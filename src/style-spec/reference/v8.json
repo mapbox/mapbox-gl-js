@@ -827,6 +827,22 @@
         }
       }
     },
+    "icon-pitch-scaling": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "If set to 1, icon scales along with other map features as the map is tilted. Values lower than 1 reduce the amount of scaling. Value of 0 means icon stays the same size no matter the tilt of the map.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.34.0"
+        },
+        "data-driven styling": {}
+      }
+    },
     "icon-text-fit": {
       "type": "enum",
       "function": "piecewise-constant",
@@ -1155,6 +1171,38 @@
         "data-driven styling": {
           "js": "0.35.0"
         }
+      }
+    },
+    "text-pitch-scaling": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "If set to 1, text scales along with other map features as the map is tilted. Values lower than 1 reduce the amount of scaling. Value of 0 means text stays the same size no matter the tilt of the map.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.34.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "max-camera-distance": {
+      "type": "number",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 20,
+      "doc": "On a pitched map, scale is a function of the ratio between 'distance from the camera to the item' and 'distance from the camera to the center of the map'. This value controls the maximum camera distance at which this item will be visible. The value is defined as a multiple of the distance from the camera to the center of the map. With the default field of view and a pitch of 60 degrees, the most distant items on the map end up being about twice as far from the camera as items in the center. Use this property to prevent the distant field from getting too cluttered on pitched maps.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.34.0"
+        },
+        "data-driven styling": {}
       }
     },
     "text-max-width": {

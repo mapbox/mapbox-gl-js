@@ -185,7 +185,7 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.map = {
-            transform: {}
+            transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } }
         };
 
         source.on('data', (e) => {

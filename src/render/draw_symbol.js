@@ -101,6 +101,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false,
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
+        gl.uniform1f(program.u_pitch_scaling, layer.getLayoutValue(isText ? 'text-pitch-scaling' : 'icon-pitch-scaling'));
+        gl.uniform1f(program.u_minimum_pitch_scaling, tile.collisionTile.minimumPitchScaling);
+        gl.uniform1f(program.u_maximum_pitch_scaling, tile.collisionTile.maximumPitchScaling);
+        gl.uniform1f(program.u_collision_y_stretch, tile.collisionTile.yStretch);
+
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap);
 
@@ -192,6 +197,8 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
         gl.uniform1f(program.u_size, sizeData.layoutSize);
     }
+    gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
+    gl.uniform1f(program.u_max_camera_distance, layer.getLayoutValue('max-camera-distance'));
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
@@ -199,15 +206,12 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
     const gl = painter.gl;
     const tr = painter.transform;
 
-    if (pitchWithMap) {
-        const s = pixelsToTileUnits(tile, 1, tr.zoom);
-        gl.uniform2f(program.u_extrude_scale, s, s);
-    } else {
-        const s = tr.cameraToCenterDistance;
-        gl.uniform2f(program.u_extrude_scale,
-            tr.pixelsToGLUnits[0] * s,
-            tr.pixelsToGLUnits[1] * s);
-    }
+    const sPitched = pixelsToTileUnits(tile, 1, tr.zoom);
+    gl.uniform2f(program.u_pitched_extrude_scale, sPitched, sPitched);
+    const sUnpitched = tr.cameraToCenterDistance;
+    gl.uniform2f(program.u_unpitched_extrude_scale,
+                 tr.pixelsToGLUnits[0] * sUnpitched,
+                 tr.pixelsToGLUnits[1] * sUnpitched);
 
     if (isSDF) {
         const haloWidthProperty = `${isText ? 'text' : 'icon'}-halo-width`;

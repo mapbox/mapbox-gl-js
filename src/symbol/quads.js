@@ -29,7 +29,7 @@ const minScale = 0.5; // underscale by 1 zoom level
  * @class SymbolQuad
  * @private
  */
-function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode) {
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode, center) {
     this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
@@ -41,6 +41,7 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
     this.minScale = minScale;
     this.maxScale = maxScale;
     this.writingMode = writingMode;
+    this.center = center;
 }
 
 /**
@@ -121,8 +122,9 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
         bl = bl.matMult(matrix);
         br = br.matMult(matrix);
     }
+    const center = new Point(tr.x - tl.x, tr.y - br.y);
 
-    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity)];
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity, null, center)];
 }
 
 /**
@@ -147,6 +149,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
 
+    let labelMinScale = minScale;
+
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
         const glyph = positionedGlyph.glyph;
@@ -158,12 +162,11 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
         const centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
         let glyphInstances;
-        let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
+            labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
             if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
+                labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
             }
 
         } else {
@@ -182,6 +185,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
         const y2 = y1 + rect.h;
 
         const center = new Point(positionedGlyph.x, glyph.advance / 2);
+        const glyphCenter = new Point(positionedGlyph.x + glyph.advance / 2, 0);
 
         const otl = new Point(x1, y1);
         const otr = new Point(x2, y1);
@@ -220,7 +224,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             //  which is used at placement time to determine which set to show
             const anchorAngle = (anchor.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
             const glyphAngle = (instance.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode));
+            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode, glyphCenter));
         }
     }
 

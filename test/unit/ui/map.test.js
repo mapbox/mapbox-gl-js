@@ -21,6 +21,7 @@ function createMap(options, callback) {
         interactive: false,
         attributionControl: false,
         trackResize: true,
+        redoPlacementOnPan: false,
         style: {
             "version": 8,
             "sources": {},

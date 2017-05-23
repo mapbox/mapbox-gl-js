@@ -57,7 +57,9 @@ const defaultOptions = {
 
     renderWorldCopies: true,
 
-    refreshExpiredTiles: true
+    refreshExpiredTiles: true,
+
+    redoPlacementOnPan: true
 };
 
 /**
@@ -179,6 +181,9 @@ class Map extends Camera {
         this._setupPainter();
 
         this.on('move', this._update.bind(this, false));
+        if (options.redoPlacementOnPan) {
+            this.on('move', this._redoPlacementOnPan.bind(this));
+        }
         this.on('zoom', this._update.bind(this, true));
         this.on('moveend', () => {
             this.animationLoop.set(300); // text fading
@@ -1488,6 +1493,20 @@ class Map extends Camera {
     _onWindowResize() {
         if (this._trackResize) {
             this.stop().resize()._update();
+        }
+    }
+
+    _redoPlacement() {
+        if (this.style) {
+            this._pendingRedoPlacement = false;
+            this.style._redoPlacement();
+        }
+    }
+
+    _redoPlacementOnPan() {
+        if (this.style && !this._pendingRedoPlacement && this.transform.pitch > 25) {
+            this._pendingRedoPlacement = true;
+            setTimeout(this._redoPlacement.bind(this), 300);
         }
     }
 

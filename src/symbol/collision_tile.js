@@ -3,6 +3,7 @@
 const Point = require('point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
+const initializeEdgeCollisionBoxes = require('./edge_collision_boxes');
 
 const intersectionTests = require('../util/intersection_tests');
 
@@ -14,24 +15,40 @@ const intersectionTests = require('../util/intersection_tests');
  * @private
  */
 class CollisionTile {
-    constructor(angle, pitch, collisionBoxArray) {
+    constructor(angle, pitch, cameraToCenterDistance, cameraToTileDistance, pitchScaling, collisionBoxArray) {
         if (typeof angle === 'object') {
             const serialized = angle;
             collisionBoxArray = pitch;
             angle = serialized.angle;
             pitch = serialized.pitch;
+            cameraToCenterDistance = serialized.cameraToCenterDistance;
+            cameraToTileDistance = serialized.cameraToTileDistance;
+            this.minimumPitchScaling = serialized.minimumPitchScaling;
+            this.maximumPitchScaling = serialized.maximumPitchScaling;
             this.grid = new Grid(serialized.grid);
             this.ignoredGrid = new Grid(serialized.ignoredGrid);
         } else {
             this.grid = new Grid(EXTENT, 12, 6);
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
+            this.minimumPitchScaling = pitchScaling.minimum;
+            this.maximumPitchScaling = pitchScaling.maximum;
         }
 
-        this.minScale = 0.5;
-        this.maxScale = 2;
+        const tilePitchScaling = cameraToTileDistance > cameraToCenterDistance ? this.minimumPitchScaling : this.maximumPitchScaling;
+
+        this.perspectiveRatio = 1 +
+            (1.0 - tilePitchScaling) * ((cameraToTileDistance / cameraToCenterDistance) - 1);
+
+        // High perspective ratio means we're effectively "underzooming"
+        // the tile. Adjust the minScale and maxScale range accordingly
+        // to constrain the number of collision calculations
+        this.minScale = .5 / this.perspectiveRatio;
+        this.maxScale = 2 / this.perspectiveRatio;
 
         this.angle = angle;
         this.pitch = pitch;
+        this.cameraToCenterDistance = cameraToCenterDistance;
+        this.cameraToTileDistance = cameraToTileDistance;
 
         const sin = Math.sin(angle),
             cos = Math.cos(angle);
@@ -39,37 +56,17 @@ class CollisionTile {
         this.reverseRotationMatrix = [cos, sin, -sin, cos];
 
         // Stretch boxes in y direction to account for the map tilt.
-        this.yStretch = 1 / Math.cos(pitch / 180 * Math.PI);
-
         // The amount the map is squished depends on the y position.
-        // Sort of account for this by making all boxes a bit bigger.
-        this.yStretch = Math.pow(this.yStretch, 1.3);
+        // We can only approximate here based on the y position of the tile
+        // The shaders calculate a more accurate "incidence_stretch"
+        // at render time to calculate an effective scale for collision
+        // purposes, but we still want to use the yStretch approximation
+        // here because we can't adjust the aspect ratio of the collision
+        // boxes at render time.
+        this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
 
         this.collisionBoxArray = collisionBoxArray;
-        if (collisionBoxArray.length === 0) {
-            // the first time collisionBoxArray is passed to a CollisionTile
-
-            // tempCollisionBox
-            collisionBoxArray.emplaceBack();
-
-            const maxInt16 = 32767;
-            //left
-            collisionBoxArray.emplaceBack(0, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
-            // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
-            // top
-            collisionBoxArray.emplaceBack(0, 0, -maxInt16, 0, maxInt16, 0, maxInt16,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
-            // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, -maxInt16, 0, maxInt16, 0, maxInt16,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
-        }
+        initializeEdgeCollisionBoxes(collisionBoxArray);
 
         this.tempCollisionBox = collisionBoxArray.get(0);
         this.edges = [
@@ -90,6 +87,10 @@ class CollisionTile {
         return {
             angle: this.angle,
             pitch: this.pitch,
+            cameraToCenterDistance: this.cameraToCenterDistance,
+            cameraToTileDistance: this.cameraToTileDistance,
+            minimumPitchScaling: this.minimumPitchScaling,
+            maximumPitchScaling: this.maximumPitchScaling,
             grid: grid,
             ignoredGrid: ignoredGrid
         };
@@ -118,10 +119,18 @@ class CollisionTile {
             const x = anchorPoint.x;
             const y = anchorPoint.y;
 
-            const x1 = x + box.x1;
-            const y1 = y + box.y1 * yStretch;
-            const x2 = x + box.x2;
-            const y2 = y + box.y2 * yStretch;
+            // When the 'perspectiveRatio' is high, we're effectively underzooming
+            // the tile because it's in the distance.
+            // In order to detect collisions that only happen while underzoomed,
+            // we have to query a larger portion of the grid.
+            // This extra work is offset by having a lower 'maxScale' bound
+            // Note that this adjustment ONLY affects the bounding boxes
+            // in the grid. It doesn't affect the boxes used for the
+            // minPlacementScale calculations.
+            const x1 = x + box.x1 * this.perspectiveRatio;
+            const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
+            const x2 = x + box.x2 * this.perspectiveRatio;
+            const y2 = y + box.y2 * yStretch * this.perspectiveRatio;
 
             box.bbox0 = x1;
             box.bbox1 = y1;
@@ -181,7 +190,7 @@ class CollisionTile {
         const sourceLayerFeatures = {};
         const result = [];
 
-        if (queryGeometry.length === 0 || (this.grid.length === 0 && this.ignoredGrid.length === 0)) {
+        if (queryGeometry.length === 0 || (this.grid.keys.length === 0 && this.ignoredGrid.keys.length === 0)) {
             return result;
         }
 
@@ -303,7 +312,9 @@ class CollisionTile {
      * @param {number} minPlacementScale
      * @private
      */
-    insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement) {
+    insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement, pitchScaling) {
+        this.minimumPitchScaling = Math.min(pitchScaling, this.minimumPitchScaling);
+        this.maximumPitchScaling = Math.max(pitchScaling, this.maximumPitchScaling);
 
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;
