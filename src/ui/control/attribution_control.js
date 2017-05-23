@@ -68,13 +68,22 @@ class AttributionControl {
 
     _updateEditLink() {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
+        const params = [
+            {key: "pitch", value: this._map.getPitch()},
+            {key: "bearing", value: this._map.getBearing()},
+            {key: "owner", value: this.styleOwner},
+            {key: "id", value: this.styleId},
+            {key: "access_token", value: config.ACCESS_TOKEN}
+        ];
+
         if (this._editLink) {
             const center = this._map.getCenter();
-            const styleParams = (this.styleOwner && this.styleId) ? config.ACCESS_TOKEN ? `?owner=${this.styleOwner}&id=${this.styleId}&access_token=${config.ACCESS_TOKEN}` : `?owner=${this.styleOwner}&id=${this.styleId}` : '';
-            this._editLink.href = `https://www.mapbox.com/feedback/${styleParams}#/${
+            const paramString = params.reduce((acc, next, i) => acc += next.value !== undefined ? `${next.key}=${next.value}${i < params.length - 1 ? '&' : ''}` : '', `?`);
+            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}#/${
                     Math.round(center.lng * 1000) / 1000}/${Math.round(center.lat * 1000) / 1000}/${Math.round(this._map.getZoom())}`;
         }
     }
+
 
     _updateData(e) {
         if (e && e.sourceDataType === 'metadata') {
