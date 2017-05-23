@@ -3,10 +3,12 @@
 const test = require('mapbox-gl-js-test').test;
 const window = require('../../../../src/util/window');
 const Map = require('../../../../src/ui/map');
+const config = require('../../../../src/util/config');
 const AttributionControl = require('../../../../src/ui/control/attribution_control');
 
 function createMap() {
     const container = window.document.createElement('div');
+    config.ACCESS_TOKEN = 'pk.123';
     return new Map({
         container: container,
         attributionControl: false,
@@ -15,9 +17,10 @@ function createMap() {
             sources: {},
             layers: [],
             owner: 'mapbox',
-            id: 'streets-v10'
+            id: 'streets-v10',
         }
     });
+
 }
 
 test('AttributionControl appears in bottom-right by default', (t) => {
@@ -105,14 +108,13 @@ test('AttributionControl has the correct edit map link', (t) => {
     const map = createMap();
     const attribution = new AttributionControl();
     map.addControl(attribution);
-
     map.on('load', () => {
         map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/feedback/" target="_blank">Improve this map</a>'});
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10#/0/0/0', 'edit link contains map location data');
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
                 map.setZoom(2);
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10#/0/0/2', 'edit link updates on mapmove');
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2', 'edit link updates on mapmove');
                 t.end();
             }
         });
