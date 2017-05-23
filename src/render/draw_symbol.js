@@ -6,7 +6,7 @@ const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
-const projectSymbolVertices = require('./project_symbol_vertices');
+const symbolVertices = require('./project_symbol_vertices');
 
 module.exports = drawSymbols;
 
@@ -101,12 +101,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         painter.enableTileClippingMask(coord);
 
-        gl.uniformMatrix4fv(program.u_matrix, false,
-                painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
-
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        gl.uniformMatrix4fv(program.u_matrix, false, symbolVertices.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s));
+        //gl.uniformMatrix4fv(program.u_matrix, false,
+                //painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
+
         const a = window.performance.now();
-        const buffer = projectSymbolVertices(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, s, layer);
+        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, s, layer);
         painter.projectionTime += window.performance.now() - a;
         painter.count++;
 

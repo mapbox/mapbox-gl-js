@@ -14,7 +14,43 @@ const VertexPositionArray = createStructArrayType({
     ]
 });
 
-module.exports = projectSymbolVertices;
+module.exports = {
+    project: projectSymbolVertices,
+    getPixelMatrix: getPixelMatrix,
+    getGlCoordMatrix: getGlCoordMatrix
+};
+
+function getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
+    const m = mat4.identity(new Float32Array(16));
+    if (false && pitchWithMap) {
+        mat4.identity(m);
+        mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
+        if (!rotateWithMap) {
+            mat4.rotateZ(m, m, transform.angle);
+        }
+    } else {
+        mat4.scale(m, m, [transform.width / 2, -transform.height / 2, 1]);
+        mat4.translate(m, m, [1, -1, 0]);
+        mat4.multiply(m, m, posMatrix);
+    }
+    return m;
+}
+
+function getGlCoordMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
+    const m = mat4.identity(new Float32Array(16));
+    if (false && pitchWithMap) {
+        mat4.multiply(m, m, posMatrix);
+        mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
+        if (!rotateWithMap) {
+            mat4.rotateZ(m, m, -transform.angle);
+        }
+    } else {
+        mat4.scale(m, m, [1, -1, 1]);
+        mat4.translate(m, m, [-1, -1, 0]);
+        mat4.scale(m, m, [2 / transform.width, 2 / transform.height, 1]);
+    }
+    return m;
+}
 
 function project(point, matrix) {
     const pos = [point.x, point.y, 0, 1];
@@ -22,42 +58,12 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitchWithMap, pixelsToTileUnits, layer) {
+function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchWithMap, pixelsToTileUnits, layer) {
 
     const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
 
     // matrix for converting from tile coordinates to the label plane
-    const labelPlaneMatrix = new Float64Array(16);
-    // matrix for converting from the lable plane to gl coords
-    const glCoordMatrix = new Float64Array(16);
-
-    const tr = painter.transform;
-
-    if (false && pitchWithMap) {
-        const s = 1 / pixelsToTileUnits;
-        mat4.identity(labelPlaneMatrix);
-        mat4.scale(labelPlaneMatrix, labelPlaneMatrix, [s, s, 1]);
-
-        mat4.identity(glCoordMatrix);
-        mat4.multiply(glCoordMatrix, glCoordMatrix, tileMatrix);
-        mat4.scale(glCoordMatrix, glCoordMatrix, [1 / s, 1 / s, 1]);
-
-        if (!rotateWithMap) {
-            mat4.rotateZ(labelPlaneMatrix, labelPlaneMatrix, tr.angle);
-            mat4.rotateZ(glCoordMatrix, glCoordMatrix, -tr.angle);
-        }
-
-    } else {
-        const m = mat4.create();
-        mat4.scale(m, m, [tr.width / 2, -tr.height / 2, 1]);
-        mat4.translate(m, m, [1, -1, 0]);
-        mat4.multiply(labelPlaneMatrix, m, tileMatrix);
-
-        mat4.identity(glCoordMatrix);
-        mat4.scale(glCoordMatrix, glCoordMatrix, [1, -1, 1]);
-        mat4.translate(glCoordMatrix, glCoordMatrix, [-1, -1, 0]);
-        mat4.scale(glCoordMatrix, glCoordMatrix, [2 / tr.width, 2 / tr.height, 1]);
-    }
+    const labelPlaneMatrix = getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
 
     const vertexPositions = new VertexPositionArray();
 
@@ -81,13 +87,13 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
             }
         }
 
-        processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale);
-        processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale);
+        processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
+        processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
     }
     return new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
 }
 
-function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale) {
+function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
     const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
     if (line.length > 1) {
         let prev = anchor;
@@ -121,23 +127,23 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
             }
 
             const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
-            addGlyph(p, glyph, fontScale, segmentAngle, vertexPositions, glCoordMatrix);
+            addGlyph(p, glyph, fontScale, segmentAngle, vertexPositions);
         }
     } else {
         const angle = 0;
         for (const glyph of glyphs) {
             const p = anchor.clone();
             p.x += glyph.offsetX * fontScale;
-            addGlyph(p, glyph, fontScale, angle, vertexPositions, glCoordMatrix);
+            addGlyph(p, glyph, fontScale, angle, vertexPositions);
         }
     }
 }
 
-function addGlyph(p, glyph, fontScale, angle, vertexPositions, glCoordMatrix) {
-    const tl = project(p.add(new Point(glyph.tlX, glyph.offsetY + glyph.tlY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
-    const tr = project(p.add(new Point(glyph.brX, glyph.offsetY + glyph.tlY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
-    const bl = project(p.add(new Point(glyph.tlX, glyph.offsetY + glyph.brY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
-    const br = project(p.add(new Point(glyph.brX, glyph.offsetY + glyph.brY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
+function addGlyph(p, glyph, fontScale, angle, vertexPositions) {
+    const tl = p.add(new Point(glyph.tlX, glyph.offsetY + glyph.tlY)._mult(fontScale)._rotate(angle));
+    const tr = p.add(new Point(glyph.brX, glyph.offsetY + glyph.tlY)._mult(fontScale)._rotate(angle));
+    const bl = p.add(new Point(glyph.tlX, glyph.offsetY + glyph.brY)._mult(fontScale)._rotate(angle));
+    const br = p.add(new Point(glyph.brX, glyph.offsetY + glyph.brY)._mult(fontScale)._rotate(angle));
     vertexPositions.emplaceBack(tl.x, tl.y);
     vertexPositions.emplaceBack(tr.x, tr.y);
     vertexPositions.emplaceBack(bl.x, bl.y);
