@@ -725,6 +725,11 @@ class SymbolBucket {
 
                 for (let b = feature.boxStartIndex; b < feature.boxEndIndex; b++) {
                     const box = this.collisionBoxArray.get(b);
+                    if (collisionTile.perspectiveRatio === 1 && box.maxScale < 1) {
+                        // These boxes aren't used on unpitched maps
+                        // See CollisionTile#insertCollisionFeature
+                        continue;
+                    }
                     const boxAnchorPoint = box.anchorPoint;
 
                     const tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);

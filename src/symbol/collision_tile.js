@@ -332,7 +332,10 @@ class CollisionTile {
         for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
             const box = collisionBoxArray.get(k);
             box.placementScale = minPlacementScale;
-            if (minPlacementScale < this.maxScale) {
+            if (minPlacementScale < this.maxScale &&
+                (this.perspectiveRatio === 1 || box.maxScale >= 1)) {
+                // Boxes with maxScale < 1 are only relevant in pitched maps,
+                // so filter them out in unpitched maps to keep the grid sparse
                 grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
             }
         }
