@@ -42,7 +42,7 @@ const BenchmarksView = React.createClass({
 
     renderBenchmark: function(name) {
         return <tr key={name}>
-            <th>{name}</th>
+            <th><a href={`#${name}`} onClick={this.reload}>{name}</a></th>
             {Object.keys(this.state.results[name]).map(this.renderBenchmarkVersion.bind(this, name))}
         </tr>;
     },
@@ -179,6 +179,10 @@ const BenchmarksView = React.createClass({
         return reduceStatuses(Object.keys(this.state.results).map(function(name) {
             return this.getBenchmarkStatus(name);
         }, this));
+    },
+
+    reload() {
+        location.reload();
     }
 });
 
