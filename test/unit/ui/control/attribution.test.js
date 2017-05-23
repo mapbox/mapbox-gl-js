@@ -18,7 +18,8 @@ function createMap() {
             layers: [],
             owner: 'mapbox',
             id: 'streets-v10',
-        }
+        },
+        hash: true
     });
 
 }
@@ -112,9 +113,9 @@ test('AttributionControl has the correct edit map link', (t) => {
         map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/feedback/" target="_blank">Improve this map</a>'});
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?pitch=0&bearing=0&owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#0/0/0', 'edit link contains map location data');
                 map.setZoom(2);
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?pitch=0&bearing=0&owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2', 'edit link updates on mapmove');
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#2/0/0', 'edit link updates on mapmove');
                 t.end();
             }
         });

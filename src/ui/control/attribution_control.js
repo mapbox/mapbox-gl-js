@@ -69,18 +69,20 @@ class AttributionControl {
     _updateEditLink() {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         const params = [
-            {key: "pitch", value: this._map.getPitch()},
-            {key: "bearing", value: this._map.getBearing()},
             {key: "owner", value: this.styleOwner},
             {key: "id", value: this.styleId},
             {key: "access_token", value: config.ACCESS_TOKEN}
         ];
 
         if (this._editLink) {
-            const center = this._map.getCenter();
-            const paramString = params.reduce((acc, next, i) => acc += next.value !== undefined ? `${next.key}=${next.value}${i < params.length - 1 ? '&' : ''}` : '', `?`);
-            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}#/${
-                    Math.round(center.lng * 1000) / 1000}/${Math.round(center.lat * 1000) / 1000}/${Math.round(this._map.getZoom())}`;
+            const paramString = params.reduce((acc, next, i) => {
+                if (next.value !== undefined) {
+                    acc += `${next.key}=${next.value}${i < params.length - 1 ? '&' : ''}`;
+                }
+                return acc;
+            }, `?`);
+            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map.hash ? this._map.hash.getHashString() : ''}`;
+
         }
     }
 

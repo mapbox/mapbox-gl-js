@@ -42,6 +42,22 @@ class Hash {
         return this;
     }
 
+    getHashString() {
+        const center = this._map.getCenter(),
+            zoom = this._map.getZoom(),
+            bearing = this._map.getBearing(),
+            pitch = this._map.getPitch(),
+            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
+
+        let hash = `#${Math.round(zoom * 100) / 100
+                }/${Math.round(center.lat * Math.pow(10, precision)) / Math.pow(10, precision)
+                }/${Math.round(center.lng * Math.pow(10, precision)) / Math.pow(10, precision)}`;
+
+        if (bearing || pitch) hash += (`/${Math.round(bearing * 10) / 10}`);
+        if (pitch) hash += (`/${Math.round(pitch)}`);
+        return hash;
+    }
+
     _onHashChange() {
         const loc = window.location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
@@ -57,21 +73,10 @@ class Hash {
     }
 
     _updateHash() {
-        const center = this._map.getCenter(),
-            zoom = this._map.getZoom(),
-            bearing = this._map.getBearing(),
-            pitch = this._map.getPitch(),
-            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
-
-        let hash = `#${Math.round(zoom * 100) / 100
-                }/${center.lat.toFixed(precision)
-                }/${center.lng.toFixed(precision)}`;
-
-        if (bearing || pitch) hash += (`/${Math.round(bearing * 10) / 10}`);
-        if (pitch) hash += (`/${Math.round(pitch)}`);
-
+        const hash = this.getHashString(this._map);
         window.history.replaceState('', '', hash);
     }
+
 }
 
 module.exports = Hash;
