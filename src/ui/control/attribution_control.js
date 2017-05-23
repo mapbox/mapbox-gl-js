@@ -2,6 +2,7 @@
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+const config = require('../../util/config');
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
@@ -69,7 +70,7 @@ class AttributionControl {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
             const center = this._map.getCenter();
-            const styleParams = (this.styleOwner && this.styleId) ? `?owner=${this.styleOwner}&id=${this.styleId}` : '';
+            const styleParams = (this.styleOwner && this.styleId) ? config.ACCESS_TOKEN ? `?owner=${this.styleOwner}&id=${this.styleId}&access_token=${config.ACCESS_TOKEN}` : `?owner=${this.styleOwner}&id=${this.styleId}` : '';
             this._editLink.href = `https://www.mapbox.com/feedback/${styleParams}#/${
                     Math.round(center.lng * 1000) / 1000}/${Math.round(center.lat * 1000) / 1000}/${Math.round(this._map.getZoom())}`;
         }
