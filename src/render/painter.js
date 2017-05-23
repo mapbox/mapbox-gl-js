@@ -200,6 +200,9 @@ class Painter {
     render(style, options) {
         this.projectionTime = 0;
         this.count = 0;
+        this.labelCount = 0;
+        this.hiddenLabelCount = 0;
+        this.glyphCount = 0;
         this.style = style;
         this.options = options;
 
@@ -224,7 +227,7 @@ class Painter {
         this.renderPass();
         this.isOpaquePass = false;
         this.renderPass();
-        console.log(this.projectionTime, 'count', this.count);
+        //console.log(this.projectionTime, 'count', this.count, this.labelCount, this.hiddenLabelCount, this.glyphCount);
 
         if (this.options.showTileBoundaries) {
             const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
