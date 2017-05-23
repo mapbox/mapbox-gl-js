@@ -91,20 +91,6 @@ const BenchmarksView = React.createClass({
         return output;
     },
 
-    scrollToBenchmark: function(name, version) {
-        const duration = 300;
-        const startTime = (new Date()).getTime();
-        const startYOffset = window.pageYOffset;
-
-        requestAnimationFrame(function frame() {
-            const endYOffset = document.getElementById(name + version).offsetTop;
-            const time = (new Date()).getTime();
-            const yOffset = Math.min((time - startTime) / duration, 1) * (endYOffset - startYOffset) + startYOffset;
-            window.scrollTo(0, yOffset);
-            if (time < startTime + duration) requestAnimationFrame(frame);
-        });
-    },
-
     getInitialState: function() {
         const results = {};
 
@@ -128,7 +114,6 @@ const BenchmarksView = React.createClass({
 
         asyncSeries(Object.keys(that.state.results), (name, callback) => {
             asyncSeries(Object.keys(that.state.results[name]), (version, callback) => {
-                that.scrollToBenchmark(name, version);
                 that.runBenchmark(name, version, callback);
             }, callback);
         }, (err) => {
@@ -153,7 +138,6 @@ const BenchmarksView = React.createClass({
         }
 
         results.status = 'running';
-        this.scrollToBenchmark(name, version);
         log('dark', 'starting');
 
         setTimeout(() => {
