@@ -63,7 +63,7 @@ function isVisible(anchor, posMatrix) {
     return p.x >= -1 && p.x <= 1 && p.y >= -1 && p.y <= 1;
 }
 
-function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchWithMap, pixelsToTileUnits, layer) {
+function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchWithMap, isLine, pixelsToTileUnits, layer) {
 
     const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
 
@@ -85,9 +85,19 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
             continue;
         }
 
-        const line = bucket.lineArray.get(symbol.lineIndex);
         const size = evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol);
         const fontScale = size / 24;
+
+        if (!isLine) {
+            const numVertices = symbol.verticesLength * 4;
+            const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
+            for (let i = 0; i < numVertices; i++) {
+                vertexPositions.emplaceBack(anchor.x, anchor.y, 0, fontScale);
+            }
+            continue;
+        }
+
+        const line = bucket.lineArray.get(symbol.lineIndex);
 
         const glyphsForward = [];
         const glyphsBackward = [];

@@ -50,7 +50,8 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['text-translate'],
         layer.paint['text-translate-anchor'],
         layer.layout['text-rotation-alignment'],
-        layer.layout['text-pitch-alignment']
+        layer.layout['text-pitch-alignment'],
+        layer.layout['symbol-placement'] === 'line'
     );
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -59,7 +60,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment) {
+        rotationAlignment, pitchAlignment, isLine) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -107,7 +108,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 //painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
         const a = window.performance.now();
-        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, s, layer);
+        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, isLine, s, layer);
         painter.projectionTime += window.performance.now() - a;
         painter.count++;
 
