@@ -76,9 +76,9 @@ class RasterTerrainTileSource extends Evented {
     loadTile(tile, callback) {
         const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
-        tile.request = ajax.getImage(url, done.bind(this));
+        tile.request = ajax.getImage(url, imageLoaded.bind(this));
 
-        function done(err, img) {
+        function imageLoaded(err, img) {
             delete tile.request;
 
             if (tile.aborted) {
@@ -93,15 +93,47 @@ class RasterTerrainTileSource extends Evented {
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
 
-            tile.rawTileData = {data: browser.getImageData(img), width: img.width, height: img.height};
-            tile.dem = new DEMPyramid();
-            tile.dem.loadFromImage(tile.rawTileData);
+            tile.rawImageData = {data: browser.getImageData(img), width: img.width, height: img.height};
+
+            const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
+
+            const params = {
+                uid: tile.uid,
+                coord: tile.coord,
+                zoom: tile.coord.z,
+                tileSize: this.tileSize * overscaling,
+                type: this.type,
+                source: this.id,
+                overscaling: overscaling,
+                rawImageData: tile.rawImageData
+            };
+
+            if (!tile.workerID || tile.state === 'expired') {
+                tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
+            } else if (tile.state === 'loading') {
+                // schedule tile reloading after it has been loaded
+                tile.reloadCallback = callback;
+            } else {
+                this.dispatcher.send('reloadTile', params, done.bind(this), tile.workerID);
+            }
 
             delete img.cacheControl;
             delete img.expires;
 
-            tile.state = 'loaded';
-            callback(null);
+        }
+
+        function done(err, data) {
+            if (err) {
+                this.state = 'errored';
+                callback(err);
+            }
+
+            if (data) {
+                tile.dem = new DEMPyramid(tile.uid, null, data.levels);
+                tile.state = 'loaded';
+                callback(null);
+            }
+
         }
     }
 

@@ -3,14 +3,14 @@ const assert = require('assert');
 // const getImageData = require('../util/browser.js').getImageData;
 
 class Level {
-    constructor(width, height, border) {
+    constructor(width, height, border, data) {
         assert(width > 0);
         assert(height > 0);
         this.width = width;
         this.height = height;
         this.border = border;
         this.stride = this.width + 2 * this.border;
-        this.data = new Int32Array((this.width + 2 * this.border) * (this.height + 2 * this.border));
+        this.data = data || new Int32Array((this.width + 2 * this.border) * (this.height + 2 * this.border));
     }
 
     set(x, y, value) {
@@ -44,9 +44,10 @@ class Level {
 }
 
 class DEMPyramid {
-    constructor(scale) {
+    constructor(uid, scale, levels) {
+        this.uid = uid;
         this.scale = scale || 1;
-        this.levels = [];
+        this.levels = levels ? levels.map((l)=> new Level(l.width, l.height, l.border, l.data)) : [];
         this.loaded = false;
     }
 
@@ -67,7 +68,7 @@ class DEMPyramid {
 
     loadFromImage(data) {
         // Build level 0
-        this.levels = [ new Level(data.width, data.height, 128) ];
+        this.levels = [ new Level(data.width, data.height, data.width/2) ];
         const level = this.levels[0];
         const pixels = data.data;
 

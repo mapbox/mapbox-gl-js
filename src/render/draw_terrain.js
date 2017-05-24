@@ -104,12 +104,22 @@ class TerrainTexture {
 function prepareTerrain(painter, tile, layer) {
     const gl = painter.gl;
     const terrainBucket = tile.getBucket(layer);
-    // set up terrain prepare textures
 
-    const levels = terrainBucket ? populateLevelPixels(terrainBucket.buffers.terrainArray, tile) : tile.dem.levels.map((l, i)=> {
-        if (i > 7) return {width: l.width, height: l.height, data: new Uint8Array(l.data.buffer)};
-        return {width: l.width * 2, height: l.height * 2, data: new Uint8Array(l.data.buffer)};
+    // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
+    // ex.
+    // Uint32:
+    // base 10 - 67308
+    // base 2 - 0000 0000 0000 0001 0000 0110 1110 1100
+    //
+    // Uint8:
+    // base 10 - 0, 1, 6, 236 (this order is reversed in the resulting array via the overflow.
+    // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
+    // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
+
+    const levels = tile.dem.levels.map((l, i)=> {
+        return {width: l.width + 2 * l.border, height: l.height + 2 * l.border, data: new Uint8Array(l.data.buffer)};
     });
+    console.log(tile.uid, levels);
 
     const dem = gl.createTexture();
 
@@ -151,22 +161,4 @@ function prepareTerrain(painter, tile, layer) {
     tile.texture.unbindFramebuffer();
 
     tile.prepared = true;
-}
-
-function populateLevelPixels(terrainArray) {
-    const levels = [];
-    let levelSize = TERRAIN_TILE_WIDTH;
-    let prevIndex = 0;
-    while (levelSize >= 2) {
-        // levelSize * 2 = total width of texture with border
-        // (levelSize *2)^2 = levelSize*levelSize*4 = total pixels in a tile
-        // 4 = bytesPerElement for a Uint32Array
-        const levelByteLength = levelSize * levelSize * 4 * 4;
-        levels.push({height: levelSize * 2, width:levelSize * 2, data:new Uint8Array(terrainArray.arrayBuffer.slice(prevIndex, levelByteLength + prevIndex))});
-        prevIndex += levelByteLength;
-        levelSize /= 2;
-    }
-    levels.push({height: 2, width: 2, data:new Uint8Array(16)});
-    levels.push({height: 1, width: 1, data:new Uint8Array(4)});
-    return levels;
 }
