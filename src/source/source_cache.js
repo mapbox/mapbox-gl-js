@@ -407,39 +407,35 @@ class SourceCache extends Evented {
 
     /**
      * Add a tile, given its coordinate, to the pyramid.
-     * @param {TileCoord} coord
+     * @param {TileCoord} tileCoord
      * @returns {Tile} the added Tile.
      * @private
      */
-    addTile(coord) {
-        let tile = this._tiles[coord.id];
+    addTile(tileCoord) {
+        let tile = this._tiles[tileCoord.id];
         if (tile)
             return tile;
 
-        const wrapped = coord.wrapped();
-        tile = this._tiles[wrapped.id];
-
-        if (!tile) {
-            tile = this._cache.get(wrapped.id);
-            if (tile) {
-                tile.redoPlacement(this._source);
-                if (this._cacheTimers[wrapped.id]) {
-                    clearTimeout(this._cacheTimers[wrapped.id]);
-                    this._cacheTimers[wrapped.id] = undefined;
-                    this._setTileReloadTimer(wrapped.id, tile);
-                }
+        tile = this._cache.get(tileCoord.id);
+        if (tile) {
+            tile.redoPlacement(this._source);
+            if (this._cacheTimers[tileCoord.id]) {
+                clearTimeout(this._cacheTimers[tileCoord.id]);
+                this._cacheTimers[tileCoord.id] = undefined;
+                this._setTileReloadTimer(tileCoord.id, tile);
             }
         }
+
         const cached = Boolean(tile);
         if (!cached) {
-            const zoom = coord.z;
+            const zoom = tileCoord.z;
             const overscaling = zoom > this._source.maxzoom ? Math.pow(2, zoom - this._source.maxzoom) : 1;
-            tile = new Tile(wrapped, this._source.tileSize * overscaling, this._source.maxzoom);
-            this.loadTile(tile, this._tileLoaded.bind(this, tile, coord.id, tile.state));
+            tile = new Tile(tileCoord, this._source.tileSize * overscaling, this._source.maxzoom);
+            this.loadTile(tile, this._tileLoaded.bind(this, tile, tileCoord.id, tile.state));
         }
 
         tile.uses++;
-        this._tiles[coord.id] = tile;
+        this._tiles[tileCoord.id] = tile;
         if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'source'});
 
         return tile;
@@ -517,7 +513,7 @@ class SourceCache extends Evented {
      * @private
      */
     tilesIn(queryGeometry) {
-        const tileResults = {};
+        const tileResults = [];
         const ids = this.getIds();
 
         let minX = Infinity;
@@ -533,6 +529,7 @@ class SourceCache extends Evented {
             maxX = Math.max(maxX, p.column);
             maxY = Math.max(maxY, p.row);
         }
+
 
         for (let i = 0; i < ids.length; i++) {
             const tile = this._tiles[ids[i]];
@@ -551,26 +548,16 @@ class SourceCache extends Evented {
                     tileSpaceQueryGeometry.push(coordinateToTilePoint(coord, tile.sourceMaxZoom, queryGeometry[j]));
                 }
 
-                let tileResult = tileResults[tile.coord.id];
-                if (tileResult === undefined) {
-                    tileResult = tileResults[tile.coord.id] = {
-                        tile: tile,
-                        coord: coord,
-                        queryGeometry: [],
-                        scale: Math.pow(2, this.transform.zoom - tile.coord.z)
-                    };
-                }
-
-                // Wrapped tiles share one tileResult object but can have multiple queryGeometry parts
-                tileResult.queryGeometry.push(tileSpaceQueryGeometry);
+                tileResults.push({
+                    tile: tile,
+                    coord: coord,
+                    queryGeometry: [tileSpaceQueryGeometry],
+                    scale: Math.pow(2, this.transform.zoom - tile.coord.z)
+                });
             }
         }
 
-        const results = [];
-        for (const t in tileResults) {
-            results.push(tileResults[t]);
-        }
-        return results;
+        return tileResults;
     }
 
     redoPlacement() {

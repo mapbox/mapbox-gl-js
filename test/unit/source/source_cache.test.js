@@ -166,7 +166,7 @@ test('SourceCache#addTile', (t) => {
         t.end();
     });
 
-    t.test('reuses wrapped tile', (t) => {
+    t.test('does not reuse wrapped tile', (t) => {
         const coord = new TileCoord(0, 0, 0);
         let load = 0,
             add = 0;
@@ -183,9 +183,9 @@ test('SourceCache#addTile', (t) => {
         const t1 = sourceCache.addTile(coord);
         const t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
 
-        t.equal(load, 1);
-        t.equal(add, 1);
-        t.equal(t1, t2);
+        t.equal(load, 2);
+        t.equal(add, 2);
+        t.notEqual(t1, t2);
 
         t.end();
     });
@@ -478,7 +478,7 @@ test('SourceCache#update', (t) => {
 
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
-                tile.state = (tile.coord.id === new TileCoord(0, 0, 0).id) ? 'loaded' : 'loading';
+                tile.state = (tile.coord.id === new TileCoord(0, 0, 0, 1).id) ? 'loaded' : 'loading';
                 callback();
             }
         });
