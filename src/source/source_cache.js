@@ -486,6 +486,8 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
+        tile.stopPlacementThrottler();
+
         if (tile.hasData()) {
             const wrappedId = tile.coord.wrapped().id;
             this._cache.add(wrappedId, tile);
