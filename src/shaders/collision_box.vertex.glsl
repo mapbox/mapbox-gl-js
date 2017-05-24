@@ -12,6 +12,7 @@ uniform float u_camera_to_center_distance;
 varying float v_max_zoom;
 varying float v_placement_zoom;
 varying float v_perspective_zoom_adjust;
+varying vec2 v_fade_tex;
 
 void main() {
     vec4 projectedPoint = u_matrix * vec4(a_anchor_pos, 0, 1);
@@ -23,8 +24,9 @@ void main() {
 
     gl_Position = u_matrix * vec4(a_pos + a_extrude * collision_perspective_ratio * collision_adjustment / u_scale, 0.0, 1.0);
 
-    v_perspective_zoom_adjust = log2(collision_perspective_ratio * collision_adjustment)*10.0;
-
     v_max_zoom = a_data.x;
     v_placement_zoom = a_data.y;
+
+    v_perspective_zoom_adjust = log2(collision_perspective_ratio * collision_adjustment) * 10.0;
+    v_fade_tex = vec2((v_placement_zoom + v_perspective_zoom_adjust) / 255.0, 0.0);
 }
