@@ -155,7 +155,7 @@ class Tile {
             showCollisionBoxes: source.map.showCollisionBoxes
         }, (_, data) => {
             this.reloadSymbolData(data, source.map.style);
-
+            if (source.map.showCollisionBoxes) source.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
             // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
             if (source.map) source.map.painter.tileExtentVAO.vao = null;
 
