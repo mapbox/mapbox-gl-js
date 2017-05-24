@@ -227,7 +227,7 @@ class Painter {
         this.renderPass();
         this.isOpaquePass = false;
         this.renderPass();
-        //console.log(this.projectionTime, 'count', this.count, this.labelCount, this.hiddenLabelCount, this.glyphCount);
+        console.log(this.projectionTime, 'count', this.count, this.labelCount, this.hiddenLabelCount, this.glyphCount);
 
         if (this.options.showTileBoundaries) {
             const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
