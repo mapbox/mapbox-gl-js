@@ -12,9 +12,22 @@ test('LRUCache', (t) => {
     t.deepEqual(cache.keys(), ['washington'], '.keys()');
     t.equal(cache.has('washington'), true, '.has()');
     t.equal(cache.get('washington'), 'dc', '.get()');
-    t.equal(cache.get('washington'), null, '.get()');
-    t.equal(cache.has('washington'), false, '.has()');
-    t.deepEqual(cache.keys(), [], '.keys()');
+    t.equal(cache.get('washington'), 'dc', '.get()');
+    t.equal(cache.has('washington'), true, '.has()');
+    t.deepEqual(cache.keys(), ['washington'], '.keys()');
+    t.end();
+});
+
+test('LRUCache - get moves key to top of order stack', (t) => {
+    const cache = new LRUCache(10, (removed) => {
+        t.equal(removed, 'dc');
+    });
+    t.equal(cache.add('washington', 'dc'), cache, '.add()');
+    t.equal(cache.add('san francisco', 'ca'), cache, '.add()');
+    t.deepEqual(cache.keys(), ['washington', 'san francisco'], '.keys()');
+    t.equal(cache.has('washington'), true, '.has()');
+    t.equal(cache.get('washington'), 'dc', '.get()');
+    t.deepEqual(cache.keys(), ['san francisco', 'washington'], '.keys()');
     t.end();
 });
 
@@ -43,7 +56,11 @@ test('LRUCache - duplicate add', (t) => {
 });
 
 test('LRUCache - remove', (t) => {
-    const cache = new LRUCache(10, () => {});
+    let called;
+    const cache = new LRUCache(10, (removed) => {
+        t.equal(removed, 'dc');
+        called = true;
+    });
 
     cache.add('washington', 'dc');
     cache.add('baltimore', 'md');
@@ -58,6 +75,10 @@ test('LRUCache - remove', (t) => {
     t.notOk(cache.has('baltimore'));
 
     t.ok(cache.remove('baltimore'));
+
+    t.notOk(called);
+    cache.remove('washington', true);
+    t.ok(called);
 
     t.end();
 });

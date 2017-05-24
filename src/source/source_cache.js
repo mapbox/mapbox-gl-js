@@ -422,6 +422,7 @@ class SourceCache extends Evented {
         if (!tile) {
             tile = this._cache.get(wrapped.id);
             if (tile) {
+                this._cache.remove(wrapped.id);
                 tile.redoPlacement(this._source);
                 if (this._cacheTimers[wrapped.id]) {
                     clearTimeout(this._cacheTimers[wrapped.id]);
@@ -459,7 +460,7 @@ class SourceCache extends Evented {
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
-                this._cache.remove(id);
+                this._cache.remove(id, true);
                 this._cacheTimers[id] = undefined;
             }, expiryTimeout);
         }
