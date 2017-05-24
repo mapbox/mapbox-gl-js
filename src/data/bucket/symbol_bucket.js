@@ -38,6 +38,7 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Uint32', name: 'lineIndex' },
         { type: 'Uint16', name: 'segment' },
         { type: 'Uint32', name: 'sizeStopStart' },
+        { type: 'Float32', name: 'placementZoom' },
     ]
 });
 
@@ -48,7 +49,7 @@ const VertexTransformArray = createStructArrayType({
         { type: 'Int16', name: 'tlX' },
         { type: 'Int16', name: 'tlY' },
         { type: 'Int16', name: 'brX' },
-        { type: 'Int16', name: 'brY' }
+        { type: 'Int16', name: 'brY' },
     ]});
 
 const LineArray = createStructArrayType({
@@ -788,7 +789,8 @@ class SymbolBucket {
 
         this.placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 vertexStart, this.vertexTransformArray.length - vertexStart,
-                lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0);
+                lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0,
+                placementZoom);
 
         arrays.populatePaintArrays(featureProperties);
     }

@@ -14,6 +14,8 @@ const VertexPositionArray = createStructArrayType({
     ]
 });
 
+const serializedVertexPositionArrayType = VertexPositionArray.serialize();
+
 module.exports = {
     project: projectSymbolVertices,
     getPixelMatrix: getPixelMatrix,
@@ -76,7 +78,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
 
-        if (!isVisible(new Point(symbol.anchorX, symbol.anchorY), posMatrix)) {
+        if (!isVisible(new Point(symbol.anchorX, symbol.anchorY), posMatrix) || !painter.frameHistory.isVisible(symbol.placementZoom)) {
             const numVertices = symbol.verticesLength * 4;
             for (let i = 0; i < numVertices; i++) {
                 vertexPositions.emplaceBack(0, 0, 0, 0);
@@ -89,6 +91,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         const fontScale = size / 24;
 
         if (!isLine) {
+            painter.pointLabelCount++;
             const numVertices = symbol.verticesLength * 4;
             const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
             for (let i = 0; i < numVertices; i++) {
@@ -118,7 +121,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
         processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
     }
-    return new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
+    return new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX);
 }
 
 function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
