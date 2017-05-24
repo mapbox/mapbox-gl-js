@@ -1,4 +1,4 @@
-updated_at: '04/13/2017'
+updated_at: '05/24/2017'
 roadmap_items:
   -
     term: "Active development"
@@ -8,11 +8,14 @@ roadmap_items:
         name: Client-side terrain rendering
         issues: ["3730"]
       -
-        name: Custom WebGL layer type
-        issues: ["281"]
+        name: Arbitrary expressions for property functions
+        issues: ["4715"]
       -
-        name: Property function support for <code>text-size</code> and <code>icon-size</code>
-        issues: ["4228"]
+        name: Data-driven (property functions) <code>line-width</code>
+        issues: ["3045"]
+      -
+        name: Text legibiity improvements on tilted maps
+        issues: ["4547"]
   -
     term: "Upcoming"
     description: "Things we hope to start building in the next several months."
