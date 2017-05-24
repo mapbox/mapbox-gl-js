@@ -150,9 +150,7 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
     } else {
         const angle = 0;
         for (const glyph of glyphs) {
-            const p = anchor.clone();
-            p.x += glyph.offsetX * fontScale;
-            addGlyph(p, fontScale, angle, vertexPositions);
+            addGlyph(anchor, fontScale, angle, vertexPositions);
         }
     }
 }

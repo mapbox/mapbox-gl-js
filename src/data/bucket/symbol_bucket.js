@@ -687,7 +687,8 @@ class SymbolBucket {
                         symbolInstance.featureProperties,
                         symbolInstance.writingModes,
                         symbolInstance.anchor,
-                        lineArrayIndex);
+                        lineArrayIndex,
+                        line.length > 1);
                 }
             }
 
@@ -718,7 +719,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineArrayIndex) {
+    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineArrayIndex, isLine) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -770,10 +771,11 @@ class SymbolBucket {
             const index = segment.vertexLength;
 
             const y = symbol.glyphOffsetY;
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            const x = isLine ? 0 : symbol.glyphOffsetX;
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, x + tl.x, y + tl.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, x + tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, x + bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, x + br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
