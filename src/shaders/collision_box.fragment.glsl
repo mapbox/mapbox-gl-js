@@ -3,12 +3,14 @@ uniform float u_zoom;
 // Labels with placement zoom greater than this value will not be placed,
 // regardless of perspective effects.
 uniform float u_maxzoom;
+uniform sampler2D u_fadetexture;
 
 // v_max_zoom is a collision-box-specific value that controls when line-following
 // collision boxes are used.
 varying float v_max_zoom;
 varying float v_placement_zoom;
 varying float v_perspective_zoom_adjust;
+varying vec2 v_fade_tex;
 
 void main() {
 
@@ -18,7 +20,7 @@ void main() {
     gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0) * alpha;
 
     // Red = collision, label hidden
-    if (v_placement_zoom + v_perspective_zoom_adjust > u_zoom) {
+    if (texture2D(u_fadetexture, v_fade_tex).a < 1.0) {
         gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0) * alpha;
     }
 
