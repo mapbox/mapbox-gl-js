@@ -81,7 +81,7 @@ class AttributionControl {
                 }
                 return acc;
             }, `?`);
-            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map.hash ? this._map.hash.getHashString() : ''}`;
+            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map.hash ? this._map.hash.getHashString(true) : ''}`;
 
         }
     }
