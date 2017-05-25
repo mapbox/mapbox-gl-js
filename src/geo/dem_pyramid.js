@@ -1,6 +1,5 @@
 'use strict';
 const assert = require('assert');
-// const getImageData = require('../util/browser.js').getImageData;
 
 class Level {
     constructor(width, height, border, data) {
@@ -84,6 +83,10 @@ class DEMPyramid {
         this.loaded = true;
     }
 
+    serialize() {
+        // todo: figure out efficient transfer of DEM
+    }
+
     backfillBorders(borderTile, dx, dy) {
         for (let l = 0; l < this.levels.length; l++) {
             const t = this.levels[l];
@@ -106,13 +109,14 @@ class DEMPyramid {
                 }
             }
         }
+
+        function clamp(value, min, max) {
+            return value < min ? min : (value > max ? max : value);
+        }
     }
-
 }
 
-function clamp(value, min, max) {
-    return value < min ? min : (value > max ? max : value);
-}
+
 
 
 module.exports = {DEMPyramid, Level};
