@@ -44,7 +44,7 @@ const PlacedSymbolArray = createStructArrayType({
 
 const GlyphOffsetArray = createStructArrayType({
     members: [
-        { type: 'Int16', name: 'offsetX' }
+        { type: 'Float32', name: 'offsetX' }
     ]
 });
 
@@ -728,12 +728,15 @@ class SymbolBucket {
         quads.sort(function(sa, sb) {
             const a = sa.glyphOffsetX;
             const b = sb.glyphOffsetX;
-            if (a < 0 === b < 0) {
+            const aIsForward = a > 0;
+            const bIsForward = b > 0;
+
+            if (aIsForward === bIsForward) {
                 return Math.abs(a) - Math.abs(b);
-            } else if (a < 0) {
-                return 1;
-            } else if (b < 0) {
+            } else if (aIsForward) {
                 return -1;
+            } else {
+                return 1;
             }
         });
 

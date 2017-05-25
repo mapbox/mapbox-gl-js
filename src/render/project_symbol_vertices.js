@@ -114,7 +114,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         const end = symbol.glyphStartIndex + symbol.numGlyphs;
         for (let glyphIndex = symbol.glyphStartIndex; glyphIndex < end; glyphIndex++) {
             const glyph = bucket.glyphOffsetArray.get(glyphIndex);
-            if (glyph.offsetX >= 0) {
+            if (glyph.offsetX > 0) {
                 glyphsForward.push(glyph);
             } else {
                 glyphsBackward.push(glyph);
@@ -147,7 +147,7 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
 
         let numVertices, vertexStartIndex, angle;
         if (dir === 1) {
-            numVertices = line.length - symbol.segment;
+            numVertices = line.length - symbol.segment - 1;
             vertexStartIndex = line.startIndex + symbol.segment + 1;
             angle = 0;
         } else {
@@ -158,7 +158,7 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
 
         for (const glyph of glyphs) {
             const offsetX = Math.abs(glyph.offsetX) * fontScale;
-            while (offsetX >= segmentDistance + previousDistance && vertexIndex < numVertices) {
+            while (offsetX >= segmentDistance + previousDistance && Math.abs(vertexIndex) < numVertices) {
                 previousDistance += segmentDistance;
                 prev = next;
                 const next_ = lineVertexArray.get(vertexStartIndex + vertexIndex);
