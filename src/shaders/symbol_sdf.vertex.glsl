@@ -138,7 +138,6 @@ void main() {
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
-    v_gamma_scale = gl_Position.w;
     highp float segment_angle = -a_projected_pos[2];
     highp float font_scale = a_projected_pos[3];
     highp float angle_sin = sin(segment_angle);
@@ -146,6 +145,7 @@ void main() {
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     gl_Position = u_matrix * vec4(a_projected_pos.xy + rotation_matrix * (a_offset / 64.0 * font_scale), 0.0, 1.0);
+    v_gamma_scale = gl_Position.w;
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);

@@ -24,7 +24,7 @@ module.exports = {
 
 function getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
     const m = mat4.identity(new Float32Array(16));
-    if (false && pitchWithMap) {
+    if (pitchWithMap) {
         mat4.identity(m);
         mat4.scale(m, m, [1 / pixelsToTileUnits, 1 / pixelsToTileUnits, 1]);
         if (!rotateWithMap) {
@@ -40,7 +40,7 @@ function getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixel
 
 function getGlCoordMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
     const m = mat4.identity(new Float32Array(16));
-    if (false && pitchWithMap) {
+    if (pitchWithMap) {
         mat4.multiply(m, m, posMatrix);
         mat4.scale(m, m, [pixelsToTileUnits, pixelsToTileUnits, 1]);
         if (!rotateWithMap) {

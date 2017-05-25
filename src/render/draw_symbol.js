@@ -68,7 +68,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const gl = painter.gl;
 
     const rotateWithMap = rotationAlignment === 'map';
-    const pitchWithMap = pitchAlignment === 'map';
+    const pitchWithMap = pitchAlignment === 'map' && false;
 
     const depthOn = false && pitchWithMap;
 
@@ -223,7 +223,7 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
     if (isSDF) {
         const haloWidthProperty = `${isText ? 'text' : 'icon'}-halo-width`;
         const hasHalo = !layer.isPaintValueFeatureConstant(haloWidthProperty) || layer.paint[haloWidthProperty];
-        const gammaScale = (pitchWithMap ? Math.cos(tr._pitch) : 1) * tr.cameraToCenterDistance;
+        const gammaScale = (pitchWithMap ? Math.cos(tr._pitch) * tr.cameraToCenterDistance : 1);
         gl.uniform1f(program.u_gamma_scale, gammaScale);
 
         if (hasHalo && false) { // Draw halo underneath the text.
