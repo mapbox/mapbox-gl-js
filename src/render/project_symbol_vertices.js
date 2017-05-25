@@ -9,8 +9,9 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 
 const VertexPositionArray = createStructArrayType({
+    alignmnet: 4,
     members: [
-        { type: 'Float32', name: 'a_projected_pos', components: 4 }
+        { type: 'Float32', name: 'a_projected_pos', components: 3 }
     ]
 });
 
@@ -86,7 +87,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         if (!isVisible(new Point(symbol.anchorX, symbol.anchorY), posMatrix) || !painter.frameHistory.isVisible(symbol.placementZoom)) {
             const numVertices = symbol.numGlyphs * 4;
             for (let i = 0; i < numVertices; i++) {
-                vertexPositions.emplaceBack(0, 0, 0, 0);
+                vertexPositions.emplaceBack(-Infinity, -Infinity, 0);
             }
             painter.hiddenLabelCount++;
             continue;
@@ -100,7 +101,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
             const numVertices = symbol.numGlyphs * 4;
             const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
             for (let i = 0; i < numVertices; i++) {
-                vertexPositions.emplaceBack(anchor.x, anchor.y, 0, fontScale);
+                vertexPositions.emplaceBack(anchor.x, anchor.y, 0);
             }
             continue;
         }
@@ -168,21 +169,21 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
             }
 
             const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
-            addGlyph(p, fontScale, segmentAngle, vertexPositions);
+            addGlyph(p, segmentAngle, vertexPositions);
         }
     } else {
         const angle = 0;
         for (const glyph of glyphs) {
-            addGlyph(anchor, fontScale, angle, vertexPositions);
+            addGlyph(anchor, angle, vertexPositions);
         }
     }
 }
 
-function addGlyph(p, fontScale, angle, vertexPositions) {
-    vertexPositions.emplaceBack(p.x, p.y, angle, fontScale);
-    vertexPositions.emplaceBack(p.x, p.y, angle, fontScale);
-    vertexPositions.emplaceBack(p.x, p.y, angle, fontScale);
-    vertexPositions.emplaceBack(p.x, p.y, angle, fontScale);
+function addGlyph(p, angle, vertexPositions) {
+    vertexPositions.emplaceBack(p.x, p.y, angle);
+    vertexPositions.emplaceBack(p.x, p.y, angle);
+    vertexPositions.emplaceBack(p.x, p.y, angle);
+    vertexPositions.emplaceBack(p.x, p.y, angle);
 }
 
 function evaluateSizeForZoom(bucket, layer, transform) {
