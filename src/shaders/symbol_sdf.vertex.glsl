@@ -176,6 +176,7 @@ void main() {
     // the y-axis.
     highp float collision_adjustment = max(1.0, incidence_stretch / u_collision_y_stretch);
 
-    highp float perspective_zoom_adjust = log2(perspective_ratio * collision_adjustment) * 10.0;
+    // Floor to 1/10th zoom to dodge precision issues that can cause partially hidden labels
+    highp float perspective_zoom_adjust = floor(log2(perspective_ratio * collision_adjustment) * 10.0);
     v_fade_tex = vec2((a_labelminzoom + perspective_zoom_adjust) / 255.0, 0.0);
 }

@@ -27,6 +27,6 @@ void main() {
     v_max_zoom = a_data.x;
     v_placement_zoom = a_data.y;
 
-    v_perspective_zoom_adjust = log2(collision_perspective_ratio * collision_adjustment) * 10.0;
+    v_perspective_zoom_adjust = floor(log2(collision_perspective_ratio * collision_adjustment) * 10.0);
     v_fade_tex = vec2((v_placement_zoom + v_perspective_zoom_adjust) / 255.0, 0.0);
 }
