@@ -111,13 +111,13 @@ Property expressions are represented using a Lisp-like structured syntax tree.
 
 **Decision:**
 - `["if", boolean_expr, expr_if_true, expr_if_false]` 
-- `["switch", default_result_expr, [bool_expr1, result_expr1], [bool_expr2, result_expr2], ...]`
-- `["match", input_expr, default_result_expr, [test_expr1, result_expr1], [test_expr2, result_expr2]]`
+- `["switch", [[bool_expr1, result_expr1], [bool_expr2, result_expr2], ...], default_result_expr]`
+- `["match", input_expr, [[test_expr1, result_expr1], [test_expr2, result_expr2]], default_result_expr]`
+- `["interval", numeric_expr, [lbound_expr1, result_expr1], [lbound_expr2, result_expr2], ...]`
 
 **Comparison and boolean operations:**
 - `[ "==", expr1, expr2]` (similar for `!=`)
 - `[ ">", lhs_expr, rhs_expr ]` (similar for <, >=, <=)
-- `[ "between", "[]"|"(]"|"[)"|"()", test_expr, left_boundary_expr, right_boundary_expr ]` - tests whether `test_expr` is "between" the left and right boundaries, with the first argument dictating whether the each boundary is exclusive or inclusive.
 - `[ "&&", boolean_expr1, boolean_expr2, ... ]` (similar for `||`)
 - `[ "!", boolean_expr]`
 
@@ -131,7 +131,9 @@ Property expressions are represented using a Lisp-like structured syntax tree.
 - sin, cos, tan, asin, acos, atan
 - ceil, floor, round, abs
 - min, max
+- `['linear', x, [ x1, y1 ], [ x2, y2 ] ]` - returns the output of the linear function determined by `(x1, y1)`, `(x2, y2)`, evaluated at `x`
 
 **Color:**
 - rgb, hsl, hcl, lab, hex, (others?)
+- `["color", color_name_expr]`
 
