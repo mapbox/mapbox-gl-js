@@ -72,7 +72,12 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
 
-    const vertexPositions = new VertexPositionArray();
+    if (bucket.vertexPositions === undefined) {
+        bucket.vertexPositions = new VertexPositionArray();
+    } else {
+        bucket.vertexPositions.clear();
+    }
+    const vertexPositions = bucket.vertexPositions;
 
     const placedSymbols = bucket.placedSymbolArray;
     for (let s = 0; s < placedSymbols.length; s++) {
@@ -121,7 +126,12 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
         processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
     }
-    return new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX);
+
+    if (bucket.vertexPositionBuffer === undefined) {
+        // TODO avoid leaking this buffer
+        bucket.vertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
+    }
+    return bucket.vertexPositionBuffer;
 }
 
 function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
@@ -151,7 +161,7 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
                 previousDistance += segmentDistance;
                 prev = next;
                 const next_ = lineVertexArray.get(vertexStartIndex + vertexIndex);
-                vertexIndex++;
+                vertexIndex += dir;
                 next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
                 segmentAngle = angle + Math.atan2(next.y - prev.y, next.x - prev.x);
                 segmentDistance = prev.dist(next);

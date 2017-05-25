@@ -159,6 +159,13 @@ class StructArray {
     }
 
     /**
+     * Resets the the length of the array to 0 without de-allocating capcacity.
+     */
+    clear() {
+        this.length = 0;
+    }
+
+    /**
      * Resize the array.
      * If `n` is greater than the current length then additional elements with undefined values are added.
      * If `n` is less than the current length then the array will be reduced to the first `n` elements.
