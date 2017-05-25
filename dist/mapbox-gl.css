@@ -345,8 +345,8 @@ a.mapboxgl-ctrl-logo {
 
 .mapboxgl-user-location-dot {
     background-color: #1DA1F2;
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     box-shadow: 0 0 2px rgba(0,0,0,0.25);
     border: 2px solid #fff;
@@ -355,8 +355,8 @@ a.mapboxgl-ctrl-logo {
     content: '';
     display: block;
     box-shadow: #1DA1F2 0 0 0 2px;
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     position: relative;
     z-index: -1;
