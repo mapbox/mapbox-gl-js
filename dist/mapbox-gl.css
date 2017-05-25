@@ -345,18 +345,18 @@ a.mapboxgl-ctrl-logo {
 
 .mapboxgl-user-location-dot {
     background-color: #1DA1F2;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     box-shadow: 0 0 2px rgba(0,0,0,0.25);
-    border: 3px solid #fff;
+    border: 2px solid #fff;
 }
 .mapboxgl-user-location-dot:after {
     content: '';
     display: block;
     box-shadow: #1DA1F2 0 0 0 2px;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     position: relative;
     z-index: -1;
@@ -373,12 +373,12 @@ a.mapboxgl-ctrl-logo {
 }
 @-webkit-keyframes pulse {
     0%   {   -webkit-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8); }
-    70%  {   -webkit-box-shadow: 0 0 0 30px rgba(29, 161, 242, 0); }
+    70%  {   -webkit-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0); }
     242% {   -webkit-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0); }
 }
 @-ms-keyframes pulse {
     0%   {   -ms-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8); }
-    70%  {   -ms-box-shadow: 0 0 0 30px rgba(29, 161, 242, 0); }
+    70%  {   -ms-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0); }
     242% {   -ms-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0); }
 }
 @keyframes pulse {
@@ -387,8 +387,8 @@ a.mapboxgl-ctrl-logo {
              box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.4);
     }
     70% {
-        -moz-box-shadow: 0 0 0 30px rgba(29, 161, 242, 0);
-             box-shadow: 0 0 0 30px rgba(29, 161, 242, 0);
+        -moz-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0);
+             box-shadow: 0 0 0 15px rgba(29, 161, 242, 0);
     }
     100% {
         -moz-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0);
