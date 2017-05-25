@@ -124,8 +124,13 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         painter.labelCount++;
         painter.glyphCount += symbol.verticesLength;
 
-        processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
-        processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
+        const lineVertexArray = bucket.lineVertexArray;
+        const a = project(lineVertexArray.get(line.startIndex + symbol.segment), labelPlaneMatrix);
+        const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), labelPlaneMatrix);
+        const flip = b.x < a.x;
+
+        processDirection(glyphsForward, 1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
+        processDirection(glyphsBackward, -1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
     }
 
     if (bucket.vertexPositionBuffer === undefined) {
@@ -135,7 +140,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
     return bucket.vertexPositionBuffer;
 }
 
-function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
+function processDirection(glyphs, dir, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
     const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
     if (line.length > 1) {
         let prev = anchor;
@@ -145,15 +150,21 @@ function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPosi
         let segmentDistance = 0;
         let segmentAngle = 0;
 
-        let numVertices, vertexStartIndex, angle;
+        let numVertices, vertexStartIndex;
+        let angle = 0;
+
+        if (flip) {
+            dir *= -1;
+            angle = Math.PI;
+        }
+
         if (dir === 1) {
             numVertices = line.length - symbol.segment - 1;
             vertexStartIndex = line.startIndex + symbol.segment + 1;
-            angle = 0;
         } else {
             numVertices = symbol.segment + 1;
             vertexStartIndex = line.startIndex + symbol.segment;
-            angle = Math.PI;
+            angle += Math.PI;
         }
 
         for (const glyph of glyphs) {
