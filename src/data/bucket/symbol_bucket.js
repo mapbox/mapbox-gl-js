@@ -220,7 +220,8 @@ class SymbolBucket {
             this.textSizeData = options.textSizeData;
             this.iconSizeData = options.iconSizeData;
 
-            this.placedSymbolArray = new PlacedSymbolArray(options.placedSymbolArray);
+            this.placedGlyphArray = new PlacedSymbolArray(options.placedGlyphArray);
+            this.placedIconArray = new PlacedSymbolArray(options.placedIconArray);
             this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
             this.lineArray = new LineArray(options.lineArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
@@ -332,7 +333,8 @@ class SymbolBucket {
             textSizeData: this.textSizeData,
             iconSizeData: this.iconSizeData,
             fontstack: this.fontstack,
-            placedSymbolArray: this.placedSymbolArray.serialize(transferables),
+            placedGlyphArray: this.placedGlyphArray.serialize(transferables),
+            placedIconArray: this.placedIconArray.serialize(transferables),
             glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
             lineArray: this.lineArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
@@ -572,7 +574,8 @@ class SymbolBucket {
 
         this.createArrays();
 
-        this.placedSymbolArray = new PlacedSymbolArray();
+        this.placedGlyphArray = new PlacedSymbolArray();
+        this.placedIconArray = new PlacedSymbolArray();
         this.glyphOffsetArray = new GlyphOffsetArray;
         this.lineArray = new LineArray();
         this.lineVertexArray = new LineVertexArray();
@@ -649,24 +652,19 @@ class SymbolBucket {
 
 
             // Insert final placement into collision tree and add glyphs/icons to buffers
+            if (!hasText && !hasIcon) continue;
+            const line = symbolInstance.line;
+            const start = this.lineVertexArray.length;
+            for (let i = 0; i < line.length; i++) {
+                this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
+            }
+            const length = this.lineVertexArray.length - start;
+            const lineArrayIndex = this.lineArray.emplaceBack(start, length);
+
 
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
                 if (glyphScale <= maxScale) {
-
-
-                    const line = symbolInstance.line;
-                    //let lineArrayIndex = lineIndexMap[line.index];
-                    //if (lineArrayIndex === undefined) {
-                    const start = this.lineVertexArray.length;
-                    for (let i = 0; i < line.length; i++) {
-                        this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
-                    }
-                    const length = this.lineVertexArray.length - start;
-                    const lineArrayIndex = this.lineArray.emplaceBack(start, length);
-                        //lineIndexMap[line.index] = lineArrayIndex;
-                    //}
-
                     const textSizeData = getSizeVertexData(layer,
                         this.zoom,
                         this.textSizeData.coveringZoomRange,
@@ -685,11 +683,12 @@ class SymbolBucket {
                         symbolInstance.writingModes,
                         symbolInstance.anchor,
                         lineArrayIndex,
-                        line.length > 1);
+                        line.length > 1,
+                        this.placedGlyphArray);
                 }
             }
 
-            if (false && hasIcon) {
+            if (hasIcon) {
                 collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
                 if (iconScale <= maxScale) {
                     const iconSizeData = getSizeVertexData(
@@ -697,7 +696,8 @@ class SymbolBucket {
                         this.zoom,
                         this.iconSizeData.coveringZoomRange,
                         'icon-size',
-                        symbolInstance.featureProperties);
+                        symbolInstance.featureProperties,
+                        this.zoomStopArray);
                     this.addSymbols(
                         this.arrays.icon,
                         symbolInstance.iconQuads,
@@ -706,7 +706,12 @@ class SymbolBucket {
                         layout['icon-keep-upright'],
                         iconAlongLine,
                         collisionTile.angle,
-                        symbolInstance.featureProperties
+                        symbolInstance.featureProperties,
+                        undefined,
+                        symbolInstance.anchor,
+                        lineArrayIndex,
+                        line.length > 1,
+                        this.placedIconArray
                     );
                 }
             }
@@ -716,7 +721,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineArrayIndex, isLine) {
+    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineArrayIndex, isLine, placedSymbolArray) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -786,7 +791,7 @@ class SymbolBucket {
             this.glyphOffsetArray.emplaceBack(symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, br.x, br.y);
         }
 
-        this.placedSymbolArray.emplaceBack(anchor.x, anchor.y,
+        placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
                 lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0,
                 placementZoom);

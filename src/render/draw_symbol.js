@@ -35,16 +35,16 @@ function drawSymbols(painter, sourceCache, layer, coords) {
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    /*
     drawLayerSymbols(painter, sourceCache, layer, coords, false,
         layer.paint['icon-translate'],
         layer.paint['icon-translate-anchor'],
         layer.layout['icon-rotation-alignment'],
         // icon-pitch-alignment is not yet implemented
         // and we simply inherit the rotation alignment
-        layer.layout['icon-rotation-alignment']
+        layer.layout['icon-rotation-alignment'],
+        layer.layout['icon-keep-upright'],
+        layer.layout['symbol-placement'] === 'line'
     );
-    */
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
         layer.paint['text-translate'],
@@ -61,7 +61,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, textKeepUpright, isLine) {
+        rotationAlignment, pitchAlignment, keepUpright, isLine) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -69,7 +69,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const gl = painter.gl;
 
     const rotateWithMap = rotationAlignment === 'map';
-    const pitchWithMap = pitchAlignment === 'map' && false;
+    const pitchWithMap = pitchAlignment === 'map';// && false;
 
     const depthOn = false && pitchWithMap;
 
@@ -108,7 +108,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         //const a = window.performance.now();
-        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, textKeepUpright, isLine, s, layer);
+        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, isLine, s, layer);
         //painter.projectionTime += window.performance.now() - a;
         painter.count++;
 

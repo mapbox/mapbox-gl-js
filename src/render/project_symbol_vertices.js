@@ -66,21 +66,33 @@ function isVisible(anchor, posMatrix) {
     return p.x >= -1 && p.x <= 1 && p.y >= -1 && p.y <= 1;
 }
 
-function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchWithMap, textKeepUpright, isLine, pixelsToTileUnits, layer) {
+function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, isLine, pixelsToTileUnits, layer) {
 
     const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
 
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
 
-    if (bucket.vertexPositions === undefined) {
-        bucket.vertexPositions = new VertexPositionArray();
-    } else {
-        bucket.vertexPositions.clear();
-    }
-    const vertexPositions = bucket.vertexPositions;
+    let vertexPositions;
 
-    const placedSymbols = bucket.placedSymbolArray;
+    if (isText) {
+        if (bucket.glyphVertexPositions === undefined) {
+            bucket.glyphVertexPositions = new VertexPositionArray();
+        } else {
+            bucket.glyphVertexPositions.clear();
+        }
+        vertexPositions = bucket.glyphVertexPositions;
+    } else {
+        if (bucket.iconVertexPositions === undefined) {
+            bucket.iconVertexPositions = new VertexPositionArray();
+        } else {
+            bucket.iconVertexPositions.clear();
+        }
+        vertexPositions = bucket.iconVertexPositions;
+    }
+
+    const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
+
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
 
@@ -127,7 +139,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         const lineVertexArray = bucket.lineVertexArray;
 
         let flip = false;
-        if (textKeepUpright) {
+        if (keepUpright) {
             const a = project(lineVertexArray.get(line.startIndex + symbol.segment), labelPlaneMatrix);
             const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), labelPlaneMatrix);
             flip = b.x < a.x;
@@ -137,11 +149,19 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         processDirection(glyphsBackward, -1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
     }
 
-    if (bucket.vertexPositionBuffer === undefined) {
-        // TODO avoid leaking this buffer
-        bucket.vertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
+    if (isText) {
+        if (bucket.glyphVertexPositionBuffer === undefined) {
+            // TODO avoid leaking this buffer
+            bucket.glyphVertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
+        }
+        return bucket.glyphVertexPositionBuffer;
+    } else {
+        if (bucket.iconVertexPositionBuffer === undefined) {
+            // TODO avoid leaking this buffer
+            bucket.iconVertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
+        }
+        return bucket.iconVertexPositionBuffer;
     }
-    return bucket.vertexPositionBuffer;
 }
 
 function processDirection(glyphs, dir, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {

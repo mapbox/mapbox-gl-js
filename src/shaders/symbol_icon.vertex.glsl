@@ -1,6 +1,6 @@
-
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
+attribute vec4 a_projected_pos;
 
 // icon-size data (see symbol_sdf.vertex.glsl for more)
 attribute vec3 a_size;
@@ -17,8 +17,6 @@ uniform mat4 u_matrix;
 
 uniform bool u_is_text;
 uniform mediump float u_zoom;
-uniform bool u_rotate_with_map;
-uniform vec2 u_extrude_scale;
 
 uniform vec2 u_texsize;
 
@@ -69,13 +67,7 @@ void main() {
     // result: z = 0 if a_minzoom <= adjustedZoom < a_maxzoom, and 1 otherwise
     mediump float z = 2.0 - step(a_minzoom, adjustedZoom) - (1.0 - step(a_maxzoom, adjustedZoom));
 
-    vec2 extrude = fontScale * u_extrude_scale * (a_offset / 64.0);
-    if (u_rotate_with_map) {
-        gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
-        gl_Position.z += z * gl_Position.w;
-    } else {
-        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
-    }
+    gl_Position = u_matrix * vec4(a_projected_pos.xy + (a_offset / 64.0 * fontScale), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
