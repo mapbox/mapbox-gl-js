@@ -66,7 +66,7 @@ function isVisible(anchor, posMatrix) {
     return p.x >= -1 && p.x <= 1 && p.y >= -1 && p.y <= 1;
 }
 
-function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchWithMap, isLine, pixelsToTileUnits, layer) {
+function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchWithMap, textKeepUpright, isLine, pixelsToTileUnits, layer) {
 
     const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
 
@@ -125,9 +125,13 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         painter.glyphCount += symbol.verticesLength;
 
         const lineVertexArray = bucket.lineVertexArray;
-        const a = project(lineVertexArray.get(line.startIndex + symbol.segment), labelPlaneMatrix);
-        const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), labelPlaneMatrix);
-        const flip = b.x < a.x;
+
+        let flip = false;
+        if (textKeepUpright) {
+            const a = project(lineVertexArray.get(line.startIndex + symbol.segment), labelPlaneMatrix);
+            const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), labelPlaneMatrix);
+            flip = b.x < a.x;
+        }
 
         processDirection(glyphsForward, 1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
         processDirection(glyphsBackward, -1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);

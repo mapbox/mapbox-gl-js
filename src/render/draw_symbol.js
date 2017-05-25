@@ -51,6 +51,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['text-translate-anchor'],
         layer.layout['text-rotation-alignment'],
         layer.layout['text-pitch-alignment'],
+        layer.layout['text-keep-upright'],
         layer.layout['symbol-placement'] === 'line'
     );
 
@@ -60,7 +61,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, isLine) {
+        rotationAlignment, pitchAlignment, textKeepUpright, isLine) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -106,9 +107,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const glCoordMatrix = symbolVertices.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
-        const a = window.performance.now();
-        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, isLine, s, layer);
-        painter.projectionTime += window.performance.now() - a;
+        //const a = window.performance.now();
+        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, textKeepUpright, isLine, s, layer);
+        //painter.projectionTime += window.performance.now() - a;
         painter.count++;
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
