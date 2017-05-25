@@ -84,7 +84,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         const symbol = placedSymbols.get(s);
 
         if (!isVisible(new Point(symbol.anchorX, symbol.anchorY), posMatrix) || !painter.frameHistory.isVisible(symbol.placementZoom)) {
-            const numVertices = symbol.verticesLength * 4;
+            const numVertices = symbol.numGlyphs * 4;
             for (let i = 0; i < numVertices; i++) {
                 vertexPositions.emplaceBack(0, 0, 0, 0);
             }
@@ -97,7 +97,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
 
         if (!isLine) {
             painter.pointLabelCount++;
-            const numVertices = symbol.verticesLength * 4;
+            const numVertices = symbol.numGlyphs * 4;
             const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
             for (let i = 0; i < numVertices; i++) {
                 vertexPositions.emplaceBack(anchor.x, anchor.y, 0, fontScale);
@@ -110,13 +110,13 @@ function projectSymbolVertices(bucket, posMatrix, painter, rotateWithMap, pitchW
         const glyphsForward = [];
         const glyphsBackward = [];
 
-        const end = symbol.verticesStart + symbol.verticesLength;
-        for (let vertexIndex = symbol.verticesStart; vertexIndex < end; vertexIndex++) {
-            const vertex = bucket.vertexTransformArray.get(vertexIndex);
-            if (vertex.offsetX >= 0) {
-                glyphsForward.push(vertex);
+        const end = symbol.glyphStartIndex + symbol.numGlyphs;
+        for (let glyphIndex = symbol.glyphStartIndex; glyphIndex < end; glyphIndex++) {
+            const glyph = bucket.glyphOffsetArray.get(glyphIndex);
+            if (glyph.offsetX >= 0) {
+                glyphsForward.push(glyph);
             } else {
-                glyphsBackward.push(vertex);
+                glyphsBackward.push(glyph);
             }
         }
 

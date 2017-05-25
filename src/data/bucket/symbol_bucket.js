@@ -33,8 +33,8 @@ const PlacedSymbolArray = createStructArrayType({
     members: [
         { type: 'Int16', name: 'anchorX' },
         { type: 'Int16', name: 'anchorY' },
-        { type: 'Uint16', name: 'verticesStart' },
-        { type: 'Uint16', name: 'verticesLength' },
+        { type: 'Uint16', name: 'glyphStartIndex' },
+        { type: 'Uint16', name: 'numGlyphs' },
         { type: 'Uint32', name: 'lineIndex' },
         { type: 'Uint16', name: 'segment' },
         { type: 'Uint32', name: 'sizeStopStart' },
@@ -42,15 +42,11 @@ const PlacedSymbolArray = createStructArrayType({
     ]
 });
 
-const VertexTransformArray = createStructArrayType({
+const GlyphOffsetArray = createStructArrayType({
     members: [
-        { type: 'Int16', name: 'offsetX' },
-        { type: 'Int16', name: 'offsetY' },
-        { type: 'Int16', name: 'tlX' },
-        { type: 'Int16', name: 'tlY' },
-        { type: 'Int16', name: 'brX' },
-        { type: 'Int16', name: 'brY' },
-    ]});
+        { type: 'Int16', name: 'offsetX' }
+    ]
+});
 
 const LineArray = createStructArrayType({
     members: [
@@ -225,7 +221,7 @@ class SymbolBucket {
             this.iconSizeData = options.iconSizeData;
 
             this.placedSymbolArray = new PlacedSymbolArray(options.placedSymbolArray);
-            this.vertexTransformArray = new VertexTransformArray(options.vertexTransformArray);
+            this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
             this.lineArray = new LineArray(options.lineArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
             this.zoomStopArray = new ZoomStopArray(options.zoomStopArray);
@@ -337,7 +333,7 @@ class SymbolBucket {
             iconSizeData: this.iconSizeData,
             fontstack: this.fontstack,
             placedSymbolArray: this.placedSymbolArray.serialize(transferables),
-            vertexTransformArray: this.vertexTransformArray.serialize(transferables),
+            glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
             lineArray: this.lineArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
             zoomStopArray: this.zoomStopArray.serialize(transferables),
@@ -577,7 +573,7 @@ class SymbolBucket {
         this.createArrays();
 
         this.placedSymbolArray = new PlacedSymbolArray();
-        this.vertexTransformArray = new VertexTransformArray();
+        this.glyphOffsetArray = new GlyphOffsetArray;
         this.lineArray = new LineArray();
         this.lineVertexArray = new LineVertexArray();
         this.zoomStopArray = new ZoomStopArray();
@@ -727,7 +723,7 @@ class SymbolBucket {
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
-        const vertexStart = this.vertexTransformArray.length;
+        const glyphOffsetArrayStart = this.glyphOffsetArray.length;
 
         quads.sort(function(sa, sb) {
             const a = sa.glyphOffsetX;
@@ -784,11 +780,11 @@ class SymbolBucket {
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
 
-            this.vertexTransformArray.emplaceBack(symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, br.x, br.y);
+            this.glyphOffsetArray.emplaceBack(symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, br.x, br.y);
         }
 
         this.placedSymbolArray.emplaceBack(anchor.x, anchor.y,
-                vertexStart, this.vertexTransformArray.length - vertexStart,
+                glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
                 lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0,
                 placementZoom);
 
