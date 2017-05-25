@@ -209,7 +209,7 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
         const gammaScale = (pitchWithMap ? Math.cos(tr._pitch) * tr.cameraToCenterDistance : 1);
         gl.uniform1f(program.u_gamma_scale, gammaScale);
 
-        if (hasHalo && false) { // Draw halo underneath the text.
+        if (hasHalo) { // Draw halo underneath the text.
             gl.uniform1f(program.u_is_halo, 1);
             drawSymbolElements(buffers, layer, gl, program, buffer);
         }
