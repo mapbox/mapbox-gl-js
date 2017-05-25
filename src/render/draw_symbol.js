@@ -126,9 +126,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     const gl = painter.gl;
     const tr = painter.transform;
 
-    gl.uniform1i(program.u_rotate_with_map, rotateWithMap);
-    gl.uniform1i(program.u_pitch_with_map, pitchWithMap);
-
     gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(program.u_texture, 0);
 
@@ -158,10 +155,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     gl.uniform1i(program.u_fadetexture, 1);
 
     gl.uniform1f(program.u_zoom, tr.zoom);
-
-    gl.uniform1f(program.u_pitch, tr.pitch / 360 * 2 * Math.PI);
-    gl.uniform1f(program.u_bearing, tr.bearing / 360 * 2 * Math.PI);
-    gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
 
     gl.uniform1i(program.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
     gl.uniform1i(program.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
@@ -209,16 +202,6 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
 
     const gl = painter.gl;
     const tr = painter.transform;
-
-    if (pitchWithMap) {
-        const s = pixelsToTileUnits(tile, 1, tr.zoom);
-        gl.uniform2f(program.u_extrude_scale, s, s);
-    } else {
-        const s = tr.cameraToCenterDistance;
-        gl.uniform2f(program.u_extrude_scale,
-            tr.pixelsToGLUnits[0] * s,
-            tr.pixelsToGLUnits[1] * s);
-    }
 
     if (isSDF) {
         const haloWidthProperty = `${isText ? 'text' : 'icon'}-halo-width`;
