@@ -109,11 +109,11 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
   * Classes
   * Template strings
   * Computed and shorthand object properties
-* The following ES6 features are not to be used, in order to maintain support for Node 4.x, IE 11, and older mobile browsers. This may change in the future.
   * Default parameters
   * Rest parameters
-  * Spread (`...`) operator
   * Destructuring
+* The following ES6 features are not to be used, in order to maintain support for IE 11 and older mobile browsers. This may change in the future.
+  * Spread (`...`) operator (because it requires Object.assign)
   * Iterators and generators
   * "Library" features such as `Map`, `Set`, `array.find`, etc.
   * Modules
