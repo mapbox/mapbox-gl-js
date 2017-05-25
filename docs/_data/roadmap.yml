@@ -5,8 +5,8 @@ roadmap_items:
     description: "Things actively being built right now."
     items:
       -
-        name: Client-side terrain rendering
-        issues: ["3730"]
+        name: Client-side hillshade rendering
+        issues: ["3730", "4701"]
       -
         name: Arbitrary expressions for property functions
         issues: ["4715"]
