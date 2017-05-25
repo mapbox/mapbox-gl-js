@@ -9,7 +9,7 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=6.4.0"
   },
   "dependencies": {
     "@mapbox/gl-matrix": "^0.0.1",
