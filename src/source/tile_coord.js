@@ -143,7 +143,7 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
 }
 
-TileCoord.cover = function(z, bounds, actualZ, renderWorldCopies) {
+TileCoord.cover = function (z, bounds, actualZ, renderWorldCopies, extraBorder) {
     if (renderWorldCopies === undefined) {
         renderWorldCopies = true;
     }
@@ -170,7 +170,37 @@ TileCoord.cover = function(z, bounds, actualZ, renderWorldCopies) {
     // /---+
     scanTriangle(bounds[0], bounds[1], bounds[2], 0, tiles, scanLine);
     scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
+    if (extraBorder) {
+        // TODO account for wrapped worlds :scream:
+        const cornerCoords = Object.keys(t).reduce((compare, cur) => {
+            const coord = t[cur];
+            return {
+                minx: Math.min(compare.minx, coord.x),
+                maxx: Math.max(compare.maxx, coord.x),
+                miny: Math.min(compare.miny, coord.y),
+                maxy: Math.max(compare.maxy, coord.y)
+            };
+        }, { minx: Infinity, maxx: -Infinity, miny: Infinity, maxy: -Infinity });
 
+        for (let x = cornerCoords.minx - 1; x < cornerCoords.maxx + 2; x++) {
+            //upper border
+            const upper = new TileCoord(actualZ, x, cornerCoords.maxy + 1);
+            t[upper.id] = upper;
+            //lower border
+            const lower = new TileCoord(actualZ, x, cornerCoords.miny - 1);
+            t[lower.id] = lower;
+        }
+        for (let y = cornerCoords.miny; y < cornerCoords.maxy + 1; y++) {
+            // left side
+            const left = new TileCoord(actualZ, cornerCoords.minx - 1, y);
+            t[left.id] = left;
+            // right side
+            const right = new TileCoord(actualZ, cornerCoords.maxx + 1, y);
+            t[right.id] = right;
+        }
+        console.log('bordered', Object.keys(t).length);
+
+    }
     return Object.keys(t).map((id) => {
         return t[id];
     });

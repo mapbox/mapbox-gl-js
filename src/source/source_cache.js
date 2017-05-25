@@ -211,32 +211,32 @@ class SourceCache extends Evented {
     _backfillDEM() {
         for (const key in this._tiles) {
             const {z, x, y, w} = TileCoord.fromID(key);
-            const centerTile = this._tiles[key];
 
             const dim = Math.pow(2, z);
             const px = (x - 1 + dim) % dim;
             const nx = (x + 1 + dim) % dim;
 
-            const tiles = [
+            const neighboringTiles = [
                 { z: z, x: x, y: y },
                 { z: z, x: px, y: y },
                 { z: z, x: nx, y: y }
             ];
-            // Add upper tiles
+            // Add upper neighboringTiles
             if (y > 0) {
-                tiles.push({ z: z, x: px, y: y - 1 });
-                tiles.push({ z: z, x: x, y: y - 1 });
-                tiles.push({ z: z, x: nx, y: y - 1 });
+                neighboringTiles.push({ z: z, x: px, y: y - 1 });
+                neighboringTiles.push({ z: z, x: x, y: y - 1 });
+                neighboringTiles.push({ z: z, x: nx, y: y - 1 });
             }
-            // Add lower tiles
+            // Add lower neighboringTiles
             if (y + 1 < dim) {
-                tiles.push({ z: z, x: px, y: y + 1 });
-                tiles.push({ z: z, x: x, y: y + 1 });
-                tiles.push({ z: z, x: nx, y: y + 1 });
+                neighboringTiles.push({ z: z, x: px, y: y + 1 });
+                neighboringTiles.push({ z: z, x: x, y: y + 1 });
+                neighboringTiles.push({ z: z, x: nx, y: y + 1 });
             }
+            const centerTile = this._tiles[key];
 
-            for (let i = 1; i < tiles.length; i++) {
-                const borderTile = this._tiles[((dim * dim * w + dim * tiles[i].y + tiles[i].x) * 32) + tiles[i].z];
+            for (let i = 1; i < neighboringTiles.length; i++) {
+                const borderTile = this._tiles[((dim * dim * w + dim * neighboringTiles[i].y + neighboringTiles[i].x) * 32) + neighboringTiles[i].z];
                 // check if bordering tile is on the screen with the tilecoord id
                 // formula. no need to backfill the tile boundaries unless
                 // the boundary is on the screen.
@@ -419,7 +419,8 @@ class SourceCache extends Evented {
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom,
-                reparseOverscaled: this._source.reparseOverscaled
+                reparseOverscaled: this._source.reparseOverscaled,
+                extraBorder: !!(this._source.type === 'raster-terrain')
             });
 
             if (this._source.hasTile) {
