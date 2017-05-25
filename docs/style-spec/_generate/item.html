@@ -1,9 +1,9 @@
 <div class='col12 clearfix pad0y pad2x'>
   <div>
     <span class='code space-right'><a id='<%= id %>' href='#<%= id %>'><%= name %></a></span>
-    <% if (prop.function == "interpolated" ) { %><span class='icon smooth-ramp inline quiet'></span><% } %>
-    <% if (prop.function == "piecewise-constant" ) { %><span class='icon step-ramp inline quiet'></span><% } %>
-    <% if (prop.transition) { %><span class='icon opacity inline quiet'></span><% } %>
+    <% if (prop.function == "interpolated" ) { %><span class='icon smooth-ramp inline quiet' title='Supports interpolated functions'></span><% } %>
+    <% if (prop.function == "piecewise-constant" ) { %><span class='icon step-ramp inline quiet' title='Supports piecewise constant functions'></span><% } %>
+    <% if (prop.transition) { %><span class='icon opacity inline quiet' title='Transitionable'></span><% } %>
   </div>
   <div>
     <em class='inline quiet'>
