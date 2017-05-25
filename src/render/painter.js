@@ -300,7 +300,7 @@ class Painter {
         this.gl.depthRange(nearDepth, farDepth);
     }
 
-    translatePosMatrix(matrix, tile, translate, anchor) {
+    translatePosMatrix(matrix, tile, translate, anchor, inPixelUnits) {
         if (!translate[0] && !translate[1]) return matrix;
 
         if (anchor === 'viewport') {
@@ -312,7 +312,11 @@ class Painter {
             ];
         }
 
-        const translation = [
+        const translation = inPixelUnits ? [
+            translate[0],
+            translate[1],
+            0
+        ] : [
             pixelsToTileUnits(tile, translate[0], this.transform.zoom),
             pixelsToTileUnits(tile, translate[1], this.transform.zoom),
             0

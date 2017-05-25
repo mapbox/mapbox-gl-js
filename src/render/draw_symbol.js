@@ -103,9 +103,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         painter.enableTileClippingMask(coord);
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        gl.uniformMatrix4fv(program.u_matrix, false, symbolVertices.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s));
-        //gl.uniformMatrix4fv(program.u_matrix, false,
-                //painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
+        const glCoordMatrix = symbolVertices.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         const a = window.performance.now();
         const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, isLine, s, layer);
