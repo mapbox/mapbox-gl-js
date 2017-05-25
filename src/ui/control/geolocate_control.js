@@ -9,7 +9,7 @@ const LngLat = require('../../geo/lng_lat');
 const Marker = require('../marker');
 
 const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
-const defaultFitBoundsOptions = { maxZoom: 18 };
+const defaultFitBoundsOptions = { maxZoom: 15 };
 const className = 'mapboxgl-ctrl';
 
 let supportsGeolocation;
@@ -51,7 +51,7 @@ function checkGeolocationSupport(callback) {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
- * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
+ * @param {Object} [options.fitBoundsOptions={maxZoom: 15}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 15 to limit how far the map will zoom in for very accurate locations.
  * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
  *
