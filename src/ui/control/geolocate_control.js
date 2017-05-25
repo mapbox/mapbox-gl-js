@@ -8,8 +8,17 @@ const assert = require('assert');
 const LngLat = require('../../geo/lng_lat');
 const Marker = require('../marker');
 
-const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
-const defaultFitBoundsOptions = { maxZoom: 15 };
+const defaultOptions = {
+    positionOptions: {
+        enableHighAccuracy: false,
+        timeout: 6000 /* 6 sec */
+    },
+    fitBoundsOptions: {
+        maxZoom: 15
+    },
+    trackUserLocation: false,
+    showUserLocation: true
+};
 const className = 'mapboxgl-ctrl';
 
 let supportsGeolocation;
@@ -67,10 +76,7 @@ class GeolocateControl extends Evented {
 
     constructor(options) {
         super();
-        this.options = options || {};
-
-        // apply default for options.showUserLocation
-        this.options.showUserLocation = (this.options && 'showUserLocation' in this.options) ? this.options.showUserLocation : true;
+        this.options = util.extend({}, defaultOptions, options);
 
         util.bindAll([
             '_onSuccess',
@@ -162,7 +168,7 @@ class GeolocateControl extends Evented {
         const center = new LngLat(position.coords.longitude, position.coords.latitude);
         const radius = position.coords.accuracy;
 
-        this._map.fitBounds(center.toBounds(radius), util.extend(defaultFitBoundsOptions, this.options.fitBoundsOptions || {}), {
+        this._map.fitBounds(center.toBounds(radius), this.options.fitBoundsOptions, {
             geolocateSource: true // tag this camera change so it won't cause the control to change to background state
         });
     }
@@ -281,8 +287,6 @@ class GeolocateControl extends Evented {
     }
 
     _onClickGeolocate() {
-        const positionOptions = util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {});
-
         if (this.options.trackUserLocation) {
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
@@ -349,7 +353,7 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.setAttribute('aria-pressed', true);
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
-                    this._onSuccess, this._onError, positionOptions);
+                    this._onSuccess, this._onError, this.options.positionOptions);
             }
 
             if (this._watchState === 'ACTIVE_LOCK') {
@@ -357,7 +361,7 @@ class GeolocateControl extends Evented {
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
-                this._onSuccess, this._onError, positionOptions);
+                this._onSuccess, this._onError, this.options.positionOptions);
 
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
