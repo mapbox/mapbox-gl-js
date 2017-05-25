@@ -1,4 +1,5 @@
-updated_at: '05/24/2017'
+## date format: Month DD, YYYY
+updated_at: 'May 24, 2017'
 roadmap_items:
   -
     term: "Active development"
