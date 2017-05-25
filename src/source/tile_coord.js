@@ -172,6 +172,7 @@ TileCoord.cover = function (z, bounds, actualZ, renderWorldCopies, extraBorder) 
     scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
     if (extraBorder) {
         // TODO account for wrapped worlds :scream:
+        // TODO TEST
         const cornerCoords = Object.keys(t).reduce((compare, cur) => {
             const coord = t[cur];
             return {
@@ -198,7 +199,6 @@ TileCoord.cover = function (z, bounds, actualZ, renderWorldCopies, extraBorder) 
             const right = new TileCoord(actualZ, cornerCoords.maxx + 1, y);
             t[right.id] = right;
         }
-        console.log('bordered', Object.keys(t).length);
 
     }
     return Object.keys(t).map((id) => {

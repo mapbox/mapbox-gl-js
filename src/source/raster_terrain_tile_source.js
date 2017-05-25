@@ -8,6 +8,7 @@ const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const TileBounds = require('./tile_bounds');
 const browser = require('../util/browser');
 const DEMPyramid = require('../geo/dem_pyramid').DEMPyramid;
+const TileCoord = require('./tile_coord');
 
 class RasterTerrainTileSource extends Evented {
 
@@ -77,6 +78,7 @@ class RasterTerrainTileSource extends Evented {
         const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, imageLoaded.bind(this));
+        tile.neighboringTiles = this._getNeighboringTiles(tile.coord.id);
 
         function imageLoaded(err, img) {
             delete tile.request;
@@ -135,6 +137,36 @@ class RasterTerrainTileSource extends Evented {
             }
 
         }
+    }
+
+    _getNeighboringTiles(tileId) {
+        const {z, x, y, w} = TileCoord.fromID(tileId);
+        const dim = Math.pow(2, z);
+
+        const px = (x - 1 + dim) % dim;
+        const pxw = x === 0 ? w - 1 : w;
+        const nx = (x + 1 + dim) % dim;
+        const nxw = x + 1 === dim ? w + 1 : w;
+
+        const neighboringTiles = [
+            { z: z, x: x, y: y, w: w },
+            { z: z, x: px, y: y, w: pxw },
+            { z: z, x: nx, y: y, w: nxw  }
+        ];
+        // Add upper neighboringTiles
+        if (y > 0) {
+            neighboringTiles.push({ z: z, x: px, y: y - 1, w: pxw  });
+            neighboringTiles.push({ z: z, x: x, y: y - 1, w: w  });
+            neighboringTiles.push({ z: z, x: nx, y: y - 1, w: nxw  });
+        }
+        // Add lower neighboringTiles
+        if (y + 1 < dim) {
+            neighboringTiles.push({ z: z, x: px, y: y + 1, w: pxw  });
+            neighboringTiles.push({ z: z, x: x, y: y + 1, w: w  });
+            neighboringTiles.push({ z: z, x: nx, y: y + 1, w: nxw  });
+        }
+        const neighboringCoords = neighboringTiles.map((t) => new TileCoord(t.z, t.x, t.y, t.w));
+        return neighboringCoords;
     }
 
     abortTile(tile) {
