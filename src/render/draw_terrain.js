@@ -1,6 +1,7 @@
 'use strict';
 const mat4 = require('gl-matrix').mat4;
 const EXTENT = require('../data/extent');
+const parseColor = require('./../style-spec/util/parse_color');
 
 module.exports = drawTerrain;
 
@@ -76,16 +77,16 @@ class TerrainTexture {
 
         gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
         gl.uniform1i(program.u_image, 0);
-        gl.uniform1i(program.u_mode, 8);
+        gl.uniform1i(program.u_mode, 7);
         gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
         gl.uniform1f(program.u_azimuth, azimuth);
         gl.uniform1f(program.u_zenith, 60 * DEG2RAD);
         gl.uniform1f(program.u_mipmap, 0);
-        gl.uniform1f(program.u_exaggeration, layer.paint["terrain-exaggeration"]);
-        gl.uniform4fv(program.u_shadow, layer.paint["terrain-shadow-color"]);
-        gl.uniform4fv(program.u_highlight, layer.paint["terrain-highlight-color"]);
-        gl.uniform4fv(program.u_accent, layer.paint["terrain-accent-color"]);
+        gl.uniform1f(program.u_exaggeration, layer.paint["terrain-exaggeration"]*2);
+        gl.uniform4fv(program.u_shadow, parseColor(layer.paint["terrain-shadow-color"]));
+        gl.uniform4fv(program.u_highlight, parseColor(layer.paint["terrain-highlight-color"]));
+        gl.uniform4fv(program.u_accent, parseColor(layer.paint["terrain-accent-color"]));
 
         const buffer = tile.boundsBuffer || this.painter.rasterBoundsBuffer;
         const vao = tile.boundsVAO || this.painter.rasterBoundsVAO;

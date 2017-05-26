@@ -52,7 +52,8 @@ void main() {
     vec2 deriv = vec2(
         (c + f + f + i) - (a + d + d + g),
         (g + h + h + i) - (a + b + b + c)
-    ) / pow(2.0, 20.0 - u_zoom);
+        // decrease the value u_zoom is subtracted from to intensify terrain appearance
+    ) / pow(2.0, 18.0 - u_zoom);
 
     float metersPerPixel = (11752832.0 / pow(2.0, u_zoom) / 256.0) * 1.0;
     float openness = 0.0;
