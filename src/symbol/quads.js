@@ -178,7 +178,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             }];
         }
 
-        const x1 = glyph.left;
+        const halfAdvance = glyph.advance / 2;
+        const x1 = glyph.left - halfAdvance;
         const y1 = -glyph.top;
         const x2 = x1 + rect.w;
         const y2 = y1 + rect.h;
@@ -223,7 +224,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             const anchorAngle = (anchor.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
             const glyphAngle = (instance.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
             quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode,
-                        positionedGlyph.x, positionedGlyph.y));
+                        positionedGlyph.x + halfAdvance, positionedGlyph.y));
         }
     }
 
