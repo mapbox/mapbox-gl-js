@@ -25,12 +25,12 @@ mapboxgl.Point = require('point-geometry');
 
 mapboxgl.Evented = require('./util/evented');
 mapboxgl.supported = require('./util/browser').supported;
+mapboxgl.setURLTransform = require('./util/mapbox.js').setURLTransform;
 
 const config = require('./util/config');
 mapboxgl.config = config;
 
 const rtlTextPlugin = require('./source/rtl_text_plugin');
-
 mapboxgl.setRTLTextPlugin = rtlTextPlugin.setRTLTextPlugin;
 
  /**
@@ -78,4 +78,20 @@ Object.defineProperty(mapboxgl, 'accessToken', {
  * @example
  * mapboxgl.supported() // = true
  * @see [Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
+ */
+
+/**
+ * Sets the map's URL Transform callback function
+ * Call this method to set a callback to transform URLs before they are requested
+ * from the internet. The callback can be used to add or remove custom parameters, or reroute
+ * certain requests to other servers or endpoints.
+ *
+ * @function setURLTransform
+ * @param {Function} callback Callback function called with the original URL to be transformed. Return the transformed URL
+ * @example
+ * mapboxgl.setURLTransform( (url)=> {
+ *  if(url.startsWith('https://myHost') {
+ *   return url += `&_ts=${Date.now()}`;
+ *  }
+ * });
  */

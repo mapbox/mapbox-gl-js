@@ -3,6 +3,7 @@
 
 const config = require('./config');
 const browser = require('./browser');
+const window = require('../util/window');
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 
@@ -36,22 +37,37 @@ function isMapboxURL(url: string) {
 
 exports.isMapboxURL = isMapboxURL;
 
+let _urlTransform = null;
+
+function transformURL (url: string): string {
+    if (_urlTransform) {
+        url = _urlTransform(url) || url;
+    }
+    return url;
+}
+
+exports.setURLTransform = function(transform: Function) {
+    if (typeof transform == 'function' || !transform) {
+        _urlTransform = transform;
+    }
+};
+
 exports.normalizeStyleURL = function(url: string, accessToken: string): string {
-    if (!isMapboxURL(url)) return url;
+    if (!isMapboxURL(url)) return transformURL(url);
     const urlObject = parseUrl(url);
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
 exports.normalizeGlyphsURL = function(url: string, accessToken: string): string {
-    if (!isMapboxURL(url)) return url;
+    if (!isMapboxURL(url)) return transformURL(url);
     const urlObject = parseUrl(url);
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
 exports.normalizeSourceURL = function(url: string, accessToken: string): string {
-    if (!isMapboxURL(url)) return url;
+    if (!isMapboxURL(url)) return transformURL(url);
     const urlObject = parseUrl(url);
     urlObject.path = `/v4/${urlObject.authority}.json`;
     // TileJSON requests need a secure flag appended to their URLs so
@@ -73,7 +89,7 @@ exports.normalizeSpriteURL = function(url: string, format: string, extension: st
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
 exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
-    if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
+    if (!sourceURL || !isMapboxURL(sourceURL)) return transformURL(tileURL);
 
     const urlObject = parseUrl(tileURL);
 
@@ -113,5 +129,13 @@ function parseUrl(url: string): UrlObject {
 
 function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
-    return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
+    const url = `${obj.protocol}://${obj.authority}${obj.path}${params}`;
+    return transformURL(url);
 }
+
+exports.resolveURL = function(url: string): string {
+    url = transformURL(url);
+    const a = window.document.createElement('a');
+    a.href = url;
+    return transformURL(a.href);
+};
