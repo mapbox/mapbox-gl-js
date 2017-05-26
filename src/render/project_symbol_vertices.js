@@ -140,8 +140,8 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
 
         let flip = false;
         if (keepUpright) {
-            const a = project(lineVertexArray.get(line.startIndex + symbol.segment), labelPlaneMatrix);
-            const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), labelPlaneMatrix);
+            const a = project(lineVertexArray.get(line.startIndex + symbol.segment), posMatrix);
+            const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), posMatrix);
             flip = b.x < a.x;
         }
 
