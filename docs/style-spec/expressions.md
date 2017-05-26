@@ -1,16 +1,16 @@
 **NOTE: Consider the contents of this doc as a proposed replacement for the "Function" section of the style spec docs.  Drafting it here rather than in the HTML doc so that it's easier to read/comment on.**
 
-# Functions
+# Style Functions
 
 The value for any layout or paint property may be specified as a function. Functions allow you to make the appearance of a map feature change with the current zoom level and/or the feature's properties.
 
-## Property functions
-
-<p><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Note that support for property functions is not available across all properties and platforms at this time.</p>
-
 `expression`
 _Required [expression value](#Expressions)_
-A property expression defines how one or more feature property values are combined using logical, mathematical, string, or color operations to produce the appropriate style value.  See [Expressions](#Expressions) for details.
+An expression defines how one or more feature property values and/or the current zoom level are combined using logical, mathematical, string, or color operations to produce the appropriate style value.  See [Expressions](#Expressions) for syntax details.
+
+## Property functions
+
+<p>A <strong>property function</strong> is any function defined using an expression that includes a reference to `["properties"]`. Property functions allow the appearance of a map feature to change with its properties. They can be used to visually differentate types of features within the same layer or create data visualizations. Note that support for property functions is not available across all properties and platforms at this time.</p>
 
 ```js
 {
@@ -28,22 +28,19 @@ A property expression defines how one or more feature property values are combin
 ```
 
 
-## Zoom functions
+## Zoom-dependent functions
 
-**Zoom functions** allow the appearance of a map feature to change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density.
+A <strong>zoom function</strong> is any function defined using an expression that includes a reference to `["zoom"]`.  Such functions allow the appearance of a map feature change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density.  
 
-`stops`
-_Required array_
-Zoom functions are defined in terms of input values and output values. A set of one input value and one output value is known as a "stop."  Each stop is thus an array with two elements: the first is a zoom level; the second is either a style value or a property function.  Note that support for property functions is not yet complete.
+A zoom function must be of the following form (see [Curves](#Curves) below):
 
-`base`
-_Optional number. Default is 1._
-The exponential base of the interpolation curve. It controls the rate at which the function output increases. Higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.
+```js
+{
+  "expression": [ "curve", interpolation, ["zoom"], ... ]
+}
+```
 
-`type`
-_Optional enum. One of exponential, interval._
- - `exponential` functions generate an output by interpolating between stops just less than and just greater than the function input. The domain must be numeric. This is the default for properties marked with , the "exponential" symbol.
- - `interval` functions return the output value of the stop just less than the function input. The domain must be numeric. This is the default for properties marked with , the "interval" symbol.
+(`["zoom"]` may not appear anywhere else in the expression.)
 
 
 ### Example: a zoom-only function.
@@ -51,14 +48,11 @@ _Optional enum. One of exponential, interval._
 ```js
 {
   "circle-radius": {
-    "stops": [
-
-      // zoom is 5 -> circle radius will be 1px
-      [5, 1],
-
-      // zoom is 10 -> circle radius will be 2px
-      [10, 2]
-
+    "expression": [
+      "curve", "linear", ["zoom"],
+      // zoom is 5 (or less) -> circle radius will be 1px
+      // zoom is 10 (or greater) -> circle radius will be 2px
+      5, 1, 10, 2
     ]
   }
 }
@@ -73,19 +67,19 @@ feature's properties.
 ```js
 {
   "circle-radius": {
-    "stops": [
+    "expression": [
+      "curve", "linear", ["zoom"],
+
       // zoom is 0 and "rating" is 0 -> circle radius will be 0px
       // zoom is 0 and "rating" is 5 -> circle radius will be 5px
-      [0, { "expression": [ "number_data", "rating" ] }]
-
+      0, [ "number_data", "rating" ],
       // zoom is 20 and "rating" is 0 -> circle radius will be 4 * 0 = 0px
       // zoom is 20 and "rating" is 5 -> circle radius will be 4 * 5 = 20px
-      [20, { "expression": [ "*", 4, ["number_data", "rating"] ] }]
+      10, [ "*", 4, ["number_data", "rating"] ]
     ]
   }
 }
 ```
-
 
 ## Property Expressions
 
@@ -97,23 +91,29 @@ Property expressions are represented using a Lisp-like structured syntax tree.
 - `[ "e" ]`
 
 **Literals:**
-- JSON string / number / boolean literal
+- string `"foo"`
+- number `42`
+- boolean `true` or `false`
+- null `null`
+- object `["object", obj]` where `obj` is a JSON object literal
+- array `["array", arr]` where `arr` is a JSON array literal
 
-**Property lookup:**
-- Feature property:
-  - `[ "number_data", key_expr ]` reads `feature.properties[key_expr]`, coercing it to a number if necessary.
-  - `[ "string_data", key_expr ]` reads `feature.properties[key_expr]`, coercing it to a string if necessary.
-  - `[ "boolean_data", key_expr ]` reads `feature.properties[key_expr]`, coercing it to a boolean if necessary, with `0`, `''`, `null`, and missing properties mapping to `false`, and all other values mapping to `true`.
-  - `[ "has", key_expr ]` returns `true` if the property is present, false otherwise.
-  - `[ "typeof", key_expr ]` yields the data type of `feature.properties[key_expr]`: one of `'string'`, `'number'`, `'boolean'`, `'object'`, `'array'`, or, in the case that the property is not present, `'none'`.
-- `[ "geometry_type" ]` returns the value of `feature.geometry.type`.
-- `[ "string_id" ]`, `[ "number_id" ]` returns the value of `feature.id`.
+**Lookup:**
+- `["get", container, key ]`
+  - `container`: `array` or `object`
+  - `key`: `string` if `container` is an object, `number` if it's an array.
+- `[ "has", container, key ]` returns `true` if the property is present, false otherwise.
+- `[ "typeof", container, key ]` yields the data type of `container[key]`: one of `'string'`, `'number'`, `'boolean'`, `'object'`, `'array'`, or, in the case that the property is not present, `'none'`.
+
+**Feature data:**
+- `["properties"]` the feature's `properties` object
+- `["geometry_type"]` the string value of `feature.geometry.type`
+- `[ "id" ]` returns the value of `feature.id`.
 
 **Decision:**
-- `["if", boolean_expr, expr_if_true, expr_if_false]` 
-- `["switch", [[bool_expr1, result_expr1], [bool_expr2, result_expr2], ...], default_result_expr]`
-- `["match", input_expr, [[test_expr1, result_expr1], [test_expr2, result_expr2]], default_result_expr]`
-- `["intervals", x, y_1, n_1, ..., y_m, n_m, y_last]` - the input x expression is followed by m+1 possible output y expressions interspersed with m breakpoints. In order to permit efficient evaluation, the breakpoints n_1 < ... < n_m are required to be numeric literals in strictly ascending order; expressions are not allowed. The result is the first y_k such that n_k >= x, or y_last if x is greater than all n's.
+- `["case", cond1, result1, cond2, result2, ..., ["else"], result_m]`
+- `["if", boolean_expr, expr_if_true, expr_if_false]` - synonym for `["case", boolean_expr, expr_if_true, ["else"], expr_if_false]`
+- `["match", x, a_1, y_1, a_2, y_2, ..., ["else"], y_else]`
 
 **Comparison and boolean operations:**
 - `[ "==", expr1, expr2]` (similar for `!=`)
@@ -121,17 +121,26 @@ Property expressions are represented using a Lisp-like structured syntax tree.
 - `[ "&&", boolean_expr1, boolean_expr2, ... ]` (similar for `||`)
 - `[ "!", boolean_expr]`
 
-**String:**
-- `["concat", expr1, expr2, …]`
-- `["upcase", string_expr]`, `["downcase", string_expr]`
+**Curves:**
+`["curve", interpolation, x, n_1, y_1, ..., n_m, y_m]` defines a function with n_1, y_1, ..., n_m, y_m as input/output pairs, and `interpolation` dictating how inputs between `n_(i)` and `n_(i+1)` are computed.
+- The `n_i`'s must be strictly ascending (`n_1 < n_2 < n_3 < ...`)
+- The `y_i`'s must all be of the same type. (Specific `interpolation` types may impose further restrictions.)
+- _interpolation_ is one of:
+  * `["step"]` - equivalent to existing "interval" function behavior.
+  * `["exponential", _base_]` - equivalent to existing "exponential" function behavior. `y_i`'s must be numeric or color expressions
+  * `["linear"]` - equivalent to `["exponential", 1]`
+  * `["cubic-bezier", x1, y1, x2, y2]` - define your own interpolation. `y_i`'s must be numeric.
 
-**Numeric:**
+**Math:**
 - +, -, \*, /, %, ^ (e.g. `["+", expr1, expr2, expr3, …]`, `["-", expr1, expr2 ]`, etc.)
 - log10, ln, log2
 - sin, cos, tan, asin, acos, atan
 - ceil, floor, round, abs
 - min, max
-- `['linear', x, [ x1, y1 ], [ x2, y2 ] ]` - returns the output of the linear function determined by `(x1, y1)`, `(x2, y2)`, evaluated at `x`
+
+**String:**
+- `["concat", expr1, expr2, …]`
+- `["upcase", string_expr]`, `["downcase", string_expr]`
 
 **Color:**
 - rgb, hsl, hcl, lab, hex, (others?)
