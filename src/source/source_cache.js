@@ -192,9 +192,9 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this._source.type === 'raster-terrain') {
-            this._source.fire('dataloading', {dataType: 'source', tile: tile, coord: tile.coord});
+            // this._source.fire('dataloading', {dataType: 'source', tile: tile, coord: tile.coord});
             // need all visible tiles to be loaded for the DEM to be backfilled correctly
-            if (this.loaded()) this._backfillDEM();
+            this._backfillDEM(tile);
         } else {
             this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
         }
@@ -208,55 +208,64 @@ class SourceCache extends Evented {
      * For raster terrain source, backfill DEM to eliminate visible tile boundaries
      * @private
      */
-    _backfillDEM() {
-        for (const key in this._tiles) {
-            const {z, x, y, w} = TileCoord.fromID(key);
+    _backfillDEM(tile) {
+        const neighboringTiles = getNeighboringTiles(tile.coord);
+        for (let key in this._tiles) {
+            if (this._tiles[key].state === "loaded" && neighboringTiles.includes(key)) {
+                const borderTile = this._tiles[key];
+                fillBorder(tile, borderTile);
+                fillBorder(borderTile, tile);
+            }
+        }
 
+        function fillBorder(tile, borderTile){
+            tile.texture = undefined;
+            let dx = borderTile.coord.x - tile.coord.x;
+            const dy = borderTile.coord.y - tile.coord.y;
+            if (dx === 0 && dy === 0) return;
+
+            if (Math.abs(dy) > 1) {
+                return;
+            }
+            if (Math.abs(dx) > 1) {
+                // Adjust the delta coordinate for world wraparound.
+                if (Math.abs(dx + dim) === 1) { dx += dim; }
+                else if (Math.abs(dx - dim) === 1) { dx -= dim; }
+            }
+            if (!borderTile.dem || !tile.dem) return;
+            tile.dem.backfillBorders(borderTile.dem, dx, dy);
+        }
+
+        function getNeighboringTiles(tilecoord) {
+            const {z, x, y, w} = tilecoord;
             const dim = Math.pow(2, z);
+
             const px = (x - 1 + dim) % dim;
+            const pxw = x === 0 ? w - 1 : w;
             const nx = (x + 1 + dim) % dim;
+            const nxw = x + 1 === dim ? w + 1 : w;
 
             const neighboringTiles = [
-                { z: z, x: x, y: y },
-                { z: z, x: px, y: y },
-                { z: z, x: nx, y: y }
+                { z: z, x: x, y: y, w: w },
+                { z: z, x: px, y: y, w: pxw },
+                { z: z, x: nx, y: y, w: nxw  }
             ];
             // Add upper neighboringTiles
             if (y > 0) {
-                neighboringTiles.push({ z: z, x: px, y: y - 1 });
-                neighboringTiles.push({ z: z, x: x, y: y - 1 });
-                neighboringTiles.push({ z: z, x: nx, y: y - 1 });
+                neighboringTiles.push({ z: z, x: px, y: y - 1, w: pxw  });
+                neighboringTiles.push({ z: z, x: x, y: y - 1, w: w  });
+                neighboringTiles.push({ z: z, x: nx, y: y - 1, w: nxw  });
             }
             // Add lower neighboringTiles
             if (y + 1 < dim) {
-                neighboringTiles.push({ z: z, x: px, y: y + 1 });
-                neighboringTiles.push({ z: z, x: x, y: y + 1 });
-                neighboringTiles.push({ z: z, x: nx, y: y + 1 });
+                neighboringTiles.push({ z: z, x: px, y: y + 1, w: pxw  });
+                neighboringTiles.push({ z: z, x: x, y: y + 1, w: w  });
+                neighboringTiles.push({ z: z, x: nx, y: y + 1, w: nxw  });
             }
-            const centerTile = this._tiles[key];
-
-            for (let i = 1; i < neighboringTiles.length; i++) {
-                const borderTile = this._tiles[((dim * dim * w + dim * neighboringTiles[i].y + neighboringTiles[i].x) * 32) + neighboringTiles[i].z];
-                // check if bordering tile is on the screen with the tilecoord id
-                // formula. no need to backfill the tile boundaries unless
-                // the boundary is on the screen.
-                if (!borderTile) continue;
-                let dx = borderTile.coord.x - centerTile.coord.x;
-                const dy = borderTile.coord.y - centerTile.coord.y;
-                if (dx === 0 && dy === 0) continue;
-
-                if (Math.abs(dy) > 1) {
-                    continue;
-                }
-                if (Math.abs(dx) > 1) {
-                    // Adjust the delta coordinate for world wraparound.
-                    if (Math.abs(dx + dim) === 1) { dx += dim; }                    else if (Math.abs(dx - dim) === 1) { dx -= dim; }
-                }
-                if (!borderTile.dem || !centerTile.dem) continue;
-                centerTile.dem.backfillBorders(borderTile.dem, dx, dy);
-            }
-            this._source.fire('data', {dataType: 'source', tile: centerTile, coord: centerTile.coord});
+            const neighboringCoords = neighboringTiles.map((t) => ""+(new TileCoord(t.z, t.x, t.y, t.w)).id);
+            return neighboringCoords;
         }
+        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
     }
     /**
      * Get a specific tile by TileCoordinate
@@ -419,8 +428,7 @@ class SourceCache extends Evented {
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom,
-                reparseOverscaled: this._source.reparseOverscaled,
-                extraBorder: !!(this._source.type === 'raster-terrain')
+                reparseOverscaled: this._source.reparseOverscaled
             });
 
             if (this._source.hasTile) {

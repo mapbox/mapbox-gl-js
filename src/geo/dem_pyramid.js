@@ -102,12 +102,13 @@ class DEMPyramid {
 
             const ox = -dx * t.width;
             const oy = -dy * t.height;
-
             for (let y = yMin; y < yMax; y++) {
                 for (let x = xMin; x < xMax; x++) {
                     t.set(x, y, o.get(x + ox, y + oy));
                 }
             }
+
+
         }
 
         function clamp(value, min, max) {

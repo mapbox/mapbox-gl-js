@@ -76,7 +76,7 @@ class TerrainTexture {
 
         gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
         gl.uniform1i(program.u_image, 0);
-        gl.uniform1i(program.u_mode, 0);
+        gl.uniform1i(program.u_mode, 8);
         gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
         gl.uniform1f(program.u_azimuth, azimuth);
@@ -119,7 +119,6 @@ function prepareTerrain(painter, tile, layer) {
     const levels = tile.dem.levels.map((l, i)=> {
         return {width: l.width + 2 * l.border, height: l.height + 2 * l.border, data: new Uint8Array(l.data.buffer)};
     });
-    console.log(tile.uid, levels);
 
     const dem = gl.createTexture();
 
