@@ -192,9 +192,9 @@ class Map extends Camera {
 
         bindHandlers(this, options);
 
-        this.hash = options.hash && (new Hash()).addTo(this);
+        this._hash = options.hash && (new Hash()).addTo(this);
         // don't set position from options if set through hash
-        if (!this.hash || !this.hash._onHashChange()) {
+        if (!this._hash || !this._hash._onHashChange()) {
             this.jumpTo({
                 center: options.center,
                 zoom: options.zoom,
@@ -1458,7 +1458,7 @@ class Map extends Camera {
      * methods on the map.
      */
     remove() {
-        if (this.hash) this.hash.remove();
+        if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
         this.setStyle(null);
         if (typeof window !== 'undefined') {
