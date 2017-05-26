@@ -875,7 +875,7 @@ class SymbolBucket {
             if (!shapedTextOrientations[writingMode]) continue;
             glyphQuads = glyphQuads.concat(addToBuffers ?
                 getGlyphQuads(anchor, shapedTextOrientations[writingMode],
-                              textBoxScale, line, layer, textAlongLine,
+                              line, layer, textAlongLine,
                               globalProperties, featureProperties) :
                 []);
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
@@ -886,7 +886,7 @@ class SymbolBucket {
 
         if (shapedIcon) {
             iconQuads = addToBuffers ?
-                getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer,
+                getIconQuads(anchor, shapedIcon, line, layer,
                              iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
                              globalProperties, featureProperties) :
                 [];
