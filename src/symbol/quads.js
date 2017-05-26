@@ -8,8 +8,6 @@ module.exports = {
     SymbolQuad: SymbolQuad
 };
 
-const minScale = 0.5; // underscale by 1 zoom level
-
 /**
  * A textured quad for rendering a single icon or glyph.
  *
@@ -21,25 +19,17 @@ const minScale = 0.5; // underscale by 1 zoom level
  * @param {Point} bl The offset of the bottom left corner from the anchor.
  * @param {Point} br The offset of the bottom right corner from the anchor.
  * @param {Object} tex The texture coordinates.
- * @param {number} anchorAngle The angle of the label at it's center, not the angle of this quad.
- * @param {number} glyphAngle The angle of the glyph to be positioned in the quad.
- * @param {number} minScale The minimum scale, relative to the tile's intended scale, that the glyph can be shown at.
- * @param {number} maxScale The maximum scale, relative to the tile's intended scale, that the glyph can be shown at.
  *
  * @class SymbolQuad
  * @private
  */
-function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode, glyphOffsetX, glyphOffsetY) {
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, writingMode, glyphOffsetX, glyphOffsetY) {
     this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
     this.bl = bl;
     this.br = br;
     this.tex = tex;
-    this.anchorAngle = anchorAngle;
-    this.glyphAngle = glyphAngle;
-    this.minScale = minScale;
-    this.maxScale = maxScale;
     this.writingMode = writingMode;
     this.glyphOffsetX = glyphOffsetX;
     this.glyphOffsetY = glyphOffsetY;
@@ -101,29 +91,20 @@ function getIconQuads(anchor, shapedIcon, line, layer, alongLine, shapedText, gl
         bl = new Point(left, bottom);
     }
 
-    let angle = layer.getLayoutValue('icon-rotate', globalProperties, featureProperties) * Math.PI / 180;
-    if (alongLine) {
-        const prev = line[anchor.segment];
-        if (anchor.y === prev.y && anchor.x === prev.x && anchor.segment + 1 < line.length) {
-            const next = line[anchor.segment + 1];
-            angle += Math.atan2(anchor.y - next.y, anchor.x - next.x) + Math.PI;
-        } else {
-            angle += Math.atan2(anchor.y - prev.y, anchor.x - prev.x);
-        }
-    }
+    const angle = layer.getLayoutValue('icon-rotate', globalProperties, featureProperties) * Math.PI / 180;
 
     if (angle) {
         const sin = Math.sin(angle),
             cos = Math.cos(angle),
             matrix = [cos, -sin, sin, cos];
 
-        tl = tl.matMult(matrix);
-        tr = tr.matMult(matrix);
-        bl = bl.matMult(matrix);
-        br = br.matMult(matrix);
+        tl._matMult(matrix);
+        tr._matMult(matrix);
+        bl._matMult(matrix);
+        br._matMult(matrix);
     }
 
-    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity, undefined, 0, 0)];
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, undefined, 0, 0)];
 }
 
 /**
@@ -154,63 +135,34 @@ function getGlyphQuads(anchor, shaping, line, layer, alongLine, globalProperties
         const rect = glyph.rect;
         if (!rect) continue;
 
-        const labelMinScale = minScale;
-        const glyphInstances = [{
-            anchorPoint: new Point(anchor.x, anchor.y),
-            upsideDown: false,
-            angle: 0,
-            maxScale: Infinity,
-            minScale: minScale
-        }];
+        const anchorPoint = new Point(anchor.x, anchor.y);
 
         const halfAdvance = glyph.advance / 2;
-        const x1 = glyph.left - halfAdvance;
+        const xOffset = alongLine ? positionedGlyph.x + halfAdvance : 0;
+        const builtInXOffset = alongLine ? 0 : positionedGlyph.x + halfAdvance;
+
+        const x1 = glyph.left - halfAdvance + builtInXOffset;
         const y1 = -glyph.top;
         const x2 = x1 + rect.w;
         const y2 = y1 + rect.h;
 
-        const center = new Point(positionedGlyph.x, glyph.advance / 2);
+        const tl = new Point(x1, y1);
+        const tr = new Point(x2, y1);
+        const bl  = new Point(x1, y2);
+        const br = new Point(x2, y2);
 
-        const otl = new Point(x1, y1);
-        const otr = new Point(x2, y1);
-        const obl = new Point(x1, y2);
-        const obr = new Point(x2, y2);
+        if (textRotate) {
+            const sin = Math.sin(textRotate),
+                cos = Math.cos(textRotate),
+                matrix = [cos, -sin, sin, cos];
 
-        if (positionedGlyph.angle !== 0) {
-            otl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            otr._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            obl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            obr._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            tl._matMult(matrix);
+            tr._matMult(matrix);
+            bl._matMult(matrix);
+            br._matMult(matrix);
         }
 
-        for (let i = 0; i < glyphInstances.length; i++) {
-
-            const instance = glyphInstances[i];
-            let tl = otl,
-                tr = otr,
-                bl = obl,
-                br = obr;
-
-            if (textRotate) {
-                const sin = Math.sin(textRotate),
-                    cos = Math.cos(textRotate),
-                    matrix = [cos, -sin, sin, cos];
-
-                tl = tl.matMult(matrix);
-                tr = tr.matMult(matrix);
-                bl = bl.matMult(matrix);
-                br = br.matMult(matrix);
-            }
-
-            // Prevent label from extending past the end of the line
-            const glyphMinScale = Math.max(instance.minScale, labelMinScale);
-             // All the glyphs for a label are tagged with either the "right side up" or "upside down" anchor angle,
-            //  which is used at placement time to determine which set to show
-            const anchorAngle = (anchor.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
-            const glyphAngle = (instance.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode,
-                        positionedGlyph.x + halfAdvance, positionedGlyph.y));
-        }
+        quads.push(new SymbolQuad(anchorPoint, tl, tr, bl, br, rect, shaping.writingMode, xOffset, positionedGlyph.y));
     }
 
     return quads;

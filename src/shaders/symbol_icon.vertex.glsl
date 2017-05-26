@@ -67,7 +67,12 @@ void main() {
     // result: z = 0 if a_minzoom <= adjustedZoom < a_maxzoom, and 1 otherwise
     mediump float z = 2.0 - step(a_minzoom, adjustedZoom) - (1.0 - step(a_maxzoom, adjustedZoom));
 
-    gl_Position = u_matrix * vec4(a_projected_pos.xy + (a_offset / 64.0 * fontScale), 0.0, 1.0);
+    highp float segment_angle = -a_projected_pos[2];
+    highp float angle_sin = sin(segment_angle);
+    highp float angle_cos = cos(segment_angle);
+    mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
+
+    gl_Position = u_matrix * vec4(a_projected_pos.xy + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
