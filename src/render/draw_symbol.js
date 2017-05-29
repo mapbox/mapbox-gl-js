@@ -42,8 +42,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         // icon-pitch-alignment is not yet implemented
         // and we simply inherit the rotation alignment
         layer.layout['icon-rotation-alignment'],
-        layer.layout['icon-keep-upright'],
-        layer.layout['symbol-placement'] === 'line'
+        layer.layout['icon-keep-upright']
     );
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
@@ -51,8 +50,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['text-translate-anchor'],
         layer.layout['text-rotation-alignment'],
         layer.layout['text-pitch-alignment'],
-        layer.layout['text-keep-upright'],
-        layer.layout['symbol-placement'] === 'line'
+        layer.layout['text-keep-upright']
     );
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -61,7 +59,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, keepUpright, isLine) {
+        rotationAlignment, pitchAlignment, keepUpright) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -70,8 +68,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';// && false;
+    const alongLine = rotateWithMap && layer.layout['symbol-placement'] === 'line';
 
-    const depthOn = false && pitchWithMap;
+    const depthOn = pitchWithMap;
 
     if (depthOn) {
         gl.enable(gl.DEPTH_TEST);
@@ -108,7 +107,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         //const a = window.performance.now();
-        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, isLine, s, layer);
+        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, s, layer);
         //painter.projectionTime += window.performance.now() - a;
         painter.count++;
 

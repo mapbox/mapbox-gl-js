@@ -67,7 +67,7 @@ function isVisible(anchor, posMatrix) {
     return p.x >= -1 && p.x <= 1 && p.y >= -1 && p.y <= 1;
 }
 
-function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, isLine, pixelsToTileUnits, layer) {
+function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, pixelsToTileUnits, layer) {
 
     const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
 
@@ -109,7 +109,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
         const size = evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol);
         const fontScale = size / 24;
 
-        if (!isLine) {
+        if (!alongLine) {
             painter.pointLabelCount++;
             const numVertices = symbol.numGlyphs * 4;
             const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
