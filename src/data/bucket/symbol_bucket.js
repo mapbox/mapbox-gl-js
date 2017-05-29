@@ -39,6 +39,7 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Uint16', name: 'segment' },
         { type: 'Uint32', name: 'sizeStopStart' },
         { type: 'Float32', name: 'placementZoom' },
+        { type: 'Uint8', name: 'vertical' }
     ]
 });
 
@@ -745,16 +746,16 @@ class SymbolBucket {
             }
         });
 
+        const labelAngle = Math.abs((anchor.angle + placementAngle) % Math.PI);
+        const inVerticalRange = labelAngle > Math.PI / 4 && labelAngle <= Math.PI * 3 / 4;
+        const useVerticalMode = Boolean(writingModes & WritingMode.vertical) && inVerticalRange;
+
         for (const symbol of quads) {
-            /*
-            // drop incorrectly oriented glyphs
-            const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
-            if (writingModes & WritingMode.vertical) {
-                if (alongLine && symbol.writingMode === WritingMode.vertical) {
-                    if (keepUpright && alongLine && a <= (Math.PI * 5 / 4) || a > (Math.PI * 7 / 4)) continue;
-                } else if (keepUpright && alongLine && a <= (Math.PI * 3 / 4) || a > (Math.PI * 5 / 4)) continue;
-            } else if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
-            */
+
+            if (alongLine && keepUpright) {
+                // drop incorrectly oriented glyphs
+                if ((symbol.writingMode === WritingMode.vertical) !== useVerticalMode) continue;
+            }
 
             const tl = symbol.tl,
                 tr = symbol.tr,
@@ -795,7 +796,7 @@ class SymbolBucket {
         placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
                 lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0,
-                placementZoom);
+                placementZoom, useVerticalMode);
 
         arrays.populatePaintArrays(featureProperties);
     }

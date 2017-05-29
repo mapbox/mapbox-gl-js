@@ -151,6 +151,14 @@ function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, feat
         const bl  = new Point(x1, y2);
         const br = new Point(x2, y2);
 
+        const center = new Point(builtInXOffset - halfAdvance, glyph.advance / 2);
+        if (positionedGlyph.angle !== 0) {
+            tl._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            tr._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            bl._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            br._sub(center)._rotate(positionedGlyph.angle)._add(center);
+        }
+
         if (textRotate) {
             const sin = Math.sin(textRotate),
                 cos = Math.cos(textRotate),

@@ -143,8 +143,12 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
         if (keepUpright) {
             const a = project(lineVertexArray.get(line.startIndex + symbol.segment), posMatrix);
             const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), posMatrix);
-            // TODO handle vertical writing mode (flip based on y component)
-            flip = b.x < a.x;
+
+            if (symbol.vertical) {
+                flip = b.y > a.y;
+            } else {
+                flip = b.x < a.x;
+            }
         }
 
         processDirection(glyphsForward, 1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
