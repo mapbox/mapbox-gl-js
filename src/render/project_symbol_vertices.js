@@ -61,10 +61,10 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function isVisible(anchor, posMatrix) {
-    return true;
-    const p = project(anchor, posMatrix);
-    return p.x >= -1 && p.x <= 1 && p.y >= -1 && p.y <= 1;
+function isVisible(symbol, posMatrix, bufferX, bufferY, painter) {
+    const p = project(new Point(symbol.anchorX, symbol.anchorY), posMatrix);
+    const inPaddedViewport = p.x >= -bufferX && p.x <= bufferX && p.y >= -bufferY && p.y <= bufferY;
+    return inPaddedViewport && painter.frameHistory.isVisible(symbol.placementZoom);
 }
 
 function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, pixelsToTileUnits, layer) {
@@ -94,10 +94,13 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
 
     const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
 
+    const bufferX = 256 / painter.width * 2 + 1;
+    const bufferY = 256 / painter.height * 2 + 1;
+
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
 
-        if (!isVisible(new Point(symbol.anchorX, symbol.anchorY), posMatrix) || !painter.frameHistory.isVisible(symbol.placementZoom)) {
+        if (!isVisible(symbol, posMatrix, bufferX, bufferY, painter)) {
             const numVertices = symbol.numGlyphs * 4;
             for (let i = 0; i < numVertices; i++) {
                 vertexPositions.emplaceBack(-Infinity, -Infinity, 0);
