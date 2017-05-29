@@ -784,6 +784,13 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('does not throw when cameras current zoom is sufficiently greater than passed zoom option', (t)=>{
+            const camera = createCamera({zoom: 22, center:[0, 0]});
+            t.doesNotThrow(()=>camera.flyTo({zoom:10, center:[0, 0]}));
+            t.end();
+
+        });
+
         t.test('zooms to specified level', (t) => {
             const camera = createCamera();
             camera.flyTo({ zoom: 3.2, animate: false });

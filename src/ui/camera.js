@@ -758,7 +758,7 @@ class Camera extends Evented {
             S = (r(1) - r0) / rho;
 
         // When u₀ = u₁, the optimal path doesn’t require both ascent and descent.
-        if (Math.abs(u1) < 0.000001) {
+        if (Math.abs(u1) < 0.000001 || isNaN(S)) {
             // Perform a more or less instantaneous transition if the path is too short.
             if (Math.abs(w0 - w1) < 0.000001) return this.easeTo(options, eventData);
 
