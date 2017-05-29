@@ -62,7 +62,9 @@ class TerrainTexture {
         const gl = this.painter.gl;
         const program = this.painter.useProgram('terrain');
         const posMatrix = this.painter.transform.calculatePosMatrix(tile.coord);
-        const azimuth = (-layer.paint["terrain-illumination-direction"] - 90) * DEG2RAD;
+        const light = this.painter.style.light._declarations;
+        const azimuth = -light.position.value[1] * DEG2RAD;
+        const zenith = light.position.value[2] * DEG2RAD;
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -73,9 +75,9 @@ class TerrainTexture {
         gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
         gl.uniform1f(program.u_azimuth, azimuth);
-        gl.uniform1f(program.u_zenith, 60 * DEG2RAD);
+        gl.uniform1f(program.u_zenith, zenith);
         gl.uniform1f(program.u_mipmap, 0);
-        gl.uniform1f(program.u_exaggeration, layer.paint["terrain-exaggeration"]);
+        gl.uniform1f(program.u_intensity, light.intensity.value);
         gl.uniform4fv(program.u_shadow, parseColor(layer.paint["terrain-shadow-color"]));
         gl.uniform4fv(program.u_highlight, parseColor(layer.paint["terrain-highlight-color"]));
         gl.uniform4fv(program.u_accent, parseColor(layer.paint["terrain-accent-color"]));

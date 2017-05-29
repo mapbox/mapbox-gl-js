@@ -15,7 +15,7 @@ uniform float u_zoom;
 uniform float u_azimuth;
 uniform float u_zenith;
 uniform float u_mipmap;
-uniform float u_exaggeration;
+uniform float u_intensity;
 
 uniform vec4 u_shadow;
 uniform vec4 u_highlight;
@@ -59,15 +59,15 @@ void main() {
         gl_FragColor = vec4(hillshade, hillshade, hillshade, 1.0);
     } else if (u_mode == mode_color) {
         float accent = cos(slope);
-        vec4 accent_color = u_exaggeration * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
+        vec4 accent_color = u_intensity * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
         float shade = abs(mod((aspect + u_azimuth) / PI + 0.5, 2.0) - 1.0);
         vec4 shade_color = mix(u_shadow, u_highlight, shade) * (slope) * sin(u_zenith);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
     } else if (u_mode == mode_coloropen) {
         float accent = cos((1.0 - openness) * 2.0);
-        vec4 accent_color = u_exaggeration * (1.0 - accent) * u_accent;
+        vec4 accent_color = u_intensity * (1.0 - accent) * u_accent;
         float shade = abs(mod((aspect + u_azimuth) / PI + 0.5, 2.0) - 1.0);
-        vec4 shade_color = u_exaggeration * slope * sin(u_zenith) * mix(u_shadow, u_highlight, shade);
+        vec4 shade_color = u_intensity * slope * sin(u_zenith) * mix(u_shadow, u_highlight, shade);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
     } else {
         gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
