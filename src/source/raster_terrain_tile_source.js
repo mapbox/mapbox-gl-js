@@ -25,8 +25,8 @@ class RasterTerrainTileSource extends Evented {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
-        this.options = options;
         this.isTileClipped = true;
+        this.options = options;
 
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     }
@@ -64,7 +64,7 @@ class RasterTerrainTileSource extends Evented {
 
     serialize() {
         return {
-            type: 'raster',
+            type: 'raster-terrain',
             url: this.url,
             tileSize: this.tileSize,
             tiles: this.tiles,
