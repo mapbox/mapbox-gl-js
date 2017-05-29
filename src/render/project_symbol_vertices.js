@@ -62,6 +62,7 @@ function project(point, matrix) {
 }
 
 function isVisible(anchor, posMatrix) {
+    return true;
     const p = project(anchor, posMatrix);
     return p.x >= -1 && p.x <= 1 && p.y >= -1 && p.y <= 1;
 }
