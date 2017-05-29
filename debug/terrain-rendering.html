@@ -21,59 +21,69 @@
 var raster =   {
     "version": 8,
     "sources": {
+        "streets": {
+            "url": 'mapbox://mapbox.mapbox-streets-v7',
+            type: 'vector'
+        },
         "rasterTerrain": {
             "type": "raster-terrain",
             "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
-            // "url": "mapbox://mapbox.terrain-rgb"
         }
     },
     "layers": [
         {
-            "id": "background",
-            "type": "background",
+            "id": "background", "type": "background",
             "paint": {
-                "background-color": "#FFF"
+                "background-color": "#f4f1c4"
+            }
+        },
+        {
+            "id":"water",
+            "type": "fill",
+            "source":"streets",
+            "source-layer":"water",
+            "paint": {
+                "fill-color":"#7bcdff"
             }
         },
         {
             "id": "terrain",
             "source": "rasterTerrain",
             "type": "terrain"
-        }
+        },
+        {
+            "id":"water2",
+            "type": "line",
+            "source":"streets",
+            "source-layer":"water",
+            "paint": {
+                "line-color":"#4a99ca",
+                "line-width": 1
+            }
+        },
+
     ]
 };
 
-var vector =   {
-    "version": 8,
-    "sources": {
-        "vtiles": {
-            "type": "vector",
-            "tiles": [ "http://localhost:3001/tiles/{z}/{x}/{y}.mvt" ]
-        }
-    },
-    "layers": [
-        {
-            "id": "background",
-            "type": "background",
-            "paint": {
-                "background-color": "#FFF"
-            }
-        },
-        {
-            "id": "terrain",
-            "source": "vtiles",
-            "source-layer": "elevation",
-            "type": "terrain"
-        }
-    ]
-};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12,
     center: [-112.9487, 36.2628],
-    style: raster,
+    style: raster, //'mapbox://styles/mollymerp/cj3a5b1xn00002sl54qiyk16r',
     hash: true
+});
+
+map.on('load', ()=> {
+    // map.addSource('rasterTerrain',
+    //     {
+    //         "type": "raster-terrain",
+    //         "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
+    //     }).addLayer({
+    //     "id": "terrain",
+    //     "source": "rasterTerrain",
+    //     "type": "terrain"
+    // })
 });
 
 </script>

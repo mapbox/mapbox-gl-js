@@ -210,7 +210,7 @@ class SourceCache extends Evented {
      */
     _backfillDEM(tile) {
         const neighboringTiles = getNeighboringTiles(tile.coord);
-        for (let key in this._tiles) {
+        for (const key in this._tiles) {
             if (this._tiles[key].state === "loaded" && neighboringTiles.includes(key)) {
                 const borderTile = this._tiles[key];
                 fillBorder(tile, borderTile);
@@ -218,10 +218,11 @@ class SourceCache extends Evented {
             }
         }
 
-        function fillBorder(tile, borderTile){
+        function fillBorder(tile, borderTile) {
             tile.texture = undefined;
             let dx = borderTile.coord.x - tile.coord.x;
             const dy = borderTile.coord.y - tile.coord.y;
+            const dim = Math.pow(2, tile.coord.z);
             if (dx === 0 && dy === 0) return;
 
             if (Math.abs(dy) > 1) {
@@ -229,8 +230,7 @@ class SourceCache extends Evented {
             }
             if (Math.abs(dx) > 1) {
                 // Adjust the delta coordinate for world wraparound.
-                if (Math.abs(dx + dim) === 1) { dx += dim; }
-                else if (Math.abs(dx - dim) === 1) { dx -= dim; }
+                if (Math.abs(dx + dim) === 1) { dx += dim; }                else if (Math.abs(dx - dim) === 1) { dx -= dim; }
             }
             if (!borderTile.dem || !tile.dem) return;
             tile.dem.backfillBorders(borderTile.dem, dx, dy);
@@ -262,7 +262,7 @@ class SourceCache extends Evented {
                 neighboringTiles.push({ z: z, x: x, y: y + 1, w: w  });
                 neighboringTiles.push({ z: z, x: nx, y: y + 1, w: nxw  });
             }
-            const neighboringCoords = neighboringTiles.map((t) => ""+(new TileCoord(t.z, t.x, t.y, t.w)).id);
+            const neighboringCoords = neighboringTiles.map((t) => `${(new TileCoord(t.z, t.x, t.y, t.w)).id}`);
             return neighboringCoords;
         }
         this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});

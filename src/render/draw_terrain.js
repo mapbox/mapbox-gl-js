@@ -13,7 +13,6 @@ const DEG2RAD = Math.PI / 180.0;
 
 function drawTerrain(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
-    const gl = painter.gl;
 
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -97,8 +96,6 @@ class TerrainTexture {
 
 function prepareTerrain(painter, tile, layer) {
     const gl = painter.gl;
-    const terrainBucket = tile.getBucket(layer);
-
     // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
     // ex.
     // Uint32:
@@ -110,7 +107,7 @@ function prepareTerrain(painter, tile, layer) {
     // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
 
-    const levels = tile.dem.levels.map((l, i)=> {
+    const levels = tile.dem.levels.map((l)=> {
         return {width: l.width + 2 * l.border, height: l.height + 2 * l.border, data: new Uint8Array(l.data.buffer)};
     });
 
