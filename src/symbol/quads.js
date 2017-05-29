@@ -137,10 +137,12 @@ function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, feat
 
         const halfAdvance = glyph.advance / 2;
         const xOffset = alongLine ? positionedGlyph.x + halfAdvance : 0;
+        const yOffset = alongLine ? positionedGlyph.y : 0;
         const builtInXOffset = alongLine ? 0 : positionedGlyph.x + halfAdvance;
+        const builtInYOffset = alongLine ? 0 : positionedGlyph.y;
 
         const x1 = glyph.left - halfAdvance + builtInXOffset;
-        const y1 = -glyph.top;
+        const y1 = -glyph.top + builtInYOffset;
         const x2 = x1 + rect.w;
         const y2 = y1 + rect.h;
 
@@ -160,7 +162,7 @@ function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, feat
             br._matMult(matrix);
         }
 
-        quads.push(new SymbolQuad(anchorPoint, tl, tr, bl, br, rect, shaping.writingMode, xOffset, positionedGlyph.y));
+        quads.push(new SymbolQuad(anchorPoint, tl, tr, bl, br, rect, shaping.writingMode, xOffset, yOffset));
     }
 
     return quads;
