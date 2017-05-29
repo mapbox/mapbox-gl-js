@@ -13,27 +13,20 @@ const DEG2RAD = Math.PI / 180.0;
 
 function drawTerrain(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
-
     const gl = painter.gl;
-    // gl.disable(gl.STENCIL_TEST);
-    gl.enable(gl.BLEND);
-    gl.disable(gl.DEPTH_TEST);
-    painter.depthMask(true);
 
-    // Change depth function to prevent double drawing in areas where tiles overlap.
-    gl.depthFunc(gl.LESS);
-
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    painter.setDepthSublayer(0);
+    painter.depthMask(false);
 
     for (const coord of coords) {
-
         const tile = sourceCache.getTile(coord);
         if (!tile.texture) {
             prepareTerrain(painter, tile, layer);
         }
 
+        painter.enableTileClippingMask(coord);
         tile.texture.render(tile, layer);
+
     }
 }
 
@@ -53,8 +46,8 @@ class TerrainTexture {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         this.texture.width = this.width;
@@ -83,7 +76,7 @@ class TerrainTexture {
         gl.uniform1f(program.u_azimuth, azimuth);
         gl.uniform1f(program.u_zenith, 60 * DEG2RAD);
         gl.uniform1f(program.u_mipmap, 0);
-        gl.uniform1f(program.u_exaggeration, layer.paint["terrain-exaggeration"]*2);
+        gl.uniform1f(program.u_exaggeration, layer.paint["terrain-exaggeration"]);
         gl.uniform4fv(program.u_shadow, parseColor(layer.paint["terrain-shadow-color"]));
         gl.uniform4fv(program.u_highlight, parseColor(layer.paint["terrain-highlight-color"]));
         gl.uniform4fv(program.u_accent, parseColor(layer.paint["terrain-accent-color"]));
@@ -159,6 +152,5 @@ function prepareTerrain(painter, tile, layer) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
     tile.texture.unbindFramebuffer();
-
     tile.prepared = true;
 }

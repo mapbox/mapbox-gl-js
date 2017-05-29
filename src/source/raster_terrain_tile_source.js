@@ -26,6 +26,8 @@ class RasterTerrainTileSource extends Evented {
         this.tileSize = 512;
         this._loaded = false;
         this.options = options;
+        this.isTileClipped = true;
+
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     }
 
