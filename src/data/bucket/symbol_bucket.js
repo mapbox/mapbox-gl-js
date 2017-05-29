@@ -746,6 +746,7 @@ class SymbolBucket {
         });
 
         for (const symbol of quads) {
+            /*
             // drop incorrectly oriented glyphs
             const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
             if (writingModes & WritingMode.vertical) {
@@ -753,6 +754,7 @@ class SymbolBucket {
                     if (keepUpright && alongLine && a <= (Math.PI * 5 / 4) || a > (Math.PI * 7 / 4)) continue;
                 } else if (keepUpright && alongLine && a <= (Math.PI * 3 / 4) || a > (Math.PI * 5 / 4)) continue;
             } else if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+            */
 
             const tl = symbol.tl,
                 tr = symbol.tr,
