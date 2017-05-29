@@ -683,7 +683,7 @@ class SymbolBucket {
                         symbolInstance.writingModes,
                         symbolInstance.anchor,
                         lineArrayIndex,
-                        line.length > 1,
+                        textAlongLine,
                         this.placedGlyphArray);
                 }
             }
@@ -710,7 +710,7 @@ class SymbolBucket {
                         undefined,
                         symbolInstance.anchor,
                         lineArrayIndex,
-                        line.length > 1,
+                        iconAlongLine,
                         this.placedIconArray
                     );
                 }
