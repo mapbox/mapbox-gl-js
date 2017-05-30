@@ -12,7 +12,7 @@ class VertexArrayObject {
         this.vao = null;
     }
 
-    bind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset) {
+    bind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer) {
 
         if (gl.extVertexArrayObject === undefined) {
             gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -24,18 +24,24 @@ class VertexArrayObject {
             this.boundVertexBuffer !== layoutVertexBuffer ||
             this.boundVertexBuffer2 !== vertexBuffer2 ||
             this.boundElementBuffer !== elementBuffer ||
-            this.boundVertexOffset !== vertexOffset
+            this.boundVertexOffset !== vertexOffset ||
+            this.boundDynamicVertexBuffer !== dynamicVertexBuffer
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset);
+            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
             this.gl = gl;
         } else {
             gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
+
+            if (dynamicVertexBuffer) {
+                // The buffer may have been updated. Rebind to upload data.
+                dynamicVertexBuffer.bind(gl);
+            }
         }
     }
 
-    freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset) {
+    freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -51,6 +57,7 @@ class VertexArrayObject {
             this.boundVertexBuffer2 = vertexBuffer2;
             this.boundElementBuffer = elementBuffer;
             this.boundVertexOffset = vertexOffset;
+            this.boundDynamicVertexBuffer = dynamicVertexBuffer;
 
         } else {
             numPrevAttributes = gl.currentNumAttributes || 0;
@@ -69,12 +76,19 @@ class VertexArrayObject {
         if (vertexBuffer2) {
             vertexBuffer2.enableAttributes(gl, program);
         }
+        if (dynamicVertexBuffer) {
+            dynamicVertexBuffer.enableAttributes(gl, program);
+        }
 
         layoutVertexBuffer.bind(gl);
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         if (vertexBuffer2) {
             vertexBuffer2.bind(gl);
             vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (dynamicVertexBuffer) {
+            dynamicVertexBuffer.bind(gl);
+            dynamicVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (elementBuffer) {
             elementBuffer.bind(gl);

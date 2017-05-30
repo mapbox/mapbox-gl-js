@@ -104,12 +104,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         //const a = window.performance.now();
-        const buffer = symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, s, layer);
+        symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, s, layer);
         //painter.projectionTime += window.performance.now() - a;
         painter.count++;
 
-        drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
-                pitchWithMap, buffer);
+        drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
 
         prevFontstack = bucket.fontstack;
     }
@@ -161,7 +160,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     if (size.uLayoutSize !== undefined) gl.uniform1f(program.u_layout_size, size.uLayoutSize);
 }
 
-function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap, buffer) {
+function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -174,24 +173,21 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
 
         if (hasHalo) { // Draw halo underneath the text.
             gl.uniform1f(program.u_is_halo, 1);
-            drawSymbolElements(buffers, layer, gl, program, buffer);
+            drawSymbolElements(buffers, layer, gl, program);
         }
 
         gl.uniform1f(program.u_is_halo, 0);
     }
 
-    drawSymbolElements(buffers, layer, gl, program, buffer);
+    drawSymbolElements(buffers, layer, gl, program);
 }
 
-function drawSymbolElements(buffers, layer, gl, program, buffer) {
+function drawSymbolElements(buffers, layer, gl, program) {
     const layerData = buffers.layerData[layer.id];
     const paintVertexBuffer = layerData && layerData.paintVertexBuffer;
 
     for (const segment of buffers.segments) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset);
-        buffer.bind(gl);
-        buffer.enableAttributes(gl, program);
-        buffer.setVertexAttribPointers(gl, program, segment.vertexOffset);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }

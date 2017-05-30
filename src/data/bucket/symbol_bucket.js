@@ -64,9 +64,14 @@ const layoutAttributes = [
     {name: 'a_data',        components: 4, type: 'Uint16'}
 ];
 
+const dynamicLayoutAttributes = [
+    { name: 'a_projected_pos', components: 4, type: 'Float32' }
+];
+
 const symbolInterfaces = {
     glyph: {
         layoutAttributes: layoutAttributes,
+        dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
@@ -78,6 +83,7 @@ const symbolInterfaces = {
     },
     icon: {
         layoutAttributes: layoutAttributes,
+        dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
@@ -701,6 +707,7 @@ class SymbolBucket {
     addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineStartIndex, lineLength, placedSymbolArray) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
+        const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -751,6 +758,11 @@ class SymbolBucket {
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, placementZoom, glyphAngle);
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, placementZoom, glyphAngle);
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, placementZoom, glyphAngle);
+
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);

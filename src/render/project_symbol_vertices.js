@@ -1,8 +1,6 @@
 'use strict';
 
 const Point = require('point-geometry');
-const Buffer = require('../data/buffer');
-const createStructArrayType = require('../util/struct_array');
 const interpolate = require('../style-spec/util/interpolate');
 const util = require('../util/util');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
@@ -11,14 +9,6 @@ const assert = require('assert');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 
-const VertexPositionArray = createStructArrayType({
-    alignmnet: 4,
-    members: [
-        { type: 'Float32', name: 'a_projected_pos', components: 3 }
-    ]
-});
-
-const serializedVertexPositionArrayType = VertexPositionArray.serialize();
 
 module.exports = {
     project: projectSymbolVertices,
@@ -79,23 +69,11 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
 
-    let vertexPositions;
+    const dynamicLayoutVertexArray = isText ?
+        bucket.buffers.glyph.dynamicLayoutVertexArray :
+        bucket.buffers.icon.dynamicLayoutVertexArray;
 
-    if (isText) {
-        if (bucket.glyphVertexPositions === undefined) {
-            bucket.glyphVertexPositions = new VertexPositionArray();
-        } else {
-            bucket.glyphVertexPositions.clear();
-        }
-        vertexPositions = bucket.glyphVertexPositions;
-    } else {
-        if (bucket.iconVertexPositions === undefined) {
-            bucket.iconVertexPositions = new VertexPositionArray();
-        } else {
-            bucket.iconVertexPositions.clear();
-        }
-        vertexPositions = bucket.iconVertexPositions;
-    }
+    dynamicLayoutVertexArray.clear();
 
     const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
 
@@ -108,7 +86,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
         if (!isVisible(symbol, posMatrix, bufferX, bufferY, painter)) {
             const numVertices = symbol.numGlyphs * 4;
             for (let i = 0; i < numVertices; i++) {
-                vertexPositions.emplaceBack(-Infinity, -Infinity, 0);
+                dynamicLayoutVertexArray.emplaceBack(-Infinity, -Infinity, 0);
             }
             painter.hiddenLabelCount++;
             continue;
@@ -122,7 +100,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
             const numVertices = symbol.numGlyphs * 4;
             const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
             for (let i = 0; i < numVertices; i++) {
-                vertexPositions.emplaceBack(anchor.x, anchor.y, 0);
+                dynamicLayoutVertexArray.emplaceBack(anchor.x, anchor.y, 0);
             }
             continue;
         }
@@ -157,30 +135,18 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
             }
         }
 
-        processDirection(glyphsForward, 1, flip, symbol, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
-        processDirection(glyphsBackward, -1, flip, symbol, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
+        processDirection(glyphsForward, 1, flip, symbol, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale);
+        processDirection(glyphsBackward, -1, flip, symbol, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale);
     }
 
     if (isText) {
-        if (bucket.glyphVertexPositionBuffer === undefined) {
-            // TODO avoid leaking this buffer
-            bucket.glyphVertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
-        } else {
-            bucket.glyphVertexPositionBuffer.updateData(vertexPositions.serialize());
-        }
-        return bucket.glyphVertexPositionBuffer;
+        bucket.buffers.glyph.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
     } else {
-        if (bucket.iconVertexPositionBuffer === undefined) {
-            // TODO avoid leaking this buffer
-            bucket.iconVertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
-        } else {
-            bucket.iconVertexPositionBuffer.updateData(vertexPositions.serialize());
-        }
-        return bucket.iconVertexPositionBuffer;
+        bucket.buffers.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
     }
 }
 
-function processDirection(glyphs, dir, flip, symbol, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
+function processDirection(glyphs, dir, flip, symbol, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale) {
     const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
 
     assert(symbol.lineLength > 1);
@@ -221,15 +187,15 @@ function processDirection(glyphs, dir, flip, symbol, lineVertexArray, vertexPosi
         }
 
         const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
-        addGlyph(p, segmentAngle, vertexPositions);
+        addGlyph(p, segmentAngle, dynamicLayoutVertexArray);
     }
 }
 
-function addGlyph(p, angle, vertexPositions) {
-    vertexPositions.emplaceBack(p.x, p.y, angle);
-    vertexPositions.emplaceBack(p.x, p.y, angle);
-    vertexPositions.emplaceBack(p.x, p.y, angle);
-    vertexPositions.emplaceBack(p.x, p.y, angle);
+function addGlyph(p, angle, dynamicLayoutVertexArray) {
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
 }
 
 
