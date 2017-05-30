@@ -39,6 +39,8 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Uint32', name: 'lineLength' },
         { type: 'Uint16', name: 'segment' },
         { type: 'Uint32', name: 'sizeStopStart' },
+        { type: 'Uint16', name: 'lowerSize' },
+        { type: 'Uint16', name: 'upperSize' },
         { type: 'Float32', name: 'placementZoom' },
         { type: 'Uint8', name: 'vertical' }
     ]
@@ -783,9 +785,20 @@ class SymbolBucket {
             this.glyphOffsetArray.emplaceBack(symbol.glyphOffsetX);
         }
 
+        let lowerSize, upperSize;
+        if (sizeVertex) {
+            if (sizeVertex.length === 3) {
+                lowerSize = sizeVertex[0];
+                upperSize = sizeVertex[1];
+            } else if (sizeVertex.length === 1) {
+                lowerSize = upperSize = sizeVertex[0];
+            }
+        }
+
         placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
                 lineStartIndex, lineLength, anchor.segment, sizeVertex ? sizeVertex.start : 0,
+                lowerSize, upperSize,
                 placementZoom, useVerticalMode);
 
         arrays.populatePaintArrays(featureProperties);

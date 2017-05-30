@@ -1,11 +1,8 @@
 'use strict';
 
-const assert = require('assert');
-const util = require('../util/util');
 const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const symbolVertices = require('./project_symbol_vertices');
 
 module.exports = drawSymbols;
@@ -158,43 +155,10 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     gl.uniform1i(program.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
     gl.uniform1i(program.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
 
-    if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
-        // composite function
-        const t = interpolationFactor(tr.zoom,
-            sizeData.functionBase,
-            sizeData.coveringZoomRange[0],
-            sizeData.coveringZoomRange[1]
-        );
-        gl.uniform1f(program.u_size_t, util.clamp(t, 0, 1));
-    } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
-        // camera function
-        let size;
-        if (sizeData.functionType === 'interval') {
-            size = layer.getLayoutValue(isText ? 'text-size' : 'icon-size',
-                {zoom: tr.zoom});
-        } else {
-            assert(sizeData.functionType === 'exponential');
-            // Even though we could get the exact value of the camera function
-            // at z = tr.zoom, we intentionally do not: instead, we interpolate
-            // between the camera function values at a pair of zoom stops covering
-            // [tileZoom, tileZoom + 1] in order to be consistent with this
-            // restriction on composite functions
-            const t = sizeData.functionType === 'interval' ? 0 :
-                interpolationFactor(tr.zoom,
-                    sizeData.functionBase,
-                    sizeData.coveringZoomRange[0],
-                    sizeData.coveringZoomRange[1]);
-
-            const lowerValue = sizeData.coveringStopValues[0];
-            const upperValue = sizeData.coveringStopValues[1];
-            size = lowerValue + (upperValue - lowerValue) * util.clamp(t, 0, 1);
-        }
-
-        gl.uniform1f(program.u_size, size);
-        gl.uniform1f(program.u_layout_size, sizeData.layoutSize);
-    } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
-        gl.uniform1f(program.u_size, sizeData.layoutSize);
-    }
+    const size = symbolVertices.calculateSize(sizeData, tr, layer, isText);
+    if (size.uSizeT !== undefined) gl.uniform1f(program.u_size_t, size.uSizeT);
+    if (size.uSize !== undefined) gl.uniform1f(program.u_size, size.uSize);
+    if (size.uLayoutSize !== undefined) gl.uniform1f(program.u_layout_size, size.uLayoutSize);
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap, buffer) {

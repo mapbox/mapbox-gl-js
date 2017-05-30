@@ -4,6 +4,8 @@ const Point = require('point-geometry');
 const Buffer = require('../data/buffer');
 const createStructArrayType = require('../util/struct_array');
 const interpolate = require('../style-spec/util/interpolate');
+const util = require('../util/util');
+const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const assert = require('assert');
 
 const mat4 = require('@mapbox/gl-matrix').mat4;
@@ -21,7 +23,8 @@ const serializedVertexPositionArrayType = VertexPositionArray.serialize();
 module.exports = {
     project: projectSymbolVertices,
     getPixelMatrix: getPixelMatrix,
-    getGlCoordMatrix: getGlCoordMatrix
+    getGlCoordMatrix: getGlCoordMatrix,
+    calculateSize: evaluateSizeForZoom
 };
 
 function getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
@@ -70,7 +73,8 @@ function isVisible(symbol, posMatrix, bufferX, bufferY, painter) {
 
 function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, pixelsToTileUnits, layer) {
 
-    const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
+    const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
+    const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
 
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
@@ -110,7 +114,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
             continue;
         }
 
-        const size = evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol);
+        const size = evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const fontScale = size / 24;
 
         if (!alongLine) {
@@ -228,32 +232,58 @@ function addGlyph(p, angle, vertexPositions) {
     vertexPositions.emplaceBack(p.x, p.y, angle);
 }
 
-function evaluateSizeForZoom(bucket, layer, transform) {
-    const sizeProperty = 'text-size';
-    const sizeData = bucket.textSizeData;
+
+function evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol) {
+    const part = partiallyEvaluatedSize;
     if (sizeData.isFeatureConstant) {
-        return { size: layer.getLayoutValue(sizeProperty, { zoom: transform.zoom }) };
+        return part.uSize;
     } else {
         if (sizeData.isZoomConstant) {
-            return {};
+            return symbol.lowerSize / 10;
         } else {
-            return { t: layer.getLayoutInterpolationT(sizeProperty, { zoom: transform.zoom }) };
+            return interpolate.number(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
         }
     }
 }
 
-function evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol) {
-    const sizeData = bucket.textSizeData;
-    if (sizeData.isFeatureConstant) {
-        return partiallyEvaluatedSize.size;
-    } else {
-        if (sizeData.isZoomConstant) {
-            return bucket.zoomStopArray.get(symbol.sizeStopStart).textSize;
+function evaluateSizeForZoom(sizeData, tr, layer, isText) {
+    const sizeUniforms = {};
+    if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
+        // composite function
+        const t = interpolationFactor(tr.zoom,
+            sizeData.functionBase,
+            sizeData.coveringZoomRange[0],
+            sizeData.coveringZoomRange[1]
+        );
+        sizeUniforms.uSizeT = util.clamp(t, 0, 1);
+    } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
+        // camera function
+        let size;
+        if (sizeData.functionType === 'interval') {
+            size = layer.getLayoutValue(isText ? 'text-size' : 'icon-size',
+                {zoom: tr.zoom});
         } else {
-            const offset = symbol.sizeStopStart;
-            const a = bucket.zoomStopArray.get(offset + Math.floor(partiallyEvaluatedSize.t));
-            const b = bucket.zoomStopArray.get(offset + Math.ceil(partiallyEvaluatedSize.t));
-            return interpolate.number(a.textSize, b.textSize, partiallyEvaluatedSize.t % 1);
+            assert(sizeData.functionType === 'exponential');
+            // Even though we could get the exact value of the camera function
+            // at z = tr.zoom, we intentionally do not: instead, we interpolate
+            // between the camera function values at a pair of zoom stops covering
+            // [tileZoom, tileZoom + 1] in order to be consistent with this
+            // restriction on composite functions
+            const t = sizeData.functionType === 'interval' ? 0 :
+                interpolationFactor(tr.zoom,
+                    sizeData.functionBase,
+                    sizeData.coveringZoomRange[0],
+                    sizeData.coveringZoomRange[1]);
+
+            const lowerValue = sizeData.coveringStopValues[0];
+            const upperValue = sizeData.coveringStopValues[1];
+            size = lowerValue + (upperValue - lowerValue) * util.clamp(t, 0, 1);
         }
+
+        sizeUniforms.uSize = size;
+        sizeUniforms.uLayoutSize = sizeData.layoutSize;
+    } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
+        sizeUniforms.uSize = sizeData.layoutSize;
     }
+    return sizeUniforms;
 }
