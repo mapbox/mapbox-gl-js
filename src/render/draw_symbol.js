@@ -149,8 +149,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     painter.frameHistory.bind(gl);
     gl.uniform1i(program.u_fadetexture, 1);
 
-    gl.uniform1f(program.u_zoom, tr.zoom);
-
     gl.uniform1i(program.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
     gl.uniform1i(program.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
 

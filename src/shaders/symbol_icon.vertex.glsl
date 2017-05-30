@@ -16,7 +16,6 @@ uniform mediump float u_layout_size; // used when size is feature constant
 uniform mat4 u_matrix;
 
 uniform bool u_is_text;
-uniform mediump float u_zoom;
 
 uniform vec2 u_texsize;
 
@@ -32,9 +31,6 @@ void main() {
     vec2 a_tex = a_data.xy;
     mediump vec2 label_data = unpack_float(a_data[2]);
     mediump float a_labelminzoom = label_data[0];
-    mediump vec2 a_zoom = unpack_float(a_data[3]);
-    mediump float a_minzoom = a_zoom[0];
-    mediump float a_maxzoom = a_zoom[1];
 
     float size;
     // In order to accommodate placing labels around corners in
@@ -61,11 +57,6 @@ void main() {
     }
 
     float fontScale = u_is_text ? size / 24.0 : size;
-
-    mediump float zoomAdjust = log2(size / layoutSize);
-    mediump float adjustedZoom = (u_zoom - zoomAdjust) * 10.0;
-    // result: z = 0 if a_minzoom <= adjustedZoom < a_maxzoom, and 1 otherwise
-    mediump float z = 2.0 - step(a_minzoom, adjustedZoom) - (1.0 - step(a_maxzoom, adjustedZoom));
 
     highp float segment_angle = -a_projected_pos[2];
     highp float angle_sin = sin(segment_angle);
