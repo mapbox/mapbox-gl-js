@@ -38,7 +38,6 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Uint32', name: 'lineStartIndex' },
         { type: 'Uint32', name: 'lineLength' },
         { type: 'Uint16', name: 'segment' },
-        { type: 'Uint32', name: 'sizeStopStart' },
         { type: 'Uint16', name: 'lowerSize' },
         { type: 'Uint16', name: 'upperSize' },
         { type: 'Float32', name: 'placementZoom' },
@@ -57,13 +56,6 @@ const LineVertexArray = createStructArrayType({
         { type: 'Int16', name: 'x' },
         { type: 'Int16', name: 'y' }
     ]});
-
-const ZoomStopArray = createStructArrayType({
-    members: [
-        { type: 'Float32', name: 'z' },
-        { type: 'Float32', name: 'textSize' }
-    ]
-});
 
 const elementArrayType = createElementArrayType();
 
@@ -221,7 +213,6 @@ class SymbolBucket {
             this.placedIconArray = new PlacedSymbolArray(options.placedIconArray);
             this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
-            this.zoomStopArray = new ZoomStopArray(options.zoomStopArray);
 
         } else {
             this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
@@ -333,7 +324,6 @@ class SymbolBucket {
             placedIconArray: this.placedIconArray.serialize(transferables),
             glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
-            zoomStopArray: this.zoomStopArray.serialize(transferables),
             arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
         };
     }
@@ -573,7 +563,6 @@ class SymbolBucket {
         this.placedIconArray = new PlacedSymbolArray();
         this.glyphOffsetArray = new GlyphOffsetArray;
         this.lineVertexArray = new LineVertexArray();
-        this.zoomStopArray = new ZoomStopArray();
         const lineIndexMap = {};
 
         const layer = this.layers[0];
@@ -662,8 +651,7 @@ class SymbolBucket {
                         this.zoom,
                         this.textSizeData.coveringZoomRange,
                         'text-size',
-                        symbolInstance.featureProperties,
-                        this.zoomStopArray);
+                        symbolInstance.featureProperties);
                     this.addSymbols(
                         this.arrays.glyph,
                         symbolInstance.glyphQuads,
@@ -689,8 +677,7 @@ class SymbolBucket {
                         this.zoom,
                         this.iconSizeData.coveringZoomRange,
                         'icon-size',
-                        symbolInstance.featureProperties,
-                        this.zoomStopArray);
+                        symbolInstance.featureProperties);
                     this.addSymbols(
                         this.arrays.icon,
                         symbolInstance.iconQuads,
@@ -797,7 +784,7 @@ class SymbolBucket {
 
         placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
-                lineStartIndex, lineLength, anchor.segment, sizeVertex ? sizeVertex.start : 0,
+                lineStartIndex, lineLength, anchor.segment,
                 lowerSize, upperSize,
                 placementZoom, useVerticalMode);
 
@@ -997,36 +984,25 @@ function getSizeAttributeDeclarations(layer, sizeProperty) {
     return [];
 }
 
-function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featureProperties, zoomStopArray) {
-    const start = zoomStopArray.length;
+function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featureProperties) {
     if (
         layer.isLayoutValueZoomConstant(sizeProperty) &&
         !layer.isLayoutValueFeatureConstant(sizeProperty)
     ) {
         // source function
-        zoomStopArray.emplaceBack(-1, layer.getLayoutValue(sizeProperty, {}, featureProperties));
-        const ret = [
+        return [
             10 * layer.getLayoutValue(sizeProperty, {}, featureProperties)
         ];
-        ret.start = start;
-        return ret;
     } else if (
         !layer.isLayoutValueZoomConstant(sizeProperty) &&
         !layer.isLayoutValueFeatureConstant(sizeProperty)
     ) {
-        const levels = layer.getLayoutValueStopZoomLevels(sizeProperty);
-        for (let i = 0; i < levels.length; i++) {
-            const z = levels[i];
-            zoomStopArray.emplaceBack(z, layer.getLayoutValue(sizeProperty, {zoom: z}, featureProperties));
-        }
         // composite function
-        const ret = [
+        return [
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[0]}, featureProperties),
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties),
             10 * layer.getLayoutValue(sizeProperty, {zoom: 1 + tileZoom}, featureProperties)
         ];
-        ret.start = start;
-        return ret;
     }
     // camera function or constant
     return null;
