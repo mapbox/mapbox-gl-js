@@ -1,6 +1,6 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
-attribute vec4 a_projected_pos;
+attribute vec3 a_projected_pos;
 
 // icon-size data (see symbol_sdf.vertex.glsl for more)
 attribute vec2 a_size;

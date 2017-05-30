@@ -65,7 +65,7 @@ const layoutAttributes = [
 ];
 
 const dynamicLayoutAttributes = [
-    { name: 'a_projected_pos', components: 4, type: 'Float32' }
+    { name: 'a_projected_pos', components: 3, type: 'Float32' }
 ];
 
 const symbolInterfaces = {
@@ -756,10 +756,10 @@ class SymbolBucket {
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, placementZoom);
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, placementZoom);
 
-            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
-            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
-            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
-            dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0);
+            dynamicLayoutVertexArray.emplaceBack(0, 0, 0);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);

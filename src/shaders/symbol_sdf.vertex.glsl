@@ -1,6 +1,6 @@
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
-attribute vec4 a_projected_pos;
+attribute vec3 a_projected_pos;
 
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
