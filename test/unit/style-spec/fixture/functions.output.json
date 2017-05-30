@@ -157,5 +157,9 @@
   {
     "message": "layers[43].paint.fill-color.default: color expected, \"invalid\" found",
     "line": 839
+  },
+  {
+    "message": "layers[44].layout.text-size.stops: stops must not have duplicate pairs.",
+    "line": 850
   }
 ]

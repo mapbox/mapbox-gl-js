@@ -78,8 +78,22 @@ module.exports = function validateFunction(options) {
             arrayElementValidator: validateFunctionStop
         }));
 
-        if (getType(value) === 'array' && value.length === 0) {
-            errors.push(new ValidationError(options.key, value, 'array must have at least one stop'));
+        if (getType(value) === 'array') {
+            if (value.length === 0) {
+                errors.push(new ValidationError(options.key, value, 'array must have at least one stop'));
+            } else {
+                const seenStops = Object.create(null);
+                value.every(stop => {
+                    if (getType(stop) !== 'array' || getType(stop[0]) !== 'number') {
+                        return false;
+                    }
+                    if (seenStops[stop[0]]) {
+                        errors.push(new ValidationError(options.key, value, 'stops must not have duplicate pairs.'));
+                    }
+                    seenStops[stop[0]] = stop[1];
+                    return true;
+                });
+            }
         }
 
         return errors;
