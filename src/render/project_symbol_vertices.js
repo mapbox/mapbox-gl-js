@@ -162,12 +162,16 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
         if (bucket.glyphVertexPositionBuffer === undefined) {
             // TODO avoid leaking this buffer
             bucket.glyphVertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
+        } else {
+            bucket.glyphVertexPositionBuffer.updateData(vertexPositions.serialize());
         }
         return bucket.glyphVertexPositionBuffer;
     } else {
         if (bucket.iconVertexPositionBuffer === undefined) {
             // TODO avoid leaking this buffer
             bucket.iconVertexPositionBuffer = new Buffer(vertexPositions.serialize(), serializedVertexPositionArrayType, Buffer.BufferType.VERTEX, true);
+        } else {
+            bucket.iconVertexPositionBuffer.updateData(vertexPositions.serialize());
         }
         return bucket.iconVertexPositionBuffer;
     }

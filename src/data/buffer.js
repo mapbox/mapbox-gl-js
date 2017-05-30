@@ -23,16 +23,16 @@ class Buffer {
      * @param {Object} array A serialized StructArray.
      * @param {Object} arrayType A serialized StructArrayType.
      * @param {BufferType} type
-     * @param {Boolean} streamDraw Whether this buffer will be repeatedly updated.
+     * @param {Boolean} dynamicDraw Whether this buffer will be repeatedly updated.
      */
-    constructor(array, arrayType, type, streamDraw) {
+    constructor(array, arrayType, type, dynamicDraw) {
         this.arrayBuffer = array.arrayBuffer;
         this.length = array.length;
         this.attributes = arrayType.members;
         this.itemSize = arrayType.bytesPerElement;
         this.type = type;
         this.arrayType = arrayType;
-        this.streamDraw = streamDraw;
+        this.dynamicDraw = dynamicDraw;
     }
 
     static fromStructArray(array, type) {
@@ -50,17 +50,25 @@ class Buffer {
             this.gl = gl;
             this.buffer = gl.createBuffer();
             gl.bindBuffer(type, this.buffer);
-            gl.bufferData(type, this.arrayBuffer, this.streamDraw ? gl.STREAM_DRAW : gl.STATIC_DRAW);
+            gl.bufferData(type, this.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
             // dump array buffer once it's bound to gl
-            if (!this.streamDraw) this.arrayBuffer = null;
+            this.arrayBuffer = null;
         } else {
             gl.bindBuffer(type, this.buffer);
 
-            if (this.streamDraw) {
+            if (this.dynamicDraw && this.arrayBuffer) {
                 gl.bufferSubData(type, 0, this.arrayBuffer);
+                this.arrayBuffer = null;
             }
         }
+    }
+
+    /*
+     * @param {Object} array A serialized StructArray.
+     */
+    updateData(array) {
+        this.arrayBuffer = array.arrayBuffer;
     }
 
     enableAttributes (gl, program) {
