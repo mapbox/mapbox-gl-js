@@ -103,7 +103,7 @@ const symbolInterfaces = {
     }
 };
 
-function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, labelminzoom, labelangle) {
+function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, labelminzoom) {
     array.emplaceBack(
         // a_pos_offset
         x,
@@ -116,7 +116,7 @@ function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, labelminzoom, labela
         ty / 4, // y coordinate of symbol on glyph atlas texture
         packUint8ToFloat(
             (labelminzoom || 0) * 10, // labelminzoom
-            labelangle % 256 // labelangle
+            0 // unused 8 bits
         ),
         0, // unused 16 bits
 
@@ -747,17 +747,14 @@ class SymbolBucket {
                 tex = symbol.tex,
                 anchorPoint = symbol.anchorPoint;
 
-            // Encode angle of glyph
-            const glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 256);
-
             const segment = arrays.prepareSegment(4);
             const index = segment.vertexLength;
 
             const y = symbol.glyphOffsetY;
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, placementZoom);
 
             dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);
             dynamicLayoutVertexArray.emplaceBack(0, 0, 0, 0);

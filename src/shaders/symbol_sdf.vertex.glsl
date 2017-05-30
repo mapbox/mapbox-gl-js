@@ -50,7 +50,6 @@ void main() {
 
     mediump vec2 label_data = unpack_float(a_data[2]);
     mediump float a_labelminzoom = label_data[0];
-    mediump float a_labelangle = label_data[1];
 
     mediump vec2 a_zoom = unpack_float(a_data[3]);
     mediump float a_minzoom = a_zoom[0];
