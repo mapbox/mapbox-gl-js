@@ -95,10 +95,27 @@ class DEMPyramid {
             if (t.width !== o.width) throw new Error('level mismatch (width)');
             if (t.height !== o.height) throw new Error('level mismatch (height)');
 
-            const xMin = clamp(dx * t.width, -t.border, t.width + t.border);
-            const xMax = clamp(dx * t.width + t.width, -t.border, t.width + t.border);
-            const yMin = clamp(dy * t.height, -t.border, t.height + t.border);
-            const yMax = clamp(dy * t.height + t.height, -t.border, t.height + t.border);
+
+            let _xMin = dx * t.width, _xMax = dx * t.width + t.width, _yMin = dy * t.height, _yMax = dy * t.height + t.height;
+
+            switch (dx) {
+                case -1:
+                    _xMin = _xMax - 1;
+                case 1:
+                   _xMax = _xMin + 1;
+            }
+
+            switch (dy) {
+                case -1:
+                    _yMin = _yMax - 1;
+                case 1:
+                   _yMax = _yMin + 1;
+            }
+
+            const xMin = clamp(_xMin, -t.border, t.width + t.border);
+            const xMax = clamp(_xMax, -t.border, t.width + t.border);
+            const yMin = clamp(_yMin, -t.border, t.height + t.border);
+            const yMax = clamp(_yMax, -t.border, t.height + t.border);
 
             const ox = -dx * t.width;
             const oy = -dy * t.height;
