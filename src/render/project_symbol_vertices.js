@@ -4,6 +4,7 @@ const Point = require('point-geometry');
 const Buffer = require('../data/buffer');
 const createStructArrayType = require('../util/struct_array');
 const interpolate = require('../style-spec/util/interpolate');
+const assert = require('assert');
 
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
@@ -122,8 +123,6 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
             continue;
         }
 
-        const line = bucket.lineArray.get(symbol.lineIndex);
-
         const glyphsForward = [];
         const glyphsBackward = [];
 
@@ -144,8 +143,8 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
 
         let flip = false;
         if (keepUpright) {
-            const a = project(lineVertexArray.get(line.startIndex + symbol.segment), posMatrix);
-            const b = project(lineVertexArray.get(line.startIndex + symbol.segment + 1), posMatrix);
+            const a = project(lineVertexArray.get(symbol.lineStartIndex + symbol.segment), posMatrix);
+            const b = project(lineVertexArray.get(symbol.lineStartIndex + symbol.segment + 1), posMatrix);
 
             if (symbol.vertical) {
                 flip = b.y > a.y;
@@ -154,8 +153,8 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
             }
         }
 
-        processDirection(glyphsForward, 1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
-        processDirection(glyphsBackward, -1, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
+        processDirection(glyphsForward, 1, flip, symbol, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
+        processDirection(glyphsBackward, -1, flip, symbol, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale);
     }
 
     if (isText) {
@@ -177,53 +176,48 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
     }
 }
 
-function processDirection(glyphs, dir, flip, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
+function processDirection(glyphs, dir, flip, symbol, lineVertexArray, vertexPositions, labelPlaneMatrix, fontScale) {
     const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
-    if (line.length > 1) {
-        let prev = anchor;
-        let next = prev;
-        let vertexIndex = 0;
-        let previousDistance = 0;
-        let segmentDistance = 0;
-        let segmentAngle = 0;
 
-        let numVertices, vertexStartIndex;
-        let angle = 0;
+    assert(symbol.lineLength > 1);
+    let prev = anchor;
+    let next = prev;
+    let vertexIndex = 0;
+    let previousDistance = 0;
+    let segmentDistance = 0;
+    let segmentAngle = 0;
 
-        if (flip) {
-            dir *= -1;
-            angle = Math.PI;
-        }
+    let numVertices, vertexStartIndex;
+    let angle = 0;
 
-        if (dir === 1) {
-            numVertices = line.length - symbol.segment - 1;
-            vertexStartIndex = line.startIndex + symbol.segment + 1;
-        } else {
-            numVertices = symbol.segment + 1;
-            vertexStartIndex = line.startIndex + symbol.segment;
-            angle += Math.PI;
-        }
+    if (flip) {
+        dir *= -1;
+        angle = Math.PI;
+    }
 
-        for (const glyph of glyphs) {
-            const offsetX = Math.abs(glyph.offsetX) * fontScale;
-            while (offsetX >= segmentDistance + previousDistance && Math.abs(vertexIndex) < numVertices) {
-                previousDistance += segmentDistance;
-                prev = next;
-                const next_ = lineVertexArray.get(vertexStartIndex + vertexIndex);
-                vertexIndex += dir;
-                next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
-                segmentAngle = angle + Math.atan2(next.y - prev.y, next.x - prev.x);
-                segmentDistance = prev.dist(next);
-            }
-
-            const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
-            addGlyph(p, segmentAngle, vertexPositions);
-        }
+    if (dir === 1) {
+        numVertices = symbol.lineLength - symbol.segment - 1;
+        vertexStartIndex = symbol.lineStartIndex + symbol.segment + 1;
     } else {
-        const angle = 0;
-        for (const glyph of glyphs) {
-            addGlyph(anchor, angle, vertexPositions);
+        numVertices = symbol.segment + 1;
+        vertexStartIndex = symbol.lineStartIndex + symbol.segment;
+        angle += Math.PI;
+    }
+
+    for (const glyph of glyphs) {
+        const offsetX = Math.abs(glyph.offsetX) * fontScale;
+        while (offsetX >= segmentDistance + previousDistance && Math.abs(vertexIndex) < numVertices) {
+            previousDistance += segmentDistance;
+            prev = next;
+            const next_ = lineVertexArray.get(vertexStartIndex + vertexIndex);
+            vertexIndex += dir;
+            next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
+            segmentAngle = angle + Math.atan2(next.y - prev.y, next.x - prev.x);
+            segmentDistance = prev.dist(next);
         }
+
+        const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
+        addGlyph(p, segmentAngle, vertexPositions);
     }
 }
 

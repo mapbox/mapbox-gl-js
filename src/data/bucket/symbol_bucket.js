@@ -35,7 +35,8 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Int16', name: 'anchorY' },
         { type: 'Uint16', name: 'glyphStartIndex' },
         { type: 'Uint16', name: 'numGlyphs' },
-        { type: 'Uint32', name: 'lineIndex' },
+        { type: 'Uint32', name: 'lineStartIndex' },
+        { type: 'Uint32', name: 'lineLength' },
         { type: 'Uint16', name: 'segment' },
         { type: 'Uint32', name: 'sizeStopStart' },
         { type: 'Float32', name: 'placementZoom' },
@@ -46,13 +47,6 @@ const PlacedSymbolArray = createStructArrayType({
 const GlyphOffsetArray = createStructArrayType({
     members: [
         { type: 'Float32', name: 'offsetX' }
-    ]
-});
-
-const LineArray = createStructArrayType({
-    members: [
-        { type: 'Uint32', name: 'startIndex' },
-        { type: 'Uint32', name: 'length' }
     ]
 });
 
@@ -224,7 +218,6 @@ class SymbolBucket {
             this.placedGlyphArray = new PlacedSymbolArray(options.placedGlyphArray);
             this.placedIconArray = new PlacedSymbolArray(options.placedIconArray);
             this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
-            this.lineArray = new LineArray(options.lineArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
             this.zoomStopArray = new ZoomStopArray(options.zoomStopArray);
 
@@ -337,7 +330,6 @@ class SymbolBucket {
             placedGlyphArray: this.placedGlyphArray.serialize(transferables),
             placedIconArray: this.placedIconArray.serialize(transferables),
             glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
-            lineArray: this.lineArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
             zoomStopArray: this.zoomStopArray.serialize(transferables),
             arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
@@ -578,7 +570,6 @@ class SymbolBucket {
         this.placedGlyphArray = new PlacedSymbolArray();
         this.placedIconArray = new PlacedSymbolArray();
         this.glyphOffsetArray = new GlyphOffsetArray;
-        this.lineArray = new LineArray();
         this.lineVertexArray = new LineVertexArray();
         this.zoomStopArray = new ZoomStopArray();
         const lineIndexMap = {};
@@ -655,12 +646,11 @@ class SymbolBucket {
             // Insert final placement into collision tree and add glyphs/icons to buffers
             if (!hasText && !hasIcon) continue;
             const line = symbolInstance.line;
-            const start = this.lineVertexArray.length;
+            const lineStartIndex = this.lineVertexArray.length;
             for (let i = 0; i < line.length; i++) {
                 this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
             }
-            const length = this.lineVertexArray.length - start;
-            const lineArrayIndex = this.lineArray.emplaceBack(start, length);
+            const lineLength = this.lineVertexArray.length - lineStartIndex;
 
 
             if (hasText) {
@@ -683,8 +673,8 @@ class SymbolBucket {
                         symbolInstance.featureProperties,
                         symbolInstance.writingModes,
                         symbolInstance.anchor,
-                        lineArrayIndex,
-                        textAlongLine,
+                        lineStartIndex,
+                        lineLength,
                         this.placedGlyphArray);
                 }
             }
@@ -710,8 +700,8 @@ class SymbolBucket {
                         symbolInstance.featureProperties,
                         undefined,
                         symbolInstance.anchor,
-                        lineArrayIndex,
-                        iconAlongLine,
+                        lineStartIndex,
+                        lineLength,
                         this.placedIconArray
                     );
                 }
@@ -722,7 +712,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineArrayIndex, isLine, placedSymbolArray) {
+    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, anchor, lineStartIndex, lineLength, placedSymbolArray) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -795,7 +785,7 @@ class SymbolBucket {
 
         placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
-                lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0,
+                lineStartIndex, lineLength, anchor.segment, sizeVertex ? sizeVertex.start : 0,
                 placementZoom, useVerticalMode);
 
         arrays.populatePaintArrays(featureProperties);
