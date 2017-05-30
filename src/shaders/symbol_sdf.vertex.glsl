@@ -21,7 +21,7 @@ uniform mediump float u_size; // used when size is both zoom and feature constan
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
 
-// matrix is for the vertex position.
+uniform mat4 u_label_plane_matrix;
 uniform mat4 u_matrix;
 
 uniform bool u_is_text;
@@ -65,7 +65,8 @@ void main() {
     highp float angle_cos = cos(segment_angle);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
-    gl_Position = u_matrix * vec4(a_projected_pos.xy + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
+    vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
+    gl_Position = u_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
     v_gamma_scale = gl_Position.w;
 
     v_tex = a_tex / u_texsize;

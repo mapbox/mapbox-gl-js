@@ -61,7 +61,7 @@ function isVisible(symbol, posMatrix, bufferX, bufferY, painter) {
     return inPaddedViewport && painter.frameHistory.isVisible(symbol.placementZoom);
 }
 
-function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, pixelsToTileUnits, layer) {
+function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, pixelsToTileUnits, layer) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
     const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
@@ -94,16 +94,6 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
 
         const size = evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const fontScale = size / 24;
-
-        if (!alongLine) {
-            painter.pointLabelCount++;
-            const numVertices = symbol.numGlyphs * 4;
-            const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
-            for (let i = 0; i < numVertices; i++) {
-                dynamicLayoutVertexArray.emplaceBack(anchor.x, anchor.y, 0);
-            }
-            continue;
-        }
 
         const glyphsForward = [];
         const glyphsBackward = [];

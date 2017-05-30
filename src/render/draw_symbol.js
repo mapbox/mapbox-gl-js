@@ -4,6 +4,8 @@ const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const symbolVertices = require('./project_symbol_vertices');
+const mat4 = require('@mapbox/gl-matrix').mat4;
+const identityMat4 = mat4.identity(new Float32Array(16));
 
 module.exports = drawSymbols;
 
@@ -103,10 +105,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const glCoordMatrix = symbolVertices.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
-        //const a = window.performance.now();
-        symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, alongLine, s, layer);
-        //painter.projectionTime += window.performance.now() - a;
-        painter.count++;
+        if (alongLine) {
+            gl.uniformMatrix4fv(program.u_label_plane_matrix, false, identityMat4);
+            //const a = window.performance.now();
+            symbolVertices.project(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, s, layer);
+            //painter.projectionTime += window.performance.now() - a;
+        } else {
+            gl.uniformMatrix4fv(program.u_label_plane_matrix, false, symbolVertices.getPixelMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s));
+        }
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
 
