@@ -972,10 +972,9 @@ function getSizeAttributeDeclarations(layer, sizeProperty) {
     ) {
         // composite function:
         // [ text-size(lowerZoomStop, feature),
-        //   text-size(upperZoomStop, feature),
-        //   layoutSize == text-size(layoutZoomLevel, feature) ]
+        //   text-size(upperZoomStop, feature)]
         return [{
-            name: 'a_size', components: 3, type: 'Uint16'
+            name: 'a_size', components: 2, type: 'Uint16'
         }];
     }
     // constant or camera function
@@ -998,8 +997,7 @@ function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featur
         // composite function
         return [
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[0]}, featureProperties),
-            10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties),
-            10 * layer.getLayoutValue(sizeProperty, {zoom: 1 + tileZoom}, featureProperties)
+            10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties)
         ];
     }
     // camera function or constant

@@ -155,7 +155,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     const size = symbolVertices.calculateSize(sizeData, tr, layer, isText);
     if (size.uSizeT !== undefined) gl.uniform1f(program.u_size_t, size.uSizeT);
     if (size.uSize !== undefined) gl.uniform1f(program.u_size, size.uSize);
-    if (size.uLayoutSize !== undefined) gl.uniform1f(program.u_layout_size, size.uLayoutSize);
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {

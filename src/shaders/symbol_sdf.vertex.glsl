@@ -8,14 +8,12 @@ attribute vec4 a_projected_pos;
 // For source functions, we bind only one value per vertex: the value of {text,icon}-size evaluated for the current feature.
 // For composite functions:
 // [ text-size(lowerZoomStop, feature),
-//   text-size(upperZoomStop, feature),
-//   layoutSize == text-size(layoutZoomLevel, feature) ]
-attribute vec3 a_size;
+//   text-size(upperZoomStop, feature) ]
+attribute vec2 a_size;
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
 uniform mediump float u_size_t; // used to interpolate between zoom stops when size is a composite function
 uniform mediump float u_size; // used when size is both zoom and feature constant
-uniform mediump float u_layout_size; // used when size is feature constant
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -50,27 +48,14 @@ void main() {
     mediump vec2 label_data = unpack_float(a_data[2]);
     mediump float a_labelminzoom = label_data[0];
 
-    // In order to accommodate placing labels around corners in
-    // symbol-placement: line, each glyph in a label could have multiple
-    // "quad"s only one of which should be shown at a given zoom level.
-    // The min/max zoom assigned to each quad is based on the font size at
-    // the vector tile's zoom level, which might be different than at the
-    // currently rendered zoom level if text-size is zoom-dependent.
-    // Thus, we compensate for this difference by calculating an adjustment
-    // based on the scale of rendered text size relative to layout text size.
-    mediump float layoutSize;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
         v_size = mix(a_size[0], a_size[1], u_size_t) / 10.0;
-        layoutSize = a_size[2] / 10.0;
     } else if (u_is_size_zoom_constant && !u_is_size_feature_constant) {
         v_size = a_size[0] / 10.0;
-        layoutSize = v_size;
     } else if (!u_is_size_zoom_constant && u_is_size_feature_constant) {
         v_size = u_size;
-        layoutSize = u_layout_size;
     } else {
         v_size = u_size;
-        layoutSize = u_size;
     }
 
     float fontScale = u_is_text ? v_size / 24.0 : v_size;

@@ -247,7 +247,6 @@ function evaluateSizeForZoom(sizeData, tr, layer, isText) {
         }
 
         sizeUniforms.uSize = size;
-        sizeUniforms.uLayoutSize = sizeData.layoutSize;
     } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
         sizeUniforms.uSize = sizeData.layoutSize;
     }

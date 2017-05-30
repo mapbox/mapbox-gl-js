@@ -3,12 +3,11 @@ attribute vec4 a_data;
 attribute vec4 a_projected_pos;
 
 // icon-size data (see symbol_sdf.vertex.glsl for more)
-attribute vec3 a_size;
+attribute vec2 a_size;
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
 uniform mediump float u_size_t; // used to interpolate between zoom stops when size is a composite function
 uniform mediump float u_size; // used when size is both zoom and feature constant
-uniform mediump float u_layout_size; // used when size is feature constant
 
 #pragma mapbox: define lowp float opacity
 
@@ -33,27 +32,14 @@ void main() {
     mediump float a_labelminzoom = label_data[0];
 
     float size;
-    // In order to accommodate placing labels around corners in
-    // symbol-placement: line, each glyph in a label could have multiple
-    // "quad"s only one of which should be shown at a given zoom level.
-    // The min/max zoom assigned to each quad is based on the font size at
-    // the vector tile's zoom level, which might be different than at the
-    // currently rendered zoom level if text-size is zoom-dependent.
-    // Thus, we compensate for this difference by calculating an adjustment
-    // based on the scale of rendered text size relative to layout text size.
-    mediump float layoutSize;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
         size = mix(a_size[0], a_size[1], u_size_t) / 10.0;
-        layoutSize = a_size[2] / 10.0;
     } else if (u_is_size_zoom_constant && !u_is_size_feature_constant) {
         size = a_size[0] / 10.0;
-        layoutSize = size;
     } else if (!u_is_size_zoom_constant && u_is_size_feature_constant) {
         size = u_size;
-        layoutSize = u_layout_size;
     } else {
         size = u_size;
-        layoutSize = u_size;
     }
 
     float fontScale = u_is_text ? size / 24.0 : size;
