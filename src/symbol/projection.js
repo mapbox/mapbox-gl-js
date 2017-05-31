@@ -1,20 +1,18 @@
 'use strict';
 
 const Point = require('point-geometry');
-const interpolate = require('../style-spec/util/interpolate');
-const util = require('../util/util');
-const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const assert = require('assert');
+
+const symbolSize = require('./symbol_size');
 
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 
 
 module.exports = {
-    project: projectSymbolVertices,
+    updateLineLabels: updateLineLabels,
     getPixelMatrix: getPixelMatrix,
-    getGlCoordMatrix: getGlCoordMatrix,
-    calculateSize: evaluateSizeForZoom
+    getGlCoordMatrix: getGlCoordMatrix
 };
 
 function getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
@@ -61,10 +59,10 @@ function isVisible(symbol, posMatrix, bufferX, bufferY, painter) {
     return inPaddedViewport && painter.frameHistory.isVisible(symbol.placementZoom);
 }
 
-function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, pixelsToTileUnits, layer) {
+function updateLineLabels(bucket, posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, pixelsToTileUnits, layer) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
+    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
 
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = getPixelMatrix(posMatrix, pitchWithMap, rotateWithMap, painter.transform, pixelsToTileUnits);
@@ -92,7 +90,7 @@ function projectSymbolVertices(bucket, posMatrix, painter, isText, rotateWithMap
             continue;
         }
 
-        const size = evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
+        const size = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const fontScale = size / 24;
 
         const glyphsForward = [];
@@ -186,59 +184,4 @@ function addGlyph(p, angle, dynamicLayoutVertexArray) {
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-}
-
-
-function evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol) {
-    const part = partiallyEvaluatedSize;
-    if (sizeData.isFeatureConstant) {
-        return part.uSize;
-    } else {
-        if (sizeData.isZoomConstant) {
-            return symbol.lowerSize / 10;
-        } else {
-            return interpolate.number(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
-        }
-    }
-}
-
-function evaluateSizeForZoom(sizeData, tr, layer, isText) {
-    const sizeUniforms = {};
-    if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
-        // composite function
-        const t = interpolationFactor(tr.zoom,
-            sizeData.functionBase,
-            sizeData.coveringZoomRange[0],
-            sizeData.coveringZoomRange[1]
-        );
-        sizeUniforms.uSizeT = util.clamp(t, 0, 1);
-    } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
-        // camera function
-        let size;
-        if (sizeData.functionType === 'interval') {
-            size = layer.getLayoutValue(isText ? 'text-size' : 'icon-size',
-                {zoom: tr.zoom});
-        } else {
-            assert(sizeData.functionType === 'exponential');
-            // Even though we could get the exact value of the camera function
-            // at z = tr.zoom, we intentionally do not: instead, we interpolate
-            // between the camera function values at a pair of zoom stops covering
-            // [tileZoom, tileZoom + 1] in order to be consistent with this
-            // restriction on composite functions
-            const t = sizeData.functionType === 'interval' ? 0 :
-                interpolationFactor(tr.zoom,
-                    sizeData.functionBase,
-                    sizeData.coveringZoomRange[0],
-                    sizeData.coveringZoomRange[1]);
-
-            const lowerValue = sizeData.coveringStopValues[0];
-            const upperValue = sizeData.coveringStopValues[1];
-            size = lowerValue + (upperValue - lowerValue) * util.clamp(t, 0, 1);
-        }
-
-        sizeUniforms.uSize = size;
-    } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
-        sizeUniforms.uSize = sizeData.layoutSize;
-    }
-    return sizeUniforms;
 }
