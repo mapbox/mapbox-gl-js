@@ -162,9 +162,9 @@ class Painter {
 
         const rasterBoundsArray = new RasterBoundsArray();
         rasterBoundsArray.emplaceBack(0, 0, 0, 0);
-        rasterBoundsArray.emplaceBack(EXTENT, 0, 32767, 0);
-        rasterBoundsArray.emplaceBack(0, EXTENT, 0, 32767);
-        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, 32767, 32767);
+        rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
+        rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
+        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
         this.rasterBoundsBuffer = Buffer.fromStructArray(rasterBoundsArray, Buffer.BufferType.VERTEX);
         this.rasterBoundsVAO = new VertexArrayObject();
 

@@ -98,18 +98,17 @@ class CollisionTile {
             // tempCollisionBox
             collisionBoxArray.emplaceBack();
 
-            const maxInt16 = 32767;
             //left
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -EXTENT, 0, EXTENT, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
             // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -EXTENT, 0, EXTENT, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
             // top
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, -EXTENT, 0, EXTENT, 0, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
             // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -EXTENT, 0, EXTENT, 0, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
 
