@@ -1,7 +1,11 @@
 'use strict';
-const mat4 = require('gl-matrix').mat4;
+
 const EXTENT = require('../data/extent');
 const parseColor = require('./../style-spec/util/parse_color');
+const glMatrix = require('@mapbox/gl-matrix');
+const mat3 = glMatrix.mat3;
+const mat4 = glMatrix.mat4;
+const vec3 = glMatrix.vec3;
 
 module.exports = drawTerrain;
 
@@ -70,9 +74,7 @@ class TerrainTexture {
         const gl = this.painter.gl;
         const program = this.painter.useProgram('terrain');
         const posMatrix = this.painter.transform.calculatePosMatrix(tile.coord);
-        const light = this.painter.style.light._declarations;
-        const azimuth = -light.position.value[1] * DEG2RAD;
-        const zenith = light.position.value[2] * DEG2RAD;
+        setLight(program, this.painter);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -82,10 +84,7 @@ class TerrainTexture {
         gl.uniform1i(program.u_mode, 7);
         gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
-        gl.uniform1f(program.u_azimuth, azimuth);
-        gl.uniform1f(program.u_zenith, zenith);
         gl.uniform1f(program.u_mipmap, 0);
-        gl.uniform1f(program.u_intensity, light.intensity.value);
         gl.uniform4fv(program.u_shadow, parseColor(layer.paint["terrain-shadow-color"]));
         gl.uniform4fv(program.u_highlight, parseColor(layer.paint["terrain-highlight-color"]));
         gl.uniform4fv(program.u_accent, parseColor(layer.paint["terrain-accent-color"]));
@@ -102,6 +101,32 @@ class TerrainTexture {
         this.painter.bindDefaultFramebuffer();
         gl.viewport(0, 0, this.painter.width, this.painter.height);
     }
+}
+
+function setLight(program, painter) {
+    const gl = painter.gl;
+    const light = painter.style.light;
+
+    const _lp = light.calculated.position,
+        lightPos = [_lp.x, _lp.y, _lp.z];
+    // console.log(toSpherical(lightPos));
+    const lightMat = mat3.create();
+    if (light.calculated.anchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
+    vec3.transformMat3(lightPos, lightPos, lightMat);
+    // console.log(toSpherical(lightPos));
+    // TODO figure out why after > 140 degrees of rotation of the map, the light gets flipped.
+
+    gl.uniform3fv(program.u_lightpos, lightPos);
+    gl.uniform1f(program.u_lightintensity, light.calculated.intensity);
+}
+
+// TODO delete
+function toSpherical(lightpos){
+    const r = Math.sqrt(Math.pow(lightpos[0],2.0) + Math.pow(lightpos[1], 2.0)+ Math.pow(lightpos[2], 2.0));
+    const polar = Math.acos(lightpos[2]/r);
+    const azimuth =  Math.atan(lightpos[1]/lightpos[0]);
+
+    return [azimuth * 180/Math.PI, polar * 180/Math.PI, r]
 }
 
 function prepareTerrain(painter, tile, layer) {

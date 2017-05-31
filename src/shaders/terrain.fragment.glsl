@@ -12,10 +12,9 @@ varying vec2 v_pos;
 uniform int u_mode;
 uniform vec2 u_dimension;
 uniform float u_zoom;
-uniform float u_azimuth;
-uniform float u_zenith;
 uniform float u_mipmap;
-uniform float u_intensity;
+uniform float u_lightintensity;
+uniform vec3 u_lightpos;
 
 uniform vec4 u_shadow;
 uniform vec4 u_highlight;
@@ -41,7 +40,10 @@ void main() {
     float slope = atan(1.25 * length(deriv));
     float aspect = deriv.x != 0.0 ? atan(deriv.y, -deriv.x) : PI / 2.0 * (deriv.y > 0.0 ? 1.0 : -1.0);
     float openness = pixel.b;
-
+    float r = sqrt(pow(u_lightpos.x,2.0) + pow(u_lightpos.y, 2.0)+ pow(u_lightpos.z, 2.0));
+    float polar = acos(u_lightpos.z/r);
+    // TODO figure out why this is funky
+    float azimuth =  atan(u_lightpos.y/u_lightpos.x) - radians(180.0);
 
     if (u_mode == mode_raw) {
         gl_FragColor = texture2D(u_image, v_pos, u_mipmap);
@@ -55,19 +57,21 @@ void main() {
     } else if (u_mode == mode_openness) {
         gl_FragColor = vec4(openness, openness, openness, 1.0);
     } else if (u_mode == mode_hillshade) {
-        float hillshade = cos(u_zenith) * cos(slope) + sin(u_zenith) * sin(slope) * cos(u_azimuth - aspect);
+        float hillshade = cos(polar) * cos(slope) + sin(polar) * sin(slope) * cos(azimuth - aspect);
         gl_FragColor = vec4(hillshade, hillshade, hillshade, 1.0);
     } else if (u_mode == mode_color) {
         float accent = cos(slope);
-        vec4 accent_color = u_intensity * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
-        float shade = abs(mod((aspect + u_azimuth) / PI + 0.5, 2.0) - 1.0);
-        vec4 shade_color = mix(u_shadow, u_highlight, shade) * (slope) * sin(u_zenith);
+        vec4 accent_color = u_lightintensity * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
+        // left over of full rotations?
+
+        float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
+        vec4 shade_color = mix(u_shadow, u_highlight, shade) * (slope) * sin(polar);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
     } else if (u_mode == mode_coloropen) {
         float accent = cos((1.0 - openness) * 2.0);
-        vec4 accent_color = u_intensity * (1.0 - accent) * u_accent;
-        float shade = abs(mod((aspect + u_azimuth) / PI + 0.5, 2.0) - 1.0);
-        vec4 shade_color = u_intensity * slope * sin(u_zenith) * mix(u_shadow, u_highlight, shade);
+        vec4 accent_color = u_lightintensity * (1.0 - accent) * u_accent;
+        float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
+        vec4 shade_color = u_lightintensity * slope * sin(polar) * mix(u_shadow, u_highlight, shade);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
     } else {
         gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
