@@ -173,5 +173,21 @@ function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, feat
         quads.push(new SymbolQuad(anchorPoint, tl, tr, bl, br, rect, shaping.writingMode, xOffset, yOffset));
     }
 
+    // Quads need to be in a strict order so that the render-time projection algorithm can be more efficient.
+    quads.sort((qa, qb) => {
+        const a = qa.glyphOffsetX;
+        const b = qb.glyphOffsetX;
+        const aIsForward = a > 0;
+        const bIsForward = b > 0;
+
+        if (aIsForward === bIsForward) {
+            return Math.abs(a) - Math.abs(b);
+        } else if (aIsForward) {
+            return -1;
+        } else {
+            return 1;
+        }
+    });
+
     return quads;
 }

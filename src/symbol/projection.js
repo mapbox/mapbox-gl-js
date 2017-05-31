@@ -129,11 +129,13 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         bucket.buffers.icon.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
 
+    const lineVertexArray = bucket.lineVertexArray;
     const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
 
+        // Don't bother calculating the correct point for invisible labels. Move them offscreen.
         if (!isVisible(symbol, posMatrix, clippingBuffer, painter)) {
             for (let i = symbol.numGlyphs; i > 0; i--) {
                 addGlyph(offscreenPoint, 0, dynamicLayoutVertexArray);
@@ -141,7 +143,7 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
             continue;
         }
 
-        const lineVertexArray = bucket.lineVertexArray;
+        // Determine whether the label needs to be flipped to keep it upright.
         let flip = false;
         if (keepUpright) {
             const a = project(lineVertexArray.get(symbol.lineStartIndex + symbol.segment), posMatrix);
@@ -149,8 +151,8 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
             flip = symbol.vertical ? b.y > a.y : b.x < a.x;
         }
 
-        const size = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
-        const fontScale = size / 24;
+        const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
+        const fontScale = fontSize / 24;
 
         const glyphsForward = [];
         const glyphsBackward = [];
@@ -176,10 +178,9 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
 }
 
 function processDirection(glyphs, dir, flip, symbol, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale) {
-    const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
-
     assert(symbol.lineLength > 1);
-    let prev = anchor;
+
+    let prev = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
     let next = prev;
     let vertexIndex = 0;
     let previousDistance = 0;
@@ -190,6 +191,8 @@ function processDirection(glyphs, dir, flip, symbol, lineVertexArray, dynamicLay
     let angle = 0;
 
     if (flip) {
+        // The label needs to be flipped to keep text upright.
+        // Iterate in the reverse direction.
         dir *= -1;
         angle = Math.PI;
     }
@@ -203,19 +206,25 @@ function processDirection(glyphs, dir, flip, symbol, lineVertexArray, dynamicLay
         angle += Math.PI;
     }
 
+    // For each glyph, find the point `offsetX` distance from the anchor.
     for (const glyph of glyphs) {
         const offsetX = Math.abs(glyph.offsetX) * fontScale;
+
+        // If the current segment doesn't have enough remaining space, iterate forward along the line.
+        // Since all the glyphs are sorted by their distance from the anchor you never need to iterate backwards.
+        // This way line vertices are projected at most once.
         while (offsetX >= segmentDistance + previousDistance && Math.abs(vertexIndex) < numVertices) {
             previousDistance += segmentDistance;
             prev = next;
-            const next_ = lineVertexArray.get(vertexStartIndex + vertexIndex);
+            next = project(lineVertexArray.get(vertexStartIndex + vertexIndex), labelPlaneMatrix);
             vertexIndex += dir;
-            next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
             segmentAngle = angle + Math.atan2(next.y - prev.y, next.x - prev.x);
             segmentDistance = prev.dist(next);
         }
 
-        const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
+        // The point is on the current segment. Interpolate to find it.
+        const segmentInterpolationT = (offsetX - previousDistance) / segmentDistance;
+        const p = next.sub(prev)._mult(segmentInterpolationT)._add(prev);
         addGlyph(p, segmentAngle, dynamicLayoutVertexArray);
     }
 }

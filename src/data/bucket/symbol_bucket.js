@@ -563,9 +563,8 @@ class SymbolBucket {
 
         this.placedGlyphArray = new PlacedSymbolArray();
         this.placedIconArray = new PlacedSymbolArray();
-        this.glyphOffsetArray = new GlyphOffsetArray;
+        this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new LineVertexArray();
-        const lineIndexMap = {};
 
         const layer = this.layers[0];
         const layout = layer.layout;
@@ -712,21 +711,6 @@ class SymbolBucket {
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
-
-        quads.sort(function(sa, sb) {
-            const a = sa.glyphOffsetX;
-            const b = sb.glyphOffsetX;
-            const aIsForward = a > 0;
-            const bIsForward = b > 0;
-
-            if (aIsForward === bIsForward) {
-                return Math.abs(a) - Math.abs(b);
-            } else if (aIsForward) {
-                return -1;
-            } else {
-                return 1;
-            }
-        });
 
         const labelAngle = Math.abs((anchor.angle + placementAngle) % Math.PI);
         const inVerticalRange = labelAngle > Math.PI / 4 && labelAngle <= Math.PI * 3 / 4;
