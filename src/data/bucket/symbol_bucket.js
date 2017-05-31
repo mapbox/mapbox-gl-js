@@ -122,8 +122,7 @@ function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, labelminzoom) {
 
         // a_size
         sizeVertex ? sizeVertex[0] : undefined,
-        sizeVertex ? sizeVertex[1] : undefined,
-        sizeVertex ? sizeVertex[2] : undefined
+        sizeVertex ? sizeVertex[1] : undefined
     );
 }
 
@@ -770,20 +769,10 @@ class SymbolBucket {
             this.glyphOffsetArray.emplaceBack(symbol.glyphOffsetX);
         }
 
-        let lowerSize, upperSize;
-        if (sizeVertex) {
-            if (sizeVertex.length === 3) {
-                lowerSize = sizeVertex[0];
-                upperSize = sizeVertex[1];
-            } else if (sizeVertex.length === 1) {
-                lowerSize = upperSize = sizeVertex[0];
-            }
-        }
-
         placedSymbolArray.emplaceBack(anchor.x, anchor.y,
                 glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
                 lineStartIndex, lineLength, anchor.segment,
-                lowerSize, upperSize,
+                sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
                 placementZoom, useVerticalMode);
 
         arrays.populatePaintArrays(featureProperties);

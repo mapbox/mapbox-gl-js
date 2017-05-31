@@ -66,7 +66,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const gl = painter.gl;
 
     const rotateWithMap = rotationAlignment === 'map';
-    const pitchWithMap = pitchAlignment === 'map';// && false;
+    const pitchWithMap = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout['symbol-placement'] === 'line';
 
     const depthOn = pitchWithMap;
