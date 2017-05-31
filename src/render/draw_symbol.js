@@ -105,7 +105,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
-        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
+        gl.uniformMatrix4fv(program.u_gl_coord_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         if (alongLine) {
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, identityMat4);
