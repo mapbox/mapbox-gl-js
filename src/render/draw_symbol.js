@@ -103,16 +103,17 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         painter.enableTileClippingMask(coord);
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         if (alongLine) {
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, identityMat4);
             //const a = window.performance.now();
-            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, rotateWithMap, pitchWithMap, keepUpright, s, layer);
+            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, keepUpright, s, layer);
             //painter.projectionTime += window.performance.now() - a;
         } else {
-            gl.uniformMatrix4fv(program.u_label_plane_matrix, false, symbolProjection.getPixelMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s));
+            gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
