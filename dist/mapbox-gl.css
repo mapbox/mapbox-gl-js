@@ -361,27 +361,27 @@ a.mapboxgl-ctrl-logo {
     position: relative;
     z-index: -1;
 
-    -webkit-animation: pulse 2s;
-    -moz-animation: pulse 2s;
-    -ms-animation: pulse 2s;
-    animation: pulse 2s;
+    -webkit-animation: mapboxgl-user-location-dot-pulse 2s;
+    -moz-animation: mapboxgl-user-location-dot-pulse 2s;
+    -ms-animation: mapboxgl-user-location-dot-pulse 2s;
+    animation: mapboxgl-user-location-dot-pulse 2s;
 
     -webkit-animation-iteration-count: infinite;
     -moz-animation-iteration-count: infinite;
     -ms-animation-iteration-count: infinite;
     animation-iteration-count: infinite;
 }
-@-webkit-keyframes pulse {
+@-webkit-keyframes mapboxgl-user-location-dot-pulse {
     0%   {   -webkit-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8); }
     70%  {   -webkit-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0); }
     242% {   -webkit-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0); }
 }
-@-ms-keyframes pulse {
+@-ms-keyframes mapboxgl-user-location-dot-pulse {
     0%   {   -ms-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8); }
     70%  {   -ms-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0); }
     242% {   -ms-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0); }
 }
-@keyframes pulse {
+@keyframes mapboxgl-user-location-dot-pulse {
     0% {
         -moz-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8);
              box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.4);
