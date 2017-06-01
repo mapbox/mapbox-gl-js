@@ -28,7 +28,7 @@
     "line": 75
   },
   {
-    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
+    "message": "layers[6].paint.line-dasharray.stops[0][0]: number expected, string found",
     "line": 89
   },
   {
