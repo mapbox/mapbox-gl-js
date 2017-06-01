@@ -55,7 +55,10 @@ function checkGeolocationSupport(callback) {
  *
  * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
  *
- * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the users's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so the user's location dot still updates but the camera doesn't.
+ * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the GeolocateControl has three states:
+ * * active - the map's camera automatically updates as the user's location changes, keeping the location dot in the center.
+ * * passive - the user's location dot automatically updates, but the map's camera does not.
+ * * disabled
  *
  * @implements {IControl}
  * @param {Object} [options]
