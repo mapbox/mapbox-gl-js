@@ -211,7 +211,7 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            let zoomBase = attribute.name === 'a_floorwidth' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const zoomBase = attribute.name === 'a_floorwidth' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             const value = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
 
             for (let i = start; i < length; i++) {
@@ -246,7 +246,7 @@ class ProgramConfiguration {
             }
         }
         for (const uniform of this.interpolationUniforms) {
-            let zoomBase = uniform.name === 'u_floorwidth_t' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const zoomBase = uniform.name === 'u_floorwidth_t' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             // stopInterp indicates which stops need to be interpolated.
             // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
             const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
