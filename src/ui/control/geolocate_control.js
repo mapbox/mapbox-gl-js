@@ -155,10 +155,6 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
         }
 
-        if (this._watchState === 'ACTIVE_LOCK') {
-            this.fire('trackuserlocationstart');
-        }
-
         this.fire('geolocate', position);
         this._finish();
     }
@@ -292,6 +288,8 @@ class GeolocateControl extends Evented {
             case 'OFF':
                 // turn on the Geolocate Control
                 this._watchState = 'WAITING_ACTIVE';
+
+                this.fire('trackuserlocationstart');
                 break;
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -304,12 +302,16 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
+
+                this.fire('trackuserlocationend');
                 break;
             case 'BACKGROUND':
                 this._watchState = 'ACTIVE_LOCK';
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 // set camera to last known location
                 if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
+
+                this.fire('trackuserlocationstart');
                 break;
             default:
                 assert(false, `Unexpected watchState ${this._watchState}`);
@@ -353,10 +355,6 @@ class GeolocateControl extends Evented {
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, this.options.positionOptions);
-            }
-
-            if (this._watchState === 'ACTIVE_LOCK') {
-                this.fire('trackuserlocationstart');
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
