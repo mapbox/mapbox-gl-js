@@ -138,7 +138,6 @@ class GeolocateControl extends Evented {
             default:
                 assert(false, `Unexpected watchState ${this._watchState}`);
             }
-            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
         }
 
         // if showUserLocation and the watch state isn't off then update the marker location
