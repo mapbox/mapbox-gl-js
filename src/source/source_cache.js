@@ -189,6 +189,7 @@ class SourceCache extends Evented {
         }
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
+
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this._source.type === 'raster-terrain') {
@@ -209,9 +210,8 @@ class SourceCache extends Evented {
      * @private
      */
     _backfillDEM(tile) {
-        const neighboringTiles = getNeighboringTiles(tile.coord);
         for (const key in this._tiles) {
-            if (this._tiles[key].state === "loaded" && neighboringTiles.includes(key)) {
+            if (this._tiles[key].state === "loaded" && tile.neighboringTiles[key]) {
                 const borderTile = this._tiles[key];
                 fillBorder(tile, borderTile);
                 fillBorder(borderTile, tile);
@@ -223,48 +223,27 @@ class SourceCache extends Evented {
             let dx = borderTile.coord.x - tile.coord.x;
             const dy = borderTile.coord.y - tile.coord.y;
             const dim = Math.pow(2, tile.coord.z);
-            if (dx === 0 && dy === 0) return;
+            if (dx === 0 && dy === 0) {
+                tile.neighboringTiles[borderTile.coord.id].backfilled = true;
+                return;
+            }
 
             if (Math.abs(dy) > 1) {
                 return;
             }
             if (Math.abs(dx) > 1) {
                 // Adjust the delta coordinate for world wraparound.
-                if (Math.abs(dx + dim) === 1) { dx += dim; }                else if (Math.abs(dx - dim) === 1) { dx -= dim; }
+                if (Math.abs(dx + dim) === 1) {
+                    dx += dim;
+                } else if (Math.abs(dx - dim) === 1) {
+                    dx -= dim;
+                }
             }
             if (!borderTile.dem || !tile.dem) return;
             tile.dem.backfillBorders(borderTile.dem, dx, dy);
+            tile.neighboringTiles[borderTile.coord.id].backfilled = true;
         }
 
-        function getNeighboringTiles(tilecoord) {
-            const {z, x, y, w} = tilecoord;
-            const dim = Math.pow(2, z);
-
-            const px = (x - 1 + dim) % dim;
-            const pxw = x === 0 ? w - 1 : w;
-            const nx = (x + 1 + dim) % dim;
-            const nxw = x + 1 === dim ? w + 1 : w;
-
-            const neighboringTiles = [
-                { z: z, x: x, y: y, w: w },
-                { z: z, x: px, y: y, w: pxw },
-                { z: z, x: nx, y: y, w: nxw  }
-            ];
-            // Add upper neighboringTiles
-            if (y > 0) {
-                neighboringTiles.push({ z: z, x: px, y: y - 1, w: pxw  });
-                neighboringTiles.push({ z: z, x: x, y: y - 1, w: w  });
-                neighboringTiles.push({ z: z, x: nx, y: y - 1, w: nxw  });
-            }
-            // Add lower neighboringTiles
-            if (y + 1 < dim) {
-                neighboringTiles.push({ z: z, x: px, y: y + 1, w: pxw  });
-                neighboringTiles.push({ z: z, x: x, y: y + 1, w: w  });
-                neighboringTiles.push({ z: z, x: nx, y: y + 1, w: nxw  });
-            }
-            const neighboringCoords = neighboringTiles.map((t) => `${(new TileCoord(t.z, t.x, t.y, t.w)).id}`);
-            return neighboringCoords;
-        }
         this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
     }
     /**

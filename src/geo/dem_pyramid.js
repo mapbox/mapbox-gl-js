@@ -99,17 +99,21 @@ class DEMPyramid {
             let _xMin = dx * t.width, _xMax = dx * t.width + t.width, _yMin = dy * t.height, _yMax = dy * t.height + t.height;
 
             switch (dx) {
-                case -1:
-                    _xMin = _xMax - 1;
-                case 1:
-                   _xMax = _xMin + 1;
+            case -1:
+                _xMin = _xMax - 1;
+                break;
+            case 1:
+                _xMax = _xMin + 1;
+                break;
             }
 
             switch (dy) {
-                case -1:
-                    _yMin = _yMax - 1;
-                case 1:
-                   _yMax = _yMin + 1;
+            case -1:
+                _yMin = _yMax - 1;
+                break;
+            case 1:
+                _yMax = _yMin + 1;
+                break;
             }
 
             const xMin = clamp(_xMin, -t.border, t.width + t.border);

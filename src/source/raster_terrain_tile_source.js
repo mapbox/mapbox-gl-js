@@ -81,7 +81,6 @@ class RasterTerrainTileSource extends Evented {
 
         tile.request = ajax.getImage(url, imageLoaded.bind(this));
         tile.neighboringTiles = this._getNeighboringTiles(tile.coord.id);
-
         function imageLoaded(err, img) {
             delete tile.request;
 
@@ -167,7 +166,11 @@ class RasterTerrainTileSource extends Evented {
             neighboringTiles.push({ z: z, x: x, y: y + 1, w: w  });
             neighboringTiles.push({ z: z, x: nx, y: y + 1, w: nxw  });
         }
-        const neighboringCoords = neighboringTiles.map((t) => new TileCoord(t.z, t.x, t.y, t.w));
+        const neighboringCoords = {};
+        neighboringTiles.forEach((t) => {
+            const c = new TileCoord(t.z, t.x, t.y, t.w);
+            neighboringCoords[c.id] = {backfilled: false};
+        });
         return neighboringCoords;
     }
 

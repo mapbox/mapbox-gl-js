@@ -37,7 +37,7 @@ var raster =   {
         {
             "id": "background", "type": "background",
             "paint": {
-                "background-color": "#f4f1c4"
+                "background-color": "#fff"
             }
         },
         {
@@ -73,25 +73,25 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12,
     center: [-112.9487, 36.2628],
-    style: 'mapbox://styles/mollymerp/cj3e8wxmj00042so5xtkxx66y',
+    style: raster, //'mapbox://styles/mollymerp/cj3e8wxmj00042so5xtkxx66y',
     hash: true
 });
 
 map.on('load', ()=> {
     map.setLight({position: [1.15, 225, 30]});
-    map.addSource('rasterTerrain',
-        {
-            "type": "raster-terrain",
-            "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
-        }).addLayer({
-        "id": "terrain",
-        "source": "rasterTerrain",
-        "type": "terrain",
-        "paint":{
-            // "terrain-shadow-color": "#c2c29d",
-            // "terrain-highlight-color": "#EAE9D3"
-        }
-    })
+    // map.addSource('rasterTerrain',
+        // {
+        //     "type": "raster-terrain",
+        //     "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
+        // }).addLayer({
+        // "id": "terrain",
+        // "source": "rasterTerrain",
+        // "type": "terrain",
+        // "paint":{
+        //     // "terrain-shadow-color": "#c2c29d",
+        //     // "terrain-highlight-color": "#EAE9D3"
+        // }
+    // })
 });
 
 </script>
