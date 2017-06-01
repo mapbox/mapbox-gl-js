@@ -159,6 +159,13 @@ class StructArray {
     }
 
     /**
+     * Resets the the length of the array to 0 without de-allocating capcacity.
+     */
+    clear() {
+        this.length = 0;
+    }
+
+    /**
      * Resize the array.
      * If `n` is greater than the current length then additional elements with undefined values are added.
      * If `n` is less than the current length then the array will be reduced to the first `n` elements.
@@ -294,6 +301,9 @@ function createStructArrayType(options: {|
     for (const member of members) {
         for (let c = 0; c < member.components; c++) {
             const name = member.name + (member.components === 1 ? '' : c);
+            if (name in StructType.prototype) {
+                throw new Error(`${name} is a reserved name and cannot be used as a member name.`);
+            }
             Object.defineProperty(StructType.prototype, name, {
                 get: createGetter(member, c),
                 set: createSetter(member, c)

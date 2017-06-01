@@ -21,6 +21,7 @@ const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const createStructArrayType = require('../../util/struct_array');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -28,17 +29,51 @@ const WritingMode = Shaping.WritingMode;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
 
+const PlacedSymbolArray = createStructArrayType({
+    members: [
+        { type: 'Int16', name: 'anchorX' },
+        { type: 'Int16', name: 'anchorY' },
+        { type: 'Uint16', name: 'glyphStartIndex' },
+        { type: 'Uint16', name: 'numGlyphs' },
+        { type: 'Uint32', name: 'lineStartIndex' },
+        { type: 'Uint32', name: 'lineLength' },
+        { type: 'Uint16', name: 'segment' },
+        { type: 'Uint16', name: 'lowerSize' },
+        { type: 'Uint16', name: 'upperSize' },
+        { type: 'Float32', name: 'lineOffsetX' },
+        { type: 'Float32', name: 'lineOffsetY' },
+        { type: 'Float32', name: 'placementZoom' },
+        { type: 'Uint8', name: 'vertical' }
+    ]
+});
+
+const GlyphOffsetArray = createStructArrayType({
+    members: [
+        { type: 'Float32', name: 'offsetX' }
+    ]
+});
+
+const LineVertexArray = createStructArrayType({
+    members: [
+        { type: 'Int16', name: 'x' },
+        { type: 'Int16', name: 'y' }
+    ]});
+
 const elementArrayType = createElementArrayType();
 
 const layoutAttributes = [
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
-    {name: 'a_label_pos',   components: 2, type: 'Int16'},
     {name: 'a_data',        components: 4, type: 'Uint16'}
+];
+
+const dynamicLayoutAttributes = [
+    { name: 'a_projected_pos', components: 3, type: 'Float32' }
 ];
 
 const symbolInterfaces = {
     glyph: {
         layoutAttributes: layoutAttributes,
+        dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
@@ -50,6 +85,7 @@ const symbolInterfaces = {
     },
     icon: {
         layoutAttributes: layoutAttributes,
+        dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
@@ -70,34 +106,26 @@ const symbolInterfaces = {
     }
 };
 
-function addVertex(array, x, y, ox, oy, labelX, labelY, tx, ty, sizeVertex, minzoom, maxzoom, labelminzoom, labelangle) {
+function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, labelminzoom) {
     array.emplaceBack(
         // a_pos_offset
-        x,
-        y,
+        anchorX,
+        anchorY,
         Math.round(ox * 64),
         Math.round(oy * 64),
-
-        // a_label_pos
-        labelX,
-        labelY,
 
         // a_data
         tx, // x coordinate of symbol on glyph atlas texture
         ty, // y coordinate of symbol on glyph atlas texture
         packUint8ToFloat(
             (labelminzoom || 0) * 10, // labelminzoom
-            labelangle % 256 // labelangle
+            0 // unused 8 bits
         ),
-        packUint8ToFloat(
-            (minzoom || 0) * 10, // minzoom
-            Math.min(maxzoom || 25, 25) * 10 // maxzoom
-        ),
+        0, // unused 16 bits
 
         // a_size
         sizeVertex ? sizeVertex[0] : undefined,
-        sizeVertex ? sizeVertex[1] : undefined,
-        sizeVertex ? sizeVertex[2] : undefined
+        sizeVertex ? sizeVertex[1] : undefined
     );
 }
 
@@ -188,6 +216,12 @@ class SymbolBucket {
             }
             this.textSizeData = options.textSizeData;
             this.iconSizeData = options.iconSizeData;
+
+            this.placedGlyphArray = new PlacedSymbolArray(options.placedGlyphArray);
+            this.placedIconArray = new PlacedSymbolArray(options.placedIconArray);
+            this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
+            this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
+
         } else {
             this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
             this.iconSizeData = getSizeData(this.zoom, layer, 'icon-size');
@@ -294,6 +328,10 @@ class SymbolBucket {
             textSizeData: this.textSizeData,
             iconSizeData: this.iconSizeData,
             fontstack: this.fontstack,
+            placedGlyphArray: this.placedGlyphArray.serialize(transferables),
+            placedIconArray: this.placedIconArray.serialize(transferables),
+            glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
+            lineVertexArray: this.lineVertexArray.serialize(transferables),
             arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
         };
     }
@@ -416,6 +454,9 @@ class SymbolBucket {
         const layoutTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1}, feature.properties);
         const layoutIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1}, feature.properties);
 
+        const textOffset = this.layers[0].getLayoutValue('text-offset', {zoom: this.zoom }, feature.properties);
+        const iconOffset = this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom }, feature.properties);
+
         // To reduce the number of labels that jump around when zooming we need
         // to use a text-size value that is the same for all zoom levels.
         // This calculates text-size at a high zoom level so that all tiles can
@@ -460,8 +501,8 @@ class SymbolBucket {
             const addToBuffers = inside || mayOverlap;
             this.addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, this.layers[0],
                 addToBuffers, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
-                textBoxScale, textPadding, textAlongLine,
-                iconBoxScale, iconPadding, iconAlongLine,
+                textBoxScale, textPadding, textAlongLine, textOffset,
+                iconBoxScale, iconPadding, iconAlongLine, iconOffset,
                 {zoom: this.zoom}, feature.properties);
         };
 
@@ -528,6 +569,11 @@ class SymbolBucket {
         // create the bufers used for rendering.
 
         this.createArrays();
+
+        this.placedGlyphArray = new PlacedSymbolArray();
+        this.placedIconArray = new PlacedSymbolArray();
+        this.glyphOffsetArray = new GlyphOffsetArray();
+        this.lineVertexArray = new LineVertexArray();
 
         const layer = this.layers[0];
         const layout = layer.layout;
@@ -603,6 +649,14 @@ class SymbolBucket {
 
 
             // Insert final placement into collision tree and add glyphs/icons to buffers
+            if (!hasText && !hasIcon) continue;
+            const line = symbolInstance.line;
+            const lineStartIndex = this.lineVertexArray.length;
+            for (let i = 0; i < line.length; i++) {
+                this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
+            }
+            const lineLength = this.lineVertexArray.length - lineStartIndex;
+
 
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
@@ -618,11 +672,15 @@ class SymbolBucket {
                         glyphScale,
                         textSizeData,
                         layout['text-keep-upright'],
+                        symbolInstance.textOffset,
                         textAlongLine,
                         collisionTile.angle,
                         symbolInstance.featureProperties,
                         symbolInstance.writingModes,
-                        symbolInstance.anchor);
+                        symbolInstance.anchor,
+                        lineStartIndex,
+                        lineLength,
+                        this.placedGlyphArray);
                 }
             }
 
@@ -641,11 +699,15 @@ class SymbolBucket {
                         iconScale,
                         iconSizeData,
                         layout['icon-keep-upright'],
+                        symbolInstance.iconOffset,
                         iconAlongLine,
                         collisionTile.angle,
                         symbolInstance.featureProperties,
                         null,
-                        symbolInstance.anchor
+                        symbolInstance.anchor,
+                        lineStartIndex,
+                        lineLength,
+                        this.placedIconArray
                     );
                 }
             }
@@ -655,54 +717,62 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, labelAnchor) {
+    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, lineOffset, alongLine, placementAngle, featureProperties, writingModes, labelAnchor, lineStartIndex, lineLength, placedSymbolArray) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
+        const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
+        const glyphOffsetArrayStart = this.glyphOffsetArray.length;
+
+        const labelAngle = Math.abs((labelAnchor.angle + placementAngle) % Math.PI);
+        const inVerticalRange = labelAngle > Math.PI / 4 && labelAngle <= Math.PI * 3 / 4;
+        const useVerticalMode = Boolean(writingModes & WritingMode.vertical) && inVerticalRange;
+
         for (const symbol of quads) {
-            // drop incorrectly oriented glyphs
-            const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
-            if (writingModes & WritingMode.vertical) {
-                if (alongLine && symbol.writingMode === WritingMode.vertical) {
-                    if (keepUpright && alongLine && a <= (Math.PI * 5 / 4) || a > (Math.PI * 7 / 4)) continue;
-                } else if (keepUpright && alongLine && a <= (Math.PI * 3 / 4) || a > (Math.PI * 5 / 4)) continue;
-            } else if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+
+            if (alongLine && keepUpright) {
+                // drop incorrectly oriented glyphs
+                if ((symbol.writingMode === WritingMode.vertical) !== useVerticalMode) continue;
+            }
 
             const tl = symbol.tl,
                 tr = symbol.tr,
                 bl = symbol.bl,
                 br = symbol.br,
-                tex = symbol.tex,
-                anchorPoint = symbol.anchorPoint;
-
-            let minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom);
-            const maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
-
-            if (maxZoom <= minZoom) continue;
-
-            // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
-            if (minZoom === placementZoom) minZoom = 0;
-
-            // Encode angle of glyph
-            const glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 256);
+                tex = symbol.tex;
 
             const segment = arrays.prepareSegment(4);
             const index = segment.vertexLength;
 
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, labelAnchor.x, labelAnchor.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, labelAnchor.x, labelAnchor.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, labelAnchor.x, labelAnchor.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, labelAnchor.x, labelAnchor.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            const y = symbol.glyphOffset[1];
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, placementZoom);
+
+            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
+            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
+            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
+            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
 
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
+
+            this.glyphOffsetArray.emplaceBack(symbol.glyphOffset[0]);
         }
+
+        placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
+                glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
+                lineStartIndex, lineLength, labelAnchor.segment,
+                sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
+                lineOffset[0], lineOffset[1],
+                placementZoom, useVerticalMode);
 
         arrays.populatePaintArrays(featureProperties);
     }
@@ -777,8 +847,8 @@ class SymbolBucket {
      * @private
      */
     addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, layer, addToBuffers, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
-        textBoxScale, textPadding, textAlongLine,
-        iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
+        textBoxScale, textPadding, textAlongLine, textOffset,
+        iconBoxScale, iconPadding, iconAlongLine, iconOffset, globalProperties, featureProperties) {
 
         let textCollisionFeature, iconCollisionFeature;
         let iconQuads = [];
@@ -788,7 +858,7 @@ class SymbolBucket {
             if (!shapedTextOrientations[writingMode]) continue;
             glyphQuads = glyphQuads.concat(addToBuffers ?
                 getGlyphQuads(anchor, shapedTextOrientations[writingMode],
-                              textBoxScale, line, layer, textAlongLine,
+                              layer, textAlongLine,
                               globalProperties, featureProperties) :
                 []);
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
@@ -799,7 +869,7 @@ class SymbolBucket {
 
         if (shapedIcon) {
             iconQuads = addToBuffers ?
-                getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer,
+                getIconQuads(anchor, shapedIcon, layer,
                              iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
                              globalProperties, featureProperties) :
                 [];
@@ -824,7 +894,10 @@ class SymbolBucket {
             iconBoxEndIndex,
             glyphQuads,
             iconQuads,
+            textOffset,
+            iconOffset,
             anchor,
+            line,
             featureIndex,
             featureProperties,
             writingModes
@@ -894,10 +967,9 @@ function getSizeAttributeDeclarations(layer, sizeProperty) {
     ) {
         // composite function:
         // [ text-size(lowerZoomStop, feature),
-        //   text-size(upperZoomStop, feature),
-        //   layoutSize == text-size(layoutZoomLevel, feature) ]
+        //   text-size(upperZoomStop, feature)]
         return [{
-            name: 'a_size', components: 3, type: 'Uint16'
+            name: 'a_size', components: 2, type: 'Uint16'
         }];
     }
     // constant or camera function
@@ -920,8 +992,7 @@ function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featur
         // composite function
         return [
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[0]}, featureProperties),
-            10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties),
-            10 * layer.getLayoutValue(sizeProperty, {zoom: 1 + tileZoom}, featureProperties)
+            10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties)
         ];
     }
     // camera function or constant

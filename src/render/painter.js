@@ -292,19 +292,37 @@ class Painter {
         this.gl.depthRange(nearDepth, farDepth);
     }
 
-    translatePosMatrix(matrix, tile, translate, anchor) {
+    /**
+     * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
+     * @param {Float32Array} matrix
+     * @param {Tile} tile
+     * @param {Array<number>} translate
+     * @param {string} anchor
+     * @param {boolean} inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
+     *
+     * @returns {Float32Array} matrix
+     */
+    translatePosMatrix(matrix, tile, translate, translateAnchor, inViewportPixelUnitsUnits) {
         if (!translate[0] && !translate[1]) return matrix;
 
-        if (anchor === 'viewport') {
-            const sinA = Math.sin(-this.transform.angle);
-            const cosA = Math.cos(-this.transform.angle);
+        const angle = inViewportPixelUnitsUnits ?
+            (translateAnchor === 'map' ? this.transform.angle : 0) :
+            (translateAnchor === 'viewport' ? -this.transform.angle : 0);
+
+        if (angle) {
+            const sinA = Math.sin(angle);
+            const cosA = Math.cos(angle);
             translate = [
                 translate[0] * cosA - translate[1] * sinA,
                 translate[0] * sinA + translate[1] * cosA
             ];
         }
 
-        const translation = [
+        const translation = inViewportPixelUnitsUnits ? [
+            translate[0],
+            translate[1],
+            0
+        ] : [
             pixelsToTileUnits(tile, translate[0], this.transform.zoom),
             pixelsToTileUnits(tile, translate[1], this.transform.zoom),
             0

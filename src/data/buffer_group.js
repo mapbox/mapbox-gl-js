@@ -18,6 +18,13 @@ class BufferGroup {
         this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray,
             LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
 
+        if (arrays.dynamicLayoutVertexArray) {
+            const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.dynamicLayoutAttributes);
+            this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType(arrays.dynamicLayoutVertexArray);
+            this.dynamicLayoutVertexBuffer = new Buffer(arrays.dynamicLayoutVertexArray,
+                DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
+        }
+
         if (arrays.elementArray) {
             this.elementBuffer = new Buffer(arrays.elementArray,
                 programInterface.elementArrayType.serialize(), Buffer.BufferType.ELEMENT);
@@ -49,6 +56,9 @@ class BufferGroup {
     destroy() {
         this.layoutVertexBuffer.destroy();
 
+        if (this.dynamicLayoutVertexBuffer) {
+            this.dynamicLayoutVertexBuffer.destroy();
+        }
         if (this.elementBuffer) {
             this.elementBuffer.destroy();
         }

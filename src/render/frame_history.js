@@ -47,6 +47,10 @@ class FrameHistory {
         this.previousZoom = zoom;
     }
 
+    isVisible(zoom) {
+        return this.opacities[Math.floor(zoom * 10)] !== 0;
+    }
+
     bind(gl) {
         if (!this.texture) {
             this.texture = gl.createTexture();
