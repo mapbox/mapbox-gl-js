@@ -211,7 +211,8 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            const value = getPaintAttributeValue(attribute, layer, globalProperties, featureProperties);
+            let zoomBase = attribute.name === 'a_floorwidth' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const value = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
 
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
@@ -237,13 +238,18 @@ class ProgramConfiguration {
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
-                gl.uniform1f(program[uniform.name], value);
+                if (uniform.name === 'a_floorwidth') {
+                    gl.uniform1f(program[uniform.name], layer.getPaintValue('line-width', { zoom: Math.floor(globalProperties.zoom) }));
+                } else {
+                    gl.uniform1f(program[uniform.name], value);
+                }
             }
         }
         for (const uniform of this.interpolationUniforms) {
+            let zoomBase = uniform.name === 'u_floorwidth_t' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             // stopInterp indicates which stops need to be interpolated.
             // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-            const stopInterp = layer.getPaintInterpolationT(uniform.property, globalProperties);
+            const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
             // We can only store four stop values in the buffers. stopOffset is the number of stops that come
             // before the stops that were added to the buffers.
             gl.uniform1f(program[uniform.name], Math.max(0, Math.min(3, stopInterp - uniform.stopOffset)));

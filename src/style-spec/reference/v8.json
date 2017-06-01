@@ -2191,6 +2191,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Stroke thickness.",
