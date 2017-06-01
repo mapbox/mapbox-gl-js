@@ -2,6 +2,12 @@
 #define EDGE_GAMMA 0.105/DEVICE_PIXEL_RATIO
 
 uniform bool u_is_halo;
+// 'fill_color' and 'halo_color' are automatically collapsed into a single
+// attribute on the gl-native side to stay under the GL_MAX_VERTEX_ATTRIBS=8
+// limit on some supported devices.
+// Changing the name of either variable or using both values in the same
+// draw call will break the gl-native side.
+
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
