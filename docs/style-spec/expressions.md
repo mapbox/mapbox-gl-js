@@ -134,9 +134,8 @@ Every expression evaluates to a value of one of the following types.
 
 ###Decision:
 - `["is_error", expr: T]` - `true` if `expr` is an `Error` value, `false` otherwise
-- `["case", cond1: Boolean, result1: T, cond2: Boolean, result2: T, ..., ["else"], result_m: T] -> T`
-- `["if", cond: Boolean, expr_if_true: T, expr_if_false: T] -> T` - synonym for `["case", Boolean_expr, expr_if_true, ["else"], expr_if_false]`
-- `["match", x: T, a_1: T, y_1: U, a_2: T, y_2: U, ..., ["else"], y_else: U]` - `a_1`, `a_2`, ... must be _literal_ values of type `T`.
+- `["case", cond1: Boolean, result1: T, cond2: Boolean, result2: T, ..., cond_m, result_m: T, result_otherwise: T] -> T`
+- `["match", x: T, a_1: T, y_1: U, a_2: T, y_2: U, ..., a_m: T, y_m: U, y_else: U]` - `a_1`, `a_2`, ... must be _literal_ values of type `T`.
 
 ###Comparison and boolean operations:
 - `[ "==", expr1: T, expr2: T] -> Boolean`, where T is any primitive type. (similar for `!=`)
