@@ -27,7 +27,7 @@ button {
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v8',
-    center: [-180, 0],
+    center: [0, 0],
     zoom: 0.5
 });
 
@@ -46,8 +46,8 @@ var geojson = {
 };
 
 var speedFactor = 30; // number of frames per longitude degree
-var animation; // to store the animation
-var startTime = performance.now(); // system timestamp
+var animation;
+var startTime = 0;
 var progress = 0; // progress = timestamp - startTime
 var pause = false;
 var pauseButton = document.getElementById('pause');
@@ -76,6 +76,8 @@ map.on('load', function() {
         }
     });
 
+    startTime = performance.now();
+
     animateLine();
 
     pauseButton.addEventListener('click', function() {
@@ -88,8 +90,8 @@ map.on('load', function() {
         }
     });
 
-    // requestAnimationFrame pauses when the tab is inactive
-    // reset startTime and progress when switched back
+    // requestAnimationFrame pauses once the tab becomes inactive
+    // reset startTime and progress once the tab is active again
     document.addEventListener('visibilitychange', function() {
         pause = true;
     });
@@ -103,7 +105,7 @@ map.on('load', function() {
             progress = timestamp - startTime;
         }
 
-        // restart if all 360 degrees are covered
+        // restart if it finishes a loop
         if (progress > speedFactor * 360) {
             startTime = timestamp;
             geojson.features[0].geometry.coordinates = [];
