@@ -14,6 +14,7 @@
     "global-require": "off",
     "key-spacing": "off",
     "no-eq-null": "off",
+    "no-lonely-if": "off",
     "no-new": "off",
     "no-var": "error",
     "no-warning-comments": "error",

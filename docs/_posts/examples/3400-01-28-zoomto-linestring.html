@@ -65,16 +65,14 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function() {
-    // Add a GeoJSON source containing place coordinates and information.
-    map.addSource("LineString", {
-        "type": "geojson",
-        "data": geojson
-    });
 
     map.addLayer({
         "id": "LineString",
         "type": "line",
-        "source": "LineString",
+        "source": {
+            "type": "geojson",
+            "data": geojson
+        },
         "layout": {
             "line-join": "round",
             "line-cap": "round"

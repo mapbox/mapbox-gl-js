@@ -1,0 +1,24 @@
+{
+  "version": 8,
+  "metadata": {
+    "mapbox:groups": {
+      "group-0": {
+        "name": "Group Name"
+      }
+    }
+  },
+  "constants": {},
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "metadata": {
+        "mapbox:group": "group-0"
+      },
+      "paint": {
+        "background-color": "#000"
+      }
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+
+'use strict';
+
+// Shows (and describes) the shaders that would be generated for the given
+// style JSON
+// Usage: describe_shaders path/to/style.json zoom
+
+require('flow-remove-types/register');
+const fs = require('fs');
+const deref = require('../style-spec/deref');
+const util = require('../util/util');
+const shaders = require('../render/shaders');
+const ProgramConfiguration = require('../data/program_configuration');
+const StyleLayer = require('../style/style_layer');
+const AnimationLoop = require('../style/animation_loop');
+
+const fillProgramInterface = require('../data/bucket/fill_bucket').programInterface;
+const circleProgramInterface = require('../data/bucket/circle_bucket').programInterface;
+const lineProgramInterface = require('../data/bucket/line_bucket').programInterface;
+const fillExtrusionProgramInterface = require('../data/bucket/fill_extrusion_bucket').programInterface;
+
+const programInterfaces = util.extend({
+    fill: fillProgramInterface,
+    circle: circleProgramInterface,
+    line: lineProgramInterface,
+    fillExtrusion: fillExtrusionProgramInterface,
+}, require('../data/bucket/symbol_bucket').programInterfaces);
+
+const style = JSON.parse(fs.readFileSync(process.argv[2]));
+style.layers = deref(style.layers);
+const zoom = parseFloat(process.argv[3]);
+
+const programs = {};
+
+style.layers.forEach((layer) => {
+    const shader = layer.type;
+    const definition = shaders[shader];
+    if (layer.type === 'symbol') {
+        addProgramInfo(layer, programInterfaces['glyph'], shaders['symbolSDF']);
+        // output both types of icon shaders, since the choice is made at runtime
+        addProgramInfo(layer, programInterfaces['icon'], shaders['symbolSDF']);
+        addProgramInfo(layer, programInterfaces['icon'], shaders['symbolIcon']);
+    } else {
+        const programInterface = programInterfaces[layer.type];
+        if (programInterface) addProgramInfo(layer, programInterface, definition);
+    }
+});
+
+function addProgramInfo(layer, programInterface, shaderDefinition) {
+    const styleLayer = new StyleLayer(layer);
+    styleLayer.updatePaintTransitions([], {}, { zoom: zoom }, new AnimationLoop(), {});
+    const configuration = ProgramConfiguration.createDynamic(
+        programInterface.paintAttributes, styleLayer, zoom);
+    const key = `${layer.type}${configuration.cacheKey || ''}`;
+    const program = programs[key] = programs[key] || { layers: [] };
+    program.layers.push(layer);
+    if (!program.shaderSource) {
+        program.shaderSource = createShaderSource(shaderDefinition, configuration);
+    }
+}
+
+for (const key in programs) {
+    const layers = programs[key].layers;
+    const shaders = programs[key].shaderSource;
+    console.log(`
+## ${key}
+
+### Layers
+${layers.map(layer => `* ${layer.id}`).join('\n')}
+
+### Vertex Shader
+\`\`\`glsl
+${shaders.vertexSource}
+\`\`\`
+
+### Fragment Shader
+\`\`\`glsl
+${shaders.fragmentSource}
+\`\`\`
+`);
+}
+
+
+function createShaderSource(definition, configuration) {
+    const definesSource = `#define MAPBOX_GL_JS\n#define DEVICE_PIXEL_RATIO \${browser.devicePixelRatio.toFixed(1)}\n`;
+    const vertexSource = configuration.applyPragmas(definesSource + shaders.prelude.vertexSource + definition.vertexSource, 'vertex');
+    const fragmentSource = configuration.applyPragmas(definesSource + shaders.prelude.fragmentSource + definition.fragmentSource, 'fragment');
+    return {vertexSource, fragmentSource};
+}

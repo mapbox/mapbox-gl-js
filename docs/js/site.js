@@ -16,8 +16,7 @@ function load() {
                 setTimeout(function() {
                     $clip.text(text);
                 }, 1000);
-                var type = (location.pathname.split('plugins').length > 1) ? 'plugin' : 'example';
-                analytics.track('Copied ' + type + ' with clipboard');
+                analytics.track('Copied example with clipboard');
             });
         }
     });
@@ -50,7 +49,7 @@ if (filterInput) {
         for (i=0; i < headings.length; i++) {
             if (!value || value == undefined || value == "" || value.length == 0) {
                 headings[i].style.display = 'block';
-            } else { 
+            } else {
                 headings[i].style.display = 'none';
             }
         }

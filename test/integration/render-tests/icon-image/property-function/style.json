@@ -1,0 +1,59 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -10
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "image": "bakery-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                10
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": {
+          "type": "identity",
+          "property": "image"
+        }
+      }
+    }
+  ]
+}

@@ -18,9 +18,8 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function() {
-
     // Add a new source from our GeoJSON data and set the
-    // 'cluster' option to true.
+    // 'cluster' option to true. GL-JS will add the point_count property to your source data.
     map.addSource("earthquakes", {
         type: "geojson",
         // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
@@ -31,56 +30,55 @@ map.on('load', function() {
         clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
     });
 
-    // Use the earthquakes source to create five layers:
-    // One for unclustered points, three for each cluster category,
-    // and one for cluster labels.
     map.addLayer({
-        "id": "unclustered-points",
-        "type": "symbol",
-        "source": "earthquakes",
-        "filter": ["!has", "point_count"],
-        "layout": {
-            "icon-image": "marker-15"
+        id: "clusters",
+        type: "circle",
+        source: "earthquakes",
+        filter: ["has", "point_count"],
+        paint: {
+            "circle-color": {
+                property: "point_count",
+                type: "interval",
+                stops: [
+                    [0, "#51bbd6"],
+                    [100, "#f1f075"],
+                    [750, "#f28cb1"],
+                ]
+            },
+            "circle-radius": {
+                property: "point_count",
+                type: "interval",
+                stops: [
+                    [0, 20],
+                    [100, 30],
+                    [750, 40]
+                ]
+            }
         }
     });
 
-    // Display the earthquake data in three layers, each filtered to a range of
-    // count values. Each range gets a different fill color.
-    var layers = [
-        [150, '#f28cb1'],
-        [20, '#f1f075'],
-        [0, '#51bbd6']
-    ];
-
-    layers.forEach(function (layer, i) {
-        map.addLayer({
-            "id": "cluster-" + i,
-            "type": "circle",
-            "source": "earthquakes",
-            "paint": {
-                "circle-color": layer[1],
-                "circle-radius": 18
-            },
-            "filter": i === 0 ?
-                [">=", "point_count", layer[0]] :
-                ["all",
-                    [">=", "point_count", layer[0]],
-                    ["<", "point_count", layers[i - 1][0]]]
-        });
+    map.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "earthquakes",
+        filter: ["has", "point_count"],
+        layout: {
+            "text-field": "{point_count_abbreviated}",
+            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+            "text-size": 12
+        }
     });
 
-    // Add a layer for the clusters' count labels
     map.addLayer({
-        "id": "cluster-count",
-        "type": "symbol",
-        "source": "earthquakes",
-        "layout": {
-            "text-field": "{point_count}",
-            "text-font": [
-                "DIN Offc Pro Medium",
-                "Arial Unicode MS Bold"
-            ],
-            "text-size": 12
+        id: "unclustered-point",
+        type: "circle",
+        source: "earthquakes",
+        filter: ["!has", "point_count"],
+        paint: {
+            "circle-color": "#11b4da",
+            "circle-radius": 4,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "#fff"
         }
     });
 });

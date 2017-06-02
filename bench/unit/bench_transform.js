@@ -3,8 +3,8 @@
 const Benchmark = require('benchmark');
 const suite = new Benchmark.Suite();
 
-const Transform = require('../../js/geo/transform');
-const LngLat = require('../../js/geo/lng_lat.js');
+const Transform = require('../../src/geo/transform');
+const LngLat = require('../../src/geo/lng_lat.js');
 const Point = require('point-geometry');
 
 const t = new Transform();

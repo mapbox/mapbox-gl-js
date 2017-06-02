@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "ignored": {
+        "js": "https://github.com/mapbox/mapbox-gl-js/issues/4601",
+        "native": "https://github.com/mapbox/mapbox-gl-native/pull/8760"
+      }
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -13,
+              -13
+            ],
+            [
+              -10,
+              7
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              7,
+              -10
+            ],
+            [
+              -13,
+              -13
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-color": "#CCC",
+        "fill-outline-color": "#000"
+      }
+    }
+  ]
+}

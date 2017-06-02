@@ -1,40 +1,29 @@
 -
   term: "Active development"
+  description: "Things actively being built right now."
   items:
+    -
+      name: Client-side terrain rendering
+      issues: ["3730"]
+    -
+      name: Custom WebGL layer type
+      issues: ["281"]
+    - 
+      name: Property function support for <code>text-size</code> and <code>icon-size</code>
+      issues: ["4228"]
+-
+  term: "Upcoming"
+  description: "Things we hope to start building in the next several months."
+  items:
+    -
+      name: Property aggregation on clustered features
+      issues: ["2412"]
     -
       name: <code>Map#setCamera</code> method
       issues: ["3583", "2801"]
     -
-      name: Custom canvas layer type
-      issues: ["3580"]
-    -
-      name: Source loading and errored patterns
-      issues: ["3280"]
-    -
-      name: Vector terrain
--
-  term: "Upcoming"
-  items:
-    -
-      name: Monorepo architecture
-      issues: ["3656"]
-    -
-      name: <code>Map#addImage</code> and <code>Map#removeImage</code>
-      issues: ["2059"]
-    -
-      name: Better benchmarking tools
-      issues: ["3237", "3495", "3031", "2253", "3248"]
-    -
       name: Custom source type API
       project: 2
     - 
-      name: Property aggregation on clustered features
-      issues: ["2412"]
-    -
-      name: Property functions for symbol paint properties
-      issues: ["2730"]
-    -
-      name: Custom WebGL layer type
-      issues: ["281"]
-    -
-      name: Arbitrary expression functions
+      name: Patterns for loading and errored tiles
+      issues: [3280]

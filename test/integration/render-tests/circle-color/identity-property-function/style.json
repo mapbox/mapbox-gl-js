@@ -1,0 +1,49 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "color": "red"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                0,
+                0
+            ]
+        }
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "mapbox",
+      "paint": {
+        "circle-radius": 20,
+        "circle-color": {
+          "type": "identity",
+          "property": "color"
+        }
+      }
+    }
+  ]
+}

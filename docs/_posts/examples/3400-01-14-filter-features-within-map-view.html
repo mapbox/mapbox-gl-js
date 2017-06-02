@@ -156,16 +156,12 @@ function getUniqueFeatures(array, comparatorProperty) {
 
 map.on('load', function() {
 
-    // Add our vector tile source: World wide
-    // airports provided by Natural Earth
-    map.addSource('airports', {
-        "type": "vector",
-        "url": "mapbox://mapbox.04w69w5j"
-    });
-
     map.addLayer({
         "id": "airport",
-        "source": "airports",
+        "source": {
+            "type": "vector",
+            "url": "mapbox://mapbox.04w69w5j"
+        },
         "source-layer": "ne_10m_airports",
         "type": "symbol",
         "layout": {
@@ -174,6 +170,7 @@ map.on('load', function() {
             "icon-allow-overlap":true
         }
     });
+
     map.on('moveend', function() {
         var features = map.queryRenderedFeatures({layers:['airport']});
 
@@ -191,25 +188,20 @@ map.on('load', function() {
         }
     });
 
-    map.on('mousemove', function(e) {
-        var features = map.queryRenderedFeatures(e.point, {
-            layers: ['airport']
-        });
-
+    map.on('mousemove', 'airport', function(e) {
         // Change the cursor style as a UI indicator.
-        map.getCanvas().style.cursor = features.length ? 'pointer' : '';
+        map.getCanvas().style.cursor = 'pointer';
 
-        if (!features.length) {
-            popup.remove();
-            return;
-        }
-
-        var feature = features[0];
-        // Populate the popup and set its coordinates
-        // based on the feature found.
+        // Populate the popup and set its coordinates based on the feature.
+        var feature = e.features[0];
         popup.setLngLat(feature.geometry.coordinates)
             .setText(feature.properties.name + ' (' + feature.properties.abbrev + ')')
             .addTo(map);
+    });
+
+    map.on('mouseleave', 'airport', function() {
+        map.getCanvas().style.cursor = '';
+        popup.remove();
     });
 
     filterEl.addEventListener('keyup', function(e) {

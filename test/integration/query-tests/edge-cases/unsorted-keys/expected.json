@@ -1,0 +1,25 @@
+[
+  {
+    "properties": {
+      "ldir": "E",
+      "localrank": 1,
+      "name": "Loveland",
+      "name_de": "Loveland",
+      "name_en": "Loveland",
+      "name_es": "Loveland",
+      "name_fr": "Loveland",
+      "name_ru": "Лавленд",
+      "name_zh": "洛弗兰德",
+      "type": "town"
+    },
+    "id": 1540753080,
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -84.26383852958679,
+        39.268954879518304
+      ]
+    }
+  }
+]

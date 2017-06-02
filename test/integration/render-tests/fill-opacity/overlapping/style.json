@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "sources": {
+    "rectangles": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -130.78125,
+                    -33.13755119234615
+                  ],
+                  [
+                    -130.78125,
+                    63.548552232036414
+                  ],
+                  [
+                    15.468749999999998,
+                    63.548552232036414
+                  ],
+                  [
+                    15.468749999999998,
+                    -33.13755119234615
+                  ],
+                  [
+                    -130.78125,
+                    -33.13755119234615
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -48.515625,
+                    -54.97761367069625
+                  ],
+                  [
+                    -48.515625,
+                    36.5978891330702
+                  ],
+                  [
+                    169.45312499999997,
+                    36.5978891330702
+                  ],
+                  [
+                    169.45312499999997,
+                    -54.97761367069625
+                  ],
+                  [
+                    -48.515625,
+                    -54.97761367069625
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "rectangles",
+      "type": "fill",
+      "source": "rectangles",
+      "paint": {
+        "fill-opacity": 0.3
+      }
+    }
+  ]
+}

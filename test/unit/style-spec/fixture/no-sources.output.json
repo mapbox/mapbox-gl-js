@@ -1,0 +1,10 @@
+[
+  {
+    "message": "missing required property \"sources\"",
+    "line": 1
+  },
+  {
+    "message": "layers[0]: source \"raster\" not found",
+    "line": 7
+  }
+]

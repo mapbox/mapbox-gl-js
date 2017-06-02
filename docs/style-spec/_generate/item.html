@@ -1,0 +1,97 @@
+<div class='col12 clearfix pad0y pad2x'>
+  <div>
+    <span class='code space-right'><a id='<%= id %>' href='#<%= id %>'><%= name %></a></span>
+    <% if (prop.function == "interpolated" ) { %><span class='icon smooth-ramp inline quiet'></span><% } %>
+    <% if (prop.function == "piecewise-constant" ) { %><span class='icon step-ramp inline quiet'></span><% } %>
+    <% if (prop.transition) { %><span class='icon opacity inline quiet'></span><% } %>
+  </div>
+  <div>
+    <em class='inline quiet'>
+      <%= prop.required ? 'Required' : 'Optional' %>
+      <% if (prop.type && prop.type !== '*') { %><a href='#types-<%= prop.type %>'><%= prop.type %></a>.<% } %>
+    </em>
+    <% if (prop.values && Array.isArray(prop.values) === false) { // skips $root.version %><span class='space-right quiet'>
+      <em>One of</em> <%= _(Object.keys(prop.values)).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+    </span><% } %>
+    <% if (prop.units) { %><span class='space-right quiet'>
+      <em>Units in</em>
+      <% if (typeof prop.units === 'object') { %>
+        <%= _(prop.units).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+      <% } else { %>
+        <var><%= prop.units %></var>.
+      <% } %>
+    </span><% } %>
+    <% if (prop.default || prop.default === false || prop.default === 0) { %><span class='space-right quiet'>
+      <em>Defaults to </em> <var><%= prop.default %></var>.
+    </span><% } %>
+    <% if (prop.requires) { %><span class='space-right quiet'>
+      <%= _(prop.requires).map(function(req) {
+          if (typeof req === 'string') {
+            return '<em>Requires</em> <var>' + req + '</var>.';
+          } else {
+            if (req['!']) {
+              return '<em>Disabled by</em> <var>' + req['!'] + '</var>.';
+            } else if (req['<=']) {
+              return '<em>Must be less than or equal to</em> <var>' + req['<='] + '</var>.';
+            } else {
+              var requiredValue = _.toPairs(req)[0][1];
+              var requiredDisplay = _.isArray(requiredValue)
+                ? '</var>one of<var> ' + requiredValue.join('</var>,<var> ')
+                : requiredValue;
+              return '<em>Requires</em> <var>' + _.toPairs(req)[0][0] + ' = ' + requiredDisplay + '</var>.';
+            }
+          }
+        }).join(' ') %>
+    </span><% } %>
+  </div>
+  <% if (prop.doc) { %>
+  <div class='space-bottom1'><%= md(prop.doc) %></div>
+  <% } %>
+  <% if (prop.values && Array.isArray(prop.values) === false) { // skips $root.version %><div class='space-bottom1'><dl>
+    <% for (var v in prop.values) { %>
+      <dt><var><%= v %></var></dt>
+      <dd><%= md(prop.values[v].doc) %></dd>
+    <% } %>
+  </dl></div><% } %>
+  <% if (prop.example) { %>
+  <div class='space-bottom1 clearfix'>
+{% highlight json %}
+<%= '"' + name + '": ' + JSON.stringify(prop.example, null, 2) %>
+{% endhighlight %}
+  </div>
+  <% } %>
+  <% if (prop['sdk-support']) {
+    var support = function(type, sdk) {
+      var support = prop['sdk-support'][type];
+      if (!support) return 'Not yet supported';
+      support = support[sdk];
+      if (support === undefined) return 'Not yet supported';
+      return '>= ' + support;
+    }
+  %>
+  <div class='space-bottom2'>
+    <table class='micro fixed'>
+      <thead>
+      <tr class='fill-light'>
+        <th>SDK Support</th>
+        <td class='center'>Mapbox GL JS</td>
+        <td class='center'>Android SDK</td>
+        <td class='center'>iOS SDK</td>
+        <td class='center'>macOS SDK</td>
+      </tr>
+      </thead>
+      <tbody>
+      <% _.each(Object.keys(prop['sdk-support']), function(key) { %>
+      <tr>
+        <td><%= md(key) %></td>
+        <td class='center'><%- support(key, 'js') %></td>
+        <td class='center'><%- support(key, 'android') %></td>
+        <td class='center'><%- support(key, 'ios') %></td>
+        <td class='center'><%- support(key, 'macos') %></td>
+      </tr>
+      <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>

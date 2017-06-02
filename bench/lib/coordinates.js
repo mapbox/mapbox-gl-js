@@ -3,7 +3,7 @@
 // This file contains the set of coordinates of tiles used in a "flyTo" from
 // the Mapbox SF office to the Mapbox DC office.
 
-const Coordinate = require('../../js/geo/coordinate');
+const Coordinate = require('../../src/geo/coordinate');
 
 module.exports = [
     new Coordinate(5242, 12665, 15),

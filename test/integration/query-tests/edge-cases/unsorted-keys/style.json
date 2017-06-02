@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 8,
+      "height": 8,
+      "queryGeometry": [
+        4,
+        4
+      ]
+    }
+  },
+  "center": [
+    -84.2638406,
+    39.2689562
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "place-town",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "place_label",
+      "layout": {
+        "icon-image": "interstate_3",
+        "text-field": "{name_en}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 20
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 0%)"
+      },
+      "interactive": true
+    }
+  ]
+}
