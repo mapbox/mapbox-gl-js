@@ -53,12 +53,14 @@ class SourceCache extends Evented {
         this._cache = new Cache(0, this.unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
+        this._cacheSize = null;
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
     }
 
     onAdd(map) {
         this.map = map;
+        this._cacheSize = map._cacheSize
         if (this._source && this._source.onAdd) {
             this._source.onAdd(map);
         }
@@ -278,7 +280,8 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Resizes the tile cache based on the current viewport's size.
+     * Resizes the tile cache based on the current viewport's size
+     * or the cacheSize option passed during map creation
      *
      * Larger viewports use more tiles and need larger caches. Larger viewports
      * are more likely to be found on devices with more memory and on pages where
@@ -291,7 +294,10 @@ class SourceCache extends Evented {
         const heightInTiles = Math.ceil(transform.height / transform.tileSize) + 1;
         const approxTilesInView = widthInTiles * heightInTiles;
         const commonZoomRange = 5;
-        this._cache.setMaxSize(Math.floor(approxTilesInView * commonZoomRange));
+
+        const maxSize = this._cacheSize || Math.floor(approxTilesInView * commonZoomRange);
+
+        this._cache.setMaxSize(maxSize);
     }
 
     /**

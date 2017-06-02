@@ -57,7 +57,9 @@ const defaultOptions = {
 
     renderWorldCopies: true,
 
-    refreshExpiredTiles: true
+    refreshExpiredTiles: true,
+
+    cacheSize: null
 };
 
 /**
@@ -122,6 +124,7 @@ const defaultOptions = {
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
+  * @param {number} [options.cacheSize=null]  The number of tiles stored in the tile cache. If omitted, the cache will be dynamically sized based on the current viewport.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -145,6 +148,7 @@ class Map extends Camera {
         super(transform, options);
 
         this._interactive = options.interactive;
+        this._cacheSize = options.cacheSize;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._trackResize = options.trackResize;
