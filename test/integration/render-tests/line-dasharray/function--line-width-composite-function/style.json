@@ -1,0 +1,150 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "ignored":{
+        "native": "https://github.com/mapbox/mapbox-gl-js/issues/3682#issuecomment-264348200"
+      }
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+        "line-width": {
+          "property": "class",
+          "type": "categorical",
+          "stops": [
+            [
+              {
+                "zoom": 13, 
+                "value": "path"
+              },
+              1
+            ],
+            [
+              {
+                "zoom": 13,
+                "value": "driveway"
+              },
+              2
+            ],
+            [
+              {
+                "zoom": 13,
+                "value": "service"
+              },
+              3
+            ],
+            [
+              {
+                "zoom": 13,
+                "value": "street_limited"
+              },
+              4
+            ],
+            [
+              {
+                "zoom": 13,
+                "value": "street"
+              },
+              5
+            ],
+            [
+              {
+                "zoom": 13,
+                "value": "main"
+              },
+              6
+            ],
+            [
+              {
+                "zoom": 15, 
+                "value": "path"
+              },
+              4
+            ],
+            [
+              {
+                "zoom": 15,
+                "value": "driveway"
+              },
+              8
+            ],
+            [
+              {
+                "zoom": 15,
+                "value": "service"
+              },
+              12
+            ],
+            [
+              {
+                "zoom": 15,
+                "value": "street_limited"
+              },
+              16
+            ],
+            [
+              {
+                "zoom": 15,
+                "value": "street"
+              },
+              20
+            ],
+            [
+              {
+                "zoom": 15,
+                "value": "main"
+              },
+              24
+            ]
+          ]
+        },
+        "line-dasharray": {
+          "stops": [
+            [
+              13,
+              [
+                1,
+                1
+              ]
+            ],
+            [
+              15,
+              [
+                2,
+                2
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}
