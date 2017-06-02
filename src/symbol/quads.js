@@ -193,6 +193,10 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
 
         const baseQuad = {
             upright: calculateBaseQuad(positionedGlyph, glyph, rect, textOffset),
+            // The quad coordinates represent an offset from the anchor.  Since
+            // we use the same anchor for both the 'upright' and 'upside-down'
+            // copies of each glyph, invert the y dimension of text-offset for the
+            // upside-down case.
             upsideDown: calculateBaseQuad(positionedGlyph, glyph, rect, [textOffset[0], -textOffset[1]])
         };
 
