@@ -51,7 +51,7 @@ const lineInterface = {
         {property: 'line-gap-width', multiplier: 10, type: 'Uint8', name: 'a_gapwidth'},
         {property: 'line-offset', multiplier: 1, type: 'Int8'},
         {property: 'line-width', multiplier: 10, type: 'Uint8', name: 'a_width'},
-        {property: 'line-width', multiplier: 10, type: 'Uint8', name: 'a_floorwidth'},
+        {property: 'line-width', multiplier: 10, type: 'Uint8', name: 'a_floorwidth', useIntegerZoom: true},
     ],
     elementArrayType: createElementArrayType()
 };

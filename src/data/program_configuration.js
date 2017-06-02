@@ -211,7 +211,7 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            const zoomBase = attribute.name === 'a_floorwidth' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const zoomBase = attribute.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             const value = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
 
             for (let i = start; i < length; i++) {
@@ -234,19 +234,17 @@ class ProgramConfiguration {
 
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
-            const value = layer.getPaintValue(uniform.property, globalProperties);
+            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const value = layer.getPaintValue(uniform.property, zoomBase);
+
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
-                if (uniform.name === 'a_floorwidth') {
-                    gl.uniform1f(program[uniform.name], layer.getPaintValue('line-width', { zoom: Math.floor(globalProperties.zoom) }));
-                } else {
-                    gl.uniform1f(program[uniform.name], value);
-                }
+                gl.uniform1f(program[uniform.name], value);
             }
         }
         for (const uniform of this.interpolationUniforms) {
-            const zoomBase = uniform.name === 'u_floorwidth_t' ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             // stopInterp indicates which stops need to be interpolated.
             // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
             const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
