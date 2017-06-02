@@ -110,7 +110,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, identityMat4);
-            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, keepUpright, s, layer);
+            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, pitchWithMap, keepUpright, s, layer);
         } else {
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
         }

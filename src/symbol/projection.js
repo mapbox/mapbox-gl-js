@@ -103,13 +103,14 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function isVisible(symbol, posMatrix, clippingBuffer, painter) {
-    const p = project(new Point(symbol.anchorX, symbol.anchorY), posMatrix);
+function isVisible(anchorPos, symbol, clippingBuffer, painter) {
+    const x = anchorPos[0] / anchorPos[3];
+    const y = anchorPos[1] / anchorPos[3];
     const inPaddedViewport = (
-            p.x >= -clippingBuffer[0] &&
-            p.x <= clippingBuffer[0] &&
-            p.y >= -clippingBuffer[1] &&
-            p.y <= clippingBuffer[1]);
+            x >= -clippingBuffer[0] &&
+            x <= clippingBuffer[0] &&
+            y >= -clippingBuffer[1] &&
+            y <= clippingBuffer[1]);
     return inPaddedViewport && painter.frameHistory.isVisible(symbol.placementZoom);
 }
 
@@ -117,7 +118,7 @@ function isVisible(symbol, posMatrix, clippingBuffer, painter) {
  *  Update the `dynamicLayoutVertexBuffer` for the buffer with the correct glyph positions for the current map view.
  *  This is only run on labels that are aligned with lines. Horizontal labels are handled entirely in the shader.
  */
-function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, keepUpright, pixelsToTileUnits, layer) {
+function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, pitchWithMap, keepUpright, pixelsToTileUnits, layer) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
     const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
@@ -135,8 +136,11 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
 
+        const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
+        vec4.transformMat4(anchorPos, anchorPos, posMatrix);
+
         // Don't bother calculating the correct point for invisible labels. Move them offscreen.
-        if (!isVisible(symbol, posMatrix, clippingBuffer, painter)) {
+        if (!isVisible(anchorPos, symbol, clippingBuffer, painter)) {
             for (let i = symbol.numGlyphs; i > 0; i--) {
                 addGlyph(offscreenPoint, 0, dynamicLayoutVertexArray);
             }
@@ -151,8 +155,14 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
             flip = symbol.vertical ? b.y > a.y : b.x < a.x;
         }
 
+        const cameraToAnchorDistance = anchorPos[3];
+        const perspectiveRatio = 1 + 0.5 * ((cameraToAnchorDistance / painter.transform.cameraToCenterDistance) - 1);
+
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
-        const fontScale = fontSize / 24;
+        const pitchScaledFontSize = pitchWithMap ?
+            fontSize * perspectiveRatio :
+            fontSize / perspectiveRatio;
+        const fontScale = pitchScaledFontSize / 24;
         const offsetY = symbol.lineOffsetY * fontSize;
 
         const glyphsForward = [];
