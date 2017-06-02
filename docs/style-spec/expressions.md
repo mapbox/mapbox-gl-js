@@ -133,9 +133,9 @@ Every expression evaluates to a value of one of the following types.
 - `[ "id" ] -> Value` returns the value of `feature.id`.
 
 ###Decision:
-- `["is_error", expr: T]` - `true` if `expr` is an `Error` value, `false` otherwise
 - `["case", cond1: Boolean, result1: T, cond2: Boolean, result2: T, ..., cond_m, result_m: T, result_otherwise: T] -> T`
 - `["match", x: T, a_1: T, y_1: U, a_2: T, y_2: U, ..., a_m: T, y_m: U, y_else: U]` - `a_1`, `a_2`, ... must be _literal_ values of type `T`.
+- `["is_error", expr: T]` - `true` if `expr` is an `Error` value, `false` otherwise
 
 ###Comparison and boolean operations:
 - `[ "==", expr1: T, expr2: T] -> Boolean`, where T is any primitive type. (similar for `!=`)
@@ -145,7 +145,7 @@ Every expression evaluates to a value of one of the following types.
 
 ###Curves:
 
-`["curve", interpolation, x: Number, n_1, y_1: T, ..., n_m, y_m: T] -> T` defines a function with `(n_1, y_1)`, ..., `(n_m, y_m)` as input/output pairs, and `interpolation` dictating how inputs between `n_i` and `n_(i+1)` are computed.
+`["curve", interpolation, x: Number, n_1: Number, y_1: T, ..., n_m: Number, y_m: T] -> T` defines a function with `(n_1, y_1)`, ..., `(n_m, y_m)` as input/output pairs, and `interpolation` dictating how inputs between `n_i` and `n_(i+1)` are computed.
 - The `n_i`'s must be numeric literals in strictly ascending order (`n_1 < n_2 < n_3 < ...`)
 - Specific `interpolation` types may imply certain restrictions on the output type `T`.
 - `interpolation` is one of:
