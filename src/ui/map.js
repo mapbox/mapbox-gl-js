@@ -848,6 +848,7 @@ class Map extends Camera {
             this.style._remove();
             this.off('rotate', this.style._redoPlacement);
             this.off('pitch', this.style._redoPlacement);
+            this.off('move', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -863,6 +864,7 @@ class Map extends Camera {
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
+        this.on('move', this.style._redoPlacement);
 
         return this;
     }
@@ -1328,6 +1330,7 @@ class Map extends Camera {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
+            this._frameId = null;
         }
         this.fire('webglcontextlost', {originalEvent: event});
     }
@@ -1460,6 +1463,7 @@ class Map extends Camera {
     remove() {
         if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
+        this._frameId = null;
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);

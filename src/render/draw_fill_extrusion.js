@@ -151,6 +151,7 @@ function drawExtrusion(painter, source, layer, coord) {
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
+        if (pattern.isPatternMissing(image, painter)) return;
         pattern.prepare(image, painter, program);
         pattern.setTile(tile, painter, program);
         gl.uniform1f(program.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);

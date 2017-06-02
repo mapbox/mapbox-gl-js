@@ -32,6 +32,7 @@ const elementArrayType = createElementArrayType();
 
 const layoutAttributes = [
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
+    {name: 'a_label_pos',   components: 2, type: 'Int16'},
     {name: 'a_data',        components: 4, type: 'Uint16'}
 ];
 
@@ -60,15 +61,16 @@ const symbolInterfaces = {
     },
     collisionBox: { // used to render collision boxes for debugging purposes
         layoutAttributes: [
-            {name: 'a_pos',     components: 2, type: 'Int16'},
-            {name: 'a_extrude', components: 2, type: 'Int16'},
-            {name: 'a_data',    components: 2, type: 'Uint8'}
+            {name: 'a_pos',        components: 2, type: 'Int16'},
+            {name: 'a_anchor_pos', components: 2, type: 'Int16'},
+            {name: 'a_extrude',    components: 2, type: 'Int16'},
+            {name: 'a_data',       components: 2, type: 'Uint8'}
         ],
         elementArrayType: createElementArrayType(2)
     }
 };
 
-function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, minzoom, maxzoom, labelminzoom, labelangle) {
+function addVertex(array, x, y, ox, oy, labelX, labelY, tx, ty, sizeVertex, minzoom, maxzoom, labelminzoom, labelangle) {
     array.emplaceBack(
         // a_pos_offset
         x,
@@ -76,9 +78,13 @@ function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, minzoom, maxzoom, la
         Math.round(ox * 64),
         Math.round(oy * 64),
 
+        // a_label_pos
+        labelX,
+        labelY,
+
         // a_data
-        tx / 4, // x coordinate of symbol on glyph atlas texture
-        ty / 4, // y coordinate of symbol on glyph atlas texture
+        tx, // x coordinate of symbol on glyph atlas texture
+        ty, // y coordinate of symbol on glyph atlas texture
         packUint8ToFloat(
             (labelminzoom || 0) * 10, // labelminzoom
             labelangle % 256 // labelangle
@@ -95,11 +101,14 @@ function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, minzoom, maxzoom, la
     );
 }
 
-function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, placementZoom) {
+function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoom, placementZoom) {
     return layoutVertexArray.emplaceBack(
         // pos
         point.x,
         point.y,
+        // a_anchor_pos
+        anchor.x,
+        anchor.y,
         // extrude
         Math.round(extrude.x),
         Math.round(extrude.y),
@@ -360,10 +369,11 @@ class SymbolBucket {
             if (feature.text) {
                 const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(feature.text);
                 const textOffset = this.layers[0].getLayoutValue('text-offset', {zoom: this.zoom}, feature.properties).map((t)=> t * oneEm);
+                const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
 
                 shapedTextOrientations = {
-                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, WritingMode.horizontal),
-                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, WritingMode.vertical)
+                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
+                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
                 };
             } else {
                 shapedTextOrientations = {};
@@ -372,16 +382,15 @@ class SymbolBucket {
             let shapedIcon;
             if (feature.icon) {
                 const image = icons[feature.icon];
-                const iconOffset = this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties);
-                shapedIcon = shapeIcon(image, iconOffset);
-
                 if (image) {
+                    shapedIcon = shapeIcon(image,
+                        this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties));
                     if (this.sdfIcons === undefined) {
                         this.sdfIcons = image.sdf;
                     } else if (this.sdfIcons !== image.sdf) {
                         util.warnOnce('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                     }
-                    if (image.pixelRatio !== 1) {
+                    if (!image.isNativePixelRatio) {
                         this.iconsNeedLinear = true;
                     } else if (layout['icon-rotate'] !== 0 || !this.layers[0].isLayoutValueFeatureConstant('icon-rotate')) {
                         this.iconsNeedLinear = true;
@@ -523,6 +532,10 @@ class SymbolBucket {
         const layer = this.layers[0];
         const layout = layer.layout;
 
+        // Symbols that don't show until greater than the CollisionTile's maxScale won't even be added
+        // to the buffers. Even though pan operations on a tilted map might cause the symbol to be
+        // displayable, we have to stay conservative here because the CollisionTile didn't consider
+        // this scale range.
         const maxScale = collisionTile.maxScale;
 
         const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
@@ -608,7 +621,8 @@ class SymbolBucket {
                         textAlongLine,
                         collisionTile.angle,
                         symbolInstance.featureProperties,
-                        symbolInstance.writingModes);
+                        symbolInstance.writingModes,
+                        symbolInstance.anchor);
                 }
             }
 
@@ -629,7 +643,9 @@ class SymbolBucket {
                         layout['icon-keep-upright'],
                         iconAlongLine,
                         collisionTile.angle,
-                        symbolInstance.featureProperties
+                        symbolInstance.featureProperties,
+                        null,
+                        symbolInstance.anchor
                     );
                 }
             }
@@ -639,7 +655,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes) {
+    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, labelAnchor) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -676,10 +692,10 @@ class SymbolBucket {
             const segment = arrays.prepareSegment(4);
             const index = segment.vertexLength;
 
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, labelAnchor.x, labelAnchor.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, labelAnchor.x, labelAnchor.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, labelAnchor.x, labelAnchor.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, labelAnchor.x, labelAnchor.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -709,7 +725,12 @@ class SymbolBucket {
 
                 for (let b = feature.boxStartIndex; b < feature.boxEndIndex; b++) {
                     const box = this.collisionBoxArray.get(b);
-                    const anchorPoint = box.anchorPoint;
+                    if (collisionTile.perspectiveRatio === 1 && box.maxScale < 1) {
+                        // These boxes aren't used on unpitched maps
+                        // See CollisionTile#insertCollisionFeature
+                        continue;
+                    }
+                    const boxAnchorPoint = box.anchorPoint;
 
                     const tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);
                     const tr = new Point(box.x2, box.y1 * yStretch)._rotate(angle);
@@ -722,10 +743,10 @@ class SymbolBucket {
                     const segment = arrays.prepareSegment(4);
                     const index = segment.vertexLength;
 
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tl, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tr, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, br, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, bl, maxZoom, placementZoom);
 
                     elementArray.emplaceBack(index, index + 1);
                     elementArray.emplaceBack(index + 1, index + 2);

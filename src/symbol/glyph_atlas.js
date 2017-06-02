@@ -79,14 +79,8 @@ class GlyphAtlas {
 
         // Add a 1px border around every image.
         const padding = 1;
-        let packWidth = bufferedWidth + 2 * padding;
-        let packHeight = bufferedHeight + 2 * padding;
-
-        // Increase to next number divisible by 4, but at least 1.
-        // This is so we can scale down the texture coordinates and pack them
-        // into fewer bytes.
-        packWidth += (4 - packWidth % 4);
-        packHeight += (4 - packHeight % 4);
+        const packWidth = bufferedWidth + 2 * padding;
+        const packHeight = bufferedHeight + 2 * padding;
 
         let rect = this.atlas.packOne(packWidth, packHeight);
         if (!rect) {

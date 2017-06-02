@@ -59,14 +59,18 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @private
  */
 function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shapedText, globalProperties, featureProperties) {
-    const rect = shapedIcon.image.rect;
+    const image = shapedIcon.image;
     const layout = layer.layout;
 
+    // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
+    // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
+    // on one edge in some cases.
     const border = 1;
-    const left = shapedIcon.left - border;
-    const right = left + rect.w / shapedIcon.image.pixelRatio;
-    const top = shapedIcon.top - border;
-    const bottom = top + rect.h / shapedIcon.image.pixelRatio;
+
+    const top = shapedIcon.top - border / image.pixelRatio;
+    const left = shapedIcon.left - border / image.pixelRatio;
+    const bottom = shapedIcon.bottom + border / image.pixelRatio;
+    const right = shapedIcon.right + border / image.pixelRatio;
     let tl, tr, br, bl;
 
     // text-fit mode
@@ -122,7 +126,15 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
         br = br.matMult(matrix);
     }
 
-    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity)];
+    // Icon quad is padded, so texture coordinates also need to be padded.
+    const textureRect = {
+        x: image.textureRect.x - border,
+        y: image.textureRect.y - border,
+        w: image.textureRect.w + border * 2,
+        h: image.textureRect.h + border * 2
+    };
+
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, textureRect, 0, 0, minScale, Infinity)];
 }
 
 /**
@@ -147,6 +159,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
 
+    let labelMinScale = minScale;
+
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
         const glyph = positionedGlyph.glyph;
@@ -158,12 +172,11 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
         const centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
         let glyphInstances;
-        let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
+            labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
             if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
+                labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
             }
 
         } else {
