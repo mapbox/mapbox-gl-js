@@ -300,7 +300,11 @@ class Popup extends Evented {
 
         //defer transform updates except when the DOM is instantiated
         //this ensures transform updates happen simultaneously with canvas flip
-        DOM.setTransform(this._container, transform, instantiating === true, this._map);
+        if (instantiating === true) {
+            DOM.setTransform(this._container, transform);
+        } else {
+            this._map.deferTransform(this._container, transform);
+        }
     }
 
     _onClickClose() {

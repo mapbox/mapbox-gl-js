@@ -1401,7 +1401,7 @@ class Map extends Camera {
      */
     _applyTransforms() {
         for (const row of this._transformStack) {
-            util.applyTransform(row[0], row[1]);
+            DOM.setTransform(row[0], row[1]);
         }
         this._transformStack = [];
     }

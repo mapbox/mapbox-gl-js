@@ -455,33 +455,3 @@ exports.parseCacheControl = function(cacheControl: string): Object {
 
     return header;
 };
-
-
-/**
- * Immediately apply a css transform to given DOM element
- * @param {Object} container
- * @param {string} transform
- */
-exports.applyTransform = function(container: Object, transform: string) {
-    //this should be testProp(['transform', 'WebkitTransform']);
-    //but this code is run before window.document.documentElement.style is defined
-    container.style['transform'] = transform;
-    container.style['WebkitTransform'] = transform;
-};
-
-/**
- * Stages a DOM transform update
- *
- * @param container target DOM element
- * @param transform new transform
- * @param immediate if false, transform will be applied on next `Painter.render`.
- *  If true, transform will be applied immediately.
- */
-exports.pushTransform = function(container: Object, transform: string, immediate: boolean, map: Object) {
-    if (immediate === true) {
-        exports.applyTransform(container, transform);
-    } else {
-        map.deferTransform(container, transform);
-    }
-};
-
