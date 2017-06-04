@@ -1316,7 +1316,6 @@ class Map extends Camera {
 
         this.painter = new Painter(gl, this.transform);
     }
-    
 
     /**
      * Fired when the WebGL context is lost.
@@ -1389,8 +1388,8 @@ class Map extends Camera {
 
     /**
      * Defers the given DOM transform until the next render tick
-     * @param {Object} container 
-     * @param {string} transform 
+     * @param {Object} container
+     * @param {string} transform
      */
     deferTransform(container, transform) {
         this._transformStack.push([container, transform]);
@@ -1400,7 +1399,7 @@ class Map extends Camera {
      * Applies deferred DOM transforms that have been pushed with _deferTransform
      * Call immediately after painter.render
      */
-    _applyTransforms(){
+    _applyTransforms() {
         for (const row of this._transformStack) {
             util.applyTransform(row[0], row[1]);
         }

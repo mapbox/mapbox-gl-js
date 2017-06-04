@@ -459,15 +459,15 @@ exports.parseCacheControl = function(cacheControl: string): Object {
 
 /**
  * Immediately apply a css transform to given DOM element
- * @param {Object} container 
- * @param {string} transform 
+ * @param {Object} container
+ * @param {string} transform
  */
 exports.applyTransform = function(container: Object, transform: string) {
     //this should be testProp(['transform', 'WebkitTransform']);
     //but this code is run before window.document.documentElement.style is defined
     container.style['transform'] = transform;
     container.style['WebkitTransform'] = transform;
-}
+};
 
 /**
  * Stages a DOM transform update
