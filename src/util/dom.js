@@ -36,9 +36,9 @@ exports.enableDrag = function () {
     }
 };
 
-exports.setTransform = function(el, value, immediate) {
+exports.setTransform = function(el, value, immediate, map) {
     immediate = (immediate === undefined) ? true : immediate;
-    util.pushTransform(el, value, immediate);
+    util.pushTransform(el, value, immediate, map);
 };
 
 // Suppress the next click, but only if it's immediate.

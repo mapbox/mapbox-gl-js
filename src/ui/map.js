@@ -151,6 +151,8 @@ class Map extends Camera {
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
 
+        this._transformStack = [];
+
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
             if (!this._container) throw new Error(`Container '${options.container}' not found.`);
@@ -1314,6 +1316,7 @@ class Map extends Camera {
 
         this.painter = new Painter(gl, this.transform);
     }
+    
 
     /**
      * Fired when the WebGL context is lost.
@@ -1385,6 +1388,26 @@ class Map extends Camera {
     }
 
     /**
+     * Defers the given DOM transform until the next render tick
+     * @param {Object} container 
+     * @param {string} transform 
+     */
+    deferTransform(container, transform) {
+        this._transformStack.push([container, transform]);
+    }
+
+    /**
+     * Applies deferred DOM transforms that have been pushed with _deferTransform
+     * Call immediately after painter.render
+     */
+    _applyTransforms(){
+        for (const row of this._transformStack) {
+            util.applyTransform(row[0], row[1]);
+        }
+        this._transformStack = [];
+    }
+
+    /**
      * Call when a (re-)render of the map is required:
      * - The style has changed (`setPaintProperty()`, etc.)
      * - Source data has changed (e.g. tiles have finished loading)
@@ -1428,6 +1451,8 @@ class Map extends Camera {
             this._loaded = true;
             this.fire('load');
         }
+
+        this._applyTransforms();
 
         this._frameId = null;
 
