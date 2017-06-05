@@ -1,0 +1,109 @@
+---
+layout: example
+category: example
+title: Center on symbol
+description: Using featuresAt and flyTo to center the map on a symbol
+---
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-90.96, -0.47],
+    zoom: 8
+});
+
+map.on('style.load', function () {
+
+    // add geojson data as a new source
+    map.addSource("myMarkers", {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -91.395263671875,
+                -0.9145729757782163
+
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -90.32958984375,
+                -0.6344474832838974
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -91.34033203125,
+                0.01647949196029245
+              ]
+            }
+          }
+        ]
+      }
+    });
+
+    // add source as a layer and apply some styles
+    map.addLayer({
+        "id": "myMarkers",
+        "interactive": true,
+        "type": "symbol",
+        "source": "myMarkers",
+        "layout": {
+          "icon-image": {
+            "base": 1,
+            "stops": [
+                [
+                    1,
+                    "marker-15"
+                ]
+            ]
+          },
+        },
+        "paint": {}
+    });
+});
+
+map.on('click', function(e){
+  // Use featresAt to get features within a given radius of the click event
+  // Use layer option to avoid getting results from other layers
+  map.featuresAt(e.point, { layer: 'myMarkers', radius: 20, includeGeometry: true }, function(err, features){
+    if(err) throw err;
+    // if there are features within the given radius of the click event, 
+    // fly to the location of the click event
+    if(features.length){
+      // Get coordinates from the marker and center the map on those coordinates
+      map.flyTo({center: features[0].geometry.coordinates });
+    }
+  });
+});
+
+
+// Use the same approach as above to indicate that the symbols are clickable
+// by changing the cursor style to 'pointer'.
+map.on('mousemove', function(e){
+  map.featuresAt(e.point, { radius: 10, includeGeometry: true }, function(err, features){
+    if(features.length) {
+      document.getElementsByClassName('mapboxgl-canvas')[0].style.cursor = "pointer";
+    } else {
+      document.getElementsByClassName('mapboxgl-canvas')[0].style.cursor = "";
+    }
+  });
+});
+</script>
