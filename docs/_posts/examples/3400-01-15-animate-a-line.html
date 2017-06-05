@@ -26,7 +26,7 @@ button {
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v10',
     center: [0, 0],
     zoom: 0.5
 });
@@ -49,22 +49,19 @@ var speedFactor = 30; // number of frames per longitude degree
 var animation;
 var startTime = 0;
 var progress = 0; // progress = timestamp - startTime
-var pause = false;
+var pauseAnimation = false;
 var pauseButton = document.getElementById('pause');
 
 map.on('load', function() {
 
     // Add a source and layer displaying the line which will be
-    // animated in a circle as a sine wave along the map.
-    map.addSource('line-animation', {
-        'type': 'geojson',
-        'data': geojson
-    });
-
     map.addLayer({
         'id': 'line-animation',
         'type': 'line',
-        'source': 'line-animation',
+        'source': {
+           'type': 'geojson',
+           'data': geojson
+        },
         'layout': {
             'line-cap': 'round',
             'line-join': 'round'
@@ -85,7 +82,7 @@ map.on('load', function() {
         if (pauseButton.classList.contains('pause')) {
             cancelAnimationFrame(animation);
         } else {
-            pause = true;
+            pauseAnimation = true;
             animateLine();
         }
     });
@@ -93,14 +90,15 @@ map.on('load', function() {
     // requestAnimationFrame pauses once the tab becomes inactive
     // reset startTime and progress once the tab is active again
     document.addEventListener('visibilitychange', function() {
-        pause = true;
+        pauseAnimation = true;
     });
 
+    // animated in a circle as a sine wave along the map.
     function animateLine(timestamp) {
-        if (pause) {
+        if (pauseAnimation) {
             // no timestamp in frame0
             startTime = performance.now() - progress;
-            pause = false;
+            pauseAnimation = false;
         } else {
             progress = timestamp - startTime;
         }
