@@ -36,11 +36,11 @@ module.exports = function(style) {
 
     const processedConstants = {};
 
-    eachLayer(style, (layer) => {
+    eachLayer(style, function(layer) {
 
         const round = layer.layout && layer.layout['line-cap'] === 'round';
 
-        eachPaint(layer, (paint) => {
+        eachPaint(layer, function(paint) {
 
 
             // split raster brightness
@@ -153,7 +153,7 @@ module.exports = function(style) {
         });
     });
 
-    style.layers = style.layers.filter((layer) => {
+    style.layers = style.layers.filter(function(layer) {
         return !layer.layers;
     });
 
