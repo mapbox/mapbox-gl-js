@@ -98,13 +98,13 @@ Every expression evaluates to a value of one of the following types.
 - `Boolean`
   - Literal: `true` or `false`
 - `Color`
-- `JSONObject`
+- `Object`
 - `Array<T, N>`: an array of N values of type T
   - Literal: `["array", v0, v1, ...]`
 - `Vector<T>`: a dynamically sized array of values of type T
   - Literal: `["vector", v0, v1, v2, ... vN]`
   - TODO: without type inference, 0-length arrays and vectors can't be typed
-- `Value`: A "variant" type representing the set of possible values retrievable from a feature's `properties` object (`Null | String | Number | Boolean | JSONObject | Vector<Value>`)
+- `Value`: A "variant" type representing the set of possible values retrievable from a feature's `properties` object (`Null | String | Number | Boolean | Object | Vector<Value>`)
 - `Error`: a subtype of all other types. Used wherever an expression is unable to return the appropriate supertype. Carries diagnostic information such as an explanatory message and the expression location where the Error value was generated.
 
 ###Constants:
@@ -120,15 +120,14 @@ Every expression evaluates to a value of one of the following types.
   - `0`, `''`, and `null` are converted to `false`, all other values to `true`
 
 ###Lookup:
-- `["get", obj: JSONObject, key: String ] -> Value`
-- `["has", obj: JSONObject, key: String ] -> Boolean`
-- `["at", arr: JSONArray, index: Number] -> Value`
+- `["get", obj: Object, key: String ] -> Value`
+- `["has", obj: Object, key: String ] -> Boolean`
 - `["at", arr: Array<T>|Vector<T>, index: Number] -> T`
 - `["typeof", expr: Value] -> String`
-- `["length", e: JSONArray|Vector<T>|String] -> Number`
+- `["length", e: Vector<T>|String] -> Number`
 
 ###Feature data:
-- `["properties"] -> JSONObject` the feature's `properties` object
+- `["properties"] -> Object` the feature's `properties` object
 - `["geometry_type"] -> String` the string value of `feature.geometry.type`
 - `[ "id" ] -> Value` returns the value of `feature.id`.
 
