@@ -369,6 +369,17 @@
             }
           }
         },
+        "normal": {
+          "doc": "Normal mapping textures",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -3058,6 +3069,141 @@
       }
     },
     "raster-fade-duration": {
+      "type": "number",
+      "default": 300,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "milliseconds",
+      "doc": "Fade duration when a new tile is added.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "paint_normal": {
+    "normal-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the image will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-hue-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "degrees",
+      "doc": "Rotates hues around the color wheel.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-brightness-min": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Increase or reduce the brightness of the image. The value is the minimum brightness.",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-brightness-max": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Increase or reduce the brightness of the image. The value is the maximum brightness.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-saturation": {
+      "type": "number",
+      "doc": "Increase or reduce the saturation of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-contrast": {
+      "type": "number",
+      "doc": "Increase or reduce the contrast of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-fade-duration": {
       "type": "number",
       "default": 300,
       "minimum": 0,
