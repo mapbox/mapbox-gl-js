@@ -49,10 +49,11 @@ void main() {
 
     vec4 projectedPoint = u_matrix * vec4(a_pos, 0, 1);
     highp float camera_to_anchor_distance = projectedPoint.w;
+    // See comments in symbol_sdf.vertex
     highp float distance_ratio = u_pitch_with_map ?
         camera_to_anchor_distance / u_camera_to_center_distance :
         u_camera_to_center_distance / camera_to_anchor_distance;
-    highp float perspective_ratio = 0.5 + 0.5 * clamp(distance_ratio, 0.1, 10.0);
+    highp float perspective_ratio = 0.5 + 0.5 * distance_ratio;
 
     size *= perspective_ratio;
 

@@ -24,7 +24,7 @@ module.exports = {
  *
  * ## GL coordinate space
  * At the end of everything, the vertex shader needs to produce a position in GL coordinate space,
- * which is (-1, 1) at the top left and (1, -1) in the bottom left.
+ * which is (-1, 1) at the top left and (1, -1) in the bottom right.
  *
  * ## Map pixel coordinate spaces
  * Each tile has a pixel coordinate space. It's just the tile units scaled so that one unit is
@@ -46,7 +46,7 @@ module.exports = {
  *      - map pixel space           pitch-alignment=map         rotation-alignment=map
  *      - rotated map pixel space   pitch-alignment=map         rotation-alignment=viewport
  *      - viewport pixel space      pitch-alignment=viewport    rotation-alignment=*
- * 2. the the label follows a line, find the point along the line that is the correct distance from the anchor.
+ * 2. if the label follows a line, find the point along the line that is the correct distance from the anchor.
  * 3. add the glyph's corner offset to the point from step 3
  * 4. convert from the label coordinate space to gl coordinates
  *
@@ -139,7 +139,9 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
-        // Don't bother calculating the correct point for invisible labels. Move them offscreen.
+        // Don't bother calculating the correct point for invisible labels.
+        // Hide them by moving them offscreen. We still need to add them to the buffer
+        // because the dynamic buffer is paired with a static buffer that doesn't get updated.
         if (!isVisible(anchorPos, symbol, clippingBuffer, painter)) {
             for (let i = symbol.numGlyphs; i > 0; i--) {
                 addGlyph(offscreenPoint, 0, dynamicLayoutVertexArray);

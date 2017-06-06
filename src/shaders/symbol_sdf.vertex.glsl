@@ -66,10 +66,16 @@ void main() {
 
     vec4 projectedPoint = u_matrix * vec4(a_pos, 0, 1);
     highp float camera_to_anchor_distance = projectedPoint.w;
+    // If the label is pitched with the map, layout is done in pitched space,
+    // which makes labels in the distance smaller relative to viewport space.
+    // We counteract part of that effect by multiplying by the perspective ratio.
+    // If the label isn't pitched with the map, we do layout in viewport space,
+    // which makes labels in the distance larger relative to the features around
+    // them. We counteract part of that effect by dividing by the perspective ratio.
     highp float distance_ratio = u_pitch_with_map ?
         camera_to_anchor_distance / u_camera_to_center_distance :
         u_camera_to_center_distance / camera_to_anchor_distance;
-    highp float perspective_ratio = 0.5 + 0.5 * clamp(distance_ratio, 0.1, 10.0);
+    highp float perspective_ratio = 0.5 + 0.5 * distance_ratio;
 
     size *= perspective_ratio;
 
