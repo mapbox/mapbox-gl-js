@@ -1,29 +1,31 @@
--
-  term: "Active development"
-  description: "Things actively being built right now."
-  items:
-    -
-      name: Client-side terrain rendering
-      issues: ["3730"]
-    -
-      name: Custom WebGL layer type
-      issues: ["281"]
-    - 
-      name: Property function support for <code>text-size</code> and <code>icon-size</code>
-      issues: ["4228"]
--
-  term: "Upcoming"
-  description: "Things we hope to start building in the next several months."
-  items:
-    -
-      name: Property aggregation on clustered features
-      issues: ["2412"]
-    -
-      name: <code>Map#setCamera</code> method
-      issues: ["3583", "2801"]
-    -
-      name: Custom source type API
-      project: 2
-    - 
-      name: Patterns for loading and errored tiles
-      issues: [3280]
+updated_at: '04/13/2017'
+roadmap_items:
+  -
+    term: "Active development"
+    description: "Things actively being built right now."
+    items:
+      -
+        name: Client-side terrain rendering
+        issues: ["3730"]
+      -
+        name: Custom WebGL layer type
+        issues: ["281"]
+      -
+        name: Property function support for <code>text-size</code> and <code>icon-size</code>
+        issues: ["4228"]
+  -
+    term: "Upcoming"
+    description: "Things we hope to start building in the next several months."
+    items:
+      -
+        name: Property aggregation on clustered features
+        issues: ["2412"]
+      -
+        name: <code>Map#setCamera</code> method
+        issues: ["3583", "2801"]
+      -
+        name: Custom source type API
+        project: 2
+      -
+        name: Patterns for loading and errored tiles
+        issues: [3280]
