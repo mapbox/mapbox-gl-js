@@ -32,12 +32,13 @@ class ProgramConfiguration {
         this.interpolationUniforms = [];
         this.pragmas = {vertex: {}, fragment: {}};
         this.cacheKey = '';
+        this.interface = {};
     }
 
-    static createDynamic(attributes, layer, zoom) {
+    static createDynamic(programInterface, layer, zoom) {
         const self = new ProgramConfiguration();
 
-        for (const attributeConfig of attributes) {
+        for (const attributeConfig of programInterface.paintAttributes || []) {
             const attribute = normalizePaintAttribute(attributeConfig, layer);
             assert(/^a_/.test(attribute.name));
             const name = attribute.name.slice(2);
@@ -51,6 +52,7 @@ class ProgramConfiguration {
             }
         }
         self.PaintVertexArray = createVertexArrayType(self.attributes);
+        self.interface = programInterface;
 
         return self;
     }

@@ -31,7 +31,7 @@ class BufferGroup {
         this.layerData = {};
         for (const layer of layers) {
             const array = arrays.paintVertexArrays && arrays.paintVertexArrays[layer.id];
-            const programConfiguration = ProgramConfiguration.createDynamic(programInterface.paintAttributes || [], layer, zoom);
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
             const paintVertexBuffer = array ? new Buffer(array.array, array.type, Buffer.BufferType.VERTEX) : null;
             this.layerData[layer.id] = {programConfiguration, paintVertexBuffer};
         }

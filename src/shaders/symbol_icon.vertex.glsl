@@ -1,5 +1,3 @@
-// NOTE: the a_data attribute in this shader is manually bound (see https://github.com/mapbox/mapbox-gl-js/issues/4607 / #4728).
-// If removing or renaming a_data, revisit the manual binding in painter.js accordingly.
 attribute vec4 a_pos_offset;
 attribute vec2 a_label_pos;
 attribute vec4 a_data;

@@ -393,12 +393,13 @@ class Painter {
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
 
-
-        // For the symbol programs, manually ensure the attrib bound to position 0 is always used (either a_data or a_pos_offset would work here).
-        // This is needed to fix https://github.com/mapbox/mapbox-gl-js/issues/4607 — otherwise a_size can be bound first, causing rendering to fail.
-        // All remaining attribs will be bound dynamically below.
-        if (name === 'symbolSDF' || name === 'symbolIcon') {
-            gl.bindAttribLocation(program, 0, 'a_data');
+        // Manually bind layout attributes in the order defined by their
+        // ProgramInterface so that we don't dynamically link an unused
+        // attribute at position 0, which can cause rendering to fail for an
+        // entire layer (see #4607, #4728)
+        const layoutAttributes = configuration.interface.layoutAttributes || [];
+        for (let i = 0; i < layoutAttributes.length; i++) {
+            gl.bindAttribLocation(program, i, layoutAttributes[i].name);
         }
 
         gl.linkProgram(program);
