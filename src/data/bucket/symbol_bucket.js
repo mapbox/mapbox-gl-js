@@ -727,8 +727,10 @@ class SymbolBucket {
 
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
 
-        const labelAngle = Math.abs((labelAnchor.angle + placementAngle) % Math.PI);
-        const inVerticalRange = labelAngle > Math.PI / 4 && labelAngle <= Math.PI * 3 / 4;
+        const labelAngle = ((labelAnchor.angle + placementAngle) + 2 * Math.PI) % (2 * Math.PI);
+        const inVerticalRange = (
+                (labelAngle > Math.PI * 1 / 4 && labelAngle <= Math.PI * 3 / 4) ||
+                (labelAngle > Math.PI * 5 / 4 && labelAngle <= Math.PI * 7 / 4));
         const useVerticalMode = Boolean(writingModes & WritingMode.vertical) && inVerticalRange;
 
         for (const symbol of quads) {
