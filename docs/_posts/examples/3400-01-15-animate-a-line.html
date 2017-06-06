@@ -49,7 +49,7 @@ var speedFactor = 30; // number of frames per longitude degree
 var animation;
 var startTime = 0;
 var progress = 0; // progress = timestamp - startTime
-var pauseAnimation = false;
+var isActive = false; // indicator of whether the animation needs to be active
 var pauseButton = document.getElementById('pause');
 
 map.on('load', function() {
@@ -82,7 +82,7 @@ map.on('load', function() {
         if (pauseButton.classList.contains('pause')) {
             cancelAnimationFrame(animation);
         } else {
-            pauseAnimation = true;
+            isActive = true;
             animateLine();
         }
     });
@@ -90,15 +90,15 @@ map.on('load', function() {
     // requestAnimationFrame pauses once the tab becomes inactive
     // reset startTime and progress once the tab is active again
     document.addEventListener('visibilitychange', function() {
-        pauseAnimation = true;
+        isActive = true;
     });
 
     // animated in a circle as a sine wave along the map.
     function animateLine(timestamp) {
-        if (pauseAnimation) {
+        if (isActive) {
             // no timestamp in frame0
             startTime = performance.now() - progress;
-            pauseAnimation = false;
+            isActive = false;
         } else {
             progress = timestamp - startTime;
         }
