@@ -38,8 +38,11 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
+            { x: 370, y: 74},
+            { x: 389, y: 78},
+            { x: 409, y: 82},
+            { x: 428, y: 86},
             { x: 448, y: 90},
-            { x: 458, y: 92},
             { x: 468, y: 94},
             { x: 478, y: 96},
             { x: 487, y: 97},
@@ -51,7 +54,10 @@ test('CollisionFeature', (t) => {
             { x: 540, y: 76},
             { x: 549, y: 72},
             { x: 558, y: 67},
-            { x: 567, y: 63} ]);
+            { x: 576, y: 59},
+            { x: 594, y: 50},
+            { x: 612, y: 42},
+            { x: 630, y: 33} ]);
         t.end();
     });
 
@@ -61,8 +67,11 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         const maxScales = pluckMaxScales(cf);
         t.deepEqual(maxScales, [
+            0.37037035822868347,
+            0.43478259444236755,
+            0.5263158082962036,
+            0.6666666865348816,
             0.9090909361839294,
-            0.9900000095367432,
             1.4285714626312256,
             2,
             3.3333332538604736,
@@ -74,7 +83,10 @@ test('CollisionFeature', (t) => {
             1.4285714626312256,
             1.1111111640930176,
             0.9090909361839294,
-            0.7692307829856873]);
+            0.6666666865348816,
+            0.5263158082962036,
+            0.43478259444236755,
+            0.37037035822868347]);
         t.end();
     });
 
@@ -84,8 +96,9 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
+            { x: 0, y: 10 },
+            { x: 0, y: 30 },
             { x: 0, y: 50 },
-            { x: 0, y: 60 },
             { x: 0, y: 70 },
             { x: 0, y: 80 },
             { x: 0, y: 90 },
@@ -97,7 +110,7 @@ test('CollisionFeature', (t) => {
             { x: 0, y: 150 },
             { x: 0, y: 160 },
             { x: 0, y: 170 },
-            { x: 0, y: 180 } ]);
+            { x: 0, y: 190 } ]);
         t.end();
     });
 
