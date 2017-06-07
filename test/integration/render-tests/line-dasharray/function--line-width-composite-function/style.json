@@ -2,144 +2,146 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "ignored":{
-        "native": "https://github.com/mapbox/mapbox-gl-js/issues/3682#issuecomment-264348200"
-      }
+      "width": 64,
+      "height": 64
     }
   },
-  "center": [
-    13.418056,
-    52.499167
-  ],
-  "zoom": 14,
+  "zoom": 0.5,
   "sources": {
-    "mapbox": {
-      "type": "vector",
-      "maxzoom": 14,
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.mvt"
-      ]
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 1
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  -5
+                ],
+                [
+                  10,
+                  -5
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 2
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  0
+                ],
+                [
+                  10,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 3
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  5
+                ],
+                [
+                  10,
+                  5
+                ]
+              ]
+            }
+          }
+        ]
+      }
     }
   },
   "layers": [
     {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "white"
-      }
-    },
-    {
       "id": "road",
       "type": "line",
-      "source": "mapbox",
-      "source-layer": "road",
+      "source": "geojson",
       "paint": {
         "line-width": {
-          "property": "class",
+          "property": "property",
           "type": "categorical",
           "stops": [
             [
               {
-                "zoom": 13, 
-                "value": "path"
+                "zoom": 0,
+                "value": 1
               },
               1
             ],
             [
               {
-                "zoom": 13,
-                "value": "driveway"
+                "zoom": 0,
+                "value": 2
               },
               2
             ],
             [
               {
-                "zoom": 13,
-                "value": "service"
+                "zoom": 0,
+                "value": 3
               },
               3
             ],
             [
               {
-                "zoom": 13,
-                "value": "street_limited"
+                "zoom": 1,
+                "value": 1
               },
               4
             ],
             [
               {
-                "zoom": 13,
-                "value": "street"
+                "zoom": 1,
+                "value": 2
               },
               5
             ],
             [
               {
-                "zoom": 13,
-                "value": "main"
+                "zoom": 1,
+                "value": 3
               },
               6
-            ],
-            [
-              {
-                "zoom": 15, 
-                "value": "path"
-              },
-              4
-            ],
-            [
-              {
-                "zoom": 15,
-                "value": "driveway"
-              },
-              8
-            ],
-            [
-              {
-                "zoom": 15,
-                "value": "service"
-              },
-              12
-            ],
-            [
-              {
-                "zoom": 15,
-                "value": "street_limited"
-              },
-              16
-            ],
-            [
-              {
-                "zoom": 15,
-                "value": "street"
-              },
-              20
-            ],
-            [
-              {
-                "zoom": 15,
-                "value": "main"
-              },
-              24
             ]
           ]
         },
         "line-dasharray": {
           "stops": [
             [
-              13,
+              0,
               [
                 1,
                 1
               ]
             ],
             [
-              15,
+              1,
               [
                 2,
-                2
+                1
               ]
             ]
           ]
