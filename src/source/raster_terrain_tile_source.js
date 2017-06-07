@@ -132,7 +132,7 @@ class RasterTerrainTileSource extends Evented {
             }
 
             if (data) {
-                tile.dem = new DEMPyramid(tile.uid, null, data.levels);
+                tile.dem =  DEMPyramid.deserialize(data);
                 tile.state = 'loaded';
                 callback(null);
             }

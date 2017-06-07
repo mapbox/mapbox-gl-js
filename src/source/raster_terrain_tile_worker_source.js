@@ -20,7 +20,8 @@ class RasterTerrainTileWorkerSource {
 
         const dem = new DEMPyramid(uid);
         dem.loadFromImage(params.rawImageData);
-        callback(null, dem);
+        const transferrables = [];
+        callback(null, dem.serialize(transferrables), transferrables);
 
     }
 

@@ -46,7 +46,7 @@ class DEMPyramid {
     constructor(uid, scale, levels) {
         this.uid = uid;
         this.scale = scale || 1;
-        this.levels = levels ? levels.map((l)=> new Level(l.width, l.height, l.border, l.data)) : [];
+        this.levels = levels ? levels : [];
         this.loaded = false;
     }
 
@@ -83,8 +83,17 @@ class DEMPyramid {
         this.loaded = true;
     }
 
-    serialize() {
-        // todo: figure out efficient transfer of DEM
+    serialize(transferables) {
+        const references = {
+            uid: this.uid,
+            scale: this.scale,
+        };
+
+        this.levels.forEach((l,i)=>{
+            if (transferables) transferables.push(l.data.buffer);
+            references[i] = l.data.buffer;
+        });
+        return references;
     }
 
     backfillBorders(borderTile, dx, dy) {
@@ -136,9 +145,22 @@ class DEMPyramid {
             return value < min ? min : (value > max ? max : value);
         }
     }
-}
-
-
+};
 
 
 module.exports = {DEMPyramid, Level};
+
+
+DEMPyramid.deserialize = function(data) {
+    const levels = [];
+    // TODO dont hardcode tilesize
+    let tileSize = 256, i=0;
+    while (tileSize >= 2) {
+        levels.push(new Level(tileSize, tileSize, tileSize/2, new Int32Array(data[i])));
+        tileSize /=2;
+        i++;
+    }
+    levels.push(new Level(2,2,0));
+    levels.push(new Level(1,1,0));
+    return new DEMPyramid(data.uid, data.scale, levels);
+}
