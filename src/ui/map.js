@@ -98,6 +98,7 @@ const defaultOptions = {
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
  *   the map within 7 degrees of north, the map will automatically snap to exact north.
+ * @param {boolean} [options.pitchWithRotate=true] If `false`, the map's pitch (tilt) control with "drag to rotate" interaction will be disabled.
  * @param {Array<string>} [options.classes] Mapbox style class names with which to initialize the map.
  *   Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
