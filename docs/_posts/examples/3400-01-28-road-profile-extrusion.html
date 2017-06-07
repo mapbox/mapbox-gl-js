@@ -1,0 +1,56 @@
+--- 
+layout: example 
+category: example 
+title: Extrude a 3D road profile.
+description: Create a 3D road or activity profile using fill-extrude-height.
+tags: 
+  - layers 
+---
+
+<div id='map'>
+</div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: [-122.4662, 37.7989],
+    zoom: 14,
+    pitch: 50,
+    bearing: 0
+});
+
+map.on('load', function() {
+
+    // source GeoJSON data for visual is at
+    // https://gist.github.com/ryanbaumann/f196a84c4c5728d860db0fc7a19d0c9b
+    map.addSource("roadProfile", {
+        'type': 'geojson',
+        'data': '{{site.baseurl}}/assets/data/3d-road-profile-example.geojson'
+    });
+
+    map.addLayer({
+        'id': 'roadExtrude',
+        'type': 'fill',
+        'source': 'roadProfile',
+        'paint': {
+            // Color each polygon extrusion with data-driven styles
+            'fill-color': {
+                'property': 'g', //color by gradient
+                'type': 'exponential', //interpolate colors between stops
+                'stops': [
+                    [-10, '#E4855C'], // Red colors for negative gradients
+                    [10, '#97EA8B'] // Green colors for positive gradients
+                ]
+            },
+            // Extrude each polygon to the height of the 'elevation' data property
+            'fill-extrude-height': {
+                'property': 'e', //use the e data property as the elevation
+                'type': 'identity' //use the value in the 'e' property as the extrude height
+            },
+            'fill-opacity': 0.5 //Lower opacity to prevent line-of-sight problems
+        }
+    });
+});
+</script>
+
+
