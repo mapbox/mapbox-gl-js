@@ -46,10 +46,10 @@ var geojson = {
 };
 
 var speedFactor = 30; // number of frames per longitude degree
-var animation;
+var animation; // to store and cancel the animation
 var startTime = 0;
 var progress = 0; // progress = timestamp - startTime
-var resetTime = false; // indicator of whether the animation needs to be active
+var resetTime = false; // indicator of whether time reset is needed for the animation
 var pauseButton = document.getElementById('pause');
 
 map.on('load', function() {
