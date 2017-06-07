@@ -5,6 +5,7 @@ const parseColor = require('../util/parse_color');
 const extend = require('../util/extend');
 const getType = require('../util/get_type');
 const interpolate = require('../util/interpolate');
+const compileExpression = require('./expression');
 
 function identityFunction(x) {
     return x;
@@ -24,7 +25,15 @@ function createFunction(parameters, propertySpec) {
         };
         fun.isFeatureConstant = true;
         fun.isZoomConstant = true;
-
+    } else if (parameters.type === 'expression') {
+        const compiled = compileExpression(parameters.expression);
+        fun = function(zoom, featureProperties) {
+            const result = compiled.function({zoom}, {properties: featureProperties});
+            return isColor ? parseColor(result) : result;
+        };
+        fun.isFeatureConstant = compiled.isFeatureConstant;
+        fun.isZoomConstant = compiled.isZoomConstant;
+        fun.zoomInterpolationBase = parameters.zoomInterpolationBase;
     } else {
         const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
         const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
@@ -248,7 +257,7 @@ function findStopLessThanOrEqualTo(stops, input) {
 }
 
 function isFunctionDefinition(value) {
-    return typeof value === 'object' && (value.stops || value.type === 'identity');
+    return typeof value === 'object' && (value.stops || value.type === 'identity' || value.type === 'expression');
 }
 
 /**
