@@ -54,7 +54,7 @@ var pauseButton = document.getElementById('pause');
 
 map.on('load', function() {
 
-    // Add a source and layer displaying the line which will be
+    // add the line which will be modified in the animation
     map.addLayer({
         'id': 'line-animation',
         'type': 'line',
@@ -77,6 +77,7 @@ map.on('load', function() {
 
     animateLine();
 
+    // click the button to pause or play
     pauseButton.addEventListener('click', function() {
         pauseButton.classList.toggle('pause');
         if (pauseButton.classList.contains('pause')) {
@@ -87,8 +88,7 @@ map.on('load', function() {
         }
     });
 
-    // requestAnimationFrame pauses once the tab becomes inactive
-    // reset startTime and progress once the tab is active again
+    // reset startTime and progress once the tab loses or gains focus
     // requestAnimationFrame also pauses on hidden tabs by default
     document.addEventListener('visibilitychange', function() {
         resetTime = true;
@@ -97,7 +97,7 @@ map.on('load', function() {
     // animated in a circle as a sine wave along the map.
     function animateLine(timestamp) {
         if (resetTime) {
-            // no timestamp in frame0
+            // resume previous progress
             startTime = performance.now() - progress;
             resetTime = false;
         } else {
@@ -113,13 +113,12 @@ map.on('load', function() {
             // draw a sine wave with some math.
             var y = Math.sin(x * Math.PI / 90) * 40;
             // append new coordinates to the lineString
-            // then update the map
             geojson.features[0].geometry.coordinates.push([x, y]);
+            // then update the map
             map.getSource('line-animation').setData(geojson);
         }
         // Request the next frame of the animation.
         animation = requestAnimationFrame(animateLine);
     }
-
 });
 </script>
