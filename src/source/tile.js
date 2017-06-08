@@ -212,7 +212,8 @@ class Tile {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         }
 
-        const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[params.sourceLayer];
+        const sourceLayer = params ? params.sourceLayer : undefined;
+        const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[sourceLayer];
 
         if (!layer) return;
 
