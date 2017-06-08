@@ -253,8 +253,6 @@ class GeolocateControl extends Evented {
 
         // when showUserLocation is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
         if (this.options.showUserLocation) {
-            if (this.options.trackUserLocation) this._watchState = 'INITILIZE';
-
             this._dotElement = DOM.create('div', 'mapboxgl-user-location-dot');
 
             // until https://github.com/mapbox/mapbox-gl-js/issues/2900, the offset is used to ensure the Marker is centered at the
@@ -381,6 +379,24 @@ class GeolocateControl extends Evented {
 }
 
 module.exports = GeolocateControl;
+
+/* Geolocate Control Watch States
+ * This is the private state of the control.
+ *
+ * OFF
+ *    off/inactive
+ * WAITING_ACTIVE
+ *    Geolocate Control was clicked but still waiting for Geolocation API response with user location
+ * ACTIVE_LOCK
+ *    Showing the user location as a dot AND tracking the camera to be fixed to their location. If their location changes the map moves to follow.
+ * ACTIVE_ERROR
+ *    There was en error from the Geolocation API while trying to show and track the user location.
+ * BACKGROUND
+ *    Showing the user location as a dot but the camera doesn't follow their location as it changes.
+ * BACKGROUND_ERROR
+ *    There was an error from the Geolocation API while trying to show (but not track) the user location.
+ */
+
 
 /**
  * Fired on each Geolocation API position update which returned as success.
