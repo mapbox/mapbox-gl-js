@@ -30,6 +30,18 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('transforms urls after normalizing', (t) => {
+            mapbox.setURLTransform((url) => {
+                url = url.replace('http://', 'https://');
+                return `${url}&transformed=true`;
+            });
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=key&transformed=true');
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style?fresh=true&access_token=key&transformed=true');
+            t.equal(mapbox.normalizeStyleURL('http://path'), 'https://path&transformed=true');
+            mapbox.setURLTransform();
+            t.end();
+        });
+
         t.end();
     });
 
@@ -73,6 +85,18 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('transforms all urls after normalizing', (t) => {
+            mapbox.setURLTransform((url) => {
+                url = url.replace('http://', 'https://');
+                return `${url}&transformed=true`;
+            });
+            t.equal(mapbox.normalizeSourceURL(mapboxSource), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=key&transformed=true');
+            t.equal(mapbox.normalizeSourceURL(`${mapboxSource}?fresh=true`, 'token'), 'https://api.mapbox.com/v4/user.map.json?fresh=true&secure&access_token=token&transformed=true');
+            t.equal(mapbox.normalizeSourceURL('http://path'), 'https://path&transformed=true');
+            mapbox.setURLTransform();
+            t.end();
+        });
+
         t.end();
     });
 
@@ -89,6 +113,18 @@ test("mapbox", (t) => {
 
         t.test('ignores non-mapbox:// scheme', (t) => {
             t.equal(mapbox.normalizeGlyphsURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.test('transforms all urls after normalizing', (t) => {
+            mapbox.setURLTransform((url) => {
+                url = url.replace('http://', 'https://');
+                return `${url}&transformed=true`;
+            });
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'), 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key&transformed=true');
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf?fresh=true'), 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?fresh=true&access_token=key&transformed=true');
+            t.equal(mapbox.normalizeGlyphsURL('http://path'), 'https://path&transformed=true');
+            mapbox.setURLTransform();
             t.end();
         });
 
@@ -146,6 +182,18 @@ test("mapbox", (t) => {
 
         t.test('normalizes non-mapbox:// scheme when query string exists', (t) => {
             t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar?fresh=true', '@2x', '.png'), 'http://www.foo.com/bar@2x.png?fresh=true');
+            t.end();
+        });
+
+        t.test('transforms all urls after normalizing', (t) => {
+            mapbox.setURLTransform((url) => {
+                url = url.replace('http://', 'https://');
+                return `${url}&transformed=true`;
+            });
+            t.equal(mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'), 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key&transformed=true');
+            t.equal(mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8?fresh=true', '@2x', '.png'), 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite@2x.png?fresh=true&access_token=key&transformed=true');
+            t.equal(mapbox.normalizeSpriteURL('http://path/sprite', '', '.png'), 'https://path/sprite.png&transformed=true');
+            mapbox.setURLTransform();
             t.end();
         });
 
@@ -222,6 +270,18 @@ test("mapbox", (t) => {
             t.throws(() => {
                 mapbox.normalizeTileURL('', mapboxSource);
             }, new Error('Unable to parse URL object'));
+            t.end();
+        });
+
+        t.test('transforms all urls after normalizing', (t) => {
+            mapbox.setURLTransform((url) => {
+                url = url.replace('http://', 'https://');
+                return `${url}&transformed=true`;
+            });
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'https://path.png/tile.png32&transformed=true');
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', mapboxSource), 'https://example.com/tile.png?access_token=key&transformed=true');
+            t.equal(mapbox.normalizeTileURL('http://path.png'), 'https://path.png&transformed=true');
+            mapbox.setURLTransform();
             t.end();
         });
 
