@@ -275,7 +275,7 @@ function shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, vertica
         y += lineHeight;
     }
 
-    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length, translate);
+    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length);
 
     // Calculate the bounding box
     const height = lines.length * lineHeight;
@@ -299,9 +299,9 @@ function justifyLine(positionedGlyphs, glyphs, start, end, justify) {
     }
 }
 
-function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lineCount, translate) {
-    const shiftX = (justify - horizontalAlign) * maxLineLength + translate[0];
-    const shiftY = (-verticalAlign * lineCount + 0.5) * lineHeight + translate[1];
+function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lineCount) {
+    const shiftX = (justify - horizontalAlign) * maxLineLength;
+    const shiftY = (-verticalAlign * lineCount + 0.5) * lineHeight;
 
     for (let j = 0; j < positionedGlyphs.length; j++) {
         positionedGlyphs[j].x += shiftX;
