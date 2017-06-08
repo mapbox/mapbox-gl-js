@@ -137,6 +137,7 @@ class ProgramConfiguration {
         this.interpolationUniforms.push({
             name: tName,
             property: attribute.property,
+            useIntegerZoom: attribute.useIntegerZoom,
             stopOffset
         });
 
