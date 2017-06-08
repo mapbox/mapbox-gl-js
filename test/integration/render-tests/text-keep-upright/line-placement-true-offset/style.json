@@ -51,7 +51,7 @@
           "Arial Unicode MS Bold"
         ],
         "text-keep-upright": true,
-        "text-offset": [0, -1]
+        "text-offset": [0.2, -1]
       }
     }
   ]

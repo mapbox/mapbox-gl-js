@@ -1,7 +1,6 @@
 'use strict';
 
 const Point = require('point-geometry');
-const assert = require('assert');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 const symbolSize = require('./symbol_size');
@@ -134,13 +133,12 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
-        const placementZoom = symbol.placementZoom;
 
         const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        if (!isVisible(anchorPos, placementZoom, clippingBuffer, painter)) {
+        if (!isVisible(anchorPos, symbol.placementZoom, clippingBuffer, painter)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
@@ -160,33 +158,8 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         const pitchScaledFontSize = pitchWithMap ?
             fontSize * perspectiveRatio :
             fontSize / perspectiveRatio;
-        const fontScale = pitchScaledFontSize / 24;
-        const offsetY = symbol.lineOffsetY * fontSize;
 
-        const glyphsForward = [];
-        const glyphsBackward = [];
-
-        const end = symbol.glyphStartIndex + symbol.numGlyphs;
-        for (let glyphIndex = symbol.glyphStartIndex; glyphIndex < end; glyphIndex++) {
-            const glyph = bucket.glyphOffsetArray.get(glyphIndex);
-            if (glyph.offsetX > 0) {
-                glyphsForward.push(glyph);
-            } else {
-                glyphsBackward.push(glyph);
-            }
-        }
-
-        const returnGlyphs = [];
-        if (
-            processDirection(returnGlyphs, glyphsForward, 1, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale) &&
-            processDirection(returnGlyphs, glyphsBackward, -1, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale)) {
-            for (const glyph of returnGlyphs) {
-                addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle, placementZoom);
-            }
-        } else {
-            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
-            continue;
-        }
+        placeGlyphsAlongLine(symbol, pitchScaledFontSize, flip, labelPlaneMatrix, bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray);
     }
 
     if (isText) {
@@ -196,19 +169,46 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
     }
 }
 
-function processDirection(returnGlyphs, glyphs, dir, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale) {
-    assert(symbol.lineLength > 1);
+function placeGlyphsAlongLine(symbol, fontSize, flip, labelPlaneMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray) {
+    const fontScale = fontSize / 24;
+    const lineOffsetX = symbol.lineOffsetX * fontSize;
+    const lineOffsetY = symbol.lineOffsetY * fontSize;
 
-    let prev = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
-    let next = prev;
-    let vertexIndex = 0;
-    let previousDistance = 0;
-    let segmentDistance = 0;
-    let segmentAngle = 0;
+    const anchorPoint = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
+    const projectionCache = {};
 
-    let numVertices, vertexStartIndex;
+    const placedGlyphs = [];
+    const end = symbol.glyphStartIndex + symbol.numGlyphs;
+    for (let glyphIndex = symbol.glyphStartIndex; glyphIndex < end; glyphIndex++) {
+        const glyph = glyphOffsetArray.get(glyphIndex);
+
+        const placedGlyph = placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
+                symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache);
+
+        if (placedGlyph) {
+            placedGlyphs.push(placedGlyph);
+        } else {
+            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+            return;
+        }
+    }
+
+    const placementZoom = symbol.placementZoom;
+    for (const glyph of placedGlyphs) {
+        addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle, placementZoom);
+    }
+}
+
+function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, anchorSegment,
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache) {
+
+    const combinedOffsetX = flip ?
+        offsetX - lineOffsetX :
+        offsetX + lineOffsetX;
+
+    let dir = combinedOffsetX > 0 ? 1 : -1;
+
     let angle = 0;
-
     if (flip) {
         // The label needs to be flipped to keep text upright.
         // Iterate in the reverse direction.
@@ -216,43 +216,49 @@ function processDirection(returnGlyphs, glyphs, dir, flip, symbol, offsetY, line
         angle = Math.PI;
     }
 
-    if (dir === 1) {
-        numVertices = symbol.lineLength - symbol.segment - 1;
-        vertexStartIndex = symbol.lineStartIndex + symbol.segment + 1;
-    } else {
-        numVertices = symbol.segment + 1;
-        vertexStartIndex = symbol.lineStartIndex + symbol.segment;
-        angle += Math.PI;
-    }
+    if (dir < 0) angle += Math.PI;
 
-    // For each glyph, find the point `offsetX` distance from the anchor.
-    for (const glyph of glyphs) {
-        const offsetX = Math.abs(glyph.offsetX) * fontScale;
+    let currentIndex = dir > 0 ?
+        lineStartIndex + anchorSegment :
+        lineStartIndex + anchorSegment + 1;
 
-        // If the current segment doesn't have enough remaining space, iterate forward along the line.
-        // Since all the glyphs are sorted by their distance from the anchor you never need to iterate backwards.
-        // This way line vertices are projected at most once.
-        while (offsetX >= segmentDistance + previousDistance) {
-            if (Math.abs(vertexIndex) >= numVertices) return false;
-            previousDistance += segmentDistance;
-            prev = next;
-            next = project(lineVertexArray.get(vertexStartIndex + vertexIndex), labelPlaneMatrix);
-            vertexIndex += dir;
-            segmentAngle = angle + Math.atan2(next.y - prev.y, next.x - prev.x);
-            segmentDistance = prev.dist(next);
+    let current = anchorPoint;
+    let prev = anchorPoint;
+    let distanceToPrev = 0;
+    let currentSegmentDistance = 0;
+    const absOffsetX = Math.abs(combinedOffsetX);
+
+    while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
+        currentIndex += dir;
+
+        // offset does not fit on the projected line
+        if (currentIndex < lineStartIndex || currentIndex >= lineEndIndex) return null;
+
+        prev = current;
+
+        current = projectionCache[currentIndex];
+        if (current === undefined) {
+            current = projectionCache[currentIndex] = project(lineVertexArray.get(currentIndex), labelPlaneMatrix);
         }
 
-        // The point is on the current segment. Interpolate to find it.
-        const segmentInterpolationT = (offsetX - previousDistance) / segmentDistance;
-        const prevToNext = next.sub(prev);
-        const p = prevToNext.mult(segmentInterpolationT)._add(prev);
-
-        // offset the point from the line to text-offset and icon-offset
-        p._add(prevToNext._unit()._perp()._mult(offsetY * dir));
-
-        returnGlyphs.push({ point: p, angle: segmentAngle });
+        distanceToPrev += currentSegmentDistance;
+        currentSegmentDistance = prev.dist(current);
     }
-    return true;
+
+    // The point is on the current segment. Interpolate to find it.
+    const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
+    const prevToCurrent = current.sub(prev);
+    const p = prevToCurrent.mult(segmentInterpolationT)._add(prev);
+
+    // offset the point from the line to text-offset and icon-offset
+    p._add(prevToCurrent._unit()._perp()._mult(lineOffsetY * dir));
+
+    const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
+
+    return {
+        point: p,
+        angle: segmentAngle
+    };
 }
 
 const offscreenPoint = new Point(-Infinity, -Infinity);
