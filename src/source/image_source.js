@@ -11,6 +11,7 @@ const EXTENT = require('../data/extent');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('../render/vertex_array_object');
+const Texture = require('../render/texture');
 
 /**
  * A data source containing an image.
@@ -57,9 +58,7 @@ class ImageSource extends Evented {
         this.tiles = {};
 
         this.setEventedParent(eventedParent);
-
         this.options = options;
-        this.textureLoaded = false;
     }
 
     load() {
@@ -162,20 +161,14 @@ class ImageSource extends Evented {
     }
 
     _prepareImage(gl, image, resize) {
-        if (!this.textureLoaded) {
-            this.textureLoaded = true;
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else if (resize) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData || image instanceof window.HTMLCanvasElement) {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        if (!this.texture) {
+            this.texture = new Texture(gl, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
+            this.texture.setImage(image, resize);
+
+        } else if (resize || image instanceof window.HTMLVideoElement || image instanceof window.ImageData || image instanceof window.HTMLCanvasElement) {
+            this.texture.bind();
+            this.texture.dirty = this.texture.dirty || resize;
+            this.texture.setImage(image);
         }
 
         for (const w in this.tiles) {

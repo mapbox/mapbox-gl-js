@@ -54,17 +54,17 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     let parentScaleBy, parentTL;
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+    gl.bindTexture(gl.TEXTURE_2D, tile.texture.texture);
 
     gl.activeTexture(gl.TEXTURE1);
 
     if (parentTile) {
-        gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
+        gl.bindTexture(gl.TEXTURE_2D, parentTile.texture.texture);
         parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
         parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+        gl.bindTexture(gl.TEXTURE_2D, tile.texture.texture);
     }
 
     // cross-fade parameters

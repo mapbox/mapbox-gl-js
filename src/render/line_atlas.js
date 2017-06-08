@@ -1,6 +1,7 @@
 'use strict';
 
 const util = require('../util/util');
+const Texture = require('../render/texture');
 
 /**
  * A LineAtlas lets us reuse rendered dashed lines
@@ -21,6 +22,7 @@ class LineAtlas {
         this.data = new Uint8Array(this.width * this.height * this.bytes);
 
         this.positions = {};
+        this.dirty = true;
     }
 
     setSprite(sprite) {
@@ -125,21 +127,13 @@ class LineAtlas {
 
     bind(gl) {
         if (!this.texture) {
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
-
+            this.texture = new Texture(gl, gl.REPEAT, gl.LINEAR, gl.LINEAR);
         } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-            if (this.dirty) {
-                this.dirty = false;
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
-            }
+            this.texture.bind();
+        }
+        if (this.dirty) {
+            this.texture.setData(gl.RGBA, this.width, this.height, this.data);
+            this.dirty = false;
         }
     }
 }
