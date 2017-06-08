@@ -32,7 +32,7 @@ function draw(painter, source, layer, coords) {
     }
 
     // Unbind the framebuffer as a render target and render it to the map
-    texture.unbindFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     texture.renderToMap();
 }
 
@@ -42,16 +42,12 @@ function ExtrusionTexture(gl, painter, layer) {
     this.height = painter.height;
     this.painter = painter;
     this.layer = layer;
-
-    this.texture = null;
-    this.fbo = null;
-    this.fbos = this.painter.preFbos[this.width] && this.painter.preFbos[this.width][this.height];
 }
 
 ExtrusionTexture.prototype.bindFramebuffer = function() {
     const gl = this.gl;
 
-    this.texture = this.painter.getViewportTexture(this.width, this.height);
+    this.texture = this.painter.viewportTexture;
 
     gl.activeTexture(gl.TEXTURE1);
     if (!this.texture) {
@@ -62,36 +58,26 @@ ExtrusionTexture.prototype.bindFramebuffer = function() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        this.texture.width = this.width;
-        this.texture.height = this.height;
+        this.painter.viewportTexture = this.texture;
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 
-    if (!this.fbos) {
+    this.fbo = this.painter.viewportFbo;
+
+    if (!this.fbo) {
         this.fbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         const depthRenderBuffer = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+        this.painter.viewportFbo = this.fbo;
     } else {
-        this.fbo = this.fbos.pop();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     }
-};
 
-ExtrusionTexture.prototype.unbindFramebuffer = function() {
-    this.painter.bindDefaultFramebuffer();
-    if (this.fbos) {
-        this.fbos.push(this.fbo);
-    } else {
-        if (!this.painter.preFbos[this.width]) this.painter.preFbos[this.width] = {};
-        this.painter.preFbos[this.width][this.height] = [this.fbo];
-    }
-    this.painter.saveViewportTexture(this.texture);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
 };
 
 ExtrusionTexture.prototype.renderToMap = function() {
