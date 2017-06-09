@@ -6,8 +6,6 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 const symbolSize = require('./symbol_size');
 
-const offscreenPoint = new Point(-Infinity, -Infinity);
-
 module.exports = {
     updateLineLabels: updateLineLabels,
     getLabelPlaneMatrix: getLabelPlaneMatrix,
@@ -140,12 +138,8 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        // Hide them by moving them offscreen. We still need to add them to the buffer
-        // because the dynamic buffer is paired with a static buffer that doesn't get updated.
         if (!isVisible(anchorPos, symbol, clippingBuffer, painter)) {
-            for (let i = symbol.numGlyphs; i > 0; i--) {
-                addGlyph(offscreenPoint, 0, dynamicLayoutVertexArray);
-            }
+            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
 
@@ -179,8 +173,18 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
                 glyphsBackward.push(glyph);
             }
         }
-        processDirection(glyphsForward, 1, flip, symbol, offsetY, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale);
-        processDirection(glyphsBackward, -1, flip, symbol, offsetY, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale);
+
+        const returnGlyphs = [];
+        if (
+            processDirection(returnGlyphs, glyphsForward, 1, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale) &&
+            processDirection(returnGlyphs, glyphsBackward, -1, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale)) {
+            for (const glyph of returnGlyphs) {
+                addGlyph(glyph.point, glyph.angle, dynamicLayoutVertexArray);
+            }
+        } else {
+            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+            continue;
+        }
     }
 
     if (isText) {
@@ -190,7 +194,7 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
     }
 }
 
-function processDirection(glyphs, dir, flip, symbol, offsetY, lineVertexArray, dynamicLayoutVertexArray, labelPlaneMatrix, fontScale) {
+function processDirection(returnGlyphs, glyphs, dir, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale) {
     assert(symbol.lineLength > 1);
 
     let prev = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
@@ -226,7 +230,8 @@ function processDirection(glyphs, dir, flip, symbol, offsetY, lineVertexArray, d
         // If the current segment doesn't have enough remaining space, iterate forward along the line.
         // Since all the glyphs are sorted by their distance from the anchor you never need to iterate backwards.
         // This way line vertices are projected at most once.
-        while (offsetX >= segmentDistance + previousDistance && Math.abs(vertexIndex) < numVertices) {
+        while (offsetX >= segmentDistance + previousDistance) {
+            if (Math.abs(vertexIndex) >= numVertices) return false;
             previousDistance += segmentDistance;
             prev = next;
             next = project(lineVertexArray.get(vertexStartIndex + vertexIndex), labelPlaneMatrix);
@@ -243,10 +248,20 @@ function processDirection(glyphs, dir, flip, symbol, offsetY, lineVertexArray, d
         // offset the point from the line to text-offset and icon-offset
         p._add(prevToNext._unit()._perp()._mult(offsetY * dir));
 
-        addGlyph(p, segmentAngle, dynamicLayoutVertexArray);
+        returnGlyphs.push({ point: p, angle: segmentAngle });
     }
+    return true;
 }
 
+const offscreenPoint = new Point(-Infinity, -Infinity);
+
+// Hide them by moving them offscreen. We still need to add them to the buffer
+// because the dynamic buffer is paired with a static buffer that doesn't get updated.
+function hideGlyphs(num, dynamicLayoutVertexArray) {
+    for (let i = 0; i < num; i++) {
+        addGlyph(offscreenPoint, 0, dynamicLayoutVertexArray);
+    }
+}
 function addGlyph(p, angle, dynamicLayoutVertexArray) {
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
