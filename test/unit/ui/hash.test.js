@@ -121,8 +121,8 @@ test('hash', (t) => {
 
         t.equal(newHash.length, 3);
         t.equal(newHash[0], '#3');
-        t.equal(newHash[1], '1.00');
-        t.equal(newHash[2], '2.00');
+        t.equal(newHash[1], '1');
+        t.equal(newHash[2], '2');
 
         map.setPitch(60);
 
@@ -130,8 +130,8 @@ test('hash', (t) => {
 
         t.equal(newHash.length, 5);
         t.equal(newHash[0], '#3');
-        t.equal(newHash[1], '1.00');
-        t.equal(newHash[2], '2.00');
+        t.equal(newHash[1], '1');
+        t.equal(newHash[2], '2');
         t.equal(newHash[3], '0');
         t.equal(newHash[4], '60');
 
@@ -141,8 +141,8 @@ test('hash', (t) => {
 
         t.equal(newHash.length, 5);
         t.equal(newHash[0], '#3');
-        t.equal(newHash[1], '1.00');
-        t.equal(newHash[2], '2.00');
+        t.equal(newHash[1], '1');
+        t.equal(newHash[2], '2');
         t.equal(newHash[3], '135');
         t.equal(newHash[4], '60');
 

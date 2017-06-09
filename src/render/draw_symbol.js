@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const util = require('../util/util');
-const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
@@ -101,6 +100,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false,
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
+        gl.uniform1f(program.u_collision_y_stretch, tile.collisionTile.yStretch);
+
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap);
 
@@ -130,16 +131,16 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         if (!glyphAtlas) return;
 
         glyphAtlas.updateTexture(gl);
-        gl.uniform2f(program.u_texsize, glyphAtlas.width / 4, glyphAtlas.height / 4);
+        gl.uniform2f(program.u_texsize, glyphAtlas.width, glyphAtlas.height);
     } else {
         const mapMoving = painter.options.rotating || painter.options.zooming;
         const iconSizeScaled = !layer.isLayoutValueFeatureConstant('icon-size') ||
             !layer.isLayoutValueZoomConstant('icon-size') ||
             layer.getLayoutValue('icon-size', { zoom: tr.zoom }) !== 1;
-        const iconScaled = iconSizeScaled || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;
+        const iconScaled = iconSizeScaled || iconsNeedLinear;
         const iconTransformed = pitchWithMap || tr.pitch;
         painter.spriteAtlas.bind(gl, isSDF || mapMoving || iconScaled || iconTransformed);
-        gl.uniform2f(program.u_texsize, painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4);
+        gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
     }
 
     gl.activeTexture(gl.TEXTURE1);
@@ -191,6 +192,22 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         gl.uniform1f(program.u_layout_size, sizeData.layoutSize);
     } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
         gl.uniform1f(program.u_size, sizeData.layoutSize);
+    }
+    gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
+    if (layer.layout['symbol-placement'] === 'line' &&
+        layer.layout['text-rotation-alignment'] === 'map' &&
+        layer.layout['text-pitch-alignment'] === 'viewport' &&
+        layer.layout['text-field']) {
+        // We hide line labels with viewport alignment as they move into the distance
+        // because the approximations we use for drawing their glyphs get progressively worse
+        // The "1.5" here means we start hiding them when the distance from the label
+        // to the camera is 50% greater than the distance from the center of the map
+        // to the camera. Depending on viewport properties, you might expect this to filter
+        // the top third of the screen at pitch 60, and do almost nothing at pitch 45
+        gl.uniform1f(program.u_max_camera_distance, 1.5);
+    } else {
+        // "10" is effectively infinite at any pitch we support
+        gl.uniform1f(program.u_max_camera_distance, 10);
     }
 }
 

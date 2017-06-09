@@ -1706,6 +1706,9 @@
         }
       },
       "transition": false,
+      "zoom-function": true,
+      "property-function": false,
+      "function": "piecewise-constant",
       "doc": "Whether extruded geometries are lit relative to the map or viewport.",
       "example": "map",
       "sdk-support": {

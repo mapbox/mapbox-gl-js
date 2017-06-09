@@ -113,6 +113,20 @@ test('LngLatBounds', (t) => {
         t.end();
     });
 
+    t.test('#extend same LngLat instance', (t) => {
+        const point = new LngLat(0, 0);
+        const bounds = new LngLatBounds(point, point);
+
+        bounds.extend(new LngLat(15, 15));
+
+        t.equal(bounds.getSouth(), 0);
+        t.equal(bounds.getWest(), 0);
+        t.equal(bounds.getNorth(), 15);
+        t.equal(bounds.getEast(), 15);
+
+        t.end();
+    });
+
     t.test('accessors', (t) => {
         const sw = new LngLat(0, 0);
         const ne = new LngLat(-10, -20);

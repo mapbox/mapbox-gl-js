@@ -47,7 +47,7 @@ class ArrayGroup {
         this.layerData = {};
         for (const layer of layers) {
             const programConfiguration = ProgramConfiguration.createDynamic(
-                programInterface.paintAttributes || [], layer, zoom);
+                programInterface, layer, zoom);
             this.layerData[layer.id] = {
                 layer: layer,
                 programConfiguration: programConfiguration,

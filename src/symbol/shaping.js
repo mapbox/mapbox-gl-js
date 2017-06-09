@@ -275,7 +275,7 @@ function shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, vertica
         y += lineHeight;
     }
 
-    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length, translate);
+    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length);
 
     // Calculate the bounding box
     const height = lines.length * lineHeight;
@@ -299,9 +299,9 @@ function justifyLine(positionedGlyphs, glyphs, start, end, justify) {
     }
 }
 
-function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lineCount, translate) {
-    const shiftX = (justify - horizontalAlign) * maxLineLength + translate[0];
-    const shiftY = (-verticalAlign * lineCount + 0.5) * lineHeight + translate[1];
+function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lineCount) {
+    const shiftX = (justify - horizontalAlign) * maxLineLength;
+    const shiftY = (-verticalAlign * lineCount + 0.5) * lineHeight;
 
     for (let j = 0; j < positionedGlyphs.length; j++) {
         positionedGlyphs[j].x += shiftX;
@@ -310,14 +310,12 @@ function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLin
 }
 
 function shapeIcon(image, iconOffset) {
-    if (!image || !image.rect) return null;
-
     const dx = iconOffset[0];
     const dy = iconOffset[1];
-    const x1 = dx - image.width / 2;
-    const x2 = x1 + image.width;
-    const y1 = dy - image.height / 2;
-    const y2 = y1 + image.height;
+    const x1 = dx - image.displaySize[0] / 2;
+    const x2 = x1 + image.displaySize[0];
+    const y1 = dy - image.displaySize[1] / 2;
+    const y2 = y1 + image.displaySize[1];
 
     return new PositionedIcon(image, y1, y2, x1, x2);
 }

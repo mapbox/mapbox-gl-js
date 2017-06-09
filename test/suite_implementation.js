@@ -43,12 +43,15 @@ module.exports = function(style, options, _callback) {
     map.repaint = true;
 
     if (options.debug) map.showTileBoundaries = true;
-    if (options.collisionDebug) map.showCollisionBoxes = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
 
     const gl = map.painter.gl;
 
     map.once('load', () => {
+        if (options.collisionDebug) {
+            map.showCollisionBoxes = true;
+            options.operations = [["wait"]];
+        }
         applyOperations(map, options.operations, () => {
             const w = options.width * window.devicePixelRatio;
             const h = options.height * window.devicePixelRatio;

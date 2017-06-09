@@ -48,6 +48,23 @@ test('querySourceFeatures', (t) => {
         t.end();
     });
 
+    t.test('empty geojson tile', (t) => {
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        let result;
+
+        result = [];
+        tile.querySourceFeatures(result, {});
+        t.equal(result.length, 0);
+
+        const geojsonWrapper = new GeoJSONWrapper([]);
+        geojsonWrapper.name = '_geojsonTileLayer';
+        tile.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+        result = [];
+        t.doesNotThrow(tile.querySourceFeatures(result));
+        t.equal(result.length, 0);
+        t.end();
+    });
+
     t.test('vector tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         let result;
@@ -142,7 +159,7 @@ test('Tile#redoPlacement', (t) => {
                 send: () => {}
             },
             map: {
-                transform: {}
+                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } }
             }
         };
 
@@ -249,7 +266,7 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: collisionBoxArray.serialize(),
-        collisionTile: (new CollisionTile(0, 0, collisionBoxArray)).serialize(),
+        collisionTile: (new CollisionTile(0, 0, 1, 1, collisionBoxArray)).serialize(),
         featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
         buckets: []
     }, options);

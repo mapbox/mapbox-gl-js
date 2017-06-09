@@ -38,6 +38,8 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
+            { x: 448, y: 90},
+            { x: 458, y: 92},
             { x: 468, y: 94},
             { x: 478, y: 96},
             { x: 487, y: 97},
@@ -47,7 +49,32 @@ test('CollisionFeature', (t) => {
             { x: 522, y: 84},
             { x: 531, y: 80},
             { x: 540, y: 76},
-            { x: 549, y: 72} ]);
+            { x: 549, y: 72},
+            { x: 558, y: 67},
+            { x: 567, y: 63} ]);
+        t.end();
+    });
+
+    test('boxes for handling pitch underzooming have scale < 1', (t) => {
+        const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        const anchor = new Anchor(505, 95, 0, 1);
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
+        const maxScales = pluckMaxScales(cf);
+        t.deepEqual(maxScales, [
+            0.9090909361839294,
+            0.9900000095367432,
+            1.4285714626312256,
+            2,
+            3.3333332538604736,
+            10,
+            Infinity,
+            10,
+            3.3333332538604736,
+            2,
+            1.4285714626312256,
+            1.1111111640930176,
+            0.9090909361839294,
+            0.7692307829856873]);
         t.end();
     });
 
@@ -57,6 +84,8 @@ test('CollisionFeature', (t) => {
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
+            { x: 0, y: 50 },
+            { x: 0, y: 60 },
             { x: 0, y: 70 },
             { x: 0, y: 80 },
             { x: 0, y: 90 },
@@ -66,7 +95,9 @@ test('CollisionFeature', (t) => {
             { x: 0, y: 130 },
             { x: 0, y: 140 },
             { x: 0, y: 150 },
-            { x: 0, y: 160 } ]);
+            { x: 0, y: 160 },
+            { x: 0, y: 170 },
+            { x: 0, y: 180 } ]);
         t.end();
     });
 
@@ -111,7 +142,7 @@ test('CollisionFeature', (t) => {
         const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         const anchor = new Anchor(505, 95, 0, 1);
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
-        t.ok(cf.boxEndIndex - cf.boxStartIndex < 30);
+        t.ok(cf.boxEndIndex - cf.boxStartIndex < 45);
         t.end();
     });
 
@@ -130,6 +161,14 @@ test('CollisionFeature', (t) => {
         const result = [];
         for (let i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
             result.push(collisionBoxArray.get(i).anchorPoint);
+        }
+        return result;
+    }
+
+    function pluckMaxScales(cf) {
+        const result = [];
+        for (let i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
+            result.push(collisionBoxArray.get(i).maxScale);
         }
         return result;
     }
