@@ -39,7 +39,7 @@ class LngLatBounds {
      * @returns {LngLatBounds} `this`
      */
     setNorthEast(ne) {
-        this._ne = LngLat.convert(ne);
+        this._ne = ne instanceof LngLat ? new LngLat(ne.lng, ne.lat) : LngLat.convert(ne);
         return this;
     }
 
@@ -50,7 +50,7 @@ class LngLatBounds {
      * @returns {LngLatBounds} `this`
      */
     setSouthWest(sw) {
-        this._sw = LngLat.convert(sw);
+        this._sw = sw instanceof LngLat ? new LngLat(sw.lng, sw.lat) : LngLat.convert(sw);
         return this;
     }
 
