@@ -131,5 +131,11 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
-  }
+  },
+  "files": [
+    "dist/",
+    "flow-typed/",
+    "src/",
+    ".flowconfig"
+  ]
 }
