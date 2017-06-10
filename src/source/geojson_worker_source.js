@@ -83,11 +83,33 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             this._indexData(data, params, (err, indexed) => {
                 if (err) { return callback(err); }
                 this._geoJSONIndexes[params.source] = indexed;
+                this.loaded[params.source] = {};
                 callback(null);
             });
         }.bind(this);
 
         this.loadGeoJSON(params, handleData);
+    }
+
+    /**
+    * Implements {@link WorkerSource#reloadTile}.
+    *
+    * If the tile is loaded, uses the implementation in VectorTileWorkerSource.
+    * Otherwise, such as after a setData() call, we load the tile fresh.
+    *
+    * @param {Object} params
+    * @param {string} params.source The id of the source for which we're loading this tile.
+    * @param {string} params.uid The UID for this tile.
+    */
+    reloadTile(params, callback) {
+        const loaded = this.loaded[params.source],
+            uid = params.uid;
+
+        if (loaded && loaded[uid]) {
+            return super.reloadTile(params, callback);
+        } else {
+            return this.loadTile(params, callback);
+        }
     }
 
     /**
