@@ -5,6 +5,7 @@ const assert = require('assert');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 const symbolSize = require('./symbol_size');
+const addDynamicAttributes = require('../data/bucket/symbol_bucket').addDynamicAttributes;
 
 module.exports = {
     updateLineLabels: updateLineLabels,
@@ -101,7 +102,7 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function isVisible(anchorPos, symbol, clippingBuffer, painter) {
+function isVisible(anchorPos, placementZoom, clippingBuffer, painter) {
     const x = anchorPos[0] / anchorPos[3];
     const y = anchorPos[1] / anchorPos[3];
     const inPaddedViewport = (
@@ -109,7 +110,7 @@ function isVisible(anchorPos, symbol, clippingBuffer, painter) {
             x <= clippingBuffer[0] &&
             y >= -clippingBuffer[1] &&
             y <= clippingBuffer[1]);
-    return inPaddedViewport && painter.frameHistory.isVisible(symbol.placementZoom);
+    return inPaddedViewport && painter.frameHistory.isVisible(placementZoom);
 }
 
 /*
@@ -133,12 +134,13 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
+        const placementZoom = symbol.placementZoom;
 
         const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        if (!isVisible(anchorPos, symbol, clippingBuffer, painter)) {
+        if (!isVisible(anchorPos, placementZoom, clippingBuffer, painter)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
@@ -179,7 +181,7 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
             processDirection(returnGlyphs, glyphsForward, 1, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale) &&
             processDirection(returnGlyphs, glyphsBackward, -1, flip, symbol, offsetY, lineVertexArray, labelPlaneMatrix, fontScale)) {
             for (const glyph of returnGlyphs) {
-                addGlyph(glyph.point, glyph.angle, dynamicLayoutVertexArray);
+                addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle, placementZoom);
             }
         } else {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
@@ -259,12 +261,6 @@ const offscreenPoint = new Point(-Infinity, -Infinity);
 // because the dynamic buffer is paired with a static buffer that doesn't get updated.
 function hideGlyphs(num, dynamicLayoutVertexArray) {
     for (let i = 0; i < num; i++) {
-        addGlyph(offscreenPoint, 0, dynamicLayoutVertexArray);
+        addDynamicAttributes(dynamicLayoutVertexArray, offscreenPoint, 0, 25);
     }
-}
-function addGlyph(p, angle, dynamicLayoutVertexArray) {
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
 }

@@ -1,9 +1,9 @@
+const float PI = 3.141592653589793;
+
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec3 a_projected_pos;
 
-// icon-size data (see symbol_sdf.vertex.glsl for more)
-attribute vec2 a_size;
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
 uniform highp float u_size_t; // used to interpolate between zoom stops when size is a composite function
@@ -33,8 +33,11 @@ void main() {
     vec2 a_offset = a_pos_offset.zw;
 
     vec2 a_tex = a_data.xy;
-    mediump vec2 label_data = unpack_float(a_data[2]);
-    mediump float a_labelminzoom = label_data[0];
+    vec2 a_size = a_data.zw;
+
+    highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
+    highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
+    mediump float a_labelminzoom = angle_labelminzoom[1];
 
     float size;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -59,7 +62,6 @@ void main() {
 
     float fontScale = u_is_text ? size / 24.0 : size;
 
-    highp float segment_angle = -a_projected_pos[2];
     highp float angle_sin = sin(segment_angle);
     highp float angle_cos = cos(segment_angle);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);

@@ -11,7 +11,6 @@ attribute vec3 a_projected_pos;
 // For composite functions:
 // [ text-size(lowerZoomStop, feature),
 //   text-size(upperZoomStop, feature) ]
-attribute vec2 a_size;
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
 uniform highp float u_size_t; // used to interpolate between zoom stops when size is a composite function
@@ -49,9 +48,11 @@ void main() {
     vec2 a_offset = a_pos_offset.zw;
 
     vec2 a_tex = a_data.xy;
+    vec2 a_size = a_data.zw;
 
-    mediump vec2 label_data = unpack_float(a_data[2]);
-    mediump float a_labelminzoom = label_data[0];
+    highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
+    highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
+    mediump float a_labelminzoom = angle_labelminzoom[1];
     float size;
 
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -81,7 +82,6 @@ void main() {
 
     float fontScale = u_is_text ? size / 24.0 : size;
 
-    highp float segment_angle = -a_projected_pos[2];
     highp float angle_sin = sin(segment_angle);
     highp float angle_cos = cos(segment_angle);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);

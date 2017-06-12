@@ -106,7 +106,7 @@ const symbolInterfaces = {
     }
 };
 
-function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, labelminzoom) {
+function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
     array.emplaceBack(
         // a_pos_offset
         anchorX,
@@ -117,16 +117,20 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex, labelmin
         // a_data
         tx, // x coordinate of symbol on glyph atlas texture
         ty, // y coordinate of symbol on glyph atlas texture
-        packUint8ToFloat(
-            (labelminzoom || 0) * 10, // labelminzoom
-            0 // unused 8 bits
-        ),
-        0, // unused 16 bits
-
-        // a_size
         sizeVertex ? sizeVertex[0] : undefined,
         sizeVertex ? sizeVertex[1] : undefined
     );
+}
+
+function addDynamicAttributes(dynamicLayoutVertexArray, p, angle, placementZoom) {
+    const twoPi = Math.PI * 2;
+    const angleAndZoom = packUint8ToFloat(
+            ((angle + twoPi) % twoPi) / twoPi * 255,
+            placementZoom * 10);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
 }
 
 function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoom, placementZoom) {
@@ -186,25 +190,7 @@ class SymbolBucket {
         // Set up 'program interfaces' dynamically based on the layer's style
         // properties (specifically its text-size properties).
         const layer = this.layers[0];
-        this.symbolInterfaces = {
-            glyph: util.extend({}, symbolInterfaces.glyph, {
-                layoutAttributes: [].concat(
-                    symbolInterfaces.glyph.layoutAttributes,
-                    getSizeAttributeDeclarations(layer, 'text-size')
-                )
-            }),
-            icon: util.extend({}, symbolInterfaces.icon, {
-                layoutAttributes: [].concat(
-                    symbolInterfaces.icon.layoutAttributes,
-                    getSizeAttributeDeclarations(layer, 'icon-size')
-                )
-            }),
-            collisionBox: util.extend({}, symbolInterfaces.collisionBox, {
-                layoutAttributes: [].concat(
-                    symbolInterfaces.collisionBox.layoutAttributes
-                )
-            })
-        };
+        this.symbolInterfaces = symbolInterfaces;
 
         // deserializing a bucket created on a worker thread
         if (options.arrays) {
@@ -750,15 +736,12 @@ class SymbolBucket {
             const index = segment.vertexLength;
 
             const y = symbol.glyphOffset[1];
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex, placementZoom);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex, placementZoom);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex, placementZoom);
-            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, placementZoom);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
+            addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
 
-            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
-            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
-            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
-            dynamicLayoutVertexArray.emplaceBack(labelAnchor.x, labelAnchor.y, 0);
+            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0, placementZoom);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -952,32 +935,6 @@ function getSizeData(tileZoom, layer, sizeProperty) {
     return sizeData;
 }
 
-function getSizeAttributeDeclarations(layer, sizeProperty) {
-    // The contents of the a_size vertex attribute depend on the type of
-    // property value for {text,icon}-size.
-    if (
-        layer.isLayoutValueZoomConstant(sizeProperty) &&
-        !layer.isLayoutValueFeatureConstant(sizeProperty)
-    ) {
-        // source function: one size value per vertex
-        return [{
-            name: 'a_size', components: 1, type: 'Uint16'
-        }];
-    } else if (
-        !layer.isLayoutValueZoomConstant(sizeProperty) &&
-        !layer.isLayoutValueFeatureConstant(sizeProperty)
-    ) {
-        // composite function:
-        // [ text-size(lowerZoomStop, feature),
-        //   text-size(upperZoomStop, feature)]
-        return [{
-            name: 'a_size', components: 2, type: 'Uint16'
-        }];
-    }
-    // constant or camera function
-    return [];
-}
-
 function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featureProperties) {
     if (
         layer.isLayoutValueZoomConstant(sizeProperty) &&
@@ -1007,5 +964,7 @@ SymbolBucket.programInterfaces = symbolInterfaces;
 // bucket--namely, iconBoxEndIndex and textBoxEndIndex
 // eg the max valid UInt16 is 65,535
 SymbolBucket.MAX_INSTANCES = 65535;
+
+SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 
 module.exports = SymbolBucket;
