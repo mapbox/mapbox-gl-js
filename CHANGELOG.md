@@ -1,6 +1,6 @@
 ## master
 
-## 0.38.0 (May 9, 2017)
+## 0.38.0 (June 9, 2017)
 
 #### New features :sparkles:
 
