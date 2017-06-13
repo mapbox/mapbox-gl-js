@@ -71,7 +71,7 @@ examples:
         {% endif %}
         {% if page.url contains 'roadmap' %}
           <div class='pad2'>
-            <p class='icon time'>Last updated: 11/15/2016</p>
+            <p class='icon time'>Last updated: {{site.data.roadmap.updated_at}}</p>
             <p class="small"><span class="icon point roadmap-project"></span> indicates a project on GitHub</p>
           </div>
         {% endif %}
