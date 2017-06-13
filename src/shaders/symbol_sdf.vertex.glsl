@@ -42,10 +42,8 @@ uniform vec2 u_extrude_scale;
 
 uniform vec2 u_texsize;
 
-varying vec2 v_tex;
-varying vec2 v_fade_tex;
-varying float v_gamma_scale;
-varying float v_size;
+varying vec4 v_data0;
+varying vec2 v_data1;
 
 // Used below to move the vertex out of the clip space for when the current
 // zoom is out of the glyph's zoom range.
@@ -77,6 +75,7 @@ void main() {
     highp vec2 a_zoom = unpack_float(a_data[3]);
     highp float a_minzoom = a_zoom[0];
     highp float a_maxzoom = a_zoom[1];
+    float size;
 
     // In order to accommodate placing labels around corners in
     // symbol-placement: line, each glyph in a label could have multiple
@@ -88,20 +87,20 @@ void main() {
     // based on the scale of rendered text size relative to layout text size.
     highp float layoutSize;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        v_size = mix(a_size[0], a_size[1], u_size_t) / 10.0;
+        size = mix(a_size[0], a_size[1], u_size_t) / 10.0;
         layoutSize = a_size[2] / 10.0;
     } else if (u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        v_size = a_size[0] / 10.0;
-        layoutSize = v_size;
+        size = a_size[0] / 10.0;
+        layoutSize = size;
     } else if (!u_is_size_zoom_constant && u_is_size_feature_constant) {
-        v_size = u_size;
+        size = u_size;
         layoutSize = u_layout_size;
     } else {
-        v_size = u_size;
+        size = u_size;
         layoutSize = u_size;
     }
 
-    float fontScale = u_is_text ? v_size / 24.0 : v_size;
+    float fontScale = u_is_text ? size / 24.0 : size;
 
     vec4 projectedPoint = u_matrix * vec4(a_label_pos, 0, 1);
     highp float camera_to_anchor_distance = projectedPoint.w;
@@ -118,7 +117,7 @@ void main() {
         vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (offset / 64.0);
 
         gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
-        gl_Position.z += clipUnusedGlyphAngles(v_size*perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
+        gl_Position.z += clipUnusedGlyphAngles(size*perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
     // pitch-alignment: viewport
     // rotation-alignment: map
     } else if (u_rotate_with_map) {
@@ -142,7 +141,7 @@ void main() {
         vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (offset / 64.0);
 
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
-        gl_Position.z += clipUnusedGlyphAngles(v_size * perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
+        gl_Position.z += clipUnusedGlyphAngles(size * perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
     // pitch-alignment: viewport
     // rotation-alignment: viewport
     } else {
@@ -153,9 +152,9 @@ void main() {
     gl_Position.z +=
         step(u_max_camera_distance * u_camera_to_center_distance, camera_to_anchor_distance) * gl_Position.w;
 
-    v_gamma_scale = gl_Position.w / perspective_ratio;
+    float gamma_scale = gl_Position.w / perspective_ratio;
 
-    v_tex = a_tex / u_texsize;
+    vec2 tex = a_tex / u_texsize;
     // incidence_stretch is the ratio of how much y space a label takes up on a tile while drawn perpendicular to the viewport vs
     //  how much space it would take up if it were drawn flat on the tile
     // Using law of sines, camera_to_anchor/sin(ground_angle) = camera_to_center/sin(incidence_angle)
@@ -176,5 +175,8 @@ void main() {
 
     // Floor to 1/10th zoom to dodge precision issues that can cause partially hidden labels
     highp float perspective_zoom_adjust = floor(log2(perspective_ratio * collision_adjustment) * 10.0);
-    v_fade_tex = vec2((a_labelminzoom + perspective_zoom_adjust) / 255.0, 0.0);
+    vec2 fade_tex = vec2((a_labelminzoom + perspective_zoom_adjust) / 255.0, 0.0);
+
+    v_data0 = vec4(tex.x, tex.y, fade_tex.x, fade_tex.y);
+    v_data1 = vec2(gamma_scale, size);
 }

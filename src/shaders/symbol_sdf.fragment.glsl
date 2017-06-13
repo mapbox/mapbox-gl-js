@@ -13,10 +13,8 @@ uniform sampler2D u_fadetexture;
 uniform highp float u_gamma_scale;
 uniform bool u_is_text;
 
-varying vec2 v_tex;
-varying vec2 v_fade_tex;
-varying float v_gamma_scale;
-varying float v_size;
+varying vec4 v_data0;
+varying vec2 v_data1;
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -25,7 +23,12 @@ void main() {
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
 
-    float fontScale = u_is_text ? v_size / 24.0 : v_size;
+    vec2 tex = v_data0.xy;
+    vec2 fade_tex = v_data0.zw;
+    float gamma_scale = v_data1.x;
+    float size = v_data1.y;
+
+    float fontScale = u_is_text ? size / 24.0 : size;
 
     lowp vec4 color = fill_color;
     highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
@@ -36,9 +39,9 @@ void main() {
         buff = (6.0 - halo_width / fontScale) / SDF_PX;
     }
 
-    lowp float dist = texture2D(u_texture, v_tex).a;
-    lowp float fade_alpha = texture2D(u_fadetexture, v_fade_tex).a;
-    highp float gamma_scaled = gamma * v_gamma_scale;
+    lowp float dist = texture2D(u_texture, tex).a;
+    lowp float fade_alpha = texture2D(u_fadetexture, fade_tex).a;
+    highp float gamma_scaled = gamma * gamma_scale;
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist) * fade_alpha;
 
     gl_FragColor = color * (alpha * opacity);
