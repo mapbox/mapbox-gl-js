@@ -20,6 +20,7 @@
     "brfs": "^1.4.0",
     "bubleify": "^0.7.0",
     "earcut": "^2.0.3",
+    "events-polyfill": "^1.1.9",
     "geojson-rewind": "^0.1.0",
     "geojson-vt": "^2.4.0",
     "grid-index": "^1.0.0",

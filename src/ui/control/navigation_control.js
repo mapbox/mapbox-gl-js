@@ -6,6 +6,8 @@ const util = require('../../util/util');
 
 const className = 'mapboxgl-ctrl';
 
+require('events-polyfill');
+
 /**
  * A `NavigationControl` control contains zoom buttons and a compass.
  *
