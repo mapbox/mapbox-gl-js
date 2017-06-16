@@ -41,7 +41,7 @@ mapboxgl.setRTLTextPlugin = rtlTextPlugin.setRTLTextPlugin;
   * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
   * @param {Function} callback Called with an error argument if there is an error.
   * @example
-  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.1.0/mapbox-gl-rtl-text.js');
+  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.1.1/mapbox-gl-rtl-text.js');
   * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
   */
 
