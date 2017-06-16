@@ -27,8 +27,6 @@ class LogoControl {
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
-
-        this._logoDisplay = false;
         this._map.on('sourcedata', this._updateLogo);
         return this._container;
     }
@@ -44,13 +42,7 @@ class LogoControl {
 
     _updateLogo(e) {
         if (e && e.sourceDataType === 'metadata') {
-            if (!this._logoDisplay && this._logoRequired()) {
-                this._container.style.display = 'block';
-                this._logoDisplay = true;
-            } else if (this._logoDisplay && !this._logoRequired()) {
-                this._container.style.display = 'none';
-                this._logoDisplay = false;
-            }
+            this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }
     }
 
