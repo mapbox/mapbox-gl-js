@@ -19,15 +19,16 @@ class LogoControl {
 
     onAdd(map) {
         this._map = map;
-        this._logoDisplayed = true;
-
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
         anchor.target = "_blank";
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", "Mapbox logo");
         this._container.appendChild(anchor);
+        this._container.style.display = 'none';
 
+
+        this._logoDisplay = false;
         this._map.on('sourcedata', this._updateLogo);
         return this._container;
     }
@@ -42,11 +43,13 @@ class LogoControl {
     }
 
     _updateLogo(e) {
-        if (!e || e.sourceDataType === 'metadata') {
-            if (!this._logoDisplayed && this._logoRequired()) {
-                this.onAdd(this._map);
-            } else if (this._container && !this._logoRequired()) {
-                this.onRemove();
+        if (e && e.sourceDataType === 'metadata') {
+            if (!this._logoDisplay && this._logoRequired()) {
+                this._container.style.display = 'block';
+                this._logoDisplay = true;
+            } else if (this._logoDisplay && !this._logoRequired()) {
+                this._container.style.display = 'none';
+                this._logoDisplay = false;
             }
         }
     }

@@ -58,10 +58,10 @@ test('LogoControl appears in the position specified by the position option', (t)
     });
 });
 
-test('LogoControl is not added when the mapbox_logo property is false', (t) => {
+test('LogoControl is not displayed when the mapbox_logo property is false', (t) => {
     const map = createMap('top-left', false);
     map.on('load', () => {
-        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-logo').length, 0);
+        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left > .mapboxgl-ctrl')[0].style.display, 'none');
         t.end();
     });
 });
