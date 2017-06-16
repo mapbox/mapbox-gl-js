@@ -38,7 +38,7 @@
     "webworkify": "^1.4.0"
   },
   "devDependencies": {
-    "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
+    "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
