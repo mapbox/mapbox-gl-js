@@ -70,7 +70,9 @@ class ProgramConfiguration {
         const pragmas = this.getPragmas(name);
 
         pragmas.define.push(`uniform {precision} {type} ${inputName};`);
+        pragmas.define_in.push(`uniform {precision} {type} ${inputName};`);
         pragmas.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+        pragmas.initialize_in.push(`{precision} {type} ${name} = ${inputName};`);
 
         this.cacheKey += `/u_${name}`;
     }
@@ -88,7 +90,9 @@ class ProgramConfiguration {
         pragmas.define.push(`varying {precision} {type} ${name};`);
 
         pragmas.vertex.define.push(`attribute {precision} {type} ${attribute.name};`);
+        pragmas.vertex.define_in.push(`attribute {precision} {type} ${attribute.name};`);
         pragmas.vertex.initialize.push(`${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
+        pragmas.vertex.initialize_in.push(`{precision} {type} ${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
 
         this.cacheKey += `/a_${name}`;
     }
@@ -133,6 +137,7 @@ class ProgramConfiguration {
         const tName = `u_${name}_t`;
 
         pragmas.vertex.define.push(`uniform lowp float ${tName};`);
+        pragmas.vertex.define_in.push(`uniform lowp float ${tName};`);
 
         this.interpolationUniforms.push({
             name: tName,
@@ -154,6 +159,7 @@ class ProgramConfiguration {
                 zoomStops
             }));
             pragmas.vertex.define.push(`attribute {precision} vec4 ${attribute.name};`);
+            pragmas.vertex.define_in.push(`attribute {precision} vec4 ${attribute.name};`);
             componentNames.push(attribute.name);
 
         } else {
@@ -166,9 +172,12 @@ class ProgramConfiguration {
                     zoomStops: [zoomStops[k]]
                 }));
                 pragmas.vertex.define.push(`attribute {precision} {type} ${componentName};`);
+                pragmas.vertex.define_in.push(`attribute {precision} {type} ${componentName};`);
             }
         }
         pragmas.vertex.initialize.push(`${name} = evaluate_zoom_function_${attribute.components}(\
+            ${componentNames.join(', ')}, ${tName}) / ${attribute.multiplier}.0;`);
+        pragmas.vertex.initialize_in.push(`{precision} {type} ${name} = evaluate_zoom_function_${attribute.components}(\
             ${componentNames.join(', ')}, ${tName}) / ${attribute.multiplier}.0;`);
 
         this.cacheKey += `/z_${name}`;
@@ -176,15 +185,15 @@ class ProgramConfiguration {
 
     getPragmas(name) {
         if (!this.pragmas[name]) {
-            this.pragmas[name]          = {define: [], initialize: []};
-            this.pragmas[name].fragment = {define: [], initialize: []};
-            this.pragmas[name].vertex   = {define: [], initialize: []};
+            this.pragmas[name]          = {define: [], define_in: [], initialize: [], initialize_in: []};
+            this.pragmas[name].fragment = {define: [], define_in: [], initialize: [], initialize_in: []};
+            this.pragmas[name].vertex   = {define: [], define_in: [], initialize: [], initialize_in: []};
         }
         return this.pragmas[name];
     }
 
     applyPragmas(source, shaderType) {
-        return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
+        return source.replace(/#pragma mapbox: ([\w_]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
             return this.pragmas[name][operation].concat(this.pragmas[name][shaderType][operation])
                 .join('\n')
                 .replace(/{type}/g, type)
