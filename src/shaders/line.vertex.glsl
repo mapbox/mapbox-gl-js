@@ -55,7 +55,7 @@ void main() {
     float width = u_width / 2.0;
     offset = -1.0 * offset; 
 
-    float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
+    float inset = max(gapwidth - ANTIALIASING / 2.0, 0.0);
     float outset = gapwidth + width * (gapwidth > 0.0 ? 2.0 : 1.0) + ANTIALIASING;
 
     // Scale the extrusion vector down to a normal and then up by the line width
