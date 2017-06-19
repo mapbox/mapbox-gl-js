@@ -75,7 +75,13 @@ Example output value:
 {
 	"icon-image": {
 		"expression" : [
-				"concat",["string", ["get", ["properties"], "shield"]], "-", ["string", ["get", ["properties"], "ref"]]
+				"concat",
+				["string", ["get", ["properties"], "shield"]],
+				"-",
+				["case",
+					["==", ["length", ["string", ["get", ["properties"], "ref"]]], 1],
+					["2"]
+					["string", ["length", ["string", ["get", ["properties"], "ref"]]]]
 		]
 	}
 }
@@ -112,13 +118,15 @@ Mountain peak label displays name and elevation if elevation value exists, other
 				["match", ["get", ["properties"], "class"], 
 					"park", "hsl(100, 58%, 76%)",
 					"school", "hsl(50, 47%, 81%)",
-					"hospital", "hsl(340, 37%, 87%)"
+					"hospital", "hsl(340, 37%, 87%)",
+					"hsl(35, 12%, 89%)"
 				],
 				16,
 				["match", ["get", ["properties"], "class"], 
 					"park", "hsl(100, 58%, 76%)",
 					"school", "hsl(50, 63%, 84%)",
-					"hospital", "hsl(340, 63%, 89%)"
+					"hospital", "hsl(340, 63%, 89%)",
+					"hsl(35, 12%, 89%)"
 				],
 		]
 	}
@@ -155,20 +163,20 @@ Based on the following data properties:
 {
 	"icon-image": {
 		"expression": [
-			"case",
-			["<=", ["number", ["get", ["properties"], "scalerank"]], 2],
+			"curve", ["step"], ["number", ["get", ["properties"], "scalerank"]],
+			0,
 			["case", 
 				["==", ["number", ["get", ["properties"], "capital"]], 2],
 				"capital-city-dot-large",
 				"city-dot-large" 
 			],
-			["<=", ["number", ["get", ["properties"], "scalerank"]], 5],
+			3,
 			["case", 
 				["==", ["number", ["get", ["properties"], "capital"]], 2],
 				"capital-city-dot-medium",
 				"city-dot-medium" 
 			],	
-			[">", ["number", ["get", ["properties"], "scalerank"]], 5],
+			6,
 			["case", 
 				["==", ["number", ["get", ["properties"], "capital"]], 2],
 				"capital-city-dot-small",
@@ -182,25 +190,15 @@ Based on the following data properties:
 {
 	"text-size": {
 		"expression": [
-			"curve", "exponential", 0.85, ["zoom"],
+			"curve", ["exponential", 0.85], ["zoom"],
 				4,
-				["case",
-					["<=", ["number", ["get", ["properties"], "scalerank"]], 2],
-					12,
-					["<=", ["number", ["get", ["properties"], "scalerank"]], 5],
-					9,
-					[">", ["number", ["get", ["properties"], "scalerank"]], 5],
-					6
+				["curve", ["step"], ["number", ["get", ["properties"], "scalerank"]],
+					0, 12,
+					3, 9,
+					6, 6
 				],
 				14,
-				["case",
-					["<=", ["number", ["get", ["properties"], "scalerank"]], 2],
-					22,
-					["<=", ["number", ["get", ["properties"], "scalerank"]], 5],
-					22,
-					[">", ["number", ["get", ["properties"], "scalerank"]], 5],
-					22
-				],
+				22
 		]
 	}
 }
@@ -211,7 +209,7 @@ Based on the following data properties:
 		"expression": [
 			"curve", "step", ["zoom"],
 				7, 
-				["match", ["get", ["properties"], "ldir"],
+				["match", ["string", ["get", ["properties"], "ldir"]],
 					"N", "center",
 					"NE", "left",
 					"E", "left",
@@ -219,7 +217,8 @@ Based on the following data properties:
 					"S", "center",
 					"SW", "right",
 					"W", "right",
-					"NW", "right"
+					"NW", "right",
+					"center"
 				],
 				8,
 				"center"
@@ -241,7 +240,8 @@ Based on the following data properties:
 					"S", "top",
 					"SW", "top-right",
 					"W", "right",
-					"NW", "bottom-right"
+					"NW", "bottom-right",
+					"bottom"
 				],
 				8,
 				"center"
@@ -250,13 +250,12 @@ Based on the following data properties:
 }
 ```
 ```
-
 	"text-offset": {
 		"expression": [
 			"curve", "step", ["zoom"],
 				7, 
-				["case", 
-					["<=", ["number", ["get", ["properties"], "scalerank"]], 2],
+				["curve", ["step"], ["number", ["get", ["properties"], "scalerank"]],
+					0,
 					["match", ["get", ["properties"], "ldir"],
 						"N", [0, -0.3],
 						"NE", [0.2, -0.1],
@@ -265,9 +264,10 @@ Based on the following data properties:
 						"S", [0, 0.3],
 						"SW",[-0.2, 0.1],
 						"W", [-0.4, 0],
-						"NW", [-0.2, -0.1]
+						"NW", [-0.2, -0.1],
+						[0, -0.3]
 					],
-					["<=", ["number", ["get", ["properties"], "scalerank"]], 5],
+					3,
 					["match", ["get", ["properties"], "ldir"],
 						"N", [0, -0.25],
 						"NE", [0.18, -0.08],
@@ -276,9 +276,10 @@ Based on the following data properties:
 						"S", [0, 0.25],
 						"SW",[-0.18, 0.08],
 						"W", [-0.35, 0],
-						"NW", [-0.18, -0.08]
+						"NW", [-0.18, -0.08],
+						[0, -0.25]
 					],
-					[">", ["number", ["get", ["properties"], "scalerank"]], 5],
+					6,
 					["match", ["get", ["properties"], "ldir"],
 						"N", [0, -0.2],
 						"NE", [0.15, -0.06],
@@ -287,7 +288,8 @@ Based on the following data properties:
 						"S", [0, 0.2],
 						"SW",[-0.15, 0.06],
 						"W", [-0.3, 0],
-						"NW", [-0.15, -0.06]
+						"NW", [-0.15, -0.06],
+						[0, -0.2]
 					]
 				]	
 				8,
