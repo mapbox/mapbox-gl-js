@@ -60,7 +60,7 @@ class SourceCache extends Evented {
 
     onAdd(map) {
         this.map = map;
-        this._maxTileCacheSize = map._maxTileCacheSize
+        this._maxTileCacheSize = map._maxTileCacheSize;
         if (this._source && this._source.onAdd) {
             this._source.onAdd(map);
         }
