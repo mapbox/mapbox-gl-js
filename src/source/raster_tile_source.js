@@ -22,13 +22,13 @@ class RasterTileSource extends Evented {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
-        this.options = options;
+        this._options = util.extend({}, options);
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     }
 
     load() {
         this.fire('dataloading', {dataType: 'source'});
-        loadTileJSON(this.options, (err, tileJSON) => {
+        loadTileJSON(this._options, (err, tileJSON) => {
             if (err) {
                 return this.fire('error', err);
             }
@@ -58,13 +58,7 @@ class RasterTileSource extends Evented {
     }
 
     serialize() {
-        return {
-            type: 'raster',
-            url: this.url,
-            tileSize: this.tileSize,
-            tiles: this.tiles,
-            bounds: this.bounds,
-        };
+        return util.extend({}, this._options);
     }
 
     hasTile(coord) {

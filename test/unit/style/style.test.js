@@ -347,6 +347,27 @@ test('Style#setState', (t) => {
         });
     });
 
+    t.test('Issue #3893: compare new source options against originally provided options rather than normalized properties', (t) => {
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/tilejson.json', JSON.stringify({
+            tiles: ['http://tiles.server']
+        }));
+        const initial = createStyleJSON();
+        initial.sources.mySource = {
+            type: 'raster',
+            url: '/tilejson.json'
+        };
+        const style = new Style(initial);
+        style.on('style.load', () => {
+            t.stub(style, 'removeSource').callsFake(() => t.fail('removeSource called'));
+            t.stub(style, 'addSource').callsFake(() => t.fail('addSource called'));
+            style.setState(initial);
+            window.restore();
+            t.end();
+        });
+        window.server.respond();
+    });
+
     t.test('return true if there is a change', (t) => {
         const initialState = createStyleJSON();
         const nextState = createStyleJSON({
