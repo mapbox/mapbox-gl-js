@@ -137,6 +137,7 @@ class ProgramConfiguration {
         this.interpolationUniforms.push({
             name: tName,
             property: attribute.property,
+            useIntegerZoom: attribute.useIntegerZoom,
             stopOffset
         });
 
@@ -211,7 +212,8 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            const value = getPaintAttributeValue(attribute, layer, globalProperties, featureProperties);
+            const zoomBase = attribute.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const value = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
 
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
@@ -233,7 +235,9 @@ class ProgramConfiguration {
 
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
-            const value = layer.getPaintValue(uniform.property, globalProperties);
+            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const value = layer.getPaintValue(uniform.property, zoomBase);
+
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
@@ -241,9 +245,10 @@ class ProgramConfiguration {
             }
         }
         for (const uniform of this.interpolationUniforms) {
+            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             // stopInterp indicates which stops need to be interpolated.
             // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-            const stopInterp = layer.getPaintInterpolationT(uniform.property, globalProperties);
+            const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
             // We can only store four stop values in the buffers. stopOffset is the number of stops that come
             // before the stops that were added to the buffers.
             gl.uniform1f(program[uniform.name], Math.max(0, Math.min(3, stopInterp - uniform.stopOffset)));

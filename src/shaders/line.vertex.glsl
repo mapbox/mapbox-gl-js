@@ -17,7 +17,6 @@ attribute vec4 a_data;
 
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
-uniform mediump float u_width;
 uniform vec2 u_gl_units_to_pixels;
 
 varying vec2 v_normal;
@@ -29,6 +28,7 @@ varying float v_gamma_scale;
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
+#pragma mapbox: define mediump float width
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -36,6 +36,7 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
+    #pragma mapbox: initialize mediump float width
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
@@ -52,11 +53,11 @@ void main() {
     // these transformations used to be applied in the JS and native code bases. 
     // moved them into the shader for clarity and simplicity. 
     gapwidth = gapwidth / 2.0;
-    float width = u_width / 2.0;
+    float halfwidth = width / 2.0;
     offset = -1.0 * offset; 
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
-    float outset = gapwidth + width * (gapwidth > 0.0 ? 2.0 : 1.0) + ANTIALIASING;
+    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + ANTIALIASING;
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.

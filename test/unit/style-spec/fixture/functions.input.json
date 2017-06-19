@@ -83,11 +83,11 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "line-width": {
+        "line-dasharray": {
           "stops": [
             [
               "1",
-              1
+              [1, 1]
             ]
           ]
         }
