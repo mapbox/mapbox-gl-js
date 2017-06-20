@@ -45,6 +45,10 @@ const CollisionBoxArray = createStructArrayType({
         { type: 'Int16', name: 'anchorPointX' },
         { type: 'Int16', name: 'anchorPointY' },
 
+        // the offset of the box from the label's anchor point
+        { type: 'Int16', name: 'offsetX' },
+        { type: 'Int16', name: 'offsetY' },
+
         // distances to the edges from the anchor
         { type: 'Int16', name: 'x1' },
         { type: 'Int16', name: 'y1' },
@@ -53,6 +57,7 @@ const CollisionBoxArray = createStructArrayType({
 
         // the box is only valid for scales < maxScale.
         // The box does not block other boxes at scales >= maxScale;
+        { type: 'Float32', name: 'unadjustedMaxScale' },
         { type: 'Float32', name: 'maxScale' },
 
         // the index of the feature in the original vectortile

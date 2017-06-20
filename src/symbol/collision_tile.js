@@ -66,19 +66,19 @@ class CollisionTile {
 
             const maxInt16 = 32767;
             //left
-            collisionBoxArray.emplaceBack(0, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
             // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
+            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
             // top
-            collisionBoxArray.emplaceBack(0, 0, -maxInt16, 0, maxInt16, 0, maxInt16,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
             // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, -maxInt16, 0, maxInt16, 0, maxInt16,
+            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
         }
@@ -149,6 +149,17 @@ class CollisionTile {
             box.bbox1 = y1;
             box.bbox2 = x2;
             box.bbox3 = y2;
+
+            // When the map is pitched the distance covered by a line changes.
+            // Adjust the max scale by (approximatePitchedLength / approximateRegularLength)
+            // to compensate for this.
+
+            const offset = new Point(box.offsetX, box.offsetY)._matMult(rotationMatrix);
+            const xSqr = offset.x * offset.x;
+            const ySqr = offset.y * offset.y;
+            const yStretchSqr = ySqr * yStretch * yStretch;
+            const adjustmentFactor = Math.sqrt((xSqr + yStretchSqr) / (xSqr + ySqr)) || 1;
+            box.maxScale = box.unadjustedMaxScale * adjustmentFactor;
 
             if (!allowOverlap) {
                 const blockingBoxes = this.grid.query(x1, y1, x2, y2);
@@ -236,8 +247,14 @@ class CollisionTile {
             features.push(ignoredFeatures[i]);
         }
 
+        // "perspectiveRatio" is a tile-based approximation of how much larger symbols will
+        // be in the distance. It won't line up exactly with the actually rendered symbols
+        // Being exact would require running the collision detection logic in symbol_sdf.vertex
+        // in the CPU
+        const perspectiveScale = scale / this.perspectiveRatio;
+
         // Account for the rounding done when updating symbol shader variables.
-        const roundedScale = Math.pow(2, Math.ceil(Math.log(scale) / Math.LN2 * 10) / 10);
+        const roundedScale = Math.pow(2, Math.ceil(Math.log(perspectiveScale) / Math.LN2 * 10) / 10);
 
         for (let i = 0; i < features.length; i++) {
             const blocking = collisionBoxArray.get(features[i]);
@@ -255,10 +272,10 @@ class CollisionTile {
 
             // Check if query intersects with the feature box at current scale.
             const anchor = blocking.anchorPoint.matMult(rotationMatrix);
-            const x1 = anchor.x + blocking.x1 / scale;
-            const y1 = anchor.y + blocking.y1 / scale * yStretch;
-            const x2 = anchor.x + blocking.x2 / scale;
-            const y2 = anchor.y + blocking.y2 / scale * yStretch;
+            const x1 = anchor.x + blocking.x1 / perspectiveScale;
+            const y1 = anchor.y + blocking.y1 / perspectiveScale * yStretch;
+            const x2 = anchor.x + blocking.x2 / perspectiveScale;
+            const y2 = anchor.y + blocking.y2 / perspectiveScale * yStretch;
             const bbox = [
                 new Point(x1, y1),
                 new Point(x2, y1),

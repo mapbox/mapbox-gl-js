@@ -180,7 +180,13 @@ class GeoJSONSource extends Evented {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send('loadTile', params, (err, data) => {
+        if (!tile.workerID || tile.state === 'expired') {
+            tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this), this.workerID);
+        } else {
+            tile.workerID = this.dispatcher.send('reloadTile', params, done.bind(this), this.workerID);
+        }
+
+        function done(err, data) {
 
             tile.unloadVectorData();
 
@@ -199,8 +205,7 @@ class GeoJSONSource extends Evented {
             }
 
             return callback(null);
-
-        }, this.workerID);
+        }
     }
 
     abortTile(tile) {

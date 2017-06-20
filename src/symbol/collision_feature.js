@@ -50,7 +50,7 @@ class CollisionFeature {
             }
 
         } else {
-            collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, Infinity, featureIndex, sourceLayerIndex, bucketIndex,
+            collisionBoxArray.emplaceBack(anchor.x, anchor.y, 0, 0, x1, y1, x2, y2, Infinity, Infinity, featureIndex, sourceLayerIndex, bucketIndex,
                     0, 0, 0, 0, 0);
         }
 
@@ -72,10 +72,10 @@ class CollisionFeature {
     _addLineCollisionBoxes(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
         const step = boxSize / 2;
         const nBoxes = Math.floor(labelLength / step);
-        // We calculate line collision boxes out to 150% of what would normally be our
+        // We calculate line collision boxes out to 300% of what would normally be our
         // max size, to allow collision detection to work on labels that expand as
         // they move into the distance
-        const nPitchPaddingBoxes = Math.floor(nBoxes / 4);
+        const nPitchPaddingBoxes = Math.floor(nBoxes / 2);
 
         // offset the center of the first box by half a box so that the edge of the
         // box is at the edge of the label.
@@ -111,8 +111,15 @@ class CollisionFeature {
         let segmentLength = line[index].dist(line[index + 1]);
 
         for (let i = -nPitchPaddingBoxes; i < nBoxes + nPitchPaddingBoxes; i++) {
+
             // the distance the box will be from the anchor
-            const boxDistanceToAnchor = labelStartDistance + i * step;
+            const boxOffset = i * step;
+            let boxDistanceToAnchor = labelStartDistance + boxOffset;
+
+            // make the distance between pitch padding boxes bigger
+            if (boxOffset < 0) boxDistanceToAnchor += boxOffset;
+            if (boxOffset > labelLength) boxDistanceToAnchor += boxOffset - labelLength;
+
             if (boxDistanceToAnchor < anchorDistance) {
                 // The line doesn't extend far enough back for this box, skip it
                 // (This could allow for line collisions on distant tiles)
@@ -162,7 +169,8 @@ class CollisionFeature {
             }
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
-                    -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale,
+                    boxAnchorPoint.x - anchor.x, boxAnchorPoint.y - anchor.y,
+                    -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
                     featureIndex, sourceLayerIndex, bucketIndex,
                     0, 0, 0, 0, 0);
         }

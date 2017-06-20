@@ -822,7 +822,8 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
+      "units": "factor of the original icon size",
+      "doc": "Scales the original size of the icon by the provided factor. The new pixel size of the image will be the original pixel size multiplied by `icon-size`. 1 is the original size; 3 triples the size of the image.",
       "requires": [
         "icon-image"
       ],
@@ -2201,6 +2202,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Stroke thickness.",

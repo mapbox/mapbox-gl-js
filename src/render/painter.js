@@ -37,12 +37,7 @@ class Painter {
     constructor(gl, transform) {
         this.gl = gl;
         this.transform = transform;
-
-        this.reusableTextures = {
-            tiles: {},
-            viewport: null
-        };
-        this.preFbos = {};
+        this._tileTextures = {};
 
         this.frameHistory = new FrameHistory();
 
@@ -69,6 +64,15 @@ class Painter {
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
         gl.viewport(0, 0, this.width, this.height);
+
+        if (this.viewportTexture) {
+            this.gl.deleteTexture(this.viewportTexture);
+            this.viewportTexture = null;
+        }
+        if (this.viewportFbo) {
+            this.gl.deleteFramebuffer(this.viewportFbo);
+            this.viewportFbo = null;
+        }
     }
 
     setup() {
@@ -193,11 +197,6 @@ class Painter {
     // Overridden by headless tests.
     prepareBuffers() {}
 
-    bindDefaultFramebuffer() {
-        const gl = this.gl;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
-
     render(style, options) {
         this.style = style;
         this.options = options;
@@ -294,19 +293,37 @@ class Painter {
         this.gl.depthRange(nearDepth, farDepth);
     }
 
-    translatePosMatrix(matrix, tile, translate, anchor) {
+    /**
+     * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
+     * @param {Float32Array} matrix
+     * @param {Tile} tile
+     * @param {Array<number>} translate
+     * @param {string} anchor
+     * @param {boolean} inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
+     *
+     * @returns {Float32Array} matrix
+     */
+    translatePosMatrix(matrix, tile, translate, translateAnchor, inViewportPixelUnitsUnits) {
         if (!translate[0] && !translate[1]) return matrix;
 
-        if (anchor === 'viewport') {
-            const sinA = Math.sin(-this.transform.angle);
-            const cosA = Math.cos(-this.transform.angle);
+        const angle = inViewportPixelUnitsUnits ?
+            (translateAnchor === 'map' ? this.transform.angle : 0) :
+            (translateAnchor === 'viewport' ? -this.transform.angle : 0);
+
+        if (angle) {
+            const sinA = Math.sin(angle);
+            const cosA = Math.cos(angle);
             translate = [
                 translate[0] * cosA - translate[1] * sinA,
                 translate[0] * sinA + translate[1] * cosA
             ];
         }
 
-        const translation = [
+        const translation = inViewportPixelUnitsUnits ? [
+            translate[0],
+            translate[1],
+            0
+        ] : [
             pixelsToTileUnits(tile, translate[0], this.transform.zoom),
             pixelsToTileUnits(tile, translate[1], this.transform.zoom),
             0
@@ -318,34 +335,17 @@ class Painter {
     }
 
     saveTileTexture(texture) {
-        const textures = this.reusableTextures.tiles[texture.size];
+        const textures = this._tileTextures[texture.size];
         if (!textures) {
-            this.reusableTextures.tiles[texture.size] = [texture];
+            this._tileTextures[texture.size] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
-    saveViewportTexture(texture) {
-        this.reusableTextures.viewport = texture;
-    }
-
     getTileTexture(size) {
-        const textures = this.reusableTextures.tiles[size];
+        const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
-    }
-
-    getViewportTexture(width, height) {
-        const texture = this.reusableTextures.viewport;
-        if (!texture) return;
-
-        if (texture.width === width && texture.height === height) {
-            return texture;
-        } else {
-            this.gl.deleteTexture(texture);
-            this.reusableTextures.viewport = null;
-            return;
-        }
     }
 
     lineWidth(width) {
@@ -394,12 +394,13 @@ class Painter {
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
 
-
-        // For the symbol program, manually ensure the attrib bound to position 0 is always used (either a_data or a_pos_offset would work here).
-        // This is needed to fix https://github.com/mapbox/mapbox-gl-js/issues/4607 — otherwise a_size can be bound first, causing rendering to fail.
-        // All remaining attribs will be bound dynamically below.
-        if (name === 'symbolSDF') {
-            gl.bindAttribLocation(program, 0, 'a_data');
+        // Manually bind layout attributes in the order defined by their
+        // ProgramInterface so that we don't dynamically link an unused
+        // attribute at position 0, which can cause rendering to fail for an
+        // entire layer (see #4607, #4728)
+        const layoutAttributes = configuration.interface.layoutAttributes || [];
+        for (let i = 0; i < layoutAttributes.length; i++) {
+            gl.bindAttribLocation(program, i, layoutAttributes[i].name);
         }
 
         gl.linkProgram(program);

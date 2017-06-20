@@ -1,5 +1,37 @@
 ## master
 
+## 0.38.0 (June 9, 2017)
+
+#### New features :sparkles:
+
+- Attenuate label size scaling with distance, improving readability of pitched maps [#4547](https://github.com/mapbox/mapbox-gl-js/pull/4547)
+
+#### Bug fixes :beetle:
+
+- Skip rendering for patterned layers when pattern is missing [#4687](https://github.com/mapbox/mapbox-gl-js/pull/4687)
+- Fix bug with map failing to rerender after `webglcontextlost` event [#4725](https://github.com/mapbox/mapbox-gl-js/pull/4725) @cdawi
+- Clamp zoom level in `flyTo` to within the map's specified min- and maxzoom to prevent undefined behavior [#4726](https://github.com/mapbox/mapbox-gl-js/pull/4726) @ IvanSanchez
+- Fix wordmark rendering in IE [#4741](https://github.com/mapbox/mapbox-gl-js/pull/4741)
+- Fix slight pixelwise symbol rendering bugs caused by incorrect sprite calculations [#4737](https://github.com/mapbox/mapbox-gl-js/pull/4737)
+- Prevent exceptions thrown by certain `flyTo` calls [#4761](https://github.com/mapbox/mapbox-gl-js/pull/4761)
+- Fix "Improve this map" link [#4685](https://github.com/mapbox/mapbox-gl-js/pull/4685)
+- Tweak `queryRenderedSymbols` logic to better account for pitch scaling [#4792](https://github.com/mapbox/mapbox-gl-js/pull/4792)
+- Fix for symbol layers sometimes failing to render, most frequently in Safari [#4795](https://github.com/mapbox/mapbox-gl-js/pull/4795)
+- Apply `text-keep-upright` after `text-offset` to keep labels upright when intended [#4779](https://github.com/mapbox/mapbox-gl-js/pull/4779) **[Potentially breaking :warning: but considered a bugfix]**
+- Prevent exceptions thrown by empty GeoJSON tiles [4803](https://github.com/mapbox/mapbox-gl-js/pull/4803)
+
+#### Accessibility improvements :sound:
+
+- Add `aria-label` to popup close button [#4799](https://github.com/mapbox/mapbox-gl-js/pull/4799) @andrewharvey
+
+#### Development workflow + testing improvements :wrench:
+
+- Fix equality assertion bug in tests [#4731](https://github.com/mapbox/mapbox-gl-js/pull/4731) @IvanSanchez
+- Benchmark results page improvements [#4746](https://github.com/mapbox/mapbox-gl-js/pull/4746)
+- Require node version >=6.4.0, enabling the use of more ES6 features [#4752](https://github.com/mapbox/mapbox-gl-js/pull/4752)
+- Document missing `pitchWithRotate` option [#4800](https://github.com/mapbox/mapbox-gl-js/pull/4800) @simast
+- Move Github-specific Markdown files into subdirectory [#4806](https://github.com/mapbox/mapbox-gl-js/pull/4806) @tomscholz
+
 ## 0.37.0 (May 2nd, 2017)
 
 #### :warning: Breaking changes

@@ -98,6 +98,7 @@ const defaultOptions = {
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
  *   the map within 7 degrees of north, the map will automatically snap to exact north.
+ * @param {boolean} [options.pitchWithRotate=true] If `false`, the map's pitch (tilt) control with "drag to rotate" interaction will be disabled.
  * @param {Array<string>} [options.classes] Mapbox style class names with which to initialize the map.
  *   Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
@@ -1016,8 +1017,8 @@ class Map extends Camera {
      * Load an image from an external URL for use with `Map#addImage`. External
      * domains must support [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
      *
-     * @param {string} url The URL of the image.
-     * @param {Function} callback Called when the image has loaded or with an error argument if there is an error.
+     * @param {string} url The URL of the image file. Image file must be in png, webp, or jpg format.
+     * @param {Function} callback Expecting `callback(error, data)`. Called when the image has loaded or with an error argument if there is an error.
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url, callback) {

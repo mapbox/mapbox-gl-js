@@ -1,8 +1,9 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.37.0",
+  "version": "0.38.0",
   "main": "dist/mapbox-gl.js",
+  "style": "dist/mapbox-gl.css",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
@@ -37,7 +38,7 @@
     "webworkify": "^1.4.0"
   },
   "devDependencies": {
-    "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
+    "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
@@ -62,6 +63,7 @@
     "jsdom": "^9.11.0",
     "lodash": "^4.16.0",
     "minifyify": "^7.0.1",
+    "mock-geolocation": "^1.0.11",
     "npm-run-all": "^4.0.1",
     "nyc": "^10.1.2",
     "pngjs": "^3.0.0",

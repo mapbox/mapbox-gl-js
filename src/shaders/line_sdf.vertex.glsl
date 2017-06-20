@@ -24,7 +24,6 @@ uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
 uniform vec2 u_gl_units_to_pixels;
-uniform mediump float u_width;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -37,6 +36,8 @@ varying float v_gamma_scale;
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
+#pragma mapbox: define mediump float width
+#pragma mapbox: define lowp float floorwidth
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -44,6 +45,8 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
+    #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize lowp float floorwidth
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
@@ -60,11 +63,11 @@ void main() {
     // these transformations used to be applied in the JS and native code bases. 
     // moved them into the shader for clarity and simplicity. 
     gapwidth = gapwidth / 2.0;
-    float width = u_width / 2.0;
+    float halfwidth = width / 2.0;
     offset = -1.0 * offset;
  
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
-    float outset = gapwidth + width * (gapwidth > 0.0 ? 2.0 : 1.0) + ANTIALIASING;
+    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + ANTIALIASING;
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
@@ -89,8 +92,8 @@ void main() {
     float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_gl_units_to_pixels);
     v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
 
-    v_tex_a = vec2(a_linesofar * u_patternscale_a.x, normal.y * u_patternscale_a.y + u_tex_y_a);
-    v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
+    v_tex_a = vec2(a_linesofar * u_patternscale_a.x / floorwidth, normal.y * u_patternscale_a.y + u_tex_y_a);
+    v_tex_b = vec2(a_linesofar * u_patternscale_b.x / floorwidth, normal.y * u_patternscale_b.y + u_tex_y_b);
 
     v_width2 = vec2(outset, inset);
 }
