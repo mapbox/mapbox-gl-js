@@ -28,6 +28,7 @@ class LogoControl {
         this._container.style.display = 'none';
 
         this._map.on('sourcedata', this._updateLogo);
+        this._updateLogo();
         return this._container;
     }
 
@@ -41,7 +42,7 @@ class LogoControl {
     }
 
     _updateLogo(e) {
-        if (e && e.sourceDataType === 'metadata') {
+        if (!e || e.sourceDataType === 'metadata') {
             this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }
     }
