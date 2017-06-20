@@ -56,7 +56,6 @@ class FullscreenControl {
         return !!(
             window.document.fullscreenEnabled ||
             window.document.mozFullscreenEnabled ||
-            window.document.mozFullScreenEnabled ||
             window.document.msFullscreenEnabled ||
             window.document.webkitFullscreenEnabled
         );
