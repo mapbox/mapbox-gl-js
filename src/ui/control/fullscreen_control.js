@@ -4,8 +4,6 @@ const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
 
-const className = 'mapboxgl-ctrl';
-
 /**
  * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
  *
@@ -32,12 +30,13 @@ class FullscreenControl {
         } else if ('onmsfullscreenchange' in window.document) {
             this._fullscreenchange = 'MSFullscreenChange';
         }
+        this._className = 'mapboxgl-ctrl';
     }
 
     onAdd(map) {
         this._map = map;
         this._mapContainer = this._map.getContainer();
-        this._container = DOM.create('div', `${className} mapboxgl-ctrl-group`);
+        this._container = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
         if (this._checkFullscreenSupport()) {
             this._setupUI();
         } else {
@@ -62,7 +61,7 @@ class FullscreenControl {
     }
 
     _setupUI() {
-        const button = this._fullscreenButton = DOM.create('button', (`${className}-icon ${className}-fullscreen`), this._container);
+        const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._container);
         button.setAttribute("aria-label", "Toggle fullscreen");
         button.type = 'button';
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
@@ -82,8 +81,8 @@ class FullscreenControl {
 
         if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
-            this._fullscreenButton.classList.toggle(`${className}-shrink`);
-            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);
+            this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
+            this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
         }
     }
 
