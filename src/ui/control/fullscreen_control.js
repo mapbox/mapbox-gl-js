@@ -40,6 +40,7 @@ class FullscreenControl {
         if (this._checkFullscreenSupport()) {
             this._setupUI();
         } else {
+            this._container.style.display = 'none';
             util.warnOnce('This device does not support fullscreen mode.');
         }
         return this._container;
@@ -53,10 +54,11 @@ class FullscreenControl {
 
     _checkFullscreenSupport() {
         return !!(
-            this._mapContainer.requestFullscreen ||
-            this._mapContainer.mozRequestFullScreen ||
-            this._mapContainer.msRequestFullscreen ||
-            this._mapContainer.webkitRequestFullscreen
+            window.document.fullscreenEnabled ||
+            window.document.mozFullscreenEnabled ||
+            window.document.mozFullScreenEnabled ||
+            window.document.msFullscreenEnabled ||
+            window.document.webkitFullscreenEnabled
         );
     }
 
