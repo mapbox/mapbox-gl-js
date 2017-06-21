@@ -38,7 +38,7 @@ float getOpenness(vec2 dir, float ref, float metersPerPixel) {
 #define PI 3.141592653589793
 
 void main() {
-    vec2 epsilon = 0.25 / u_dimension;
+    vec2 epsilon = 1.0 / u_dimension;
     float a = getElevation(v_pos + vec2(-epsilon.x, -epsilon.y), 0.0);
     float b = getElevation(v_pos + vec2(0, -epsilon.y), 0.0);
     float c = getElevation(v_pos + vec2(epsilon.x, -epsilon.y), 0.0);
@@ -53,7 +53,7 @@ void main() {
         (c + f + f + i) - (a + d + d + g),
         (g + h + h + i) - (a + b + b + c)
         // decrease the value u_zoom is subtracted from to intensify terrain appearance
-    ) / pow(2.0, 18.0 - u_zoom);
+    ) / pow(2.0, 19.0 - u_zoom);
 
     float metersPerPixel = (11752832.0 / pow(2.0, u_zoom) / 256.0) * 1.0;
     float openness = 0.0;
