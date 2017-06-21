@@ -38,9 +38,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['icon-translate'],
         layer.paint['icon-translate-anchor'],
         layer.layout['icon-rotation-alignment'],
-        // icon-pitch-alignment is not yet implemented
-        // and we simply inherit the rotation alignment
-        layer.layout['icon-rotation-alignment'],
+        layer.layout['icon-pitch-alignment'],
         layer.layout['icon-keep-upright']
     );
 
