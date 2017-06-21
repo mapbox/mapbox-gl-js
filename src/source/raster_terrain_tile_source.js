@@ -22,6 +22,7 @@ class RasterTerrainTileSource extends Evented {
         this.minzoom = 0;
         this.maxzoom = 15;
         this.roundZoom = true;
+        this.prepareFboPass = true;
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
@@ -150,7 +151,6 @@ class RasterTerrainTileSource extends Evented {
         const nxw = x + 1 === dim ? w + 1 : w;
 
         const neighboringTiles = [
-            { z: z, x: x, y: y, w: w },
             { z: z, x: px, y: y, w: pxw },
             { z: z, x: nx, y: y, w: nxw  }
         ];

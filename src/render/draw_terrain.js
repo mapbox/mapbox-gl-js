@@ -26,21 +26,19 @@ function drawTerrain(painter, sourceCache, layer, coords) {
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        if (!tile.texture) {
-            prepareTerrain(painter, tile, layer);
-        }
-
-        // todo move?
-        tile.bordersLoaded = true;
-        for (const key in tile.neighboringTiles) {
-            if (!tile.neighboringTiles[key].backfilled && sourceCache._tiles[key]) {
-                tile.bordersLoaded = false;
-                break;
+        if (painter.isPrepareFbosPass) {
+            if (!tile.terrainTexture) prepareTerrain(painter, tile, layer);
+        } else {
+            tile.bordersLoaded = true;
+            for (const key in tile.neighboringTiles) {
+                if (!tile.neighboringTiles[key].backfilled && sourceCache._tiles[key]) {
+                    tile.bordersLoaded = false;
+                    break;
+                }
             }
+
+            tile.terrainTexture.render(tile, layer);
         }
-
-        tile.texture.render(tile, layer);
-
     }
 }
 
@@ -169,7 +167,7 @@ function prepareTerrain(painter, tile, layer) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-    tile.texture = new TerrainTexture(gl, painter, layer, tile);
+    tile.terrainTexture = new TerrainTexture(gl, painter, layer, tile);
 
     const matrix = mat4.create();
     // Flip rendering at y axis.
@@ -193,6 +191,6 @@ function prepareTerrain(painter, tile, layer) {
     vao.bind(gl, program, buffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
-    tile.texture.unbindFramebuffer();
+    tile.terrainTexture.unbindFramebuffer();
     tile.prepared = true;
 }

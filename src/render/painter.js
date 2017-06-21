@@ -277,6 +277,7 @@ class Painter {
 
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
+        this.renderFbosPass();
         this.isOpaquePass = true;
         this.renderPass();
         this.isOpaquePass = false;
@@ -332,7 +333,29 @@ class Painter {
         }
     }
 
-    depthMask(mask: boolean) {
+    renderFbosPass() {
+        this.isPrepareFbosPass = true;
+        const layerIds = this.style._order;
+        let sourceCache, coords;
+
+        for (let i = 0; i < layerIds.length; i++) {
+            const layer = this.style._layers[layerIds[i]];
+            if (layer.source !== (sourceCache && sourceCache.id)) {
+                sourceCache = this.style.sourceCaches[layer.source];
+                coords = [];
+                if (sourceCache && sourceCache.getSource().prepareFboPass) {
+                    coords = sourceCache.getVisibleCoordinates();
+                    this.renderLayer(this, sourceCache, layer, coords);
+
+                }
+            }
+
+        }
+        this.isPrepareFbosPass = false;
+
+    }
+
+    depthMask(mask) {
         if (mask !== this._depthMask) {
             this._depthMask = mask;
             this.gl.depthMask(mask);
