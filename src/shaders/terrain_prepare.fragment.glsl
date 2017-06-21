@@ -35,7 +35,6 @@ float getOpenness(vec2 dir, float ref, float metersPerPixel) {
     return atan(2.0, result / metersPerPixel) * 200.0 - 100.0;
 }
 
-#define PI 3.141592653589793
 
 void main() {
     vec2 epsilon = 1.0 / u_dimension;

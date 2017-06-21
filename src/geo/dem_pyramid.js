@@ -89,7 +89,7 @@ class DEMPyramid {
             scale: this.scale,
         };
 
-        this.levels.forEach((l,i)=>{
+        this.levels.forEach((l, i)=>{
             if (transferables) transferables.push(l.data.buffer);
             references[i] = l.data.buffer;
         });
@@ -105,7 +105,10 @@ class DEMPyramid {
             if (t.height !== o.height) throw new Error('level mismatch (height)');
 
 
-            let _xMin = dx * t.width, _xMax = dx * t.width + t.width, _yMin = dy * t.height, _yMax = dy * t.height + t.height;
+            let _xMin = dx * t.width,
+                _xMax = dx * t.width + t.width,
+                _yMin = dy * t.height,
+                _yMax = dy * t.height + t.height;
 
             switch (dx) {
             case -1:
@@ -138,14 +141,13 @@ class DEMPyramid {
                 }
             }
 
-
         }
 
         function clamp(value, min, max) {
             return value < min ? min : (value > max ? max : value);
         }
     }
-};
+}
 
 
 module.exports = {DEMPyramid, Level};
@@ -154,13 +156,13 @@ module.exports = {DEMPyramid, Level};
 DEMPyramid.deserialize = function(data) {
     const levels = [];
     // TODO dont hardcode tilesize
-    let tileSize = 256, i=0;
+    let tileSize = 256, i = 0;
     while (tileSize >= 2) {
-        levels.push(new Level(tileSize, tileSize, tileSize/2, new Int32Array(data[i])));
-        tileSize /=2;
+        levels.push(new Level(tileSize, tileSize, tileSize / 2, new Int32Array(data[i])));
+        tileSize /= 2;
         i++;
     }
-    levels.push(new Level(2,2,0));
-    levels.push(new Level(1,1,0));
+    levels.push(new Level(2, 2, 0));
+    levels.push(new Level(1, 1, 0));
     return new DEMPyramid(data.uid, data.scale, levels);
-}
+};

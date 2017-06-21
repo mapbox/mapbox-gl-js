@@ -10,8 +10,6 @@ uniform sampler2D u_image;
 varying vec2 v_pos;
 
 uniform int u_mode;
-uniform vec2 u_dimension;
-uniform float u_zoom;
 uniform float u_mipmap;
 uniform float u_lightintensity;
 uniform vec3 u_lightpos;
