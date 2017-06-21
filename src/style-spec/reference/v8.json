@@ -1019,6 +1019,36 @@
         }
       }
     },
+    "icon-pitch-alignment": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The icon is aligned to the plane of the map."
+        },
+        "viewport": {
+            "doc": "The icon is aligned to the plane of the viewport."
+        },
+        "auto": {
+            "doc": "Automatically matches the value of `icon-rotation-alignment`."
+        }
+      },
+      "default": "auto",
+      "doc": "Orientation of icon when map is pitched.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.39.0",
+          "android": null,
+          "ios": null,
+          "macos": null
+        },
+        "data-driven styling": {}
+      }
+    },
     "text-pitch-alignment": {
       "type": "enum",
       "function": "piecewise-constant",
