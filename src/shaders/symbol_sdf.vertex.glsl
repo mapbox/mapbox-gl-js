@@ -29,6 +29,8 @@ uniform mat4 u_gl_coord_matrix;
 uniform bool u_is_text;
 uniform bool u_pitch_with_map;
 uniform highp float u_pitch;
+uniform bool u_rotate_symbol;
+uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
 uniform highp float u_collision_y_stretch;
 
@@ -82,8 +84,21 @@ void main() {
 
     float fontScale = u_is_text ? size / 24.0 : size;
 
-    highp float angle_sin = sin(segment_angle);
-    highp float angle_cos = cos(segment_angle);
+    highp float symbol_rotation = 0.0;
+    if (u_rotate_symbol) {
+        // Point labels with 'rotation-alignment: map' are horizontal with respect to tile units
+        // To figure out that angle in projected space, we draw a short horizontal line in tile
+        // space, project it, and measure its angle in projected space.
+        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), 0, 1);
+
+        vec2 a = projectedPoint.xy / projectedPoint.w;
+        vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
+
+        symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
+    }
+
+    highp float angle_sin = sin(segment_angle + symbol_rotation);
+    highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
