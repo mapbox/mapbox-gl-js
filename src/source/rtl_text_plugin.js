@@ -13,10 +13,10 @@ module.exports.evented = new Evented();
 type ErrorCallback = (error: Error) => void;
 
 module.exports.registerForPluginAvailability = function(
-    callback: (pluginBlobURL: string, errorCallback: ErrorCallback) => void
+    callback: (args: {pluginBlobURL: string, errorCallback: ErrorCallback}) => void
 ) {
     if (pluginBlobURL) {
-        callback(pluginBlobURL, module.exports.errorCallback);
+        callback({ pluginBlobURL: pluginBlobURL, errorCallback: module.exports.errorCallback});
     } else {
         module.exports.evented.once('pluginAvailable', callback);
     }
