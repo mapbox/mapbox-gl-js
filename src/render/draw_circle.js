@@ -1,5 +1,6 @@
 
 const browser = require('../util/browser');
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = drawCircles;
 
@@ -28,13 +29,14 @@ function drawCircles(painter, sourceCache, layer, coords) {
         const program = painter.useProgram('circle', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-        if (layer.paint['circle-pitch-scale'] === 'map') {
-            gl.uniform1i(program.u_scale_with_map, true);
-            gl.uniform2f(program.u_extrude_scale,
-                painter.transform.pixelsToGLUnits[0] * painter.transform.cameraToCenterDistance,
-                painter.transform.pixelsToGLUnits[1] * painter.transform.cameraToCenterDistance);
+        gl.uniform1f(program.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
+        gl.uniform1i(program.u_scale_with_map, layer.paint['circle-pitch-scale'] === 'map');
+        if (layer.paint['circle-pitch-alignment'] === 'map') {
+            gl.uniform1i(program.u_pitch_with_map, true);
+            const pixelRatio = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+            gl.uniform2f(program.u_extrude_scale, pixelRatio, pixelRatio);
         } else {
-            gl.uniform1i(program.u_scale_with_map, false);
+            gl.uniform1i(program.u_pitch_with_map, false);
             gl.uniform2fv(program.u_extrude_scale, painter.transform.pixelsToGLUnits);
         }
 
