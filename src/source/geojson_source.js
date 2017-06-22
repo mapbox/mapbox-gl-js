@@ -158,8 +158,7 @@ class GeoJSONSource extends Evented {
         this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err) => {
             this._loaded = true;
             callback(err);
-
-        });
+        }, this.workerID);
     }
 
     loadTile(tile, callback) {
