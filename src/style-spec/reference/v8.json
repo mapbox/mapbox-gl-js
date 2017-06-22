@@ -2488,6 +2488,27 @@
         "data-driven styling": {}
       }
     },
+    "circle-pitch-alignment": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The circle is aligned to the plane of the map."
+        },
+        "viewport": {
+            "doc": "The circle is aligned to the plane of the viewport."
+        }
+      },
+      "default": "viewport",
+      "doc": "Orientation of circle when map is pitched.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.39.0"
+        },
+        "data-driven styling": {}
+      }
+    },
     "circle-stroke-width": {
       "type": "number",
       "default": 0,
