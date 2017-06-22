@@ -69,6 +69,24 @@ test('Style', (t) => {
         });
     });
 
+    t.test('loads plugin immediately if already registered', (t) => {
+        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/plugin.js', "doesn't matter");
+        let firstError = true;
+        rtlTextPlugin.setRTLTextPlugin("/plugin.js", (error) => {
+            // Getting this error message shows the bogus URL was succesfully passed to the worker
+            // We'll get the error from all workers, only pay attention to the first one
+            if (firstError) {
+                t.deepEquals(error, 'RTL Text Plugin failed to import scripts from data:text/javascript;base64,abc');
+                t.end();
+                firstError = false;
+            }
+        });
+        window.server.respond();
+        new Style(createStyleJSON());
+    });
+
     t.test('can be constructed from a URL', (t) => {
         window.useFakeXMLHttpRequest();
         window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));

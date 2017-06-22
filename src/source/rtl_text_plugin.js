@@ -23,6 +23,11 @@ module.exports.registerForPluginAvailability = function(
     return callback;
 };
 
+// Exposed so it can be stubbed out by tests
+module.exports.createBlobURL = function(response: Object) {
+    return window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
+};
+
 module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCallback) {
     if (pluginRequested) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
@@ -33,9 +38,7 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
         if (err) {
             callback(err);
         } else {
-            pluginBlobURL =
-                window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
-
+            pluginBlobURL = module.exports.createBlobURL(response);
             module.exports.evented.fire('pluginAvailable', { pluginBlobURL: pluginBlobURL, errorCallback: callback });
         }
     });
