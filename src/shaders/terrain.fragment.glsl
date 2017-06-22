@@ -40,10 +40,9 @@ void main() {
     float slope = atan(1.25 * length(deriv));
     float aspect = deriv.x != 0.0 ? atan(deriv.y, -deriv.x) : PI / 2.0 * (deriv.y > 0.0 ? 1.0 : -1.0);
     float openness = pixel.b;
-    float r = sqrt(pow(u_lightpos.x,2.0) + pow(u_lightpos.y, 2.0)+ pow(u_lightpos.z, 2.0));
-    float polar = acos(u_lightpos.z/r);
-    // TODO figure out why this is funky
-    float azimuth =  atan(u_lightpos.y/u_lightpos.x) - radians(180.0);
+
+    float azimuth =  u_lightpos.y;
+    float polar = u_lightpos.z;
 
     if (u_mode == mode_raw) {
         gl_FragColor = texture2D(u_image, v_pos, u_mipmap);
@@ -62,8 +61,6 @@ void main() {
     } else if (u_mode == mode_color) {
         float accent = cos(slope);
         vec4 accent_color = u_lightintensity * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
-        // left over of full rotations?
-
         float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
         vec4 shade_color = mix(u_shadow, u_highlight, shade) * (slope) * sin(polar);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
