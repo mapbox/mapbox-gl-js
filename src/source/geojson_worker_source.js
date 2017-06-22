@@ -74,21 +74,28 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param {Function} callback
      */
     loadData(params, callback) {
-        const handleData = function(err, data) {
-            if (err) return callback(err);
-            if (typeof data != 'object') {
+        this.loadGeoJSON(params, (err, data) => {
+            if (err) {
+                return callback(err);
+            }
+
+            if (typeof data !== 'object') {
                 return callback(new Error("Input data is not a valid GeoJSON object."));
             }
-            rewind(data, true);
-            this._indexData(data, params, (err, indexed) => {
-                if (err) { return callback(err); }
-                this._geoJSONIndexes[params.source] = indexed;
-                this.loaded[params.source] = {};
-                callback(null);
-            });
-        }.bind(this);
 
-        this.loadGeoJSON(params, handleData);
+            rewind(data, true);
+
+            try {
+                this._geoJSONIndexes[params.source] = params.cluster ?
+                    supercluster(params.superclusterOptions).load(data.features) :
+                    geojsonvt(data, params.geojsonVtOptions);
+            } catch (err) {
+                return callback(err);
+            }
+
+            this.loaded[params.source] = {};
+            callback(null);
+        });
     }
 
     /**
@@ -144,25 +151,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     removeSource(params) {
         if (this._geoJSONIndexes[params.source]) {
             delete this._geoJSONIndexes[params.source];
-        }
-    }
-
-    /**
-     * Index the data using either geojson-vt or supercluster
-     * @param {GeoJSON} data
-     * @param {Object} params forwarded from loadTile.
-     * @param {callback} (err, indexedData)
-     * @private
-     */
-    _indexData(data, params, callback) {
-        try {
-            if (params.cluster) {
-                callback(null, supercluster(params.superclusterOptions).load(data.features));
-            } else {
-                callback(null, geojsonvt(data, params.geojsonVtOptions));
-            }
-        } catch (err) {
-            return callback(err);
         }
     }
 }
