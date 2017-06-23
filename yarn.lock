@@ -6,9 +6,9 @@
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@mapbox/gl-matrix/-/gl-matrix-0.0.1.tgz#e5126aab4d64c36b81c7a97d0ae0dddde5773d2b"
 
-"@mapbox/mapbox-gl-rtl-text@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-0.1.0.tgz#13525f45229deb53536f9377edb0891398b1fc88"
+"@mapbox/mapbox-gl-rtl-text@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-0.1.1.tgz#1ceb3103cd668b16563b5492c0690c3f091c7491"
 
 "@mapbox/mapbox-gl-test-suite@file:test/integration":
   version "0.0.0"
