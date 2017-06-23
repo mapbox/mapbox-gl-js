@@ -66,3 +66,6 @@ Development Tools:
   mapbox-gl-inspect:
     website: https://github.com/lukasmartinelli/mapbox-gl-inspect
     description: adds an inspect control to view vector source features and properties
+  mapbox-gl-fps:
+    website: https://github.com/MazeMap/mapbox-gl-fps
+    description: A frames-per-seconds GUI control and measurer with statistic report output.
