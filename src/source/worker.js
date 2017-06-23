@@ -1,3 +1,4 @@
+// @flow
 
 const Actor = require('../util/actor');
 const StyleLayerIndex = require('../style/style_layer_index');
@@ -8,12 +9,30 @@ const assert = require('assert');
 
 const globalRTLTextPlugin = require('./rtl_text_plugin');
 
+import type {
+    WorkerSource,
+    WorkerTileParameters,
+    WorkerTileCallback,
+    TileParameters,
+    RedoPlacementParameters,
+    RedoPlacementCallback
+} from '../source/source';
+
 /**
  * @private
  */
 class Worker {
-    constructor(self) {
-        this.self = self;
+    self: WorkerGlobalScope & {
+        registerWorkerSource: (string, Class<WorkerSource>) => void,
+        registerRTLTextPlugin: (any) => void
+    };
+    actor: Actor;
+    layerIndexes: { [string]: StyleLayerIndex };
+    workerSourceTypes: { [string]: Class<WorkerSource> };
+    workerSources: { [string]: { [string]: WorkerSource } };
+
+    constructor(self: WorkerGlobalScope) {
+        this.self = (self: any); // Needs a cast because we're going to extend it with `register*` methods.
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
@@ -42,35 +61,35 @@ class Worker {
         };
     }
 
-    setLayers(mapId, layers) {
+    setLayers(mapId: string, layers: any) {
         this.getLayerIndex(mapId).replace(layers);
     }
 
-    updateLayers(mapId, params) {
+    updateLayers(mapId: string, params: {layers: any, removedIds: any, symbolOrder: any}) {
         this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
     }
 
-    loadTile(mapId, params, callback) {
+    loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).loadTile(params, callback);
     }
 
-    reloadTile(mapId, params, callback) {
+    reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
     }
 
-    abortTile(mapId, params) {
+    abortTile(mapId: string, params: TileParameters & {type: string}) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).abortTile(params);
     }
 
-    removeTile(mapId, params) {
+    removeTile(mapId: string, params: TileParameters & {type: string}) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).removeTile(params);
     }
 
-    removeSource(mapId, params) {
+    removeSource(mapId: string, params: {source: string} & {type: string}) {
         assert(params.type);
         const worker = this.getWorkerSource(mapId, params.type);
         if (worker.removeSource !== undefined) {
@@ -78,7 +97,7 @@ class Worker {
         }
     }
 
-    redoPlacement(mapId, params, callback) {
+    redoPlacement(mapId: string, params: RedoPlacementParameters & {type: string}, callback: RedoPlacementCallback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     }
@@ -89,7 +108,7 @@ class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map, params, callback) {
+    loadWorkerSource(map: string, params: {url: string}, callback: Function) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -98,7 +117,7 @@ class Worker {
         }
     }
 
-    loadRTLTextPlugin(map, pluginURL, callback) {
+    loadRTLTextPlugin(map: string, pluginURL: string, callback: Function) {
         try {
             if (!globalRTLTextPlugin.applyArabicShaping && !globalRTLTextPlugin.processBidirectionalText) {
                 this.self.importScripts(pluginURL);
@@ -111,7 +130,7 @@ class Worker {
         }
     }
 
-    getLayerIndex(mapId) {
+    getLayerIndex(mapId: string) {
         let layerIndexes = this.layerIndexes[mapId];
         if (!layerIndexes) {
             layerIndexes = this.layerIndexes[mapId] = new StyleLayerIndex();
@@ -119,7 +138,7 @@ class Worker {
         return layerIndexes;
     }
 
-    getWorkerSource(mapId, type) {
+    getWorkerSource(mapId: string, type: string) {
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type]) {
@@ -138,6 +157,6 @@ class Worker {
     }
 }
 
-module.exports = function createWorker(self) {
+module.exports = function createWorker(self: WorkerGlobalScope) {
     return new Worker(self);
 };

@@ -1,9 +1,19 @@
+// @flow
 
 const Point = require('point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
 
 const intersectionTests = require('../util/intersection_tests');
+
+type SerializedCollisionTile = {|
+    angle: number,
+    pitch: number,
+    cameraToCenterDistance: number,
+    cameraToTileDistance: number,
+    grid: ArrayBuffer,
+    ignoredGrid: ArrayBuffer
+|};
 
 /**
  * A collision tile used to prevent symbols from overlapping. It keep tracks of
@@ -13,17 +23,40 @@ const intersectionTests = require('../util/intersection_tests');
  * @private
  */
 class CollisionTile {
-    constructor(angle, pitch, cameraToCenterDistance, cameraToTileDistance, collisionBoxArray) {
+    grid: any;
+    ignoredGrid: any;
+    perspectiveRatio: number;
+    minScale: number;
+    maxScale: number;
+    angle: number;
+    pitch: number;
+    cameraToCenterDistance: number;
+    cameraToTileDistance: number;
+    rotationMatrix: [number, number, number, number];
+    reverseRotationMatrix: [number, number, number, number];
+    yStretch: number;
+    collisionBoxArray: any;
+    tempCollisionBox: any;
+    edges: Array<any>;
+
+    constructor(angle: number | SerializedCollisionTile, pitch: any, cameraToCenterDistance: any, cameraToTileDistance: any, collisionBoxArray: any) {
         if (typeof angle === 'object') {
             const serialized = angle;
             collisionBoxArray = pitch;
-            angle = serialized.angle;
-            pitch = serialized.pitch;
-            cameraToCenterDistance = serialized.cameraToCenterDistance;
-            cameraToTileDistance = serialized.cameraToTileDistance;
+
+            this.angle = serialized.angle;
+            this.pitch = serialized.pitch;
+            this.cameraToCenterDistance = serialized.cameraToCenterDistance;
+            this.cameraToTileDistance = serialized.cameraToTileDistance;
+
             this.grid = new Grid(serialized.grid);
             this.ignoredGrid = new Grid(serialized.ignoredGrid);
         } else {
+            this.angle = angle;
+            this.pitch = pitch;
+            this.cameraToCenterDistance = cameraToCenterDistance;
+            this.cameraToTileDistance = cameraToTileDistance;
+
             this.grid = new Grid(EXTENT, 12, 6);
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
         }
@@ -36,13 +69,8 @@ class CollisionTile {
         this.minScale = .5 / this.perspectiveRatio;
         this.maxScale = 2 / this.perspectiveRatio;
 
-        this.angle = angle;
-        this.pitch = pitch;
-        this.cameraToCenterDistance = cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
-
-        const sin = Math.sin(angle),
-            cos = Math.cos(angle);
+        const sin = Math.sin(this.angle),
+            cos = Math.cos(this.angle);
         this.rotationMatrix = [cos, -sin, sin, cos];
         this.reverseRotationMatrix = [cos, sin, -sin, cos];
 
@@ -91,7 +119,7 @@ class CollisionTile {
         ];
     }
 
-    serialize(transferables) {
+    serialize(transferables: ?Array<Transferable>): SerializedCollisionTile {
         const grid = this.grid.toArrayBuffer();
         const ignoredGrid = this.ignoredGrid.toArrayBuffer();
         if (transferables) {
@@ -113,10 +141,11 @@ class CollisionTile {
      * overlapping with other features.
      *
      * @param {CollisionFeature} collisionFeature
-     * @returns {number} placementScale
+     * @param allowOverlap
+     * @param avoidEdges
      * @private
      */
-    placeCollisionFeature(collisionFeature, allowOverlap, avoidEdges) {
+    placeCollisionFeature(collisionFeature: any, allowOverlap: boolean, avoidEdges: boolean): number {
 
         const collisionBoxArray = this.collisionBoxArray;
         let minPlacementScale = this.minScale;
@@ -209,7 +238,7 @@ class CollisionTile {
         return minPlacementScale;
     }
 
-    queryRenderedSymbols(queryGeometry, scale) {
+    queryRenderedSymbols(queryGeometry: any, scale: number): Array<any> {
         const sourceLayerFeatures = {};
         const result = [];
 
@@ -290,7 +319,7 @@ class CollisionTile {
         return result;
     }
 
-    getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking) {
+    getPlacementScale(minPlacementScale: number, anchorPoint: Point, box: any, blockingAnchorPoint: Point, blocking: any): number {
 
         // Find the lowest scale at which the two boxes can fit side by side without overlapping.
         // Original algorithm:
@@ -338,10 +367,11 @@ class CollisionTile {
      * later features from overlapping with it.
      *
      * @param {CollisionFeature} collisionFeature
-     * @param {number} minPlacementScale
+     * @param minPlacementScale
+     * @param ignorePlacement
      * @private
      */
-    insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement) {
+    insertCollisionFeature(collisionFeature: any, minPlacementScale: number, ignorePlacement: boolean) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;
 

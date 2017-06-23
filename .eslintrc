@@ -11,6 +11,7 @@
     "array-bracket-spacing": "off",
     "block-scoped-var": "error",
     "consistent-return": "off",
+    "flowtype/define-flow-type": 1,
     "global-require": "off",
     "key-spacing": "off",
     "no-eq-null": "off",
