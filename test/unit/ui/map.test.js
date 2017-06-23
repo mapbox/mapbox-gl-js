@@ -35,6 +35,24 @@ function createMap(options, callback) {
     return map;
 }
 
+function createStyleSource() {
+    return {
+        type: "geojson",
+        data: {
+            type: "FeatureCollection",
+            features: []
+        }
+    };
+}
+
+function createStyleLayer() {
+    return {
+        id: 'background',
+        type: 'background'
+    };
+}
+
+
 test('Map', (t) => {
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();
@@ -258,36 +276,53 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#is_Loaded', (t)=>{
+
+        t.test('Map#isSourceLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('data', (e) => {
+                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                        t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
+                        t.end();
+                    }
+                });
+                map.addSource('geojson', createStyleSource());
+                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
+            });
+        });
+
+        t.test('Map#isStyleLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            t.equal(map.isStyleLoaded(), false, 'false before style has loaded');
+            map.on('load', () => {
+                t.equal(map.isStyleLoaded(), true, 'true when style is loaded');
+                t.end();
+            });
+        });
+
+        t.test('Map#areTilesLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+            t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
+            map.on('load', ()=>{
+
+                map.addSource('geojson', createStyleSource());
+                map.style.sourceCaches.geojson._tiles.fakeTile = {state: 'loading'};
+                t.equal(map.areTilesLoaded(), false, 'returns false if tiles are loading');
+                map.style.sourceCaches.geojson._tiles.fakeTile.state = 'loaded';
+                t.equal(map.areTilesLoaded(), true, 'returns true if tiles are loaded');
+                t.end();
+            });
+        });
+        t.end();
+    });
+
     t.test('#getStyle', (t) => {
-        function createStyle() {
-            return {
-                version: 8,
-                center: [-73.9749, 40.7736],
-                zoom: 12.5,
-                bearing: 29,
-                pitch: 50,
-                sources: {},
-                layers: []
-            };
-        }
-
-        function createStyleSource() {
-            return {
-                type: "geojson",
-                data: {
-                    type: "FeatureCollection",
-                    features: []
-                }
-            };
-        }
-
-        function createStyleLayer() {
-            return {
-                id: 'background',
-                type: 'background'
-            };
-        }
-
         t.test('returns the style', (t) => {
             const style = createStyle();
             const map = createMap({style: style});
@@ -324,22 +359,6 @@ test('Map', (t) => {
             });
         });
 
-        t.test('#isSourceLoaded', (t) => {
-            const style = createStyle();
-            const map = createMap({style: style});
-
-            map.on('load', () => {
-                map.on('data', (e) => {
-                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                        t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
-                        t.end();
-                    }
-                });
-                map.addSource('geojson', createStyleSource());
-                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
-            });
-        });
-
         t.test('returns the style with added layers', (t) => {
             const style = createStyle();
             const map = createMap({style: style});
@@ -373,7 +392,7 @@ test('Map', (t) => {
         t.test('creates a new Style if diff fails', (t) => {
             const style = createStyle();
             const map = createMap({ style: style });
-            t.stub(map.style, 'setState', () => {
+            t.stub(map.style, 'setState').callsFake(() => {
                 throw new Error('Dummy error');
             });
 
@@ -386,7 +405,7 @@ test('Map', (t) => {
         t.test('creates a new Style if diff option is false', (t) => {
             const style = createStyle();
             const map = createMap({ style: style });
-            t.stub(map.style, 'setState', () => {
+            t.stub(map.style, 'setState').callsFake(() => {
                 t.fail();
             });
 
@@ -397,6 +416,69 @@ test('Map', (t) => {
         });
 
         t.end();
+    });
+
+    t.test('#moveLayer', (t) => {
+        const map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [{
+                    id: 'layerId1',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }, {
+                    id: 'layerId2',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            })
+        });
+
+        map.once('render', () => {
+            map.moveLayer('layerId1', 'layerId2');
+            t.equal(map.getLayer('layerId1').id, 'layerId1');
+            t.equal(map.getLayer('layerId2').id, 'layerId2');
+            t.end();
+        });
+    });
+
+    t.test('#getLayer', (t) => {
+        const layer = {
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
+        };
+        const map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [layer]
+            })
+        });
+
+        map.once('render', () => {
+            const mapLayer = map.getLayer('layerId');
+            t.equal(mapLayer.id, layer.id);
+            t.equal(mapLayer.type, layer.type);
+            t.equal(mapLayer.source, layer.source);
+            t.end();
+        });
     });
 
     t.test('#resize', (t) => {
@@ -809,6 +891,12 @@ test('Map', (t) => {
             });
         });
 
+        t.test('returns an empty array when no style is loaded', (t) => {
+            const map = createMap({style: undefined});
+            t.deepEqual(map.queryRenderedFeatures(), []);
+            t.end();
+        });
+
         t.end();
     });
 
@@ -1098,7 +1186,7 @@ test('Map', (t) => {
             const map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
             t.spy(map, 'fire');
-            t.stub(console, 'error', (error) => {
+            t.stub(console, 'error').callsFake((error) => {
                 if (error.message === 'version: expected one of [8], 7 found') {
                     t.notOk(map.fire.calledWith('error'));
                     console.error.restore();

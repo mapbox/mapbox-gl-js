@@ -107,7 +107,7 @@ class VideoSource extends ImageSource {
     // setCoordinates inherited from ImageSource
 
     prepare() {
-        if (!this.tile || this.video.readyState < 2) return; // not enough data for current position
+        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) return; // not enough data for current position
         this._prepareImage(this.map.painter.gl, this.video);
     }
 

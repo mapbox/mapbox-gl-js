@@ -2,7 +2,7 @@
 layout: example
 category: example
 title: Create a hover effect
-description: Using queryRenderedFeatures and a filter to change hover styles
+description: Using events and a filter to change hover styles
 tags:
   - user-interaction
 ---
@@ -55,21 +55,14 @@ map.on('load', function () {
         "filter": ["==", "name", ""]
     });
 
-    // When the user moves their mouse over the page, we look for features
-    // at the mouse position (e.point) and within the states layer (states-fill).
-    // If a feature is found, then we'll update the filter in the state-fills-hover
-    // layer to only show that state, thus making a hover effect.
-    map.on("mousemove", function(e) {
-        var features = map.queryRenderedFeatures(e.point, { layers: ["state-fills"] });
-        if (features.length) {
-            map.setFilter("state-fills-hover", ["==", "name", features[0].properties.name]);
-        } else {
-            map.setFilter("state-fills-hover", ["==", "name", ""]);
-        }
+    // When the user moves their mouse over the states-fill layer, we'll update the filter in
+    // the state-fills-hover layer to only show the matching state, thus making a hover effect.
+    map.on("mousemove", "state-fills", function(e) {
+        map.setFilter("state-fills-hover", ["==", "name", e.features[0].properties.name]);
     });
 
-    // Reset the state-fills-hover layer's filter when the mouse leaves the map
-    map.on("mouseout", function() {
+    // Reset the state-fills-hover layer's filter when the mouse leaves the layer.
+    map.on("mouseleave", "state-fills", function() {
         map.setFilter("state-fills-hover", ["==", "name", ""]);
     });
 });

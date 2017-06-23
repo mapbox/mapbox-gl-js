@@ -6,6 +6,7 @@ const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');
 const Point = require('point-geometry');
 const window = require('../util/window');
+const smartWrap = require('../util/smart_wrap');
 
 const defaultOptions = {
     closeButton: true,
@@ -21,7 +22,7 @@ const defaultOptions = {
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
  *   map is clicked.
  * @param {string} [options.anchor] - A string indicating the popup's location relative to
- *   the coordinate set via [Popup#setLngLat](#Popup#setLngLat).
+ *   the coordinate set via {@link Popup#setLngLat}.
  *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
@@ -29,8 +30,8 @@ const defaultOptions = {
  * @param {number|PointLike|Object} [options.offset] -
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
- *   - a [`PointLike`](#PointLike) specifying a constant offset
- *   - an object of [`PointLike`](#PointLike)s specifing an offset for each anchor position
+ *   - a {@link PointLike} specifying a constant offset
+ *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
@@ -126,6 +127,10 @@ class Popup extends Evented {
     /**
      * Returns the geographical location of the popup's anchor.
      *
+     * The longitude of the result may differ by a multiple of 360 degrees from the longitude previously
+     * set by `setLngLat` because `Popup` wraps the anchor longitude across copies of the world to keep
+     * the popup on screen.
+     *
      * @returns {LngLat} The geographical location of the popup's anchor.
      */
     getLngLat() {
@@ -140,6 +145,7 @@ class Popup extends Evented {
      */
     setLngLat(lnglat) {
         this._lngLat = LngLat.convert(lnglat);
+        this._pos = null;
         this._update();
         return this;
     }
@@ -167,7 +173,7 @@ class Popup extends Evented {
      * Sets the popup's content to the HTML provided as a string.
      *
      * This method does not perform HTML filtering or sanitization, and must be
-     * used only with trusted content. Consider [`setText`](#Popup#setText) if
+     * used only with trusted content. Consider {@link Popup#setText} if
      * the content is an untrusted text string.
      *
      * @param {string} html A string representing HTML content for the popup.
@@ -218,6 +224,7 @@ class Popup extends Evented {
         if (this.options.closeButton) {
             this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', this._content);
             this._closeButton.type = 'button';
+            this._closeButton.setAttribute('aria-label', 'Close popup');
             this._closeButton.innerHTML = '&#215;';
             this._closeButton.addEventListener('click', this._onClickClose);
         }
@@ -232,25 +239,30 @@ class Popup extends Evented {
             this._container.appendChild(this._content);
         }
 
+        if (this._map.transform.renderWorldCopies) {
+            this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
+        }
+
+        this._pos = this._map.project(this._lngLat);
+
         let anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
-        const pos = this._map.project(this._lngLat).round();
 
         if (!anchor) {
             const width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (pos.y + offset.bottom.y < height) {
+            if (this._pos.y + offset.bottom.y < height) {
                 anchor = ['top'];
-            } else if (pos.y > this._map.transform.height - height) {
+            } else if (this._pos.y > this._map.transform.height - height) {
                 anchor = ['bottom'];
             } else {
                 anchor = [];
             }
 
-            if (pos.x < width / 2) {
+            if (this._pos.x < width / 2) {
                 anchor.push('left');
-            } else if (pos.x > this._map.transform.width - width / 2) {
+            } else if (this._pos.x > this._map.transform.width - width / 2) {
                 anchor.push('right');
             }
 
@@ -261,7 +273,7 @@ class Popup extends Evented {
             }
         }
 
-        const offsetedPos = pos.add(offset[anchor]);
+        const offsetedPos = this._pos.add(offset[anchor]).round();
 
         const anchorTranslate = {
             'top': 'translate(-50%,0)',

@@ -2,6 +2,7 @@
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+const config = require('../../util/config');
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
@@ -38,7 +39,7 @@ class AttributionControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
 
         if (compact) {
-            this._container.classList.add('compact');
+            this._container.classList.add('mapboxgl-compact');
         }
 
         this._updateAttributions();
@@ -67,22 +68,41 @@ class AttributionControl {
 
     _updateEditLink() {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
+        const params = [
+            {key: "owner", value: this.styleOwner},
+            {key: "id", value: this.styleId},
+            {key: "access_token", value: config.ACCESS_TOKEN}
+        ];
+
         if (this._editLink) {
-            const center = this._map.getCenter();
-            this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
-                    center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
+            const paramString = params.reduce((acc, next, i) => {
+                if (next.value !== undefined) {
+                    acc += `${next.key}=${next.value}${i < params.length - 1 ? '&' : ''}`;
+                }
+                return acc;
+            }, `?`);
+            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
+
         }
     }
 
+
     _updateData(e) {
-        this._updateAttributions(e);
-        this._updateEditLink();
+        if (e && e.sourceDataType === 'metadata') {
+            this._updateAttributions();
+            this._updateEditLink();
+        }
     }
 
-    _updateAttributions(e) {
+    _updateAttributions() {
         if (!this._map.style) return;
-        if (e && e.sourceDataType!=='metadata') return;
         let attributions = [];
+
+        if (this._map.style.stylesheet) {
+            const stylesheet = this._map.style.stylesheet;
+            this.styleOwner = stylesheet.owner;
+            this.styleId = stylesheet.id;
+        }
 
         const sourceCaches = this._map.style.sourceCaches;
         for (const id in sourceCaches) {
@@ -109,7 +129,7 @@ class AttributionControl {
     _updateCompact() {
         const compact = this._map.getCanvasContainer().offsetWidth <= 640;
 
-        this._container.classList[compact ? 'add' : 'remove']('compact');
+        this._container.classList[compact ? 'add' : 'remove']('mapboxgl-compact');
     }
 
 }

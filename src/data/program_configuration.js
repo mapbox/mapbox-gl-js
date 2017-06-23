@@ -18,6 +18,10 @@ const util = require('../util/util');
  * into the shader source code, create and link a program, and bind the uniforms and
  * vertex attributes in preparation for drawing.
  *
+ * When a vector tile is parsed, this same configuration information is used to
+ * populate the attribute buffers needed for data-driven styling using the zoom
+ * level and feature property data.
+ *
  * @private
  */
 class ProgramConfiguration {
@@ -28,12 +32,13 @@ class ProgramConfiguration {
         this.interpolationUniforms = [];
         this.pragmas = {vertex: {}, fragment: {}};
         this.cacheKey = '';
+        this.interface = {};
     }
 
-    static createDynamic(attributes, layer, zoom) {
+    static createDynamic(programInterface, layer, zoom) {
         const self = new ProgramConfiguration();
 
-        for (const attributeConfig of attributes) {
+        for (const attributeConfig of programInterface.paintAttributes || []) {
             const attribute = normalizePaintAttribute(attributeConfig, layer);
             assert(/^a_/.test(attribute.name));
             const name = attribute.name.slice(2);
@@ -47,6 +52,7 @@ class ProgramConfiguration {
             }
         }
         self.PaintVertexArray = createVertexArrayType(self.attributes);
+        self.interface = programInterface;
 
         return self;
     }
@@ -87,16 +93,42 @@ class ProgramConfiguration {
         this.cacheKey += `/a_${name}`;
     }
 
+    /*
+     * For composite functions, the idea here is to provide the shader with a
+     * _partially evaluated_ function for each feature (or rather, for each
+     * vertex associated with a feature).  If the composite function is
+     * F(properties, zoom), then for each feature we'll provide the following
+     * as a vertex attribute, built at layout time:
+     * [
+     *   F(feature.properties, zA),
+     *   F(feature.properties, zB),
+     *   F(feature.properties, zC),
+     *   F(feature.properties, zD)
+     * ]
+     * where zA, zB, zC, zD are specific zoom stops defined in the composite
+     * function.
+     *
+     * And then, at render time, we'll set a corresonding 'interpolation
+     * uniform', determined by the currently rendered zoom level, which is
+     * essentially a possibly-fractional index into the above vector. By
+     * interpolating between the appropriate pair of values, the shader can
+     * thus obtain the value of F(feature.properties, currentZoom).
+     *
+     * @private
+     */
     addZoomAndPropertyAttribute(name, attribute, layer, zoom) {
         const pragmas = this.getPragmas(name);
 
         pragmas.define.push(`varying {precision} {type} ${name};`);
 
-        // Pick the index of the first offset to add to the buffers.
-        let numStops = 0;
+        // Pick the index of the first zoom stop to add to the buffers
         const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.property);
-        while (numStops < zoomLevels.length && zoomLevels[numStops] < zoom) numStops++;
-        const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
+        let stopOffset = 0;
+        if (zoomLevels.length > 4) {
+            while (stopOffset < (zoomLevels.length - 2) &&
+                zoomLevels[stopOffset] < zoom) stopOffset++;
+        }
+
 
         const tName = `u_${name}_t`;
 
@@ -105,6 +137,7 @@ class ProgramConfiguration {
         this.interpolationUniforms.push({
             name: tName,
             property: attribute.property,
+            useIntegerZoom: attribute.useIntegerZoom,
             stopOffset
         });
 
@@ -179,7 +212,8 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            const value = getPaintAttributeValue(attribute, layer, globalProperties, featureProperties);
+            const zoomBase = attribute.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const value = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
 
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
@@ -201,7 +235,9 @@ class ProgramConfiguration {
 
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
-            const value = layer.getPaintValue(uniform.property, globalProperties);
+            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
+            const value = layer.getPaintValue(uniform.property, zoomBase);
+
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
@@ -209,12 +245,13 @@ class ProgramConfiguration {
             }
         }
         for (const uniform of this.interpolationUniforms) {
+            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
             // stopInterp indicates which stops need to be interpolated.
             // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-            const stopInterp = layer.getPaintInterpolationT(uniform.property, globalProperties);
+            const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
             // We can only store four stop values in the buffers. stopOffset is the number of stops that come
             // before the stops that were added to the buffers.
-            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(4, stopInterp - uniform.stopOffset)));
+            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(3, stopInterp - uniform.stopOffset)));
         }
     }
 }

@@ -14,12 +14,14 @@ const intersectionTests = require('../util/intersection_tests');
  * @private
  */
 class CollisionTile {
-    constructor(angle, pitch, collisionBoxArray) {
+    constructor(angle, pitch, cameraToCenterDistance, cameraToTileDistance, collisionBoxArray) {
         if (typeof angle === 'object') {
             const serialized = angle;
             collisionBoxArray = pitch;
             angle = serialized.angle;
             pitch = serialized.pitch;
+            cameraToCenterDistance = serialized.cameraToCenterDistance;
+            cameraToTileDistance = serialized.cameraToTileDistance;
             this.grid = new Grid(serialized.grid);
             this.ignoredGrid = new Grid(serialized.ignoredGrid);
         } else {
@@ -27,11 +29,18 @@ class CollisionTile {
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
         }
 
-        this.minScale = 0.5;
-        this.maxScale = 2;
+        this.perspectiveRatio = 1 + 0.5 * ((cameraToTileDistance / cameraToCenterDistance) - 1);
+
+        // High perspective ratio means we're effectively "underzooming"
+        // the tile. Adjust the minScale and maxScale range accordingly
+        // to constrain the number of collision calculations
+        this.minScale = .5 / this.perspectiveRatio;
+        this.maxScale = 2 / this.perspectiveRatio;
 
         this.angle = angle;
         this.pitch = pitch;
+        this.cameraToCenterDistance = cameraToCenterDistance;
+        this.cameraToTileDistance = cameraToTileDistance;
 
         const sin = Math.sin(angle),
             cos = Math.cos(angle);
@@ -39,34 +48,37 @@ class CollisionTile {
         this.reverseRotationMatrix = [cos, sin, -sin, cos];
 
         // Stretch boxes in y direction to account for the map tilt.
-        this.yStretch = 1 / Math.cos(pitch / 180 * Math.PI);
-
         // The amount the map is squished depends on the y position.
-        // Sort of account for this by making all boxes a bit bigger.
-        this.yStretch = Math.pow(this.yStretch, 1.3);
+        // We can only approximate here based on the y position of the tile
+        // The shaders calculate a more accurate "incidence_stretch"
+        // at render time to calculate an effective scale for collision
+        // purposes, but we still want to use the yStretch approximation
+        // here because we can't adjust the aspect ratio of the collision
+        // boxes at render time.
+        this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
 
         this.collisionBoxArray = collisionBoxArray;
         if (collisionBoxArray.length === 0) {
-            // the first collisionBoxArray is passed to a CollisionTile
+            // the first time collisionBoxArray is passed to a CollisionTile
 
             // tempCollisionBox
             collisionBoxArray.emplaceBack();
 
             const maxInt16 = 32767;
             //left
-            collisionBoxArray.emplaceBack(0, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
             // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
+            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
             // top
-            collisionBoxArray.emplaceBack(0, 0, -maxInt16, 0, maxInt16, 0, maxInt16,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
             // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, -maxInt16, 0, maxInt16, 0, maxInt16,
+            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
                     0, 0, 0, 0, 0, 0, 0, 0,
                     0);
         }
@@ -90,6 +102,8 @@ class CollisionTile {
         return {
             angle: this.angle,
             pitch: this.pitch,
+            cameraToCenterDistance: this.cameraToCenterDistance,
+            cameraToTileDistance: this.cameraToTileDistance,
             grid: grid,
             ignoredGrid: ignoredGrid
         };
@@ -118,15 +132,34 @@ class CollisionTile {
             const x = anchorPoint.x;
             const y = anchorPoint.y;
 
-            const x1 = x + box.x1;
-            const y1 = y + box.y1 * yStretch;
-            const x2 = x + box.x2;
-            const y2 = y + box.y2 * yStretch;
+            // When the 'perspectiveRatio' is high, we're effectively underzooming
+            // the tile because it's in the distance.
+            // In order to detect collisions that only happen while underzoomed,
+            // we have to query a larger portion of the grid.
+            // This extra work is offset by having a lower 'maxScale' bound
+            // Note that this adjustment ONLY affects the bounding boxes
+            // in the grid. It doesn't affect the boxes used for the
+            // minPlacementScale calculations.
+            const x1 = x + box.x1 * this.perspectiveRatio;
+            const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
+            const x2 = x + box.x2 * this.perspectiveRatio;
+            const y2 = y + box.y2 * yStretch * this.perspectiveRatio;
 
             box.bbox0 = x1;
             box.bbox1 = y1;
             box.bbox2 = x2;
             box.bbox3 = y2;
+
+            // When the map is pitched the distance covered by a line changes.
+            // Adjust the max scale by (approximatePitchedLength / approximateRegularLength)
+            // to compensate for this.
+
+            const offset = new Point(box.offsetX, box.offsetY)._matMult(rotationMatrix);
+            const xSqr = offset.x * offset.x;
+            const ySqr = offset.y * offset.y;
+            const yStretchSqr = ySqr * yStretch * yStretch;
+            const adjustmentFactor = Math.sqrt((xSqr + yStretchSqr) / (xSqr + ySqr)) || 1;
+            box.maxScale = box.unadjustedMaxScale * adjustmentFactor;
 
             if (!allowOverlap) {
                 const blockingBoxes = this.grid.query(x1, y1, x2, y2);
@@ -181,7 +214,7 @@ class CollisionTile {
         const sourceLayerFeatures = {};
         const result = [];
 
-        if (queryGeometry.length === 0 || (this.grid.length === 0 && this.ignoredGrid.length === 0)) {
+        if (queryGeometry.length === 0 || (this.grid.keys.length === 0 && this.ignoredGrid.keys.length === 0)) {
             return result;
         }
 
@@ -214,8 +247,14 @@ class CollisionTile {
             features.push(ignoredFeatures[i]);
         }
 
+        // "perspectiveRatio" is a tile-based approximation of how much larger symbols will
+        // be in the distance. It won't line up exactly with the actually rendered symbols
+        // Being exact would require running the collision detection logic in symbol_sdf.vertex
+        // in the CPU
+        const perspectiveScale = scale / this.perspectiveRatio;
+
         // Account for the rounding done when updating symbol shader variables.
-        const roundedScale = Math.pow(2, Math.ceil(Math.log(scale) / Math.LN2 * 10) / 10);
+        const roundedScale = Math.pow(2, Math.ceil(Math.log(perspectiveScale) / Math.LN2 * 10) / 10);
 
         for (let i = 0; i < features.length; i++) {
             const blocking = collisionBoxArray.get(features[i]);
@@ -233,10 +272,10 @@ class CollisionTile {
 
             // Check if query intersects with the feature box at current scale.
             const anchor = blocking.anchorPoint.matMult(rotationMatrix);
-            const x1 = anchor.x + blocking.x1 / scale;
-            const y1 = anchor.y + blocking.y1 / scale * yStretch;
-            const x2 = anchor.x + blocking.x2 / scale;
-            const y2 = anchor.y + blocking.y2 / scale * yStretch;
+            const x1 = anchor.x + blocking.x1 / perspectiveScale;
+            const y1 = anchor.y + blocking.y1 / perspectiveScale * yStretch;
+            const x2 = anchor.x + blocking.x2 / perspectiveScale;
+            const y2 = anchor.y + blocking.y2 / perspectiveScale * yStretch;
             const bbox = [
                 new Point(x1, y1),
                 new Point(x2, y1),
@@ -304,14 +343,16 @@ class CollisionTile {
      * @private
      */
     insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement) {
-
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;
 
         for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
             const box = collisionBoxArray.get(k);
             box.placementScale = minPlacementScale;
-            if (minPlacementScale < this.maxScale) {
+            if (minPlacementScale < this.maxScale &&
+                (this.perspectiveRatio === 1 || box.maxScale >= 1)) {
+                // Boxes with maxScale < 1 are only relevant in pitched maps,
+                // so filter them out in unpitched maps to keep the grid sparse
                 grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
             }
         }

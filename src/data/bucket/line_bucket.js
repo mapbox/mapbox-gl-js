@@ -1,10 +1,10 @@
 'use strict';
 
 const Bucket = require('../bucket');
-const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
+const VectorTileFeature = require('vector-tile').VectorTileFeature;
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -40,16 +40,18 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
 const lineInterface = {
-    layoutVertexArrayType: createVertexArrayType([
+    layoutAttributes: [
         {name: 'a_pos',  components: 2, type: 'Int16'},
         {name: 'a_data', components: 4, type: 'Uint8'}
-    ]),
+    ],
     paintAttributes: [
         {property: 'line-color', type: 'Uint8'},
         {property: 'line-blur', multiplier: 10, type: 'Uint8'},
         {property: 'line-opacity', multiplier: 10, type: 'Uint8'},
         {property: 'line-gap-width', multiplier: 10, type: 'Uint8', name: 'a_gapwidth'},
         {property: 'line-offset', multiplier: 1, type: 'Int8'},
+        {property: 'line-width', multiplier: 10, type: 'Uint8', name: 'a_width'},
+        {property: 'line-width', multiplier: 10, type: 'Uint8', name: 'a_floorwidth', useIntegerZoom: true},
     ],
     elementArrayType: createElementArrayType()
 };
@@ -88,56 +90,56 @@ class LineBucket extends Bucket {
         const roundLimit = layout['line-round-limit'];
 
         for (const line of loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS)) {
-            this.addLine(line, feature.properties, join, cap, miterLimit, roundLimit);
+            this.addLine(line, feature, join, cap, miterLimit, roundLimit);
         }
     }
 
-    addLine(vertices, featureProperties, join, cap, miterLimit, roundLimit) {
+    addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+        const featureProperties = feature.properties;
+        const isPolygon = VectorTileFeature.types[feature.type] === 'Polygon';
 
+        // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
-        // If the line has duplicate vertices at the end, adjust length to remove them.
-        while (len > 2 && vertices[len - 1].equals(vertices[len - 2])) {
+        while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
             len--;
         }
+        let first = 0;
+        while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
+            first++;
+        }
 
-        // a line must have at least two vertices
-        if (vertices.length < 2) return;
+        // Ignore invalid geometry.
+        if (len < (isPolygon ? 3 : 2)) return;
 
         if (join === 'bevel') miterLimit = 1.05;
 
         const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-        const firstVertex = vertices[0],
-            lastVertex = vertices[len - 1],
-            closed = firstVertex.equals(lastVertex);
-
+        const firstVertex = vertices[first];
         const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
         const segment = arrays.prepareSegment(len * 10);
 
-        // a line may not have coincident points
-        if (len === 2 && closed) return;
-
         this.distance = 0;
 
         const beginCap = cap,
-            endCap = closed ? 'butt' : cap;
+            endCap = isPolygon ? 'butt' : cap;
         let startOfLine = true;
         let currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
 
         // the last three vertices added
         this.e1 = this.e2 = this.e3 = -1;
 
-        if (closed) {
+        if (isPolygon) {
             currentVertex = vertices[len - 2];
             nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
         }
 
-        for (let i = 0; i < len; i++) {
+        for (let i = first; i < len; i++) {
 
-            nextVertex = closed && i === len - 1 ?
-                vertices[1] : // if the line is closed, we treat the last vertex like the first
+            nextVertex = isPolygon && i === len - 1 ?
+                vertices[first + 1] : // if the line is closed, we treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
@@ -185,7 +187,7 @@ class LineBucket extends Bucket {
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
-            if (isSharpCorner && i > 0) {
+            if (isSharpCorner && i > first) {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
@@ -434,5 +436,7 @@ class LineBucket extends Bucket {
         }
     }
 }
+
+LineBucket.programInterface = lineInterface;
 
 module.exports = LineBucket;

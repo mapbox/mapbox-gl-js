@@ -55,6 +55,7 @@ class DragPanHandler {
      */
     enable() {
         if (this.isEnabled()) return;
+        this._el.classList.add('mapboxgl-touch-drag-pan');
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
         this._enabled = true;
@@ -68,6 +69,7 @@ class DragPanHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
+        this._el.classList.remove('mapboxgl-touch-drag-pan');
         this._el.removeEventListener('mousedown', this._onDown);
         this._el.removeEventListener('touchstart', this._onDown);
         this._enabled = false;
@@ -84,6 +86,8 @@ class DragPanHandler {
             window.document.addEventListener('mousemove', this._onMove);
             window.document.addEventListener('mouseup', this._onMouseUp);
         }
+        /* Deactivate DragPan when the window looses focus. Otherwise if a mouseup occurs when the window isn't in focus, DragPan will still be active even though the mouse is no longer pressed. */
+        window.addEventListener('blur', this._onMouseUp);
 
         this._active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
@@ -169,6 +173,7 @@ class DragPanHandler {
         this._onUp(e);
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onMouseUp);
+        window.removeEventListener('blur', this._onMouseUp);
     }
 
     _onTouchEnd(e) {
@@ -193,7 +198,7 @@ class DragPanHandler {
             if (e.ctrlKey) return true;
             const buttons = 1,  // left button
                 button = 0;   // left button
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button && e.button !== button);
         }
     }
 
@@ -209,7 +214,7 @@ class DragPanHandler {
 module.exports = DragPanHandler;
 
 /**
- * Fired when a "drag to pan" interaction starts. See [`DragPanHandler`](#DragPanHandler).
+ * Fired when a "drag to pan" interaction starts. See {@link DragPanHandler}.
  *
  * @event dragstart
  * @memberof Map
@@ -218,7 +223,7 @@ module.exports = DragPanHandler;
  */
 
 /**
- * Fired repeatedly during a "drag to pan" interaction. See [`DragPanHandler`](#DragPanHandler).
+ * Fired repeatedly during a "drag to pan" interaction. See {@link DragPanHandler}.
  *
  * @event drag
  * @memberof Map
@@ -227,7 +232,7 @@ module.exports = DragPanHandler;
  */
 
 /**
- * Fired when a "drag to pan" interaction ends. See [`DragPanHandler`](#DragPanHandler).
+ * Fired when a "drag to pan" interaction ends. See {@link DragPanHandler}.
  *
  * @event dragend
  * @memberof Map

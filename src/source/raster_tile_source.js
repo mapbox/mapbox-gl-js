@@ -5,6 +5,7 @@ const ajax = require('../util/ajax');
 const Evented = require('../util/evented');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
+const TileBounds = require('./tile_bounds');
 
 class RasterTileSource extends Evented {
 
@@ -32,6 +33,8 @@ class RasterTileSource extends Evented {
                 return this.fire('error', err);
             }
             util.extend(this, tileJSON);
+            this.setBounds(tileJSON.bounds);
+
 
             // `content` is included here to prevent a race condition where `Style#_updateSources` is called
             // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
@@ -47,13 +50,25 @@ class RasterTileSource extends Evented {
         this.map = map;
     }
 
+    setBounds(bounds) {
+        this.bounds = bounds;
+        if (bounds) {
+            this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
+        }
+    }
+
     serialize() {
         return {
             type: 'raster',
             url: this.url,
             tileSize: this.tileSize,
-            tiles: this.tiles
+            tiles: this.tiles,
+            bounds: this.bounds,
         };
+    }
+
+    hasTile(coord) {
+        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
     }
 
     loadTile(tile, callback) {
@@ -74,7 +89,7 @@ class RasterTileSource extends Evented {
                 return callback(err);
             }
 
-            if (!this.map._refreshExpiredTiles) tile.setExpiryData(img);
+            if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
             delete img.cacheControl;
             delete img.expires;
 
@@ -90,6 +105,11 @@ class RasterTileSource extends Evented {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                if (this.map.painter.extTextureFilterAnisotropic) {
+                    gl.texParameterf(gl.TEXTURE_2D, this.map.painter.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.map.painter.extTextureFilterAnisotropicMax);
+                }
+
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
                 tile.texture.size = img.width;
             }

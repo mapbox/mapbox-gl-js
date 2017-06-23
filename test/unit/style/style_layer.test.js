@@ -305,6 +305,61 @@ test('StyleLayer#setPaintProperty', (t) => {
         t.end();
     });
 
+    t.test('sets null property value', (t) => {
+        const layer = StyleLayer.create({
+            "id": "background",
+            "type": "background"
+        });
+
+        layer.setPaintProperty('background-color-transition', null);
+
+        t.deepEqual(layer.getPaintProperty('background-color-transition'), null);
+        t.end();
+    });
+
+    test('StyleLayer#getPaintValueStopZoomLevels', (t) => {
+        t.test('get undefined paint value stop zoom levels', (t) => {
+            const layer = StyleLayer.create({
+                "id": "background",
+                "type": "fill",
+                "paint.blue": {
+                    "fill-color": "#8ccbf7",
+                    "fill-opacity": 1
+                },
+                "paint": {
+                    "fill-opacity": 0
+                }
+            });
+
+            t.deepEqual(layer.getPaintValueStopZoomLevels('background-color'), []);
+
+            t.end();
+        });
+
+        t.end();
+    });
+
+    test('StyleLayer#isPaintValueZoomConstant', (t) => {
+        t.test('is paint value zoom constant undefined', (t) => {
+            const layer = StyleLayer.create({
+                "id": "background",
+                "type": "fill",
+                "paint.blue": {
+                    "fill-color": "#8ccbf7",
+                    "fill-opacity": 1
+                },
+                "paint": {
+                    "fill-opacity": 0
+                }
+            });
+
+            t.equal(layer.isPaintValueZoomConstant('background-color'), true);
+
+            t.end();
+        });
+
+        t.end();
+    });
 
     t.end();
 });

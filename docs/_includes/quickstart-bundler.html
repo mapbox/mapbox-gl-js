@@ -11,8 +11,8 @@ npm install --save mapbox-gl
 <p>Include the following code in the <code>&lt;body&gt;</code> of your HTML file.</p>
 <div class='js-replace-token'>
 {% copyable %}{% highlight javascript %}
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl';
-// or "const mapboxgl = require('mapbox-gl/dist/mapbox-gl');"
+import mapboxgl from 'mapbox-gl';
+// or "const mapboxgl = require('mapbox-gl');"
 
 mapboxgl.accessToken = '<your access token here>';
 const map = new mapboxgl.Map({
@@ -20,4 +20,4 @@ const map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v9'
 });
 {% endhighlight %}{% endcopyable %}
-<div>
+</div>

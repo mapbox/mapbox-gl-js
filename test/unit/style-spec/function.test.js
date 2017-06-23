@@ -47,6 +47,23 @@ test('constant function', (t) => {
     t.end();
 });
 
+test('binary search', (t) => {
+    t.test('will eventually terminate.', (t) => {
+        const f = createFunction({
+            stops: [[9, 10], [17, 11], [17, 11], [18, 13]],
+            base: 2
+        }, {
+            type: 'number',
+            function: 'interpolated'
+        });
+        // Nan because the interpolation will fail when given to stops with the same value.
+        // This is however more desirable than looping forever.
+        t.equal(isNaN(f(17)), true);
+        t.end();
+    });
+    t.end();
+});
+
 test('exponential function', (t) => {
     t.test('is the default for interpolated properties', (t) => {
         const f = createFunction({
@@ -57,7 +74,7 @@ test('exponential function', (t) => {
             function: 'interpolated'
         });
 
-        t.equal(f(2), 30 / 9);
+        t.equalWithPrecision(f(2), 30 / 9, 1e-6);
 
         t.end();
     });
@@ -71,11 +88,11 @@ test('exponential function', (t) => {
             type: 'number'
         });
 
-        t.equal(f(0), 2);
-        t.equal(f(1), 2);
-        t.equal(f(2), 30 / 9);
-        t.equal(f(3), 6);
-        t.equal(f(4), 6);
+        t.equalWithPrecision(f(0), 2, 1e-6);
+        t.equalWithPrecision(f(1), 2, 1e-6);
+        t.equalWithPrecision(f(2), 30 / 9, 1e-6);
+        t.equalWithPrecision(f(3), 6, 1e-6);
+        t.equalWithPrecision(f(4), 6, 1e-6);
 
         t.end();
     });
@@ -182,15 +199,15 @@ test('exponential function', (t) => {
             type: 'number'
         });
 
-        t.equal(f(2), 100);
-        t.equal(f(20), 133.9622641509434);
-        t.equal(f(607), 400);
-        t.equal(f(680), 410.7352941176471);
-        t.equal(f(4927), 1000); //86
-        t.equal(f(7300), 14779.590419993057);
-        t.equal(f(10000), 99125.30371398819);
-        t.equal(f(20000), 3360628.527166095);
-        t.equal(f(40000), 10000000);
+        t.equalWithPrecision(f(2), 100, 1e-6);
+        t.equalWithPrecision(f(20), 133.9622641509434, 1e-6);
+        t.equalWithPrecision(f(607), 400, 1e-6);
+        t.equalWithPrecision(f(680), 410.7352941176471, 1e-6);
+        t.equalWithPrecision(f(4927), 1000, 1e-6); //86
+        t.equalWithPrecision(f(7300), 14779.590419993057, 1e-6);
+        t.equalWithPrecision(f(10000), 99125.30371398819, 1e-6);
+        t.equalWithPrecision(f(20000), 3360628.527166095, 1e-6);
+        t.equalWithPrecision(f(40000), 10000000, 1e-6);
 
         t.end();
     });
@@ -438,6 +455,30 @@ test('exponential function', (t) => {
         t.end();
     });
 
+    test('zoom-and-property function, four stops, integer and fractional zooms', (t) => {
+        const f = createFunction({
+            type: 'exponential',
+            property: 'prop',
+            base: 1,
+            stops: [
+                [{ zoom: 1, value: 0 }, 0],
+                [{ zoom: 1.5, value: 0 }, 1],
+                [{ zoom: 2, value: 0 }, 10],
+                [{ zoom: 2.5, value: 0 }, 20]
+            ]
+        }, {
+            type: 'number'
+        });
+
+        t.equal(f(1, { prop: 0 }), 0);
+        t.equal(f(1.5, { prop: 0 }), 1);
+        t.equal(f(2, { prop: 0 }), 10);
+        t.equal(f(2.5, { prop: 0 }), 20);
+
+        t.end();
+    });
+
+
     t.test('zoom-and-property function, no default', (t) => {
         // This can happen for fill-outline-color, where the spec has no default.
 
@@ -670,6 +711,23 @@ test('categorical function', (t) => {
 
         t.equal(f(0, {}), 'default');
         t.equal(f(0, {foo: 3}), 'default');
+
+        t.end();
+    });
+
+    t.test('string zoom-and-property function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[{zoom: 0, value: 'bar'}, 'zero']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {}), 'default');
+        t.equal(f(0, {foo: 3}), 'default');
+        t.equal(f(0, {foo: 'bar'}), 'zero');
 
         t.end();
     });

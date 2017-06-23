@@ -810,7 +810,9 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
-      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
+      "property-function": true,
+      "units": "factor of the original icon size",
+      "doc": "Scales the original size of the icon by the provided factor. The new pixel size of the image will be the original pixel size multiplied by `icon-size`. 1 is the original size; 3 triples the size of the image.",
       "requires": [
         "icon-image"
       ],
@@ -821,7 +823,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "icon-text-fit": {
@@ -897,6 +901,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Name of image in sprite to use for drawing an image background. A string with {tokens} replaced, referencing the data property to pull from.",
       "tokens": true,
       "sdk-support": {
@@ -906,7 +911,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "icon-rotate": {
@@ -929,7 +936,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -1002,7 +1012,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -1093,7 +1106,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-font": {
@@ -1123,6 +1141,7 @@
       "units": "pixels",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Font size.",
       "requires": [
         "text-field"
@@ -1134,7 +1153,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-max-width": {
@@ -1306,6 +1327,7 @@
       "units": "degrees",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Rotates the text clockwise.",
       "requires": [
         "text-field"
@@ -1317,7 +1339,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-padding": {
@@ -1394,7 +1418,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-offset": {
@@ -1404,6 +1433,7 @@
       "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "length": 2,
       "default": [
         0,
@@ -1419,7 +1449,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-allow-overlap": {
@@ -1674,6 +1706,9 @@
         }
       },
       "transition": false,
+      "zoom-function": true,
+      "property-function": false,
+      "function": "piecewise-constant",
       "doc": "Whether extruded geometries are lit relative to the map or viewport.",
       "example": "map",
       "sdk-support": {
@@ -1774,7 +1809,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -1799,7 +1837,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.19.0"
+          "js": "0.19.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -1826,7 +1867,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.19.0"
+          "js": "0.19.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2000,6 +2044,7 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
+      "maximum": 65535,
       "units": "meters",
       "doc": "The height with which to extrude this layer.",
       "transition": true,
@@ -2019,6 +2064,7 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
+      "maximum": 65535,
       "units": "meters",
       "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `fill-extrusion-height`.",
       "transition": true,
@@ -2054,7 +2100,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2079,7 +2128,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.23.0"
+          "js": "0.23.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2139,6 +2191,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Stroke thickness.",
@@ -2170,7 +2223,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2191,7 +2247,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2213,7 +2272,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2277,7 +2339,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.18.0"
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2297,7 +2362,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.18.0"
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2317,7 +2385,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.20.0"
+          "js": "0.20.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2339,7 +2410,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.20.0"
+          "js": "0.20.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2426,10 +2500,16 @@
       "doc": "The width of the circle's stroke. Strokes are placed outside of the `circle-radius`.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2443,10 +2523,16 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     },
@@ -2462,10 +2548,16 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
         }
       }
     }
@@ -2491,7 +2583,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "icon-color": {
@@ -2512,7 +2609,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "icon-halo-color": {
@@ -2533,7 +2635,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "icon-halo-width": {
@@ -2556,7 +2663,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "icon-halo-blur": {
@@ -2579,7 +2691,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "icon-translate": {
@@ -2656,7 +2773,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-color": {
@@ -2677,7 +2799,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-halo-color": {
@@ -2698,7 +2825,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-halo-width": {
@@ -2721,7 +2853,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-halo-blur": {
@@ -2744,7 +2881,12 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0",
+          "macos": "0.4.0"
+        }
       }
     },
     "text-translate": {

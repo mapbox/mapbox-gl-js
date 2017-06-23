@@ -4,7 +4,7 @@
 const config = require('./config');
 const browser = require('./browser');
 
-const help = 'See https://www.mapbox.com/developers/api/#access-tokens';
+const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 
 type UrlObject = {|
     protocol: string,
@@ -96,7 +96,7 @@ function replaceTempAccessToken(params: Array<string>) {
     }
 }
 
-const urlRe = /^(\w+):\/\/([^/?]+)(\/[^?]+)?\??(.+)?/;
+const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
 
 function parseUrl(url: string): UrlObject {
     const parts = url.match(urlRe);

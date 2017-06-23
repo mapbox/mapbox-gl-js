@@ -1,29 +1,35 @@
--
-  term: "Active development"
-  description: "Things actively being built right now."
-  items:
-    -
-      name: Client-side terrain rendering
-      issues: ["3730"]
-    -
-      name: Property aggregation on clustered features
-      issues: ["2412"]
-    -
-      name: Runtime sprite manipulation
-      issues: ["2059", "4086"]  
-    -
-      name: Custom WebGL layer type
-      issues: ["281"]
--
-  term: "Upcoming"
-  description: "Things we hope to start building in the next several months."
-  items:
-    -
-      name: <code>Map#setCamera</code> method
-      issues: ["3583", "2801"]
-    -
-      name: Better benchmarking tools
-      issues: ["3237", "3495", "3031", "2253", "3248"]
-    -
-      name: Custom source type API
-      project: 2
+## date format: Month DD, YYYY
+updated_at: 'May 24, 2017'
+roadmap_items:
+  -
+    term: "Active development"
+    description: "Things actively being built right now."
+    items:
+      -
+        name: Client-side hillshade rendering
+        issues: ["3730", "4701"]
+      -
+        name: Arbitrary expressions for property functions
+        issues: ["4715"]
+      -
+        name: Data-driven (property functions) <code>line-width</code>
+        issues: ["3045"]
+      -
+        name: Text legibiity improvements on tilted maps
+        issues: ["4547"]
+  -
+    term: "Upcoming"
+    description: "Things we hope to start building in the next several months."
+    items:
+      -
+        name: Property aggregation on clustered features
+        issues: ["2412"]
+      -
+        name: <code>Map#setCamera</code> method
+        issues: ["3583", "2801"]
+      -
+        name: Custom source type API
+        project: 2
+      -
+        name: Patterns for loading and errored tiles
+        issues: [3280]

@@ -175,10 +175,18 @@ class GeoJSONSource extends Evented {
             overscaling: overscaling,
             angle: this.map.transform.angle,
             pitch: this.map.transform.pitch,
+            cameraToCenterDistance: this.map.transform.cameraToCenterDistance,
+            cameraToTileDistance: this.map.transform.cameraToTileDistance(tile),
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send('loadTile', params, (err, data) => {
+        if (!tile.workerID || tile.state === 'expired') {
+            tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this), this.workerID);
+        } else {
+            tile.workerID = this.dispatcher.send('reloadTile', params, done.bind(this), this.workerID);
+        }
+
+        function done(err, data) {
 
             tile.unloadVectorData();
 
@@ -197,8 +205,7 @@ class GeoJSONSource extends Evented {
             }
 
             return callback(null);
-
-        }, this.workerID);
+        }
     }
 
     abortTile(tile) {

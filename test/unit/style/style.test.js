@@ -339,7 +339,7 @@ test('Style#setState', (t) => {
             'removeSource',
             'setLayerZoomRange',
             'setLight'
-        ].forEach((method) => t.stub(style, method, () => t.fail(`${method} called`)));
+        ].forEach((method) => t.stub(style, method).callsFake(() => t.fail(`${method} called`)));
         style.on('style.load', () => {
             const didChange = style.setState(createStyleJSON());
             t.notOk(didChange, 'return false');
@@ -1258,7 +1258,7 @@ test('Style#queryRenderedFeatures', (t) => {
 
         t.test('checks type of `layers` option', (t) => {
             let errors = 0;
-            t.stub(style, 'fire', (type, data) => {
+            t.stub(style, 'fire').callsFake((type, data) => {
                 if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
             });
             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
@@ -1302,7 +1302,7 @@ test('Style#queryRenderedFeatures', (t) => {
 
         t.test('fires an error if layer included in params does not exist on the style', (t) => {
             let errors = 0;
-            t.stub(style, 'fire', (type, data) => {
+            t.stub(style, 'fire').callsFake((type, data) => {
                 if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});

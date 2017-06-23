@@ -9,7 +9,8 @@ const AttributeType = {
     Int8:   'BYTE',
     Uint8:  'UNSIGNED_BYTE',
     Int16:  'SHORT',
-    Uint16: 'UNSIGNED_SHORT'
+    Uint16: 'UNSIGNED_SHORT',
+    Float32: 'FLOAT'
 };
 
 /**
@@ -22,14 +23,16 @@ class Buffer {
      * @param {Object} array A serialized StructArray.
      * @param {Object} arrayType A serialized StructArrayType.
      * @param {BufferType} type
+     * @param {boolean} dynamicDraw Whether this buffer will be repeatedly updated.
      */
-    constructor(array, arrayType, type) {
+    constructor(array, arrayType, type, dynamicDraw) {
         this.arrayBuffer = array.arrayBuffer;
         this.length = array.length;
         this.attributes = arrayType.members;
         this.itemSize = arrayType.bytesPerElement;
         this.type = type;
         this.arrayType = arrayType;
+        this.dynamicDraw = dynamicDraw;
     }
 
     static fromStructArray(array, type) {
@@ -47,12 +50,34 @@ class Buffer {
             this.gl = gl;
             this.buffer = gl.createBuffer();
             gl.bindBuffer(type, this.buffer);
-            gl.bufferData(type, this.arrayBuffer, gl.STATIC_DRAW);
+            gl.bufferData(type, this.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
             // dump array buffer once it's bound to gl
             this.arrayBuffer = null;
         } else {
             gl.bindBuffer(type, this.buffer);
+
+            if (this.dynamicDraw && this.arrayBuffer) {
+                gl.bufferSubData(type, 0, this.arrayBuffer);
+                this.arrayBuffer = null;
+            }
+        }
+    }
+
+    /*
+     * @param {Object} array A serialized StructArray.
+     */
+    updateData(array) {
+        this.arrayBuffer = array.arrayBuffer;
+    }
+
+    enableAttributes (gl, program) {
+        for (let j = 0; j < this.attributes.length; j++) {
+            const member = this.attributes[j];
+            const attribIndex = program[member.name];
+            if (attribIndex !== undefined) {
+                gl.enableVertexAttribArray(attribIndex);
+            }
         }
     }
 

@@ -12,58 +12,55 @@ const BenchmarksView = React.createClass({
 
     render: function() {
         return <div style={{width: 960, paddingBottom: window.innerHeight, margin: '0 auto'}}>
-            {this.renderSidebarBenchmarks()}
-            {this.renderBenchmarks()}
-        </div>;
-    },
-
-    renderSidebarBenchmarks: function() {
-        return <div style={{paddingTop: 40, width: 280, position: 'fixed'}} className='text-right'>
-            <h1 className="space-bottom">Benchmarks</h1>
-            <div className="space-bottom small">
-                {Object.keys(this.state.results).map(this.renderSidebarBenchmark)}
-            </div>
-            <a
+            <h1 className="space-bottom">
+                Benchmarks
+                <a
                     className={[
+                        'fr',
                         'icon',
                         'clipboard',
                         'button',
                         (this.getStatus() === 'ended' ? '' : 'disabled')
                     ].join(' ')}
                     data-clipboard-text={this.renderTextBenchmarks()}>
-                Copy Results
-            </a>
+                    Copy Results
+                </a>
+            </h1>
+            <table>
+                <thead>
+                <tr>
+                    <th>Benchmark</th>
+                    {this.versions().map((v) => <th key={v}>{v}</th>)}
+                </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(this.state.results).map(this.renderBenchmark)}
+                </tbody>
+            </table>
         </div>;
     },
 
-    renderSidebarBenchmark: function(name) {
-        return <div
-                key={name}
-                className={[
-                    'space-bottom',
-                    this.getBenchmarkStatus(name) === 'waiting' ? 'quiet' : ''
-                ].join(' ')}>
-            <h3>{name}</h3>
-            {Object.keys(this.state.results[name]).map(this.renderSidebarBenchmarkVersion.bind(this, name))}
-        </div>;
+    renderBenchmark: function(name) {
+        return <tr key={name}>
+            <th><a href={`#${name}`} onClick={this.reload}>{name}</a></th>
+            {Object.keys(this.state.results[name]).map(this.renderBenchmarkVersion.bind(this, name))}
+        </tr>;
     },
 
-    renderSidebarBenchmarkVersion: function(name, version) {
+    renderBenchmarkVersion: function(name, version) {
         const results = this.state.results[name][version];
-        const that = this;
-
-        return <div
-                onClick={function() {
-                    that.scrollToBenchmark(name, version);
-                }}
-                style={{cursor: 'pointer'}}
+        return (
+            <td id={name + version}
                 key={version}
                 className={results.status === 'waiting' ? 'quiet' : ''}>
-            <strong>{version}:</strong> {results.message || '...'}
-        </div>;
+                {results.logs.map((log, index) => {
+                    return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
+                })}
+            </td>
+        );
     },
 
-    renderTextBenchmarks: function() {
+    versions: function() {
         const versions = [];
         for (const name in this.state.results) {
             for (const version in this.state.results[name]) {
@@ -72,7 +69,11 @@ const BenchmarksView = React.createClass({
                 }
             }
         }
+        return versions;
+    },
 
+    renderTextBenchmarks: function() {
+        const versions = this.versions();
         let output = `benchmark | ${versions.join(' | ')}\n---`;
         for (let i = 0; i < versions.length; i++) {
             output += ' | ---';
@@ -88,49 +89,6 @@ const BenchmarksView = React.createClass({
             output += '\n';
         }
         return output;
-    },
-
-    renderBenchmarks: function() {
-        return <div style={{width: 590, marginLeft: 320, marginBottom: 60}}>
-            {Object.keys(this.state.results).map(this.renderBenchmark)}
-        </div>;
-    },
-
-    renderBenchmark: function(name) {
-        return <div key={name}>
-            {Object.keys(this.state.results[name]).map(this.renderBenchmarkVersion.bind(this, name))}
-        </div>;
-    },
-
-    renderBenchmarkVersion: function(name, version) {
-        const results = this.state.results[name][version];
-        return (
-                <div
-                    style={{paddingTop: 40}}
-                    id={name + version}
-                    key={version}
-                    className={results.status === 'waiting' ? 'quiet' : ''}>
-
-                    <h2 className='space-bottom'>{name} on {version}</h2>
-                {results.logs.map((log, index) => {
-                    return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
-                })}
-            </div>
-        );
-    },
-
-    scrollToBenchmark: function(name, version) {
-        const duration = 300;
-        const startTime = (new Date()).getTime();
-        const startYOffset = window.pageYOffset;
-
-        requestAnimationFrame(function frame() {
-            const endYOffset = document.getElementById(name + version).offsetTop;
-            const time = (new Date()).getTime();
-            const yOffset = Math.min((time - startTime) / duration, 1) * (endYOffset - startYOffset) + startYOffset;
-            window.scrollTo(0, yOffset);
-            if (time < startTime + duration) requestAnimationFrame(frame);
-        });
     },
 
     getInitialState: function() {
@@ -156,7 +114,6 @@ const BenchmarksView = React.createClass({
 
         asyncSeries(Object.keys(that.state.results), (name, callback) => {
             asyncSeries(Object.keys(that.state.results[name]), (version, callback) => {
-                that.scrollToBenchmark(name, version);
                 that.runBenchmark(name, version, callback);
             }, callback);
         }, (err) => {
@@ -181,7 +138,6 @@ const BenchmarksView = React.createClass({
         }
 
         results.status = 'running';
-        this.scrollToBenchmark(name, version);
         log('dark', 'starting');
 
         setTimeout(() => {
@@ -223,6 +179,10 @@ const BenchmarksView = React.createClass({
         return reduceStatuses(Object.keys(this.state.results).map(function(name) {
             return this.getBenchmarkStatus(name);
         }, this));
+    },
+
+    reload() {
+        location.reload();
     }
 });
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const ShelfPack = require('shelf-pack');
+const ShelfPack = require('@mapbox/shelf-pack');
 const util = require('../util/util');
 
 const SIZE_GROWTH_RATE = 4;
@@ -14,7 +14,7 @@ class GlyphAtlas {
         this.width = DEFAULT_SIZE;
         this.height = DEFAULT_SIZE;
 
-        this.bin = new ShelfPack(this.width, this.height);
+        this.atlas = new ShelfPack(this.width, this.height);
         this.index = {};
         this.ids = {};
         this.data = new Uint8Array(this.width * this.height);
@@ -79,19 +79,13 @@ class GlyphAtlas {
 
         // Add a 1px border around every image.
         const padding = 1;
-        let packWidth = bufferedWidth + 2 * padding;
-        let packHeight = bufferedHeight + 2 * padding;
+        const packWidth = bufferedWidth + 2 * padding;
+        const packHeight = bufferedHeight + 2 * padding;
 
-        // Increase to next number divisible by 4, but at least 1.
-        // This is so we can scale down the texture coordinates and pack them
-        // into fewer bytes.
-        packWidth += (4 - packWidth % 4);
-        packHeight += (4 - packHeight % 4);
-
-        let rect = this.bin.packOne(packWidth, packHeight);
+        let rect = this.atlas.packOne(packWidth, packHeight);
         if (!rect) {
             this.resize();
-            rect = this.bin.packOne(packWidth, packHeight);
+            rect = this.atlas.packOne(packWidth, packHeight);
         }
         if (!rect) {
             util.warnOnce('glyph bitmap overflow');
@@ -131,7 +125,7 @@ class GlyphAtlas {
 
         this.width *= SIZE_GROWTH_RATE;
         this.height *= SIZE_GROWTH_RATE;
-        this.bin.resize(this.width, this.height);
+        this.atlas.resize(this.width, this.height);
 
         const buf = new ArrayBuffer(this.width * this.height);
         for (let i = 0; i < prevHeight; i++) {

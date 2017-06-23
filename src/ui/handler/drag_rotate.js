@@ -82,6 +82,8 @@ class DragRotateHandler {
 
         window.document.addEventListener('mousemove', this._onMove);
         window.document.addEventListener('mouseup', this._onUp);
+        /* Deactivate DragRotate when the window looses focus. Otherwise if a mouseup occurs when the window isn't in focus, DragRotate will still be active even though the mouse is no longer pressed. */
+        window.addEventListener('blur', this._onUp);
 
         this._active = false;
         this._inertia = [[Date.now(), this._map.getBearing()]];
@@ -99,6 +101,9 @@ class DragRotateHandler {
             this._map.moving = true;
             this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
+            if (this._pitchWithRotate) {
+                this._fireEvent('pitchstart', e);
+            }
         }
 
         const map = this._map;
@@ -117,7 +122,10 @@ class DragRotateHandler {
         inertia.push([Date.now(), map._normalizeBearing(bearing, last[1])]);
 
         map.transform.bearing = bearing;
-        if (this._pitchWithRotate) map.transform.pitch = pitch;
+        if (this._pitchWithRotate) {
+            this._fireEvent('pitch', e);
+            map.transform.pitch = pitch;
+        }
 
         this._fireEvent('rotate', e);
         this._fireEvent('move', e);
@@ -129,6 +137,7 @@ class DragRotateHandler {
         if (this._ignoreEvent(e)) return;
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onUp);
+        window.removeEventListener('blur', this._onUp);
 
         if (!this.isActive()) return;
 
@@ -147,6 +156,7 @@ class DragRotateHandler {
                 this._map.moving = false;
                 this._fireEvent('moveend', e);
             }
+            if (this._pitchWithRotate) this._fireEvent('pitchend', e);
         };
 
         if (inertia.length < 2) {
@@ -210,7 +220,7 @@ class DragRotateHandler {
                 // using Control + left click
                 eventButton = 0;
             }
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : eventButton !== button);
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : !this.isActive() && eventButton !== button);
         }
     }
 
@@ -227,7 +237,7 @@ class DragRotateHandler {
 module.exports = DragRotateHandler;
 
 /**
- * Fired when a "drag to rotate" interaction starts. See [`DragRotateHandler`](#DragRotateHandler).
+ * Fired when a "drag to rotate" interaction starts. See {@link DragRotateHandler}.
  *
  * @event rotatestart
  * @memberof Map
@@ -236,7 +246,7 @@ module.exports = DragRotateHandler;
  */
 
 /**
- * Fired repeatedly during a "drag to rotate" interaction. See [`DragRotateHandler`](#DragRotateHandler).
+ * Fired repeatedly during a "drag to rotate" interaction. See {@link DragRotateHandler}.
  *
  * @event rotate
  * @memberof Map
@@ -245,7 +255,7 @@ module.exports = DragRotateHandler;
  */
 
 /**
- * Fired when a "drag to rotate" interaction ends. See [`DragRotateHandler`](#DragRotateHandler).
+ * Fired when a "drag to rotate" interaction ends. See {@link DragRotateHandler}.
  *
  * @event rotateend
  * @memberof Map

@@ -1,3 +1,4 @@
+env: production
 url: https://www.mapbox.com
 api: https://www.mapbox.com/core
 tileApi: https://api.mapbox.com

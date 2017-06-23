@@ -157,9 +157,24 @@ class StyleLayer extends Evented {
         }
     }
 
+    getLayoutValueStopZoomLevels(name) {
+        const declaration = this._layoutDeclarations[name];
+
+        if (declaration) {
+            return declaration.stopZoomLevels;
+        } else {
+            return [];
+        }
+    }
+
     getPaintInterpolationT(name, globalProperties) {
         const transition = this._paintTransitions[name];
         return transition.declaration.calculateInterpolationT(globalProperties);
+    }
+
+    getLayoutInterpolationT(name, globalProperties) {
+        const declaration = this._layoutDeclarations[name];
+        return declaration.calculateInterpolationT(globalProperties);
     }
 
     isPaintValueFeatureConstant(name) {
@@ -187,6 +202,16 @@ class StyleLayer extends Evented {
 
         if (transition) {
             return transition.declaration.isZoomConstant;
+        } else {
+            return true;
+        }
+    }
+
+    isLayoutValueZoomConstant(name) {
+        const declaration = this._layoutDeclarations[name];
+
+        if (declaration) {
+            return declaration.isZoomConstant;
         } else {
             return true;
         }

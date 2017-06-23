@@ -12,7 +12,9 @@ const vec3 = glMatrix.vec3;
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
+    if (painter.isOpaquePass) return;
     if (layer.paint['fill-extrusion-opacity'] === 0) return;
+
     const gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
     gl.enable(gl.DEPTH_TEST);
@@ -21,8 +23,7 @@ function draw(painter, source, layer, coords) {
     // Create a new texture to which to render the extrusion layer. This approach
     // allows us to adjust opacity on a per-layer basis (eliminating the interior
     // walls per-feature opacity problem)
-    const texture = new ExtrusionTexture(gl, painter, layer);
-    texture.bindFramebuffer();
+    const texture = renderToTexture(gl, painter);
 
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -32,103 +33,67 @@ function draw(painter, source, layer, coords) {
     }
 
     // Unbind the framebuffer as a render target and render it to the map
-    texture.unbindFramebuffer();
-    texture.renderToMap();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    renderTextureToMap(gl, painter, layer, texture);
 }
 
-function ExtrusionTexture(gl, painter, layer) {
-    this.gl = gl;
-    this.width = painter.width;
-    this.height = painter.height;
-    this.painter = painter;
-    this.layer = layer;
-
-    this.texture = null;
-    this.fbo = null;
-    this.fbos = this.painter.preFbos[this.width] && this.painter.preFbos[this.width][this.height];
-}
-
-ExtrusionTexture.prototype.bindFramebuffer = function() {
-    const gl = this.gl;
-
-    this.texture = this.painter.getViewportTexture(this.width, this.height);
-
+function renderToTexture(gl, painter) {
     gl.activeTexture(gl.TEXTURE1);
-    if (!this.texture) {
-        this.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+    let texture = painter.viewportTexture;
+    if (!texture) {
+        texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        this.texture.width = this.width;
-        this.texture.height = this.height;
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        painter.viewportTexture = texture;
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
     }
 
-    if (!this.fbos) {
-        this.fbo = gl.createFramebuffer();
-        const stencil = gl.createRenderbuffer();
+    let fbo = painter.viewportFbo;
+    if (!fbo) {
+        fbo = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
         const depthRenderBuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.width, this.height);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, stencil);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, painter.width, painter.height);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+        painter.viewportFbo = fbo;
     } else {
-        this.fbo = this.fbos.pop();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     }
-};
 
-ExtrusionTexture.prototype.unbindFramebuffer = function() {
-    this.painter.bindDefaultFramebuffer();
-    if (this.fbos) {
-        this.fbos.push(this.fbo);
-    } else {
-        if (!this.painter.preFbos[this.width]) this.painter.preFbos[this.width] = {};
-        this.painter.preFbos[this.width][this.height] = [this.fbo];
-    }
-    this.painter.saveViewportTexture(this.texture);
-};
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-ExtrusionTexture.prototype.renderToMap = function() {
-    const gl = this.gl;
-    const painter = this.painter;
+    return texture;
+}
+
+function renderTextureToMap(gl, painter, layer, texture) {
     const program = painter.useProgram('extrusionTexture');
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    gl.uniform1f(program.u_opacity, this.layer.paint['fill-extrusion-opacity']);
-    gl.uniform1i(program.u_texture, 1);
+    gl.uniform1f(program.u_opacity, layer.paint['fill-extrusion-opacity']);
+    gl.uniform1i(program.u_image, 1);
 
-    gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
-        mat4.create(),
-        0,
-        painter.width,
-        painter.height,
-        0,
-        0,
-        1)
-    );
+    const matrix = mat4.create();
+    mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
+    gl.uniformMatrix4fv(program.u_matrix, false, matrix);
 
     gl.disable(gl.DEPTH_TEST);
 
-    gl.uniform1i(program.u_xdim, painter.width);
-    gl.uniform1i(program.u_ydim, painter.height);
+    gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     const array = new PosArray();
     array.emplaceBack(0, 0);
-    array.emplaceBack(painter.width, 0);
-    array.emplaceBack(0, painter.height);
-    array.emplaceBack(painter.width, painter.height);
+    array.emplaceBack(1, 0);
+    array.emplaceBack(0, 1);
+    array.emplaceBack(1, 1);
     const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
 
     const vao = new VertexArrayObject();
@@ -136,11 +101,9 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.DEPTH_TEST);
-};
+}
 
 function drawExtrusion(painter, source, layer, coord) {
-    if (painter.isOpaquePass) return;
-
     const tile = source.getTile(coord);
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
@@ -156,6 +119,7 @@ function drawExtrusion(painter, source, layer, coord) {
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
+        if (pattern.isPatternMissing(image, painter)) return;
         pattern.prepare(image, painter, program);
         pattern.setTile(tile, painter, program);
         gl.uniform1f(program.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);

@@ -4,12 +4,13 @@ machine:
   environment:
     XCODE_SCHEME: "no"
     XCODE_WORKSPACE: "no"
-    NODE_VERSION: 6
+    NODE_VERSION: 6.10.1
 
 dependencies:
   cache_directories:
     - './nvm'
     - '~/.yarn'
+    - '.eslintcache'
   override:
     - ./ci-scripts/dependencies.sh
 test:
@@ -22,5 +23,5 @@ deployment:
       - ./ci-scripts/deploy.sh
 general:
   artifacts:
-    - "node_modules/mapbox-gl-test-suite/render-tests/index.html"
-    - "node_modules/mapbox-gl-test-suite/query-tests/index.html"
+    - "test/integration/render-tests/index.html"
+    - "test/integration/query-tests/index.html"

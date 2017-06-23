@@ -39,9 +39,17 @@ module.exports = function (directory, implementation, options, run) {
             if (!shouldRunTest(group, test))
                 return;
 
-            if (!fs.lstatSync(path.join(directory, group, test)).isDirectory() ||
-                !fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
+            if (!fs.lstatSync(path.join(directory, group, test)).isDirectory())
+                // Skip files in this folder.
                 return;
+
+            try {
+                if (!fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
+                    return;
+            } catch (err) {
+                console.log(colors.blue(`* omitting ${group} ${test} due to missing style`));
+                return;
+            }
 
             const style = require(path.join(directory, group, test, 'style.json'));
 
@@ -84,15 +92,19 @@ module.exports = function (directory, implementation, options, run) {
 
                     if (params.ignored && !params.ok) {
                         params.color = '#9E9E9E';
+                        params.status = 'ignored failed';
                         console.log(colors.white(`* ignore ${params.group} ${params.test}`));
                     } else if (params.ignored) {
                         params.color = '#E8A408';
+                        params.status = 'ignored passed';
                         console.log(colors.yellow(`* ignore ${params.group} ${params.test}`));
                     } else if (!params.ok) {
                         params.color = 'red';
+                        params.status = 'failed';
                         console.log(colors.red(`* failed ${params.group} ${params.test}`));
                     } else {
                         params.color = 'green';
+                        params.status = 'passed';
                         console.log(colors.green(`* passed ${params.group} ${params.test}`));
                     }
 

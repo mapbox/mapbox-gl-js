@@ -1,6 +1,6 @@
 'use strict';
 
-const Reference = require('../reference/v8');
+const Reference = require('../reference/v8.json');
 const URL = require('url');
 
 function getPropertyReference(propertyName) {

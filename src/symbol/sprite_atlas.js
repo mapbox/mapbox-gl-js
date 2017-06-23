@@ -1,47 +1,70 @@
 'use strict';
 
-const ShelfPack = require('shelf-pack');
+const ShelfPack = require('@mapbox/shelf-pack');
 const browser = require('../util/browser');
 const util = require('../util/util');
+const window = require('../util/window');
+const Evented = require('../util/evented');
+const padding = 1;
 
-class AtlasImage {
-    constructor(rect, width, height, sdf, pixelRatio) {
-        this.rect = rect;
-        this.width = width;
-        this.height = height;
-        this.sdf = sdf;
-        this.pixelRatio = pixelRatio;
-    }
+// This wants to be a class, but is sent to workers, so must be a plain JSON blob.
+function spriteAtlasElement(image) {
+    const textureRect = {
+        x: image.rect.x + padding,
+        y: image.rect.y + padding,
+        w: image.rect.w - padding * 2,
+        h: image.rect.h - padding * 2
+    };
+    return {
+        sdf: image.sdf,
+        pixelRatio: image.pixelRatio,
+        isNativePixelRatio: image.pixelRatio === browser.devicePixelRatio,
+        textureRect: textureRect,
+
+        // Redundant calculated members.
+        tl: [
+            textureRect.x,
+            textureRect.y
+        ],
+        br: [
+            textureRect.x + textureRect.w,
+            textureRect.y + textureRect.h
+        ],
+        displaySize: [
+            textureRect.w / image.pixelRatio,
+            textureRect.h / image.pixelRatio
+        ]
+    };
 }
 
-class SpriteAtlas {
+// The SpriteAtlas class is responsible for turning a sprite and assorted
+// other images added at runtime into a texture that can be consumed by WebGL.
+class SpriteAtlas extends Evented {
 
     constructor(width, height) {
-        this.width = width;
-        this.height = height;
-
-        this.bin = new ShelfPack(width, height);
+        super();
         this.images = {};
         this.data = false;
         this.texture = 0; // WebGL ID
         this.filter = 0; // WebGL ID
-        this.pixelRatio = 1;
+        this.width = width * browser.devicePixelRatio;
+        this.height = height * browser.devicePixelRatio;
+        this.shelfPack = new ShelfPack(this.width, this.height);
         this.dirty = true;
     }
 
+    getPixelSize() {
+        return [
+            this.width,
+            this.height
+        ];
+    }
+
     allocateImage(pixelWidth, pixelHeight) {
-        pixelWidth = pixelWidth / this.pixelRatio;
-        pixelHeight = pixelHeight / this.pixelRatio;
+        const width = pixelWidth + 2 * padding;
+        const height = pixelHeight + 2 * padding;
 
-        // Increase to next number divisible by 4, but at least 1.
-        // This is so we can scale down the texture coordinates and pack them
-        // into 2 bytes rather than 4 bytes.
-        // Pad icons to prevent them from polluting neighbours during linear interpolation
-        const padding = 2;
-        const packWidth = pixelWidth + padding + (4 - (pixelWidth + padding) % 4);
-        const packHeight = pixelHeight + padding + (4 - (pixelHeight + padding) % 4);// + 4;
-
-        const rect = this.bin.packOne(packWidth, packHeight);
+        const rect = this.shelfPack.packOne(width, height);
         if (!rect) {
             util.warnOnce('SpriteAtlas out of space.');
             return null;
@@ -50,9 +73,74 @@ class SpriteAtlas {
         return rect;
     }
 
-    getImage(name, wrap) {
+    addImage(name, pixels, options) {
+        let width, height, pixelRatio;
+        if (pixels instanceof window.HTMLImageElement) {
+            width = pixels.width;
+            height = pixels.height;
+            pixels = browser.getImageData(pixels);
+            pixelRatio = 1;
+        } else {
+            width = options.width;
+            height = options.height;
+            pixelRatio = options.pixelRatio || 1;
+        }
+
+        if (ArrayBuffer.isView(pixels)) {
+            pixels = new Uint32Array(pixels.buffer);
+        }
+
+        if (!(pixels instanceof Uint32Array)) {
+            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement and ArrayBufferView.')});
+        }
+
         if (this.images[name]) {
-            return this.images[name];
+            return this.fire('error', {error: new Error('An image with this name already exists.')});
+        }
+
+        const rect = this.allocateImage(width, height);
+        if (!rect) {
+            return this.fire('error', {error: new Error('There is not enough space to add this image.')});
+        }
+
+        this.images[name] = {
+            rect,
+            width,
+            height,
+            pixelRatio,
+            sdf: false
+        };
+
+        this.copy(pixels, width, rect, {x: 0, y: 0, width, height}, false);
+
+        this.fire('data', {dataType: 'style'});
+    }
+
+    removeImage(name) {
+        const image = this.images[name];
+        delete this.images[name];
+
+        if (!image) {
+            return this.fire('error', {error: new Error('No image with this name exists.')});
+        }
+
+        this.shelfPack.unref(image.rect);
+        this.fire('data', {dataType: 'style'});
+    }
+
+    // Return metrics for an icon image.
+    getIcon(name) {
+        return this._getImage(name, false);
+    }
+
+    // Return metrics for repeating pattern image.
+    getPattern(name) {
+        return this._getImage(name, true);
+    }
+
+    _getImage(name, wrap) {
+        if (this.images[name]) {
+            return spriteAtlasElement(this.images[name]);
         }
 
         if (!this.sprite) {
@@ -69,89 +157,69 @@ class SpriteAtlas {
             return null;
         }
 
-        const image = new AtlasImage(rect, pos.width / pos.pixelRatio, pos.height / pos.pixelRatio, pos.sdf, pos.pixelRatio / this.pixelRatio);
+        const image = {
+            rect,
+            width: pos.width,
+            height: pos.height,
+            sdf: pos.sdf,
+            pixelRatio: pos.pixelRatio
+        };
         this.images[name] = image;
 
-        this.copy(rect, pos, wrap);
+        if (!this.sprite.imgData) return null;
+        const srcImg = new Uint32Array(this.sprite.imgData.buffer);
+        this.copy(srcImg, this.sprite.width, rect, pos, wrap);
 
-        return image;
-    }
-
-    // Return position of a repeating fill pattern.
-    getPosition(name, repeating) {
-        const image = this.getImage(name, repeating);
-        const rect = image && image.rect;
-
-        if (!rect) {
-            return null;
-        }
-
-        const width = image.width * image.pixelRatio;
-        const height = image.height * image.pixelRatio;
-        const padding = 1;
-
-        return {
-            size: [image.width, image.height],
-            tl: [(rect.x + padding)         / this.width, (rect.y + padding)          / this.height],
-            br: [(rect.x + padding + width) / this.width, (rect.y + padding + height) / this.height]
-        };
+        return spriteAtlasElement(image);
     }
 
     allocate() {
         if (!this.data) {
-            const w = Math.floor(this.width * this.pixelRatio);
-            const h = Math.floor(this.height * this.pixelRatio);
-            this.data = new Uint32Array(w * h);
+            this.data = new Uint32Array(this.width * this.height);
             for (let i = 0; i < this.data.length; i++) {
                 this.data[i] = 0;
             }
         }
     }
 
-    copy(dst, src, wrap) {
-        if (!this.sprite.imgData) return;
-        const srcImg = new Uint32Array(this.sprite.imgData.buffer);
-
+    // Copy some portion of srcImage into `SpriteAtlas#data`
+    copy(srcImg, srcImgWidth, dstPos, srcPos, wrap) {
         this.allocate();
         const dstImg = this.data;
 
-        const padding = 1;
-
         copyBitmap(
             /* source buffer */  srcImg,
-            /* source stride */  this.sprite.width,
-            /* source x */       src.x,
-            /* source y */       src.y,
+            /* source stride */  srcImgWidth,
+            /* source x */       srcPos.x,
+            /* source y */       srcPos.y,
             /* dest buffer */    dstImg,
-            /* dest stride */    this.width * this.pixelRatio,
-            /* dest x */         (dst.x + padding) * this.pixelRatio,
-            /* dest y */         (dst.y + padding) * this.pixelRatio,
-            /* icon dimension */ src.width,
-            /* icon dimension */ src.height,
-            /* wrap */ wrap
+            /* dest stride */    this.getPixelSize()[0],
+            /* dest x */         dstPos.x + padding,
+            /* dest y */         dstPos.y + padding,
+            /* icon dimension */ srcPos.width,
+            /* icon dimension */ srcPos.height,
+            /* wrap */           wrap
         );
 
+        // Indicates that `SpriteAtlas#data` has changed and needs to be
+        // reuploaded into the GL texture specified by `SpriteAtlas#texture`.
         this.dirty = true;
     }
 
     setSprite(sprite) {
-        if (sprite) {
-            this.pixelRatio = browser.devicePixelRatio > 1 ? 2 : 1;
-
-            if (this.canvas) {
-                this.canvas.width = this.width * this.pixelRatio;
-                this.canvas.height = this.height * this.pixelRatio;
-            }
+        if (sprite && this.canvas) {
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
         }
         this.sprite = sprite;
     }
 
     addIcons(icons, callback) {
-        for (let i = 0; i < icons.length; i++) {
-            this.getImage(icons[i]);
+        const result = {};
+        for (const icon of icons) {
+            result[icon] = this.getIcon(icon);
         }
-
-        callback(null, this.images);
+        callback(null, result);
     }
 
     bind(gl, linear) {
@@ -161,6 +229,7 @@ class SpriteAtlas {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
             first = true;
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -181,8 +250,8 @@ class SpriteAtlas {
                     gl.TEXTURE_2D, // enum target
                     0, // ind level
                     gl.RGBA, // ind internalformat
-                    this.width * this.pixelRatio, // GLsizei width
-                    this.height * this.pixelRatio, // GLsizei height
+                    this.width, // GLsizei width
+                    this.height, // GLsizei height
                     0, // ind border
                     gl.RGBA, // enum format
                     gl.UNSIGNED_BYTE, // enum type
@@ -194,8 +263,8 @@ class SpriteAtlas {
                     0, // int level
                     0, // int xoffset
                     0, // int yoffset
-                    this.width * this.pixelRatio, // long width
-                    this.height * this.pixelRatio, // long height
+                    this.width, // long width
+                    this.height, // long height
                     gl.RGBA, // enum format
                     gl.UNSIGNED_BYTE, // enum type
                     new Uint8Array(this.data.buffer) // Object pixels
