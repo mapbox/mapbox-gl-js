@@ -39,27 +39,32 @@ class CollisionTile {
     tempCollisionBox: any;
     edges: Array<any>;
 
-    constructor(angle: number | SerializedCollisionTile, pitch: any, cameraToCenterDistance: any, cameraToTileDistance: any, collisionBoxArray: any) {
-        if (typeof angle === 'object') {
-            const serialized = angle;
-            collisionBoxArray = pitch;
+    static deserialize(serialized: SerializedCollisionTile, collisionBoxArray: any) {
+        return new CollisionTile(
+            serialized.angle,
+            serialized.pitch,
+            serialized.cameraToCenterDistance,
+            serialized.cameraToTileDistance,
+            collisionBoxArray,
+            new Grid(serialized.grid),
+            new Grid(serialized.ignoredGrid)
+        );
+    }
 
-            this.angle = serialized.angle;
-            this.pitch = serialized.pitch;
-            this.cameraToCenterDistance = serialized.cameraToCenterDistance;
-            this.cameraToTileDistance = serialized.cameraToTileDistance;
+    constructor(angle: number,
+                pitch: number,
+                cameraToCenterDistance: number,
+                cameraToTileDistance: number,
+                collisionBoxArray: any,
+                grid: any = new Grid(EXTENT, 12, 6),
+                ignoredGrid: any = new Grid(EXTENT, 12, 0)) {
+        this.angle = angle;
+        this.pitch = pitch;
+        this.cameraToCenterDistance = cameraToCenterDistance;
+        this.cameraToTileDistance = cameraToTileDistance;
 
-            this.grid = new Grid(serialized.grid);
-            this.ignoredGrid = new Grid(serialized.ignoredGrid);
-        } else {
-            this.angle = angle;
-            this.pitch = pitch;
-            this.cameraToCenterDistance = cameraToCenterDistance;
-            this.cameraToTileDistance = cameraToTileDistance;
-
-            this.grid = new Grid(EXTENT, 12, 6);
-            this.ignoredGrid = new Grid(EXTENT, 12, 0);
-        }
+        this.grid = grid;
+        this.ignoredGrid = ignoredGrid;
 
         this.perspectiveRatio = 1 + 0.5 * ((cameraToTileDistance / cameraToCenterDistance) - 1);
 

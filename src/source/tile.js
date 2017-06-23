@@ -114,7 +114,7 @@ class Tile {
         }
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
-        this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
+        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
         this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
@@ -129,7 +129,7 @@ class Tile {
     reloadSymbolData(data: any, style: any) {
         if (this.state === 'unloaded') return;
 
-        this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
+        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
         this.featureIndex.setCollisionTile(this.collisionTile);
 
         for (const id in this.buckets) {
