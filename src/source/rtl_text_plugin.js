@@ -47,3 +47,6 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
         }
     });
 };
+
+module.exports.applyArabicShaping = (null : ?Function);
+module.exports.processBidirectionalText = (null : ?Function);

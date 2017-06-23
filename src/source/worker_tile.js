@@ -1,3 +1,4 @@
+// @flow
 
 const FeatureIndex = require('../data/feature_index');
 const CollisionTile = require('../symbol/collision_tile');
@@ -6,8 +7,39 @@ const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
 const assert = require('assert');
 
+import type {TileCoord} from './tile_coord';
+import type {SymbolBucket} from '../data/bucket/symbol_bucket';
+import type {Actor} from '../util/actor';
+import type {StyleLayerIndex} from '../style/style_layer_index';
+import type {
+    WorkerTileParameters,
+    WorkerTileCallback,
+    VectorTile
+} from '../source/source';
+
 class WorkerTile {
-    constructor(params) {
+    coord: TileCoord;
+    uid: string;
+    zoom: number;
+    tileSize: number;
+    source: string;
+    overscaling: number;
+    angle: number;
+    pitch: number;
+    cameraToCenterDistance: number;
+    cameraToTileDistance: number;
+    showCollisionBoxes: boolean;
+
+    status: 'parsing' | 'done';
+    data: VectorTile;
+    collisionBoxArray: CollisionBoxArray;
+    symbolBuckets: Array<SymbolBucket>;
+
+    abort: ?() => void;
+    reloadCallback: WorkerTileCallback;
+    vectorTile: VectorTile;
+
+    constructor(params: WorkerTileParameters) {
         this.coord = params.coord;
         this.uid = params.uid;
         this.zoom = params.zoom;
@@ -21,7 +53,7 @@ class WorkerTile {
         this.showCollisionBoxes = params.showCollisionBoxes;
     }
 
-    parse(data, layerIndex, actor, callback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
         // Normalize GeoJSON data.
         if (!data.layers) {
             data = { layers: { '_geojsonTileLayer': data } };
@@ -174,7 +206,7 @@ class WorkerTile {
         }
     }
 
-    redoPlacement(angle, pitch, cameraToCenterDistance, cameraToTileDistance, showCollisionBoxes) {
+    redoPlacement(angle: number, pitch: number, cameraToCenterDistance: number, cameraToTileDistance: number, showCollisionBoxes: boolean) {
         this.angle = angle;
         this.pitch = pitch;
         this.cameraToCenterDistance = cameraToCenterDistance;

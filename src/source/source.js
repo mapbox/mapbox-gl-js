@@ -1,3 +1,4 @@
+// @flow
 
 const util = require('../util/util');
 
@@ -13,13 +14,12 @@ const sourceTypes = {
 /*
  * Creates a tiled data source instance given an options object.
  *
- * @param {string} id
+ * @param id
  * @param {Object} source A source definition object compliant with [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type, with that type's requirements.
- * @param {string} options.type A source type like `raster`, `vector`, `video`, etc.
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-exports.create = function(id, source, dispatcher, eventedParent) {
+exports.create = function(id: string, source: any, dispatcher: any, eventedParent: any) {
     source = new sourceTypes[source.type](id, source, dispatcher, eventedParent);
 
     if (source.id !== id) {
@@ -30,11 +30,11 @@ exports.create = function(id, source, dispatcher, eventedParent) {
     return source;
 };
 
-exports.getType = function (name) {
+exports.getType = function (name: string) {
     return sourceTypes[name];
 };
 
-exports.setType = function (name, type) {
+exports.setType = function (name: string, type: any) {
     sourceTypes[name] = type;
 };
 
@@ -109,6 +109,49 @@ exports.setType = function (name, type) {
  */
 
 
+import type {TileCoord} from './tile_coord';
+import type {Actor} from '../util/actor';
+import type {StyleLayerIndex} from '../style/style_layer_index';
+
+export type TileParameters = {
+    source: string,
+    uid: string,
+};
+
+export type PlacementConfig = {
+    angle: number,
+    pitch: number,
+    cameraToCenterDistance: number,
+    cameraToTileDistance: number,
+    showCollisionBoxes: boolean,
+};
+
+export type WorkerTileParameters = TileParameters & {
+    coord: TileCoord,
+    url: string,
+    zoom: number,
+    maxZoom: number,
+    tileSize: number,
+    overscaling: number,
+} & PlacementConfig;
+
+export type WorkerTileResult = {
+    buckets: any,
+    featureIndex: any,
+    collisionTile: any,
+    rawTileData?: any,
+};
+
+export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
+
+export type RedoPlacementParameters = TileParameters & PlacementConfig;
+
+export type RedoPlacementResult = {
+    buckets: any,
+    collisionTile: any
+};
+
+export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult, transferables: ?Array<Transferable>) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -121,48 +164,56 @@ exports.setType = function (name, type) {
  * @private
  *
  * @class WorkerSource
- * @param {Actor} actor
- * @param {StyleLayerIndex} layerIndex
+ * @param actor
+ * @param layerIndex
  */
+export interface WorkerSource {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
+
+    /**
+     * Loads a tile from the given params and parse it into buckets ready to send
+     * back to the main thread for rendering.  Should call the callback with:
+     * `{ buckets, featureIndex, collisionTile, rawTileData}`.
+     */
+    loadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
+
+    /**
+     * Re-parses a tile that has already been loaded.  Yields the same data as
+     * {@link WorkerSource#loadTile}.
+     */
+    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
+
+    /**
+     * Aborts loading a tile that is in progress.
+     */
+    abortTile(params: TileParameters): void;
+
+    /**
+     * Removes this tile from any local caches.
+     */
+    removeTile(params: TileParameters): void;
+
+    redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback): void;
+    removeSource?: (params: {source: string}) => void;
+}
+
+export interface VectorTile {
+    layers: any;
+}
 
 /**
- * Loads a tile from the given params and parse it into buckets ready to send
- * back to the main thread for rendering.  Should call the callback with:
- * `{ buckets, featureIndex, collisionTile, rawTileData}`.
+ * The result passed to the `loadVectorData` callback must conform to the interface established
+ * by the `VectorTile` class from the [vector-tile](https://www.npmjs.com/package/vector-tile)
+ * npm package. In addition, it must have a `rawData` property containing an `ArrayBuffer`
+ * with protobuf data conforming to the
+ * [Mapbox Vector Tile specification](https://github.com/mapbox/vector-tile-spec).
  *
- * @method
- * @name loadTile
- * @param {Object} params Parameters sent by the main-thread Source identifying the tile to load.
- * @param {Function} callback
- * @memberof WorkerSource
- * @instance
+ * @class AugmentedVectorTile
+ * @property {ArrayBuffer} rawData
+ * @private
  */
-
-/**
- * Re-parses a tile that has already been loaded.  Yields the same data as
- * {@link WorkerSource#loadTile}.
- *
- * @method
- * @name reloadTile
- * @param {Object} params
- * @param {Function} callback
- * @memberof WorkerSource
- * @instance
- */
-
-/**
- * Aborts loading a tile that is in progress.
- * @method
- * @name abortTile
- * @param {Object} params
- * @memberof WorkerSource
- * @instance
- */
-
-/**
- * Removes this tile from any local caches.
- * @method
- * @name removeTile
- * @memberof WorkerSource
- * @instance
- */
+export type AugmentedVectorTile = VectorTile & {
+     rawData: any;
+     expires?: any;
+     cacheControl?: any;
+};
