@@ -2,6 +2,7 @@ declare module "point-geometry" {
     declare class Point {
         x: number;
         y: number;
+        constructor(x: number, y: number): Point;
         clone(): Point;
         add(point: Point): Point;
         sub(point: Point): Point;
