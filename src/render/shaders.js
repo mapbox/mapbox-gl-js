@@ -73,9 +73,5 @@ module.exports = {
     symbolSDF: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/symbol_sdf.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/symbol_sdf.vertex.glsl', 'utf8')
-    },
-    normal: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/normal.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/normal.vertex.glsl', 'utf8')
     }
 };

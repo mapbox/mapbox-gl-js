@@ -609,7 +609,7 @@ function compareKeyZoom(a, b) {
 }
 
 function isRasterType(type) {
-    return type === 'raster' || type === 'image' || type === 'video' || type === 'normal';
+    return type === 'raster' || type === 'image' || type === 'video';
 }
 
 module.exports = SourceCache;
