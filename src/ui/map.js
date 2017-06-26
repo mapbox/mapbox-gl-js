@@ -407,6 +407,22 @@ class Map extends Camera {
     }
 
     /**
+     * Gets the map's geographical bounds.
+     *
+     * Returns the LngLatBounds by which pan and zoom operations on the map are constrained.
+     *
+     * @returns {LngLatBounds | null} The maximum bounds the map is constrained to, or `null` if none set.
+     */
+    getMaxBounds () {
+        if (!(!Array.isArray(this.transform.latRange) || this.transform.latRange.length === 0) &&
+            (!Array.isArray(this.transform.lngRange) || this.transform.lngRange.length === 0)) {
+            return null;
+        }
+        return new LngLatBounds([this.transform.lngRange[0], this.transform.latRange[0]],
+            [this.transform.lngRange[1], this.transform.latRange[1]]);
+    }
+
+    /**
      * Sets or clears the map's geographical bounds.
      *
      * Pan and zoom operations are constrained within these bounds.
@@ -434,6 +450,7 @@ class Map extends Camera {
         return this;
 
     }
+
     /**
      * Sets or clears the map's minimum zoom level.
      * If the map's current zoom level is lower than the new minimum,
