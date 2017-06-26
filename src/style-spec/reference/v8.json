@@ -1041,10 +1041,7 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.39.0",
-          "android": null,
-          "ios": null,
-          "macos": null
+          "js": "0.39.0"
         },
         "data-driven styling": {}
       }
