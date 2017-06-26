@@ -35,7 +35,7 @@ class SourceCache extends Evented {
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
-            if (this._sourceLoaded && e.dataType === "source" && e.sourceDataType === 'content') {
+            if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
@@ -97,6 +97,19 @@ class SourceCache extends Evented {
         return this._source;
     }
 
+    pause() {
+        this._paused = true;
+    }
+
+    resume() {
+        if (!this._paused) return;
+        const shouldReload = this._shouldReloadOnResume;
+        this._paused = false;
+        this._shouldReloadOnResume = false;
+        if (shouldReload) this.reload();
+        if (this.transform) this.update(this.transform);
+    }
+
     _loadTile(tile, callback) {
         return this._source.loadTile(tile, callback);
     }
@@ -139,6 +152,11 @@ class SourceCache extends Evented {
     }
 
     reload() {
+        if (this._paused) {
+            this._shouldReloadOnResume = true;
+            return;
+        }
+
         this._cache.reset();
         for (const i in this._tiles) {
             this._reloadTile(i, 'reloading');
@@ -308,7 +326,8 @@ class SourceCache extends Evented {
      */
     update(transform) {
         this.transform = transform;
-        if (!this._sourceLoaded) { return; }
+        if (!this._sourceLoaded || this._paused) { return; }
+
         let i;
         let coord;
         let tile;
@@ -507,6 +526,9 @@ class SourceCache extends Evented {
      * @private
      */
     clearTiles() {
+        this._shouldReloadOnResume = false;
+        this._paused = false;
+
         for (const id in this._tiles)
             this._removeTile(id);
         this._cache.reset();
