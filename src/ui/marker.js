@@ -114,6 +114,9 @@ class Marker {
         }
 
         if (popup) {
+            if (!('offset' in popup.options)) {
+                popup.options.offset = this._offset;
+            }
             this._popup = popup;
             this._popup.setLngLat(this._lngLat);
         }
