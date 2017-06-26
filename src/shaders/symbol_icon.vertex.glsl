@@ -10,6 +10,8 @@ uniform highp float u_size_t; // used to interpolate between zoom stops when siz
 uniform highp float u_size; // used when size is both zoom and feature constant
 uniform highp float u_camera_to_center_distance;
 uniform highp float u_pitch;
+uniform bool u_rotate_symbol;
+uniform highp float u_aspect_ratio;
 uniform highp float u_collision_y_stretch;
 
 #pragma mapbox: define lowp float opacity
@@ -62,8 +64,19 @@ void main() {
 
     float fontScale = u_is_text ? size / 24.0 : size;
 
-    highp float angle_sin = sin(segment_angle);
-    highp float angle_cos = cos(segment_angle);
+    highp float symbol_rotation = 0.0;
+    if (u_rotate_symbol) {
+        // See comments in symbol_sdf.vertex
+        vec4 offsetProjectedPoint = u_matrix * vec4(a_pos + vec2(1, 0), 0, 1);
+
+        vec2 a = projectedPoint.xy / projectedPoint.w;
+        vec2 b = offsetProjectedPoint.xy / offsetProjectedPoint.w;
+
+        symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
+    }
+
+    highp float angle_sin = sin(segment_angle + symbol_rotation);
+    highp float angle_cos = cos(segment_angle + symbol_rotation);
     mat2 rotation_matrix = mat2(angle_cos, -1.0 * angle_sin, angle_sin, angle_cos);
 
     vec4 projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, 0.0, 1.0);
