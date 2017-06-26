@@ -414,12 +414,13 @@ class Map extends Camera {
      * @returns {LngLatBounds | null} The maximum bounds the map is constrained to, or `null` if none set.
      */
     getMaxBounds () {
-        if (!(!Array.isArray(this.transform.latRange) || this.transform.latRange.length === 0) &&
-            (!Array.isArray(this.transform.lngRange) || this.transform.lngRange.length === 0)) {
+        if (this.transform.latRange && this.transform.latRange.length === 2 &&
+            this.transform.lngRange && this.transform.lngRange.length === 2) {
+            return new LngLatBounds([this.transform.lngRange[0], this.transform.latRange[0]],
+                [this.transform.lngRange[1], this.transform.latRange[1]]);
+        } else {
             return null;
         }
-        return new LngLatBounds([this.transform.lngRange[0], this.transform.latRange[0]],
-            [this.transform.lngRange[1], this.transform.latRange[1]]);
     }
 
     /**
