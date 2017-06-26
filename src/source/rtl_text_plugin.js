@@ -27,6 +27,11 @@ module.exports.registerForPluginAvailability = function(
 module.exports.createBlobURL = function(response: Object) {
     return window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
 };
+// Only exposed for tests
+module.exports.clearRTLTextPlugin = function() {
+    pluginRequested = false;
+    pluginBlobURL = null;
+};
 
 module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCallback) {
     if (pluginRequested) {
