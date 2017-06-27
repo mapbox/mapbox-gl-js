@@ -1,3 +1,4 @@
+// @flow
 
 const util = require('../util/util');
 const window = require('../util/window');
@@ -10,6 +11,11 @@ const EXTENT = require('../data/extent');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('../render/vertex_array_object');
+
+import type {ISource} from './source';
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
+import type Tile from './tile';
 
 /**
  * A data source containing an image.
@@ -41,9 +47,27 @@ const VertexArrayObject = require('../render/vertex_array_object');
  * map.removeSource('some id');  // remove
  * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
-class ImageSource extends Evented {
+class ImageSource extends Evented implements ISource {
+    type: string;
+    id: string;
+    minzoom: number;
+    maxzoom: number;
+    tileSize: number;
+    url: string;
 
-    constructor(id, options, dispatcher, eventedParent) {
+    coordinates: any;
+    tiles: any;
+    options: any;
+    dispatcher: Dispatcher;
+    map: Map;
+    texture: any;
+    textureLoaded: boolean;
+    image: any;
+    centerCoord: any;
+    coord: TileCoord;
+    _tileCoords: any;
+
+    constructor(id: string, options: any, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -82,7 +106,7 @@ class ImageSource extends Evented {
         }
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this.load();
         this.map = map;
         if (this.image) {
@@ -99,7 +123,7 @@ class ImageSource extends Evented {
      *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
      */
-    setCoordinates(coordinates) {
+    setCoordinates(coordinates: any) {
         this.coordinates = coordinates;
 
         // Calculate which mercator tile is suitable for rendering the video in
@@ -140,7 +164,7 @@ class ImageSource extends Evented {
         return this;
     }
 
-    _setTile(tile) {
+    _setTile(tile: Tile) {
         this.tiles[tile.coord.w] = tile;
         const maxInt16 = 32767;
         const array = new RasterBoundsArray();
@@ -160,7 +184,7 @@ class ImageSource extends Evented {
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
-    _prepareImage(gl, image, resize) {
+    _prepareImage(gl: any, image: any, resize: any) {
         if (!this.textureLoaded) {
             this.textureLoaded = true;
             this.texture = gl.createTexture();
@@ -186,7 +210,7 @@ class ImageSource extends Evented {
         }
     }
 
-    loadTile(tile, callback) {
+    loadTile(tile: Tile, callback: Function) {
         // We have a single tile -- whoose coordinates are this.coord -- that
         // covers the image we want to render.  If that's the one being
         // requested, set it up with the image; otherwise, mark the tile as
@@ -202,7 +226,7 @@ class ImageSource extends Evented {
         }
     }
 
-    serialize() {
+    serialize(): Object {
         return {
             type: 'image',
             urls: this.url,

@@ -8,6 +8,7 @@ node_modules
 npm-debug.log
 *.sublime-*
 coverage
+flow-coverage
 .DS_Store
 .nyc_output
 *_generated.js

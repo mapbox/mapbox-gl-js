@@ -1,6 +1,11 @@
+// @flow
 
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');
+
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
+import type Evented from '../util/evented';
 
 /**
  * A data source containing video.
@@ -35,8 +40,11 @@ const ImageSource = require('./image_source');
  * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource {
+    urls: Array<string>;
+    video: any;
+    roundZoom: boolean;
 
-    constructor(id, options, dispatcher, eventedParent) {
+    constructor(id: string, options: any, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;
         this.type = 'video';
@@ -83,7 +91,7 @@ class VideoSource extends ImageSource {
         return this.video;
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         if (this.map) return;
         this.load();
         this.map = map;

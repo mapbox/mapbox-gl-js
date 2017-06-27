@@ -1,5 +1,8 @@
+// @flow
 
 const util = require('./util');
+
+type Listeners = { [string]: any };
 
 function _addEventListener(type, listener, listenerList) {
     listenerList[type] = listenerList[type] || [];
@@ -21,6 +24,10 @@ function _removeEventListener(type, listener, listenerList) {
  * @mixin Evented
  */
 class Evented {
+    _listeners: Listeners;
+    _oneTimeListeners: Listeners;
+    _eventedParent: ?Evented;
+    _eventedParentData: ?(Object | () => Object);
 
     /**
      * Adds a listener to a specified event type.
@@ -31,7 +38,7 @@ class Evented {
      *   extended with `target` and `type` properties.
      * @returns {Object} `this`
      */
-    on(type, listener) {
+    on(type: string, listener: Function) {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -45,7 +52,7 @@ class Evented {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} `this`
      */
-    off(type, listener) {
+    off(type: string, listener: Function) {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -61,7 +68,7 @@ class Evented {
      * @param {Function} listener The function to be called when the event is fired the first time.
      * @returns {Object} `this`
      */
-    once(type, listener) {
+    once(type: string, listener: Function) {
         this._oneTimeListeners = this._oneTimeListeners || {};
         _addEventListener(type, listener, this._oneTimeListeners);
 
@@ -75,7 +82,7 @@ class Evented {
      * @param {Object} [data] Data to be passed to any listeners.
      * @returns {Object} `this`
      */
-    fire(type, data) {
+    fire(type: string, data: Object) {
         if (this.listens(type)) {
             data = util.extend({}, data, {type: type, target: this});
 
@@ -112,7 +119,7 @@ class Evented {
      * @param {string} type The event type
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
      */
-    listens(type) {
+    listens(type: string) {
         return (
             (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
             (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
@@ -124,11 +131,9 @@ class Evented {
      * Bubble all events fired by this instance of Evented to this parent instance of Evented.
      *
      * @private
-     * @param {parent}
-     * @param {data}
      * @returns {Object} `this`
      */
-    setEventedParent(parent, data) {
+    setEventedParent(parent: Evented, data?: Object) {
         this._eventedParent = parent;
         this._eventedParentData = data;
 

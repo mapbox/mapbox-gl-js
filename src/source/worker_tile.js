@@ -7,14 +7,14 @@ const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
 const assert = require('assert');
 
-import type {TileCoord} from './tile_coord';
+import type TileCoord from './tile_coord';
 import type {SymbolBucket} from '../data/bucket/symbol_bucket';
-import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
+import type StyleLayerIndex from '../style/style_layer_index';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
-    VectorTile
+    VectorTile,
+    Actor
 } from '../source/source';
 
 class WorkerTile {

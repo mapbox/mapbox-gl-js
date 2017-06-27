@@ -114,7 +114,7 @@ class LngLatBounds {
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.getCenter(); // = LngLat {lng: -73.96365, lat: 40.78315}
      */
-    getCenter() {
+    getCenter(): LngLat {
         return new LngLat((this._sw.lng + this._ne.lng) / 2, (this._sw.lat + this._ne.lat) / 2);
     }
 
@@ -123,56 +123,56 @@ class LngLatBounds {
      *
      * @returns {LngLat} The southwest corner of the bounding box.
      */
-    getSouthWest() { return this._sw; }
+    getSouthWest(): LngLat { return this._sw; }
 
     /**
     * Returns the northeast corner of the bounding box.
     *
     * @returns {LngLat} The northeast corner of the bounding box.
      */
-    getNorthEast() { return this._ne; }
+    getNorthEast(): LngLat { return this._ne; }
 
     /**
     * Returns the northwest corner of the bounding box.
     *
     * @returns {LngLat} The northwest corner of the bounding box.
      */
-    getNorthWest() { return new LngLat(this.getWest(), this.getNorth()); }
+    getNorthWest(): LngLat { return new LngLat(this.getWest(), this.getNorth()); }
 
     /**
     * Returns the southeast corner of the bounding box.
     *
     * @returns {LngLat} The southeast corner of the bounding box.
      */
-    getSouthEast() { return new LngLat(this.getEast(), this.getSouth()); }
+    getSouthEast(): LngLat { return new LngLat(this.getEast(), this.getSouth()); }
 
     /**
     * Returns the west edge of the bounding box.
     *
     * @returns {number} The west edge of the bounding box.
      */
-    getWest() { return this._sw.lng; }
+    getWest(): number { return this._sw.lng; }
 
     /**
     * Returns the south edge of the bounding box.
     *
     * @returns {number} The south edge of the bounding box.
      */
-    getSouth() { return this._sw.lat; }
+    getSouth(): number { return this._sw.lat; }
 
     /**
     * Returns the east edge of the bounding box.
     *
     * @returns {number} The east edge of the bounding box.
      */
-    getEast() { return this._ne.lng; }
+    getEast(): number { return this._ne.lng; }
 
     /**
     * Returns the north edge of the bounding box.
     *
     * @returns {number} The north edge of the bounding box.
      */
-    getNorth() { return this._ne.lat; }
+    getNorth(): number { return this._ne.lat; }
 
     /**
      * Returns the bounding box represented as an array.
@@ -221,9 +221,10 @@ class LngLatBounds {
 }
 
 /**
- * A {@link LngLatBounds} object or an array of {@link LngLatLike} objects in [sw, ne] order.
+ * A {@link LngLatBounds} object, an array of {@link LngLatLike} objects in [sw, ne] order,
+ * or an array of numbers in [west, south, east, north] order.
  *
- * @typedef {LngLatBounds | [LngLatLike, LngLatLike]} LngLatBoundsLike
+ * @typedef {LngLatBounds | [LngLatLike, LngLatLike] | [number, number, number, number]} LngLatBoundsLike
  * @example
  * var v1 = new mapboxgl.LngLatBounds(
  *   new mapboxgl.LngLat(-73.9876, 40.7661),
@@ -232,6 +233,6 @@ class LngLatBounds {
  * var v2 = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002])
  * var v3 = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
  */
-export type LngLatBoundsLike = LngLatBounds | [LngLatLike, LngLatLike];
+export type LngLatBoundsLike = LngLatBounds | [LngLatLike, LngLatLike] | [number, number, number, number];
 
 module.exports = LngLatBounds;

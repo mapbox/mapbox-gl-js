@@ -106,7 +106,7 @@ exports.asyncAll = function<Item, Result> (
  *
  * @private
  */
-exports.values = function (obj: {[key: string]: string}): Array<string> {
+exports.values = function <T> (obj: {[string]: T}): Array<T> {
     const result = [];
     for (const k in obj) {
         result.push(obj[k]);
@@ -141,7 +141,7 @@ exports.keysDifference = function (obj: {[key: string]: mixed}, other: {[key: st
  * @param sources sources from which properties are pulled
  * @private
  */
-exports.extend = function (dest: Object, ...sources: Array<Object>): Object {
+exports.extend = function (dest: Object, ...sources: Array<?Object>): Object {
     for (const src of sources) {
         for (const k in src) {
             dest[k] = src[k];

@@ -1,3 +1,4 @@
+// @flow
 
 const Source = require('./source');
 const Tile = require('./tile');
@@ -7,6 +8,10 @@ const Cache = require('../util/lru_cache');
 const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
 const EXTENT = require('../data/extent');
+
+import type {ISource} from './source';
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
 
 /**
  * `SourceCache` is responsible for
@@ -20,8 +25,26 @@ const EXTENT = require('../data/extent');
  * @private
  */
 class SourceCache extends Evented {
+    id: string;
+    dispatcher: Dispatcher;
+    map: Map;
 
-    constructor(id, options, dispatcher) {
+    _source: ISource;
+    _tiles: any;
+    _cache: any;
+    _timers: any;
+    _cacheTimers: any;
+    _maxTileCacheSize: any;
+    _paused: boolean;
+    _shouldReloadOnResume: boolean;
+    _coveredTiles: any;
+    transform: any;
+    _isIdRenderable: any;
+
+    static maxUnderzooming: number;
+    static maxOverzooming: number;
+
+    constructor(id: string, options: any, dispatcher: Dispatcher) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -57,7 +80,7 @@ class SourceCache extends Evented {
         this._isIdRenderable = this._isIdRenderable.bind(this);
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this.map = map;
         this._maxTileCacheSize = map ? map._maxTileCacheSize : null;
         if (this._source && this._source.onAdd) {
@@ -65,7 +88,7 @@ class SourceCache extends Evented {
         }
     }
 
-    onRemove(map) {
+    onRemove(map: Map) {
         if (this._source && this._source.onRemove) {
             this._source.onRemove(map);
         }
@@ -109,16 +132,16 @@ class SourceCache extends Evented {
         if (this.transform) this.update(this.transform);
     }
 
-    _loadTile(tile, callback) {
+    _loadTile(tile: Tile, callback: Function) {
         return this._source.loadTile(tile, callback);
     }
 
-    _unloadTile(tile) {
+    _unloadTile(tile: Tile) {
         if (this._source.unloadTile)
             return this._source.unloadTile(tile);
     }
 
-    _abortTile(tile) {
+    _abortTile(tile: Tile) {
         if (this._source.abortTile)
             return this._source.abortTile(tile);
     }
@@ -146,7 +169,7 @@ class SourceCache extends Evented {
         return this.getIds().filter(this._isIdRenderable);
     }
 
-    _isIdRenderable(id) {
+    _isIdRenderable(id: any) {
         return this._tiles[id].hasData() && !this._coveredTiles[id];
     }
 
@@ -162,7 +185,7 @@ class SourceCache extends Evented {
         }
     }
 
-    _reloadTile(id, state) {
+    _reloadTile(id: any, state: any) {
         const tile = this._tiles[id];
 
         // this potentially does not address all underlying
@@ -181,7 +204,7 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile, id, previousState, err) {
+    _tileLoaded(tile: Tile, id: any, previousState: any, err: ?Error) {
         if (err) {
             tile.state = 'errored';
             if (err.status !== 404) this._source.fire('error', {tile: tile, error: err});
@@ -204,7 +227,7 @@ class SourceCache extends Evented {
      * @returns {Object} tile
      * @private
      */
-    getTile(coord) {
+    getTile(coord: any) {
         return this.getTileByID(coord.id);
     }
 
@@ -214,7 +237,7 @@ class SourceCache extends Evented {
      * @returns {Object} tile
      * @private
      */
-    getTileByID(id) {
+    getTileByID(id: any) {
         return this._tiles[id];
     }
 
@@ -224,7 +247,7 @@ class SourceCache extends Evented {
      * @returns {number} zoom level
      * @private
      */
-    getZoom(transform) {
+    getZoom(transform: any) {
         return transform.zoom + transform.scaleZoom(transform.tileSize / this._source.tileSize);
     }
 
@@ -238,7 +261,7 @@ class SourceCache extends Evented {
      * @returns {boolean} whether the operation was complete
      * @private
      */
-    _findLoadedChildren(coord, maxCoveringZoom, retain) {
+    _findLoadedChildren(coord: any, maxCoveringZoom: any, retain: any) {
         let found = false;
 
         for (const id in this._tiles) {
@@ -281,7 +304,7 @@ class SourceCache extends Evented {
      * @returns {Tile} tile object
      * @private
      */
-    findLoadedParent(coord, minCoveringZoom, retain) {
+    findLoadedParent(coord: any, minCoveringZoom: number, retain: any) {
         for (let z = coord.z - 1; z >= minCoveringZoom; z--) {
             coord = coord.parent(this._source.maxzoom);
             const tile = this._tiles[coord.id];
@@ -306,7 +329,7 @@ class SourceCache extends Evented {
      *
      * @private
      */
-    updateCacheSize(transform) {
+    updateCacheSize(transform: any) {
         const widthInTiles = Math.ceil(transform.width / transform.tileSize) + 1;
         const heightInTiles = Math.ceil(transform.height / transform.tileSize) + 1;
         const approxTilesInView = widthInTiles * heightInTiles;
@@ -323,7 +346,7 @@ class SourceCache extends Evented {
      * are inside the viewport.
      * @private
      */
-    update(transform) {
+    update(transform: any) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused) { return; }
 
@@ -363,7 +386,7 @@ class SourceCache extends Evented {
             });
 
             if (this._source.hasTile) {
-                visibleCoords = visibleCoords.filter((coord) => this._source.hasTile(coord));
+                visibleCoords = visibleCoords.filter((coord) => (this._source.hasTile : any)(coord));
             }
         }
 
@@ -392,7 +415,7 @@ class SourceCache extends Evented {
             const ids = Object.keys(retain);
             for (let k = 0; k < ids.length; k++) {
                 const id = ids[k];
-                coord = TileCoord.fromID(id);
+                coord = TileCoord.fromID(+id);
                 tile = this._tiles[id];
                 if (!tile) continue;
 
@@ -436,7 +459,7 @@ class SourceCache extends Evented {
      * @returns {Tile} the added Tile.
      * @private
      */
-    _addTile(tileCoord) {
+    _addTile(tileCoord: any) {
         let tile = this._tiles[tileCoord.id];
         if (tile)
             return tile;
@@ -466,7 +489,7 @@ class SourceCache extends Evented {
         return tile;
     }
 
-    _setTileReloadTimer(id, tile) {
+    _setTileReloadTimer(id: any, tile: Tile) {
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
@@ -476,7 +499,7 @@ class SourceCache extends Evented {
         }
     }
 
-    _setCacheInvalidationTimer(id, tile) {
+    _setCacheInvalidationTimer(id: any, tile: Tile) {
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
@@ -492,7 +515,7 @@ class SourceCache extends Evented {
      * @returns {undefined} nothing
      * @private
      */
-    _removeTile(id) {
+    _removeTile(id: any) {
         const tile = this._tiles[id];
         if (!tile)
             return;
@@ -540,7 +563,7 @@ class SourceCache extends Evented {
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      * @private
      */
-    tilesIn(queryGeometry) {
+    tilesIn(queryGeometry: any) {
         const tileResults = [];
         const ids = this.getIds();
 
