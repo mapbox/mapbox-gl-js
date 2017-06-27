@@ -109,7 +109,7 @@ exports.setType = function (name: string, type: any) {
  */
 
 
-import type {TileCoord} from './tile_coord';
+import type TileCoord from './tile_coord';
 import type {Actor} from '../util/actor';
 import type {StyleLayerIndex} from '../style/style_layer_index';
 import type {SerializedBucket} from '../data/bucket';
