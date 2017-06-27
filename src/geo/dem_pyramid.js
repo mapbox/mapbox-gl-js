@@ -50,21 +50,6 @@ class DEMPyramid {
         this.loaded = false;
     }
 
-    buildLevels() {
-        for (let i = 0; this.levels[i].width > 2; i++) {
-            const prev = this.levels[i];
-            const width = Math.ceil(prev.width / 2);
-            const height = Math.ceil(prev.height / 2);
-            const next =  new Level(width, height, Math.max(prev.border / 2, 1));
-            prev.resample(next);
-            this.levels.push(next);
-        }
-        // Build remaining two levels. They aren't actually used in rendering, but we
-        // need them for OpenGL's mipmapping feature.
-        this.levels.push(new Level(2, 2, 0));
-        this.levels.push(new Level(1, 1, 0));
-    }
-
     loadFromImage(data) {
         // Build level 0
         this.levels = [ new Level(data.width, data.height, data.width / 2) ];
@@ -79,7 +64,7 @@ class DEMPyramid {
                 level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
             }
         }
-        this.buildLevels();
+
         this.loaded = true;
     }
 
@@ -155,14 +140,12 @@ module.exports = {DEMPyramid, Level};
 
 DEMPyramid.deserialize = function(data) {
     const levels = [];
+
     // TODO dont hardcode tilesize
     let tileSize = 256, i = 0;
-    while (tileSize >= 2) {
+    while (data[i]) {
         levels.push(new Level(tileSize, tileSize, tileSize / 2, new Int32Array(data[i])));
-        tileSize /= 2;
         i++;
     }
-    levels.push(new Level(2, 2, 0));
-    levels.push(new Level(1, 1, 0));
     return new DEMPyramid(data.uid, data.scale, levels);
 };
