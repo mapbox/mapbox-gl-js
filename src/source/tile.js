@@ -16,6 +16,15 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 import type TileCoord from './tile_coord';
 import type {WorkerTileResult} from './worker_source';
 
+export type TileState =
+    | 'loading'   // Tile data is in the process of loading.
+    | 'loaded'    // Tile data has been loaded. Tile can be rendered.
+    | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
+    | 'unloaded'  // Tile data has been deleted.
+    | 'errored'   // Tile data was not loaded because of an error.
+    | 'expired';  /* Tile data was previously loaded, but has expired per its
+                   * HTTP headers and is in the process of refreshing. */
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -31,13 +40,7 @@ class Tile {
     buckets: {[string]: Bucket};
     expirationTime: any;
     expiredRequestCount: number;
-    state: 'loading'   // Tile data is in the process of loading.
-         | 'loaded'    // Tile data has been loaded. Tile can be rendered.
-         | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
-         | 'unloaded'  // Tile data has been deleted.
-         | 'errored'   // Tile data was not loaded because of an error.
-         | 'expired';  /* Tile data was previously loaded, but has expired per its
-                        * HTTP headers and is in the process of refreshing. */
+    state: TileState;
     placementThrottler: any;
     timeAdded: any;
     fadeEndTime: any;
@@ -69,7 +72,7 @@ class Tile {
      * @param size
      * @param sourceMaxZoom
      */
-    constructor(coord: any, size: number, sourceMaxZoom: number) {
+    constructor(coord: TileCoord, size: number, sourceMaxZoom: number) {
         this.coord = coord;
         this.uid = util.uniqueId();
         this.uses = 0;
@@ -245,7 +248,7 @@ class Tile {
         return this.buckets[layer.id];
     }
 
-    querySourceFeatures(result: any, params: any) {
+    querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
         if (!this.rawTileData) return;
 
         if (!this.vtLayers) {

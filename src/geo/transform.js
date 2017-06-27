@@ -158,7 +158,7 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @returns {number} zoom level
      */
-    coveringZoomLevel(options: {roundZoom: boolean, tileSize: number}) {
+    coveringZoomLevel(options: {roundZoom?: boolean, tileSize: number}) {
         return (options.roundZoom ? Math.round : Math.floor)(
             this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
         );
@@ -200,9 +200,9 @@ class Transform {
             tileSize: number,
             minzoom: number,
             maxzoom: number,
-            roundZoom: boolean,
-            reparseOverscaled: boolean,
-            renderWorldCopies: boolean
+            roundZoom?: boolean,
+            reparseOverscaled?: boolean,
+            renderWorldCopies?: boolean
         }
     ) {
         let z = this.coveringZoomLevel(options);

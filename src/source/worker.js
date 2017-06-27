@@ -45,14 +45,14 @@ class Worker {
         // [mapId][sourceType] => worker source instance
         this.workerSources = {};
 
-        this.self.registerWorkerSource = (name, WorkerSource) => {
+        this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
             if (this.workerSourceTypes[name]) {
                 throw new Error(`Worker source with name "${name}" already registered.`);
             }
             this.workerSourceTypes[name] = WorkerSource;
         };
 
-        this.self.registerRTLTextPlugin = (rtlTextPlugin) => {
+        this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function}) => {
             if (globalRTLTextPlugin.applyArabicShaping || globalRTLTextPlugin.processBidirectionalText) {
                 throw new Error('RTL text plugin already registered.');
             }
