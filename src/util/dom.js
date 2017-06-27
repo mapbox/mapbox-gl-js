@@ -1,4 +1,3 @@
-'use strict';
 
 const Point = require('point-geometry');
 const window = require('./window');

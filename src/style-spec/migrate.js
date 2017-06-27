@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * Migrate a Mapbox GL Style to the latest version.

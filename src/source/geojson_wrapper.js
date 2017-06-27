@@ -1,4 +1,3 @@
-'use strict';
 
 const Point = require('point-geometry');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;

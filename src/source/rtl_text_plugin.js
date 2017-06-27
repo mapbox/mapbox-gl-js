@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const ajax = require('../util/ajax');

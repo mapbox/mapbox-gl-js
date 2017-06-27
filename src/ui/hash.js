@@ -1,4 +1,3 @@
-'use strict';
 
 const util = require('../util/util');
 const window = require('../util/window');

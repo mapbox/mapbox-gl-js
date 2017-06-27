@@ -1,4 +1,3 @@
-'use strict';
 
 const isCounterClockwise = require('./util').isCounterClockwise;
 

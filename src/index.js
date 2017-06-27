@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const browser = require('./util/browser');

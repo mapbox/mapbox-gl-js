@@ -1,4 +1,3 @@
-'use strict';
 
 const quickselect = require('quickselect');
 const calculateSignedArea = require('./util').calculateSignedArea;

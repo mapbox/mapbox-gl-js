@@ -1,4 +1,3 @@
-'use strict';
 const TileCoord = require('./tile_coord');
 
 exports.rendered = function(sourceCache, styleLayers, queryGeometry, params, zoom, bearing) {

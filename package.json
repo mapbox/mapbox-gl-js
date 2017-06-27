@@ -95,7 +95,8 @@
       "package-json-versionify",
       "unassertify",
       "brfs",
-      "./src/style-spec/minifyify_style_spec"
+      "./src/build/minifyify_style_spec",
+      "./src/build/strictify"
     ]
   },
   "browser": {

@@ -1,4 +1,3 @@
-'use strict';
 
 const Point = require('point-geometry');
 const ArrayGroup = require('../array_group');

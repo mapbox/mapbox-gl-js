@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const wrap = require('../util/util').wrap;

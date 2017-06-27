@@ -1,4 +1,3 @@
-'use strict';
 
 const ValidationError = require('../error/validation_error');
 const validateEnum = require('./validate_enum');

@@ -1,4 +1,3 @@
-'use strict';
 
 exports.v6 = require('./reference/v6.json');
 exports.v7 = require('./reference/v7.json');

@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)

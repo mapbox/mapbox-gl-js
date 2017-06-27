@@ -1,4 +1,3 @@
-'use strict';
 
 const ProgramConfiguration = require('./program_configuration');
 const createVertexArrayType = require('./vertex_array_type');

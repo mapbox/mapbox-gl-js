@@ -1,4 +1,3 @@
-'use strict';
 const ajax = require('../util/ajax');
 const vt = require('vector-tile');
 const Protobuf = require('pbf');

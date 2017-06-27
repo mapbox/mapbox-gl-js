@@ -1,4 +1,3 @@
-'use strict';
 
 const StyleLayer = require('../style_layer');
 const FillBucket = require('../../data/bucket/fill_bucket');

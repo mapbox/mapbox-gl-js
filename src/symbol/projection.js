@@ -1,4 +1,3 @@
-'use strict';
 
 const Point = require('point-geometry');
 const mat4 = require('@mapbox/gl-matrix').mat4;

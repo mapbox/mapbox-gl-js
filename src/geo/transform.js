@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const LngLat = require('./lng_lat'),

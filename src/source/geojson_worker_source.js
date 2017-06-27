@@ -1,4 +1,3 @@
-'use strict';
 
 const ajax = require('../util/ajax');
 const rewind = require('geojson-rewind');

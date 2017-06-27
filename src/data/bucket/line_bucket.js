@@ -1,4 +1,3 @@
-'use strict';
 
 const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
