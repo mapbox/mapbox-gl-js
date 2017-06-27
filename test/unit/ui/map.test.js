@@ -645,6 +645,24 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getMaxBounds', (t) => {
+        t.test('returns null when no bounds set', (t) => {
+            const map = createMap({zoom:0});
+            t.equal(map.getMaxBounds(), null);
+            t.end();
+        });
+
+        t.test('returns bounds', (t) => {
+            const map = createMap({zoom:0});
+            const bounds = [[-130.4297, 50.0642], [-61.52344, 24.20688]];
+            map.setMaxBounds(bounds);
+            t.deepEqual(map.getMaxBounds().toArray(), bounds);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('#setMinZoom', (t) => {
         const map = createMap({zoom:5});
         map.setMinZoom(3.5);
