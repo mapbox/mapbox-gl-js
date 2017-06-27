@@ -21,7 +21,7 @@ declare type StyleSpecification = {|
 
 declare type LightSpecification = {|
     "anchor"?: "map" | "viewport",
-    "position"?: Array<number>,
+    "position"?: [number, number, number],
     "color"?: ColorSpecification,
     "intensity"?: number
 |}
@@ -49,18 +49,18 @@ declare type GeojsonSourceSpecification = {|
 declare type VideoSourceSpecification = {|
     "type": "video",
     "urls": Array<string>,
-    "coordinates": Array<Array<number>>
+    "coordinates": [[number, number], [number, number], [number, number], [number, number]]
 |}
 
 declare type ImageSourceSpecification = {|
     "type": "image",
     "url": string,
-    "coordinates": Array<Array<number>>
+    "coordinates": [[number, number], [number, number], [number, number], [number, number]]
 |}
 
 declare type CanvasSourceSpecification = {|
     "type": "canvas",
-    "coordinates": Array<Array<number>>,
+    "coordinates": [[number, number], [number, number], [number, number], [number, number]],
     "animate"?: boolean,
     "canvas": string
 |}
@@ -86,7 +86,7 @@ declare type FillLayerSpecification = {|
         "fill-opacity"?: number,
         "fill-color"?: ColorSpecification,
         "fill-outline-color"?: ColorSpecification,
-        "fill-translate"?: Array<number>,
+        "fill-translate"?: [number, number],
         "fill-translate-anchor"?: "map" | "viewport",
         "fill-pattern"?: string
     |},
@@ -107,7 +107,7 @@ declare type LineLayerSpecification = {|
     "layout"?: {|
         "line-opacity"?: number,
         "line-color"?: ColorSpecification,
-        "line-translate"?: Array<number>,
+        "line-translate"?: [number, number],
         "line-translate-anchor"?: "map" | "viewport",
         "line-width"?: number,
         "line-gap-width"?: number,
@@ -140,14 +140,14 @@ declare type SymbolLayerSpecification = {|
         "icon-halo-color"?: ColorSpecification,
         "icon-halo-width"?: number,
         "icon-halo-blur"?: number,
-        "icon-translate"?: Array<number>,
+        "icon-translate"?: [number, number],
         "icon-translate-anchor"?: "map" | "viewport",
         "text-opacity"?: number,
         "text-color"?: ColorSpecification,
         "text-halo-color"?: ColorSpecification,
         "text-halo-width"?: number,
         "text-halo-blur"?: number,
-        "text-translate"?: Array<number>,
+        "text-translate"?: [number, number],
         "text-translate-anchor"?: "map" | "viewport"
     |},
     "paint"?: {|
@@ -160,12 +160,12 @@ declare type SymbolLayerSpecification = {|
         "icon-rotation-alignment"?: "map" | "viewport" | "auto",
         "icon-size"?: number,
         "icon-text-fit"?: "none" | "width" | "height" | "both",
-        "icon-text-fit-padding"?: Array<number>,
+        "icon-text-fit-padding"?: [number, number, number, number],
         "icon-image"?: string,
         "icon-rotate"?: number,
         "icon-padding"?: number,
         "icon-keep-upright"?: boolean,
-        "icon-offset"?: Array<number>,
+        "icon-offset"?: [number, number],
         "icon-pitch-alignment"?: "map" | "viewport" | "auto",
         "text-pitch-alignment"?: "map" | "viewport" | "auto",
         "text-rotation-alignment"?: "map" | "viewport" | "auto",
@@ -182,7 +182,7 @@ declare type SymbolLayerSpecification = {|
         "text-padding"?: number,
         "text-keep-upright"?: boolean,
         "text-transform"?: "none" | "uppercase" | "lowercase",
-        "text-offset"?: Array<number>,
+        "text-offset"?: [number, number],
         "text-allow-overlap"?: boolean,
         "text-ignore-placement"?: boolean,
         "text-optional"?: boolean,
@@ -204,7 +204,7 @@ declare type CircleLayerSpecification = {|
         "circle-color"?: ColorSpecification,
         "circle-blur"?: number,
         "circle-opacity"?: number,
-        "circle-translate"?: Array<number>,
+        "circle-translate"?: [number, number],
         "circle-translate-anchor"?: "map" | "viewport",
         "circle-pitch-scale"?: "map" | "viewport",
         "circle-pitch-alignment"?: "map" | "viewport",
@@ -229,7 +229,7 @@ declare type FillExtrusionLayerSpecification = {|
     "layout"?: {|
         "fill-extrusion-opacity"?: number,
         "fill-extrusion-color"?: ColorSpecification,
-        "fill-extrusion-translate"?: Array<number>,
+        "fill-extrusion-translate"?: [number, number],
         "fill-extrusion-translate-anchor"?: "map" | "viewport",
         "fill-extrusion-pattern"?: string,
         "fill-extrusion-height"?: number,
