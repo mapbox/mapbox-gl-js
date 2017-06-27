@@ -16,7 +16,7 @@ import type {
 } from '../source/source';
 
 import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
+import type StyleLayerIndex from '../style/style_layer_index';
 
 export type LoadVectorTileResult = {
     vectorTile: VectorTile;
@@ -66,7 +66,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
  */
 class VectorTileWorkerSource implements WorkerSource {
     actor: Actor;
-    layerIndex: number;
+    layerIndex: StyleLayerIndex;
     loadVectorData: LoadVectorData;
     loading: { [string]: { [string]: WorkerTile } };
     loaded: { [string]: { [string]: WorkerTile } };

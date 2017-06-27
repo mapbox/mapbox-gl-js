@@ -18,6 +18,8 @@ import type {
     RedoPlacementCallback
 } from '../source/source';
 
+import type {LayerConfigs} from '../style/style_layer_index';
+
 /**
  * @private
  */
@@ -61,11 +63,11 @@ class Worker {
         };
     }
 
-    setLayers(mapId: string, layers: any) {
+    setLayers(mapId: string, layers: LayerConfigs) {
         this.getLayerIndex(mapId).replace(layers);
     }
 
-    updateLayers(mapId: string, params: {layers: any, removedIds: any, symbolOrder: any}) {
+    updateLayers(mapId: string, params: {layers: LayerConfigs, removedIds: Array<string>, symbolOrder: ?Array<string>}) {
         this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
     }
 
