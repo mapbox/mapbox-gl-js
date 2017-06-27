@@ -1,4 +1,3 @@
-'use strict';
 
 const browser = require('../util/browser');
 

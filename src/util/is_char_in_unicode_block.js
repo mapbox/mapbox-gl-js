@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 // The following table comes from <http://www.unicode.org/Public/9.0.0/ucd/Blocks.txt>.

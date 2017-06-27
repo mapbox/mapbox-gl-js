@@ -1,4 +1,3 @@
-'use strict';
 
 const util = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');

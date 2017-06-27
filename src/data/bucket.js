@@ -1,4 +1,3 @@
-'use strict';
 
 const ArrayGroup = require('./array_group');
 const BufferGroup = require('./buffer_group');

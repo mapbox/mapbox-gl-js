@@ -1,4 +1,3 @@
-'use strict';
 
 const createStructArrayType = require('../util/struct_array');
 

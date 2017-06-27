@@ -1,4 +1,3 @@
-'use strict';
 
 const browser = require('../util/browser');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');

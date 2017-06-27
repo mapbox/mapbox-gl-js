@@ -1,5 +1,3 @@
-'use strict';
-
 const through = require('through2');
 
 function replacer(k, v) {

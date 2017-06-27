@@ -1,4 +1,3 @@
-'use strict';
 
 const Source = require('./source');
 const Tile = require('./tile');

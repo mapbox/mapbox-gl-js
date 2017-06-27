@@ -1,4 +1,3 @@
-'use strict';
 
 const jsdom = require('jsdom');
 const gl = require('gl');

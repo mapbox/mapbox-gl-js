@@ -1,4 +1,3 @@
-'use strict';
 
 const assert = require('assert');
 const createVertexArrayType = require('./vertex_array_type');

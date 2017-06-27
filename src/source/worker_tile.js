@@ -1,4 +1,3 @@
-'use strict';
 
 const FeatureIndex = require('../data/feature_index');
 const CollisionTile = require('../symbol/collision_tile');

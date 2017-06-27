@@ -1,4 +1,3 @@
-'use strict';
 
 const assert = require('assert');
 const WhooTS = require('@mapbox/whoots-js');

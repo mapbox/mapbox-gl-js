@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const UnitBezier = require('@mapbox/unitbezier');

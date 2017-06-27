@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * The maximum value of a coordinate in the internal tile coordinate system. Coordinates of

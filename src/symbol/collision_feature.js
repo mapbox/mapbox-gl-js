@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * A CollisionFeature represents the area of the tile covered by a single label.

@@ -1,4 +1,3 @@
-'use strict';
 
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');

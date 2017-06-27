@@ -1,4 +1,3 @@
-'use strict';
 
 const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');

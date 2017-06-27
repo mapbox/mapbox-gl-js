@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 // Note: all "sizes" are measured in bytes

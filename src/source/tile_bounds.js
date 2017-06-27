@@ -1,4 +1,3 @@
-'use strict';
 
 const LngLatBounds = require('../geo/lng_lat_bounds');
 const clamp = require('../util/util').clamp;

@@ -1,4 +1,3 @@
-'use strict';
 
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 

@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * @enum {string} AttributeType

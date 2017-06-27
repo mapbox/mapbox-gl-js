@@ -1,4 +1,3 @@
-'use strict';
 
 const normalizeURL = require('../util/mapbox').normalizeGlyphsURL;
 const ajax = require('../util/ajax');

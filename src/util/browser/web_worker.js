@@ -1,4 +1,3 @@
-'use strict';
 
 const WebWorkify = require('webworkify');
 const window = require('../window');

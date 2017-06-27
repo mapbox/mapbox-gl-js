@@ -1,4 +1,3 @@
-'use strict';
 
 const LngLat = require('../geo/lng_lat');
 
