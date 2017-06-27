@@ -1,10 +1,14 @@
+// @flow
 
 const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
 
+import type {GlobalProperties, FeatureProperties} from '../style_layer';
+import type {BucketParameters} from '../../data/bucket';
+
 class SymbolStyleLayer extends StyleLayer {
 
-    getLayoutValue(name, globalProperties, featureProperties) {
+    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
         const value = super.getLayoutValue(name, globalProperties, featureProperties);
         if (value !== 'auto') {
             return value;
@@ -23,8 +27,10 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    createBucket(options) {
-        return new SymbolBucket(options);
+    createBucket(parameters: BucketParameters) {
+        // Eventually we need to make SymbolBucket conform to the Bucket interface.
+        // Hack around it with casts for now.
+        return (new SymbolBucket((parameters : any)) : any);
     }
 }
 

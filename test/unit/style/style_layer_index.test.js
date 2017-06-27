@@ -53,13 +53,13 @@ test('StyleLayerIndex#update', (t) => {
 
 test('StyleLayerIndex#familiesBySource', (t) => {
     const index = new StyleLayerIndex([
-        { id: '0', 'source': 'A', 'source-layer': 'foo' },
-        { id: '1', 'source': 'A', 'source-layer': 'foo' },
-        { id: '2', 'source': 'A', 'source-layer': 'foo', 'minzoom': 1 },
-        { id: '3', 'source': 'A', 'source-layer': 'bar' },
-        { id: '4', 'source': 'B', 'source-layer': 'foo' },
-        { id: '5', 'source': 'geojson' },
-        { id: '6' }
+        { id: '0', type: 'fill', 'source': 'A', 'source-layer': 'foo' },
+        { id: '1', type: 'fill', 'source': 'A', 'source-layer': 'foo' },
+        { id: '2', type: 'fill', 'source': 'A', 'source-layer': 'foo', 'minzoom': 1 },
+        { id: '3', type: 'fill', 'source': 'A', 'source-layer': 'bar' },
+        { id: '4', type: 'fill', 'source': 'B', 'source-layer': 'foo' },
+        { id: '5', type: 'fill', 'source': 'geojson' },
+        { id: '6', type: 'background' }
     ]);
 
     const ids = util.mapObject(index.familiesBySource, (bySource) => {

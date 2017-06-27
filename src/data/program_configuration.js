@@ -110,7 +110,7 @@ class SourceFunctionBinder implements Binder {
                        start: number,
                        length: number,
                        featureProperties: Object) {
-        const value = layer.getPaintValue(this.property, {}, featureProperties);
+        const value = layer.getPaintValue(this.property, undefined, featureProperties);
 
         if (this.type === 'color') {
             const color = packColor(value);
