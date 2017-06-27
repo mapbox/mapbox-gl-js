@@ -51,12 +51,17 @@
 {% endif %}
 {% endif %}
 
+{% if site.assembly == true %}
+<link href="https://api.mapbox.com/mapbox-assembly/mapbox-addon/v0.11.0/assembly.min.css" rel="stylesheet">
+{% else %}
 {% if site.localbase == true %}
 <link href='/css/base/latest/base.css?v1.0' rel='stylesheet' />
 {% else %}
 <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
 {% endif %}
 <link href='{{site.url}}/css/site.css' rel='stylesheet' />
+{% endif %}
+
 <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
 
 {% unless page.nomapboxjs %}
@@ -84,6 +89,9 @@ if (typeof L !== 'undefined' &&
     L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
 }
 </script>
+{% if site.assembly == true %}
+<script src="https://api.mapbox.com/mapbox-assembly/mapbox-addon/v0.11.0/assembly.js"></script>
+{% endif %}
 <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
 {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
 {% if page.head %}{{page.head}}{% endif %}{% if layout.head %}{{layout.head}}{% endif %}
