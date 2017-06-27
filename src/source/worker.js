@@ -108,7 +108,7 @@ class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {url: string}, callback: Function) {
+    loadWorkerSource(map: string, params: {url: string}, callback: Callback<void>) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -117,7 +117,7 @@ class Worker {
         }
     }
 
-    loadRTLTextPlugin(map: string, pluginURL: string, callback: Function) {
+    loadRTLTextPlugin(map: string, pluginURL: string, callback: Callback<void>) {
         try {
             if (!globalRTLTextPlugin.applyArabicShaping && !globalRTLTextPlugin.processBidirectionalText) {
                 this.self.importScripts(pluginURL);

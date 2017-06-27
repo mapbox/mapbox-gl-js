@@ -29,8 +29,7 @@ export type LoadGeoJSONParameters = {
     geojsonVtOptions?: Object
 };
 
-export type LoadGeoJSONCallback = (error: ?Error, result: ?GeoJSON) => void;
-export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: LoadGeoJSONCallback) => void;
+export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<GeoJSON>) => void;
 
 export interface GeoJSONIndex {
 }
@@ -102,7 +101,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param params.source The id of the source.
      * @param callback
      */
-    loadData(params: LoadGeoJSONParameters, callback: (error: ?Error) => void) {
+    loadData(params: LoadGeoJSONParameters, callback: Callback<void>) {
         this.loadGeoJSON(params, (err, data) => {
             if (err || !data) {
                 return callback(err);
@@ -157,7 +156,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param [params.url] A URL to the remote GeoJSON data.
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      */
-    loadGeoJSON(params: LoadGeoJSONParameters, callback: LoadGeoJSONCallback) {
+    loadGeoJSON(params: LoadGeoJSONParameters, callback: Callback<GeoJSON>) {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json

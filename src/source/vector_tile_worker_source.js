@@ -25,7 +25,7 @@ import type {StyleLayerIndex} from '../style/style_layer_index';
  * @param vectorTile
  * @private
  */
-export type LoadVectorDataCallback = (error: ?Error, result: ?AugmentedVectorTile) => void;
+export type LoadVectorDataCallback = Callback<?AugmentedVectorTile>;
 
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVectorDataCallback) => ?AbortVectorData;
