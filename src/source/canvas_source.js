@@ -1,6 +1,11 @@
+// @flow
 
 const ImageSource = require('./image_source');
 const window = require('../util/window');
+
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
+import type Evented from '../util/evented';
 
 /**
  * A data source containing the contents of an HTML canvas.
@@ -32,11 +37,18 @@ const window = require('../util/window');
  * map.removeSource('some id');  // remove
  */
 class CanvasSource extends ImageSource {
+    options: CanvasSourceSpecification;
+    animate: boolean;
+    canvas: HTMLCanvasElement;
+    width: number;
+    height: number;
+    play: () => void;
+    pause: () => void;
 
-    constructor(id, options, dispatcher, eventedParent) {
+    constructor(id: string, options: CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.options = options;
-        this.animate = options.hasOwnProperty('animate') ? options.animate : true;
+        this.animate = options.animate !== undefined ? options.animate : true;
     }
 
     load() {
@@ -68,7 +80,7 @@ class CanvasSource extends ImageSource {
         return this.canvas;
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         if (this.map) return;
         this.map = map;
         this.load();
@@ -105,7 +117,7 @@ class CanvasSource extends ImageSource {
         this._prepareImage(this.map.painter.gl, this.canvas, resize);
     }
 
-    serialize() {
+    serialize(): Object {
         return {
             type: 'canvas',
             canvas: this.canvas,

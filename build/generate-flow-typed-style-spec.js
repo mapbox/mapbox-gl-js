@@ -22,7 +22,12 @@ function flowType(property) {
         case 'enum':
             return flowEnum(property.values);
         case 'array':
-            return `Array<${flowType(typeof property.value === 'string' ? {type: property.value} : property.value)}>`;
+            const elementType = flowType(typeof property.value === 'string' ? {type: property.value} : property.value)
+            if (property.length) {
+                return `[${Array(property.length).fill(elementType).join(', ')}]`;
+            } else {
+                return `Array<${elementType}>`;
+            }
         case 'light':
             return 'LightSpecification';
         case 'sources':

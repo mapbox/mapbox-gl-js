@@ -55,6 +55,15 @@ class Tile {
     workerID: number;
     vtLayers: {[string]: VectorTileLayer};
 
+    aborted: ?boolean;
+    boundsBuffer: any;
+    boundsVAO: any;
+    request: any;
+    texture: any;
+    sourceCache: any;
+    refreshedUponExpiration: boolean;
+    reloadCallback: any;
+
     /**
      * @param {TileCoord} coord
      * @param size
