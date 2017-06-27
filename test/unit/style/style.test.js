@@ -86,7 +86,7 @@ test('Style', (t) => {
             // Getting this error message shows the bogus URL was succesfully passed to the worker
             // We'll get the error from all workers, only pay attention to the first one
             if (firstError) {
-                t.deepEquals(error, 'RTL Text Plugin failed to import scripts from data:text/javascript;base64,abc');
+                t.deepEquals(error, new Error('RTL Text Plugin failed to import scripts from data:text/javascript;base64,abc'));
                 t.end();
                 firstError = false;
             }

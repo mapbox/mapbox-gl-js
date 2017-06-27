@@ -122,7 +122,7 @@ class Worker {
             if (!globalRTLTextPlugin.applyArabicShaping && !globalRTLTextPlugin.processBidirectionalText) {
                 this.self.importScripts(pluginURL);
                 if (!globalRTLTextPlugin.applyArabicShaping || !globalRTLTextPlugin.processBidirectionalText) {
-                    callback(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
+                    callback(new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
                 }
             }
         } catch (e) {
