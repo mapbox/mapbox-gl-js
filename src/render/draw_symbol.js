@@ -145,7 +145,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         const glyphAtlas = fontstack && painter.glyphSource.getGlyphAtlas(fontstack);
         if (!glyphAtlas) return;
 
-        glyphAtlas.updateTexture(gl);
+        glyphAtlas.bind(gl);
         gl.uniform2f(program.u_texsize, glyphAtlas.width, glyphAtlas.height);
     } else {
         const mapMoving = painter.options.rotating || painter.options.zooming;

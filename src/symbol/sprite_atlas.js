@@ -5,6 +5,7 @@ const browser = require('../util/browser');
 const util = require('../util/util');
 const window = require('../util/window');
 const Evented = require('../util/evented');
+const Texture = require('../render/texture');
 const padding = 1;
 
 // This wants to be a class, but is sent to workers, so must be a plain JSON blob.
@@ -45,7 +46,6 @@ class SpriteAtlas extends Evented {
         super();
         this.images = {};
         this.data = false;
-        this.texture = 0; // WebGL ID
         this.filter = 0; // WebGL ID
         this.width = width * browser.devicePixelRatio;
         this.height = height * browser.devicePixelRatio;
@@ -223,54 +223,24 @@ class SpriteAtlas extends Evented {
     }
 
     bind(gl, linear) {
-        let first = false;
+        const filterVal = linear ? gl.LINEAR : gl.NEAREST;
+
         if (!this.texture) {
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            this.texture = new Texture(gl, gl.CLAMP_TO_EDGE, filterVal, filterVal);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-            first = true;
         } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            this.texture.bind();
+            if (this.filter !== filterVal) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filterVal);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filterVal);
+            }
         }
 
-        const filterVal = linear ? gl.LINEAR : gl.NEAREST;
-        if (filterVal !== this.filter) {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filterVal);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filterVal);
-            this.filter = filterVal;
-        }
+        this.filter = filterVal;
 
         if (this.dirty) {
             this.allocate();
-
-            if (first) {
-                gl.texImage2D(
-                    gl.TEXTURE_2D, // enum target
-                    0, // ind level
-                    gl.RGBA, // ind internalformat
-                    this.width, // GLsizei width
-                    this.height, // GLsizei height
-                    0, // ind border
-                    gl.RGBA, // enum format
-                    gl.UNSIGNED_BYTE, // enum type
-                    new Uint8Array(this.data.buffer) // Object data
-                );
-            } else {
-                gl.texSubImage2D(
-                    gl.TEXTURE_2D, // enum target
-                    0, // int level
-                    0, // int xoffset
-                    0, // int yoffset
-                    this.width, // long width
-                    this.height, // long height
-                    gl.RGBA, // enum format
-                    gl.UNSIGNED_BYTE, // enum type
-                    new Uint8Array(this.data.buffer) // Object pixels
-                );
-            }
-
+            this.texture.setData(gl.RGBA, this.width, this.height, new Uint8Array(this.data.buffer));
             this.dirty = false;
         }
     }

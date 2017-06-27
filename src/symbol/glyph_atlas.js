@@ -2,6 +2,7 @@
 
 const ShelfPack = require('@mapbox/shelf-pack');
 const util = require('../util/util');
+const Texture = require('../render/texture');
 
 const SIZE_GROWTH_RATE = 4;
 const DEFAULT_SIZE = 128;
@@ -18,6 +19,7 @@ class GlyphAtlas {
         this.index = {};
         this.ids = {};
         this.data = new Uint8Array(this.width * this.height);
+        this.dirty = true;
     }
 
     getGlyphs() {
@@ -116,12 +118,8 @@ class GlyphAtlas {
 
         if (prevWidth >= MAX_SIZE || prevHeight >= MAX_SIZE) return;
 
-        if (this.texture) {
-            if (this.gl) {
-                this.gl.deleteTexture(this.texture);
-            }
-            this.texture = null;
-        }
+        if (this.gl)
+            this.texture.destroy();
 
         this.width *= SIZE_GROWTH_RATE;
         this.height *= SIZE_GROWTH_RATE;
@@ -139,23 +137,12 @@ class GlyphAtlas {
     bind(gl) {
         this.gl = gl;
         if (!this.texture) {
-            this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, this.width, this.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, null);
-
+            this.texture = new Texture(gl, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
         } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            this.texture.bind();
         }
-    }
-
-    updateTexture(gl) {
-        this.bind(gl);
         if (this.dirty) {
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
+            this.texture.setData(gl.ALPHA, this.width, this.height, this.data);
             this.dirty = false;
         }
     }
