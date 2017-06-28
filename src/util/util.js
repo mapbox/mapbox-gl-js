@@ -111,7 +111,7 @@ exports.asyncAll = function<Item, Result> (
  *
  * @private
  */
-exports.values = function (obj: {[key: string]: string}): Array<string> {
+exports.values = function<T>(obj: {[key: string]: T}): Array<T> {
     const result = [];
     for (const k in obj) {
         result.push(obj[k]);

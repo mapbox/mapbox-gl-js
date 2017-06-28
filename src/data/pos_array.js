@@ -1,3 +1,4 @@
+// @flow
 
 const createStructArrayType = require('../util/struct_array');
 

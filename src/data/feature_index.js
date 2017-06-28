@@ -34,7 +34,7 @@ const FeatureIndexArray = createStructArrayType({
     ]
 });
 
-type Feature = {
+export type IndexedFeature = VectorTileFeature & {
     index: number,
     sourceLayerIndex: number,
 }
@@ -92,7 +92,7 @@ class FeatureIndex {
         }
     }
 
-    insert(feature: Feature, bucketIndex: number) {
+    insert(feature: IndexedFeature, bucketIndex: number) {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(feature.index, feature.sourceLayerIndex, bucketIndex);
         const geometry = loadGeometry(feature);

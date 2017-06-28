@@ -1,3 +1,4 @@
+// @flow
 
 const Point = require('point-geometry');
 const ArrayGroup = require('../array_group');
@@ -19,7 +20,7 @@ const loadGeometry = require('../load_geometry');
 const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
-const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const vectorTileFeatureTypes = require('vector-tile').VectorTileFeature.types;
 const createStructArrayType = require('../../util/struct_array');
 
 const shapeText = Shaping.shapeText;
@@ -27,6 +28,22 @@ const shapeIcon = Shaping.shapeIcon;
 const WritingMode = Shaping.WritingMode;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
+
+import type {BucketParameters, PopulateParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
+import type {IndexedFeature} from '../feature_index';
+
+type SymbolBucketParameters = BucketParameters & {
+    sdfIcons: boolean,
+    iconsNeedLinear: boolean,
+    fontstack: any,
+    textSizeData: any,
+    iconSizeData: any,
+    placedGlyphArray: any,
+    placedIconArray: any,
+    glyphOffsetArray: any,
+    lineVertexArray: any,
+}
 
 const PlacedSymbolArray = createStructArrayType({
     members: [
@@ -175,7 +192,39 @@ function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoo
  * @private
  */
 class SymbolBucket {
-    constructor(options) {
+    static programInterfaces: {
+        glyph: ProgramInterface,
+        icon: ProgramInterface,
+        collisionBox: ProgramInterface
+    };
+
+    static MAX_INSTANCES: number;
+
+    static addDynamicAttributes: any;
+
+    collisionBoxArray: any;
+    zoom: number;
+    overscaling: number;
+    layers: any;
+    index: any;
+    sdfIcons: boolean;
+    iconsNeedLinear: boolean;
+    fontstack: any;
+    symbolInterfaces: any;
+    buffers: any;
+    textSizeData: any;
+    iconSizeData: any;
+    placedGlyphArray: any;
+    placedIconArray: any;
+    glyphOffsetArray: any;
+    lineVertexArray: any;
+    features: any;
+    arrays: any;
+    symbolInstances: any;
+    tilePixelRatio: any;
+    compareText: any;
+
+    constructor(options: SymbolBucketParameters) {
         this.collisionBoxArray = options.collisionBoxArray;
 
         this.zoom = options.zoom;
@@ -213,7 +262,7 @@ class SymbolBucket {
         }
     }
 
-    populate(features, options) {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters) {
         const layer = this.layers[0];
         const layout = layer.layout;
         const textFont = layout['text-font'];
@@ -266,7 +315,7 @@ class SymbolBucket {
                 sourceLayerIndex: feature.sourceLayerIndex,
                 geometry: loadGeometry(feature),
                 properties: feature.properties,
-                type: VectorTileFeature.types[feature.type]
+                type: vectorTileFeatureTypes[feature.type]
             });
 
             if (icon) {
@@ -304,7 +353,7 @@ class SymbolBucket {
         return statistics;
     }
 
-    serialize(transferables) {
+    serialize(transferables?: Array<Transferable>) {
         return {
             zoom: this.zoom,
             layerIds: this.layers.map((l) => l.id),
@@ -336,7 +385,7 @@ class SymbolBucket {
         });
     }
 
-    prepare(stacks, icons) {
+    prepare(stacks: any, icons: any) {
         this.symbolInstances = [];
 
         const tileSize = 512 * this.overscaling;
@@ -435,7 +484,7 @@ class SymbolBucket {
      * source.)
      * @private
      */
-    addFeature(feature, shapedTextOrientations, shapedIcon) {
+    addFeature(feature: any, shapedTextOrientations: any, shapedIcon: any) {
         const layoutTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1}, feature.properties);
         const layoutIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1}, feature.properties);
 
@@ -531,7 +580,7 @@ class SymbolBucket {
         }
     }
 
-    anchorIsTooClose(text, repeatDistance, anchor) {
+    anchorIsTooClose(text: any, repeatDistance: any, anchor: any) {
         const compareText = this.compareText;
         if (!(text in compareText)) {
             compareText[text] = [];
@@ -549,7 +598,7 @@ class SymbolBucket {
         return false;
     }
 
-    place(collisionTile, showCollisionBoxes) {
+    place(collisionTile: any, showCollisionBoxes: any) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
@@ -702,7 +751,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, sizeVertex, keepUpright, lineOffset, alongLine, placementAngle, featureProperties, writingModes, labelAnchor, lineStartIndex, lineLength, placedSymbolArray) {
+    addSymbols(arrays: any, quads: any, scale: any, sizeVertex: any, keepUpright: any, lineOffset: any, alongLine: any, placementAngle: any, featureProperties: any, writingModes: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
@@ -761,7 +810,7 @@ class SymbolBucket {
         arrays.populatePaintArrays(featureProperties);
     }
 
-    addToDebugBuffers(collisionTile) {
+    addToDebugBuffers(collisionTile: any) {
         const arrays = this.arrays.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
@@ -830,9 +879,9 @@ class SymbolBucket {
      *
      * @private
      */
-    addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, layer, addToBuffers, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
-        textBoxScale, textPadding, textAlongLine, textOffset,
-        iconBoxScale, iconPadding, iconAlongLine, iconOffset, globalProperties, featureProperties) {
+    addSymbolInstance(anchor: any, line: any, shapedTextOrientations: any, shapedIcon: any, layer: any, addToBuffers: any, collisionBoxArray: any, featureIndex: any, sourceLayerIndex: any, bucketIndex: any,
+        textBoxScale: any, textPadding: any, textAlongLine: any, textOffset: any,
+        iconBoxScale: any, iconPadding: any, iconAlongLine: any, iconOffset: any, globalProperties: any, featureProperties: any) {
 
         let textCollisionFeature, iconCollisionFeature;
         let iconQuads = [];
@@ -892,10 +941,10 @@ class SymbolBucket {
 // For {text,icon}-size, get the bucket-level data that will be needed by
 // the painter to set symbol-size-related uniforms
 function getSizeData(tileZoom, layer, sizeProperty) {
-    const sizeData = {
-        isFeatureConstant: layer.isLayoutValueFeatureConstant(sizeProperty),
-        isZoomConstant: layer.isLayoutValueZoomConstant(sizeProperty)
-    };
+    const sizeData = {};
+
+    sizeData.isFeatureConstant = layer.isLayoutValueFeatureConstant(sizeProperty);
+    sizeData.isZoomConstant = layer.isLayoutValueZoomConstant(sizeProperty);
 
     if (sizeData.isFeatureConstant) {
         sizeData.layoutSize = layer.getLayoutValue(sizeProperty, {zoom: tileZoom + 1});

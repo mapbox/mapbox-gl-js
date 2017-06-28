@@ -26,6 +26,7 @@ declare module "vector-tile" {
     }
 
     declare class VectorTileFeatureImpl {
+        static types: ['Unknown', 'Point', 'LineString', 'Polygon'];
         toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
     }
 

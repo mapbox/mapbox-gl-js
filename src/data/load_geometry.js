@@ -1,3 +1,4 @@
+// @flow
 
 const util = require('../util/util');
 const EXTENT = require('./extent');
@@ -16,8 +17,8 @@ function createBounds(bits) {
 }
 
 const boundsLookup = {
-    15: createBounds(15),
-    16: createBounds(16)
+    '15': createBounds(15),
+    '16': createBounds(16)
 };
 
 /**
@@ -29,7 +30,7 @@ const boundsLookup = {
  *   in the specified number of bits.
  * @private
  */
-module.exports = function loadGeometry(feature, bits) {
+module.exports = function loadGeometry(feature: VectorTileFeature, bits?: number) {
     const bounds = boundsLookup[bits || 16];
     assert(bounds);
 

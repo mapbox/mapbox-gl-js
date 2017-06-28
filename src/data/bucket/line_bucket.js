@@ -1,9 +1,15 @@
+// @flow
 
 const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
-const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const vectorTileFeatureTypes = require('vector-tile').VectorTileFeature.types;
+
+import type {BucketParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
+import type Point from 'point-geometry';
+import type {Segment} from '../array_group';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -77,11 +83,18 @@ function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofa
  * @private
  */
 class LineBucket extends Bucket {
-    constructor(options) {
+    static programInterface: ProgramInterface;
+
+    distance: number;
+    e1: number;
+    e2: number;
+    e3: number;
+
+    constructor(options: BucketParameters) {
         super(options, lineInterface);
     }
 
-    addFeature(feature) {
+    addFeature(feature: VectorTileFeature) {
         const layout = this.layers[0].layout;
         const join = layout['line-join'];
         const cap = layout['line-cap'];
@@ -93,9 +106,9 @@ class LineBucket extends Bucket {
         }
     }
 
-    addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+    addLine(vertices: Array<Point>, feature: VectorTileFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
         const featureProperties = feature.properties;
-        const isPolygon = VectorTileFeature.types[feature.type] === 'Polygon';
+        const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
@@ -125,7 +138,13 @@ class LineBucket extends Bucket {
         const beginCap = cap,
             endCap = isPolygon ? 'butt' : cap;
         let startOfLine = true;
-        let currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
+        let currentVertex;
+        let prevVertex = ((undefined : any): Point);
+        let nextVertex = ((undefined : any): Point);
+        let prevNormal = ((undefined : any): Point);
+        let nextNormal = ((undefined : any): Point);
+        let offsetA;
+        let offsetB;
 
         // the last three vertices added
         this.e1 = this.e2 = this.e3 = -1;
@@ -365,7 +384,13 @@ class LineBucket extends Bucket {
      * @param {boolean} round whether this is a round cap
      * @private
      */
-    addCurrentVertex(currentVertex, distance, normal, endLeft, endRight, round, segment) {
+    addCurrentVertex(currentVertex: Point,
+                     distance: number,
+                     normal: Point,
+                     endLeft: number,
+                     endRight: number,
+                     round: boolean,
+                     segment: Segment) {
         const tx = round ? 1 : 0;
         let extrude;
         const arrays = this.arrays;
@@ -414,7 +439,11 @@ class LineBucket extends Bucket {
      * @param {boolean} whether the line is turning left or right at this angle
      * @private
      */
-    addPieSliceVertex(currentVertex, distance, extrude, lineTurnsLeft, segment) {
+    addPieSliceVertex(currentVertex: Point,
+                      distance: number,
+                      extrude: Point,
+                      lineTurnsLeft: boolean,
+                      segment: Segment) {
         const ty = lineTurnsLeft ? 1 : 0;
         extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
         const arrays = this.arrays;
