@@ -41,7 +41,7 @@ type Pragmas = {
     }
 }
 
-type PaintPropertyStatistics = {
+export type PaintPropertyStatistics = {
     [property: string]: { max: number }
 }
 
