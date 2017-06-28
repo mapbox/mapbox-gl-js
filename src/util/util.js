@@ -5,6 +5,11 @@ const Coordinate = require('../geo/coordinate');
 const Point = require('point-geometry');
 
 /**
+ * @module util
+ * @private
+ */
+
+/**
  * Given a value `t` that varies between 0 and 1, return
  * an interpolation function that eases between 0 and 1 in a pleasing
  * cubic in-out fashion.
