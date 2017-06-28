@@ -254,7 +254,7 @@ const structArrayTypeCache: {[key: string]: typeof StructArray} = {};
 function createStructArrayType(options: {|
   members: Array<{type: ViewType, name: string, components?: number}>,
   alignment?: number
-|}) {
+|}): Class<StructArray> {
 
     const key = JSON.stringify(options);
 
