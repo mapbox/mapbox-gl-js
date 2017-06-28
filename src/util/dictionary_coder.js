@@ -1,9 +1,12 @@
+// @flow
 
 const assert = require('assert');
 
 class DictionaryCoder {
+    _stringToNumber: { [string]: number };
+    _numberToString: Array<string>;
 
-    constructor(strings) {
+    constructor(strings: Array<string>) {
         this._stringToNumber = {};
         this._numberToString = [];
         for (let i = 0; i < strings.length; i++) {
@@ -13,12 +16,12 @@ class DictionaryCoder {
         }
     }
 
-    encode(string) {
+    encode(string: string) {
         assert(string in this._stringToNumber);
         return this._stringToNumber[string];
     }
 
-    decode(n) {
+    decode(n: number) {
         assert(n < this._numberToString.length);
         return this._numberToString[n];
     }
