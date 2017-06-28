@@ -1,3 +1,4 @@
+// @flow
 
 const browser = require('../util/browser');
 const mat4 = require('@mapbox/gl-matrix').mat4;
@@ -25,6 +26,21 @@ const draw = {
     debug: require('./draw_debug')
 };
 
+import type Transform from '../geo/transform';
+import type Tile from '../source/tile';
+import type TileCoord from '../source/tile_coord';
+import type {Program} from '../data/program_configuration';
+import type Style from '../style/style';
+import type StyleLayer from '../style/style_layer';
+import type LineAtlas from './line_atlas';
+import type SpriteAtlas from '../symbol/sprite_atlas';
+import type GlyphSource from '../symbol/glyph_source';
+
+type PainterOptions = {
+    showOverdrawInspector: boolean,
+    showTileBoundaries: boolean
+}
+
 /**
  * Initialize a new painter object.
  *
@@ -32,7 +48,44 @@ const draw = {
  * @private
  */
 class Painter {
-    constructor(gl, transform) {
+    gl: WebGLRenderingContext;
+    transform: Transform;
+    _tileTextures: { [number]: Array<WebGLTexture> };
+    frameHistory: FrameHistory;
+    numSublayers: number;
+    depthEpsilon: number;
+    lineWidthRange: [number, number];
+    basicFillProgramConfiguration: ProgramConfiguration;
+    emptyProgramConfiguration: ProgramConfiguration;
+    width: number;
+    height: number;
+    viewportTexture: WebGLTexture;
+    viewportFbo: WebGLFramebuffer;
+    _depthMask: boolean;
+    tileExtentBuffer: Buffer;
+    tileExtentVAO: VertexArrayObject;
+    tileExtentPatternVAO: VertexArrayObject;
+    debugBuffer: Buffer;
+    debugVAO: VertexArrayObject;
+    rasterBoundsBuffer: Buffer;
+    rasterBoundsVAO: VertexArrayObject;
+    extTextureFilterAnisotropic: any;
+    extTextureFilterAnisotropicMax: any;
+    _tileClippingMaskIDs: { [number]: number };
+    style: Style;
+    options: PainterOptions;
+    lineAtlas: LineAtlas;
+    spriteAtlas: SpriteAtlas;
+    glyphSource: GlyphSource;
+    depthRange: number;
+    isOpaquePass: boolean;
+    currentLayer: number;
+    id: string;
+    _showOverdrawInspector: boolean;
+    cache: { [string]: Program };
+    currentProgram: Program;
+
+    constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.gl = gl;
         this.transform = transform;
         this._tileTextures = {};
@@ -56,7 +109,7 @@ class Painter {
      * Update the GL viewport, projection matrix, and transforms to compensate
      * for a new width and height value.
      */
-    resize(width, height) {
+    resize(width: number, height: number) {
         const gl = this.gl;
 
         this.width = width * browser.devicePixelRatio;
@@ -152,7 +205,7 @@ class Painter {
         gl.clear(gl.DEPTH_BUFFER_BIT);
     }
 
-    _renderTileClippingMasks(coords) {
+    _renderTileClippingMasks(coords: Array<TileCoord>) {
         const gl = this.gl;
         gl.colorMask(false, false, false, false);
         this.depthMask(false);
@@ -185,7 +238,7 @@ class Painter {
         gl.enable(gl.DEPTH_TEST);
     }
 
-    enableTileClippingMask(coord) {
+    enableTileClippingMask(coord: TileCoord) {
         const gl = this.gl;
         gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
     }
@@ -193,7 +246,7 @@ class Painter {
     // Overridden by headless tests.
     prepareBuffers() {}
 
-    render(style, options) {
+    render(style: Style, options: PainterOptions) {
         this.style = style;
         this.options = options;
 
@@ -230,7 +283,8 @@ class Painter {
     renderPass() {
         const layerIds = this.style._order;
 
-        let sourceCache, coords;
+        let sourceCache;
+        let coords = [];
 
         this.currentLayer = this.isOpaquePass ? layerIds.length - 1 : 0;
 
@@ -268,14 +322,14 @@ class Painter {
         }
     }
 
-    depthMask(mask) {
+    depthMask(mask: boolean) {
         if (mask !== this._depthMask) {
             this._depthMask = mask;
             this.gl.depthMask(mask);
         }
     }
 
-    renderLayer(painter, sourceCache, layer, coords) {
+    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && !coords.length) return;
         this.id = layer.id;
@@ -283,7 +337,7 @@ class Painter {
         draw[layer.type](painter, sourceCache, layer, coords);
     }
 
-    setDepthSublayer(n) {
+    setDepthSublayer(n: number) {
         const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
         const nearDepth = farDepth - 1 + this.depthRange;
         this.gl.depthRange(nearDepth, farDepth);
@@ -299,7 +353,7 @@ class Painter {
      *
      * @returns {Float32Array} matrix
      */
-    translatePosMatrix(matrix, tile, translate, translateAnchor, inViewportPixelUnitsUnits) {
+    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits: boolean) {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -330,7 +384,7 @@ class Painter {
         return translatedMatrix;
     }
 
-    saveTileTexture(texture) {
+    saveTileTexture(texture: WebGLTexture & { size: number }) {
         const textures = this._tileTextures[texture.size];
         if (!textures) {
             this._tileTextures[texture.size] = [texture];
@@ -339,16 +393,16 @@ class Painter {
         }
     }
 
-    getTileTexture(size) {
+    getTileTexture(size: number) {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 
-    lineWidth(width) {
+    lineWidth(width: number) {
         this.gl.lineWidth(util.clamp(width, this.lineWidthRange[0], this.lineWidthRange[1]));
     }
 
-    showOverdrawInspector(enabled) {
+    showOverdrawInspector(enabled: boolean) {
         if (!enabled && !this._showOverdrawInspector) return;
         this._showOverdrawInspector = enabled;
 
@@ -365,7 +419,7 @@ class Painter {
         }
     }
 
-    createProgram(name, configuration) {
+    createProgram(name: string, configuration: ProgramConfiguration): Program {
         const gl = this.gl;
         const program = gl.createProgram();
         const definition = shaders[name];
@@ -381,13 +435,13 @@ class Painter {
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
-        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
+        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
         gl.attachShader(program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
-        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
+        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
         gl.attachShader(program, vertexShader);
 
         // Manually bind layout attributes in the order defined by their
@@ -400,24 +454,30 @@ class Painter {
         }
 
         gl.linkProgram(program);
-        assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
+        assert(gl.getProgramParameter(program, gl.LINK_STATUS), (gl.getProgramInfoLog(program): any));
 
         const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
         const result = {program, numAttributes};
 
         for (let i = 0; i < numAttributes; i++) {
             const attribute = gl.getActiveAttrib(program, i);
-            result[attribute.name] = gl.getAttribLocation(program, attribute.name);
+            if (attribute) {
+                result[attribute.name] = gl.getAttribLocation(program, attribute.name);
+            }
         }
+
         const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(program, i);
-            result[uniform.name] = gl.getUniformLocation(program, uniform.name);
+            if (uniform) {
+                result[uniform.name] = gl.getUniformLocation(program, uniform.name);
+            }
         }
+
         return result;
     }
 
-    _createProgramCached(name, programConfiguration) {
+    _createProgramCached(name: string, programConfiguration: ProgramConfiguration): Program {
         this.cache = this.cache || {};
         const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
@@ -426,7 +486,7 @@ class Painter {
         return this.cache[key];
     }
 
-    useProgram(name, programConfiguration) {
+    useProgram(name: string, programConfiguration: ProgramConfiguration): Program {
         const gl = this.gl;
         const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
 
