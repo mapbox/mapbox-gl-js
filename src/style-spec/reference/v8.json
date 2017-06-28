@@ -2106,6 +2106,35 @@
           "js": "0.27.0"
         }
       }
+    },
+    "fill-extrusion-duration": {
+      "type": "number",
+      "default": 3000,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "milliseconds",
+      "doc": "Extrusion animation duration.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-extrusion-animate": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Should the extrusion be animated?"
+    },
+    "fill-extrusion-animation-reversed": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Should the extrusion be reversed?"
     }
   },
   "paint_line": {
