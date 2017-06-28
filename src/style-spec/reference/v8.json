@@ -374,16 +374,8 @@
             }
           }
         },
-        "terrain": {
-            "doc": "Terrain visualization based on DEM data.",
-            "sdk-support": {
-              "basic functionality": {
-                "js": "vnext"
-              }
-            }
-        },
-        "raster-terrain": {
-            "doc": "Terrain visualization based on DEM data.",
+        "hillshade": {
+            "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles.",
             "sdk-support": {
               "basic functionality": {
                 "js": "vnext"
@@ -456,7 +448,7 @@
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
-    "layout_terrain",
+    "layout_hillshade",
     "layout_background"
   ],
   "layout_background": {
@@ -1620,7 +1612,7 @@
       }
     }
   },
-  "layout_terrain": {
+  "layout_hillshade": {
     "visibility": {
       "type": "enum",
       "function": "piecewise-constant",
@@ -1854,7 +1846,7 @@
     "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
-    "paint_terrain",
+    "paint_hillshade",
     "paint_background"
   ],
   "paint_fill": {
@@ -3203,67 +3195,32 @@
       }
     }
   },
-  "paint_terrain": {
-    "terrain-shadow-color": {
+  "paint_hillshade": {
+    "hillshade-shadow-color": {
       "type": "color",
       "default": "#0000FF",
-      "doc": "The color of the terrain that faces away from the light source.",
+      "doc": "The shading color of areas that face away from the light source.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
       "transition": true
     },
-    "terrain-highlight-color": {
+    "hillshade-highlight-color": {
       "type": "color",
       "default": "#FFFF00",
-      "doc": "The color of the terrain that faces towards the light source.",
+      "doc": "The shading color of areas that faces towards the light source.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
       "transition": true
     },
-    "terrain-accent-color": {
+    "hillshade-accent-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "The color used to accentuate rugged terrain with sharp cliffs and gorges.",
+      "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "transition": true
-    },
-    "terrain-illumination-direction": {
-      "type": "number",
-      "default": 135,
-      "period": 360,
-      "units": "degrees",
-      "function": "interpolated",
-      "zoom-function": true,
-      "property-function": true,
-      "doc": "Direction of the lightsource. Defaults to top left."
-    },
-    "terrain-illumination-alignment": {
-      "type": "enum",
-      "function": "piecewise-constant",
-      "zoom-function": true,
-      "property-function": true,
-      "values": {
-        "map": {
-            "doc": "The terrain illumination is relative to the north-west direction."
-        },
-        "viewport": {
-            "doc": "The terrain illumination is relative to the top left of the viewport."
-        }
-      },
-      "default": "viewport",
-      "doc": "Direction of light source when map is rotated."
-    },
-    "terrain-exaggeration": {
-      "type": "number",
-      "doc": "Intensity of the terrain",
-      "default": 1,
-      "minimum": 0,
-      "function": "interpolated",
-      "zoom-function": true,
       "transition": true
     }
   },

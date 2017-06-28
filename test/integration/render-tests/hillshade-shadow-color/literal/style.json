@@ -27,11 +27,11 @@
       }
     },
     {
-      "id": "terrain",
-      "type": "terrain",
+      "id": "hillshade",
+      "type": "hillshade",
       "source": "source",
       "paint": {
-        "terrain-accent-color": "purple"
+        "hillshade-shadow-color": "green"
       }
     }
   ]

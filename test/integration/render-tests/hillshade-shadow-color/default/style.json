@@ -27,12 +27,9 @@
       }
     },
     {
-      "id": "terrain",
-      "type": "terrain",
-      "source": "source",
-      "paint": {
-        "terrain-highlight-color": "#ddd"
-      }
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "source"
     }
   ]
 }

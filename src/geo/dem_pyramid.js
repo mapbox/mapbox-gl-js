@@ -38,8 +38,6 @@ class Level {
             }
         }
     }
-
-
 }
 
 class DEMPyramid {
@@ -125,7 +123,6 @@ class DEMPyramid {
                     t.set(x, y, o.get(x + ox, y + oy));
                 }
             }
-
         }
 
         function clamp(value, min, max) {
@@ -142,7 +139,8 @@ DEMPyramid.deserialize = function(data) {
     const levels = [];
 
     // TODO dont hardcode tilesize
-    let tileSize = 256, i = 0;
+    const tileSize = 256;
+    let i = 0;
     while (data[i]) {
         levels.push(new Level(tileSize, tileSize, tileSize / 2, new Int32Array(data[i])));
         i++;

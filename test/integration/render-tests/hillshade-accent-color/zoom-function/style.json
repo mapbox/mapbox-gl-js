@@ -27,11 +27,22 @@
       }
     },
     {
-      "id": "terrain",
-      "type": "terrain",
+      "id": "hillshade",
+      "type": "hillshade",
       "source": "source",
       "paint": {
-        "terrain-shadow-color": "green"
+        "hillshade-accent-color": {
+          "stops": [
+            [
+              10,
+              "#0473c0"
+            ],
+            [
+              12,
+              "#04c04c"
+            ]
+          ]
+        }
       }
     }
   ]

@@ -193,8 +193,6 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this._source.type === 'raster-terrain') {
-            // this._source.fire('dataloading', {dataType: 'source', tile: tile, coord: tile.coord});
-            // need all visible tiles to be loaded for the DEM to be backfilled correctly
             this._backfillDEM(tile);
         } else {
             this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
@@ -219,7 +217,7 @@ class SourceCache extends Evented {
         }
 
         function fillBorder(tile, borderTile) {
-            tile.terrainTexture = undefined;
+            tile.hillshadeTexture = undefined;
             let dx = borderTile.coord.x - tile.coord.x;
             const dy = borderTile.coord.y - tile.coord.y;
             const dim = Math.pow(2, tile.coord.z);

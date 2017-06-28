@@ -23,7 +23,6 @@
     "earcut": "^2.0.3",
     "geojson-rewind": "^0.1.0",
     "geojson-vt": "^2.4.0",
-    "gl-matrix": "^2.3.1",
     "grid-index": "^1.0.0",
     "mapbox-gl-supported": "^1.2.0",
     "package-json-versionify": "^1.0.2",

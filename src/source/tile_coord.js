@@ -143,7 +143,7 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
 }
 
-TileCoord.cover = function (z, bounds, actualZ, renderWorldCopies) {
+TileCoord.cover = function(z, bounds, actualZ, renderWorldCopies) {
     if (renderWorldCopies === undefined) {
         renderWorldCopies = true;
     }

@@ -24,7 +24,7 @@ const draw = {
     raster: require('./draw_raster'),
     background: require('./draw_background'),
     debug: require('./draw_debug'),
-    terrain: require('./draw_terrain')
+    hillshade: require('./draw_hillshade')
 };
 
 import type Transform from '../geo/transform';
@@ -169,14 +169,14 @@ class Painter {
         this.rasterBoundsBuffer = Buffer.fromStructArray(rasterBoundsArray, Buffer.BufferType.VERTEX);
         this.rasterBoundsVAO = new VertexArrayObject();
 
-        // used if terrain tile isn't fully backfilled in order to prevent seams with missing data from flashing
-        const incompleteTerrainBoundsArray = new RasterBoundsArray();
-        incompleteTerrainBoundsArray.emplaceBack(0, 0, 0, 0);
-        incompleteTerrainBoundsArray.emplaceBack(EXTENT - (4 * EXTENT / 512), 0, EXTENT - (4 * EXTENT / 512), 0);
-        incompleteTerrainBoundsArray.emplaceBack(0, EXTENT - (4 * EXTENT / 512), 0, EXTENT - (4 * EXTENT / 512));
-        incompleteTerrainBoundsArray.emplaceBack(EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512));
-        this.incompleteTerrainBoundsBuffer = Buffer.fromStructArray(incompleteTerrainBoundsArray, Buffer.BufferType.VERTEX);
-        this.incompleteTerrainBoundsVAO = new VertexArrayObject();
+        // used if raster-terrain tile isn't fully backfilled in order to prevent seams with missing data from flashing
+        const incompleteHillshadeBoundsArray = new RasterBoundsArray();
+        incompleteHillshadeBoundsArray.emplaceBack(0, 0, 0, 0);
+        incompleteHillshadeBoundsArray.emplaceBack(EXTENT - (4 * EXTENT / 512), 0, EXTENT - (4 * EXTENT / 512), 0);
+        incompleteHillshadeBoundsArray.emplaceBack(0, EXTENT - (4 * EXTENT / 512), 0, EXTENT - (4 * EXTENT / 512));
+        incompleteHillshadeBoundsArray.emplaceBack(EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512));
+        this.incompleteHillshadeBoundsBuffer = Buffer.fromStructArray(incompleteHillshadeBoundsArray, Buffer.BufferType.VERTEX);
+        this.incompleteHillshadeBoundsVAO = new VertexArrayObject();
 
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
@@ -349,10 +349,8 @@ class Painter {
 
                 }
             }
-
         }
         this.isPrepareFbosPass = false;
-
     }
 
     depthMask(mask) {
