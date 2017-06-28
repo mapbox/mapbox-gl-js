@@ -76,8 +76,6 @@ class Painter {
     setup() {
         const gl = this.gl;
 
-        gl.verbose = true;
-
         // We are blending the new pixels *behind* the existing pixels. That way we can
         // draw front-to-back and use then stencil buffer to cull opaque pixels early.
         gl.enable(gl.BLEND);
