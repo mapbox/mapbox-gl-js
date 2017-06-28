@@ -1,3 +1,4 @@
+// @flow
 
 const createStructArrayType = require('../util/struct_array');
 const Point = require('point-geometry');
@@ -76,7 +77,8 @@ const CollisionBoxArray = createStructArrayType({
     ]
 });
 
-Object.defineProperty(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
+// https://github.com/facebook/flow/issues/285
+(Object.defineProperty : any)(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
     get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
 
