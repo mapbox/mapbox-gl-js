@@ -1,11 +1,24 @@
+// @flow
 
 const Point = require('point-geometry');
-const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const VTFeature = require('vector-tile').VectorTileFeature;
 const EXTENT = require('../data/extent');
 
-class FeatureWrapper {
+import type {
+    VectorTile,
+    VectorTileLayer,
+    VectorTileFeature
+} from '../source/source';
 
-    constructor(feature) {
+class FeatureWrapper implements VectorTileFeature {
+    type: string;
+    id: mixed;
+    properties: { [string]: mixed };
+    extent: number;
+    geometry: any;
+    rawGeometry: any;
+
+    constructor(feature: any) {
         this.type = feature.type;
         if (feature.type === 1) {
             this.rawGeometry = [];
@@ -70,20 +83,28 @@ class FeatureWrapper {
     }
 
     toGeoJSON() {
-        VectorTileFeature.prototype.toGeoJSON.call(this);
+        VTFeature.prototype.toGeoJSON.call(this);
     }
 }
 
-// conform to vectortile api
-class GeoJSONWrapper {
+class GeoJSONWrapper implements VectorTile, VectorTileLayer {
+    name: string;
+    layers: { [string]: VectorTileLayer };
+    rawData: any;
 
-    constructor(features) {
+    length: number;
+    features: Array<any>;
+    extent: number;
+
+    constructor(features: Array<any>) {
         this.features = features;
         this.length = features.length;
         this.extent = EXTENT;
+        this.name = '_geojsonTileLayer';
+        this.layers = { '_geojsonTileLayer': this };
     }
 
-    feature(i) {
+    feature(i: number) {
         return new FeatureWrapper(this.features[i]);
     }
 }

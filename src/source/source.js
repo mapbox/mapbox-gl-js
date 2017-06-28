@@ -227,8 +227,16 @@ export interface WorkerSource {
     removeSource?: (params: {source: string}) => void;
 }
 
+export interface VectorTileFeature {
+}
+
+export interface VectorTileLayer {
+    length: number;
+    feature(i: number): VectorTileFeature;
+}
+
 export interface VectorTile {
-    layers: any;
+    layers: { [string]: VectorTileLayer };
 }
 
 /**

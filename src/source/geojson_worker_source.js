@@ -51,8 +51,7 @@ function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataC
     // is a convenience that allows `FeatureIndex` to operate the same way
     // across `VectorTileSource` and `GeoJSONSource` data.
     const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-    geojsonWrapper.name = '_geojsonTileLayer';
-    let pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+    let pbf = vtpbf(geojsonWrapper);
     if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
         // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
         pbf = new Uint8Array(pbf);
