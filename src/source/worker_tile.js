@@ -66,7 +66,7 @@ class WorkerTile {
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
         const featureIndex = new FeatureIndex(this.coord, this.overscaling);
-        featureIndex.bucketLayerIDs = {};
+        featureIndex.bucketLayerIDs = {}; // Should this be an array?
 
         const buckets = {};
         let bucketIndex = 0;
@@ -123,7 +123,7 @@ class WorkerTile {
                 });
 
                 bucket.populate(features, options);
-                featureIndex.bucketLayerIDs[bucketIndex] = family.map((l) => l.id);
+                featureIndex.bucketLayerIDs[String(bucketIndex)] = family.map((l) => l.id);
 
                 bucketIndex++;
             }

@@ -331,7 +331,7 @@ exports.clone = function<T>(input: T): T {
  *
  * @private
  */
-exports.arraysIntersect = function(a: Array<mixed>, b: Array<mixed>): boolean {
+exports.arraysIntersect = function<T>(a: Array<T>, b: Array<T>): boolean {
     for (let l = 0; l < a.length; l++) {
         if (b.indexOf(a[l]) >= 0) return true;
     }

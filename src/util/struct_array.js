@@ -122,7 +122,7 @@ class StructArray {
     /**
      * Serialize this StructArray instance
      */
-    serialize(transferables: ?{push: (buffer: ArrayBuffer) => void}) {
+    serialize(transferables?: Array<Transferable>) {
         assert(!this.isTransferred);
 
         this._trim();
