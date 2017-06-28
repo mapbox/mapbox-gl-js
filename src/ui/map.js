@@ -1690,19 +1690,6 @@ function removeNode(node) {
  */
 
 /**
- * A {@link LngLatBounds} object or an array of {@link LngLatLike} objects in [sw, ne] order.
- *
- * @typedef {(LngLatBounds | Array<LngLatLike>)} LngLatBoundsLike
- * @example
- * var v1 = new mapboxgl.LngLatBounds(
- *   new mapboxgl.LngLat(-73.9876, 40.7661),
- *   new mapboxgl.LngLat(-73.9397, 40.8002)
- * );
- * var v2 = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002])
- * var v3 = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
- */
-
-/**
  * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
  * `x` and `y` properties representing screen coordinates in pixels.
  *
