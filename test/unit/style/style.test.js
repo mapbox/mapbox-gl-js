@@ -1044,8 +1044,6 @@ test('Style#setPaintProperty', (t) => {
             let begun = false;
             let styleUpdateCalled = false;
 
-            // once the source has loaded, call SourceCache#update(tr) to load
-            // some initial tiles.
             source.on('data', (e) => setImmediate(() => {
                 if (!begun && sourceCache.loaded()) {
                     begun = true;
