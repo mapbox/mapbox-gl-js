@@ -444,7 +444,7 @@ class Painter {
         // ProgramInterface so that we don't dynamically link an unused
         // attribute at position 0, which can cause rendering to fail for an
         // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration.interface.layoutAttributes || [];
+        const layoutAttributes = configuration.interface ? configuration.interface.layoutAttributes : [];
         for (let i = 0; i < layoutAttributes.length; i++) {
             gl.bindAttribLocation(program, i, layoutAttributes[i].name);
         }

@@ -1,3 +1,4 @@
+// @flow
 
 const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
@@ -6,6 +7,9 @@ const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
+
+import type {BucketParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
 
 const fillInterface = {
     layoutAttributes: [
@@ -22,11 +26,13 @@ const fillInterface = {
 };
 
 class FillBucket extends Bucket {
-    constructor(options) {
+    static programInterface: ProgramInterface;
+
+    constructor(options: BucketParameters) {
         super(options, fillInterface);
     }
 
-    addFeature(feature) {
+    addFeature(feature: VectorTileFeature) {
         const arrays = this.arrays;
 
         for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {

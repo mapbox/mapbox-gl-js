@@ -1,3 +1,4 @@
+// @flow
 
 const createStructArrayType = require('../util/struct_array');
 
@@ -8,7 +9,7 @@ module.exports = createElementArrayType;
  * arguments, it defaults to three components per element, forming triangles.
  * @private
  */
-function createElementArrayType(components) {
+function createElementArrayType(components?: number) {
     return createStructArrayType({
         members: [{
             type: 'Uint16',

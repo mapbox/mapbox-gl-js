@@ -5,9 +5,28 @@ const createVertexArrayType = require('./vertex_array_type');
 const util = require('../util/util');
 
 import type StyleLayer from '../style/style_layer';
+import type {ViewType, StructArray} from '../util/struct_array';
+
+type LayoutAttribute = {
+    name: string,
+    type: ViewType,
+    components?: number
+}
+
+type PaintAttribute = {
+    name?: string,
+    type: ViewType,
+    property: string,
+    components?: number,
+    multiplier?: number,
+    dimensions?: number,
+    zoomStops?: Array<number>,
+    useIntegerZoom?: boolean
+}
 
 type Attribute = {
     name: string,
+    type: ViewType,
     property: string,
     components: number,
     multiplier: number,
@@ -45,9 +64,12 @@ export type PaintPropertyStatistics = {
     [property: string]: { max: number }
 }
 
-type ProgramInterface = {
-    layoutAttributes?: Array<Attribute>,
-    paintAttributes?: Array<Attribute>
+export type ProgramInterface = {
+    layoutAttributes: Array<LayoutAttribute>,
+    dynamicLayoutAttributes?: Array<LayoutAttribute>,
+    paintAttributes?: Array<PaintAttribute>,
+    elementArrayType?: Class<StructArray>,
+    elementArrayType2?: Class<StructArray>,
 }
 
 export type Program = {
@@ -80,8 +102,8 @@ class ProgramConfiguration {
     interpolationUniforms: Array<InterpolationUniform>;
     pragmas: { [string]: Pragmas };
     cacheKey: string;
-    interface: ProgramInterface;
-    PaintVertexArray: any;
+    interface: ?ProgramInterface;
+    PaintVertexArray: Class<StructArray>;
 
     constructor() {
         this.attributes = [];
@@ -89,7 +111,6 @@ class ProgramConfiguration {
         this.interpolationUniforms = [];
         this.pragmas = {};
         this.cacheKey = '';
-        this.interface = {};
     }
 
     static createDynamic(programInterface: ProgramInterface, layer: StyleLayer, zoom: number) {
@@ -334,7 +355,7 @@ function getPaintAttributeValue(attribute: Attribute, layer: StyleLayer, globalP
     return values.length === 1 ? values[0] : values;
 }
 
-function normalizePaintAttribute(attribute: Attribute, layer: StyleLayer): Attribute {
+function normalizePaintAttribute(attribute: PaintAttribute, layer: StyleLayer): Attribute {
     let name = attribute.name;
 
     // by default, construct the shader variable name for paint attribute

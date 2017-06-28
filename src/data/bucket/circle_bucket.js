@@ -1,8 +1,12 @@
+// @flow
 
 const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
+
+import type {BucketParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
 
 const circleInterface = {
     layoutAttributes: [
@@ -35,11 +39,13 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * @private
  */
 class CircleBucket extends Bucket {
-    constructor(options) {
+    static programInterface: ProgramInterface;
+
+    constructor(options: BucketParameters) {
         super(options, circleInterface);
     }
 
-    addFeature(feature) {
+    addFeature(feature: VectorTileFeature) {
         const arrays = this.arrays;
 
         for (const ring of loadGeometry(feature)) {
