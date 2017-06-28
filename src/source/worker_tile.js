@@ -7,14 +7,14 @@ const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
 const assert = require('assert');
 
-import type {TileCoord} from './tile_coord';
+import type TileCoord from './tile_coord';
 import type {SymbolBucket} from '../data/bucket/symbol_bucket';
-import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
+import type StyleLayerIndex from '../style/style_layer_index';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
-    VectorTile
+    VectorTile,
+    Actor
 } from '../source/source';
 
 class WorkerTile {
@@ -54,11 +54,6 @@ class WorkerTile {
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
-        // Normalize GeoJSON data.
-        if (!data.layers) {
-            data = { layers: { '_geojsonTileLayer': data } };
-        }
-
         this.status = 'parsing';
         this.data = data;
 
@@ -96,8 +91,8 @@ class WorkerTile {
             const features = [];
             for (let i = 0; i < sourceLayer.length; i++) {
                 const feature = sourceLayer.feature(i);
-                feature.index = i;
-                feature.sourceLayerIndex = sourceLayerIndex;
+                (feature : any).index = i;
+                (feature : any).sourceLayerIndex = sourceLayerIndex;
                 features.push(feature);
             }
 

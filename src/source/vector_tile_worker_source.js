@@ -13,11 +13,11 @@ import type {
     TileParameters,
     RedoPlacementParameters,
     RedoPlacementCallback,
-    AugmentedVectorTile
+    AugmentedVectorTile,
+    Actor
 } from '../source/source';
 
-import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
+import type StyleLayerIndex from '../style/style_layer_index';
 
 /**
  * @callback LoadVectorDataCallback
@@ -56,7 +56,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
  */
 class VectorTileWorkerSource implements WorkerSource {
     actor: Actor;
-    layerIndex: number;
+    layerIndex: StyleLayerIndex;
     loadVectorData: LoadVectorData;
     loading: { [string]: { [string]: WorkerTile } };
     loaded: { [string]: { [string]: WorkerTile } };

@@ -13,6 +13,8 @@ const Throttler = require('../util/throttler');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
+import type TileCoord from './tile_coord';
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -20,7 +22,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
  * @private
  */
 class Tile {
-    coord: any;
+    coord: TileCoord;
     uid: number;
     uses: number;
     tileSize: number;
@@ -51,6 +53,15 @@ class Tile {
     placementSource: any;
     workerID: number;
     vtLayers: any;
+
+    aborted: ?boolean;
+    boundsBuffer: any;
+    boundsVAO: any;
+    request: any;
+    texture: any;
+    sourceCache: any;
+    refreshedUponExpiration: boolean;
+    reloadCallback: any;
 
     /**
      * @param {TileCoord} coord

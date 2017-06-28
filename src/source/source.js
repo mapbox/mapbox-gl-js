@@ -2,7 +2,7 @@
 
 const util = require('../util/util');
 
-const sourceTypes = {
+const sourceTypes: {[string]: Class<ISource>} = {
     'vector': require('../source/vector_tile_source'),
     'raster': require('../source/raster_tile_source'),
     'geojson': require('../source/geojson_source'),
@@ -11,32 +11,12 @@ const sourceTypes = {
     'canvas': require('../source/canvas_source')
 };
 
-/*
- * Creates a tiled data source instance given an options object.
- *
- * @param id
- * @param {Object} source A source definition object compliant with [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type, with that type's requirements.
- * @param {Dispatcher} dispatcher
- * @returns {Source}
- */
-exports.create = function(id: string, source: any, dispatcher: any, eventedParent: any) {
-    source = new sourceTypes[source.type](id, source, dispatcher, eventedParent);
-
-    if (source.id !== id) {
-        throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);
-    }
-
-    util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
-    return source;
-};
-
-exports.getType = function (name: string) {
-    return sourceTypes[name];
-};
-
-exports.setType = function (name: string, type: any) {
-    sourceTypes[name] = type;
-};
+import type Dispatcher from '../util/dispatcher';
+import type Evented from '../util/evented';
+import type Map from '../ui/map';
+import type Tile from './tile';
+import type TileCoord from './tile_coord';
+import type StyleLayerIndex from '../style/style_layer_index';
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`, `video`, etc.) and all custom, third-party types.
@@ -59,59 +39,105 @@ exports.setType = function (name: string, type: any) {
  * @property {boolean} reparseOverscaled `true` if tiles should be sent back to the worker for each overzoomed zoom level, `false` if not.
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false` if they are floor-ed to the nearest integer.
  */
+export interface ISource {
+    +type: string;
+    id: string;
+    minzoom: number,
+    maxzoom: number,
+    tileSize: number,
 
-/**
- * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource} implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
+    roundZoom?: boolean,
+    reparseOverscaled?: boolean,
+
+    constructor(id: string, source: any, dispatcher: Dispatcher, eventedParent: Evented): ISource;
+
+    fire(type: string, data: Object): mixed;
+
+    +onAdd?: (map: Map) => void;
+    +onRemove?: (map: Map) => void;
+
+    /**
+     * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource} implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
+     *
+     * @member {URL|undefined} workerSourceURL
+     * @memberof Source
+     * @static
+     */
+
+    /**
+     * @method
+     * @name loadTile
+     * @param {Tile} tile
+     * @param {Funtion} callback Called when tile has been loaded
+     * @memberof Source
+     * @instance
+     */
+    loadTile(tile: Tile, callback: Function): void;
+
+    +hasTile?: (coord: TileCoord) => boolean;
+
+    /**
+     * @method
+     * @name abortTile
+     * @param {Tile} tile
+     * @memberof Source
+     * @instance
+     */
+    +abortTile?: (tile: Tile) => void;
+
+    /**
+     * @method
+     * @name unloadTile
+     * @param {Tile} tile
+     * @memberof Source
+     * @instance
+     */
+    +unloadTile?: (tile: Tile) => void;
+
+    /**
+     * @method
+     * @name serialize
+     * @returns {Object} A plain (stringifiable) JS object representing the current state of the source. Creating a source using the returned object as the `options` should result in a Source that is equivalent to this one.
+     * @memberof Source
+     * @instance
+     */
+    serialize(): Object;
+
+    /**
+     * @method
+     * @name prepare
+     * @memberof Source
+     * @instance
+     */
+    +prepare?: () => void;
+}
+
+/*
+ * Creates a tiled data source instance given an options object.
  *
- * @member {URL|undefined} workerSourceURL
- * @memberof Source
- * @static
+ * @param id
+ * @param {Object} source A source definition object compliant with [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type, with that type's requirements.
+ * @param {Dispatcher} dispatcher
+ * @returns {Source}
  */
+exports.create = function(id: string, source: any, dispatcher: Dispatcher, eventedParent: Evented) {
+    source = new sourceTypes[source.type](id, source, dispatcher, eventedParent);
 
-/**
- * @method
- * @name loadTile
- * @param {Tile} tile
- * @param {Funtion} callback Called when tile has been loaded
- * @memberof Source
- * @instance
- */
+    if (source.id !== id) {
+        throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);
+    }
 
-/**
- * @method
- * @name abortTile
- * @param {Tile} tile
- * @memberof Source
- * @instance
- */
+    util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
+    return source;
+};
 
-/**
- * @method
- * @name unloadTile
- * @param {Tile} tile
- * @memberof Source
- * @instance
- */
+exports.getType = function (name: string) {
+    return sourceTypes[name];
+};
 
-/**
- * @method
- * @name serialize
- * @returns {Object} A plain (stringifiable) JS object representing the current state of the source. Creating a source using the returned object as the `options` should result in a Source that is equivalent to this one.
- * @memberof Source
- * @instance
- */
-
-/**
- * @method
- * @name prepare
- * @memberof Source
- * @instance
- */
-
-
-import type {TileCoord} from './tile_coord';
-import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
+exports.setType = function (name: string, type: Class<ISource>) {
+    sourceTypes[name] = type;
+};
 
 export type TileParameters = {
     source: string,
@@ -152,6 +178,10 @@ export type RedoPlacementResult = {
 };
 
 export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult, transferables: ?Array<Transferable>) => void;
+
+export interface Actor {
+    send(type: string, data: Object, callback: Function): void;
+}
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -197,8 +227,16 @@ export interface WorkerSource {
     removeSource?: (params: {source: string}) => void;
 }
 
+export interface VectorTileFeature {
+}
+
+export interface VectorTileLayer {
+    length: number;
+    feature(i: number): VectorTileFeature;
+}
+
 export interface VectorTile {
-    layers: any;
+    layers: { [string]: VectorTileLayer };
 }
 
 /**

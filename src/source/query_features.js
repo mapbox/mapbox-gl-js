@@ -1,6 +1,8 @@
+// @flow
+
 const TileCoord = require('./tile_coord');
 
-exports.rendered = function(sourceCache, styleLayers, queryGeometry, params, zoom, bearing) {
+exports.rendered = function(sourceCache: any, styleLayers: any, queryGeometry: any, params: any, zoom: any, bearing: any) {
     const tilesIn = sourceCache.tilesIn(queryGeometry);
 
     tilesIn.sort(sortTilesIn);
@@ -23,7 +25,7 @@ exports.rendered = function(sourceCache, styleLayers, queryGeometry, params, zoo
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
-exports.source = function(sourceCache, params) {
+exports.source = function(sourceCache: any, params: any) {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });

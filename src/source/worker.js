@@ -18,6 +18,8 @@ import type {
     RedoPlacementCallback
 } from '../source/source';
 
+import type { LayerConfigs } from '../style/style_layer_index';
+
 /**
  * @private
  */
@@ -45,14 +47,14 @@ class Worker {
         // [mapId][sourceType] => worker source instance
         this.workerSources = {};
 
-        this.self.registerWorkerSource = (name, WorkerSource) => {
+        this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
             if (this.workerSourceTypes[name]) {
                 throw new Error(`Worker source with name "${name}" already registered.`);
             }
             this.workerSourceTypes[name] = WorkerSource;
         };
 
-        this.self.registerRTLTextPlugin = (rtlTextPlugin) => {
+        this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function}) => {
             if (globalRTLTextPlugin.applyArabicShaping || globalRTLTextPlugin.processBidirectionalText) {
                 throw new Error('RTL text plugin already registered.');
             }
@@ -61,11 +63,11 @@ class Worker {
         };
     }
 
-    setLayers(mapId: string, layers: any) {
+    setLayers(mapId: string, layers: LayerConfigs) {
         this.getLayerIndex(mapId).replace(layers);
     }
 
-    updateLayers(mapId: string, params: {layers: any, removedIds: any, symbolOrder: any}) {
+    updateLayers(mapId: string, params: {layers: LayerConfigs, removedIds: Array<string>, symbolOrder: Array<string>}) {
         this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
     }
 
