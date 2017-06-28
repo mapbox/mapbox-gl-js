@@ -57,16 +57,40 @@ test('Style', (t) => {
     });
 
     t.test('registers plugin listener', (t) => {
+        rtlTextPlugin.clearRTLTextPlugin();
+        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/plugin.js', "doesn't matter");
+        rtlTextPlugin.setRTLTextPlugin("/plugin.js");
         t.spy(rtlTextPlugin, 'registerForPluginAvailability');
         const style = new Style(createStyleJSON());
         t.spy(style.dispatcher, 'broadcast');
         t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
 
         style.on('style.load', () => {
-            rtlTextPlugin.evented.fire('pluginAvailable');
-            t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
+            window.server.respond();
+            t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin', "data:text/javascript;base64,abc"));
             t.end();
         });
+    });
+
+    t.test('loads plugin immediately if already registered', (t) => {
+        rtlTextPlugin.clearRTLTextPlugin();
+        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/plugin.js', "doesn't matter");
+        let firstError = true;
+        rtlTextPlugin.setRTLTextPlugin("/plugin.js", (error) => {
+            // Getting this error message shows the bogus URL was succesfully passed to the worker
+            // We'll get the error from all workers, only pay attention to the first one
+            if (firstError) {
+                t.deepEquals(error, 'RTL Text Plugin failed to import scripts from data:text/javascript;base64,abc');
+                t.end();
+                firstError = false;
+            }
+        });
+        window.server.respond();
+        new Style(createStyleJSON());
     });
 
     t.test('can be constructed from a URL', (t) => {

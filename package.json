@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@mapbox/gl-matrix": "^0.0.1",
+    "@mapbox/mapbox-gl-style-spec": "file:src/style-spec",
     "@mapbox/shelf-pack": "^3.0.0",
     "@mapbox/unitbezier": "^0.0.0",
     "@mapbox/whoots-js": "^3.0.0",
@@ -51,9 +52,9 @@
     "envify": "^4.0.0",
     "eslint": "3.12.1",
     "eslint-config-mourner": "^2.0.0",
-    "eslint-plugin-flowtype": "^2.20.0",
+    "eslint-plugin-flowtype": "^2.34.0",
     "eslint-plugin-html": "^2.0.0",
-    "flow-bin": "^0.42.0",
+    "flow-bin": "^0.48.0",
     "flow-remove-types": "^1.0.4",
     "github-slugger": "^1.1.1",
     "gl": "^4.0.1",
@@ -128,7 +129,6 @@
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
-    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "postinstall": "cd src/style-spec && yarn || npm install"
+    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
   }
 }

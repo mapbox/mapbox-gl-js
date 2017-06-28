@@ -2,7 +2,7 @@
 layout: example
 category: example
 title: Locate the user
-description: Geolocate the user and then center the map on their current location
+description: Geolocate the user and then track their current location on the map
 tags: 
   - controls-and-overlays
 ---
@@ -16,5 +16,10 @@ var map = new mapboxgl.Map({
 });
 
 // Add geolocate control to the map.
-map.addControl(new mapboxgl.GeolocateControl());
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: true
+}));
 </script>
