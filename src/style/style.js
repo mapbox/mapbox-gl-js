@@ -106,7 +106,7 @@ class Style extends Evented {
                 this.sprite = new ImageSprite(stylesheet.sprite, this);
             }
 
-            this.glyphSource = new GlyphSource(stylesheet.glyphs);
+            this.glyphSource = new GlyphSource(stylesheet.glyphs, options.localIdeographFontFamily);
             this._resolve();
             this.fire('data', {dataType: 'style'});
             this.fire('style.load');

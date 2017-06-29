@@ -191,7 +191,11 @@ const defaultOptions = {
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {boolean} [options.renderWorldCopies=true]  If `true`, multiple copies of the world will be rendered, when zoomed out.
-  * @param {number} [options.maxTileCacheSize=null]  The maxiumum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
+ * @param {number} [options.maxTileCacheSize=null]  The maxiumum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
+ * @param {string} [options.localIdeographFontFamily=null] If specified, defines a css font-family
+ *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
+ *   In these ranges, font settings from the map's style will be mostly ignored, except for font-weight keywords (light/regular/medium/bold).
+ *   The purpose of this option is to avoid bandwidth-intensive glyph server requests.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -293,7 +297,7 @@ class Map extends Camera {
         this.resize();
 
         if (options.classes) this.setClasses(options.classes);
-        if (options.style) this.setStyle(options.style);
+        if (options.style) this.setStyle(options.style, { localIdeographFontFamily: options.localIdeographFontFamily });
 
         if (options.attributionControl) this.addControl(new AttributionControl());
         this.addControl(new LogoControl(), options.logoPosition);
@@ -928,11 +932,14 @@ class Map extends Camera {
      * @param {Object} [options]
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
      *   and adding building the given one instead of attempting a diff-based update.
+     * @param {string} [options.localIdeographFontFamily=null] If non-null, defines a css font-family
+     *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables'
+     *   ranges. Forces a full update.
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style: any, options?: {diff: boolean}) {
-        const shouldTryDiff = (!options || options.diff !== false) && this.style && style &&
+    setStyle(style: any, options?: {diff?: boolean, localIdeographFontFamily?: string}) {
+        const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style &&
             !(style instanceof Style) && typeof style !== 'string';
         if (shouldTryDiff) {
             try {
@@ -959,7 +966,7 @@ class Map extends Camera {
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this);
+            this.style = new Style(style, this, options);
         }
 
         this.style.setEventedParent(this, {style: this.style});
