@@ -99,7 +99,7 @@ class HillshadeTexture {
 
     unbindFramebuffer() {
         const gl = this.painter.gl;
-        this.painter.bindDefaultFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.viewport(0, 0, this.painter.width, this.painter.height);
     }
 }

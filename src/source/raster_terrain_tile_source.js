@@ -146,28 +146,29 @@ class RasterTerrainTileSource extends Evented {
         const nx = (x + 1 + dim) % dim;
         const nxw = x + 1 === dim ? w + 1 : w;
 
-        const neighboringTiles = [
-            { z: z, x: px, y: y, w: pxw },
-            { z: z, x: nx, y: y, w: nxw  }
-        ];
+        const neighboringTiles = {};
+        neighboringTiles[getTileId({ z: z, x: px, y: y, w: pxw })] = {backfilled: false};
+        neighboringTiles[getTileId({ z: z, x: nx, y: y, w: nxw })] = {backfilled: false};
+
         // Add upper neighboringTiles
         if (y > 0) {
-            neighboringTiles.push({ z: z, x: px, y: y - 1, w: pxw  });
-            neighboringTiles.push({ z: z, x: x, y: y - 1, w: w  });
-            neighboringTiles.push({ z: z, x: nx, y: y - 1, w: nxw  });
+            neighboringTiles[getTileId({ z: z, x: px, y: y - 1, w: pxw  })] = {backfilled: false};
+            neighboringTiles[getTileId({ z: z, x: x, y: y - 1, w: w  })] = {backfilled: false};
+            neighboringTiles[getTileId({ z: z, x: nx, y: y - 1, w: nxw  })] = {backfilled: false};
         }
         // Add lower neighboringTiles
         if (y + 1 < dim) {
-            neighboringTiles.push({ z: z, x: px, y: y + 1, w: pxw  });
-            neighboringTiles.push({ z: z, x: x, y: y + 1, w: w  });
-            neighboringTiles.push({ z: z, x: nx, y: y + 1, w: nxw  });
+            neighboringTiles[getTileId({ z: z, x: px, y: y + 1, w: pxw  })] = {backfilled: false};
+            neighboringTiles[getTileId({ z: z, x: x, y: y + 1, w: w  })] = {backfilled: false};
+            neighboringTiles[getTileId({ z: z, x: nx, y: y + 1, w: nxw  })] = {backfilled: false};
         }
-        const neighboringCoords = {};
-        neighboringTiles.forEach((t) => {
-            const c = new TileCoord(t.z, t.x, t.y, t.w);
-            neighboringCoords[c.id] = {backfilled: false};
-        });
-        return neighboringCoords;
+
+        return neighboringTiles;
+
+        function getTileId(coord) {
+            const tilecoord = new TileCoord(coord.z, coord.x, coord.y, coord.w);
+            return tilecoord.id;
+        }
     }
 
     abortTile(tile) {
