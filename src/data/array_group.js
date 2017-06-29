@@ -140,7 +140,6 @@ class ArrayGroup {
                 layerData.paintVertexArray,
                 layerData.paintPropertyStatistics,
                 this.layoutVertexArray.length,
-                this.globalProperties,
                 featureProperties);
         }
     }

@@ -21,9 +21,9 @@ const fillExtrusionInterface = {
     elementArrayType: createElementArrayType(3),
 
     paintAttributes: [
-        {property: 'fill-extrusion-base',   type: 'Uint16'},
-        {property: 'fill-extrusion-height', type: 'Uint16'},
-        {property: 'fill-extrusion-color',  type: 'Uint8'}
+        {property: 'fill-extrusion-base'},
+        {property: 'fill-extrusion-height'},
+        {property: 'fill-extrusion-color'}
     ]
 };
 

@@ -12,7 +12,7 @@ const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const ProgramConfiguration = require('../data/program_configuration');
-const shaders = require('./shaders');
+const shaders = require('../shaders');
 const assert = require('assert');
 
 const draw = {
@@ -101,7 +101,7 @@ class Painter {
 
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
-        this.basicFillProgramConfiguration = ProgramConfiguration.createStatic(['color', 'opacity']);
+        this.basicFillProgramConfiguration = ProgramConfiguration.createBasicFill();
         this.emptyProgramConfiguration = new ProgramConfiguration();
     }
 
@@ -418,15 +418,15 @@ class Painter {
     createProgram(name: string, configuration: ProgramConfiguration): Program {
         const gl = this.gl;
         const program = gl.createProgram();
-        const definition = shaders[name];
 
-        let definesSource = `#define MAPBOX_GL_JS\n#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}\n`;
+        const defines = configuration.defines().concat(
+            `#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}`);
         if (this._showOverdrawInspector) {
-            definesSource += '#define OVERDRAW_INSPECTOR;\n';
+            defines.push('#define OVERDRAW_INSPECTOR;');
         }
 
-        const fragmentSource = configuration.applyPragmas(definesSource + shaders.prelude.fragmentSource + definition.fragmentSource, 'fragment');
-        const vertexSource = configuration.applyPragmas(definesSource + shaders.prelude.vertexSource + definition.vertexSource, 'vertex');
+        const fragmentSource = defines.concat(shaders.prelude.fragmentSource, shaders[name].fragmentSource).join('\n');
+        const vertexSource = defines.concat(shaders.prelude.vertexSource, shaders[name].vertexSource).join('\n');
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragmentShader, fragmentSource);
