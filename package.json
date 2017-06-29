@@ -36,7 +36,8 @@
     "unflowify": "^1.0.0",
     "vector-tile": "^1.3.0",
     "vt-pbf": "^2.0.2",
-    "webworkify": "^1.4.0"
+    "webworkify": "^1.4.0",
+    "@mapbox/tiny-sdf": "^1.1.0"
   },
   "devDependencies": {
     "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
