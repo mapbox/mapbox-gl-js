@@ -93,11 +93,11 @@ const symbolInterfaces = {
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
-            {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
-            {name: 'a_halo_color', property: 'text-halo-color', type: 'Uint8'},
-            {name: 'a_halo_width', property: 'text-halo-width', type: 'Uint16', multiplier: 10},
-            {name: 'a_halo_blur', property: 'text-halo-blur', type: 'Uint16', multiplier: 10},
-            {name: 'a_opacity', property: 'text-opacity', type: 'Uint8', multiplier: 255}
+            {property: 'text-color', name: 'fill_color'},
+            {property: 'text-halo-color', name: 'halo_color'},
+            {property: 'text-halo-width', name: 'halo_width'},
+            {property: 'text-halo-blur', name: 'halo_blur'},
+            {property: 'text-opacity', name: 'opacity'}
         ]
     },
     icon: {
@@ -105,11 +105,11 @@ const symbolInterfaces = {
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
-            {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
-            {name: 'a_halo_color', property: 'icon-halo-color', type: 'Uint8'},
-            {name: 'a_halo_width', property: 'icon-halo-width', type: 'Uint16', multiplier: 10},
-            {name: 'a_halo_blur', property: 'icon-halo-blur', type: 'Uint16', multiplier: 10},
-            {name: 'a_opacity', property: 'icon-opacity', type: 'Uint8', multiplier: 255}
+            {property: 'icon-color', name: 'fill_color'},
+            {property: 'icon-halo-color', name: 'halo_color'},
+            {property: 'icon-halo-width', name: 'halo_width'},
+            {property: 'icon-halo-blur', name: 'halo_blur'},
+            {property: 'icon-opacity', name: 'opacity'}
         ]
     },
     collisionBox: { // used to render collision boxes for debugging purposes

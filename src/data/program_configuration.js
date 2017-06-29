@@ -1,8 +1,8 @@
 // @flow
 
-const assert = require('assert');
 const createVertexArrayType = require('./vertex_array_type');
-const util = require('../util/util');
+const interpolationFactor = require('../style-spec/function').interpolationFactor;
+const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray} from '../util/struct_array';
@@ -14,50 +14,9 @@ type LayoutAttribute = {
 }
 
 type PaintAttribute = {
+    property: string,
     name?: string,
-    type: ViewType,
-    property: string,
-    components?: number,
-    multiplier?: number,
-    dimensions?: number,
-    zoomStops?: Array<number>,
     useIntegerZoom?: boolean
-}
-
-type Attribute = {
-    name: string,
-    type: ViewType,
-    property: string,
-    components: number,
-    multiplier: number,
-    dimensions: number,
-    zoomStops: Array<number>,
-    useIntegerZoom: boolean
-}
-
-type Uniform = {
-    name: string,
-    property: string
-}
-
-type InterpolationUniform = {
-    name: string,
-    property: string,
-    stopOffset: number,
-    useIntegerZoom: boolean
-}
-
-type Pragmas = {
-    define: Array<string>,
-    initialize: Array<string>,
-    vertex: {
-        define: Array<string>,
-        initialize: Array<string>,
-    },
-    fragment: {
-        define: Array<string>,
-        initialize: Array<string>,
-    }
 }
 
 export type PaintPropertyStatistics = {
@@ -74,6 +33,162 @@ export type ProgramInterface = {
 
 export type Program = {
     [string]: any
+}
+
+function packColor(color: [number, number, number, number]): [number, number] {
+    return [
+        packUint8ToFloat(255 * color[0], 255 * color[1]),
+        packUint8ToFloat(255 * color[2], 255 * color[3])
+    ];
+}
+
+interface Binder {
+    property: string;
+
+    populatePaintArray(layer: StyleLayer,
+                       paintArray: StructArray,
+                       statistics: PaintPropertyStatistics,
+                       start: number,
+                       length: number,
+                       featureProperties: Object): void;
+
+    defines(): Array<string>;
+
+    setUniforms(gl: WebGLRenderingContext,
+                program: Program,
+                layer: StyleLayer,
+                globalProperties: { zoom: number }): void;
+}
+
+class ConstantBinder implements Binder {
+    name: string;
+    type: string;
+    property: string;
+    useIntegerZoom: boolean;
+
+    constructor(name: string, type: string, property: string, useIntegerZoom: boolean) {
+        this.name = name;
+        this.type = type;
+        this.property = property;
+        this.useIntegerZoom = useIntegerZoom;
+    }
+
+    defines() {
+        return [`#define HAS_UNIFORM_u_${this.name}`];
+    }
+
+    populatePaintArray() {}
+
+    setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, {zoom}: { zoom: number }) {
+        const value = layer.getPaintValue(this.property, { zoom: this.useIntegerZoom ? Math.floor(zoom) : zoom });
+        if (this.type === 'color') {
+            gl.uniform4fv(program[`u_${this.name}`], value);
+        } else {
+            gl.uniform1f(program[`u_${this.name}`], value);
+        }
+    }
+}
+
+class SourceFunctionBinder implements Binder {
+    name: string;
+    type: string;
+    property: string;
+
+    constructor(name: string, type: string, property: string) {
+        this.name = name;
+        this.type = type;
+        this.property = property;
+    }
+
+    defines() {
+        return [];
+    }
+
+    populatePaintArray(layer: StyleLayer,
+                       paintArray: StructArray,
+                       statistics: PaintPropertyStatistics,
+                       start: number,
+                       length: number,
+                       featureProperties: Object) {
+        const value = layer.getPaintValue(this.property, {}, featureProperties);
+
+        if (this.type === 'color') {
+            const color = packColor(value);
+            for (let i = start; i < length; i++) {
+                const struct: any = paintArray.get(i);
+                struct[`a_${this.name}0`] = color[0];
+                struct[`a_${this.name}1`] = color[1];
+            }
+        } else {
+            for (let i = start; i < length; i++) {
+                const struct: any = paintArray.get(i);
+                struct[`a_${this.name}`] = value;
+            }
+
+            const stats = statistics[this.property];
+            stats.max = Math.max(stats.max, value);
+        }
+    }
+
+    setUniforms(gl: WebGLRenderingContext, program: Program) {
+        gl.uniform1f(program[`a_${this.name}_t`], 0);
+    }
+}
+
+class CompositeFunctionBinder implements Binder {
+    name: string;
+    type: string;
+    property: string;
+    useIntegerZoom: boolean;
+    zoom: number;
+
+    constructor(name: string, type: string, property: string, useIntegerZoom: boolean, zoom: number) {
+        this.name = name;
+        this.type = type;
+        this.property = property;
+        this.useIntegerZoom = useIntegerZoom;
+        this.zoom = zoom;
+    }
+
+    defines() {
+        return [];
+    }
+
+    populatePaintArray(layer: StyleLayer,
+                       paintArray: StructArray,
+                       statistics: PaintPropertyStatistics,
+                       start: number,
+                       length: number,
+                       featureProperties: Object) {
+        const min = layer.getPaintValue(this.property, {zoom: this.zoom    }, featureProperties);
+        const max = layer.getPaintValue(this.property, {zoom: this.zoom + 1}, featureProperties);
+
+        if (this.type === 'color') {
+            const minColor = packColor(min);
+            const maxColor = packColor(max);
+            for (let i = start; i < length; i++) {
+                const struct: any = paintArray.get(i);
+                struct[`a_${this.name}0`] = minColor[0];
+                struct[`a_${this.name}1`] = minColor[1];
+                struct[`a_${this.name}2`] = maxColor[0];
+                struct[`a_${this.name}3`] = maxColor[1];
+            }
+        } else {
+            for (let i = start; i < length; i++) {
+                const struct: any = paintArray.get(i);
+                struct[`a_${this.name}0`] = min;
+                struct[`a_${this.name}1`] = max;
+            }
+
+            const stats = statistics[this.property];
+            stats.max = Math.max(stats.max, min, max);
+        }
+    }
+
+    setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, {zoom}: { zoom: number }) {
+        const f = interpolationFactor(this.useIntegerZoom ? Math.floor(zoom) : zoom, 1, this.zoom, this.zoom + 1);
+        gl.uniform1f(program[`a_${this.name}_t`], f);
+    }
 }
 
 /**
@@ -97,188 +212,64 @@ export type Program = {
  * @private
  */
 class ProgramConfiguration {
-    attributes: Array<Attribute>;
-    uniforms: Array<Uniform>;
-    interpolationUniforms: Array<InterpolationUniform>;
-    pragmas: { [string]: Pragmas };
+    binders: { [string]: Binder };
     cacheKey: string;
     interface: ?ProgramInterface;
     PaintVertexArray: Class<StructArray>;
 
     constructor() {
-        this.attributes = [];
-        this.uniforms = [];
-        this.interpolationUniforms = [];
-        this.pragmas = {};
+        this.binders = {};
         this.cacheKey = '';
     }
 
     static createDynamic(programInterface: ProgramInterface, layer: StyleLayer, zoom: number) {
         const self = new ProgramConfiguration();
+        const attributes = [];
 
-        for (const attributeConfig of programInterface.paintAttributes || []) {
-            const attribute = normalizePaintAttribute(attributeConfig, layer);
-            assert(/^a_/.test(attribute.name));
-            const name = attribute.name.slice(2);
+        for (const attribute of programInterface.paintAttributes || []) {
+            const property = attribute.property;
+            const useIntegerZoom = attribute.useIntegerZoom || false;
+            const name = attribute.name || property.replace(`${layer.type}-`, '').replace(/-/g, '_');
+            const type = layer._paintSpecifications[property].type;
 
-            if (layer.isPaintValueFeatureConstant(attribute.property)) {
-                self.addZoomAttribute(name, attribute);
-            } else if (layer.isPaintValueZoomConstant(attribute.property)) {
-                self.addPropertyAttribute(name, attribute);
+            if (layer.isPaintValueFeatureConstant(property)) {
+                self.binders[name] = new ConstantBinder(name, type, property, useIntegerZoom);
+                self.cacheKey += `/u_${name}`;
+            } else if (layer.isPaintValueZoomConstant(property)) {
+                self.binders[name] = new SourceFunctionBinder(name, type, property);
+                self.cacheKey += `/a_${name}`;
+                attributes.push({
+                    name: `a_${name}`,
+                    type: 'Float32',
+                    components: type === 'color' ? 2 : 1
+                });
             } else {
-                self.addZoomAndPropertyAttribute(name, attribute, layer, zoom);
+                self.binders[name] = new CompositeFunctionBinder(name, type, property, useIntegerZoom, zoom);
+                self.cacheKey += `/z_${name}`;
+                attributes.push({
+                    name: `a_${name}`,
+                    type: 'Float32',
+                    components: type === 'color' ? 4 : 2
+                });
             }
         }
-        self.PaintVertexArray = createVertexArrayType(self.attributes);
+
+        self.PaintVertexArray = createVertexArrayType(attributes);
         self.interface = programInterface;
 
         return self;
     }
 
-    static createStatic(uniformNames: Array<string>) {
+    static createBasicFill() {
         const self = new ProgramConfiguration();
 
-        for (const name of uniformNames) {
-            self.addUniform(name, `u_${name}`);
-        }
+        self.binders.color = new ConstantBinder('color', 'color', 'fill-color', false);
+        self.cacheKey += `/u_color`;
+
+        self.binders.opacity = new ConstantBinder('opacity', 'number', 'fill-opacity', false);
+        self.cacheKey += `/u_opacity`;
 
         return self;
-    }
-
-    addUniform(name: string, inputName: string) {
-        const pragmas = this.getPragmas(name);
-
-        pragmas.define.push(`uniform {precision} {type} ${inputName};`);
-        pragmas.initialize.push(`{precision} {type} ${name} = ${inputName};`);
-
-        this.cacheKey += `/u_${name}`;
-    }
-
-    addZoomAttribute(name: string, attribute: Attribute) {
-        this.uniforms.push(attribute);
-        this.addUniform(name, attribute.name);
-    }
-
-    addPropertyAttribute(name: string, attribute: Attribute) {
-        const pragmas = this.getPragmas(name);
-
-        this.attributes.push(attribute);
-
-        pragmas.define.push(`varying {precision} {type} ${name};`);
-
-        pragmas.vertex.define.push(`attribute {precision} {type} ${attribute.name};`);
-        pragmas.vertex.initialize.push(`${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
-
-        this.cacheKey += `/a_${name}`;
-    }
-
-    /*
-     * For composite functions, the idea here is to provide the shader with a
-     * _partially evaluated_ function for each feature (or rather, for each
-     * vertex associated with a feature).  If the composite function is
-     * F(properties, zoom), then for each feature we'll provide the following
-     * as a vertex attribute, built at layout time:
-     * [
-     *   F(feature.properties, zA),
-     *   F(feature.properties, zB),
-     *   F(feature.properties, zC),
-     *   F(feature.properties, zD)
-     * ]
-     * where zA, zB, zC, zD are specific zoom stops defined in the composite
-     * function.
-     *
-     * And then, at render time, we'll set a corresonding 'interpolation
-     * uniform', determined by the currently rendered zoom level, which is
-     * essentially a possibly-fractional index into the above vector. By
-     * interpolating between the appropriate pair of values, the shader can
-     * thus obtain the value of F(feature.properties, currentZoom).
-     *
-     * @private
-     */
-    addZoomAndPropertyAttribute(name: string, attribute: Attribute, layer: StyleLayer, zoom: number) {
-        const pragmas = this.getPragmas(name);
-
-        pragmas.define.push(`varying {precision} {type} ${name};`);
-
-        // Pick the index of the first zoom stop to add to the buffers
-        const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.property);
-        let stopOffset = 0;
-        if (zoomLevels.length > 4) {
-            while (stopOffset < (zoomLevels.length - 2) &&
-                zoomLevels[stopOffset] < zoom) stopOffset++;
-        }
-
-
-        const tName = `u_${name}_t`;
-
-        pragmas.vertex.define.push(`uniform lowp float ${tName};`);
-
-        this.interpolationUniforms.push({
-            name: tName,
-            property: attribute.property,
-            useIntegerZoom: attribute.useIntegerZoom,
-            stopOffset
-        });
-
-        // Find the four closest stops, ideally with two on each side of the zoom level.
-        const zoomStops = [];
-        for (let s = 0; s < 4; s++) {
-            zoomStops.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
-        }
-
-        const componentNames = [];
-
-        if (attribute.components === 1) {
-            this.attributes.push(util.extend({}, attribute, {
-                components: 4,
-                zoomStops
-            }));
-            pragmas.vertex.define.push(`attribute {precision} vec4 ${attribute.name};`);
-            componentNames.push(attribute.name);
-
-        } else {
-            for (let k = 0; k < 4; k++) {
-                const componentName = attribute.name + k;
-                componentNames.push(componentName);
-
-                this.attributes.push(util.extend({}, attribute, {
-                    name: componentName,
-                    zoomStops: [zoomStops[k]]
-                }));
-                pragmas.vertex.define.push(`attribute {precision} {type} ${componentName};`);
-            }
-        }
-        pragmas.vertex.initialize.push(`${name} = evaluate_zoom_function_${attribute.components}(\
-            ${componentNames.join(', ')}, ${tName}) / ${attribute.multiplier}.0;`);
-
-        this.cacheKey += `/z_${name}`;
-    }
-
-    getPragmas(name: string) {
-        if (!this.pragmas[name]) {
-            this.pragmas[name] = {
-                define: [],
-                initialize: [],
-                fragment: {
-                    define: [],
-                    initialize: []
-                },
-                vertex: {
-                    define: [],
-                    initialize: []
-                }
-            };
-        }
-        return this.pragmas[name];
-    }
-
-    applyPragmas(source: string, shaderType: 'vertex' | 'fragment') {
-        return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
-            return this.pragmas[name][operation].concat(this.pragmas[name][shaderType][operation])
-                .join('\n')
-                .replace(/{type}/g, type)
-                .replace(/{precision}/g, precision);
-        });
     }
 
     // Since this object is accessed frequently during populatePaintArray, it
@@ -286,93 +277,44 @@ class ProgramConfiguration {
     // 'hidden class' optimizations to take effect
     createPaintPropertyStatistics() {
         const paintPropertyStatistics: PaintPropertyStatistics = {};
-        for (const attribute of this.attributes) {
-            if (attribute.dimensions !== 1) continue;
-            paintPropertyStatistics[attribute.property] = {
+        for (const name in this.binders) {
+            paintPropertyStatistics[this.binders[name].property] = {
                 max: -Infinity
             };
         }
         return paintPropertyStatistics;
     }
 
-    populatePaintArray(layer: StyleLayer, paintArray: any, paintPropertyStatistics: PaintPropertyStatistics, length: number, globalProperties: { zoom: number }, featureProperties: Object) {
+    populatePaintArray(layer: StyleLayer,
+                       paintArray: StructArray,
+                       statistics: PaintPropertyStatistics,
+                       length: number,
+                       featureProperties: Object) {
         const start = paintArray.length;
         paintArray.resize(length);
 
-        for (const attribute of this.attributes) {
-            const zoomBase = attribute.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
-            const value: any = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
-
-            for (let i = start; i < length; i++) {
-                const vertex = paintArray.get(i);
-                if (attribute.components === 4) {
-                    for (let c = 0; c < 4; c++) {
-                        vertex[attribute.name + c] = value[c] * attribute.multiplier;
-                    }
-                } else {
-                    vertex[attribute.name] = value * attribute.multiplier;
-                }
-                if (attribute.dimensions === 1) {
-                    const stats = paintPropertyStatistics[attribute.property];
-                    stats.max = Math.max(stats.max,
-                        attribute.components === 1 ? value : Math.max.apply(Math, value));
-                }
-            }
+        for (const name in this.binders) {
+            this.binders[name].populatePaintArray(
+                layer, paintArray,
+                statistics,
+                start, length,
+                featureProperties);
         }
+    }
+
+    defines(): Array<string> {
+        const result = [];
+        for (const name in this.binders) {
+            result.push.apply(result, this.binders[name].defines());
+        }
+        return result;
     }
 
     setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, globalProperties: { zoom: number }) {
-        for (const uniform of this.uniforms) {
-            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
-            const value = layer.getPaintValue(uniform.property, zoomBase);
-
-            if (uniform.components === 4) {
-                gl.uniform4fv(program[uniform.name], value);
-            } else {
-                gl.uniform1f(program[uniform.name], value);
-            }
-        }
-        for (const uniform of this.interpolationUniforms) {
-            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
-            // stopInterp indicates which stops need to be interpolated.
-            // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-            const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
-            // We can only store four stop values in the buffers. stopOffset is the number of stops that come
-            // before the stops that were added to the buffers.
-            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(3, stopInterp - uniform.stopOffset)));
+        for (const name in this.binders) {
+            this.binders[name].setUniforms(gl, program, layer, globalProperties);
         }
     }
-}
-
-function getPaintAttributeValue(attribute: Attribute, layer: StyleLayer, globalProperties: { zoom: number }, featureProperties: Object) {
-    if (!attribute.zoomStops) {
-        return layer.getPaintValue(attribute.property, globalProperties, featureProperties);
-    }
-    // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
-    const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(
-        attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
-
-    return values.length === 1 ? values[0] : values;
-}
-
-function normalizePaintAttribute(attribute: PaintAttribute, layer: StyleLayer): Attribute {
-    let name = attribute.name;
-
-    // by default, construct the shader variable name for paint attribute
-    // `layertype-some-property` as `some_property`
-    if (!name) {
-        name = attribute.property.replace(`${layer.type}-`, '').replace(/-/g, '_');
-    }
-    const isColor = layer._paintSpecifications[attribute.property].type === 'color';
-
-    return util.extend({
-        name: `a_${name}`,
-        components: isColor ? 4 : 1,
-        multiplier: isColor ? 255 : 1,
-        // distinct from `components`, because components can be overridden for
-        // zoom interpolation
-        dimensions: isColor ? 4 : 1
-    }, attribute);
 }
 
 module.exports = ProgramConfiguration;

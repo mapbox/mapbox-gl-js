@@ -19,9 +19,9 @@ const fillInterface = {
     elementArrayType2: createElementArrayType(2),
 
     paintAttributes: [
-        {property: 'fill-color',         type: 'Uint8'},
-        {property: 'fill-outline-color', type: 'Uint8'},
-        {property: 'fill-opacity',       type: 'Uint8', multiplier: 255}
+        {property: 'fill-color'},
+        {property: 'fill-outline-color'},
+        {property: 'fill-opacity'}
     ]
 };
 
