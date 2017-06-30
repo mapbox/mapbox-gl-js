@@ -354,7 +354,9 @@
           "doc": "An extruded (3D) polygon.",
           "sdk-support": {
             "basic functionality": {
-              "js": "0.27.0"
+              "js": "0.27.0",
+              "ios": "3.6.0",
+              "macos": "0.5.0"
             }
           }
         },
@@ -521,7 +523,9 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     }
@@ -824,7 +828,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0"
+          "js": "0.35.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -912,7 +918,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0"
+          "js": "0.35.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1154,7 +1162,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0"
+          "js": "0.35.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1340,7 +1350,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0"
+          "js": "0.35.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1450,7 +1462,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0"
+          "js": "0.35.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1713,7 +1727,9 @@
       "example": "map",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1730,7 +1746,9 @@
       "example": [1.5, 90, 80],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1744,7 +1762,9 @@
       "doc": "Color tint for lighting extruded geometries.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1760,7 +1780,9 @@
       "doc": "Intensity of lighting (on a scale from 0 to 1). Higher numbers will present as more extreme contrast.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     }
@@ -1954,7 +1976,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1973,10 +1997,14 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         },
         "data-driven styling": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -1995,7 +2023,9 @@
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up (on the flat plane), respectively.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         },
         "data-driven styling": {}
       }
@@ -2019,7 +2049,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         },
         "data-driven styling": {}
       }
@@ -2032,7 +2064,9 @@
       "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         },
         "data-driven styling": {}
       }
@@ -2050,10 +2084,14 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         },
         "data-driven styling": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     },
@@ -2073,10 +2111,14 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         },
         "data-driven styling": {
-          "js": "0.27.0"
+          "js": "0.27.0",
+          "ios": "3.6.0",
+          "macos": "0.5.0"
         }
       }
     }
