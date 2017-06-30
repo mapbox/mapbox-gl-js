@@ -1,8 +1,3 @@
-#!/usr/bin/env bash
-
-source ./nvm/nvm.sh
-nvm use ${NODE_VERSION}
-
 set -e
 set -o pipefail
 
@@ -28,7 +23,7 @@ npm run build-dev
 npm run test-flow
 
 # run unit, render & query tests with coverage
-npm run test-cov
+xvfb-run --server-args="-screen 0 1024x768x24" npm run test-cov
 
 # send coverage report to coveralls
 nyc report --reporter=lcov
