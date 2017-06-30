@@ -5,7 +5,8 @@
       "collisionDebug": true,
       "debug": true,
       "width": 500,
-      "height": 500
+      "height": 500,
+      "diff": 0.005
     }
   },
   "center": [
