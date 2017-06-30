@@ -62,7 +62,7 @@ module.exports.charAllowsIdeographicBreaking = function(char) {
 };
 
 // The following logic comes from
-// <http://www.unicode.org/Public/vertical/revision-16/VerticalOrientation-16.txt>.
+// <http://www.unicode.org/Public/vertical/revision-17/VerticalOrientation-17.txt>.
 // The data file denotes with “U” or “Tu” any codepoint that may be drawn
 // upright in vertical text but does not distinguish between upright and
 // “neutral” characters.
