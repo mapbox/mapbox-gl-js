@@ -1,0 +1,36 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: mbgl/ci:r4-linux-clang-3.9
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-mapbox-gl-js-cache
+      - run:
+          name: install dependencies
+          command: |
+            bash ./.circleci/dependencies.sh
+      - save_cache:
+          key: v1-mapbox-gl-js-cache
+          paths:
+            - '~/.yarn'
+            - '.eslintcache'
+            - 'node_modules'
+      - run:
+          name: run tests
+          command: |
+            bash ./.circleci/test.sh
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/query-tests/index.html"
+      - run:
+          name: deploy if tagged
+          when: on_success
+          command: |
+            if [[ $CIRCLE_TAG =~ v[0-9]+\.[0-9]+\.[0-9]+(\-dev)? ]]; then
+              bash ./deploy.sh
+            fi
