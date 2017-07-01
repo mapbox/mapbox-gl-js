@@ -13,11 +13,17 @@ import type {
     TileParameters,
     RedoPlacementParameters,
     RedoPlacementCallback,
-    AugmentedVectorTile
 } from '../source/source';
 
 import type {Actor} from '../util/actor';
 import type {StyleLayerIndex} from '../style/style_layer_index';
+
+export type LoadVectorTileResult = {
+    vectorTile: VectorTile;
+    rawData: ArrayBuffer;
+    expires?: any;
+    cacheControl?: any;
+};
 
 /**
  * @callback LoadVectorDataCallback
@@ -25,7 +31,7 @@ import type {StyleLayerIndex} from '../style/style_layer_index';
  * @param vectorTile
  * @private
  */
-export type LoadVectorDataCallback = Callback<?AugmentedVectorTile>;
+export type LoadVectorDataCallback = Callback<?LoadVectorTileResult>;
 
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVectorDataCallback) => ?AbortVectorData;
@@ -35,12 +41,16 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const xhr = ajax.getArrayBuffer(params.url, (err, response) => {
-        if (err) { return callback(err); }
-        const vectorTile = new vt.VectorTile(new Protobuf(response.data));
-        vectorTile.rawData = response.data;
-        vectorTile.cacheControl = response.cacheControl;
-        vectorTile.expires = response.expires;
-        callback(err, vectorTile);
+        if (err) {
+            callback(err);
+        } else if (response) {
+            callback(null, {
+                vectorTile: new vt.VectorTile(new Protobuf(response.data)),
+                rawData: response.data,
+                cacheControl: response.cacheControl,
+                expires: response.expires
+            });
+        }
     });
     return () => { xhr.abort(); };
 }
@@ -88,20 +98,20 @@ class VectorTileWorkerSource implements WorkerSource {
             this.loading[source] = {};
 
         const workerTile = this.loading[source][uid] = new WorkerTile(params);
-        workerTile.abort = this.loadVectorData(params, (err, vectorTile) => {
+        workerTile.abort = this.loadVectorData(params, (err, response) => {
             delete this.loading[source][uid];
 
-            if (err || !vectorTile) {
+            if (err || !response) {
                 return callback(err);
             }
 
-            const rawTileData = vectorTile.rawData;
+            const rawTileData = response.rawData;
             const cacheControl = {};
-            if (vectorTile.expires) cacheControl.expires = vectorTile.expires;
-            if (vectorTile.cacheControl) cacheControl.cacheControl = vectorTile.cacheControl;
+            if (response.expires) cacheControl.expires = response.expires;
+            if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
 
-            workerTile.vectorTile = vectorTile;
-            workerTile.parse(vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
+            workerTile.vectorTile = response.vectorTile;
+            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
                 if (err || !result) return callback(err);
 
                 // Not transferring rawTileData because the worker needs to retain its copy.

@@ -196,24 +196,3 @@ export interface WorkerSource {
     redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback): void;
     removeSource?: (params: {source: string}) => void;
 }
-
-export interface VectorTile {
-    layers: any;
-}
-
-/**
- * The result passed to the `loadVectorData` callback must conform to the interface established
- * by the `VectorTile` class from the [vector-tile](https://www.npmjs.com/package/vector-tile)
- * npm package. In addition, it must have a `rawData` property containing an `ArrayBuffer`
- * with protobuf data conforming to the
- * [Mapbox Vector Tile specification](https://github.com/mapbox/vector-tile-spec).
- *
- * @class AugmentedVectorTile
- * @property {ArrayBuffer} rawData
- * @private
- */
-export type AugmentedVectorTile = VectorTile & {
-     rawData: any;
-     expires?: any;
-     cacheControl?: any;
-};
