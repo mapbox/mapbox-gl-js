@@ -47,18 +47,21 @@ function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataC
         return callback(null, null); // nothing in the given tile
     }
 
+    const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+
     // Encode the geojson-vt tile into binary vector tile form form.  This
     // is a convenience that allows `FeatureIndex` to operate the same way
     // across `VectorTileSource` and `GeoJSONSource` data.
-    const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-    geojsonWrapper.name = '_geojsonTileLayer';
-    let pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+    let pbf = vtpbf(geojsonWrapper);
     if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
         // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
         pbf = new Uint8Array(pbf);
     }
-    geojsonWrapper.rawData = pbf.buffer;
-    callback(null, geojsonWrapper);
+
+    callback(null, {
+        vectorTile: geojsonWrapper,
+        rawData: pbf.buffer
+    });
 }
 
 /**

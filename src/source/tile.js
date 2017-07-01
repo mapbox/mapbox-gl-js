@@ -50,7 +50,7 @@ class Tile {
     showCollisionBoxes: boolean;
     placementSource: any;
     workerID: number;
-    vtLayers: any;
+    vtLayers: {[string]: VectorTileLayer};
 
     /**
      * @param {TileCoord} coord
@@ -238,7 +238,7 @@ class Tile {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         }
 
-        const sourceLayer = params ? params.sourceLayer : undefined;
+        const sourceLayer = params ? params.sourceLayer : '';
         const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[sourceLayer];
 
         if (!layer) return;
