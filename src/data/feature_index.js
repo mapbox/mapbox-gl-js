@@ -22,6 +22,7 @@ import type CollisionTile from '../symbol/collision_tile';
 import type TileCoord from '../source/tile_coord';
 import type {PaintPropertyStatistics} from './program_configuration';
 import type StyleLayer from '../style/style_layer';
+import type {SerializedStructArray} from '../util/struct_array';
 
 const FeatureIndexArray = createStructArrayType({
     members: [
@@ -50,46 +51,60 @@ type QueryParameters = {
     }
 }
 
+export type SerializedFeatureIndex = {
+    coord: TileCoord,
+    overscaling: number,
+    grid: ArrayBuffer,
+    featureIndexArray: SerializedStructArray,
+    bucketLayerIDs: Array<Array<string>>,
+    paintPropertyStatistics: PaintPropertyStatistics
+}
+
 class FeatureIndex {
-    grid: Grid;
-    featureIndexArray: FeatureIndexArray;
-    rawTileData: any;
-    bucketLayerIDs: Array<Array<string>>;
-    paintPropertyStatistics: PaintPropertyStatistics;
     coord: TileCoord;
     overscaling: number;
     x: number;
     y: number;
     z: number;
+    grid: Grid;
+    featureIndexArray: FeatureIndexArray;
+
+    rawTileData: ArrayBuffer;
+    bucketLayerIDs: Array<Array<string>>;
+    paintPropertyStatistics: PaintPropertyStatistics;
+
     collisionTile: CollisionTile;
-    vtLayers: any;
+    vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
-    constructor(coord: TileCoord, overscaling: number, collisionTile?: CollisionTile) {
-        if (coord.grid) {
-            const serialized = coord;
-            const rawTileData = overscaling;
-            coord = serialized.coord;
-            overscaling = serialized.overscaling;
-            this.grid = new Grid(serialized.grid);
-            this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
-            this.rawTileData = rawTileData;
-            this.bucketLayerIDs = serialized.bucketLayerIDs;
-            this.paintPropertyStatistics = serialized.paintPropertyStatistics;
-        } else {
-            this.grid = new Grid(EXTENT, 16, 0);
-            this.featureIndexArray = new FeatureIndexArray();
-        }
+    static deserialize(serialized: SerializedFeatureIndex,
+                       rawTileData: ArrayBuffer,
+                       collisionTile: CollisionTile) {
+        const self = new FeatureIndex(
+            serialized.coord,
+            serialized.overscaling,
+            new Grid(serialized.grid),
+            new FeatureIndexArray(serialized.featureIndexArray));
 
+        self.rawTileData = rawTileData;
+        self.bucketLayerIDs = serialized.bucketLayerIDs;
+        self.paintPropertyStatistics = serialized.paintPropertyStatistics;
+        self.setCollisionTile(collisionTile);
+
+        return self;
+    }
+
+    constructor(coord: TileCoord,
+                overscaling: number,
+                grid?: Grid,
+                featureIndexArray?: FeatureIndexArray) {
         this.coord = coord;
         this.overscaling = overscaling;
         this.x = coord.x;
         this.y = coord.y;
         this.z = coord.z - Math.log(overscaling) / Math.LN2;
-
-        if (collisionTile) {
-            this.setCollisionTile(collisionTile);
-        }
+        this.grid = grid || new Grid(EXTENT, 16, 0);
+        this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
     }
 
     insert(feature: IndexedFeature, bucketIndex: number) {
@@ -117,7 +132,7 @@ class FeatureIndex {
         this.collisionTile = collisionTile;
     }
 
-    serialize(transferables?: Array<Transferable>) {
+    serialize(transferables?: Array<Transferable>): SerializedFeatureIndex {
         const grid = this.grid.toArrayBuffer();
         if (transferables) {
             transferables.push(grid);

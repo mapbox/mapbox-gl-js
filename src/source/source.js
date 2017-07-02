@@ -112,6 +112,10 @@ exports.setType = function (name: string, type: any) {
 import type {TileCoord} from './tile_coord';
 import type {Actor} from '../util/actor';
 import type {StyleLayerIndex} from '../style/style_layer_index';
+import type {SerializedBucket} from '../data/bucket';
+import type {SerializedFeatureIndex} from '../data/feature_index';
+import type {SerializedCollisionTile} from '../symbol/collision_tile';
+import type {SerializedStructArray} from '../util/struct_array';
 
 export type TileParameters = {
     source: string,
@@ -136,10 +140,11 @@ export type WorkerTileParameters = TileParameters & {
 } & PlacementConfig;
 
 export type WorkerTileResult = {
-    buckets: any,
-    featureIndex: any,
-    collisionTile: any,
-    rawTileData?: any,
+    buckets: Array<SerializedBucket>,
+    featureIndex: SerializedFeatureIndex,
+    collisionTile: SerializedCollisionTile,
+    collisionBoxArray: SerializedStructArray,
+    rawTileData?: ArrayBuffer,
 };
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
@@ -147,8 +152,8 @@ export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, tran
 export type RedoPlacementParameters = TileParameters & PlacementConfig;
 
 export type RedoPlacementResult = {
-    buckets: any,
-    collisionTile: any
+    buckets: Array<SerializedBucket>,
+    collisionTile: SerializedCollisionTile
 };
 
 export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult, transferables: ?Array<Transferable>) => void;
