@@ -6,7 +6,7 @@ const Grid = require('grid-index');
 
 const intersectionTests = require('../util/intersection_tests');
 
-type SerializedCollisionTile = {|
+export type SerializedCollisionTile = {|
     angle: number,
     pitch: number,
     cameraToCenterDistance: number,

@@ -13,6 +13,9 @@ const Throttler = require('../util/throttler');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
+import type TileCoord from './tile_coord';
+import type {WorkerTileResult} from './source';
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -20,12 +23,12 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
  * @private
  */
 class Tile {
-    coord: any;
+    coord: TileCoord;
     uid: number;
     uses: number;
     tileSize: number;
     sourceMaxZoom: number;
-    buckets: any;
+    buckets: {[string]: Bucket};
     expirationTime: any;
     expiredRequestCount: number;
     state: 'loading'   // Tile data is in the process of loading.
@@ -38,10 +41,10 @@ class Tile {
     placementThrottler: any;
     timeAdded: any;
     fadeEndTime: any;
-    rawTileData: any;
-    collisionBoxArray: any;
+    rawTileData: ArrayBuffer;
+    collisionBoxArray: ?CollisionBoxArray;
     collisionTile: ?CollisionTile;
-    featureIndex: any;
+    featureIndex: ?FeatureIndex;
     redoWhenDone: boolean;
     angle: number;
     pitch: number;
@@ -96,7 +99,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: any, painter: any) {
+    loadVectorData(data: WorkerTileResult, painter: any) {
         if (this.hasData()) {
             this.unloadVectorData();
         }
@@ -115,7 +118,7 @@ class Tile {
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
+        this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
 
@@ -126,11 +129,14 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData(data: any, style: any) {
+    reloadSymbolData(data: WorkerTileResult, style: any) {
         if (this.state === 'unloaded') return;
 
         this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
-        this.featureIndex.setCollisionTile(this.collisionTile);
+
+        if (this.featureIndex) {
+            this.featureIndex.setCollisionTile(this.collisionTile);
+        }
 
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
