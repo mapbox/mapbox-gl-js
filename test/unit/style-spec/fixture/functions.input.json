@@ -879,6 +879,39 @@
           ]
         }
       }
+    },
+    {
+      "id": "valid expression",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "expression": ["rgba", 10, ["number", ["get", "x"]], 30, 1]
+        }
+      }
+    },
+    {
+      "id": "invalid expression type - color",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "expression": ["pi"]
+        }
+      }
+    },
+    {
+      "id": "invalid expression - fails type checking",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "expression": ["rgba", 1, "should be a number", 0, 1]
+        }
+      }
     }
   ]
 }

@@ -131,7 +131,7 @@
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "test": "run-s lint lint-css test-unit test-flow",
     "test-suite": "run-s test-render test-query",
-    "test-suite-clean": "find test/integration/*-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
+    "test-suite-clean": "find test/integration/{render,query}-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
     "test-unit": "tap --reporter dot --no-coverage test/unit",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",

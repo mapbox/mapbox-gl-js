@@ -1,7 +1,7 @@
 // @flow
 
 const createVertexArrayType = require('./vertex_array_type');
-const interpolationFactor = require('../style-spec/function').interpolationFactor;
+const interpolationFactor = require('../style-spec/function/interpolation_factor');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 
 import type StyleLayer from '../style/style_layer';

@@ -21,23 +21,7 @@ class StyleDeclaration {
         this.isZoomConstant = this.function.isZoomConstant;
 
         if (!this.isFeatureConstant && !this.isZoomConstant) {
-            this.stopZoomLevels = [];
-            const interpolationAmountStops = [];
-            for (const stop of this.value.stops) {
-                const zoom = stop[0].zoom;
-                if (this.stopZoomLevels.indexOf(zoom) < 0) {
-                    this.stopZoomLevels.push(zoom);
-                    interpolationAmountStops.push([zoom, interpolationAmountStops.length]);
-                }
-            }
-
-            this._functionInterpolationT = createFunction({
-                type: 'exponential',
-                stops: interpolationAmountStops,
-                base: value.base
-            }, {
-                type: 'number'
-            });
+            this.stopZoomLevels = [].concat(this.function.zoomStops);
         } else if (!this.isZoomConstant) {
             this.stopZoomLevels = [];
             for (const stop of this.value.stops) {
@@ -67,7 +51,7 @@ class StyleDeclaration {
      */
     calculateInterpolationT(globalProperties) {
         if (this.isFeatureConstant || this.isZoomConstant) return 0;
-        return this._functionInterpolationT(globalProperties && globalProperties.zoom, {});
+        return this.function.interpolationT(globalProperties);
     }
 }
 

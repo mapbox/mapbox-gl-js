@@ -17,6 +17,7 @@
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
+    "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-var": "error",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
