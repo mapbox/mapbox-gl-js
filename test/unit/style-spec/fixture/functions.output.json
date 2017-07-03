@@ -84,11 +84,11 @@
     "line": 401
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
-  },
-  {
     "message": "layers[23].paint.fill-color.stops: identity function may not have a \"stops\" property",
     "line": 415
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
   },
   {
     "message": "layers[24].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
@@ -157,5 +157,13 @@
   {
     "message": "layers[43].paint.fill-color.default: color expected, \"invalid\" found",
     "line": 839
+  },
+  {
+    "message": "layers[45].paint.fill-color.expression: Expected Color but found Number instead.",
+    "line": 860
+  },
+  {
+    "message": "layers[46].paint.fill-color.expression[2]: Expected Number but found String instead.",
+    "line": 871
   }
 ]

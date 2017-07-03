@@ -1666,6 +1666,10 @@
     "doc": "The geometry type for the filter to select."
   },
   "function": {
+    "expression": {
+      "type": "expression",
+      "doc": "An expression."
+    },
     "stops": {
       "type": "array",
       "doc": "An array of stops.",
@@ -1733,6 +1737,12 @@
     ],
     "length": 2,
     "doc": "Zoom level and value pair."
+  },
+  "expression": {
+    "type": "array",
+    "value": "*",
+    "minimum": 1,
+    "doc": "An expression defines a function that can be used for data-driven style properties or feature filters."
   },
   "light": {
     "anchor": {

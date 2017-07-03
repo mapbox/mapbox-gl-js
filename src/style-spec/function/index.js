@@ -76,6 +76,7 @@ function createFunction(parameters, propertySpec) {
 
 module.exports = createFunction;
 module.exports.isFunctionDefinition = isFunctionDefinition;
+module.exports.getExpectedType = getExpectedType;
 
 function isFunctionDefinition(value) {
     return typeof value === 'object' &&
