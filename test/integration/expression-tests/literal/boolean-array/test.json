@@ -1,0 +1,29 @@
+{
+  "expression": [
+    "literal",
+    [
+      true,
+      false
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Array<Boolean, 2>"
+    },
+    "evaluateResults": [
+      [
+        true,
+        false
+      ]
+    ]
+  }
+}

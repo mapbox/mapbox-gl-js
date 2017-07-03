@@ -1,0 +1,23 @@
+{
+  "expression": [
+    "log2",
+    1024
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      10
+    ]
+  }
+}

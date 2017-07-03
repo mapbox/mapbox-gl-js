@@ -1,0 +1,20 @@
+{
+  "expression": "ahoy!",
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "ahoy!"
+    ]
+  }
+}

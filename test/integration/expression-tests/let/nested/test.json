@@ -1,0 +1,44 @@
+{
+  "expression": [
+    "let",
+    "a",
+    1,
+    [
+      "let",
+      "b",
+      [
+        "+",
+        1,
+        [
+          "a"
+        ]
+      ],
+      [
+        "+",
+        [
+          "a"
+        ],
+        [
+          "b"
+        ]
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      3
+    ]
+  }
+}

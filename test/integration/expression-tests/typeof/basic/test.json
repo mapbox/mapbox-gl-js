@@ -1,0 +1,116 @@
+{
+  "expression": [
+    "typeof",
+    [
+      "get",
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": null
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "s"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 0
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            1,
+            2,
+            3
+          ]
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            true,
+            false
+          ]
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            1,
+            false
+          ]
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": {}
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "Null",
+      "String",
+      "Number",
+      "Boolean",
+      "Array<Number, 3>",
+      "Array<String, 3>",
+      "Array<Boolean, 2>",
+      "Array<Value, 2>",
+      "Object"
+    ]
+  }
+}

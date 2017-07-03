@@ -1,0 +1,59 @@
+{
+  "expression": [
+    "string",
+    [
+      "match",
+      [
+        "string",
+        [
+          "get",
+          "x"
+        ]
+      ],
+      "a",
+      "Apple",
+      "b",
+      "Banana",
+      "Kumquat"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": "a"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "b"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "c"
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "Apple",
+      "Banana",
+      "Kumquat"
+    ]
+  }
+}

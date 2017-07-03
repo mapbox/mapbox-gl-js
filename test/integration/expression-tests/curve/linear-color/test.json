@@ -1,0 +1,83 @@
+{
+  "expression": [
+    "to_rgba",
+    [
+      "curve",
+      [
+        "exponential",
+        1
+      ],
+      [
+        "number",
+        [
+          "get",
+          "x"
+        ]
+      ],
+      1,
+      [
+        "parse_color",
+        "red"
+      ],
+      11,
+      [
+        "parse_color",
+        "blue"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": 0
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 5
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 11
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Array<Number, 4>"
+    },
+    "evaluateResults": [
+      [
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        0.6,
+        0,
+        0.4,
+        1
+      ],
+      [
+        0,
+        0,
+        1,
+        1
+      ]
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "expression": [
+    "concat",
+    "a",
+    "b",
+    "c"
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "abc"
+    ]
+  }
+}

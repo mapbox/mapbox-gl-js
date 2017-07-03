@@ -1,0 +1,77 @@
+{
+  "expression": [
+    "string",
+    [
+      "case",
+      [
+        "boolean",
+        [
+          "get",
+          "x"
+        ]
+      ],
+      "x",
+      [
+        "boolean",
+        [
+          "get",
+          "y"
+        ]
+      ],
+      "y",
+      "otherwise"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": true,
+          "y": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": true,
+          "y": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false,
+          "y": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false,
+          "y": false
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "x",
+      "x",
+      "y",
+      "otherwise"
+    ]
+  }
+}

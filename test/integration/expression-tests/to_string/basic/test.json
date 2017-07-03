@@ -1,0 +1,75 @@
+{
+  "expression": [
+    "to_string",
+    [
+      "get",
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": null
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            1,
+            2
+          ]
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": {
+            "y": 1
+          }
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "1",
+      "false",
+      "null",
+      {
+        "error": "ExpressionEvaluationError: Expected a primitive value in [\"string\", ...], but found Array<Number, 2> instead."
+      },
+      {
+        "error": "ExpressionEvaluationError: Expected a primitive value in [\"string\", ...], but found Object instead."
+      }
+    ]
+  }
+}

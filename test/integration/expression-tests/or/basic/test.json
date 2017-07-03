@@ -1,0 +1,71 @@
+{
+  "expression": [
+    "||",
+    [
+      "boolean",
+      [
+        "get",
+        "x"
+      ]
+    ],
+    [
+      "boolean",
+      [
+        "get",
+        "y"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": true,
+          "y": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": true,
+          "y": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false,
+          "y": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false,
+          "y": false
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "evaluateResults": [
+      true,
+      true,
+      true,
+      false
+    ]
+  }
+}

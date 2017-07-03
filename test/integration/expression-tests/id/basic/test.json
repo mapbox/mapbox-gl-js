@@ -1,0 +1,38 @@
+{
+  "expression": [
+    "id"
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "id": 1
+      }
+    ],
+    [
+      {},
+      {
+        "id": "one"
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Value"
+    },
+    "evaluateResults": [
+      {
+        "error": "ExpressionEvaluationError: Property 'id' not found in feature"
+      },
+      1,
+      "one"
+    ]
+  }
+}

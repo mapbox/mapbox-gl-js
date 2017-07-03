@@ -1,0 +1,42 @@
+{
+  "expression": [
+    "properties"
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 5
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": "invalid"
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Object"
+    },
+    "evaluateResults": [
+      {},
+      {
+        "x": 5
+      },
+      {
+        "error": "ExpressionEvaluationError: Expected feature.properties to be of type Object, but found String instead."
+      }
+    ]
+  }
+}

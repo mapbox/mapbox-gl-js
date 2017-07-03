@@ -1,0 +1,64 @@
+{
+  "expression": [
+    "match",
+    [
+      "get",
+      "x"
+    ],
+    "a",
+    "the letter a",
+    0,
+    "the number 0",
+    true,
+    "The Truth",
+    "otherwise"
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": "a"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 0
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "0"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": true
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "the letter a",
+      "the number 0",
+      "otherwise",
+      "The Truth"
+    ]
+  }
+}

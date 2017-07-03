@@ -1,0 +1,35 @@
+{
+  "expression": [
+    "string",
+    [
+      "match",
+      [
+        "string",
+        [
+          "get",
+          "x"
+        ]
+      ],
+      [
+        "string",
+        [
+          "get",
+          "y"
+        ]
+      ],
+      "thing one",
+      "thing two"
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[1][2][1]",
+          "error": "Match inputs must be literal primitive values or arrays of literal primitive values."
+        }
+      ]
+    }
+  }
+}

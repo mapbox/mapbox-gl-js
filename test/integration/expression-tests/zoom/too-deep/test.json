@@ -1,0 +1,34 @@
+{
+  "expression": [
+    "curve",
+    [
+      "step"
+    ],
+    1,
+    0,
+    [
+      "curve",
+      [
+        "linear"
+      ],
+      [
+        "zoom"
+      ],
+      0,
+      0,
+      22,
+      22
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[4][2]",
+          "error": "The \"zoom\" expression may only be used as the input to a top-level \"curve\" expression."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "expression": [
+    "to_number",
+    [
+      "get",
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "1"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "6.02e-23"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "Not a number"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": null
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            1,
+            2
+          ]
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": {
+            "y": 1
+          }
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      1,
+      1,
+      6.02e-23,
+      {
+        "error": "ExpressionEvaluationError: Could not convert \"Not a number\" to number."
+      },
+      0,
+      {
+        "error": "ExpressionEvaluationError: Could not convert [1,2] to number."
+      },
+      {
+        "error": "ExpressionEvaluationError: Could not convert {\"y\":1} to number."
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "expression": [
+    "curve",
+    [
+      "linear"
+    ],
+    [
+      "zoom"
+    ],
+    0,
+    0,
+    30,
+    30
+  ],
+  "evaluate": [
+    [
+      {
+        "zoom": 5
+      },
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": false,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      5
+    ]
+  }
+}

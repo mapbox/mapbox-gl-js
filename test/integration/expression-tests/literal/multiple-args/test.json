@@ -1,0 +1,24 @@
+{
+  "expression": [
+    "literal",
+    {},
+    []
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "'literal' expression requires exactly one argument, but found 2 instead."
+        }
+      ]
+    }
+  }
+}

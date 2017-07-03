@@ -1,0 +1,33 @@
+{
+  "expression": [
+    "geometry_type"
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "geometry": {
+          "type": "LineString"
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      {
+        "error": "ExpressionEvaluationError: Property 'geometry' not found in feature"
+      },
+      "LineString"
+    ]
+  }
+}
