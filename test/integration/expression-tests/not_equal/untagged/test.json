@@ -1,0 +1,27 @@
+{
+  "expression": [
+    "!=",
+    [
+      "string",
+      [
+        "get",
+        "x"
+      ]
+    ],
+    [
+      "get",
+      "y"
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "Expected String but found Value instead."
+        }
+      ]
+    }
+  }
+}

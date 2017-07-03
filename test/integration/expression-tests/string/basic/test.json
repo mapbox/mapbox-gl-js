@@ -1,0 +1,63 @@
+{
+  "expression": [
+    "string",
+    [
+      "get",
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": "1"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": null
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "1",
+      {
+        "error": "ExpressionEvaluationError: Expected value to be of type String, but found Number instead."
+      },
+      {
+        "error": "ExpressionEvaluationError: Expected value to be of type String, but found Boolean instead."
+      },
+      {
+        "error": "ExpressionEvaluationError: Expected value to be of type String, but found Null instead."
+      }
+    ]
+  }
+}

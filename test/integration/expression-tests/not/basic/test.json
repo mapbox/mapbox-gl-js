@@ -1,0 +1,42 @@
+{
+  "expression": [
+    "!",
+    [
+      "boolean",
+      [
+        "get",
+        "x"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "evaluateResults": [
+      false,
+      true
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "expression": [
+    "+",
+    [
+      "*",
+      1,
+      2,
+      3,
+      [
+        "FAKE_EXPRESSION",
+        1
+      ]
+    ],
+    10
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[1][4][0]",
+          "error": "Unknown expression \"FAKE_EXPRESSION\". If you wanted a literal array, use [\"literal\", [...]]."
+        }
+      ]
+    }
+  }
+}

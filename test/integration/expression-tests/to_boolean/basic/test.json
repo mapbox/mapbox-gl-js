@@ -1,0 +1,91 @@
+{
+  "expression": [
+    "to_boolean",
+    [
+      "get",
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": true
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": false
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": ""
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": "false"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 0
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": null
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "evaluateResults": [
+      {
+        "error": "ExpressionEvaluationError: Property 'x' not found in feature.properties"
+      },
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  }
+}

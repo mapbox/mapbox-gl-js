@@ -1,0 +1,33 @@
+{
+  "expression": [
+    "let",
+    "a",
+    1,
+    [
+      "+",
+      [
+        "+",
+        [
+          "a"
+        ],
+        [
+          "b"
+        ]
+      ],
+      [
+        "a"
+      ]
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[3][1][2][0]",
+          "error": "Unknown expression \"b\". If you wanted a literal array, use [\"literal\", [...]]."
+        }
+      ]
+    }
+  }
+}

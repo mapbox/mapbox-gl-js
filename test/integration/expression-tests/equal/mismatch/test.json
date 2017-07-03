@@ -1,0 +1,30 @@
+{
+  "expression": [
+    "==",
+    [
+      "string",
+      [
+        "get",
+        "x"
+      ]
+    ],
+    [
+      "number",
+      [
+        "get",
+        "y"
+      ]
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "Expected String but found Number instead."
+        }
+      ]
+    }
+  }
+}

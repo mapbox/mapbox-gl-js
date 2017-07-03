@@ -1,0 +1,51 @@
+{
+  "expression": [
+    "==",
+    [
+      "to_string",
+      [
+        "get",
+        "x"
+      ]
+    ],
+    [
+      "to_string",
+      [
+        "get",
+        "y"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": 1,
+          "y": 1
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 1,
+          "y": 2
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "evaluateResults": [
+      true,
+      false
+    ]
+  }
+}

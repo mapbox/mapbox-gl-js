@@ -1,0 +1,29 @@
+{
+  "expression": [
+    "literal",
+    [
+      1,
+      2
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Array<Number, 2>"
+    },
+    "evaluateResults": [
+      [
+        1,
+        2
+      ]
+    ]
+  }
+}

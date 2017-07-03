@@ -1,0 +1,23 @@
+{
+  "expression": [
+    "asin",
+    0.5
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      0.5235987755982988
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "expression": [
+    "let",
+    "z0_value",
+    10,
+    "z20_value",
+    30,
+    [
+      "curve",
+      [
+        "linear"
+      ],
+      [
+        "zoom"
+      ],
+      0,
+      [
+        "z0_value"
+      ],
+      20,
+      [
+        "z20_value"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {
+        "zoom": 10
+      },
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": false,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      20
+    ]
+  }
+}

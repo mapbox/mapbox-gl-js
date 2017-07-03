@@ -1,14 +1,34 @@
 <style>
     body { font-family: Helvetica; }
     h2 a { color:white; text-decoration:none; }
+    .hide { display: none; }
 </style>
+<% var failed = results.filter(r => /failed/.test(r.status)) %>
+<% if (failed.length) { %>
+<div>
+  <strong style="color: darkred;">Failed Tests:</strong>
+  <% for (const r of failed) { %><%- r.group %>/<%- r.test %> <% } %>
+</div>
+<% } else { %>
+<div><strong style="color: darkgreen;">All tests passed!</div>
+<% } %>
+<button id='toggle-passed'>Toggle showing passed tests</button>
+<script>
+const btn = document.getElementById('toggle-passed')
+btn.addEventListener('click', function (e) {
+  const passed = document.querySelectorAll('tr.passed');
+  for (const row of passed) {
+    row.classList.toggle('hide');
+  }
+});
+</script>
 <table>
 <tr>
     <th>Actual</th>
     <th>Info</th>
 </tr>
 <% for (r of results) { %>
-<tr>
+<tr class="<%- r.status %> <%- (failed.length && /passed/.test(r.status)) ? 'hide' : '' %>">
     <td><img src="data:image/png;base64,<%- r.actual %>"></td>
     <td>
         <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/style.json"><%- r.group %>/<%- r.test %> <% if (!r.ok) { %>(failed)<% } %></a></h2>

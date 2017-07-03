@@ -1,0 +1,33 @@
+{
+  "expression": [
+    "length",
+    [
+      "string",
+      [
+        "get",
+        "x"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": "a string"
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      8
+    ]
+  }
+}

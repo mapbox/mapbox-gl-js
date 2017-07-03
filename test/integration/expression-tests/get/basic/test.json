@@ -1,0 +1,37 @@
+{
+  "expression": [
+    "number",
+    [
+      "get",
+      "x"
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 1
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      {
+        "error": "ExpressionEvaluationError: Property 'x' not found in feature.properties"
+      },
+      1
+    ]
+  }
+}

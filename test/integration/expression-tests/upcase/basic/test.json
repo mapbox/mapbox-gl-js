@@ -1,0 +1,23 @@
+{
+  "expression": [
+    "upcase",
+    "string"
+  ],
+  "evaluate": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "evaluateResults": [
+      "STRING"
+    ]
+  }
+}

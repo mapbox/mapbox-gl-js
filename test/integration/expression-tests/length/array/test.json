@@ -1,0 +1,39 @@
+{
+  "expression": [
+    "length",
+    [
+      "array",
+      [
+        "get",
+        "x"
+      ]
+    ]
+  ],
+  "evaluate": [
+    [
+      {},
+      {
+        "properties": {
+          "x": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      }
+    ]
+  ],
+  "expected": {
+    "compileResult": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "evaluateResults": [
+      5
+    ]
+  }
+}
