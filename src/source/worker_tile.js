@@ -66,10 +66,9 @@ class WorkerTile {
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
         const featureIndex = new FeatureIndex(this.coord, this.overscaling);
-        featureIndex.bucketLayerIDs = {}; // Should this be an array?
+        featureIndex.bucketLayerIDs = [];
 
         const buckets = {};
-        let bucketIndex = 0;
 
         const options = {
             featureIndex: featureIndex,
@@ -115,7 +114,7 @@ class WorkerTile {
                 }
 
                 const bucket = buckets[layer.id] = layer.createBucket({
-                    index: bucketIndex,
+                    index: featureIndex.bucketLayerIDs.length,
                     layers: family,
                     zoom: this.zoom,
                     overscaling: this.overscaling,
@@ -123,9 +122,7 @@ class WorkerTile {
                 });
 
                 bucket.populate(features, options);
-                featureIndex.bucketLayerIDs[String(bucketIndex)] = family.map((l) => l.id);
-
-                bucketIndex++;
+                featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }
         }
 
