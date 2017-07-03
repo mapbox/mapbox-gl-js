@@ -54,7 +54,7 @@ class FeatureIndex {
     grid: Grid;
     featureIndexArray: FeatureIndexArray;
     rawTileData: any;
-    bucketLayerIDs: { [string]: Array<string> };
+    bucketLayerIDs: Array<Array<string>>;
     paintPropertyStatistics: PaintPropertyStatistics;
     coord: TileCoord;
     overscaling: number;
@@ -295,8 +295,8 @@ class FeatureIndex {
     }
 
     hasLayer(id: string) {
-        for (const index in this.bucketLayerIDs) {
-            for (const layerID of this.bucketLayerIDs[index]) {
+        for (const layerIDs of this.bucketLayerIDs) {
+            for (const layerID of layerIDs) {
                 if (id === layerID) return true;
             }
         }
