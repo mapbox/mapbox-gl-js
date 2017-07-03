@@ -52,7 +52,7 @@
 {% endif %}
 
 {% if site.assembly == true %}
-<link href="https://api.mapbox.com/mapbox-assembly/mapbox-addon/v0.11.4/assembly.min.css" rel="stylesheet">
+<link href="https://api.mapbox.com/mapbox-assembly/mbx/v0.12.2/assembly.min.css" rel="stylesheet">
 {% else %}
 {% if site.localbase == true %}
 <link href='/css/base/latest/base.css?v1.0' rel='stylesheet' />
@@ -89,9 +89,6 @@ if (typeof L !== 'undefined' &&
     L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
 }
 </script>
-{% if site.assembly == true %}
-<script src="https://api.mapbox.com/mapbox-assembly/mapbox-addon/v0.11.4/assembly.js"></script>
-{% endif %}
 <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
 {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
 {% if page.head %}{{page.head}}{% endif %}{% if layout.head %}{{layout.head}}{% endif %}
