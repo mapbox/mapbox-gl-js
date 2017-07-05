@@ -104,10 +104,10 @@ function isVisible(anchorPos, placementZoom, clippingBuffer, painter) {
     const x = anchorPos[0] / anchorPos[3];
     const y = anchorPos[1] / anchorPos[3];
     const inPaddedViewport = (
-            x >= -clippingBuffer[0] &&
-            x <= clippingBuffer[0] &&
-            y >= -clippingBuffer[1] &&
-            y <= clippingBuffer[1]);
+        x >= -clippingBuffer[0] &&
+        x <= clippingBuffer[0] &&
+        y >= -clippingBuffer[1] &&
+        y <= clippingBuffer[1]);
     return inPaddedViewport && painter.frameHistory.isVisible(placementZoom);
 }
 
@@ -154,11 +154,12 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         const projectionCache = {};
 
         const placeUnflipped = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-                                  bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache);
+            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache);
+
         if (placeUnflipped.notEnoughRoom ||
             (placeUnflipped.needsFlipping &&
              placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-                    bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache).notEnoughRoom)) {
+                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }
     }
@@ -187,12 +188,12 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
 
         const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
+            lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
         if (!firstPlacedGlyph)
             return { notEnoughRoom: true };
 
         const lastPlacedGlyph = placeGlyphAlongLine(fontScale * lastGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
+            lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
         if (!lastPlacedGlyph)
             return { notEnoughRoom: true };
 
@@ -210,7 +211,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 
             // Since first and last glyph fit on the line, we're sure that the rest of the glyphs can be placed
             placedGlyphs.push(placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                    lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache));
+                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache));
         }
         placedGlyphs.push(lastPlacedGlyph);
     } else {
@@ -225,7 +226,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         }
         const glyph = glyphOffsetArray.get(symbol.glyphStartIndex);
         const singleGlyph = placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache);
+            symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache);
         if (!singleGlyph)
             return { notEnoughRoom: true };
 
@@ -240,7 +241,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 }
 
 function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, anchorSegment,
-        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache) {
+    lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache) {
 
     const combinedOffsetX = flip ?
         offsetX - lineOffsetX :

@@ -369,13 +369,9 @@ class Painter {
             ];
         }
 
-        const translation = inViewportPixelUnitsUnits ? [
-            translate[0],
-            translate[1],
-            0
-        ] : [
-            pixelsToTileUnits(tile, translate[0], this.transform.zoom),
-            pixelsToTileUnits(tile, translate[1], this.transform.zoom),
+        const translation = [
+            inViewportPixelUnitsUnits ? translate[0] : pixelsToTileUnits(tile, translate[0], this.transform.zoom),
+            inViewportPixelUnitsUnits ? translate[1] : pixelsToTileUnits(tile, translate[1], this.transform.zoom),
             0
         ];
 

@@ -82,8 +82,7 @@ test('SourceCache#addTile', (t) => {
 
     t.test('adds tile when uncached', (t) => {
         const coord = new TileCoord(0, 0, 0);
-        const sourceCache = createSourceCache({})
-        .on('dataloading', (data) => {
+        const sourceCache = createSourceCache({}).on('dataloading', (data) => {
             t.deepEqual(data.tile.coord, coord);
             t.equal(data.tile.uses, 1);
             t.end();
@@ -103,8 +102,7 @@ test('SourceCache#addTile', (t) => {
                 load++;
                 callback();
             }
-        })
-        .on('dataloading', () => { add++; });
+        }).on('dataloading', () => { add++; });
 
         const tr = new Transform();
         tr.width = 512;
@@ -177,8 +175,7 @@ test('SourceCache#addTile', (t) => {
                 load++;
                 callback();
             }
-        })
-        .on('dataloading', () => { add++; });
+        }).on('dataloading', () => { add++; });
 
         const t1 = sourceCache._addTile(coord);
         const t2 = sourceCache._addTile(new TileCoord(0, 0, 0, 1));
@@ -279,8 +276,7 @@ test('SourceCache / Source lifecycle', (t) => {
     });
 
     t.test('forward error event', (t) => {
-        const sourceCache = createSourceCache({ error: 'Error loading source' })
-        .on('error', (err) => {
+        const sourceCache = createSourceCache({ error: 'Error loading source' }).on('error', (err) => {
             t.equal(err.error, 'Error loading source');
             t.end();
         });
@@ -289,14 +285,13 @@ test('SourceCache / Source lifecycle', (t) => {
 
     t.test('suppress 404 errors', (t) => {
         const sourceCache = createSourceCache({status: 404, message: 'Not found'})
-        .on('error', t.fail);
+            .on('error', t.fail);
         sourceCache.onAdd();
         t.end();
     });
 
     t.test('loaded() true after source error', (t) => {
-        const sourceCache = createSourceCache({ error: 'Error loading source' })
-        .on('error', () => {
+        const sourceCache = createSourceCache({ error: 'Error loading source' }).on('error', () => {
             t.ok(sourceCache.loaded());
             t.end();
         });

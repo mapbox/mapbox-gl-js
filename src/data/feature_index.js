@@ -205,15 +205,17 @@ class FeatureIndex {
         return result;
     }
 
-    filterMatching(result: {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
-                   matching: Array<any>,
-                   array: any,
-                   queryGeometry: Array<Array<Point>>,
-                   filter: any,
-                   filterLayerIDs: Array<string>,
-                   styleLayers: {[string]: StyleLayer},
-                   bearing: number,
-                   pixelsToTileUnits: number) {
+    filterMatching(
+        result: {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>},
+        matching: Array<any>,
+        array: any,
+        queryGeometry: Array<Array<Point>>,
+        filter: any,
+        filterLayerIDs: Array<string>,
+        styleLayers: {[string]: StyleLayer},
+        bearing: number,
+        pixelsToTileUnits: number
+    ) {
         let previousIndex;
         for (let k = 0; k < matching.length; k++) {
             const index = matching[k];

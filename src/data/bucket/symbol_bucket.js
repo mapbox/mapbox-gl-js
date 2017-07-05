@@ -124,8 +124,8 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
 function addDynamicAttributes(dynamicLayoutVertexArray, p, angle, placementZoom) {
     const twoPi = Math.PI * 2;
     const angleAndZoom = packUint8ToFloat(
-            ((angle + twoPi) % twoPi) / twoPi * 255,
-            placementZoom * 10);
+        ((angle + twoPi) % twoPi) / twoPi * 255,
+        placementZoom * 10);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
@@ -375,9 +375,9 @@ class SymbolBucket {
             break;
         }
 
-        const justify = layout['text-justify'] === 'right' ? 1 :
-            layout['text-justify'] === 'left' ? 0 :
-            0.5;
+        const justify =
+            layout['text-justify'] === 'right' ? 1 :
+            layout['text-justify'] === 'left' ? 0 : 0.5;
 
         const oneEm = 24;
         const lineHeight = layout['text-line-height'] * oneEm;
@@ -613,12 +613,12 @@ class SymbolBucket {
 
             let glyphScale = hasText ?
                 collisionTile.placeCollisionFeature(textCollisionFeature,
-                        layout['text-allow-overlap'], layout['symbol-avoid-edges']) :
+                    layout['text-allow-overlap'], layout['symbol-avoid-edges']) :
                 collisionTile.minScale;
 
             let iconScale = hasIcon ?
                 collisionTile.placeCollisionFeature(iconCollisionFeature,
-                        layout['icon-allow-overlap'], layout['symbol-avoid-edges']) :
+                    layout['icon-allow-overlap'], layout['symbol-avoid-edges']) :
                 collisionTile.minScale;
 
 
@@ -714,8 +714,8 @@ class SymbolBucket {
 
         const labelAngle = ((labelAnchor.angle + placementAngle) + 2 * Math.PI) % (2 * Math.PI);
         const inVerticalRange = (
-                (labelAngle > Math.PI * 1 / 4 && labelAngle <= Math.PI * 3 / 4) ||
-                (labelAngle > Math.PI * 5 / 4 && labelAngle <= Math.PI * 7 / 4));
+            (labelAngle > Math.PI * 1 / 4 && labelAngle <= Math.PI * 3 / 4) ||
+            (labelAngle > Math.PI * 5 / 4 && labelAngle <= Math.PI * 7 / 4));
         const useVerticalMode = Boolean(writingModes & WritingMode.vertical) && inVerticalRange;
 
         for (const symbol of quads) {
@@ -752,11 +752,11 @@ class SymbolBucket {
         }
 
         placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
-                glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
-                lineStartIndex, lineLength, labelAnchor.segment,
-                sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
-                lineOffset[0], lineOffset[1],
-                placementZoom, useVerticalMode);
+            glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
+            lineStartIndex, lineLength, labelAnchor.segment,
+            sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
+            lineOffset[0], lineOffset[1],
+            placementZoom, useVerticalMode);
 
         arrays.populatePaintArrays(featureProperties);
     }
@@ -842,8 +842,7 @@ class SymbolBucket {
             if (!shapedTextOrientations[writingMode]) continue;
             glyphQuads = glyphQuads.concat(addToBuffers ?
                 getGlyphQuads(anchor, shapedTextOrientations[writingMode],
-                              layer, textAlongLine,
-                              globalProperties, featureProperties) :
+                    layer, textAlongLine, globalProperties, featureProperties) :
                 []);
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
@@ -854,8 +853,8 @@ class SymbolBucket {
         if (shapedIcon) {
             iconQuads = addToBuffers ?
                 getIconQuads(anchor, shapedIcon, layer,
-                             iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
-                             globalProperties, featureProperties) :
+                    iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
+                    globalProperties, featureProperties) :
                 [];
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
         }

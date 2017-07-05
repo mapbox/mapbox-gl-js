@@ -262,8 +262,7 @@ function createStructArrayType(options: {|
         return structArrayTypeCache[key];
     }
 
-    const alignment = (options.alignment === undefined) ?
-      1 : options.alignment;
+    const alignment = options.alignment === undefined ? 1 : options.alignment;
 
     let offset = 0;
     let maxSize = 0;

@@ -84,11 +84,8 @@ class WorkerTile {
             }
 
             if (sourceLayer.version === 1) {
-                util.warnOnce(
-                    `Vector tile source "${this.source}" layer "${
-                    sourceLayerId}" does not use vector tile spec v2 ` +
-                    `and therefore may have some rendering errors.`
-                );
+                util.warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
+                    `does not use vector tile spec v2 and therefore may have some rendering errors.`);
             }
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
@@ -167,11 +164,12 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
-                const collisionTile = new CollisionTile(this.angle,
-                                                        this.pitch,
-                                                        this.cameraToCenterDistance,
-                                                        this.cameraToTileDistance,
-                                                        this.collisionBoxArray);
+                const collisionTile = new CollisionTile(
+                    this.angle,
+                    this.pitch,
+                    this.cameraToCenterDistance,
+                    this.cameraToTileDistance,
+                    this.collisionBoxArray);
 
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
@@ -213,11 +211,12 @@ class WorkerTile {
             return {};
         }
 
-        const collisionTile = new CollisionTile(this.angle,
-                                                this.pitch,
-                                                this.cameraToCenterDistance,
-                                                this.cameraToTileDistance,
-                                                this.collisionBoxArray);
+        const collisionTile = new CollisionTile(
+            this.angle,
+            this.pitch,
+            this.cameraToCenterDistance,
+            this.cameraToTileDistance,
+            this.collisionBoxArray);
 
         for (const bucket of this.symbolBuckets) {
             recalculateLayers(bucket, this.zoom);

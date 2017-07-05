@@ -51,13 +51,15 @@ class CollisionTile {
         );
     }
 
-    constructor(angle: number,
-                pitch: number,
-                cameraToCenterDistance: number,
-                cameraToTileDistance: number,
-                collisionBoxArray: any,
-                grid: any = new Grid(EXTENT, 12, 6),
-                ignoredGrid: any = new Grid(EXTENT, 12, 0)) {
+    constructor(
+        angle: number,
+        pitch: number,
+        cameraToCenterDistance: number,
+        cameraToTileDistance: number,
+        collisionBoxArray: any,
+        grid: any = new Grid(EXTENT, 12, 6),
+        ignoredGrid: any = new Grid(EXTENT, 12, 0)
+    ) {
         this.angle = angle;
         this.pitch = pitch;
         this.cameraToCenterDistance = cameraToCenterDistance;
@@ -99,20 +101,16 @@ class CollisionTile {
             const maxInt16 = 32767;
             //left
             collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
             // right
             collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
             // top
             collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
             // bottom
             collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    0);
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
 
         this.tempCollisionBox = collisionBoxArray.get(0);

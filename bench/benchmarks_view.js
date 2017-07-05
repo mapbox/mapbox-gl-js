@@ -28,10 +28,10 @@ const BenchmarksView = React.createClass({
             </h1>
             <table>
                 <thead>
-                <tr>
-                    <th>Benchmark</th>
-                    {this.versions().map((v) => <th key={v}>{v}</th>)}
-                </tr>
+                    <tr>
+                        <th>Benchmark</th>
+                        {this.versions().map((v) => <th key={v}>{v}</th>)}
+                    </tr>
                 </thead>
                 <tbody>
                     {Object.keys(this.state.results).map(this.renderBenchmark)}
