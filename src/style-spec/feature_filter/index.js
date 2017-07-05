@@ -39,9 +39,10 @@ function compile(filter) {
 }
 
 function compilePropertyReference(property) {
-    return property === '$type' ? 'f.type' :
-        property === '$id' ? 'f.id' :
-        `p[${JSON.stringify(property)}]`;
+    const ref =
+        property === '$type' ? 'f.type' :
+        property === '$id' ? 'f.id' : `p[${JSON.stringify(property)}]`;
+    return ref;
 }
 
 function compileComparisonOp(property, value, op, checkType) {

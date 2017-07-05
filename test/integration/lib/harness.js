@@ -71,8 +71,7 @@ module.exports = function (directory, implementation, options, run) {
 
             const skipped = params.skipped && params.skipped[implementation];
             if (skipped) {
-                console.log(colors.gray(`* skipped ${params.group} ${params.test
-                    } (${skipped})`));
+                console.log(colors.gray(`* skipped ${params.group} ${params.test} (${skipped})`));
                 return;
             }
 

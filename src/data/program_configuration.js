@@ -329,7 +329,7 @@ function getPaintAttributeValue(attribute: Attribute, layer: StyleLayer, globalP
     }
     // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
     const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(
-            attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
+        attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
 
     return values.length === 1 ? values[0] : values;
 }

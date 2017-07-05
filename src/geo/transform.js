@@ -196,14 +196,14 @@ class Transform {
      * @returns {Array<Tile>} tiles
      */
     coveringTiles(
-      options: {
-        tileSize: number,
-        minzoom: number,
-        maxzoom: number,
-        roundZoom: boolean,
-        reparseOverscaled: boolean,
-        renderWorldCopies: boolean
-      }
+        options: {
+            tileSize: number,
+            minzoom: number,
+            maxzoom: number,
+            roundZoom: boolean,
+            reparseOverscaled: boolean,
+            renderWorldCopies: boolean
+        }
     ) {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;

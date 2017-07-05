@@ -50,7 +50,7 @@ class CollisionFeature {
 
         } else {
             collisionBoxArray.emplaceBack(anchor.x, anchor.y, 0, 0, x1, y1, x2, y2, Infinity, Infinity, featureIndex, sourceLayerIndex, bucketIndex,
-                    0, 0, 0, 0, 0);
+                0, 0, 0, 0, 0);
         }
 
         this.boxEndIndex = collisionBoxArray.length;
@@ -168,10 +168,10 @@ class CollisionFeature {
             }
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
-                    boxAnchorPoint.x - anchor.x, boxAnchorPoint.y - anchor.y,
-                    -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
-                    featureIndex, sourceLayerIndex, bucketIndex,
-                    0, 0, 0, 0, 0);
+                boxAnchorPoint.x - anchor.x, boxAnchorPoint.y - anchor.y,
+                -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
+                featureIndex, sourceLayerIndex, bucketIndex,
+                0, 0, 0, 0, 0);
         }
     }
 }

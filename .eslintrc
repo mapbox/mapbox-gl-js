@@ -25,7 +25,9 @@
     "prefer-template": "error",
     "quotes": "off",
     "space-before-function-paren": "off",
-    "template-curly-spacing": "error"
+    "template-curly-spacing": "error",
+    "no-useless-escape": "off",
+    "indent": ["error", 4, {"flatTernaryExpressions": true}]
   },
   "env": {
     "es6": true,

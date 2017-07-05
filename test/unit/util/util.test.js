@@ -19,12 +19,10 @@ test('util', (t) => {
     t.ok(typeof util.uniqueId() === 'number', 'uniqueId');
 
     t.test('getCoordinatesCenter', (t) => {
-        t.deepEqual(util.getCoordinatesCenter(
-            [
-                new Coordinate(0, 0, 2),
-                new Coordinate(1, 1, 2)
-            ]),
-            new Coordinate(0.5, 0.5, 0));
+        t.deepEqual(util.getCoordinatesCenter([
+            new Coordinate(0, 0, 2),
+            new Coordinate(1, 1, 2)
+        ]), new Coordinate(0.5, 0.5, 0));
         t.end();
     });
 

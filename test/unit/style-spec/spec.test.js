@@ -8,7 +8,7 @@ const spec = require('../../../src/style-spec');
         const v = version + kind;
         test(v, (t) => {
             for (const k in spec[v]) {
-        // Exception for version.
+                // Exception for version.
                 if (k === '$version') {
                     t.equal(typeof spec[v].$version, 'number', '$version (number)');
                 } else {
@@ -24,9 +24,9 @@ function validSchema(k, t, obj, ref, version, kind) {
     const scalar = ['boolean', 'string', 'number'];
     const types = Object.keys(ref).concat(['boolean', 'string', 'number',
         'array', 'enum', 'color', '*',
-    // new in v8
+        // new in v8
         'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template',
-    // new enums in v8
+        // new enums in v8
         'line-cap-enum',
         'line-join-enum',
         'symbol-placement-enum',
@@ -60,19 +60,19 @@ function validSchema(k, t, obj, ref, version, kind) {
         'sdk-support'
     ];
 
-  // Schema object.
+    // Schema object.
     if (Array.isArray(obj.type) || typeof obj.type === 'string') {
-    // schema must have only known keys
+        // schema must have only known keys
         for (const attr in obj) {
             t.ok(keys.indexOf(attr) !== -1, `${k}.${attr} stray key`);
         }
 
-    // schema type must be js native, 'color', or present in ref root object.
+        // schema type must be js native, 'color', or present in ref root object.
         t.ok(types.indexOf(obj.type) !== -1, `${k}.type (${obj.type})`);
 
-    // schema type is an enum, it must have 'values' and they must be
-    // objects (>=v8) or scalars (<=v7). If objects, check that doc key
-    // (if present) is a string.
+        // schema type is an enum, it must have 'values' and they must be
+        // objects (>=v8) or scalars (<=v7). If objects, check that doc key
+        // (if present) is a string.
         if (obj.type === 'enum') {
             const values = (ref.$version >= 8 ? Object.keys(obj.values) : obj.values);
             t.ok(Array.isArray(values) && values.every((v) => {
@@ -90,7 +90,7 @@ function validSchema(k, t, obj, ref, version, kind) {
             }
         }
 
-    // schema type is array, it must have 'value' and it must be a type.
+        // schema type is array, it must have 'value' and it must be a type.
         if (obj.value !== undefined) {
             if (Array.isArray(obj.value)) {
                 obj.value.forEach((i) => {
@@ -103,18 +103,18 @@ function validSchema(k, t, obj, ref, version, kind) {
             }
         }
 
-    // schema key doc checks
+        // schema key doc checks
         if (obj.doc !== undefined) {
             t.equal('string', typeof obj.doc, `${k}.doc (string)`);
             if (kind === 'min') t.fail(`minified file should not have ${k}.doc`);
         } else if (t.name === 'latest') t.fail(`doc missing for ${k}`);
 
-    // schema key example checks
+        // schema key example checks
         if (kind === 'min' && obj.example !== undefined) {
             t.fail(`minified file should not have ${k}.example`);
         }
 
-    // schema key function checks
+        // schema key function checks
         if (obj.function !== undefined) {
             if (ref.$version >= 7) {
                 t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0, `function: ${obj.function}`);
@@ -123,17 +123,17 @@ function validSchema(k, t, obj, ref, version, kind) {
             }
         }
 
-    // schema key required checks
+        // schema key required checks
         if (obj.required !== undefined) {
             t.equal('boolean', typeof obj.required, `${k}.required (boolean)`);
         }
 
-    // schema key transition checks
+        // schema key transition checks
         if (obj.transition !== undefined) {
             t.equal('boolean', typeof obj.transition, `${k}.transition (boolean)`);
         }
 
-    // schema key requires checks
+        // schema key requires checks
         if (obj.requires !== undefined) {
             t.equal(true, Array.isArray(obj.requires), `${k}.requires (array)`);
         }
@@ -142,10 +142,10 @@ function validSchema(k, t, obj, ref, version, kind) {
             if (typeof child === 'string' && scalar.indexOf(child) !== -1) return;
             validSchema(`${k}[${j}]`, t,  typeof child === 'string' ? ref[child] : child, ref);
         });
-    // Container object.
+        // Container object.
     } else if (typeof obj === 'object') {
         for (const j in obj) validSchema(`${k}.${j}`, t, obj[j], ref);
-    // Invalid ref object.
+        // Invalid ref object.
     } else {
         t.ok(false, `Invalid: ${k}`);
     }

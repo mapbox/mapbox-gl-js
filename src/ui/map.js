@@ -982,11 +982,11 @@ class Map extends Camera {
         }
     }
 
-     /**
-      * Returns a Boolean indicating whether the map's style is fully loaded.
-      *
-      * @returns {boolean} A Boolean indicating whether the style is fully loaded.
-      */
+    /**
+     * Returns a Boolean indicating whether the map's style is fully loaded.
+     *
+     * @returns {boolean} A Boolean indicating whether the style is fully loaded.
+     */
     isStyleLoaded() {
         if (!this.style) return util.warnOnce('There is no style added to the map.');
         return this.style.loaded();
@@ -1102,9 +1102,9 @@ class Map extends Camera {
      * @param {number} [options.pixelRatio] The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
      */
     addImage(
-      name: string,
-      image: HTMLImageElement | $ArrayBufferView,
-      options?: {width: number, height: number, pixelRatio: number}
+        name: string,
+        image: HTMLImageElement | $ArrayBufferView,
+        options?: {width: number, height: number, pixelRatio: number}
     ) {
         this.style.spriteAtlas.addImage(name, image, options);
     }
@@ -1953,17 +1953,17 @@ function removeNode(node) {
  * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
  */
 
- /**
-  * Fired when an error occurs. This is GL JS's primary error reporting
-  * mechanism. We use an event instead of `throw` to better accommodate
-  * asyncronous operations. If no listeners are bound to the `error` event, the
-  * error will be printed to the console.
-  *
-  * @event error
-  * @memberof Map
-  * @instance
-  * @property {{error: {message: string}}} data
-  */
+/**
+ * Fired when an error occurs. This is GL JS's primary error reporting
+ * mechanism. We use an event instead of `throw` to better accommodate
+ * asyncronous operations. If no listeners are bound to the `error` event, the
+ * error will be printed to the console.
+ *
+ * @event error
+ * @memberof Map
+ * @instance
+ * @property {{error: {message: string}}} data
+ */
 
 /**
  * Fired when any map data loads or changes. See {@link MapDataEvent}
@@ -2028,32 +2028,32 @@ function removeNode(node) {
  * @property {MapDataEvent} data
  */
 
- /**
-  * A `MapDataEvent` object is emitted with the {@link Map.event:data}
-  * and {@link Map.event:dataloading} events. Possible values for
-  * `dataType`s are:
-  *
-  * - `'source'`: The non-tile data associated with any source
-  * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
-  *
-  * @typedef {Object} MapDataEvent
-  * @property {string} type The event type.
-  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
-  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
-  * @property {Object} [source] The [style spec representation of the source](https://www.mapbox.com/mapbox-gl-style-spec/#sources) if the event has a `dataType` of `source`.
-  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
-  * that internal data has been received or changed. Possible values are `metadata` and `content`.
-  * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
-  * the event is related to loading of a tile.
-  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
-  * the event is related to loading of a tile.
-  */
+/**
+ * A `MapDataEvent` object is emitted with the {@link Map.event:data}
+ * and {@link Map.event:dataloading} events. Possible values for
+ * `dataType`s are:
+ *
+ * - `'source'`: The non-tile data associated with any source
+ * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
+ *
+ * @typedef {Object} MapDataEvent
+ * @property {string} type The event type.
+ * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
+ * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
+ * @property {Object} [source] The [style spec representation of the source](https://www.mapbox.com/mapbox-gl-style-spec/#sources) if the event has a `dataType` of `source`.
+ * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
+ * that internal data has been received or changed. Possible values are `metadata` and `content`.
+ * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
+ * the event is related to loading of a tile.
+ * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
+ * the event is related to loading of a tile.
+ */
 type MapDataEvent = {
     type: string,
     dataType: string
 }
 
- /**
+/**
  * Fired immediately after the map has been removed with {@link Map.event:remove}.
  *
  * @event remove
@@ -2061,7 +2061,7 @@ type MapDataEvent = {
  * @instance
  */
 
-  /**
+/**
  * Fired immediately after the map has been resized.
  *
  * @event resize
