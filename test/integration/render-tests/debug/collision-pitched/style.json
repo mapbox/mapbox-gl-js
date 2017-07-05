@@ -5,6 +5,7 @@
             "ignored": {
               "native": "https://github.com/mapbox/mapbox-gl-native/issues/8967"
              },
+            "diff": 0.004,
             "collisionDebug": true,
             "debug": true,
             "width": 500,
