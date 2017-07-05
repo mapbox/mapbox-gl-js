@@ -31,6 +31,6 @@ jobs:
           name: deploy if tagged
           when: on_success
           command: |
-            if [ $CIRCLE_TAG =~ /v[0-9]+\.[0-9]+\.[0-9]+(\-dev)?/ ]; then
+            if [[ $CIRCLE_TAG =~ v[0-9]+\.[0-9]+\.[0-9]+(\-dev)? ]]; then
               bash ./deploy.sh
             fi
