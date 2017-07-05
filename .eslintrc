@@ -27,7 +27,15 @@
     "space-before-function-paren": "off",
     "template-curly-spacing": "error",
     "no-useless-escape": "off",
-    "indent": ["error", 4, {"flatTernaryExpressions": true}]
+    "indent": ["error", 4, {
+      "flatTernaryExpressions": true,
+      "FunctionDeclaration": {
+        "parameters": "off"
+      },
+      "FunctionExpression": {
+        "parameters": "off"
+      }
+    }]
   },
   "env": {
     "es6": true,
