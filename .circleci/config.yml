@@ -32,5 +32,12 @@ jobs:
           when: on_success
           command: |
             if [[ $CIRCLE_TAG =~ v[0-9]+\.[0-9]+\.[0-9]+(\-dev)? ]]; then
-              bash ./deploy.sh
+              bash ./.circleci/deploy.sh
             fi
+# this is a workaround for getting the CIRCLE_TAG env variable to work in 2.0
+# ref: https://discuss.circleci.com/t/build-on-tag/9864/42
+deployment:
+  fake_deploy_for_cci2:
+    tag: /.*/
+    steps:
+      - run: echo "make tags run in 2.0"
