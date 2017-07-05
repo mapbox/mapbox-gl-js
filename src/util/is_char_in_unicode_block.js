@@ -228,7 +228,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Takri': (char) => char >= 0x11680 && char <= 0x116CF,
     // 'Ahom': (char) => char >= 0x11700 && char <= 0x1173F,
     // 'Warang Citi': (char) => char >= 0x118A0 && char <= 0x118FF,
-    // 'Zanabazar Square': (char) => char >= 0x11A00 && char <= 0x11A00,
+    // 'Zanabazar Square': (char) => char >= 0x11A00 && char <= 0x11A4F,
     // 'Soyombo': (char) => char >= 0x11A50 && char <= 0x11AAF,
     // 'Pau Cin Hau': (char) => char >= 0x11AC0 && char <= 0x11AFF,
     // 'Bhaiksuki': (char) => char >= 0x11C00 && char <= 0x11C6F,
