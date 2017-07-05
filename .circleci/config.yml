@@ -12,6 +12,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            echo $CIRCLE_TAG \
             bash ./.circleci/dependencies.sh
       - save_cache:
           key: v1-mapbox-gl-js-cache
