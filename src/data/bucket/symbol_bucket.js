@@ -22,6 +22,7 @@ const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibili
 const classifyRings = require('../../util/classify_rings');
 const vectorTileFeatureTypes = require('vector-tile').VectorTileFeature.types;
 const createStructArrayType = require('../../util/struct_array');
+const verticalizePunctuation = require('../../util/verticalize_punctuation');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -323,8 +324,16 @@ class SymbolBucket {
             }
 
             if (text) {
+                const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+                const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
                 for (let i = 0; i < text.length; i++) {
                     stack[text.charCodeAt(i)] = true;
+                    if (textAlongLine && allowsVerticalWritingMode) {
+                        const verticalChar = verticalizePunctuation.lookup[text.charAt(i)];
+                        if (verticalChar) {
+                            stack[verticalChar.charCodeAt(0)] = true;
+                        }
+                    }
                 }
             }
         }

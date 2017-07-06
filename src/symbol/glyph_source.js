@@ -1,7 +1,6 @@
 
 const normalizeURL = require('../util/mapbox').normalizeGlyphsURL;
 const ajax = require('../util/ajax');
-const verticalizePunctuation = require('../util/verticalize_punctuation');
 const Glyphs = require('../util/glyphs');
 const GlyphAtlas = require('../symbol/glyph_atlas');
 const Protobuf = require('pbf');
@@ -88,12 +87,7 @@ class GlyphSource {
         };
 
         for (let i = 0; i < glyphIDs.length; i++) {
-            const glyphID = glyphIDs[i];
-            const string = String.fromCharCode(glyphID);
-            getGlyph(glyphID);
-            if (verticalizePunctuation.lookup[string]) {
-                getGlyph(verticalizePunctuation.lookup[string].charCodeAt(0));
-            }
+            getGlyph(glyphIDs[i]);
         }
 
         if (!remaining) callback(undefined, glyphs, fontstack);
