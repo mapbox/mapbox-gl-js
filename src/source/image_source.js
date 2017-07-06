@@ -142,12 +142,11 @@ class ImageSource extends Evented {
 
     _setTile(tile) {
         this.tiles[tile.coord.w] = tile;
-        const maxInt16 = 32767;
         const array = new RasterBoundsArray();
         array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
-        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, maxInt16, 0);
-        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, maxInt16);
-        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, maxInt16, maxInt16);
+        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, EXTENT, 0);
+        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, EXTENT);
+        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, EXTENT, EXTENT);
 
         tile.buckets = {};
 

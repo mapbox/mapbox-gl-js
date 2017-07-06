@@ -5,6 +5,7 @@ const StyleLayerIndex = require('../style/style_layer_index');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
+const RasterTerrainTileWorkerSource = require('./raster_terrain_tile_worker_source');
 const assert = require('assert');
 
 const globalRTLTextPlugin = require('./rtl_text_plugin');
@@ -39,7 +40,8 @@ class Worker {
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
-            geojson: GeoJSONWorkerSource
+            geojson: GeoJSONWorkerSource,
+            'raster-terrain': RasterTerrainTileWorkerSource
         };
 
         // [mapId][sourceType] => worker source instance

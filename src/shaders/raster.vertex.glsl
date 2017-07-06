@@ -11,6 +11,6 @@ varying vec2 v_pos1;
 
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
-    v_pos0 = (((a_texture_pos / 32767.0) - 0.5) / u_buffer_scale ) + 0.5;
+    v_pos0 = (((a_texture_pos / 8192.0) - 0.5) / u_buffer_scale ) + 0.5;
     v_pos1 = (v_pos0 * u_scale_parent) + u_tl_parent;
 }

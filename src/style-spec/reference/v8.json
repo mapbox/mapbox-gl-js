@@ -122,6 +122,9 @@
         },
         "raster": {
             "doc": "A raster tile source."
+        },
+        "raster-terrain": {
+            "doc": "Mapbox Terrain RGB elevation raster tiles"
         }
       },
       "doc": "The data type of the tile source."
@@ -371,6 +374,14 @@
             }
           }
         },
+        "hillshade": {
+            "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles.",
+            "sdk-support": {
+              "basic functionality": {
+                "js": "vnext"
+              }
+            }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -437,6 +448,7 @@
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
+    "layout_hillshade",
     "layout_background"
   ],
   "layout_background": {
@@ -1600,6 +1612,19 @@
       }
     }
   },
+  "layout_hillshade": {
+    "visibility": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": [
+        "visible",
+        "none"
+      ],
+      "default": "visible",
+      "doc": "The display of this layer. `none` hides this layer."
+    }
+  },
   "filter": {
     "type": "array",
     "value": "*",
@@ -1821,6 +1846,7 @@
     "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
+    "paint_hillshade",
     "paint_background"
   ],
   "paint_fill": {
@@ -3167,6 +3193,35 @@
         },
         "data-driven styling": {}
       }
+    }
+  },
+  "paint_hillshade": {
+    "hillshade-shadow-color": {
+      "type": "color",
+      "default": "#0000FF",
+      "doc": "The shading color of areas that face away from the light source.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true
+    },
+    "hillshade-highlight-color": {
+      "type": "color",
+      "default": "#FFFF00",
+      "doc": "The shading color of areas that faces towards the light source.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true
+    },
+    "hillshade-accent-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true
     }
   },
   "paint_background": {

@@ -23,7 +23,8 @@ const draw = {
     'fill-extrusion': require('./draw_fill_extrusion'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
-    debug: require('./draw_debug')
+    debug: require('./draw_debug'),
+    hillshade: require('./draw_hillshade')
 };
 
 import type Transform from '../geo/transform';
@@ -162,11 +163,20 @@ class Painter {
 
         const rasterBoundsArray = new RasterBoundsArray();
         rasterBoundsArray.emplaceBack(0, 0, 0, 0);
-        rasterBoundsArray.emplaceBack(EXTENT, 0, 32767, 0);
-        rasterBoundsArray.emplaceBack(0, EXTENT, 0, 32767);
-        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, 32767, 32767);
+        rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
+        rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
+        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
         this.rasterBoundsBuffer = Buffer.fromStructArray(rasterBoundsArray, Buffer.BufferType.VERTEX);
         this.rasterBoundsVAO = new VertexArrayObject();
+
+        // used if raster-terrain tile isn't fully backfilled in order to prevent seams with missing data from flashing
+        const incompleteHillshadeBoundsArray = new RasterBoundsArray();
+        incompleteHillshadeBoundsArray.emplaceBack(0, 0, 0, 0);
+        incompleteHillshadeBoundsArray.emplaceBack(EXTENT - (4 * EXTENT / 512), 0, EXTENT - (4 * EXTENT / 512), 0);
+        incompleteHillshadeBoundsArray.emplaceBack(0, EXTENT - (4 * EXTENT / 512), 0, EXTENT - (4 * EXTENT / 512));
+        incompleteHillshadeBoundsArray.emplaceBack(EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512), EXTENT - (4 * EXTENT / 512));
+        this.incompleteHillshadeBoundsBuffer = Buffer.fromStructArray(incompleteHillshadeBoundsArray, Buffer.BufferType.VERTEX);
+        this.incompleteHillshadeBoundsVAO = new VertexArrayObject();
 
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
@@ -267,6 +277,7 @@ class Painter {
 
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
+        this.renderFbosPass();
         this.isOpaquePass = true;
         this.renderPass();
         this.isOpaquePass = false;
@@ -322,7 +333,26 @@ class Painter {
         }
     }
 
-    depthMask(mask: boolean) {
+    renderFbosPass() {
+        this.isPrepareFbosPass = true;
+        const layerIds = this.style._order;
+        let sourceCache, coords;
+
+        for (let i = 0; i < layerIds.length; i++) {
+            const layer = this.style._layers[layerIds[i]];
+            if (layer.source !== (sourceCache && sourceCache.id)) {
+                sourceCache = this.style.sourceCaches[layer.source];
+                coords = [];
+                if (sourceCache && sourceCache.getSource().prepareFboPass) {
+                    coords = sourceCache.getVisibleCoordinates();
+                    this.renderLayer(this, sourceCache, layer, coords);
+                }
+            }
+        }
+        this.isPrepareFbosPass = false;
+    }
+
+    depthMask(mask) {
         if (mask !== this._depthMask) {
             this._depthMask = mask;
             this.gl.depthMask(mask);

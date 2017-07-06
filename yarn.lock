@@ -2866,12 +2866,6 @@ github-slugger@1.1.1:
   dependencies:
     emoji-regex "^6.0.0"
 
-github-slugger@^1.0.0, github-slugger@^1.1.1:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-1.1.3.tgz#314a6e759a18c2b0cc5760d512ccbab549c549a7"
-  dependencies:
-    emoji-regex ">=6.0.0 <=6.1.1"
-
 gl@^4.0.1:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/gl/-/gl-4.0.3.tgz#277f8bd542c84f99fa5bf98821b32d7b27a05627"
