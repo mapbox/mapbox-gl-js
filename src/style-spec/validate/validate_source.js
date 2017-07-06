@@ -1,3 +1,4 @@
+'use strict';
 
 const ValidationError = require('../error/validation_error');
 const unbundle = require('../util/unbundle_jsonlint');
@@ -19,6 +20,7 @@ module.exports = function validateSource(options) {
 
     switch (type) {
     case 'vector':
+    case 'vectoroffline':
     case 'raster':
         errors = errors.concat(validateObject({
             key: key,

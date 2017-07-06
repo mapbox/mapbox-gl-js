@@ -32,7 +32,7 @@ class VectorTileOfflineSource extends VectorTileSource {
                     });
 
         }else{
-            throw new Error('vector tile Offline sources need sqlitePlugin');
+            throw new Error('vector tile Offline sources need cordova-sqlite-ext extended -----> https://github.com/jessisena/cordova-sqlite-ext');
         }
     }
 

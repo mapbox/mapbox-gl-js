@@ -1,45 +1,29 @@
-// @flow
+'use strict';
 
 const Actor = require('../util/actor');
 const StyleLayerIndex = require('../style/style_layer_index');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
+const VectorTileOfflineWorkerSource = require('./vector_tile_offline_worker_source');
 const assert = require('assert');
 
 const globalRTLTextPlugin = require('./rtl_text_plugin');
-
-import type {
-    WorkerSource,
-    WorkerTileParameters,
-    WorkerTileCallback,
-    TileParameters,
-    RedoPlacementParameters,
-    RedoPlacementCallback
-} from '../source/source';
 
 /**
  * @private
  */
 class Worker {
-    self: WorkerGlobalScope & {
-        registerWorkerSource: (string, Class<WorkerSource>) => void,
-        registerRTLTextPlugin: (any) => void
-    };
-    actor: Actor;
-    layerIndexes: { [string]: StyleLayerIndex };
-    workerSourceTypes: { [string]: Class<WorkerSource> };
-    workerSources: { [string]: { [string]: WorkerSource } };
-
-    constructor(self: WorkerGlobalScope) {
-        this.self = (self: any); // Needs a cast because we're going to extend it with `register*` methods.
+    constructor(self) {
+        this.self = self;
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
-            geojson: GeoJSONWorkerSource
+            geojson: GeoJSONWorkerSource,
+            vectoroffline: VectorTileOfflineWorkerSource
         };
 
         // [mapId][sourceType] => worker source instance
@@ -61,35 +45,35 @@ class Worker {
         };
     }
 
-    setLayers(mapId: string, layers: any) {
+    setLayers(mapId, layers) {
         this.getLayerIndex(mapId).replace(layers);
     }
 
-    updateLayers(mapId: string, params: {layers: any, removedIds: any, symbolOrder: any}) {
+    updateLayers(mapId, params) {
         this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
     }
 
-    loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
+    loadTile(mapId, params, callback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).loadTile(params, callback);
     }
 
-    reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
+    reloadTile(mapId, params, callback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
     }
 
-    abortTile(mapId: string, params: TileParameters & {type: string}) {
+    abortTile(mapId, params) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).abortTile(params);
     }
 
-    removeTile(mapId: string, params: TileParameters & {type: string}) {
+    removeTile(mapId, params) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).removeTile(params);
     }
 
-    removeSource(mapId: string, params: {source: string} & {type: string}) {
+    removeSource(mapId, params) {
         assert(params.type);
         const worker = this.getWorkerSource(mapId, params.type);
         if (worker.removeSource !== undefined) {
@@ -97,7 +81,7 @@ class Worker {
         }
     }
 
-    redoPlacement(mapId: string, params: RedoPlacementParameters & {type: string}, callback: RedoPlacementCallback) {
+    redoPlacement(mapId, params, callback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     }
@@ -108,7 +92,7 @@ class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {url: string}, callback: Callback<void>) {
+    loadWorkerSource(map, params, callback) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -117,20 +101,17 @@ class Worker {
         }
     }
 
-    loadRTLTextPlugin(map: string, pluginURL: string, callback: Callback<void>) {
+    loadRTLTextPlugin(map, pluginURL, callback) {
         try {
             if (!globalRTLTextPlugin.applyArabicShaping && !globalRTLTextPlugin.processBidirectionalText) {
                 this.self.importScripts(pluginURL);
-                if (!globalRTLTextPlugin.applyArabicShaping || !globalRTLTextPlugin.processBidirectionalText) {
-                    callback(new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`));
-                }
             }
         } catch (e) {
             callback(e);
         }
     }
 
-    getLayerIndex(mapId: string) {
+    getLayerIndex(mapId) {
         let layerIndexes = this.layerIndexes[mapId];
         if (!layerIndexes) {
             layerIndexes = this.layerIndexes[mapId] = new StyleLayerIndex();
@@ -138,7 +119,7 @@ class Worker {
         return layerIndexes;
     }
 
-    getWorkerSource(mapId: string, type: string) {
+    getWorkerSource(mapId, type) {
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type]) {
@@ -157,6 +138,6 @@ class Worker {
     }
 }
 
-module.exports = function createWorker(self: WorkerGlobalScope) {
+module.exports = function createWorker(self) {
     return new Worker(self);
 };
