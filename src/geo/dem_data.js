@@ -27,31 +27,20 @@ class Level {
         assert(y < this.height + this.border);
         return (y + this.border) * this.stride + (x + this.border);
     }
-
-    resample(target) {
-        assert(target instanceof Level);
-        for (let y = 0; y < target.height; y++) {
-            const fy = y * 2;
-            for (let x = 0; x < target.width; x++) {
-                const fx = x * 2;
-                target.set(x, y, (this.get(fx, fy) + this.get(fx + 1, fy) + this.get(fx, fy + 1) + this.get(fx + 1, fy + 1)) / 4);
-            }
-        }
-    }
 }
 
-class DEMPyramid {
-    constructor(uid, scale, levels) {
+class DEMData {
+    constructor(uid, scale, data) {
         this.uid = uid;
         this.scale = scale || 1;
-        this.levels = levels ? levels : [];
+        this.data = data ? data : [];
         this.loaded = false;
     }
 
     loadFromImage(data) {
         // Build level 0
-        this.levels = [ new Level(data.width, data.height, data.width / 2) ];
-        const level = this.levels[0];
+        this.data = [new Level(data.width, data.height, data.width / 2)];
+        const level = this.data[0];
         const pixels = data.data;
 
         // unpack
@@ -59,6 +48,7 @@ class DEMPyramid {
             for (let x = 0; x < data.width; x++) {
                 const i = y * data.width + x;
                 const j = i * 4;
+                // decoding
                 level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
             }
         }
@@ -72,17 +62,16 @@ class DEMPyramid {
             scale: this.scale,
         };
 
-        this.levels.forEach((l, i)=>{
-            if (transferables) transferables.push(l.data.buffer);
-            references[i] = l.data.buffer;
-        });
+
+        if (transferables) transferables.push(this.data[0].data.buffer);
+        references[0] = this.data[0].data.buffer;
         return references;
     }
 
     backfillBorders(borderTile, dx, dy) {
-        for (let l = 0; l < this.levels.length; l++) {
-            const t = this.levels[l];
-            const o = borderTile.levels[l];
+        for (let l = 0; l < this.data.length; l++) {
+            const t = this.data[l];
+            const o = borderTile.data[l];
 
             if (t.width !== o.width) throw new Error('level mismatch (width)');
             if (t.height !== o.height) throw new Error('level mismatch (height)');
@@ -132,18 +121,13 @@ class DEMPyramid {
 }
 
 
-module.exports = {DEMPyramid, Level};
+module.exports = {DEMData, Level};
 
 
-DEMPyramid.deserialize = function(data) {
-    const levels = [];
+DEMData.deserialize = function(buffer) {
 
     // TODO dont hardcode tilesize
     const tileSize = 256;
-    let i = 0;
-    while (data[i]) {
-        levels.push(new Level(tileSize, tileSize, tileSize / 2, new Int32Array(data[i])));
-        i++;
-    }
-    return new DEMPyramid(data.uid, data.scale, levels);
+    const data = [new Level(tileSize, tileSize, tileSize / 2, new Int32Array(buffer[0]))];
+    return new DEMData(data.uid, data.scale, data);
 };

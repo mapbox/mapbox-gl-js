@@ -7,7 +7,7 @@ const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const TileBounds = require('./tile_bounds');
 const browser = require('../util/browser');
-const DEMPyramid = require('../geo/dem_pyramid').DEMPyramid;
+const DEMData = require('../geo/dem_data').DEMData;
 const TileCoord = require('./tile_coord');
 
 class RasterTerrainTileSource extends Evented {
@@ -130,7 +130,7 @@ class RasterTerrainTileSource extends Evented {
             }
 
             if (data) {
-                tile.dem =  DEMPyramid.deserialize(data);
+                tile.dem =  DEMData.deserialize(data);
                 tile.state = 'loaded';
                 callback(null);
             }

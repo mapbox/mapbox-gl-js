@@ -1,5 +1,5 @@
 'use strict';
-const DEMPyramid = require('../geo/dem_pyramid').DEMPyramid;
+const DEMData = require('../geo/dem_data').DEMData;
 
 
 class RasterTerrainTileWorkerSource {
@@ -18,7 +18,7 @@ class RasterTerrainTileWorkerSource {
         if (!this.loading[source])
             this.loading[source] = {};
 
-        const dem = new DEMPyramid(uid);
+        const dem = new DEMData(uid);
         dem.loadFromImage(params.rawImageData);
         const transferrables = [];
         callback(null, dem.serialize(transferrables), transferrables);

@@ -130,7 +130,7 @@ function prepareTerrain(painter, tile, layer) {
     // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
 
-    const levels = tile.dem.levels.map((l)=> {
+    const pixelData = tile.dem.data.map((l)=> {
         return {width: l.width + 2 * l.border, height: l.height + 2 * l.border, data: new Uint8Array(l.data.buffer)};
     });
 
@@ -139,8 +139,8 @@ function prepareTerrain(painter, tile, layer) {
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, dem);
 
-    for (let i = 0; i < levels.length; i++) {
-        gl.texImage2D(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE, levels[i].data);
+    for (let i = 0; i < pixelData.length; i++) {
+        gl.texImage2D(gl.TEXTURE_2D, i, gl.RGBA, pixelData[i].width, pixelData[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixelData[i].data);
     }
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
