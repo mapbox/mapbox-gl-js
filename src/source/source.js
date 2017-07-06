@@ -1,9 +1,10 @@
-// @flow
+'use strict';
 
 const util = require('../util/util');
 
 const sourceTypes = {
     'vector': require('../source/vector_tile_source'),
+    'vectoroffline': require('../source/vector_tile_offline_source'),
     'raster': require('../source/raster_tile_source'),
     'geojson': require('../source/geojson_source'),
     'video': require('../source/video_source'),
@@ -14,12 +15,13 @@ const sourceTypes = {
 /*
  * Creates a tiled data source instance given an options object.
  *
- * @param id
+ * @param {string} id
  * @param {Object} source A source definition object compliant with [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type, with that type's requirements.
+ * @param {string} options.type A source type like `raster`, `vector`, `video`, etc.
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-exports.create = function(id: string, source: any, dispatcher: any, eventedParent: any) {
+exports.create = function(id, source, dispatcher, eventedParent) {
     source = new sourceTypes[source.type](id, source, dispatcher, eventedParent);
 
     if (source.id !== id) {
@@ -30,11 +32,11 @@ exports.create = function(id: string, source: any, dispatcher: any, eventedParen
     return source;
 };
 
-exports.getType = function (name: string) {
+exports.getType = function (name) {
     return sourceTypes[name];
 };
 
-exports.setType = function (name: string, type: any) {
+exports.setType = function (name, type) {
     sourceTypes[name] = type;
 };
 
@@ -109,54 +111,6 @@ exports.setType = function (name: string, type: any) {
  */
 
 
-import type {TileCoord} from './tile_coord';
-import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
-import type {SerializedBucket} from '../data/bucket';
-import type {SerializedFeatureIndex} from '../data/feature_index';
-import type {SerializedCollisionTile} from '../symbol/collision_tile';
-import type {SerializedStructArray} from '../util/struct_array';
-
-export type TileParameters = {
-    source: string,
-    uid: string,
-};
-
-export type PlacementConfig = {
-    angle: number,
-    pitch: number,
-    cameraToCenterDistance: number,
-    cameraToTileDistance: number,
-    showCollisionBoxes: boolean,
-};
-
-export type WorkerTileParameters = TileParameters & {
-    coord: TileCoord,
-    url: string,
-    zoom: number,
-    maxZoom: number,
-    tileSize: number,
-    overscaling: number,
-} & PlacementConfig;
-
-export type WorkerTileResult = {
-    buckets: Array<SerializedBucket>,
-    featureIndex: SerializedFeatureIndex,
-    collisionTile: SerializedCollisionTile,
-    collisionBoxArray: SerializedStructArray,
-    rawTileData?: ArrayBuffer,
-};
-
-export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
-
-export type RedoPlacementParameters = TileParameters & PlacementConfig;
-
-export type RedoPlacementResult = {
-    buckets: Array<SerializedBucket>,
-    collisionTile: SerializedCollisionTile
-};
-
-export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult, transferables: ?Array<Transferable>) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -169,35 +123,48 @@ export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult
  * @private
  *
  * @class WorkerSource
- * @param actor
- * @param layerIndex
+ * @param {Actor} actor
+ * @param {StyleLayerIndex} layerIndex
  */
-export interface WorkerSource {
-    constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 
-    /**
-     * Loads a tile from the given params and parse it into buckets ready to send
-     * back to the main thread for rendering.  Should call the callback with:
-     * `{ buckets, featureIndex, collisionTile, rawTileData}`.
-     */
-    loadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
+/**
+ * Loads a tile from the given params and parse it into buckets ready to send
+ * back to the main thread for rendering.  Should call the callback with:
+ * `{ buckets, featureIndex, collisionTile, rawTileData}`.
+ *
+ * @method
+ * @name loadTile
+ * @param {Object} params Parameters sent by the main-thread Source identifying the tile to load.
+ * @param {Function} callback
+ * @memberof WorkerSource
+ * @instance
+ */
 
-    /**
-     * Re-parses a tile that has already been loaded.  Yields the same data as
-     * {@link WorkerSource#loadTile}.
-     */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
+/**
+ * Re-parses a tile that has already been loaded.  Yields the same data as
+ * {@link WorkerSource#loadTile}.
+ *
+ * @method
+ * @name reloadTile
+ * @param {Object} params
+ * @param {Function} callback
+ * @memberof WorkerSource
+ * @instance
+ */
 
-    /**
-     * Aborts loading a tile that is in progress.
-     */
-    abortTile(params: TileParameters): void;
+/**
+ * Aborts loading a tile that is in progress.
+ * @method
+ * @name abortTile
+ * @param {Object} params
+ * @memberof WorkerSource
+ * @instance
+ */
 
-    /**
-     * Removes this tile from any local caches.
-     */
-    removeTile(params: TileParameters): void;
-
-    redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback): void;
-    removeSource?: (params: {source: string}) => void;
-}
+/**
+ * Removes this tile from any local caches.
+ * @method
+ * @name removeTile
+ * @memberof WorkerSource
+ * @instance
+ */
