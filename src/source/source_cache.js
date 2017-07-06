@@ -192,11 +192,8 @@ class SourceCache extends Evented {
 
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        if (this._source.type === 'raster-terrain') {
-            this._backfillDEM(tile);
-        } else {
-            this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
-        }
+        if (this._source.type === 'raster-terrain') this._backfillDEM(tile);
+        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -242,8 +239,6 @@ class SourceCache extends Evented {
 
             tile.neighboringTiles[borderTile.coord.id].backfilled = true;
         }
-
-        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
     }
     /**
      * Get a specific tile by TileCoordinate
