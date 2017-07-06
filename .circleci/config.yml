@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mbgl/ci:r4-linux-clang-3.9
+      - image: mbgl/ci:r1-linux-gl-js
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
@@ -11,8 +11,7 @@ jobs:
           key: v1-mapbox-gl-js-cache
       - run:
           name: install dependencies
-          command: |
-            bash ./.circleci/dependencies.sh
+          command: yarn
       - save_cache:
           key: v1-mapbox-gl-js-cache
           paths:
