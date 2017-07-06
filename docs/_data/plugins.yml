@@ -20,9 +20,13 @@ User Interface Plugins:
     example: mapbox-gl-directions
 
 Map Rendering Plugins:
+  mapbox-gl-language:
+    website: https://github.com/mapbox/mapbox-gl-language/
+    description: automatically localizes the map into the user’s language
   mapbox-gl-rtl-text:
     website: https://github.com/mapbox/mapbox-gl-rtl-text
     description: adds right-to-left text support to Mapbox GL JS
+    example: mapbox-gl-rtl-text
   deck.gl:
     website: https://github.com/uber/deck.gl
     description: adds advanced WebGL visualization layers to Mapbox GL JS
