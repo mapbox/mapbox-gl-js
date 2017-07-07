@@ -72,6 +72,7 @@ class GeoJSONSource extends Evented {
         this.setEventedParent(eventedParent);
 
         this._data = options.data;
+        this._options = util.extend({}, options);
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
@@ -213,10 +214,10 @@ class GeoJSONSource extends Evented {
     }
 
     serialize() {
-        return {
+        return util.extend({}, this._options, {
             type: this.type,
             data: this._data
-        };
+        });
     }
 }
 
