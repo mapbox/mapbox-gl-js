@@ -1,5 +1,9 @@
 ## master
 
+#### :warning: Breaking changes
+
+- Markers are now anchored at their center by default ([#4751](https://github.com/mapbox/mapbox-gl-js/pull/4751))
+
 ## 0.38.0 (June 9, 2017)
 
 #### New features :sparkles:
