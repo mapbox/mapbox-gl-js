@@ -14,13 +14,13 @@ class StyleLayerIndex {
     _layerConfigs: LayerConfigs;
     _layers: { [string]: StyleLayer };
 
-    constructor(layerConfigs: ?LayerConfigs) {
+    constructor(layerConfigs: ?Array<LayerSpecification>) {
         if (layerConfigs) {
             this.replace(layerConfigs);
         }
     }
 
-    replace(layerConfigs: LayerConfigs) {
+    replace(layerConfigs: Array<LayerSpecification>) {
         this.symbolOrder = [];
         for (const layerConfig of layerConfigs) {
             if (layerConfig.type === 'symbol') {
@@ -32,7 +32,7 @@ class StyleLayerIndex {
         this.update(layerConfigs, []);
     }
 
-    update(layerConfigs: LayerConfigs, removedIds: Array<string>, symbolOrder: ?Array<string>) {
+    update(layerConfigs: Array<LayerSpecification>, removedIds: Array<string>, symbolOrder: ?Array<string>) {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
