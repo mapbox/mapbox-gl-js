@@ -41,7 +41,7 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
     ajax.getArrayBuffer(pluginURL, (err, response) => {
         if (err) {
             callback(err);
-        } else {
+        } else if (response) {
             pluginBlobURL = module.exports.createBlobURL(response);
             module.exports.evented.fire('pluginAvailable', { pluginBlobURL: pluginBlobURL, errorCallback: callback });
         }

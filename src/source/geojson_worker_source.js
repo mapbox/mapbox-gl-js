@@ -29,7 +29,7 @@ export type LoadGeoJSONParameters = {
     geojsonVtOptions?: Object
 };
 
-export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<GeoJSON>) => void;
+export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<mixed>) => void;
 
 export interface GeoJSONIndex {
 }
@@ -159,7 +159,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param [params.url] A URL to the remote GeoJSON data.
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      */
-    loadGeoJSON(params: LoadGeoJSONParameters, callback: Callback<GeoJSON>) {
+    loadGeoJSON(params: LoadGeoJSONParameters, callback: Callback<mixed>) {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
