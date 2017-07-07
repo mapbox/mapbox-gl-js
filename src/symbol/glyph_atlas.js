@@ -1,4 +1,3 @@
-'use strict';
 
 const ShelfPack = require('@mapbox/shelf-pack');
 const util = require('../util/util');

@@ -20,6 +20,7 @@ module.exports = function validateSource(options) {
 
     switch (type) {
     case 'vector':
+    case 'vectoroffline':
     case 'raster':
         errors = errors.concat(validateObject({
             key: key,

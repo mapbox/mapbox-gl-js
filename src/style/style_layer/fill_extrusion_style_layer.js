@@ -1,4 +1,3 @@
-'use strict';
 
 const StyleLayer = require('../style_layer');
 const FillExtrusionBucket = require('../../data/bucket/fill_extrusion_bucket');

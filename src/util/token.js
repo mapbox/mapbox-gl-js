@@ -1,5 +1,3 @@
-'use strict';
-
 // @flow
 
 module.exports = resolveTokens;
@@ -12,7 +10,7 @@ module.exports = resolveTokens;
  * @returns {string} the template with tokens replaced
  * @private
  */
-function resolveTokens(properties: {[key: string]: string}, text: string): string {
+function resolveTokens(properties: Object, text: string): string {
     return text.replace(/{([^{}]+)}/g, (match, key: string) => {
         return key in properties ? properties[key] : '';
     });

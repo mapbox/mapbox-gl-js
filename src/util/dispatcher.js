@@ -1,4 +1,3 @@
-'use strict';
 
 const util = require('./util');
 const Actor = require('./actor');

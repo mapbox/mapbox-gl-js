@@ -1,5 +1,3 @@
-'use strict';
-
 const through = require('through2');
 
 function replacer(k, v) {
@@ -7,7 +5,7 @@ function replacer(k, v) {
 }
 
 module.exports = (path) => {
-    if (path.match(/style\-spec\/reference\/v[0-9]+\.json$/)) {
+    if (path.match(/style\-spec[\\/]reference[\\/]v[0-9]+\.json$/)) {
         let source = '';
         return through(
             // eslint-disable-next-line prefer-arrow-callback

@@ -1,4 +1,3 @@
-'use strict';
 
 const isEqual = require('lodash.isequal');
 

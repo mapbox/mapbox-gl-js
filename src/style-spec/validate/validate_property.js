@@ -1,4 +1,3 @@
-'use strict';
 
 const validate = require('./validate');
 const ValidationError = require('../error/validation_error');
@@ -32,9 +31,12 @@ module.exports = function validateProperty(options, propertyType) {
 
     let tokenMatch;
     if (getType(value) === 'string' && valueSpec['property-function'] && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
-        return [new ValidationError(key, value, '"%s" does not support interpolation syntax\n' +
-            'Use an identity property function instead: `{ "type": "identity", "property": %s` }`.',
-            propertyKey, JSON.stringify(tokenMatch[1]))];
+        return [new ValidationError(
+            key, value,
+            '"%s" does not support interpolation syntax\n' +
+                'Use an identity property function instead: `{ "type": "identity", "property": %s` }`.',
+            propertyKey, JSON.stringify(tokenMatch[1])
+        )];
     }
 
     const errors = [];

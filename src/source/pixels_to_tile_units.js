@@ -1,4 +1,3 @@
-'use strict';
 
 const EXTENT = require('../data/extent');
 

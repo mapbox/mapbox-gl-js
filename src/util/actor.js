@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -66,7 +65,11 @@ class Actor {
         if (data.type === '<response>') {
             callback = this.callbacks[data.id];
             delete this.callbacks[data.id];
-            if (callback) callback(data.error || null, data.data);
+            if (callback && data.error) {
+                callback(new Error(data.error));
+            } else if (callback) {
+                callback(null, data.data);
+            }
         } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
             // data.type == 'loadTile', 'removeTile', etc.
             this.parent[data.type](data.sourceMapId, data.data, done);

@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
@@ -9,6 +9,9 @@ const classifyRings = require('../../util/classify_rings');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
+import type {BucketParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
+
 const fillExtrusionInterface = {
     layoutAttributes: [
         {name: 'a_pos',          components: 2, type: 'Int16'},
@@ -18,9 +21,9 @@ const fillExtrusionInterface = {
     elementArrayType: createElementArrayType(3),
 
     paintAttributes: [
-        {property: 'fill-extrusion-base',   type: 'Uint16'},
-        {property: 'fill-extrusion-height', type: 'Uint16'},
-        {property: 'fill-extrusion-color',  type: 'Uint8'}
+        {property: 'fill-extrusion-base'},
+        {property: 'fill-extrusion-height'},
+        {property: 'fill-extrusion-color'}
     ]
 };
 
@@ -42,11 +45,13 @@ function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
 }
 
 class FillExtrusionBucket extends Bucket {
-    constructor(options) {
+    static programInterface: ProgramInterface;
+
+    constructor(options: BucketParameters) {
         super(options, fillExtrusionInterface);
     }
 
-    addFeature(feature) {
+    addFeature(feature: VectorTileFeature) {
         const arrays = this.arrays;
 
         for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {

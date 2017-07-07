@@ -1,4 +1,3 @@
-'use strict';
 
 // Constants
 const Xn = 0.950470, // D65 standard referent

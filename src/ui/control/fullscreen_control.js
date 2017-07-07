@@ -1,4 +1,3 @@
-'use strict';
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
@@ -30,24 +29,43 @@ class FullscreenControl {
         } else if ('onmsfullscreenchange' in window.document) {
             this._fullscreenchange = 'MSFullscreenChange';
         }
+        this._className = 'mapboxgl-ctrl';
     }
 
     onAdd(map) {
-        const className = 'mapboxgl-ctrl';
-        const container = this._container = DOM.create('div', `${className} mapboxgl-ctrl-group`);
-        const button = this._fullscreenButton = DOM.create('button', (`${className}-icon ${className}-fullscreen`), this._container);
-        button.setAttribute("aria-label", "Toggle fullscreen");
-        button.type = 'button';
-        this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
-        this._mapContainer = map.getContainer();
-        window.document.addEventListener(this._fullscreenchange, this._changeIcon);
-        return container;
+        this._map = map;
+        this._mapContainer = this._map.getContainer();
+        this._container = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
+        if (this._checkFullscreenSupport()) {
+            this._setupUI();
+        } else {
+            this._container.style.display = 'none';
+            util.warnOnce('This device does not support fullscreen mode.');
+        }
+        return this._container;
     }
 
     onRemove() {
         this._container.parentNode.removeChild(this._container);
         this._map = null;
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
+    }
+
+    _checkFullscreenSupport() {
+        return !!(
+            window.document.fullscreenEnabled ||
+            window.document.mozFullscreenEnabled ||
+            window.document.msFullscreenEnabled ||
+            window.document.webkitFullscreenEnabled
+        );
+    }
+
+    _setupUI() {
+        const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._container);
+        button.setAttribute("aria-label", "Toggle fullscreen");
+        button.type = 'button';
+        this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
+        window.document.addEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _isFullscreen() {
@@ -63,9 +81,8 @@ class FullscreenControl {
 
         if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
-            const className = 'mapboxgl-ctrl';
-            this._fullscreenButton.classList.toggle(`${className}-shrink`);
-            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);
+            this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
+            this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
         }
     }
 

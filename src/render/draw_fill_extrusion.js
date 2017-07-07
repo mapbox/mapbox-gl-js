@@ -1,4 +1,3 @@
-'use strict';
 
 const glMatrix = require('@mapbox/gl-matrix');
 const Buffer = require('../data/buffer');

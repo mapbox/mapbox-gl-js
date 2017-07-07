@@ -1,4 +1,3 @@
-'use strict';
 
 const validateStyleMin = require('./validate_style.min');
 const ParsingError = require('./error/parsing_error');

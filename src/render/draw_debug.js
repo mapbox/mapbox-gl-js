@@ -1,4 +1,3 @@
-'use strict';
 
 const browser = require('../util/browser');
 const mat4 = require('@mapbox/gl-matrix').mat4;

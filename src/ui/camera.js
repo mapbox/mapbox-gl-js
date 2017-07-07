@@ -1,4 +1,3 @@
-'use strict';
 
 const util = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
@@ -704,7 +703,7 @@ class Camera extends Evented {
 
         let rho = options.curve;
 
-            // w₀: Initial visible span, measured in pixels at the initial scale.
+        // w₀: Initial visible span, measured in pixels at the initial scale.
         const w0 = Math.max(tr.width, tr.height),
             // w₁: Final visible span, measured in pixels with respect to the initial scale.
             w1 = w0 / scale,
@@ -740,13 +739,13 @@ class Camera extends Evented {
 
         // r₀: Zoom-out factor during ascent.
         const r0 = r(0);
-            /**
-             * w(s): Returns the visible span on the ground, measured in pixels with respect to the
-             * initial scale.
-             *
-             * Assumes an angular field of view of 2 arctan ½ ≈ 53°.
-             * @private
-             */
+        /**
+         * w(s): Returns the visible span on the ground, measured in pixels with respect to the
+         * initial scale.
+         *
+         * Assumes an angular field of view of 2 arctan ½ ≈ 53°.
+         * @private
+         */
         let w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
             /**
              * u(s): Returns the distance along the flight path as projected onto the ground plane,

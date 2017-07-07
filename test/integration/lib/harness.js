@@ -71,8 +71,7 @@ module.exports = function (directory, implementation, options, run) {
 
             const skipped = params.skipped && params.skipped[implementation];
             if (skipped) {
-                console.log(colors.gray(`* skipped ${params.group} ${params.test
-                    } (${skipped})`));
+                console.log(colors.gray(`* skipped ${params.group} ${params.test} (${skipped})`));
                 return;
             }
 
@@ -92,15 +91,19 @@ module.exports = function (directory, implementation, options, run) {
 
                     if (params.ignored && !params.ok) {
                         params.color = '#9E9E9E';
+                        params.status = 'ignored failed';
                         console.log(colors.white(`* ignore ${params.group} ${params.test}`));
                     } else if (params.ignored) {
                         params.color = '#E8A408';
+                        params.status = 'ignored passed';
                         console.log(colors.yellow(`* ignore ${params.group} ${params.test}`));
                     } else if (!params.ok) {
                         params.color = 'red';
+                        params.status = 'failed';
                         console.log(colors.red(`* failed ${params.group} ${params.test}`));
                     } else {
                         params.color = 'green';
+                        params.status = 'passed';
                         console.log(colors.green(`* passed ${params.group} ${params.test}`));
                     }
 

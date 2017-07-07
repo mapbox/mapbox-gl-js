@@ -1,9 +1,13 @@
-'use strict';
 // @flow
 
 const UnitBezier = require('@mapbox/unitbezier');
 const Coordinate = require('../geo/coordinate');
 const Point = require('point-geometry');
+
+/**
+ * @module util
+ * @private
+ */
 
 /**
  * Given a value `t` that varies between 0 and 1, return
@@ -84,9 +88,9 @@ exports.wrap = function (n: number, min: number, max: number): number {
  * @private
  */
 exports.asyncAll = function<Item, Result> (
-  array: Array<Item>,
-  fn: (item: Item, fnCallback: (error: Error | null, result: Result) => void) => void,
-  callback: (error: Error | null, results: Array<Result>) => void
+    array: Array<Item>,
+    fn: (item: Item, fnCallback: (error: Error | null, result: Result) => void) => void,
+    callback: (error: Error | null, results: Array<Result>) => void
 ) {
     if (!array.length) { return callback(null, []); }
     let remaining = array.length;
@@ -107,7 +111,7 @@ exports.asyncAll = function<Item, Result> (
  *
  * @private
  */
-exports.values = function (obj: {[key: string]: string}): Array<string> {
+exports.values = function<T>(obj: {[key: string]: T}): Array<T> {
     const result = [];
     for (const k in obj) {
         result.push(obj[k]);
@@ -327,7 +331,7 @@ exports.clone = function<T>(input: T): T {
  *
  * @private
  */
-exports.arraysIntersect = function(a: Array<mixed>, b: Array<mixed>): boolean {
+exports.arraysIntersect = function<T>(a: Array<T>, b: Array<T>): boolean {
     for (let l = 0; l < a.length; l++) {
         if (b.indexOf(a[l]) >= 0) return true;
     }

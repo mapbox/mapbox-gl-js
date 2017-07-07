@@ -1,10 +1,12 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
+const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const Style = require('../../../src/style/style');
 const SourceCache = require('../../../src/source/source_cache');
 const StyleLayer = require('../../../src/style/style_layer');
+const Transform = require('../../../src/geo/transform');
 const util = require('../../../src/util/util');
 const Evented = require('../../../src/util/evented');
 const window = require('../../../src/util/window');
@@ -57,16 +59,40 @@ test('Style', (t) => {
     });
 
     t.test('registers plugin listener', (t) => {
+        rtlTextPlugin.clearRTLTextPlugin();
+        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/plugin.js', "doesn't matter");
+        rtlTextPlugin.setRTLTextPlugin("/plugin.js");
         t.spy(rtlTextPlugin, 'registerForPluginAvailability');
         const style = new Style(createStyleJSON());
         t.spy(style.dispatcher, 'broadcast');
         t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
 
         style.on('style.load', () => {
-            rtlTextPlugin.evented.fire('pluginAvailable');
-            t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
+            window.server.respond();
+            t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin', "data:text/javascript;base64,abc"));
             t.end();
         });
+    });
+
+    t.test('loads plugin immediately if already registered', (t) => {
+        rtlTextPlugin.clearRTLTextPlugin();
+        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/plugin.js', "doesn't matter");
+        let firstError = true;
+        rtlTextPlugin.setRTLTextPlugin("/plugin.js", (error) => {
+            // Getting this error message shows the bogus URL was succesfully passed to the worker
+            // We'll get the error from all workers, only pay attention to the first one
+            if (firstError) {
+                t.deepEquals(error, new Error('RTL Text Plugin failed to import scripts from data:text/javascript;base64,abc'));
+                t.end();
+                firstError = false;
+            }
+        });
+        window.server.respond();
+        new Style(createStyleJSON());
     });
 
     t.test('can be constructed from a URL', (t) => {
@@ -345,6 +371,27 @@ test('Style#setState', (t) => {
             t.notOk(didChange, 'return false');
             t.end();
         });
+    });
+
+    t.test('Issue #3893: compare new source options against originally provided options rather than normalized properties', (t) => {
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('/tilejson.json', JSON.stringify({
+            tiles: ['http://tiles.server']
+        }));
+        const initial = createStyleJSON();
+        initial.sources.mySource = {
+            type: 'raster',
+            url: '/tilejson.json'
+        };
+        const style = new Style(initial);
+        style.on('style.load', () => {
+            t.stub(style, 'removeSource').callsFake(() => t.fail('removeSource called'));
+            t.stub(style, 'addSource').callsFake(() => t.fail('addSource called'));
+            style.setState(initial);
+            window.restore();
+            t.end();
+        });
+        window.server.respond();
     });
 
     t.test('return true if there is a change', (t) => {
@@ -982,6 +1029,65 @@ test('Style#moveLayer', (t) => {
             style.moveLayer('a', 'c');
             t.deepEqual(style._order, ['b', 'a', 'c']);
             t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#setPaintProperty', (t) => {
+    t.test('#4738 postpones source reload until layers have been broadcast to workers', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {"type": "FeatureCollection", "features": []}
+                }
+            },
+            "layers": [
+                {
+                    "id": "circle",
+                    "type": "circle",
+                    "source": "geojson"
+                }
+            ]
+        }));
+
+        const tr = new Transform();
+        tr.resize(512, 512);
+
+        style.once('style.load', () => {
+            style.update();
+            style._recalculate(tr.zoom);
+            const sourceCache = style.sourceCaches['geojson'];
+            const source = style.getSource('geojson');
+
+            let begun = false;
+            let styleUpdateCalled = false;
+
+            source.on('data', (e) => setImmediate(() => {
+                if (!begun && sourceCache.loaded()) {
+                    begun = true;
+                    sinon.stub(sourceCache, 'reload').callsFake(() => {
+                        t.ok(styleUpdateCalled, 'loadTile called before layer data broadcast');
+                        t.end();
+                    });
+
+                    source.setData({"type": "FeatureCollection", "features": []});
+                    style.setPaintProperty('circle', 'circle-color', {type: 'identity', property: 'foo'});
+                }
+
+                if (begun && e.sourceDataType === 'content') {
+                    // setData() worker-side work is complete; simulate an
+                    // animation frame a few ms later, so that this test can
+                    // confirm that SourceCache#reload() isn't called until
+                    // after the next Style#update()
+                    setTimeout(() => {
+                        styleUpdateCalled = true;
+                        style.update();
+                    }, 50);
+                }
+            }));
         });
     });
 

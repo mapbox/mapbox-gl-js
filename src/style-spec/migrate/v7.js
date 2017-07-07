@@ -1,4 +1,3 @@
-'use strict';
 
 const ref = require('../reference/v7.json');
 

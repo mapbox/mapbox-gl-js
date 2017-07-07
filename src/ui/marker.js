@@ -1,4 +1,3 @@
-'use strict';
 
 const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');
@@ -9,7 +8,7 @@ const smartWrap = require('../util/smart_wrap');
  * Creates a marker component
  * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
  * @param {Object=} options
- * @param {PointLike=} options.offset The offset in pixels as a {@link PointLink} object to apply relative to the element's top left corner. Negatives indicate left and up.
+ * @param {PointLike=} options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's top left corner. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])

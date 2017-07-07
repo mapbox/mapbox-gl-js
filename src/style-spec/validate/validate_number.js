@@ -1,4 +1,3 @@
-'use strict';
 
 const getType = require('../util/get_type');
 const ValidationError = require('../error/validation_error');

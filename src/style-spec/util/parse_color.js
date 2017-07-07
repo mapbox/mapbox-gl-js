@@ -1,4 +1,3 @@
-'use strict';
 
 const parseColorString = require('csscolorparser').parseCSSColor;
 

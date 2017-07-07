@@ -1,4 +1,3 @@
-'use strict';
 
 const assert = require('assert');
 const WebWorker = require('./web_worker');

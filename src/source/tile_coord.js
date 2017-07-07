@@ -1,4 +1,3 @@
-'use strict';
 
 const assert = require('assert');
 const WhooTS = require('@mapbox/whoots-js');
@@ -110,8 +109,8 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
 
     // sort edges by x-coordinate
     if ((e0.x0 === e1.x0 && e0.y0 === e1.y0) ?
-            (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
-            (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
+        (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
+        (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
         const t = e0; e0 = e1; e1 = t;
     }
 

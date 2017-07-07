@@ -1,4 +1,3 @@
-'use strict';
 const util = require('../util/util');
 const ajax = require('../util/ajax');
 const browser = require('../util/browser');

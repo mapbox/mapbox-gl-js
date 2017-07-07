@@ -1,4 +1,3 @@
-'use strict';
 
 const util = require('../util/util');
 const StyleTransition = require('./style_transition');

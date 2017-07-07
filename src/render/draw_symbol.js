@@ -1,4 +1,3 @@
-'use strict';
 
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -38,9 +37,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['icon-translate'],
         layer.paint['icon-translate-anchor'],
         layer.layout['icon-rotation-alignment'],
-        // icon-pitch-alignment is not yet implemented
-        // and we simply inherit the rotation alignment
-        layer.layout['icon-rotation-alignment'],
+        layer.layout['icon-pitch-alignment'],
         layer.layout['icon-keep-upright']
     );
 
@@ -58,7 +55,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, keepUpright) {
+    rotationAlignment, pitchAlignment, keepUpright) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -68,6 +65,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
     const alongLine = rotateWithMap && layer.layout['symbol-placement'] === 'line';
+    // Line label rotation happens in `updateLineLabels`
+    // Pitched point labels are automatically rotated by the labelPlaneMatrix projection
+    // Unpitched point labels need to have their rotation applied after projection
+    const rotateInShader = rotateWithMap && !pitchWithMap && !alongLine;
 
     const depthOn = pitchWithMap;
 
@@ -96,7 +97,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData);
+            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateInShader, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData);
         }
 
         painter.enableTileClippingMask(coord);
@@ -110,7 +111,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (alongLine) {
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, identityMat4);
-            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, pitchWithMap, keepUpright, s, layer);
+            symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, s, layer);
         } else {
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
         }
@@ -125,7 +126,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
-function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeData) {
+function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateInShader, pitchWithMap, fontstack, iconsNeedLinear, sizeData) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -170,6 +171,9 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     const size = symbolSize.evaluateSizeForZoom(sizeData, tr, layer, isText);
     if (size.uSizeT !== undefined) gl.uniform1f(program.u_size_t, size.uSizeT);
     if (size.uSize !== undefined) gl.uniform1f(program.u_size, size.uSize);
+
+    gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
+    gl.uniform1i(program.u_rotate_symbol, rotateInShader);
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {

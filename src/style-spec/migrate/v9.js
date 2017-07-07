@@ -1,4 +1,3 @@
-'use strict';
 
 const deref = require('../deref');
 

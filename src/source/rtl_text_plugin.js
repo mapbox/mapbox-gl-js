@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const ajax = require('../util/ajax');
@@ -13,14 +12,24 @@ module.exports.evented = new Evented();
 type ErrorCallback = (error: Error) => void;
 
 module.exports.registerForPluginAvailability = function(
-    callback: (pluginBlobURL: string, errorCallback: ErrorCallback) => void
+    callback: (args: {pluginBlobURL: string, errorCallback: ErrorCallback}) => void
 ) {
     if (pluginBlobURL) {
-        callback(pluginBlobURL, module.exports.errorCallback);
+        callback({ pluginBlobURL: pluginBlobURL, errorCallback: module.exports.errorCallback});
     } else {
         module.exports.evented.once('pluginAvailable', callback);
     }
     return callback;
+};
+
+// Exposed so it can be stubbed out by tests
+module.exports.createBlobURL = function(response: Object) {
+    return window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
+};
+// Only exposed for tests
+module.exports.clearRTLTextPlugin = function() {
+    pluginRequested = false;
+    pluginBlobURL = null;
 };
 
 module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCallback) {
@@ -33,10 +42,11 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
         if (err) {
             callback(err);
         } else {
-            pluginBlobURL =
-                window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
-
+            pluginBlobURL = module.exports.createBlobURL(response);
             module.exports.evented.fire('pluginAvailable', { pluginBlobURL: pluginBlobURL, errorCallback: callback });
         }
     });
 };
+
+module.exports.applyArabicShaping = (null : ?Function);
+module.exports.processBidirectionalText = (null : ?Function);

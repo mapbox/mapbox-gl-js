@@ -108,7 +108,7 @@ test('LineBucket', (t) => {
 test('LineBucket segmentation', (t) => {
     // Stub ArrayGroup.MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    t.stub(ArrayGroup, 'MAX_VERTEX_ARRAY_LENGTH', 256);
+    t.stub(ArrayGroup, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
 
     const layer = new StyleLayer({ id: 'test', type: 'line' });
     const bucket = new LineBucket({ layers: [layer] });

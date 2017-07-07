@@ -1,4 +1,3 @@
-'use strict';
 
 const scriptDetection = require('./script_detection');
 
