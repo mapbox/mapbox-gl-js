@@ -146,7 +146,7 @@ exports.keysDifference = function (obj: {[key: string]: mixed}, other: {[key: st
  * @param sources sources from which properties are pulled
  * @private
  */
-exports.extend = function (dest: Object, ...sources: Array<Object>): Object {
+exports.extend = function (dest: Object, ...sources: Array<?Object>): Object {
     for (const src of sources) {
         for (const k in src) {
             dest[k] = src[k];
