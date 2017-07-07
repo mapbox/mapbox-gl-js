@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mbgl/ci:r1-linux-gl-js
+      - image: mbgl/ci:r4-linux-gl-js
     working_directory: ~/mapbox-gl-js
     steps:
       - checkout
