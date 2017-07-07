@@ -96,8 +96,8 @@
       "package-json-versionify",
       "unassertify",
       "brfs",
-      "./src/build/minifyify_style_spec",
-      "./src/build/strictify"
+      "./build/minifyify_style_spec",
+      "./build/strictify"
     ]
   },
   "browser": {
@@ -134,6 +134,7 @@
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
   },
   "files": [
+    "build/",
     "dist/",
     "flow-typed/",
     "src/",
