@@ -1,17 +1,26 @@
+// @flow
 
 const StyleLayer = require('./style_layer');
 const util = require('../util/util');
 const featureFilter = require('../style-spec/feature_filter');
 const groupByLayout = require('../style-spec/group_by_layout');
 
+export type LayerConfigs = { [string]: LayerSpecification };
+
 class StyleLayerIndex {
-    constructor(layerConfigs) {
+    symbolOrder: Array<string>;
+    familiesBySource: { [string]: { [string]: Array<Array<StyleLayer>> } };
+
+    _layerConfigs: LayerConfigs;
+    _layers: { [string]: StyleLayer };
+
+    constructor(layerConfigs: ?LayerConfigs) {
         if (layerConfigs) {
             this.replace(layerConfigs);
         }
     }
 
-    replace(layerConfigs) {
+    replace(layerConfigs: LayerConfigs) {
         this.symbolOrder = [];
         for (const layerConfig of layerConfigs) {
             if (layerConfig.type === 'symbol') {
@@ -23,7 +32,7 @@ class StyleLayerIndex {
         this.update(layerConfigs, []);
     }
 
-    update(layerConfigs, removedIds, symbolOrder) {
+    update(layerConfigs: LayerConfigs, removedIds: Array<string>, symbolOrder: ?Array<string>) {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
