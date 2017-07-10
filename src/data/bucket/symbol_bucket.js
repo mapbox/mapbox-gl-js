@@ -30,9 +30,8 @@ const WritingMode = Shaping.WritingMode;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
 
-import type {BucketParameters, PopulateParameters} from '../bucket';
+import type {BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
-import type {IndexedFeature} from '../feature_index';
 
 type SymbolBucketParameters = BucketParameters & {
     sdfIcons: boolean,
@@ -282,8 +281,7 @@ class SymbolBucket {
         const stack = stacks[textFont] = stacks[textFont] || {};
         const globalProperties =  {zoom: this.zoom};
 
-        for (let i = 0; i < features.length; i++) {
-            const feature = features[i];
+        for (const {feature, index, sourceLayerIndex} of features) {
             if (!layer.filter(feature)) {
                 continue;
             }
@@ -312,8 +310,8 @@ class SymbolBucket {
             this.features.push({
                 text,
                 icon,
-                index: i,
-                sourceLayerIndex: feature.sourceLayerIndex,
+                index,
+                sourceLayerIndex,
                 geometry: loadGeometry(feature),
                 properties: feature.properties,
                 type: vectorTileFeatureTypes[feature.type]

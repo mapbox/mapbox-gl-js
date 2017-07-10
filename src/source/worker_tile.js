@@ -84,11 +84,9 @@ class WorkerTile {
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
-            for (let i = 0; i < sourceLayer.length; i++) {
-                const feature = sourceLayer.feature(i);
-                (feature: any).index = i;
-                (feature: any).sourceLayerIndex = sourceLayerIndex;
-                features.push(feature);
+            for (let index = 0; index < sourceLayer.length; index++) {
+                const feature = sourceLayer.feature(index);
+                features.push({ feature, index, sourceLayerIndex });
             }
 
             for (const family of layerFamilies[sourceLayerId]) {
