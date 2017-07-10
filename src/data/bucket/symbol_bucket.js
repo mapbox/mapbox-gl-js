@@ -257,6 +257,8 @@ class SymbolBucket {
             this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
 
+            this.symbolInstances = options.symbolInstances;
+
         } else {
             this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
             this.iconSizeData = getSizeData(this.zoom, layer, 'icon-size');
@@ -375,6 +377,7 @@ class SymbolBucket {
             placedIconArray: this.placedIconArray.serialize(transferables),
             glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
+            symbolInstances: this.symbolInstances,
             arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
         };
     }

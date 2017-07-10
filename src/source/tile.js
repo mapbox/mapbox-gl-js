@@ -209,6 +209,35 @@ class Tile {
     }
 
     _immediateRedoPlacement() {
+        const collisionTile = new CollisionTile(
+            this.angle,
+            this.pitch,
+            this.cameraToCenterDistance,
+            this.cameraToTileDistance,
+            this.collisionBoxArray);
+
+        const symbolBuckets = [];
+        const style = this.placementSource.map.style;
+        for (let i = style._order.length - 1; i >= 0; i--) {
+            const layerId = style._order[i];
+            const layer = style._layers[layerId];
+            if (layer.type !== 'symbol') continue;
+
+            const bucket = this.getBucket(layer);
+
+            if (bucket) {
+                //recalculateLayers(bucket, this.zoom);
+                bucket.place(collisionTile, this.showCollisionBoxes);
+                symbolBuckets.push(bucket);
+            }
+        }
+
+        const data = {
+            buckets: serializeBuckets(symbolBuckets, []),
+            collisionTile: collisionTile.serialize([])
+        };
+
+        /*
         this.placementSource.dispatcher.send('redoPlacement', {
             type: this.placementSource.type,
             uid: this.uid,
@@ -219,18 +248,19 @@ class Tile {
             cameraToTileDistance: this.cameraToTileDistance,
             showCollisionBoxes: this.showCollisionBoxes
         }, (_, data) => {
-            this.reloadSymbolData(data, this.placementSource.map.style);
-            if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
-            // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
-            if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
+        */
+        this.reloadSymbolData(data, this.placementSource.map.style);
+        if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
+        // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
+        if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
 
-            this.state = 'loaded';
+        this.state = 'loaded';
 
-            if (this.redoWhenDone) {
-                this.redoWhenDone = false;
-                this._immediateRedoPlacement();
-            }
-        }, this.workerID);
+        if (this.redoWhenDone) {
+            this.redoWhenDone = false;
+            this._immediateRedoPlacement();
+        }
+        //}, this.workerID);
     }
 
     getBucket(layer: any) {
@@ -332,6 +362,12 @@ class Tile {
             this.state = 'loaded';
         }
     }
+}
+
+function serializeBuckets(buckets, transferables) {
+    return buckets
+        .filter((b) => !b.isEmpty())
+        .map((b) => b.serialize(transferables));
 }
 
 module.exports = Tile;
