@@ -14,7 +14,7 @@ import type StyleLayerIndex from '../style/style_layer_index';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
-} from '../source/source';
+} from '../source/worker_source';
 
 class WorkerTile {
     coord: TileCoord;
