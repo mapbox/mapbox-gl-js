@@ -83,6 +83,8 @@ function flowLayer(key) {
         delete layer.source;
         delete layer['source-layer'];
         delete layer.filter;
+    } else {
+        layer.source.required = true;
     }
 
     return flowObjectDeclaration(flowLayerTypeName(key), layer);
