@@ -12,7 +12,7 @@ const VectorTileWorkerSource = require('./vector_tile_worker_source');
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
-} from '../source/source';
+} from '../source/worker_source';
 
 import type {Actor} from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';

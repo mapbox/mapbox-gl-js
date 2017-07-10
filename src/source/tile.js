@@ -14,7 +14,7 @@ const Throttler = require('../util/throttler');
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type TileCoord from './tile_coord';
-import type {WorkerTileResult} from './source';
+import type {WorkerTileResult} from './worker_source';
 
 /**
  * A tile object is the combination of a Coordinate, which defines

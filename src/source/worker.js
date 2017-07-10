@@ -16,7 +16,7 @@ import type {
     TileParameters,
     RedoPlacementParameters,
     RedoPlacementCallback
-} from '../source/source';
+} from '../source/worker_source';
 
 /**
  * @private

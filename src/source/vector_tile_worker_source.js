@@ -13,7 +13,7 @@ import type {
     TileParameters,
     RedoPlacementParameters,
     RedoPlacementCallback,
-} from '../source/source';
+} from '../source/worker_source';
 
 import type {Actor} from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
