@@ -8,25 +8,14 @@ tags:
 ---
 <style>
     .calculation-box {
-        height: 140px;
+        height: 75px;
         width: 150px;
         position: absolute;
-        top: 210px;
+        bottom: 40px;
         left: 10px;
         background-color: rgba(255, 255, 255, .9);
         padding: 15px;
         text-align: center;
-    }
-
-    #calculate {
-        min-height: 20px;
-        background-color: #3887be;
-        color: #fff;
-        font-family: 'Open Sans';
-        border-radius: 5px;
-        padding: 10px;
-        cursor: pointer;
-        margin: 10px 0;
     }
 
     p {
@@ -42,7 +31,6 @@ tags:
 <div id='map'></div>
 <div class='calculation-box'>
     <p>Draw a polygon using the draw tools.</p>
-    <div id='calculate' class='button button'>Calculate area</div>
     <div id='calculated-area'></div>
 </div>
 
@@ -64,18 +52,22 @@ var draw = new MapboxDraw({
 });
 map.addControl(draw);
 
-var calcButton = document.getElementById('calculate');
-calcButton.onclick = function() {
+map.on('draw.create', updateArea);
+map.on('draw.delete', updateArea);
+map.on('draw.update', updateArea);
+
+function updateArea() {
     var data = draw.getAll();
+    var answer = document.getElementById('calculated-area');
     if (data.features.length > 0) {
         var area = turf.area(data);
         // restrict to area to 2 decimal points
         var rounded_area = Math.round(area*100)/100;
-        var answer = document.getElementById('calculated-area');
         answer.innerHTML = '<p><strong>' + rounded_area + '</strong></p><p>square meters</p>';
     } else {
+        answer.innerHTML = '';
         alert("Use the draw tools to draw a polygon!");
     }
-};
+}
 
 </script>
