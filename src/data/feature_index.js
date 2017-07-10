@@ -35,11 +35,6 @@ const FeatureIndexArray = createStructArrayType({
     ]
 });
 
-export type IndexedFeature = VectorTileFeature & {
-    index: number,
-    sourceLayerIndex: number,
-}
-
 type QueryParameters = {
     scale: number,
     bearing: number,
@@ -107,9 +102,9 @@ class FeatureIndex {
         this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
     }
 
-    insert(feature: IndexedFeature, bucketIndex: number) {
+    insert(feature: VectorTileFeature, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
         const key = this.featureIndexArray.length;
-        this.featureIndexArray.emplaceBack(feature.index, feature.sourceLayerIndex, bucketIndex);
+        this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
         const geometry = loadGeometry(feature);
 
         for (let r = 0; r < geometry.length; r++) {
