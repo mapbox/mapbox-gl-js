@@ -10,10 +10,6 @@ const mat4 = glmatrix.mat4;
 const intersectionTests = require('../util/intersection_tests');
 
 export type SerializedCollisionTile = {|
-    angle: number,
-    pitch: number,
-    cameraToCenterDistance: number,
-    cameraToTileDistance: number,
     grid: ArrayBuffer,
     ignoredGrid: ArrayBuffer
 |};
@@ -42,27 +38,21 @@ class CollisionTile {
     tempCollisionBox: any;
     edges: Array<any>;
 
-    static deserialize(serialized: SerializedCollisionTile, collisionBoxArray: any) {
+    static deserialize(serialized: SerializedCollisionTile) {
         return new CollisionTile(
-            serialized.angle,
-            serialized.pitch,
-            serialized.cameraToCenterDistance,
-            serialized.cameraToTileDistance,
-            collisionBoxArray,
             new Grid(serialized.grid),
             new Grid(serialized.ignoredGrid)
         );
     }
 
     constructor(
-        angle: number,
-        pitch: number,
-        cameraToCenterDistance: number,
-        cameraToTileDistance: number,
-        collisionBoxArray: any,
         grid: any = new Grid(1, 12, 6),
         ignoredGrid: any = new Grid(1, 12, 0)
     ) {
+        const angle = 0;
+        const pitch = 0;
+        const cameraToCenterDistance = 1;
+        const cameraToTileDistance = 1;
         this.angle = angle;
         this.pitch = pitch;
         this.cameraToCenterDistance = cameraToCenterDistance;
@@ -95,38 +85,6 @@ class CollisionTile {
         // boxes at render time.
         this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
         this.yStretch = 1;
-
-        this.collisionBoxArray = collisionBoxArray;
-        if (collisionBoxArray.length === 0) {
-            // the first time collisionBoxArray is passed to a CollisionTile
-
-            // tempCollisionBox
-            collisionBoxArray.emplaceBack();
-
-            /*
-            const maxInt16 = 32767;
-            //left
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // top
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-                */
-        }
-
-        this.tempCollisionBox = collisionBoxArray.get(0);
-        this.edges = [
-            collisionBoxArray.get(1),
-            collisionBoxArray.get(2),
-            collisionBoxArray.get(3),
-            collisionBoxArray.get(4)
-        ];
     }
 
     serialize(transferables: ?Array<Transferable>): SerializedCollisionTile {
@@ -137,10 +95,6 @@ class CollisionTile {
             transferables.push(ignoredGrid);
         }
         return {
-            angle: this.angle,
-            pitch: this.pitch,
-            cameraToCenterDistance: this.cameraToCenterDistance,
-            cameraToTileDistance: this.cameraToTileDistance,
             grid: grid,
             ignoredGrid: ignoredGrid
         };
@@ -265,7 +219,6 @@ class CollisionTile {
             return result;
         }
 
-        const collisionBoxArray = this.collisionBoxArray;
         const rotationMatrix = this.rotationMatrix;
         const yStretch = this.yStretch;
 
@@ -304,7 +257,7 @@ class CollisionTile {
         const roundedScale = Math.pow(2, Math.ceil(Math.log(perspectiveScale) / Math.LN2 * 10) / 10);
 
         for (let i = 0; i < features.length; i++) {
-            const blocking = collisionBoxArray.get(features[i]);
+            const blocking = this.collisionBoxArray.get(features[i]);
             const sourceLayer = blocking.sourceLayerIndex;
             const featureIndex = blocking.featureIndex;
 
@@ -415,6 +368,40 @@ class CollisionTile {
 
     setMatrix(matrix) {
         this.matrix = matrix;
+    }
+
+    setCollisionBoxArray(collisionBoxArray) {
+        this.collisionBoxArray = collisionBoxArray;
+        if (collisionBoxArray.length === 0) {
+            // the first time collisionBoxArray is passed to a CollisionTile
+
+            // tempCollisionBox
+            collisionBoxArray.emplaceBack();
+
+            /*
+            const maxInt16 = 32767;
+            //left
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
+            // right
+            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
+            // top
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
+            // bottom
+            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
+                0, 0, 0, 0, 0, 0, 0, 0, 0);
+                */
+        }
+
+        this.tempCollisionBox = collisionBoxArray.get(0);
+        this.edges = [
+            collisionBoxArray.get(1),
+            collisionBoxArray.get(2),
+            collisionBoxArray.get(3),
+            collisionBoxArray.get(4)
+        ];
     }
 
     projectPoint(point) {

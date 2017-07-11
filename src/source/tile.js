@@ -117,7 +117,7 @@ class Tile {
         }
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
-        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
+        this.collisionTile = CollisionTile.deserialize(data.collisionTile);
         this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
@@ -210,14 +210,10 @@ class Tile {
     }
 
     _immediateRedoPlacement() {
-        const collisionTile = new CollisionTile(
-            this.angle,
-            this.pitch,
-            this.cameraToCenterDistance,
-            this.cameraToTileDistance,
-            this.collisionBoxArray);
+        const collisionTile = new CollisionTile();
 
         collisionTile.setMatrix(this.matrix);
+        collisionTile.setCollisionBoxArray(this.collisionBoxArray);
 
         const symbolBuckets = [];
         const style = this.placementSource.map.style;
