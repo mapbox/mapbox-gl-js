@@ -133,7 +133,7 @@ class Tile {
     reloadSymbolData(data: WorkerTileResult) {
         if (this.state === 'unloaded') return;
 
-        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
+        this.collisionTile = data.collisionTile;
 
         if (this.featureIndex) {
             this.featureIndex.setCollisionTile(this.collisionTile);
@@ -223,7 +223,7 @@ class Tile {
 
         const data = {
             buckets: symbolBuckets,
-            collisionTile: collisionTile.serialize([])
+            collisionTile: collisionTile
         };
 
         /*
