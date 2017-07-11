@@ -875,7 +875,7 @@ class Style extends Evented {
                 this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, layer);
             }
         }
-        console.time('redo placement');
+        console.timeEnd('redo placement');
     }
 
     // Callbacks from web workers
