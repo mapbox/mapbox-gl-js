@@ -110,10 +110,10 @@ class CollisionTile {
      * @param avoidEdges
      * @private
      */
-    placeCollisionFeature(collisionFeature: any, allowOverlap: boolean, avoidEdges: boolean): number {
+    placeCollisionFeature(collisionFeature: any, allowOverlap: boolean, avoidEdges: boolean, scale: number): boolean {
 
         const collisionBoxArray = this.collisionBoxArray;
-        let minPlacementScale = this.minScale;
+
         const rotationMatrix = this.rotationMatrix;
         const yStretch = this.yStretch;
 
@@ -133,10 +133,10 @@ class CollisionTile {
             // Note that this adjustment ONLY affects the bounding boxes
             // in the grid. It doesn't affect the boxes used for the
             // minPlacementScale calculations.
-            const x1 = x + box.x1;// * this.perspectiveRatio;
-            const y1 = y + box.y1;// * yStretch * this.perspectiveRatio;
-            const x2 = x + box.x2;// * this.perspectiveRatio;
-            const y2 = y + box.y2;// * yStretch * this.perspectiveRatio;
+            const x1 = x + box.x1 / scale;
+            const y1 = y + box.y1 / scale;
+            const x2 = x + box.x2 / scale;
+            const y2 = y + box.y2 / scale;
             const tl = this.projectPoint(new Point(x1, y1));
             const br = this.projectPoint(new Point(x2, y2));
 
@@ -163,15 +163,13 @@ class CollisionTile {
                 for (let i = 0; i < blockingBoxes.length; i++) {
                     const blocking = collisionBoxArray.get(blockingBoxes[i]);
                     const blockingAnchorPoint = blocking.anchorPoint;//._matMult(rotationMatrix);
-
-                    minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
-                    if (minPlacementScale >= this.maxScale) {
-                        return minPlacementScale;
+                    if (this.checkIfBoxesCollide(scale, anchorPoint, box, blockingAnchorPoint, blocking)) {
+                        return false;
                     }
                 }
             }
 
-            if (avoidEdges && false) {
+            /*if (avoidEdges && false) {
                 let rotatedCollisionBox;
 
                 if (false && this.angle) {
@@ -200,10 +198,10 @@ class CollisionTile {
                         return minPlacementScale;
                     }
                 }
-            }
+            }*/
         }
 
-        return minPlacementScale;
+        return true;
     }
 
     queryRenderedSymbols(queryGeometry: any, scale: number): Array<any> {
@@ -286,8 +284,7 @@ class CollisionTile {
         return result;
     }
 
-    getPlacementScale(minPlacementScale: number, anchorPoint: Point, box: any, blockingAnchorPoint: Point, blocking: any): number {
-
+    checkIfBoxesCollide(scale: number, anchorPoint: Point, box: any, blockingAnchorPoint: Point, blocking: any) {
         anchorPoint = this.projectPoint(anchorPoint);
         blockingAnchorPoint = this.projectPoint(blockingAnchorPoint);
         const boxTL = this.projectOffset(new Point(box.x1, box.y1));
@@ -307,34 +304,9 @@ class CollisionTile {
         if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
         if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
 
-        let collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
-        const blockingMaxScale = blocking.maxScale;
-        const boxMaxScale = box.maxScale;
-
-        if (collisionFreeScale > blockingMaxScale) {
-            // After a box's maxScale the label has shrunk enough that the box is no longer needed to cover it,
-            // so unblock the new box at the scale that the old box disappears.
-            collisionFreeScale = blockingMaxScale;
-        }
-
-        if (collisionFreeScale > boxMaxScale) {
-            // If the box can only be shown after it is visible, then the box can never be shown.
-            // But the label can be shown after this box is not visible.
-            collisionFreeScale = boxMaxScale;
-        }
-
-        if (collisionFreeScale > minPlacementScale &&
-                collisionFreeScale >= blocking.placementScale) {
-            // If this collision occurs at a lower scale than previously found collisions
-            // and the collision occurs while the other label is visible
-
-            // this this is the lowest scale at which the label won't collide with anything
-            minPlacementScale = collisionFreeScale;
-        }
-
-        return minPlacementScale;
+        const collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
+        return collisionFreeScale > scale;
     }
-
 
     /**
      * Remember this collisionFeature and what scale it was placed at to block
@@ -345,19 +317,13 @@ class CollisionTile {
      * @param ignorePlacement
      * @private
      */
-    insertCollisionFeature(collisionFeature: any, minPlacementScale: number, ignorePlacement: boolean) {
+    insertCollisionFeature(collisionFeature: any, ignorePlacement: boolean) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;
 
         for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
             const box = collisionBoxArray.get(k);
-            box.placementScale = minPlacementScale;
-            if (minPlacementScale < this.maxScale &&
-                (this.perspectiveRatio === 1 || box.maxScale >= 1)) {
-                // Boxes with maxScale < 1 are only relevant in pitched maps,
-                // so filter them out in unpitched maps to keep the grid sparse
-                grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
-            }
+            grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
         }
     }
 

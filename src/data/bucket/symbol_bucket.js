@@ -609,7 +609,7 @@ class SymbolBucket {
         return false;
     }
 
-    place(collisionTile: any, showCollisionBoxes: any) {
+    place(collisionTile: any, showCollisionBoxes: any, zoom: number) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
@@ -652,6 +652,8 @@ class SymbolBucket {
             });
         }
 
+        const scale = Math.pow(2, zoom - this.zoom);
+
         for (const symbolInstance of this.symbolInstances) {
             const textCollisionFeature = {
                 boxStartIndex: symbolInstance.textBoxStartIndex,
@@ -671,25 +673,24 @@ class SymbolBucket {
 
             // Calculate the scales at which the text and icon can be placed without collision.
 
-            let glyphScale = hasText ?
+            let placeGlyph = hasText ?
                 collisionTile.placeCollisionFeature(textCollisionFeature,
-                    layout['text-allow-overlap'], layout['symbol-avoid-edges']) :
-                collisionTile.minScale;
+                    layout['text-allow-overlap'], layout['symbol-avoid-edges'], scale) :
+                false;
 
-            let iconScale = hasIcon ?
+            let placeIcon = hasIcon ?
                 collisionTile.placeCollisionFeature(iconCollisionFeature,
-                    layout['icon-allow-overlap'], layout['symbol-avoid-edges']) :
-                collisionTile.minScale;
+                    layout['icon-allow-overlap'], layout['symbol-avoid-edges'], scale) :
+                false;
 
 
             // Combine the scales for icons and text.
-
             if (!iconWithoutText && !textWithoutIcon) {
-                iconScale = glyphScale = Math.max(iconScale, glyphScale);
-            } else if (!textWithoutIcon && glyphScale) {
-                glyphScale = Math.max(iconScale, glyphScale);
-            } else if (!iconWithoutText && iconScale) {
-                iconScale = Math.max(iconScale, glyphScale);
+                placeIcon = placeGlyph = placeIcon && placeGlyph;
+            } else if (!textWithoutIcon) {
+                placeGlyph = placeIcon && placeGlyph;
+            } else if (!iconWithoutText) {
+                placeIcon = placeIcon && placeGlyph;
             }
 
 
@@ -704,8 +705,8 @@ class SymbolBucket {
 
 
             if (hasText) {
-                collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
-                if (glyphScale <= maxScale) {
+                if (placeGlyph) {
+                    collisionTile.insertCollisionFeature(textCollisionFeature, layout['text-ignore-placement']);
                     const textSizeData = getSizeVertexData(layer,
                         this.zoom,
                         this.textSizeData.coveringZoomRange,
@@ -714,7 +715,6 @@ class SymbolBucket {
                     this.addSymbols(
                         this.arrays.glyph,
                         symbolInstance.glyphQuads,
-                        glyphScale,
                         textSizeData,
                         layout['text-keep-upright'],
                         symbolInstance.textOffset,
@@ -730,8 +730,8 @@ class SymbolBucket {
             }
 
             if (hasIcon) {
-                collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
-                if (iconScale <= maxScale) {
+                if (placeIcon) {
+                    collisionTile.insertCollisionFeature(iconCollisionFeature, layout['icon-ignore-placement']);
                     const iconSizeData = getSizeVertexData(
                         layer,
                         this.zoom,
@@ -741,7 +741,6 @@ class SymbolBucket {
                     this.addSymbols(
                         this.arrays.icon,
                         symbolInstance.iconQuads,
-                        iconScale,
                         iconSizeData,
                         layout['icon-keep-upright'],
                         symbolInstance.iconOffset,
@@ -770,13 +769,13 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays: any, quads: any, scale: any, sizeVertex: any, keepUpright: any, lineOffset: any, alongLine: any, placementAngle: any, featureProperties: any, writingModes: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
+    addSymbols(arrays: any, quads: any, sizeVertex: any, keepUpright: any, lineOffset: any, alongLine: any, placementAngle: any, featureProperties: any, writingModes: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
         const zoom = this.zoom;
-        const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
+        const placementZoom = zoom;//Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
 

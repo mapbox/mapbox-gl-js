@@ -188,6 +188,7 @@ class Tile {
         }
         */
 
+        this.zoom = source.map.transform.zoom;
         this.angle = source.map.transform.angle;
         this.pitch = source.map.transform.pitch;
         this.cameraToCenterDistance = source.map.transform.cameraToCenterDistance;
@@ -218,7 +219,7 @@ class Tile {
 
             if (bucket) {
                 //recalculateLayers(bucket, this.zoom);
-                bucket.place(collisionTile, this.showCollisionBoxes);
+                bucket.place(collisionTile, this.showCollisionBoxes, this.zoom);
                 symbolBuckets.push(bucket);
             }
         }
