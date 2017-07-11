@@ -955,9 +955,9 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.off('rotate', this.style._redoPlacement);
-            this.off('pitch', this.style._redoPlacement);
-            this.off('move', this.style._redoPlacement);
+            //this.off('rotate', this.style._redoPlacement);
+            //this.off('pitch', this.style._redoPlacement);
+            //this.off('move', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -971,9 +971,9 @@ class Map extends Camera {
 
         this.style.setEventedParent(this, {style: this.style});
 
-        this.on('rotate', this.style._redoPlacement);
-        this.on('pitch', this.style._redoPlacement);
-        this.on('move', this.style._redoPlacement);
+        //this.on('rotate', this.style._redoPlacement);
+        //this.on('pitch', this.style._redoPlacement);
+        //this.on('move', this.style._redoPlacement);
 
         return this;
     }
@@ -1529,6 +1529,8 @@ class Map extends Camera {
             this._sourcesDirty = false;
             this.style._updateSources(this.transform);
         }
+
+        this.style._redoPlacement();
 
         // Actually draw
         this.painter.render(this.style, {

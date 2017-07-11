@@ -117,19 +117,17 @@ class Tile {
         }
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
-        this.collisionTile = CollisionTile.deserialize(data.collisionTile);
-        this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
+        this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
 
     /**
      * Replace this tile's symbol buckets with fresh data.
      * @param {Object} data
-     * @param {Style} style
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData(data: WorkerTileResult, style: any) {
+    reloadSymbolData(data: WorkerTileResult) {
         if (this.state === 'unloaded') return;
 
         this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
@@ -137,17 +135,6 @@ class Tile {
         if (this.featureIndex) {
             this.featureIndex.setCollisionTile(this.collisionTile);
         }
-
-        for (const id in this.buckets) {
-            const bucket = this.buckets[id];
-            if (bucket.layers[0].type === 'symbol') {
-                bucket.destroy();
-                delete this.buckets[id];
-            }
-        }
-
-        // Add new symbol buckets
-        util.extend(this.buckets, Bucket.deserialize(data.buckets, style));
     }
 
     /**
@@ -175,11 +162,14 @@ class Tile {
             this.redoWhenDone = true;
             return;
         }
+        /*
         if (!this.collisionTile) { // empty tile
             return;
         }
+        */
 
         const cameraToTileDistance = source.map.transform.cameraToTileDistance(this);
+        /*
         if (this.angle === source.map.transform.angle &&
             this.pitch === source.map.transform.pitch &&
             this.cameraToCenterDistance === source.map.transform.cameraToCenterDistance &&
@@ -196,6 +186,7 @@ class Tile {
                 return;
             }
         }
+        */
 
         this.angle = source.map.transform.angle;
         this.pitch = source.map.transform.pitch;
@@ -232,7 +223,7 @@ class Tile {
         }
 
         const data = {
-            buckets: serializeBuckets(symbolBuckets, []),
+            buckets: symbolBuckets,
             collisionTile: collisionTile.serialize([])
         };
 
@@ -248,7 +239,7 @@ class Tile {
             showCollisionBoxes: this.showCollisionBoxes
         }, (_, data) => {
         */
-        this.reloadSymbolData(data, this.placementSource.map.style);
+        this.reloadSymbolData(data);
         if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
@@ -361,12 +352,6 @@ class Tile {
             this.state = 'loaded';
         }
     }
-}
-
-function serializeBuckets(buckets, transferables) {
-    return buckets
-        .filter((b) => !b.isEmpty())
-        .map((b) => b.serialize(transferables));
 }
 
 module.exports = Tile;

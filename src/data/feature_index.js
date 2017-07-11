@@ -73,13 +73,11 @@ class FeatureIndex {
     bucketLayerIDs: Array<Array<string>>;
     paintPropertyStatistics: PaintPropertyStatistics;
 
-    collisionTile: CollisionTile;
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
     static deserialize(serialized: SerializedFeatureIndex,
-                       rawTileData: ArrayBuffer,
-                       collisionTile: CollisionTile) {
+                       rawTileData: ArrayBuffer) {
         const self = new FeatureIndex(
             serialized.coord,
             serialized.overscaling,
@@ -89,7 +87,6 @@ class FeatureIndex {
         self.rawTileData = rawTileData;
         self.bucketLayerIDs = serialized.bucketLayerIDs;
         self.paintPropertyStatistics = serialized.paintPropertyStatistics;
-        self.setCollisionTile(collisionTile);
 
         return self;
     }

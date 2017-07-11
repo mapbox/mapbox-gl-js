@@ -242,20 +242,24 @@ class SymbolBucket {
         this.symbolInterfaces = symbolInterfaces;
 
         // deserializing a bucket created on a worker thread
-        if (options.arrays) {
+        if (options.symbolInstances) {
+            /*
             this.buffers = {};
             for (const id in options.arrays) {
                 if (options.arrays[id]) {
                     this.buffers[id] = new BufferGroup(this.symbolInterfaces[id], options.layers, options.zoom, options.arrays[id]);
                 }
             }
+            */
             this.textSizeData = options.textSizeData;
             this.iconSizeData = options.iconSizeData;
 
+            /*
             this.placedGlyphArray = new PlacedSymbolArray(options.placedGlyphArray);
             this.placedIconArray = new PlacedSymbolArray(options.placedIconArray);
             this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
+            */
 
             this.symbolInstances = options.symbolInstances;
 
@@ -348,18 +352,18 @@ class SymbolBucket {
     }
 
     isEmpty() {
-        return this.arrays.icon.isEmpty() &&
-            this.arrays.glyph.isEmpty() &&
-            this.arrays.collisionBox.isEmpty();
+        return this.symbolInstances.length === 0;
     }
 
     getPaintPropertyStatistics() {
         const statistics = {};
-        for (const layer of this.layers) {
-            statistics[layer.id] = util.extend({},
-                this.arrays.icon.layerData[layer.id].paintPropertyStatistics,
-                this.arrays.glyph.layerData[layer.id].paintPropertyStatistics
-            );
+        if (this.arrays) {
+            for (const layer of this.layers) {
+                statistics[layer.id] = util.extend({},
+                    this.arrays.icon.layerData[layer.id].paintPropertyStatistics,
+                    this.arrays.glyph.layerData[layer.id].paintPropertyStatistics
+                );
+            }
         }
         return statistics;
     }
@@ -373,12 +377,7 @@ class SymbolBucket {
             textSizeData: this.textSizeData,
             iconSizeData: this.iconSizeData,
             fontstack: this.fontstack,
-            placedGlyphArray: this.placedGlyphArray.serialize(transferables),
-            placedIconArray: this.placedIconArray.serialize(transferables),
-            glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
-            lineVertexArray: this.lineVertexArray.serialize(transferables),
-            symbolInstances: this.symbolInstances,
-            arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
+            symbolInstances: this.symbolInstances
         };
     }
 
@@ -758,6 +757,14 @@ class SymbolBucket {
                 }
             }
 
+        }
+
+        this.destroy();
+        this.buffers = {};
+        for (const id in this.arrays) {
+            if (this.arrays[id]) {
+                this.buffers[id] = new BufferGroup(this.symbolInterfaces[id], this.layers, this.zoom, this.arrays[id]);
+            }
         }
 
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
