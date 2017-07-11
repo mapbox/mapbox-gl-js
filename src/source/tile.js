@@ -203,6 +203,7 @@ class Tile {
         this.cameraToTileDistance = cameraToTileDistance;
         this.showCollisionBoxes = source.map.showCollisionBoxes;
         this.placementSource = source;
+        this.matrix = source.map.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
         this.state = 'reloading';
         this.placementThrottler.invoke();
@@ -215,6 +216,8 @@ class Tile {
             this.cameraToCenterDistance,
             this.cameraToTileDistance,
             this.collisionBoxArray);
+
+        collisionTile.setMatrix(this.matrix);
 
         const symbolBuckets = [];
         const style = this.placementSource.map.style;

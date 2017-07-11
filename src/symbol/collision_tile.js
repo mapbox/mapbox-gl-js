@@ -3,6 +3,9 @@
 const Point = require('point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
+const glmatrix = require('@mapbox/gl-matrix');
+const vec4 = glmatrix.vec4;
+const mat4 = glmatrix.mat4;
 
 const intersectionTests = require('../util/intersection_tests');
 
@@ -57,13 +60,14 @@ class CollisionTile {
         cameraToCenterDistance: number,
         cameraToTileDistance: number,
         collisionBoxArray: any,
-        grid: any = new Grid(EXTENT, 12, 6),
-        ignoredGrid: any = new Grid(EXTENT, 12, 0)
+        grid: any = new Grid(1, 12, 6),
+        ignoredGrid: any = new Grid(1, 12, 0)
     ) {
         this.angle = angle;
         this.pitch = pitch;
         this.cameraToCenterDistance = cameraToCenterDistance;
         this.cameraToTileDistance = cameraToTileDistance;
+        this.matrix = mat4.identity(mat4.create());
 
         this.grid = grid;
         this.ignoredGrid = ignoredGrid;
@@ -90,6 +94,7 @@ class CollisionTile {
         // here because we can't adjust the aspect ratio of the collision
         // boxes at render time.
         this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
+        this.yStretch = 1;
 
         this.collisionBoxArray = collisionBoxArray;
         if (collisionBoxArray.length === 0) {
@@ -98,6 +103,7 @@ class CollisionTile {
             // tempCollisionBox
             collisionBoxArray.emplaceBack();
 
+            /*
             const maxInt16 = 32767;
             //left
             collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
@@ -111,6 +117,7 @@ class CollisionTile {
             // bottom
             collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                */
         }
 
         this.tempCollisionBox = collisionBoxArray.get(0);
@@ -175,11 +182,17 @@ class CollisionTile {
             const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
             const x2 = x + box.x2 * this.perspectiveRatio;
             const y2 = y + box.y2 * yStretch * this.perspectiveRatio;
+            const tl = this.projectPoint(new Point(x1, y1));
+            const br = this.projectPoint(new Point(x2, y2));
 
-            box.bbox0 = x1;
-            box.bbox1 = y1;
-            box.bbox2 = x2;
-            box.bbox3 = y2;
+            box.bbox0 = tl.x;
+            box.bbox1 = tl.y;
+            box.bbox2 = br.x;
+            box.bbox3 = br.y;
+            box.bbox0 = 0;
+            box.bbox1 = 0;
+            box.bbox2 = 0;
+            box.bbox3 = 0;
 
             // When the map is pitched the distance covered by a line changes.
             // Adjust the max scale by (approximatePitchedLength / approximateRegularLength)
@@ -191,13 +204,16 @@ class CollisionTile {
             const yStretchSqr = ySqr * yStretch * yStretch;
             const adjustmentFactor = Math.sqrt((xSqr + yStretchSqr) / (xSqr + ySqr)) || 1;
             box.maxScale = box.unadjustedMaxScale * adjustmentFactor;
+            box.maxScale = box.unadjustedMaxScale;
 
             if (!allowOverlap) {
-                const blockingBoxes = this.grid.query(x1, y1, x2, y2);
+                //const blockingBoxes = this.grid.query(x1, y1, x2, y2);
+                //const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
+                const blockingBoxes = this.grid.query(0, 0, EXTENT, EXTENT);
 
                 for (let i = 0; i < blockingBoxes.length; i++) {
                     const blocking = collisionBoxArray.get(blockingBoxes[i]);
-                    const blockingAnchorPoint = blocking.anchorPoint._matMult(rotationMatrix);
+                    const blockingAnchorPoint = blocking.anchorPoint;//._matMult(rotationMatrix);
 
                     minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
                     if (minPlacementScale >= this.maxScale) {
@@ -206,10 +222,10 @@ class CollisionTile {
                 }
             }
 
-            if (avoidEdges) {
+            if (avoidEdges && false) {
                 let rotatedCollisionBox;
 
-                if (this.angle) {
+                if (false && this.angle) {
                     const reverseRotationMatrix = this.reverseRotationMatrix;
                     const tl = new Point(box.x1, box.y1).matMult(reverseRotationMatrix);
                     const tr = new Point(box.x2, box.y1).matMult(reverseRotationMatrix);
@@ -324,14 +340,21 @@ class CollisionTile {
 
     getPlacementScale(minPlacementScale: number, anchorPoint: Point, box: any, blockingAnchorPoint: Point, blocking: any): number {
 
+        anchorPoint = this.projectPoint(anchorPoint);
+        blockingAnchorPoint = this.projectPoint(blockingAnchorPoint);
+        const boxTL = this.projectOffset(new Point(box.x1, box.y1));
+        const boxBR = this.projectOffset(new Point(box.x2, box.y2));
+        const blockingTL = this.projectOffset(new Point(blocking.x1, blocking.y1));
+        const blockingBR = this.projectOffset(new Point(blocking.x2, blocking.y2));
+
         // Find the lowest scale at which the two boxes can fit side by side without overlapping.
         // Original algorithm:
         const anchorDiffX = anchorPoint.x - blockingAnchorPoint.x;
         const anchorDiffY = anchorPoint.y - blockingAnchorPoint.y;
-        let s1 = (blocking.x1 - box.x2) / anchorDiffX; // scale at which new box is to the left of old box
-        let s2 = (blocking.x2 - box.x1) / anchorDiffX; // scale at which new box is to the right of old box
-        let s3 = (blocking.y1 - box.y2) * this.yStretch / anchorDiffY; // scale at which new box is to the top of old box
-        let s4 = (blocking.y2 - box.y1) * this.yStretch / anchorDiffY; // scale at which new box is to the bottom of old box
+        let s1 = (blockingTL.x - boxBR.x) / anchorDiffX; // scale at which new box is to the left of old box
+        let s2 = (blockingBR.x - boxTL.x) / anchorDiffX; // scale at which new box is to the right of old box
+        let s3 = (blockingTL.y - boxBR.y) * this.yStretch / anchorDiffY; // scale at which new box is to the top of old box
+        let s4 = (blockingBR.y - boxTL.y) * this.yStretch / anchorDiffY; // scale at which new box is to the bottom of old box
 
         if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
         if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
@@ -388,6 +411,24 @@ class CollisionTile {
                 grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
             }
         }
+    }
+
+    setMatrix(matrix) {
+        this.matrix = matrix;
+    }
+
+    projectPoint(point) {
+        const p = [point.x, point.y, 0, 1];
+        vec4.transformMat4(p, p, this.matrix);
+        const a = new Point(
+            (p[0] / p[3] + 1) / 2,
+            (p[1] / p[3] + 1) / 2
+        );
+        return a;
+    }
+
+    projectOffset(offset) {
+        return this.projectPoint(offset).sub(this.projectPoint(new Point(0, 0)));
     }
 }
 
