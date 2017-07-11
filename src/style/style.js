@@ -862,9 +862,11 @@ class Style extends Evented {
     }
 
     _redoPlacement() {
+        console.time('redo placement');
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].redoPlacement();
         }
+        console.timeEnd('redo placement');
     }
 
     // Callbacks from web workers

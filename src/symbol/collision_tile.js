@@ -6,6 +6,7 @@ const Grid = require('grid-index');
 const glmatrix = require('@mapbox/gl-matrix');
 const vec4 = glmatrix.vec4;
 const mat4 = glmatrix.mat4;
+const dimensions = 10000;
 
 const intersectionTests = require('../util/intersection_tests');
 
@@ -46,8 +47,8 @@ class CollisionTile {
     }
 
     constructor(
-        grid: any = new Grid(1, 12, 6),
-        ignoredGrid: any = new Grid(1, 12, 0)
+        grid: any = new Grid(dimensions, 48, 12),
+        ignoredGrid: any = new Grid(dimensions, 48, 0)
     ) {
         const angle = 0;
         const pitch = 0;
@@ -132,10 +133,10 @@ class CollisionTile {
             // Note that this adjustment ONLY affects the bounding boxes
             // in the grid. It doesn't affect the boxes used for the
             // minPlacementScale calculations.
-            const x1 = x + box.x1 * this.perspectiveRatio;
-            const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
-            const x2 = x + box.x2 * this.perspectiveRatio;
-            const y2 = y + box.y2 * yStretch * this.perspectiveRatio;
+            const x1 = x + box.x1;// * this.perspectiveRatio;
+            const y1 = y + box.y1;// * yStretch * this.perspectiveRatio;
+            const x2 = x + box.x2;// * this.perspectiveRatio;
+            const y2 = y + box.y2;// * yStretch * this.perspectiveRatio;
             const tl = this.projectPoint(new Point(x1, y1));
             const br = this.projectPoint(new Point(x2, y2));
 
@@ -143,10 +144,6 @@ class CollisionTile {
             box.bbox1 = tl.y;
             box.bbox2 = br.x;
             box.bbox3 = br.y;
-            box.bbox0 = 0;
-            box.bbox1 = 0;
-            box.bbox2 = 0;
-            box.bbox3 = 0;
 
             // When the map is pitched the distance covered by a line changes.
             // Adjust the max scale by (approximatePitchedLength / approximateRegularLength)
@@ -161,9 +158,7 @@ class CollisionTile {
             box.maxScale = box.unadjustedMaxScale;
 
             if (!allowOverlap) {
-                //const blockingBoxes = this.grid.query(x1, y1, x2, y2);
-                //const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
-                const blockingBoxes = this.grid.query(0, 0, EXTENT, EXTENT);
+                const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
 
                 for (let i = 0; i < blockingBoxes.length; i++) {
                     const blocking = collisionBoxArray.get(blockingBoxes[i]);
@@ -408,8 +403,8 @@ class CollisionTile {
         const p = [point.x, point.y, 0, 1];
         vec4.transformMat4(p, p, this.matrix);
         const a = new Point(
-            (p[0] / p[3] + 1) / 2,
-            (p[1] / p[3] + 1) / 2
+            ((p[0] / p[3] + 1) / 2) * dimensions,
+            ((-p[1] / p[3] + 1) / 2) * dimensions
         );
         return a;
     }

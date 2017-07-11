@@ -197,7 +197,8 @@ class Tile {
         this.matrix = source.map.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
         this.state = 'reloading';
-        this.placementThrottler.invoke();
+        this._immediateRedoPlacement();
+        //this.placementThrottler.invoke();
     }
 
     _immediateRedoPlacement() {
