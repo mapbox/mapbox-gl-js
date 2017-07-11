@@ -154,7 +154,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    redoPlacement(source: any) {
+    redoPlacement(source: any, collisionTile: ?CollisionTile) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -198,12 +198,11 @@ class Tile {
         this.matrix = source.map.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
         this.state = 'reloading';
-        this._immediateRedoPlacement();
+        this._immediateRedoPlacement(collisionTile);
         //this.placementThrottler.invoke();
     }
 
-    _immediateRedoPlacement() {
-        const collisionTile = new CollisionTile();
+    _immediateRedoPlacement(collisionTile) {
 
         collisionTile.setMatrix(this.matrix);
         collisionTile.setCollisionBoxArray(this.collisionBoxArray);
@@ -250,7 +249,7 @@ class Tile {
 
         if (this.redoWhenDone) {
             this.redoWhenDone = false;
-            this._immediateRedoPlacement();
+            this._immediateRedoPlacement(collisionTile);
         }
         //}, this.workerID);
     }

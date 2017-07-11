@@ -443,7 +443,7 @@ class SourceCache extends Evented {
 
         tile = this._cache.get(tileCoord.id);
         if (tile) {
-            tile.redoPlacement(this._source);
+            // tile.redoPlacement(this._source);
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 this._cacheTimers[tileCoord.id] = undefined;
@@ -588,11 +588,11 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement() {
+    redoPlacement(viewportCollisionTile) {
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this._source);
+            tile.redoPlacement(this._source, viewportCollisionTile);
         }
     }
 

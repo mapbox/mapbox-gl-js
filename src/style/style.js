@@ -23,6 +23,7 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
+const CollisionTile = require('../symbol/collision_tile');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -856,17 +857,19 @@ class Style extends Evented {
     }
 
     _updateSources(transform) {
+        if (!this.viewportCollisionTile) this.viewportCollisionTile = new CollisionTile();
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].update(transform);
+            this.sourceCaches[id].update(transform, this.viewportCollisionTile);
         }
     }
 
     _redoPlacement() {
         console.time('redo placement');
+        this.viewportCollisionTile = new CollisionTile();
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].redoPlacement();
+            this.sourceCaches[id].redoPlacement(this.viewportCollisionTile);
         }
-        console.timeEnd('redo placement');
+        console.time('redo placement');
     }
 
     // Callbacks from web workers
