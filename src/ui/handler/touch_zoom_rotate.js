@@ -8,7 +8,7 @@ const inertiaLinearity = 0.15,
     inertiaDeceleration = 12, // scale / s^2
     inertiaMaxSpeed = 2.5, // scale / s
     significantScaleThreshold = 0.15,
-    significantRotateThreshold = 4;
+    significantRotateThreshold = 10;
 
 /**
  * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
