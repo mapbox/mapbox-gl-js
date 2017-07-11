@@ -107,7 +107,10 @@ class Tile {
         this.state = 'loaded';
 
         // empty GeoJSON tile
-        if (!data) return;
+        if (!data) {
+            this.collisionBoxArray = new CollisionBoxArray();
+            return;
+        }
 
         // If we are redoing placement for the same tile, we will not recieve
         // a new "rawTileData" object. If we are loading a new tile, we will
