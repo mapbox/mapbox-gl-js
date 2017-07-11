@@ -247,7 +247,7 @@ class Tile {
 
         if (this.redoWhenDone) {
             this.redoWhenDone = false;
-            this._immediateRedoPlacement(collisionTile);
+            this._immediateRedoPlacement(collisionTile, layer);
         }
         //}, this.workerID);
     }
