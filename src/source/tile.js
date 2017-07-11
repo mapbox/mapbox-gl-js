@@ -157,7 +157,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    redoPlacement(source: any, collisionTile: ?CollisionTile) {
+    redoPlacement(source: any, collisionTile: ?CollisionTile, layer: any) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -201,29 +201,24 @@ class Tile {
         this.matrix = source.map.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
         this.state = 'reloading';
-        this._immediateRedoPlacement(collisionTile);
+        this._immediateRedoPlacement(collisionTile, layer);
         //this.placementThrottler.invoke();
     }
 
-    _immediateRedoPlacement(collisionTile) {
+    _immediateRedoPlacement(collisionTile, layer) {
 
         collisionTile.setMatrix(this.matrix);
         collisionTile.setCollisionBoxArray(this.collisionBoxArray);
 
         const symbolBuckets = [];
         const style = this.placementSource.map.style;
-        for (let i = style._order.length - 1; i >= 0; i--) {
-            const layerId = style._order[i];
-            const layer = style._layers[layerId];
-            if (layer.type !== 'symbol') continue;
 
-            const bucket = this.getBucket(layer);
+        const bucket = this.getBucket(layer);
 
-            if (bucket) {
-                //recalculateLayers(bucket, this.zoom);
-                bucket.place(collisionTile, this.showCollisionBoxes, this.zoom);
-                symbolBuckets.push(bucket);
-            }
+        if (bucket) {
+            //recalculateLayers(bucket, this.zoom);
+            bucket.place(collisionTile, this.showCollisionBoxes, this.zoom);
+            symbolBuckets.push(bucket);
         }
 
         const data = {

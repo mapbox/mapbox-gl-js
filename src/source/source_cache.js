@@ -588,11 +588,11 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement(viewportCollisionTile) {
+    redoPlacement(viewportCollisionTile, layer) {
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this._source, viewportCollisionTile);
+            tile.redoPlacement(this._source, viewportCollisionTile, layer);
         }
     }
 

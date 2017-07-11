@@ -866,8 +866,14 @@ class Style extends Evented {
     _redoPlacement() {
         console.time('redo placement');
         this.viewportCollisionTile = new CollisionTile();
+
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].redoPlacement(this.viewportCollisionTile);
+            for (let i = this._order.length - 1; i >= 0; i--) {
+                const layerId = this._order[i];
+                const layer = this._layers[layerId];
+                if (layer.type !== 'symbol') continue;
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, layer);
+            }
         }
         console.time('redo placement');
     }
