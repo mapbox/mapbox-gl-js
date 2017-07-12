@@ -11,8 +11,11 @@ const {
 const {Color, isValue, typeOf} = require('./values');
 
 import type { Value }  from './values';
-import type { Type, LambdaType } from './types';
+import type { Type, } from './types';
 import type { ExpressionName } from './expression_name';
+
+export type NArgs = { kind: 'nargs', types: Array<Type>, N: number };
+export type Signature = Array<Type | NArgs>;
 
 export type Expression = LambdaExpression | LiteralExpression | LetExpression | Reference; // eslint-disable-line no-use-before-define
 
@@ -86,8 +89,8 @@ class BaseExpression {
         (this: any).type = type;
     }
 
-    getResultType() {
-        return this.type.kind === 'lambda' ? this.type.result : this.type;
+    getType() {
+        return this.type;
     }
 
     compile(): string | Array<CompileError> {
@@ -127,7 +130,7 @@ class LiteralExpression extends BaseExpression {
         return typeof this.value === 'object' ?  `(${value})` : value;
     }
 
-    serialize(_: boolean) {
+    serialize() {
         if (this.value === null || typeof this.value === 'string' || typeof this.value === 'boolean' || typeof this.value === 'number') {
             return this.value;
         } else if (this.value instanceof Color) {
@@ -140,13 +143,14 @@ class LiteralExpression extends BaseExpression {
 
 class LambdaExpression extends BaseExpression {
     args: Array<Expression>;
-    type: LambdaType;
-    constructor(key: *, type: LambdaType, args: Array<Expression>) {
+    type: Type;
+
+    constructor(key: *, type: Type, args: Array<Expression>) {
         super(key, type);
         this.args = args;
     }
 
-    applyType(type: LambdaType, args: Array<Expression>): Expression {
+    applyType(type: Type, args: Array<Expression>): Expression {
         return new this.constructor(this.key, type, args);
     }
 
@@ -176,11 +180,10 @@ class LambdaExpression extends BaseExpression {
         throw new Error('Unimplemented');
     }
 
-    serialize(withTypes: boolean) {
-        const name = this.constructor.getName();
-        const type = this.type.kind === 'lambda' ? this.type.result.name : this.type.name;
-        const args = this.args.map(e => e.serialize(withTypes));
-        return [ name + (withTypes ? `: ${type}` : '') ].concat(args);
+    serialize() {
+        const name = this.constructor.opName();
+        const args = this.args.map(e => e.serialize());
+        return [ name ].concat(args);
     }
 
     visit(fn: (BaseExpression) => void) {
@@ -189,18 +192,19 @@ class LambdaExpression extends BaseExpression {
     }
 
     // implemented by subclasses
-    static getName(): ExpressionName { throw new Error('Unimplemented'); }
-    static getType(): LambdaType { throw new Error('Unimplemented'); }
+    static opName(): ExpressionName { throw new Error('Unimplemented'); }
+    static type(): Type { throw new Error('Unimplemented'); }
+    static signatures(): Array<Signature> { throw new Error('Unimplemented'); }
 
     // default parse; overridden by some subclasses
     static parse(args: Array<mixed>, context: ParsingContext): LambdaExpression {
-        const op = this.getName();
+        const op = this.opName();
         const parsedArgs: Array<Expression> = [];
         for (const arg of args) {
             parsedArgs.push(parseExpression(arg, context.concat(1 + parsedArgs.length, op)));
         }
 
-        return new this(context.key, this.getType(), parsedArgs);
+        return new this(context.key, this.type(), parsedArgs);
     }
 }
 
@@ -215,7 +219,7 @@ class Reference extends BaseExpression {
 
     compile() { return this.name; }
 
-    serialize(_: boolean) {
+    serialize() {
         return [this.name];
     }
 }
@@ -256,12 +260,12 @@ class LetExpression extends BaseExpression {
         }.bind(this))(${values.join(', ')})`;
     }
 
-    serialize(withTypes: boolean) {
+    serialize() {
         const serialized = ['let'];
         for (const [name, expression] of this.bindings) {
-            serialized.push(name, expression.serialize(withTypes));
+            serialized.push(name, expression.serialize());
         }
-        serialized.push(this.result.serialize(withTypes));
+        serialized.push(this.result.serialize());
         return serialized;
     }
 
@@ -337,6 +341,14 @@ function parseExpression(expr: mixed, context: ParsingContext) : Expression {
     }
 }
 
+function nargs(N: number, ...types: Array<Type>) : NArgs {
+    return {
+        kind: 'nargs',
+        types,
+        N
+    };
+}
+
 module.exports = {
     Scope,
     ParsingContext,
@@ -345,5 +357,6 @@ module.exports = {
     LiteralExpression,
     LambdaExpression,
     LetExpression,
-    Reference
+    Reference,
+    nargs
 };
