@@ -1,9 +1,14 @@
+// @flow
 
 const pattern = require('./pattern');
 
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type StyleLayer from '../style/style_layer';
+
 module.exports = drawBackground;
 
-function drawBackground(painter, sourceCache, layer) {
+function drawBackground(painter: Painter, sourceCache: SourceCache, layer: StyleLayer) {
     const gl = painter.gl;
     const transform = painter.transform;
     const tileSize = transform.tileSize;

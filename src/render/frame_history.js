@@ -1,5 +1,14 @@
+// @flow
 
 class FrameHistory {
+    changeTimes: Float64Array;
+    changeOpacities: Uint8Array;
+    opacities: Uint8ClampedArray;
+    array: Uint8Array;
+    previousZoom: number;
+    firstFrame: boolean;
+    changed: boolean;
+    texture: WebGLTexture;
 
     constructor() {
         this.changeTimes = new Float64Array(256);
@@ -11,7 +20,7 @@ class FrameHistory {
         this.firstFrame = true;
     }
 
-    record(now, zoom, duration) {
+    record(now: number, zoom: number, duration: number) {
         if (this.firstFrame) {
             now = 0;
             this.firstFrame = false;
@@ -46,11 +55,11 @@ class FrameHistory {
         this.previousZoom = zoom;
     }
 
-    isVisible(zoom) {
+    isVisible(zoom: number) {
         return this.opacities[Math.floor(zoom * 10)] !== 0;
     }
 
-    bind(gl) {
+    bind(gl: WebGLRenderingContext) {
         if (!this.texture) {
             this.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.texture);

@@ -29,7 +29,7 @@ class Transform {
     angle: number;
     rotationMatrix: Float64Array;
     zoomFraction: number;
-    pixelsToGLUnits: [number, number];
+    pixelsToGLUnits: Array<number>;
     cameraToCenterDistance: number;
     projMatrix: Float64Array;
     pixelMatrix: Float64Array;
@@ -198,8 +198,8 @@ class Transform {
     coveringTiles(
         options: {
             tileSize: number,
-            minzoom: number,
-            maxzoom: number,
+            minzoom?: number,
+            maxzoom?: number,
             roundZoom?: boolean,
             reparseOverscaled?: boolean,
             renderWorldCopies?: boolean
@@ -208,8 +208,8 @@ class Transform {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
-        if (z < options.minzoom) return [];
-        if (z > options.maxzoom) z = options.maxzoom;
+        if (options.minzoom !== undefined && z < options.minzoom) return [];
+        if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
         const centerCoord = this.pointCoordinate(this.centerPoint, z);
         const centerPoint = new Point(centerCoord.column - 0.5, centerCoord.row - 0.5);
@@ -379,7 +379,7 @@ class Transform {
      * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom: number) {
+    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number) {
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         const coord = tileCoord.toCoordinate(maxZoom);

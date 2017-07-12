@@ -38,7 +38,9 @@ import type GlyphSource from '../symbol/glyph_source';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
-    showTileBoundaries: boolean
+    showTileBoundaries: boolean,
+    rotating: boolean,
+    zooming: boolean
 }
 
 /**
@@ -353,7 +355,7 @@ class Painter {
      *
      * @returns {Float32Array} matrix
      */
-    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits: boolean) {
+    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -482,7 +484,7 @@ class Painter {
         return this.cache[key];
     }
 
-    useProgram(name: string, programConfiguration: ProgramConfiguration): Program {
+    useProgram(name: string, programConfiguration?: ProgramConfiguration): Program {
         const gl = this.gl;
         const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
 
