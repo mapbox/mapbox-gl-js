@@ -1,7 +1,6 @@
 // @flow
 
 import type { Type } from './types.js';
-
 import type { Expression } from './expression.js';
 
 export type TypeError = {|
@@ -21,10 +20,13 @@ const assert = require('assert');
 const extend = require('../util/extend');
 const {
     NullType,
-    lambda,
+    NumberType,
+    StringType,
+    BooleanType,
+    ColorType,
+    ObjectType,
+    ValueType,
     array,
-    variant,
-    nargs,
     typename
 } = require('./types');
 const {
@@ -69,120 +71,102 @@ function typeCheckExpression(expected: Type, e: Expression, scope: Scope = new S
         // e is a lambda expression, so check its result type against the
         // expected type and recursively typecheck its arguments
 
-        const typenames: { [string]: Type } = {};
+        // Check if the expected type matches the expression's output type;
+        // If expression's output type is generic, pick up a typename binding
+        // to a concrete expected type if possible
+        const initialTypenames: { [string]: Type } = {};
+        const error = match(expected, e.type, {}, initialTypenames);
+        if (error) return { result: 'error', errors: [{ key: e.key, error }] };
+        expected = e.type;
 
-        if (expected.kind !== 'lambda') {
-            // if the expected type is not a lambda, then check if it matches
-            // the expression's output type, and then proceed with type checking
-            // the arguments using e.type, which comes from the expression
-            // definition.
-            const error = match(expected, e.type.result, {}, typenames);
-            if (error) return { result: 'error', errors: [{ key: e.key, error }] };
-            expected = e.type;
-        } else {
-            const error = match(expected.result, e.type.result, typenames);
-            if (error) return { result: 'error', errors: [{ key: e.key, error }] };
-        }
-
-        // "Unroll" NArgs if present in the parameter list:
-        // argCount = nargType.type.length * n + nonNargParameterCount
-        // where n is the number of times the NArgs sequence must be
-        // repeated.
-        const argValues = e.args;
-        const expandedParams = [];
-        const errors = [];
-        for (const param of expected.params) {
-            if (param.kind === 'nargs') {
-                let count = (argValues.length - (expected.params.length - 1)) / param.types.length;
-                count = Math.min(param.N, Math.ceil(count));
-                while (count-- > 0) {
-                    for (const type of param.types) {
-                        expandedParams.push(type);
+        let errors = [];
+        for (const params of e.constructor.signatures()) {
+            errors = [];
+            const typenames: { [string]: Type } = extend({}, initialTypenames);
+            // "Unroll" NArgs if present in the parameter list:
+            // argCount = nargType.type.length * n + nonNargParameterCount
+            // where n is the number of times the NArgs sequence must be
+            // repeated.
+            const argValues = e.args;
+            const expandedParams = [];
+            for (const param of params) {
+                if (param.kind === 'nargs') {
+                    let count = (argValues.length - (params.length - 1)) / param.types.length;
+                    count = Math.min(param.N, Math.ceil(count));
+                    while (count-- > 0) {
+                        for (const type of param.types) {
+                            expandedParams.push(type);
+                        }
                     }
+                } else {
+                    expandedParams.push(param);
                 }
-            } else {
-                expandedParams.push(param);
             }
-        }
 
-        if (expandedParams.length !== argValues.length) {
-            return {
-                result: 'error',
-                errors: [{
+            if (expandedParams.length !== argValues.length) {
+                errors.push({
                     key: e.key,
                     error: `Expected ${expandedParams.length} arguments, but found ${argValues.length} instead.`
-                }]
+                });
+                continue;
+            }
+
+            // Iterate through arguments to:
+            //  - match parameter type vs argument type, checking argument's result type only (don't recursively typecheck subexpressions at this stage)
+            //  - collect typename mappings when ^ succeeds or type errors when it fails
+            for (let i = 0; i < argValues.length; i++) {
+                const param = expandedParams[i];
+                let arg = argValues[i];
+                if (arg instanceof Reference) {
+                    arg = scope.get(arg.name);
+                }
+                const error = match(
+                    resolveTypenamesIfPossible(param, typenames),
+                    arg.type,
+                    typenames
+                );
+                if (error) errors.push({ key: arg.key, error });
+            }
+
+            const resultType = resolveTypenamesIfPossible(expected, typenames);
+
+            if (isGeneric(resultType)) {
+                errors.push({
+                    key: e.key,
+                    error: `Could not resolve ${e.type.name}.  This expression must be wrapped in a type conversion, e.g. ["string", ${stringifyExpression(e)}].`
+                });
+            }
+
+            // If we already have errors, return early so we don't get duplicates when
+            // we typecheck against the resolved argument types
+            if (errors.length) continue;
+
+            // resolve typenames and recursively type check argument subexpressions
+            const resolvedParams = [];
+            const checkedArgs = [];
+            for (let i = 0; i < expandedParams.length; i++) {
+                const t = expandedParams[i];
+                const arg = argValues[i];
+                const expected = resolveTypenamesIfPossible(t, typenames);
+                const checked = typeCheckExpression(expected, arg, scope);
+                if (checked.result === 'error') {
+                    errors.push.apply(errors, checked.errors);
+                } else if (errors.length === 0) {
+                    resolvedParams.push(expected);
+                    checkedArgs.push(checked.expression);
+                }
+            }
+
+            if (errors.length === 0) return {
+                result: 'success',
+                expression: e.applyType(resultType, checkedArgs)
             };
         }
 
-        // Iterate through arguments to:
-        //  - match parameter type vs argument type, checking argument's result type only (don't recursively typecheck subexpressions at this stage)
-        //  - collect typename mappings when ^ succeeds or type errors when it fails
-        for (let i = 0; i < argValues.length; i++) {
-            const param = expandedParams[i];
-            let arg = argValues[i];
-            if (arg instanceof Reference) {
-                arg = scope.get(arg.name);
-            }
-            const error = match(
-                resolveTypenamesIfPossible(param, typenames),
-                arg.type,
-                typenames
-            );
-            if (error) errors.push({ key: arg.key, error });
-        }
-
-        const resultType = resolveTypenamesIfPossible(expected.result, typenames);
-
-        if (isGeneric(resultType)) return {
-            result: 'error',
-            errors: [{key: e.key, error: `Could not resolve ${e.type.result.name}.  This expression must be wrapped in a type conversion, e.g. ["string", ${stringifyExpression(e)}].`}]
-        };
-
-        // If we already have errors, return early so we don't get duplicates when
-        // we typecheck against the resolved argument types
-        if (errors.length) return { result: 'error', errors };
-
-        // resolve typenames and recursively type check argument subexpressions
-        const resolvedParams = [];
-        const checkedArgs = [];
-        for (let i = 0; i < expandedParams.length; i++) {
-            const t = expandedParams[i];
-            const arg = argValues[i];
-            const expected = resolveTypenamesIfPossible(t, typenames);
-            const checked = typeCheckExpression(expected, arg, scope);
-            if (checked.result === 'error') {
-                errors.push.apply(errors, checked.errors);
-            } else if (errors.length === 0) {
-                resolvedParams.push(expected);
-                checkedArgs.push(checked.expression);
-            }
-        }
-
-        // handle 'match' expression input values
-        // let matchInputs;
-        // if (e.matchInputs) {
-        //     matchInputs = [];
-        //     const inputType = resolvedParams[0];
-        //     for (const inputGroup of e.matchInputs) {
-        //         const checkedGroup = [];
-        //         for (const inputValue of inputGroup) {
-        //             const result = typeCheckExpression(inputType, inputValue);
-        //             if (result.errors) {
-        //                 errors.push.apply(errors, result.errors);
-        //             } else {
-        //                 checkedGroup.push(((result: any): TypedLiteralExpression));
-        //             }
-        //         }
-        //         matchInputs.push(checkedGroup);
-        //     }
-        // }
-
-        if (errors.length > 0) return { result: 'error', errors };
-
+        assert(errors.length > 0);
         return {
-            result: 'success',
-            expression: e.applyType(lambda(resultType, ...resolvedParams), checkedArgs)
+            result: 'error',
+            errors
         };
     }
 }
@@ -211,13 +195,36 @@ function match(expected: Type, t: Type, expectedTypenames: { [string]: Type } = 
         if (!tTypenames[t.typename] && t !== NullType) {
             tTypenames[t.typename] = expected;
         }
-        t = expected;
+        return null;
     }
 
     // a `null` literal is allowed anywhere.
     if (t.name === 'Null') return null;
 
-    if (expected.kind === 'primitive') {
+    if (expected.name === 'Value') {
+        if (t === expected) return null;
+        const members = [
+            NumberType,
+            StringType,
+            BooleanType,
+            ColorType,
+            ObjectType,
+            array(ValueType)
+        ];
+
+        for (const memberType of members) {
+            const mExpectedTypenames = extend({}, expectedTypenames);
+            const mTTypenames = extend({}, tTypenames);
+            const error = match(memberType, t, mExpectedTypenames, mTTypenames);
+            if (!error) {
+                extend(expectedTypenames, mExpectedTypenames);
+                extend(tTypenames, mTTypenames);
+                return null;
+            }
+        }
+
+        return errorMessage;
+    } if (expected.kind === 'primitive') {
         if (t === expected) return null;
         else return errorMessage;
     } else if (expected.kind === 'array') {
@@ -229,32 +236,13 @@ function match(expected: Type, t: Type, expectedTypenames: { [string]: Type } = 
         } else {
             return errorMessage;
         }
-    } else if (expected.kind === 'variant') {
-        if (t === expected) return null;
-
-        for (const memberType of expected.members) {
-            const mExpectedTypenames = extend({}, expectedTypenames);
-            const mTTypenames = extend({}, tTypenames);
-            const error = match(memberType, t, mExpectedTypenames, mTTypenames);
-            if (!error) {
-                extend(expectedTypenames, mExpectedTypenames);
-                extend(tTypenames, mTTypenames);
-                return null;
-            }
-        }
-
-        // If t itself is a variant, then 'expected' must match each of its
-        // member types in order for this to be a match.
-        if (t.kind === 'variant') return t.members.some(m => match(expected, m, expectedTypenames, tTypenames)) ? errorMessage : null;
-
-        return errorMessage;
     }
 
     throw new Error(`${expected.name} is not a valid output type.`);
 }
 
-function stringifyExpression(e: Expression, withTypes: boolean = false) :string {
-    return JSON.stringify(e.serialize(withTypes));
+function stringifyExpression(e: Expression) :string {
+    return JSON.stringify(e.serialize());
 }
 
 function isGeneric (type, stack = []) {
@@ -275,16 +263,10 @@ function isGeneric (type, stack = []) {
 
 function resolveTypenamesIfPossible(type: Type, typenames: {[string]: Type}, stack = []) : Type {
     assert(stack.indexOf(type) < 0, 'resolveTypenamesIfPossible() implementation does not support recursive variants.');
-
     if (!isGeneric(type)) return type;
-    if (type.kind === 'typename') return typenames[type.typename] || type;
-
     const resolve = (t) => resolveTypenamesIfPossible(t, typenames, stack.concat(type));
+    if (type.kind === 'typename') return typenames[type.typename] || type;
     if (type.kind === 'array') return array(resolve(type.itemType), type.N);
-    if (type.kind === 'variant') return variant(...type.members.map(resolve));
-    if (type.kind === 'nargs') return nargs(type.N, ...type.types.map(resolve));
-    if (type.kind === 'lambda') return lambda(resolve(type.result), ...type.params.map(resolve));
-
     assert(false, `Unsupported type ${type.kind}`);
     return type;
 }

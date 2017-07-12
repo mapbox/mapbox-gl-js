@@ -4,15 +4,14 @@ const assert = require('assert');
 
 const {
     typename,
-    array,
-    lambda,
-    nargs
+    array
 } = require('../types');
 
 const {
     LiteralExpression,
     LambdaExpression,
-    ParsingError
+    ParsingError,
+    nargs
 } = require('../expression');
 
 class MatchExpression extends LambdaExpression {
@@ -20,8 +19,9 @@ class MatchExpression extends LambdaExpression {
         super(key, type, args);
     }
 
-    static getName() { return 'match'; }
-    static getType() { return lambda(typename('T'), typename('U'), nargs(Infinity, array(typename('U')), typename('T')), typename('T')); }
+    static opName() { return 'match'; }
+    static type() { return typename('T'); }
+    static signatures() { return [[typename('U'), nargs(Infinity, array(typename('U')), typename('T')), typename('T')]]; }
 
     static parse(args, context) {
         if (args.length < 2)

@@ -17,7 +17,7 @@ expressionSuite.run('js', {tests: tests}, (fixture) => {
     const testResult = {
         compileResult: util.pick(compiled, ['result', 'functionSource', 'isFeatureConstant', 'isZoomConstant', 'errors'])
     };
-    if (compiled.result === 'success') testResult.compileResult.type = compiled.expression.getResultType().name;
+    if (compiled.result === 'success') testResult.compileResult.type = compiled.expression.getType().name;
 
     if (compiled.result === 'success' && fixture.evaluate) {
         const evaluateResults = [];

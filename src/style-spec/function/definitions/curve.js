@@ -5,15 +5,18 @@ const {
     NullType,
     NumberType,
     ColorType,
-    typename,
-    lambda,
-    nargs
+    typename
 } = require('../types');
 
-const { ParsingError, LiteralExpression, LambdaExpression } = require('../expression');
+const {
+    ParsingError,
+    LiteralExpression,
+    LambdaExpression,
+    nargs
+} = require('../expression');
 
 import type { Expression } from '../expression';
-import type { LambdaType } from '../types';
+import type { Type } from '../types';
 
 export type InterpolationType =
     { name: 'step' } |
@@ -27,8 +30,9 @@ class CurveExpression extends LambdaExpression {
         this.interpolation = interpolation;
     }
 
-    static getName() { return 'curve'; }
-    static getType() { return lambda(typename('T'), NullType, NumberType, nargs(Infinity, NumberType, typename('T'))); }
+    static opName() { return 'curve'; }
+    static type() { return typename('T'); }
+    static signatures() { return [[NullType, NumberType, nargs(Infinity, NumberType, typename('T'))]]; }
 
     static parse(args, context) {
         // pull out the interpolation type argument for specialized parsing,
@@ -57,18 +61,17 @@ class CurveExpression extends LambdaExpression {
         return expression;
     }
 
-    serialize(withTypes: boolean) {
-        const type = this.type.result.name;
-        const args = this.args.map(e => e.serialize(withTypes));
+    serialize() {
+        const args = this.args.map(e => e.serialize());
         const interp = [this.interpolation.name];
         if (this.interpolation.name === 'exponential') {
             interp.push(this.interpolation.base);
         }
         args.splice(0, 1, interp);
-        return [ `curve${(withTypes ? `: ${type}` : '')}` ].concat(args);
+        return [ `curve` ].concat(args);
     }
 
-    applyType(type: LambdaType, args: Array<Expression>): Expression {
+    applyType(type: Type, args: Array<Expression>): Expression {
         return new this.constructor(this.key, type, args, this.interpolation);
     }
 
