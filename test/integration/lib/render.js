@@ -53,6 +53,12 @@ function compare(path1, path2, diffPath, callback) {
  * @param {Array<string>} [options.tests] - array of test names to run; tests not in the
  * array will be skipped. Test names can be the name of a group, or the name of a group and the name
  * of an individual test, separated by a slash.
+ * @param {Object<string>} [options.ignores] - map of test names to disable. A key is the relative
+ * path to a test directory, e.g. `"render-tests/background-color/default"`. A value is a string
+ * that by convention links to an issue that explains why the test is currently disabled. By default,
+ * disabled tests will be run, but not fail the test run if the result does not match the expected
+ * result. If the value begins with "skip", the test will not be run at all -- use this for tests
+ * that would crash the test harness entirely if they were run.
  * @param {renderFn} render - a function that performs the rendering
  * @returns {undefined} terminates the process when testing is complete
  */

@@ -2,9 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "skipped": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/1350"
-      },
       "width": 64,
       "height": 64
     }
@@ -13,10 +10,22 @@
     "image": {
       "type": "image",
       "coordinates": [
-        [ -180, 85 ],
-        [ 180, 85 ],
-        [ 180, -85 ],
-        [ -180, -85 ]
+        [
+          -180,
+          85
+        ],
+        [
+          180,
+          85
+        ],
+        [
+          180,
+          -85
+        ],
+        [
+          -180,
+          -85
+        ]
       ],
       "url": "local://image/0.png"
     }

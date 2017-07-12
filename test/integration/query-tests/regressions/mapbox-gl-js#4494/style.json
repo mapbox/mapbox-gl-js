@@ -8,10 +8,7 @@
         32,
         32
       ],
-      "debug": true,
-      "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/2716"
-      }
+      "debug": true
     }
   },
   "zoom": 0,
