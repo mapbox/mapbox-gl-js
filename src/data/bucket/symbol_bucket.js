@@ -243,23 +243,19 @@ class SymbolBucket {
 
         // deserializing a bucket created on a worker thread
         if (options.symbolInstances) {
-            /*
             this.buffers = {};
             for (const id in options.arrays) {
                 if (options.arrays[id]) {
                     this.buffers[id] = new BufferGroup(this.symbolInterfaces[id], options.layers, options.zoom, options.arrays[id]);
                 }
             }
-            */
             this.textSizeData = options.textSizeData;
             this.iconSizeData = options.iconSizeData;
 
-            /*
             this.placedGlyphArray = new PlacedSymbolArray(options.placedGlyphArray);
             this.placedIconArray = new PlacedSymbolArray(options.placedIconArray);
             this.glyphOffsetArray = new GlyphOffsetArray(options.glyphOffsetArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
-            */
 
             this.symbolInstances = options.symbolInstances;
 
@@ -377,6 +373,11 @@ class SymbolBucket {
             textSizeData: this.textSizeData,
             iconSizeData: this.iconSizeData,
             fontstack: this.fontstack,
+            placedGlyphArray: this.placedGlyphArray.serialize(transferables),
+            placedIconArray: this.placedIconArray.serialize(transferables),
+            glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
+            lineVertexArray: this.lineVertexArray.serialize(transferables),
+            arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables)),
             symbolInstances: this.symbolInstances
         };
     }
@@ -398,6 +399,13 @@ class SymbolBucket {
 
     prepare(stacks: any, icons: any) {
         this.symbolInstances = [];
+
+        this.createArrays();
+
+        this.placedGlyphArray = new PlacedSymbolArray();
+        this.placedIconArray = new PlacedSymbolArray();
+        this.glyphOffsetArray = new GlyphOffsetArray();
+        this.lineVertexArray = new LineVertexArray();
 
         const tileSize = 512 * this.overscaling;
         this.tilePixelRatio = EXTENT / tileSize;
@@ -613,6 +621,7 @@ class SymbolBucket {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
+        return;
         this.createArrays();
 
         this.placedGlyphArray = new PlacedSymbolArray();
@@ -769,7 +778,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays: any, quads: any, sizeVertex: any, keepUpright: any, lineOffset: any, alongLine: any, placementAngle: any, featureProperties: any, writingModes: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
+    addSymbols(arrays: any, quads: any, sizeVertex: any, lineOffset: any, alongLine: any, featureProperties: any, isVertical: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
@@ -779,18 +788,7 @@ class SymbolBucket {
 
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
 
-        const labelAngle = ((labelAnchor.angle + placementAngle) + 2 * Math.PI) % (2 * Math.PI);
-        const inVerticalRange = (
-            (labelAngle > Math.PI * 1 / 4 && labelAngle <= Math.PI * 3 / 4) ||
-            (labelAngle > Math.PI * 5 / 4 && labelAngle <= Math.PI * 7 / 4));
-        const useVerticalMode = Boolean(writingModes & WritingMode.vertical) && inVerticalRange;
-
         for (const symbol of quads) {
-
-            if (alongLine && keepUpright) {
-                // drop incorrectly oriented glyphs
-                if ((symbol.writingMode === WritingMode.vertical) !== useVerticalMode) continue;
-            }
 
             const tl = symbol.tl,
                 tr = symbol.tr,
@@ -823,7 +821,7 @@ class SymbolBucket {
             lineStartIndex, lineLength, labelAnchor.segment,
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
-            placementZoom, useVerticalMode);
+            placementZoom, isVertical);
 
         arrays.populatePaintArrays(featureProperties);
     }
@@ -901,17 +899,41 @@ class SymbolBucket {
         textBoxScale: any, textPadding: any, textAlongLine: any, textOffset: any,
         iconBoxScale: any, iconPadding: any, iconAlongLine: any, iconOffset: any, globalProperties: any, featureProperties: any) {
 
+        const lineStartIndex = this.lineVertexArray.length;
+        for (let i = 0; i < line.length; i++) {
+            this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
+        }
+        const lineLength = this.lineVertexArray.length - lineStartIndex;
+
         let textCollisionFeature, iconCollisionFeature;
         let iconQuads = [];
         let glyphQuads = [];
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
-            glyphQuads = glyphQuads.concat(addToBuffers ?
+            glyphQuads = addToBuffers ?
                 getGlyphQuads(anchor, shapedTextOrientations[writingMode],
                     layer, textAlongLine, globalProperties, featureProperties) :
-                []);
+                [];
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
+
+            const textSizeData = getSizeVertexData(layer,
+                this.zoom,
+                this.textSizeData.coveringZoomRange,
+                'text-size',
+                featureProperties);
+            this.addSymbols(
+                this.arrays.glyph,
+                glyphQuads,
+                textSizeData,
+                textOffset,
+                textAlongLine,
+                featureProperties,
+                writingMode === WritingMode.vertical,
+                anchor,
+                lineStartIndex,
+                lineLength,
+                this.placedGlyphArray);
         }
 
         const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
@@ -924,6 +946,25 @@ class SymbolBucket {
                     globalProperties, featureProperties) :
                 [];
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
+
+            const iconSizeData = getSizeVertexData(layer,
+                this.zoom,
+                this.iconSizeData.coveringZoomRange,
+                'icon-size',
+                featureProperties);
+
+            this.addSymbols(
+                this.arrays.icon,
+                iconQuads,
+                iconSizeData,
+                iconOffset,
+                iconAlongLine,
+                featureProperties,
+                false,
+                anchor,
+                lineStartIndex,
+                lineLength,
+                this.placedIconArray);
         }
 
         const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
