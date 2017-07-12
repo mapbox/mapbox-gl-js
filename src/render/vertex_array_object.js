@@ -11,7 +11,7 @@ class VertexArrayObject {
         this.vao = null;
     }
 
-    bind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer) {
+    bind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, opacityVertexBuffer) {
 
         if (gl.extVertexArrayObject === undefined) {
             gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -24,11 +24,12 @@ class VertexArrayObject {
             this.boundVertexBuffer2 !== vertexBuffer2 ||
             this.boundElementBuffer !== elementBuffer ||
             this.boundVertexOffset !== vertexOffset ||
-            this.boundDynamicVertexBuffer !== dynamicVertexBuffer
+            this.boundDynamicVertexBuffer !== dynamicVertexBuffer ||
+            this.boundOpacityVertexBuffer !== opacityVertexBuffer
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
+            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, opacityVertexBuffer);
             this.gl = gl;
         } else {
             gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
@@ -37,10 +38,14 @@ class VertexArrayObject {
                 // The buffer may have been updated. Rebind to upload data.
                 dynamicVertexBuffer.bind(gl);
             }
+
+            if (opacityVertexBuffer) {
+                opacityVertexBuffer.bind(gl);
+            }
         }
     }
 
-    freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer) {
+    freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, opacityVertexBuffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -57,6 +62,7 @@ class VertexArrayObject {
             this.boundElementBuffer = elementBuffer;
             this.boundVertexOffset = vertexOffset;
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
+            this.boundOpacityVertexBuffer = opacityVertexBuffer;
 
         } else {
             numPrevAttributes = gl.currentNumAttributes || 0;
@@ -78,6 +84,9 @@ class VertexArrayObject {
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.enableAttributes(gl, program);
         }
+        if (opacityVertexBuffer) {
+            opacityVertexBuffer.enableAttributes(gl, program);
+        }
 
         layoutVertexBuffer.bind(gl);
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
@@ -88,6 +97,10 @@ class VertexArrayObject {
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.bind(gl);
             dynamicVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (opacityVertexBuffer) {
+            opacityVertexBuffer.bind(gl);
+            opacityVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (elementBuffer) {
             elementBuffer.bind(gl);

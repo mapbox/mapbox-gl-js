@@ -87,10 +87,15 @@ const dynamicLayoutAttributes = [
     { name: 'a_projected_pos', components: 3, type: 'Float32' }
 ];
 
+const opacityAttributes = [
+    { name: 'a_new_opacity', components: 1, type: 'Float32' }
+];
+
 const symbolInterfaces = {
     glyph: {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
+        opacityAttributes: opacityAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
@@ -103,6 +108,7 @@ const symbolInterfaces = {
     icon: {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
+        opacityAttributes: opacityAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
@@ -621,25 +627,13 @@ class SymbolBucket {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
-        return;
-        this.createArrays();
-
-        this.placedGlyphArray = new PlacedSymbolArray();
-        this.placedIconArray = new PlacedSymbolArray();
-        this.glyphOffsetArray = new GlyphOffsetArray();
-        this.lineVertexArray = new LineVertexArray();
+        const glyphOpacityArray = this.buffers.glyph && this.buffers.glyph.opacityVertexArray;
+        const iconOpacityArray = this.buffers.icon && this.buffers.icon.opacityVertexArray;
+        if (glyphOpacityArray) glyphOpacityArray.clear();
+        if (iconOpacityArray) iconOpacityArray.clear();
 
         const layer = this.layers[0];
         const layout = layer.layout;
-
-        // Symbols that don't show until greater than the CollisionTile's maxScale won't even be added
-        // to the buffers. Even though pan operations on a tilted map might cause the symbol to be
-        // displayable, we have to stay conservative here because the CollisionTile didn't consider
-        // this scale range.
-        const maxScale = collisionTile.maxScale;
-
-        const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
-        const iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
 
         const mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
             layout['text-ignore-placement'] || layout['icon-ignore-placement'];
@@ -705,75 +699,40 @@ class SymbolBucket {
 
             // Insert final placement into collision tree and add glyphs/icons to buffers
             if (!hasText && !hasIcon) continue;
-            const line = symbolInstance.line;
-            const lineStartIndex = this.lineVertexArray.length;
-            for (let i = 0; i < line.length; i++) {
-                this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
-            }
-            const lineLength = this.lineVertexArray.length - lineStartIndex;
-
 
             if (hasText) {
+
+                const opacity = placeGlyph ? 1.0 : 0.0;
+                // TODO handle vertical text properly by choosing the correct version here
+                const verticalOpacity = 0;
+
+                for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
+                    glyphOpacityArray.emplaceBack(opacity);
+                }
+                for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
+                    glyphOpacityArray.emplaceBack(verticalOpacity);
+                }
+
                 if (placeGlyph) {
                     collisionTile.insertCollisionFeature(textCollisionFeature, layout['text-ignore-placement']);
-                    const textSizeData = getSizeVertexData(layer,
-                        this.zoom,
-                        this.textSizeData.coveringZoomRange,
-                        'text-size',
-                        symbolInstance.featureProperties);
-                    this.addSymbols(
-                        this.arrays.glyph,
-                        symbolInstance.glyphQuads,
-                        textSizeData,
-                        layout['text-keep-upright'],
-                        symbolInstance.textOffset,
-                        textAlongLine,
-                        collisionTile.angle,
-                        symbolInstance.featureProperties,
-                        symbolInstance.writingModes,
-                        symbolInstance.anchor,
-                        lineStartIndex,
-                        lineLength,
-                        this.placedGlyphArray);
                 }
             }
 
             if (hasIcon) {
+                const opacity = placeIcon ? 1.0 : 0.0;
+                for (let i = 0; i < symbolInstance.numIconVertices; i++) {
+                    iconOpacityArray.emplaceBack(opacity);
+                }
+
                 if (placeIcon) {
                     collisionTile.insertCollisionFeature(iconCollisionFeature, layout['icon-ignore-placement']);
-                    const iconSizeData = getSizeVertexData(
-                        layer,
-                        this.zoom,
-                        this.iconSizeData.coveringZoomRange,
-                        'icon-size',
-                        symbolInstance.featureProperties);
-                    this.addSymbols(
-                        this.arrays.icon,
-                        symbolInstance.iconQuads,
-                        iconSizeData,
-                        layout['icon-keep-upright'],
-                        symbolInstance.iconOffset,
-                        iconAlongLine,
-                        collisionTile.angle,
-                        symbolInstance.featureProperties,
-                        null,
-                        symbolInstance.anchor,
-                        lineStartIndex,
-                        lineLength,
-                        this.placedIconArray
-                    );
                 }
             }
 
         }
 
-        this.destroy();
-        this.buffers = {};
-        for (const id in this.arrays) {
-            if (this.arrays[id]) {
-                this.buffers[id] = new BufferGroup(this.symbolInterfaces[id], this.layers, this.zoom, this.arrays[id]);
-            }
-        }
+        if (glyphOpacityArray) this.buffers.glyph.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
+        if (iconOpacityArray) this.buffers.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
 
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
@@ -806,6 +765,10 @@ class SymbolBucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
 
             addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0, placementZoom);
+            arrays.opacityVertexArray.emplaceBack(0);
+            arrays.opacityVertexArray.emplaceBack(0);
+            arrays.opacityVertexArray.emplaceBack(0);
+            arrays.opacityVertexArray.emplaceBack(0);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -908,6 +871,10 @@ class SymbolBucket {
         let textCollisionFeature, iconCollisionFeature;
         let iconQuads = [];
         let glyphQuads = [];
+
+        let numIconVertices = 0;
+        let numGlyphVertices = 0;
+        let numVerticalGlyphVertices = 0;
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
@@ -916,6 +883,12 @@ class SymbolBucket {
                     layer, textAlongLine, globalProperties, featureProperties) :
                 [];
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
+
+            if (writingMode === WritingMode.vertical) {
+                numVerticalGlyphVertices = glyphQuads.length * 4;
+            } else {
+                numGlyphVertices = glyphQuads.length * 4;
+            }
 
             const textSizeData = getSizeVertexData(layer,
                 this.zoom,
@@ -946,6 +919,8 @@ class SymbolBucket {
                     globalProperties, featureProperties) :
                 [];
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
+
+            numIconVertices = iconQuads.length * 4;
 
             const iconSizeData = getSizeVertexData(layer,
                 this.zoom,
@@ -991,7 +966,10 @@ class SymbolBucket {
             line,
             featureIndex,
             featureProperties,
-            writingModes
+            writingModes,
+            numGlyphVertices,
+            numVerticalGlyphVertices,
+            numIconVertices
         });
     }
 }

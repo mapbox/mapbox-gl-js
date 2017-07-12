@@ -3,6 +3,7 @@ const float PI = 3.141592653589793;
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec3 a_projected_pos;
+attribute float a_new_opacity;
 
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
@@ -32,7 +33,7 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
 
     vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw;
+    vec2 a_offset = a_pos_offset.zw * a_new_opacity;
 
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;

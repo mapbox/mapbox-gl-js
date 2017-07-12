@@ -203,7 +203,7 @@ function drawSymbolElements(buffers, layer, gl, program) {
     const paintVertexBuffer = layerData && layerData.paintVertexBuffer;
 
     for (const segment of buffers.segments) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }

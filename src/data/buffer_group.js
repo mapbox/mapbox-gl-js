@@ -21,6 +21,8 @@ class BufferGroup {
     layoutVertexBuffer: Buffer;
     dynamicLayoutVertexArray: StructArray;
     dynamicLayoutVertexBuffer: Buffer;
+    opacityVertexArray: StructArray;
+    opacityVertexBuffer: Buffer;
     elementBuffer: Buffer;
     elementBuffer2: Buffer;
     layerData: {[string]: {
@@ -39,6 +41,13 @@ class BufferGroup {
             const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.dynamicLayoutAttributes);
             this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType(arrays.dynamicLayoutVertexArray);
             this.dynamicLayoutVertexBuffer = new Buffer(arrays.dynamicLayoutVertexArray,
+                DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
+        }
+
+        if (arrays.opacityVertexArray && programInterface.opacityAttributes) {
+            const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.opacityAttributes);
+            this.opacityVertexArray = new DynamicLayoutVertexArrayType(arrays.opacityVertexArray);
+            this.opacityVertexBuffer = new Buffer(arrays.opacityVertexArray,
                 DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
         }
 
