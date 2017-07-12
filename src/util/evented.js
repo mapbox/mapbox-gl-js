@@ -83,7 +83,7 @@ class Evented {
      * @param {Object} [data] Data to be passed to any listeners.
      * @returns {Object} `this`
      */
-    fire(type: string, data: Object) {
+    fire(type: string, data?: Object) {
         if (this.listens(type)) {
             data = util.extend({}, data, {type: type, target: this});
 

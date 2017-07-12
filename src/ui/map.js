@@ -26,6 +26,7 @@ const isSupported = require('mapbox-gl-supported');
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {RequestParameters} from '../util/ajax';
+import type {StyleOptions} from '../style/style';
 
 /* eslint-disable no-use-before-define */
 type IControl = {
@@ -960,7 +961,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style: any, options?: {diff?: boolean, localIdeographFontFamily?: string}) {
+    setStyle(style: any, options?: {diff?: boolean} & StyleOptions) {
         const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style &&
             !(style instanceof Style) && typeof style !== 'string';
         if (shouldTryDiff) {
@@ -988,7 +989,7 @@ class Map extends Camera {
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this, options);
+            this.style = new Style(style, this, options || {});
         }
 
         this.style.setEventedParent(this, {style: this.style});

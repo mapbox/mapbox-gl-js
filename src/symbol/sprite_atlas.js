@@ -41,6 +41,8 @@ type SpriteAtlasElement = {
     displaySize: [number, number]
 };
 
+export type IconMap = {[string]: ?SpriteAtlasElement};
+
 // This wants to be a class, but is sent to workers, so must be a plain JSON blob.
 function spriteAtlasElement(image): SpriteAtlasElement {
     const textureRect = {
@@ -254,7 +256,7 @@ class SpriteAtlas extends Evented {
         this.sprite = sprite;
     }
 
-    addIcons(icons: Array<string>, callback: Callback<{[string]: ?SpriteAtlasElement}>) {
+    addIcons(icons: Array<string>, callback: Callback<IconMap>) {
         const result = {};
         for (const icon of icons) {
             result[icon] = this.getIcon(icon);

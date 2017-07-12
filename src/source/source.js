@@ -48,6 +48,7 @@ export interface Source {
 
     roundZoom?: boolean,
     reparseOverscaled?: boolean,
+    vectorLayerIds?: Array<string>,
 
     constructor(id: string, source: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented): Source;
 

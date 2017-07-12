@@ -8,6 +8,7 @@ const Protobuf = require('pbf');
 const TinySDF = require('@mapbox/tiny-sdf');
 const isChar = require('../util/is_char_in_unicode_block');
 const Evented = require('../util/evented');
+const assert = require('assert');
 
 import type {Glyph, GlyphStack} from '../util/glyphs';
 import type {Rect} from '../symbol/glyph_atlas';
@@ -37,18 +38,18 @@ class SimpleGlyph {
  * @private
  */
 class GlyphSource extends Evented {
-    url: string;
+    url: ?string;
     atlases: {[string]: GlyphAtlas};
     stacks: {[string]: { ranges: {[number]: GlyphStack}, cjkGlyphs: {[number]: Glyph} }};
     loading: {[string]: {[number]: Array<Function>}};
-    localIdeographFontFamily: string;
+    localIdeographFontFamily: ?string;
     tinySDFs: {[string]: TinySDF};
     transformRequestCallback: RequestTransformFunction;
 
     /**
      * @param {string} url glyph template url
      */
-    constructor(url: string, localIdeographFontFamily: string, transformRequestCallback: RequestTransformFunction, eventedParent?: Evented) {
+    constructor(url: ?string, localIdeographFontFamily: ?string, transformRequestCallback: RequestTransformFunction, eventedParent?: Evented) {
         super();
         this.url = url && normalizeURL(url);
         this.atlases = {};
@@ -151,7 +152,8 @@ class GlyphSource extends Evented {
             } else if (/light/i.test(fontstack)) {
                 fontWeight = '200';
             }
-            tinySDF = this.tinySDFs[fontstack] = this.createTinySDF(this.localIdeographFontFamily, fontWeight);
+            assert(this.localIdeographFontFamily);
+            tinySDF = this.tinySDFs[fontstack] = this.createTinySDF((this.localIdeographFontFamily : any), fontWeight);
         }
 
         return {
@@ -186,8 +188,9 @@ class GlyphSource extends Evented {
         } else {
             loading[range] = [callback];
 
+            assert(this.url);
             const rangeName = `${range * 256}-${range * 256 + 255}`;
-            const url = glyphUrl(fontstack, rangeName, this.url);
+            const url = glyphUrl(fontstack, rangeName, (this.url : any));
 
             this.loadPBF(url, (err, response) => {
                 if (err) {
