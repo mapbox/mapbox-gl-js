@@ -172,9 +172,18 @@ class CollisionTile {
         ];*/
     }
 
+    xytransformMat4(out, a, m) {
+        const x = a[0], y = a[1];
+        out[0] = m[0] * x + m[4] * y + m[12];
+        out[1] = m[1] * x + m[5] * y + m[13];
+        out[3] = m[3] * x + m[7] * y + m[15];
+        return out;
+    }
+
     projectPoint(point) {
         const p = [point.x, point.y, 0, 1];
-        vec4.transformMat4(p, p, this.matrix);
+        //vec4.transformMat4(p, p, this.matrix);
+        this.xytransformMat4(p, p, this.matrix);
         const a = new Point(
             ((p[0] / p[3] + 1) / 2) * dimensions,
             ((-p[1] / p[3] + 1) / 2) * dimensions
