@@ -9,7 +9,6 @@ uniform sampler2D u_fadetexture;
 // collision boxes are used.
 varying float v_max_zoom;
 varying float v_placement_zoom;
-varying float v_perspective_zoom_adjust;
 varying vec2 v_fade_tex;
 
 void main() {
@@ -25,7 +24,7 @@ void main() {
     }
 
     // Faded black = this collision box is not used at this zoom (for curved labels)
-    if (u_zoom >= v_max_zoom + v_perspective_zoom_adjust) {
+    if (u_zoom >= v_max_zoom) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0) * alpha * 0.25;
     }
 

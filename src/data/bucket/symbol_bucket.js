@@ -795,7 +795,6 @@ class SymbolBucket {
         const elementArray = arrays.elementArray;
 
         const angle = -collisionTile.angle;
-        const yStretch = collisionTile.yStretch;
 
         for (const symbolInstance of this.symbolInstances) {
             symbolInstance.textCollisionFeature = {boxStartIndex: symbolInstance.textBoxStartIndex, boxEndIndex: symbolInstance.textBoxEndIndex};
@@ -814,10 +813,10 @@ class SymbolBucket {
                     }
                     const boxAnchorPoint = box.anchorPoint;
 
-                    const tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);
-                    const tr = new Point(box.x2, box.y1 * yStretch)._rotate(angle);
-                    const bl = new Point(box.x1, box.y2 * yStretch)._rotate(angle);
-                    const br = new Point(box.x2, box.y2 * yStretch)._rotate(angle);
+                    const tl = new Point(box.x1, box.y1)._rotate(angle);
+                    const tr = new Point(box.x2, box.y1)._rotate(angle);
+                    const bl = new Point(box.x1, box.y2)._rotate(angle);
+                    const br = new Point(box.x2, box.y2)._rotate(angle);
 
                     const maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                     const placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));

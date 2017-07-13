@@ -13,7 +13,6 @@ uniform highp float u_camera_to_center_distance;
 uniform highp float u_pitch;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
-uniform highp float u_collision_y_stretch;
 
 #pragma mapbox: define lowp float opacity
 
@@ -84,11 +83,5 @@ void main() {
     gl_Position = u_gl_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
-    // See comments in symbol_sdf.vertex
-    highp float incidence_stretch  = camera_to_anchor_distance / (u_camera_to_center_distance * cos(u_pitch));
-    highp float collision_adjustment = max(1.0, incidence_stretch / u_collision_y_stretch);
-
-    highp float collision_perspective_ratio = 1.0 + 0.5*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
-    highp float perspective_zoom_adjust = floor(log2(collision_perspective_ratio * collision_adjustment) * 10.0);
-    v_fade_tex = vec2((a_labelminzoom + perspective_zoom_adjust) / 255.0, 0.0);
+    v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
 }
