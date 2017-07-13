@@ -11,6 +11,8 @@ const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 const Throttler = require('../util/throttler');
 
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type TileCoord from './tile_coord';
@@ -76,8 +78,6 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
-
-        this.placementThrottler = new Throttler(300, this._immediateRedoPlacement.bind(this));
     }
 
     registerFadeDuration(animationLoop: any, duration: number) {
@@ -201,11 +201,6 @@ class Tile {
         this.matrix = source.map.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
         this.state = 'reloading';
-        this._immediateRedoPlacement(collisionTile, layer);
-        //this.placementThrottler.invoke();
-    }
-
-    _immediateRedoPlacement(collisionTile, layer) {
 
         collisionTile.setMatrix(this.matrix);
         collisionTile.setCollisionBoxArray(this.collisionBoxArray);
@@ -217,7 +212,7 @@ class Tile {
 
         if (bucket) {
             //recalculateLayers(bucket, this.zoom);
-            bucket.place(collisionTile, this.showCollisionBoxes, this.zoom);
+            bucket.place(collisionTile, this.showCollisionBoxes, this.zoom, pixelsToTileUnits(this, 1, source.map.transform.zoom));
             symbolBuckets.push(bucket);
         }
 
@@ -245,10 +240,6 @@ class Tile {
 
         this.state = 'loaded';
 
-        if (this.redoWhenDone) {
-            this.redoWhenDone = false;
-            this._immediateRedoPlacement(collisionTile, layer);
-        }
         //}, this.workerID);
     }
 
@@ -342,13 +333,6 @@ class Tile {
                 // Max value for `setTimeout` implementations is a 32 bit integer; cap this accordingly
                 return Math.min(this.expirationTime - new Date().getTime(), Math.pow(2, 31) - 1);
             }
-        }
-    }
-
-    stopPlacementThrottler() {
-        this.placementThrottler.stop();
-        if (this.state === 'reloading') {
-            this.state = 'loaded';
         }
     }
 }

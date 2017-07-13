@@ -857,15 +857,15 @@ class Style extends Evented {
     }
 
     _updateSources(transform) {
-        if (!this.viewportCollisionTile) this.viewportCollisionTile = new CollisionTile();
+        if (!this.viewportCollisionTile) this.viewportCollisionTile = new CollisionTile(transform);
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].update(transform, this.viewportCollisionTile);
         }
     }
 
-    _redoPlacement() {
+    _redoPlacement(transform) {
         console.time('redo placement');
-        this.viewportCollisionTile = new CollisionTile();
+        this.viewportCollisionTile = new CollisionTile(transform);
 
         for (const id in this.sourceCaches) {
             for (let i = this._order.length - 1; i >= 0; i--) {

@@ -546,7 +546,7 @@ class SymbolBucket {
         const addSymbolInstance = (line, anchor) => {
             const inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
-            if (avoidEdges && !inside) return;
+            if (!inside) return;
 
             // Normally symbol layers are drawn across tile boundaries. Only symbols
             // with their anchors within the tile boundaries are added to the buffers
@@ -623,7 +623,7 @@ class SymbolBucket {
         return false;
     }
 
-    place(collisionTile: any, showCollisionBoxes: any, zoom: number) {
+    place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
@@ -678,12 +678,12 @@ class SymbolBucket {
 
             let placeGlyph = hasText ?
                 collisionTile.placeCollisionFeature(textCollisionFeature,
-                    layout['text-allow-overlap'], layout['symbol-avoid-edges'], scale) :
+                    layout['text-allow-overlap'], scale, pixelsToTileUnits) :
                 false;
 
             let placeIcon = hasIcon ?
                 collisionTile.placeCollisionFeature(iconCollisionFeature,
-                    layout['icon-allow-overlap'], layout['symbol-avoid-edges'], scale) :
+                    layout['icon-allow-overlap'], scale, pixelsToTileUnits) :
                 false;
 
 

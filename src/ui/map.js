@@ -1530,7 +1530,7 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
-        this.style._redoPlacement();
+        this.style._redoPlacement(this.painter.transform);
 
         // Actually draw
         this.painter.render(this.style, {
@@ -1639,7 +1639,7 @@ class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this.style._redoPlacement();
+        this.style._redoPlacement(this.painter.transform);
     }
 
     /*
