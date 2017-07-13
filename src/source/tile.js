@@ -157,7 +157,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    redoPlacement(source: any, collisionTile: ?CollisionTile, layer: any) {
+    redoPlacement(source: any, collisionTile: ?CollisionTile, layer: any, posMatrix: Float32Array) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -165,54 +165,17 @@ class Tile {
             this.redoWhenDone = true;
             return;
         }
-        /*
-        if (!this.collisionTile) { // empty tile
-            return;
-        }
-        */
 
-        const cameraToTileDistance = source.map.transform.cameraToTileDistance(this);
-        /*
-        if (this.angle === source.map.transform.angle &&
-            this.pitch === source.map.transform.pitch &&
-            this.cameraToCenterDistance === source.map.transform.cameraToCenterDistance &&
-            this.showCollisionBoxes === source.map.showCollisionBoxes) {
-            if (this.cameraToTileDistance === cameraToTileDistance) {
-                return;
-            } else if (this.pitch < 25) {
-                // At low pitch tile distance doesn't affect placement very
-                // much, so we skip the cost of redoPlacement
-                // However, we might as well store the latest value of
-                // cameraToTileDistance in case a redoPlacement request
-                // is already queued.
-                this.cameraToTileDistance = cameraToTileDistance;
-                return;
-            }
-        }
-        */
-
-        this.zoom = source.map.transform.zoom;
-        this.angle = source.map.transform.angle;
-        this.pitch = source.map.transform.pitch;
-        this.cameraToCenterDistance = source.map.transform.cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
-        this.showCollisionBoxes = source.map.showCollisionBoxes;
-        this.placementSource = source;
-        this.matrix = source.map.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
-
-        this.state = 'reloading';
-
-        collisionTile.setMatrix(this.matrix);
+        collisionTile.setMatrix(posMatrix);
         collisionTile.setCollisionBoxArray(this.collisionBoxArray);
 
         const symbolBuckets = [];
-        const style = this.placementSource.map.style;
 
         const bucket = this.getBucket(layer);
 
         if (bucket) {
             //recalculateLayers(bucket, this.zoom);
-            bucket.place(collisionTile, this.showCollisionBoxes, this.zoom, pixelsToTileUnits(this, 1, source.map.transform.zoom));
+            bucket.place(collisionTile, this.showCollisionBoxes, source.map.transform.zoom, pixelsToTileUnits(this, 1, source.map.transform.zoom));
             symbolBuckets.push(bucket);
         }
 
@@ -221,22 +184,10 @@ class Tile {
             collisionTile: collisionTile
         };
 
-        /*
-        this.placementSource.dispatcher.send('redoPlacement', {
-            type: this.placementSource.type,
-            uid: this.uid,
-            source: this.placementSource.id,
-            angle: this.angle,
-            pitch: this.pitch,
-            cameraToCenterDistance: this.cameraToCenterDistance,
-            cameraToTileDistance: this.cameraToTileDistance,
-            showCollisionBoxes: this.showCollisionBoxes
-        }, (_, data) => {
-        */
         this.reloadSymbolData(data);
-        if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
+        //if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
-        if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
+        if (source.map) source.map.painter.tileExtentVAO.vao = null;
 
         this.state = 'loaded';
 
