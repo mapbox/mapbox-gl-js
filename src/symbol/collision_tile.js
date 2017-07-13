@@ -1,7 +1,7 @@
 // @flow
 
 const Point = require('point-geometry');
-const Grid = require('grid-index');
+const Grid = require('./grid_index_experimental');
 const glmatrix = require('@mapbox/gl-matrix');
 
 const vec4 = glmatrix.vec4;
@@ -77,8 +77,8 @@ class CollisionTile {
             box.bbox3 = brY;
 
             if (!allowOverlap) {
-                const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
-                if (blockingBoxes.length > 0) {
+                //const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
+                if (this.grid.hitTest(box.bbox0, box.bbox1, box.bbox2, box.bbox3)) {
                     return false;
                 }
                 // for (let i = 0; i < blockingBoxes.length; i++) {
