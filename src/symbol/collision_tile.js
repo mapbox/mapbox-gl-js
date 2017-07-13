@@ -63,9 +63,9 @@ class CollisionTile {
 
             const box = collisionBoxArray.get(b);
 
-            const viewportAnchorPoint = this.projectPoint(box.anchorPoint);
-            const perspectiveRatio = this.perspectiveRatio(box.anchorPoint);
-            const tileToViewport = perspectiveRatio * dimensions / (pixelsToTileUnits * scale);
+            const projectedPoint = this.projectPoint(box.anchorPoint);
+            const viewportAnchorPoint = projectedPoint.point;
+            const tileToViewport = projectedPoint.perspectiveRatio * dimensions / (pixelsToTileUnits * scale);
             const tlX = box.x1 * tileToViewport / this.transform.width + viewportAnchorPoint.x;
             const tlY = box.y1 * tileToViewport / this.transform.height + viewportAnchorPoint.y;
             const brX = box.x2 * tileToViewport / this.transform.width + viewportAnchorPoint.x;
@@ -180,18 +180,12 @@ class CollisionTile {
             ((p[0] / p[3] + 1) / 2) * dimensions,
             ((-p[1] / p[3] + 1) / 2) * dimensions
         );
-        return a;
+        return {
+            point: a,
+            perspectiveRatio: 1 + 0.5 * ((p[3] / this.transform.cameraToCenterDistance) - 1)
+        };
     }
 
-    perspectiveRatio(point) {
-        const p = [point.x, point.y, 0, 1];
-        vec4.transformMat4(p, p, this.matrix);
-        return 1 + 0.5 * ((p[3] / this.transform.cameraToCenterDistance) - 1);
-    }
-
-    projectOffset(offset) {
-        return this.projectPoint(offset).sub(this.projectPoint(new Point(0, 0)));
-    }
 }
 
 module.exports = CollisionTile;
