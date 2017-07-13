@@ -52,7 +52,7 @@ module.exports = function (directory, implementation, options, run) {
                 return;
             }
 
-            if (implementation === 'native' && process.env.BUILDTYPE === 'Release' && group === 'debug') {
+            if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && group === 'debug') {
                 console.log(colors.gray(`* skipped ${group} ${test}`));
                 return;
             }
