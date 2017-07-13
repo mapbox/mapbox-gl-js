@@ -75,7 +75,7 @@ function typeCheckExpression(expected: Type, e: Expression, scope: Scope = new S
         // If expression's output type is generic, pick up a typename binding
         // to a concrete expected type if possible
         const initialTypenames: { [string]: Type } = {};
-        const error = match(expected, e.type, {}, initialTypenames);
+        const error = match(expected, e.type, initialTypenames, 'actual');
         if (error) return { result: 'error', errors: [{ key: e.key, error }] };
         expected = e.type;
 
@@ -174,26 +174,41 @@ function typeCheckExpression(expected: Type, e: Expression, scope: Scope = new S
 /**
  * Returns null if the type matches, or an error message if not.
  *
- * Also populate the given typenames maps: `expectedTypenames` maps typenames
- * from the scope of `expected` to Types, and `tTypenames` does the same for
- * typenames from t's typename scope.
+ * Also populate the given typenames context when a generic type is successfully
+ * matched against a concrete one, with `scope` controlling whether type names
+ * from `expected` or `t` are to be bound.
  *
  * @private
  */
-function match(expected: Type, t: Type, expectedTypenames: { [string]: Type } = {}, tTypenames: { [string]: Type } = {}) {
+function match(
+    expected: Type,
+    t: Type,
+    typenames: { [string]: Type } = {},
+    scope: 'expected' | 'actual' = 'expected'
+) {
     if (t.kind === 'lambda') t = t.result;
     const errorMessage = `Expected ${expected.name} but found ${t.name} instead.`;
 
     if (expected.kind === 'typename') {
-        if (!expectedTypenames[expected.typename] && !isGeneric(t) && t !== NullType) {
-            expectedTypenames[expected.typename] = t;
+        if (
+            scope === 'expected' &&
+            !typenames[expected.typename] &&
+            !isGeneric(t) &&
+            t !== NullType
+        ) {
+            typenames[expected.typename] = t;
         }
         return null;
     }
 
-    if (t.kind === 'typename' && !isGeneric(expected)) {
-        if (!tTypenames[t.typename] && t !== NullType) {
-            tTypenames[t.typename] = expected;
+    if (t.kind === 'typename') {
+        if (
+            scope === 'actual' &&
+            !typenames[t.typename] &&
+            !isGeneric(expected) &&
+            expected !== NullType
+        ) {
+            typenames[t.typename] = expected;
         }
         return null;
     }
@@ -213,12 +228,10 @@ function match(expected: Type, t: Type, expectedTypenames: { [string]: Type } = 
         ];
 
         for (const memberType of members) {
-            const mExpectedTypenames = extend({}, expectedTypenames);
-            const mTTypenames = extend({}, tTypenames);
-            const error = match(memberType, t, mExpectedTypenames, mTTypenames);
+            const mTypenames = extend({}, typenames);
+            const error = match(memberType, t, mTypenames, scope);
             if (!error) {
-                extend(expectedTypenames, mExpectedTypenames);
-                extend(tTypenames, mTTypenames);
+                extend(typenames, mTypenames);
                 return null;
             }
         }
@@ -229,7 +242,7 @@ function match(expected: Type, t: Type, expectedTypenames: { [string]: Type } = 
         else return errorMessage;
     } else if (expected.kind === 'array') {
         if (t.kind === 'array') {
-            const error = match(expected.itemType, t.itemType, expectedTypenames, tTypenames);
+            const error = match(expected.itemType, t.itemType, typenames, scope);
             if (error) return `${errorMessage} (${error})`;
             else if (typeof expected.N === 'number' && expected.N !== t.N) return errorMessage;
             else return null;
