@@ -25,7 +25,7 @@
     },
     "evaluateResults": [
       {
-        "error": "ExpressionEvaluationError: Property 'geometry' not found in feature"
+        "error": "Property 'geometry' not found in feature"
       },
       "LineString"
     ]

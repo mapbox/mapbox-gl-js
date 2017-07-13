@@ -50,7 +50,7 @@
         1
       ],
       {
-        "error": "ExpressionEvaluationError: Could not parse color from value 'invalid'"
+        "error": "Could not parse color from value 'invalid'"
       },
       [
         0,

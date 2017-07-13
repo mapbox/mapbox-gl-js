@@ -50,13 +50,13 @@
     "evaluateResults": [
       1,
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Number, but found String instead."
+        "error": "Expected value to be of type Number, but found String instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Number, but found Boolean instead."
+        "error": "Expected value to be of type Number, but found Boolean instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Number, but found Null instead."
+        "error": "Expected value to be of type Number, but found Null instead."
       }
     ]
   }

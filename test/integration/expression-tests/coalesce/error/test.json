@@ -76,7 +76,7 @@
       2,
       3,
       {
-        "error": "ExpressionEvaluationError: Property 'z' not found in feature.properties"
+        "error": "Property 'z' not found in feature.properties"
       }
     ]
   }

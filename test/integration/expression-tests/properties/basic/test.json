@@ -35,7 +35,7 @@
         "x": 5
       },
       {
-        "error": "ExpressionEvaluationError: Expected feature.properties to be of type Object, but found String instead."
+        "error": "Expected feature.properties to be of type Object, but found String instead."
       }
     ]
   }
