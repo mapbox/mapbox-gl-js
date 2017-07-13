@@ -5,13 +5,10 @@
   "evaluate": [
     [
       {},
-      {}
-    ],
-    [
-      {},
       {
         "geometry": {
-          "type": "LineString"
+          "type": "LineString",
+          "coordinates": [ [0, 0], [10, 0] ]
         }
       }
     ]
@@ -24,9 +21,6 @@
       "type": "String"
     },
     "evaluateResults": [
-      {
-        "error": "ExpressionEvaluationError: Property 'geometry' not found in feature"
-      },
       "LineString"
     ]
   }

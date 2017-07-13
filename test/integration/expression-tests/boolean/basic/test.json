@@ -77,24 +77,24 @@
     },
     "evaluateResults": [
       {
-        "error": "ExpressionEvaluationError: Property 'x' not found in feature.properties"
+        "error": "Property 'x' not found in feature.properties"
       },
       true,
       false,
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Boolean, but found String instead."
+        "error": "Expected value to be of type Boolean, but found String instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Boolean, but found String instead."
+        "error": "Expected value to be of type Boolean, but found String instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Boolean, but found Number instead."
+        "error": "Expected value to be of type Boolean, but found Number instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Boolean, but found Number instead."
+        "error": "Expected value to be of type Boolean, but found Number instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected value to be of type Boolean, but found Null instead."
+        "error": "Expected value to be of type Boolean, but found Null instead."
       }
     ]
   }

@@ -65,10 +65,10 @@
       "false",
       "null",
       {
-        "error": "ExpressionEvaluationError: Expected a primitive value in [\"string\", ...], but found Array<Number, 2> instead."
+        "error": "Expected a primitive value in [\"string\", ...], but found Array<Number, 2> instead."
       },
       {
-        "error": "ExpressionEvaluationError: Expected a primitive value in [\"string\", ...], but found Object instead."
+        "error": "Expected a primitive value in [\"string\", ...], but found Object instead."
       }
     ]
   }

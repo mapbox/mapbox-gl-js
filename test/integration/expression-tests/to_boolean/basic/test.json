@@ -77,7 +77,7 @@
     },
     "evaluateResults": [
       {
-        "error": "ExpressionEvaluationError: Property 'x' not found in feature.properties"
+        "error": "Property 'x' not found in feature.properties"
       },
       true,
       false,

@@ -81,14 +81,16 @@
       1,
       6.02e-23,
       {
-        "error": "ExpressionEvaluationError: Could not convert \"Not a number\" to number."
-      },
-      0,
-      {
-        "error": "ExpressionEvaluationError: Could not convert [1,2] to number."
+        "error": "Could not convert \"Not a number\" to number."
       },
       {
-        "error": "ExpressionEvaluationError: Could not convert {\"y\":1} to number."
+        "error":"Could not convert null to number."
+      },
+      {
+        "error": "Could not convert [1,2] to number."
+      },
+      {
+        "error": "Could not convert {\"y\":1} to number."
       }
     ]
   }

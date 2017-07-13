@@ -16,7 +16,7 @@ class RuntimeError extends Error {
     }
 
     toJSON() {
-        return `${this.name}: ${this.message}`;
+        return `${this.message}`;
     }
 }
 

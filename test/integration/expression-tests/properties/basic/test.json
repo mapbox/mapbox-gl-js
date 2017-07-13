@@ -5,20 +5,10 @@
   "evaluate": [
     [
       {},
-      {}
-    ],
-    [
-      {},
       {
         "properties": {
           "x": 5
         }
-      }
-    ],
-    [
-      {},
-      {
-        "properties": "invalid"
       }
     ]
   ],
@@ -30,12 +20,8 @@
       "type": "Object"
     },
     "evaluateResults": [
-      {},
       {
         "x": 5
-      },
-      {
-        "error": "ExpressionEvaluationError: Expected feature.properties to be of type Object, but found String instead."
       }
     ]
   }

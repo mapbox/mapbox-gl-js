@@ -29,7 +29,7 @@
     },
     "evaluateResults": [
       {
-        "error": "ExpressionEvaluationError: Property 'id' not found in feature"
+        "error": "Property 'id' not found in feature"
       },
       1,
       "one"
