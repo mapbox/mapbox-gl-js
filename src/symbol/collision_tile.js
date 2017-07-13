@@ -141,13 +141,12 @@ class CollisionTile {
 
     setCollisionBoxArray(collisionBoxArray) {
         this.collisionBoxArray = collisionBoxArray;
-        if (collisionBoxArray.length === 0) {
+        /*if (collisionBoxArray.length === 0) {
             // the first time collisionBoxArray is passed to a CollisionTile
 
             // tempCollisionBox
             collisionBoxArray.emplaceBack();
 
-            /*
             const maxInt16 = 32767;
             //left
             collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
@@ -161,7 +160,7 @@ class CollisionTile {
             // bottom
             collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                */
+
         }
 
         this.tempCollisionBox = collisionBoxArray.get(0);
@@ -170,7 +169,7 @@ class CollisionTile {
             collisionBoxArray.get(2),
             collisionBoxArray.get(3),
             collisionBoxArray.get(4)
-        ];
+        ];*/
     }
 
     projectPoint(point) {
