@@ -5,11 +5,12 @@ uniform sampler2D u_fadetexture;
 
 varying vec2 v_tex;
 varying vec2 v_fade_tex;
+varying float v_fade_opacity;
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
 
-    lowp float alpha = texture2D(u_fadetexture, v_fade_tex).a * opacity;
+    lowp float alpha = texture2D(u_fadetexture, v_fade_tex).a * opacity * v_fade_opacity;
     gl_FragColor = texture2D(u_texture, v_tex) * alpha;
 
 #ifdef OVERDRAW_INSPECTOR

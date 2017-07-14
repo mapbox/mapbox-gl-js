@@ -586,14 +586,14 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement(viewportCollisionTile, layer, posMatrices, transform) {
+    redoPlacement(viewportCollisionTile, symbolOpacityIndex, layer, posMatrices, transform) {
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
             if (!posMatrices[i]) {
                 posMatrices[i] = transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
             }
-            tile.redoPlacement(this._source, viewportCollisionTile, layer, posMatrices[i]);
+            tile.redoPlacement(this._source, viewportCollisionTile, symbolOpacityIndex, layer, posMatrices[i]);
         }
     }
 

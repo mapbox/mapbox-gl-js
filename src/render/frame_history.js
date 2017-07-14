@@ -12,6 +12,7 @@ class FrameHistory {
     }
 
     record(now, zoom, duration) {
+        duration = 0;
         if (this.firstFrame) {
             now = 0;
             this.firstFrame = false;

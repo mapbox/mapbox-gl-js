@@ -623,7 +623,7 @@ class SymbolBucket {
         return false;
     }
 
-    place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number) {
+    place(collisionTile: any, symbolOpacityIndex: any, coord: any, sourceMaxZoom: number, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
@@ -702,7 +702,7 @@ class SymbolBucket {
 
             if (hasText) {
 
-                const opacity = placeGlyph ? 1.0 : 0.0;
+                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, placeGlyph ? 1.0 : 0.0, symbolInstance.key);
                 // TODO handle vertical text properly by choosing the correct version here
                 const verticalOpacity = 0;
 
@@ -719,7 +719,7 @@ class SymbolBucket {
             }
 
             if (hasIcon) {
-                const opacity = placeIcon ? 1.0 : 0.0;
+                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, placeIcon ? 1.0 : 0.0, symbolInstance.key);
                 for (let i = 0; i < symbolInstance.numIconVertices; i++) {
                     iconOpacityArray.emplaceBack(opacity);
                 }
@@ -874,9 +874,11 @@ class SymbolBucket {
         let numIconVertices = 0;
         let numGlyphVertices = 0;
         let numVerticalGlyphVertices = 0;
+        let key = '';
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
+            key = shapedTextOrientations[writingMode].text;
             glyphQuads = addToBuffers ?
                 getGlyphQuads(anchor, shapedTextOrientations[writingMode],
                     layer, textAlongLine, globalProperties, featureProperties) :
@@ -953,6 +955,7 @@ class SymbolBucket {
         );
 
         this.symbolInstances.push({
+            key,
             textBoxStartIndex,
             textBoxEndIndex,
             iconBoxStartIndex,

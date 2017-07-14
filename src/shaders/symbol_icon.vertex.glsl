@@ -27,12 +27,13 @@ uniform vec2 u_texsize;
 
 varying vec2 v_tex;
 varying vec2 v_fade_tex;
+varying float v_fade_opacity;
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
 
     vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw * a_new_opacity;
+    vec2 a_offset = a_pos_offset.zw;
 
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;
@@ -84,4 +85,5 @@ void main() {
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
+    v_fade_opacity = a_new_opacity;
 }

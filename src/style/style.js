@@ -24,6 +24,7 @@ const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 const CollisionTile = require('../symbol/collision_tile');
+const OpacityIndex = require('../symbol/opacity_index');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -857,15 +858,15 @@ class Style extends Evented {
     }
 
     _updateSources(transform) {
-        if (!this.viewportCollisionTile) this.viewportCollisionTile = new CollisionTile(transform);
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].update(transform, this.viewportCollisionTile);
+            this.sourceCaches[id].update(transform);
         }
     }
 
     _redoPlacement(transform) {
         console.time('redo placement');
         this.viewportCollisionTile = new CollisionTile(transform);
+        this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
 
         const posMatrices = {};
 
@@ -878,7 +879,7 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, layer, posMatrices[id], transform);
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, this.symbolOpacityIndex, layer, posMatrices[id], transform);
             }
         }
         console.timeEnd('redo placement');

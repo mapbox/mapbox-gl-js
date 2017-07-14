@@ -37,7 +37,7 @@ uniform highp float u_camera_to_center_distance;
 uniform vec2 u_texsize;
 
 varying vec4 v_data0;
-varying vec2 v_data1;
+varying vec3 v_data1;
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -47,7 +47,8 @@ void main() {
     #pragma mapbox: initialize lowp float halo_blur
 
     vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw * a_new_opacity;
+    vec2 a_offset = a_pos_offset.zw;
+    a_new_opacity;
 
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;
@@ -109,5 +110,5 @@ void main() {
     vec2 fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
 
     v_data0 = vec4(tex.x, tex.y, fade_tex.x, fade_tex.y);
-    v_data1 = vec2(gamma_scale, size);
+    v_data1 = vec3(gamma_scale, size, a_new_opacity);
 }
