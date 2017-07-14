@@ -56,6 +56,20 @@ class CollisionFeature {
         this.boxEndIndex = collisionBoxArray.length;
     }
 
+    collisionBoxes(collisionBoxArray) {
+        const boxes = [];
+        for (let k = this.boxStartIndex; k < this.boxEndIndex; k++) {
+            const box = collisionBoxArray.get(k);
+            boxes.push(box.x1);
+            boxes.push(box.y1);
+            boxes.push(box.x2);
+            boxes.push(box.y2);
+            boxes.push(box.anchorPointX);
+            boxes.push(box.anchorPointY);
+        }
+        return boxes;
+    }
+
     /**
      * Create a set of CollisionBox objects for a line.
      *

@@ -54,32 +54,33 @@ class CollisionTile {
      * @param avoidEdges
      * @private
      */
-    placeCollisionFeature(collisionFeature: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): boolean {
-
+    placeCollisionFeature(collisionBoxes: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): boolean {
         const collisionBoxArray = this.collisionBoxArray;
-        const rotationMatrix = this.rotationMatrix;
 
-        for (let b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
+        const placedCollisionBoxes = [];
+        if (!collisionBoxes) {
+            return placedCollisionBoxes;
+        }
 
-            const box = collisionBoxArray.get(b);
-
-            const projectedPoint = this.projectPoint(box.anchorPoint);
-            const viewportAnchorPoint = projectedPoint.point;
+        for (let k = 0; k < collisionBoxes.length; k += 6) {
+            const projectedPoint = this.projectPoint(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
             const tileToViewport = projectedPoint.perspectiveRatio * dimensions / (pixelsToTileUnits * scale);
-            const tlX = box.x1 * tileToViewport / this.transform.width + viewportAnchorPoint.x;
-            const tlY = box.y1 * tileToViewport / this.transform.height + viewportAnchorPoint.y;
-            const brX = box.x2 * tileToViewport / this.transform.width + viewportAnchorPoint.x;
-            const brY = box.y2 * tileToViewport / this.transform.height + viewportAnchorPoint.y;
+            const xScale = tileToViewport / this.transform.width;
+            const yScale = tileToViewport / this.transform.height;
+            const tlX = collisionBoxes[k] * xScale + projectedPoint.point.x;
+            const tlY = collisionBoxes[k + 1] * yScale + projectedPoint.point.y;
+            const brX = collisionBoxes[k + 2] * xScale + projectedPoint.point.x;
+            const brY = collisionBoxes[k + 3] * yScale + projectedPoint.point.y;
 
-            box.bbox0 = tlX;
-            box.bbox1 = tlY;
-            box.bbox2 = brX;
-            box.bbox3 = brY;
+            placedCollisionBoxes.push(tlX);
+            placedCollisionBoxes.push(tlY);
+            placedCollisionBoxes.push(brX);
+            placedCollisionBoxes.push(brY);
 
             if (!allowOverlap) {
                 //const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
-                if (this.grid.hitTest(box.bbox0, box.bbox1, box.bbox2, box.bbox3)) {
-                    return false;
+                if (this.grid.hitTest(tlX, tlY, brX, brY)) {
+                    return [];
                 }
                 // for (let i = 0; i < blockingBoxes.length; i++) {
                 //     const blocking = collisionBoxArray.get(blockingBoxes[i]);
@@ -90,24 +91,11 @@ class CollisionTile {
             }
         }
 
-        return true;
+        return placedCollisionBoxes;
     }
 
     queryRenderedSymbols(queryGeometry: any, scale: number): Array<any> {
 
-    }
-
-    boxesCollide(box: any, blocking: any) {
-        if (box.bbox3 > blocking.bbox1 || box.bbox1 < blocking.bbox3) {
-            // Completely above or below
-            return false;
-        }
-        if (box.bbox2 < blocking.bbox0 || box.bbox0 > blocking.bbox2) {
-            // Completely left or right
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -119,19 +107,14 @@ class CollisionTile {
      * @param ignorePlacement
      * @private
      */
-    insertCollisionFeature(collisionFeature: any, ignorePlacement: boolean) {
+    insertCollisionFeature(collisionBoxes: any, ignorePlacement: boolean) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
-        const collisionBoxArray = this.collisionBoxArray;
 
-        for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
-            const box = collisionBoxArray.get(k);
-            // TODO: This key is not actually good for getting anything out since one CollisionTile can be used with
-            // multiple collision box arrays. But for now we don't need to actually get any data out.
-            if (box.bbox2 - box.bbox0 > 1000 || box.bbox3 - box.bbox1 > 1000) {
-                //console.log("check this out");
-                //return;
-            }
-            grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
+        for (let k = 0; k < collisionBoxes.length; k += 4) {
+            grid.insert(0, collisionBoxes[k],
+                collisionBoxes[k + 1],
+                collisionBoxes[k + 2],
+                collisionBoxes[k + 3]);
         }
     }
 

@@ -658,14 +658,6 @@ class SymbolBucket {
         const scale = Math.pow(2, zoom - this.zoom);
 
         for (const symbolInstance of this.symbolInstances) {
-            const textCollisionFeature = {
-                boxStartIndex: symbolInstance.textBoxStartIndex,
-                boxEndIndex: symbolInstance.textBoxEndIndex
-            };
-            const iconCollisionFeature = {
-                boxStartIndex: symbolInstance.iconBoxStartIndex,
-                boxEndIndex: symbolInstance.iconBoxEndIndex
-            };
 
             const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
             const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
@@ -676,16 +668,17 @@ class SymbolBucket {
 
             // Calculate the scales at which the text and icon can be placed without collision.
 
-            let placeGlyph = hasText ?
-                collisionTile.placeCollisionFeature(textCollisionFeature,
+            const placedGlyphBoxes = hasText ?
+                collisionTile.placeCollisionFeature(symbolInstance.textCollisionBoxes,
                     layout['text-allow-overlap'], scale, pixelsToTileUnits) :
-                false;
+                [];
 
-            let placeIcon = hasIcon ?
-                collisionTile.placeCollisionFeature(iconCollisionFeature,
+            const placedIconBoxes = hasIcon ?
+                collisionTile.placeCollisionFeature(symbolInstance.iconCollisionBoxes,
                     layout['icon-allow-overlap'], scale, pixelsToTileUnits) :
-                false;
-
+                [];
+            let placeGlyph = placedGlyphBoxes.length > 0;
+            let placeIcon = placedIconBoxes.length > 0;
 
             // Combine the scales for icons and text.
             if (!iconWithoutText && !textWithoutIcon) {
@@ -714,7 +707,7 @@ class SymbolBucket {
                 }
 
                 if (placeGlyph) {
-                    collisionTile.insertCollisionFeature(textCollisionFeature, layout['text-ignore-placement']);
+                    collisionTile.insertCollisionFeature(placedGlyphBoxes, layout['text-ignore-placement']);
                 }
             }
 
@@ -725,7 +718,7 @@ class SymbolBucket {
                 }
 
                 if (placeIcon) {
-                    collisionTile.insertCollisionFeature(iconCollisionFeature, layout['icon-ignore-placement']);
+                    collisionTile.insertCollisionFeature(placedIconBoxes, layout['icon-ignore-placement']);
                 }
             }
 
@@ -954,12 +947,17 @@ class SymbolBucket {
             (shapedTextOrientations[WritingMode.horizontal] ? WritingMode.horizontal : 0)
         );
 
+        const textCollisionBoxes = textCollisionFeature ? textCollisionFeature.collisionBoxes(collisionBoxArray) : [];
+        const iconCollisionBoxes = iconCollisionFeature ? iconCollisionFeature.collisionBoxes(collisionBoxArray) : [];
+
         this.symbolInstances.push({
             key,
             textBoxStartIndex,
             textBoxEndIndex,
+            textCollisionBoxes,
             iconBoxStartIndex,
             iconBoxEndIndex,
+            iconCollisionBoxes,
             glyphQuads,
             iconQuads,
             textOffset,
