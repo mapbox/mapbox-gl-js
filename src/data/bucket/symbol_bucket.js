@@ -112,10 +112,10 @@ const symbolInterfaces = {
     },
     collisionBox: { // used to render collision boxes for debugging purposes
         layoutAttributes: [
-            {name: 'pos',        components: 2, type: 'Int16'},
-            {name: 'anchor_pos', components: 2, type: 'Int16'},
-            {name: 'extrude',    components: 2, type: 'Int16'},
-            {name: 'data',       components: 2, type: 'Uint8'}
+            {name: 'a_pos',        components: 2, type: 'Int16'},
+            {name: 'a_anchor_pos', components: 2, type: 'Int16'},
+            {name: 'a_extrude',    components: 2, type: 'Int16'},
+            {name: 'a_data',       components: 2, type: 'Uint8'}
         ],
         elementArrayType: createElementArrayType(2)
     }
