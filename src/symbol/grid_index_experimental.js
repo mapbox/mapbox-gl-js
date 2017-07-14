@@ -39,9 +39,12 @@ GridIndex.prototype._insertCell = function(x1, y1, x2, y2, cellIndex, uid) {
     this.cells[cellIndex].push(uid);
 };
 
-GridIndex.prototype.query = function(x1, y1, x2, y2) {
+GridIndex.prototype._query = function(x1, y1, x2, y2, hitTest) {
     var min = this.min;
     var max = this.max;
+    if (x2 < 0 || x1 > this.extent || y2 < 0 || y1 > this.extent) {
+        return;
+    }
     if (x1 <= min && y1 <= min && max <= x2 && max <= y2) {
         // We use `Array#slice` because `this.keys` may be a `Int32Array` and
         // some browsers (Safari and IE) do not support `TypedArray#slice`
@@ -51,47 +54,31 @@ GridIndex.prototype.query = function(x1, y1, x2, y2) {
     } else {
         var result = [];
         var seenUids = {};
-        this._forEachCell(x1, y1, x2, y2, this._queryCell, result, seenUids);
-        return result;
+        this._forEachCell(x1, y1, x2, y2, hitTest ? this._hitTestCell : this._queryCell, result, seenUids);
+        return hitTest ? result.length > 0 : result;
     }
 };
+
+GridIndex.prototype.query = function(x1, y1, x2, y2) {
+    return this._query(x1, y1, x2, y2, false);
+}
 
 GridIndex.prototype.hitTest = function(x1, y1, x2, y2) {
-    var min = this.min;
-    var max = this.max;
-    if (x1 <= min && y1 <= min && max <= x2 && max <= y2) {
-        // We use `Array#slice` because `this.keys` may be a `Int32Array` and
-        // some browsers (Safari and IE) do not support `TypedArray#slice`
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/slice#Browser_compatibility
-        return Array.prototype.slice.call(this.keys);
-
-    } else {
-        var result = { result: false };
-        var seenUids = {};
-        this._forEachCell(x1, y1, x2, y2, this._hitTestCell, result, seenUids);
-        return result.result;
-    }
-};
+    return this._query(x1, y1, x2, y2, true);
+}
 
 GridIndex.prototype._hitTestCell = function(x1, y1, x2, y2, cellIndex, result, seenUids) {
     var cell = this.cells[cellIndex];
     if (cell !== null) {
-        var keys = this.keys;
         var bboxes = this.bboxes;
         for (var u = 0; u < cell.length; u++) {
-            var uid = cell[u];
-            if (seenUids[uid] === undefined) {
-                var offset = uid * 4;
-                if ((x1 <= bboxes[offset + 2]) &&
-                    (y1 <= bboxes[offset + 3]) &&
-                    (x2 >= bboxes[offset + 0]) &&
-                    (y2 >= bboxes[offset + 1])) {
-                    seenUids[uid] = true;
-                    result.result = true;
-                    return true;
-                } else {
-                    seenUids[uid] = false;
-                }
+            var offset = cell[u] * 4;
+            if ((x1 <= bboxes[offset + 2]) &&
+                (y1 <= bboxes[offset + 3]) &&
+                (x2 >= bboxes[offset + 0]) &&
+                (y2 >= bboxes[offset + 1])) {
+                result.push(true);
+                return true;
             }
         }
     }
@@ -125,6 +112,7 @@ GridIndex.prototype._forEachCell = function(x1, y1, x2, y2, fn, arg1, arg2) {
     var cy1 = this._convertToCellCoord(y1);
     var cx2 = this._convertToCellCoord(x2);
     var cy2 = this._convertToCellCoord(y2);
+
     for (var x = cx1; x <= cx2; x++) {
         for (var y = cy1; y <= cy2; y++) {
             var cellIndex = this.d * y + x;
