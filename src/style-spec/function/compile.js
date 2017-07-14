@@ -5,10 +5,11 @@ module.exports = compileExpression;
 const {
     parseExpression,
     ParsingContext,
-    ParsingError
+    ParsingError,
+    Scope
 } = require('./expression');
+
 const definitions = require('./definitions');
-const typecheck = require('./type_check');
 const evaluationContext = require('./evaluation_context');
 
 import type { Type } from './types.js';
@@ -67,7 +68,7 @@ function compileExpression(
         throw e;
     }
 
-    const checked = typecheck(expectedType || parsed.type, parsed);
+    const checked = parsed.typecheck(expectedType || parsed.type, new Scope());
     if (checked.result === 'error') {
         return checked;
     }
