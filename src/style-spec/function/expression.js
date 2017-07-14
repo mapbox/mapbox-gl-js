@@ -323,10 +323,6 @@ function parseExpression(expr: mixed, context: ParsingContext) : Expression {
         const op = expr[0];
         if (typeof op !== 'string') {
             throw new ParsingError(`${key}[0]`, `Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`);
-        } else if (op === 'literal') {
-            return LiteralExpression.parse(expr.slice(1), context);
-        } else if (op === 'let') {
-            return LetExpression.parse(expr.slice(1), context);
         } else if (context.scope.has(op)) {
             return new Reference(context.key, op, typename('T'));
         }

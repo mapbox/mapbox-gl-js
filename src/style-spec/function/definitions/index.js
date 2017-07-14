@@ -16,6 +16,8 @@ const {
 const {
     parseExpression,
     ParsingError,
+    LetExpression,
+    LiteralExpression,
     LambdaExpression,
     nargs
 } = require('../expression');
@@ -23,10 +25,14 @@ const {
 const MatchExpression = require('./match');
 const CurveExpression = require('./curve');
 
+import type { Expression } from '../expression';
 import type { Type } from '../types';
 import type { ExpressionName } from '../expression_name';
 
-const expressions: { [string]: Class<LambdaExpression> } = {
+const expressions: { [string]: Class<Expression> } = {
+    'let': LetExpression,
+    'literal': LiteralExpression,
+
     'ln2': defineMathConstant('ln2'),
     'pi': defineMathConstant('pi'),
     'e': defineMathConstant('e'),
