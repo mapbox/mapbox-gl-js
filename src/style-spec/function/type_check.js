@@ -1,5 +1,7 @@
 // @flow
 
+const LambdaExpression = require('./expression').LambdaExpression;
+
 import type { Type } from './types.js';
 import type { Expression } from './expression.js';
 
@@ -67,7 +69,7 @@ function typeCheckExpression(expected: Type, e: Expression, scope: Scope = new S
             result: 'success',
             expression: new LetExpression(e.key, bindings, checkedResult.expression)
         };
-    } else {
+    } else if (e instanceof LambdaExpression) {
         // e is a lambda expression, so check its result type against the
         // expected type and recursively typecheck its arguments
 
@@ -168,6 +170,9 @@ function typeCheckExpression(expected: Type, e: Expression, scope: Scope = new S
             result: 'error',
             errors
         };
+    } else {
+        assert(false);
+        throw new Error('unexpected expression type');
     }
 }
 
