@@ -32,11 +32,12 @@ const {
     typename
 } = require('./types');
 const {
-    LetExpression,
     Scope,
     Reference,
-    LiteralExpression
 } = require('./expression');
+
+const LetExpression = require('./definitions/let');
+const LiteralExpression = require('./definitions/literal');
 
 module.exports = typeCheckExpression;
 

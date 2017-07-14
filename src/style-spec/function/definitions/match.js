@@ -8,11 +8,12 @@ const {
 } = require('../types');
 
 const {
-    LiteralExpression,
     LambdaExpression,
     ParsingError,
     nargs
 } = require('../expression');
+
+const LiteralExpression = require('./literal');
 
 class MatchExpression extends LambdaExpression {
     constructor(key: *, type: *, args: *) {

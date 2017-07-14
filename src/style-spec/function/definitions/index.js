@@ -16,12 +16,12 @@ const {
 const {
     parseExpression,
     ParsingError,
-    LetExpression,
-    LiteralExpression,
     LambdaExpression,
     nargs
 } = require('../expression');
 
+const LetExpression = require('./let');
+const LiteralExpression = require('./literal');
 const MatchExpression = require('./match');
 const CurveExpression = require('./curve');
 
