@@ -623,7 +623,48 @@ class SymbolBucket {
         return false;
     }
 
-    place(collisionTile: any, symbolOpacityIndex: any, coord: any, sourceMaxZoom: number, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number) {
+    updateOpacities(symbolOpacityIndex: any, coord: any, sourceMaxZoom: number) {
+        const glyphOpacityArray = this.buffers.glyph && this.buffers.glyph.opacityVertexArray;
+        const iconOpacityArray = this.buffers.icon && this.buffers.icon.opacityVertexArray;
+        if (glyphOpacityArray) glyphOpacityArray.clear();
+        if (iconOpacityArray) iconOpacityArray.clear();
+
+        for (const symbolInstance of this.symbolInstances) {
+
+            const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
+            const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
+
+            // Insert final placement into collision tree and add glyphs/icons to buffers
+            if (!hasText && !hasIcon) continue;
+
+            if (hasText) {
+
+                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, symbolInstance.placedText ? 1.0 : 0.0, symbolInstance.key);
+                // TODO handle vertical text properly by choosing the correct version here
+                const verticalOpacity = 0;
+
+                for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
+                    glyphOpacityArray.emplaceBack(opacity);
+                }
+                for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
+                    glyphOpacityArray.emplaceBack(verticalOpacity);
+                }
+            }
+
+            if (hasIcon) {
+                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, symbolInstance.placedIcon ? 1.0 : 0.0, symbolInstance.key);
+                for (let i = 0; i < symbolInstance.numIconVertices; i++) {
+                    iconOpacityArray.emplaceBack(opacity);
+                }
+            }
+
+        }
+
+        if (glyphOpacityArray) this.buffers.glyph.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
+        if (iconOpacityArray) this.buffers.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
+    }
+
+    place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
@@ -694,38 +735,24 @@ class SymbolBucket {
             if (!hasText && !hasIcon) continue;
 
             if (hasText) {
-
-                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, placeGlyph ? 1.0 : 0.0, symbolInstance.key);
-                // TODO handle vertical text properly by choosing the correct version here
-                const verticalOpacity = 0;
-
-                for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
-                    glyphOpacityArray.emplaceBack(opacity);
-                }
-                for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
-                    glyphOpacityArray.emplaceBack(verticalOpacity);
-                }
-
                 if (placeGlyph) {
+                    symbolInstance.placedText = true;
                     collisionTile.insertCollisionFeature(placedGlyphBoxes, layout['text-ignore-placement']);
+                } else {
+                    symbolInstance.placedText = false;
                 }
             }
 
             if (hasIcon) {
-                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, placeIcon ? 1.0 : 0.0, symbolInstance.key);
-                for (let i = 0; i < symbolInstance.numIconVertices; i++) {
-                    iconOpacityArray.emplaceBack(opacity);
-                }
-
                 if (placeIcon) {
+                    symbolInstance.placedIcon = true;
                     collisionTile.insertCollisionFeature(placedIconBoxes, layout['icon-ignore-placement']);
+                } else {
+                    symbolInstance.placedIcon = false;
                 }
             }
 
         }
-
-        if (glyphOpacityArray) this.buffers.glyph.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
-        if (iconOpacityArray) this.buffers.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
 
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }

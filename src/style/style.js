@@ -863,8 +863,20 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform) {
-        console.time('redo placement');
+    getNeedsPlacement() {
+        for (const id in this.sourceCaches) {
+            if (this.sourceCaches[id].getNeedsPlacement()) {
+                return true;
+            }
+        }
+    }
+
+    _redoPlacement(transform, opacityOnly) {
+        if (opacityOnly) {
+            console.time('fade update');
+        } else {
+            console.time('redo placement');
+        }
         this.viewportCollisionTile = new CollisionTile(transform);
         this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
 
@@ -879,10 +891,14 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, this.symbolOpacityIndex, layer, posMatrices[id], transform);
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, this.symbolOpacityIndex, layer, posMatrices[id], transform, opacityOnly);
             }
         }
-        console.timeEnd('redo placement');
+        if (opacityOnly) {
+            console.timeEnd('fade update');
+        } else {
+            console.timeEnd('redo placement');
+        }
     }
 
     // Callbacks from web workers

@@ -311,6 +311,8 @@ class Map extends Camera {
 
         this.on('data', this._onData);
         this.on('dataloading', this._onDataLoading);
+
+        this._lastPlacement = 0;
     }
 
     /**
@@ -1530,7 +1532,15 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
-        this.style._redoPlacement(this.painter.transform);
+        let skippedCollisions = true;
+        if (this.style &&
+            (this.style.getNeedsPlacement() || browser.now() > (this._lastPlacement + 100))) {
+            this._lastPlacement = browser.now();
+            skippedCollisions = false;
+            this.style._redoPlacement(this.painter.transform, false);
+        } else {
+            this.style._redoPlacement(this.painter.transform, true);
+        }
 
         // Actually draw
         this.painter.render(this.style, {
@@ -1550,7 +1560,7 @@ class Map extends Camera {
         this._frameId = null;
 
         // Flag an ongoing transition
-        if (!this.animationLoop.stopped()) {
+        if (!this.animationLoop.stopped() || skippedCollisions) {
             this._styleDirty = true;
         }
 
