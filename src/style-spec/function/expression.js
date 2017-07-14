@@ -17,12 +17,19 @@ import type { ExpressionName } from './expression_name';
 export type NArgs = { kind: 'nargs', types: Array<Type>, N: number };
 export type Signature = Array<Type | NArgs>;
 
-export type Expression = LambdaExpression | LiteralExpression | LetExpression | Reference; // eslint-disable-line no-use-before-define
-
 export type CompileError = {|
     error: string,
     key: string
 |}
+
+export interface Expression {
+    key: string;
+    type: Type;
+
+    compile(): string | Array<CompileError>;
+    serialize(): any;
+    visit(fn: (Expression) => void): void;
+}
 
 class ParsingError extends Error {
     key: string;
@@ -81,34 +88,14 @@ class ParsingContext {
     }
 }
 
-class BaseExpression {
+class LiteralExpression implements Expression {
     key: string;
-    +type: Type;
-    constructor(key: *, type: *) {
-        this.key = key;
-        (this: any).type = type;
-    }
-
-    getType() {
-        return this.type;
-    }
-
-    compile(): string | Array<CompileError> {
-        throw new Error('Unimplemented');
-    }
-
-    serialize(_: boolean): any {
-        throw new Error('Unimplemented');
-    }
-
-    visit(fn: (BaseExpression) => void): void { fn(this); }
-}
-
-class LiteralExpression extends BaseExpression {
+    type: Type;
     value: Value;
 
     constructor(key: *, type: Type, value: Value) {
-        super(key, type);
+        this.key = key;
+        this.type = type;
         this.value = value;
     }
 
@@ -139,14 +126,18 @@ class LiteralExpression extends BaseExpression {
             return ["literal", this.value];
         }
     }
+
+    visit(fn: (Expression) => void) { fn(this); }
 }
 
-class LambdaExpression extends BaseExpression {
-    args: Array<Expression>;
+class LambdaExpression implements Expression {
+    key: string;
     type: Type;
+    args: Array<Expression>;
 
     constructor(key: *, type: Type, args: Array<Expression>) {
-        super(key, type);
+        this.key = key;
+        this.type = type;
         this.args = args;
     }
 
@@ -186,7 +177,7 @@ class LambdaExpression extends BaseExpression {
         return [ name ].concat(args);
     }
 
-    visit(fn: (BaseExpression) => void) {
+    visit(fn: (Expression) => void) {
         fn(this);
         this.args.forEach(a => a.visit(fn));
     }
@@ -208,12 +199,16 @@ class LambdaExpression extends BaseExpression {
     }
 }
 
-class Reference extends BaseExpression {
+class Reference implements Expression {
+    key: string;
+    type: Type;
     name: string;
+
     constructor(key: string, name: string, type: Type) {
-        super(key, type);
         if (!/^[a-zA-Z_]+[a-zA-Z_0-9]*$/.test(name))
             throw new ParsingError(key, `Invalid identifier ${name}.`);
+        this.key = key;
+        this.type = type;
         this.name = name;
     }
 
@@ -222,13 +217,19 @@ class Reference extends BaseExpression {
     serialize() {
         return [this.name];
     }
+
+    visit(fn: (Expression) => void) { fn(this); }
 }
 
-class LetExpression extends BaseExpression {
+class LetExpression implements Expression {
+    key: string;
+    type: Type;
     bindings: Array<[string, Expression]>;
     result: Expression;
+
     constructor(key: string, bindings: Array<[string, Expression]>, result: Expression) {
-        super(key, result.type);
+        this.key = key;
+        this.type = result.type;
         this.bindings = [].concat(bindings);
         this.result = result;
     }
@@ -269,7 +270,7 @@ class LetExpression extends BaseExpression {
         return serialized;
     }
 
-    visit(fn: (BaseExpression) => void): void {
+    visit(fn: (Expression) => void): void {
         fn(this);
         for (const binding of this.bindings) {
             binding[1].visit(fn);
