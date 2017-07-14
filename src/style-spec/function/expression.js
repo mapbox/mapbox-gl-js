@@ -22,6 +22,7 @@ export type TypecheckResult = {|
     errors: Array<TypeError>
 |}
 
+/*::
 export interface Expression {
     key: string;
     type: Type;
@@ -34,6 +35,7 @@ export interface Expression {
     serialize(): any;
     visit(fn: (Expression) => void): void;
 }
+*/
 
 class ParsingError extends Error {
     key: string;
