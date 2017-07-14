@@ -11,10 +11,10 @@ const {
 const {
     parseExpression,
     ParsingContext,
-    LambdaExpression
+    LambdaExpression,
+    Scope
 } = require('../../../../src/style-spec/function/expression');
 const LiteralExpression = require('../../../../src/style-spec/function/definitions/literal');
-const typecheck = require('../../../../src/style-spec/function/type_check');
 
 function createParse(types) {
     const definitions = {
@@ -27,6 +27,10 @@ function createParse(types) {
         };
     }
     return (expr) => parseExpression(expr, new ParsingContext(definitions));
+}
+
+function typecheck(expectedType, expression) {
+    return expression.typecheck(expectedType, new Scope());
 }
 
 test('typecheck expressions', (t) => {

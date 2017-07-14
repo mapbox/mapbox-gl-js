@@ -5,8 +5,10 @@ const {
     parseExpression
 } = require('../expression');
 
+const { typename } = require('../types');
+
 import type { Type } from '../types';
-import type { Expression, ParsingContext }  from '../expression';
+import type { Expression, ParsingContext, Scope }  from '../expression';
 
 class LetExpression implements Expression {
     key: string;
@@ -19,6 +21,22 @@ class LetExpression implements Expression {
         this.type = result.type;
         this.bindings = [].concat(bindings);
         this.result = result;
+    }
+
+    typecheck(expected: Type, scope: Scope) {
+        const bindings = [];
+        for (const [name, value] of this.bindings) {
+            const checkedValue = value.typecheck(typename('T'), scope);
+            if (checkedValue.result === 'error') return checkedValue;
+            bindings.push([name, checkedValue.expression]);
+        }
+        const nextScope = scope.concat(bindings);
+        const checkedResult = this.result.typecheck(expected, nextScope);
+        if (checkedResult.result === 'error') return checkedResult;
+        return {
+            result: 'success',
+            expression: new LetExpression(this.key, bindings, checkedResult.expression)
+        };
     }
 
     compile() {

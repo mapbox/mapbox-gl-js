@@ -2,6 +2,7 @@
 
 const { ParsingError } = require('../expression');
 const { Color, isValue, typeOf } = require('../values');
+const { match } = require('../types');
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
@@ -29,6 +30,12 @@ class LiteralExpression implements Expression {
         const type = typeOf(value);
 
         return new this(context.key, type, value);
+    }
+
+    typecheck(expected: Type) {
+        const error = match(expected, this.type);
+        if (error) return { result: 'error', errors: [{ key: this.key, error }] };
+        return {result: 'success', expression: this};
     }
 
     compile() {
