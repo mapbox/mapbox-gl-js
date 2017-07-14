@@ -40,12 +40,8 @@ function isGeneric(type: Type, stack: Array<Type> = []) {
         return true;
     } else if (type.kind === 'array') {
         return isGeneric(type.itemType, stack.concat(type));
-    } else if (type.kind === 'variant') {
-        return type.members.some((t) => isGeneric(t, stack.concat(type)));
     } else if (type.kind === 'nargs') {
         return type.types.some((t) => isGeneric(t, stack.concat(type)));
-    } else if (type.kind === 'lambda') {
-        return isGeneric(type.result) || type.params.some((t) => isGeneric(t, stack.concat(type)));
     }
     return false;
 }
@@ -65,7 +61,6 @@ function match(
     typenames: { [string]: Type } = {},
     scope: 'expected' | 'actual' = 'expected'
 ) {
-    if (t.kind === 'lambda') t = t.result;
     const errorMessage = `Expected ${expected.name} but found ${t.name} instead.`;
 
     if (expected.kind === 'typename') {

@@ -79,10 +79,7 @@ class CurveExpression extends CompoundExpression {
             error: `Expected at least four arguments, but found only ${compiledArgs.length}.`
         }];
 
-        let firstOutputType = this.args[3].type;
-        if (firstOutputType.kind === 'lambda') {
-            firstOutputType = firstOutputType.result;
-        }
+        const firstOutputType = this.args[3].type;
         let resultType;
         if (firstOutputType === NumberType) {
             resultType = 'number';
