@@ -1,6 +1,6 @@
 // @flow
 
-const LambdaExpression = require('./expression').LambdaExpression;
+const { CompoundExpression } = require('./compound_expression');
 
 import type { Type } from './types.js';
 import type { Expression } from './expression.js';
@@ -70,8 +70,8 @@ function typeCheckExpression(expected: Type, e: Expression, scope: Scope = new S
             result: 'success',
             expression: new LetExpression(e.key, bindings, checkedResult.expression)
         };
-    } else if (e instanceof LambdaExpression) {
-        // e is a lambda expression, so check its result type against the
+    } else if (e instanceof CompoundExpression) {
+        // e is a compound expression, so check its result type against the
         // expected type and recursively typecheck its arguments
 
         // Check if the expected type matches the expression's output type;

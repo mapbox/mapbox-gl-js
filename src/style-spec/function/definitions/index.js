@@ -16,9 +16,9 @@ const {
 const {
     parseExpression,
     ParsingError,
-    LambdaExpression,
-    nargs
 } = require('../expression');
+
+const { CompoundExpression, nargs } = require('../compound_expression');
 
 const LetExpression = require('./let');
 const LiteralExpression = require('./literal');
@@ -37,7 +37,7 @@ const expressions: { [string]: Class<Expression> } = {
     'pi': defineMathConstant('pi'),
     'e': defineMathConstant('e'),
 
-    'typeof': class TypeOf extends LambdaExpression {
+    'typeof': class TypeOf extends CompoundExpression {
         static opName() { return 'typeOf'; }
         static type() { return StringType; }
         static signatures() { return [[ValueType]]; }
@@ -49,7 +49,7 @@ const expressions: { [string]: Class<Expression> } = {
     'number': defineAssertion('number', NumberType),
     'boolean': defineAssertion('boolean', BooleanType),
     'object': defineAssertion('object', ObjectType),
-    'array': class extends LambdaExpression {
+    'array': class extends CompoundExpression {
         static opName() { return 'array'; }
         static signatures() { return [[ValueType]]; }
         static parse(args, context) {
@@ -89,7 +89,7 @@ const expressions: { [string]: Class<Expression> } = {
     },
 
     // type coercion
-    'to_string': class extends LambdaExpression {
+    'to_string': class extends CompoundExpression {
         static opName() { return 'to_string'; }
         static type() { return StringType; }
         static signatures() { return [[ValueType]]; }
@@ -97,7 +97,7 @@ const expressions: { [string]: Class<Expression> } = {
             return `this.toString(${args[0]})`;
         }
     },
-    'to_number': class extends LambdaExpression {
+    'to_number': class extends CompoundExpression {
         static opName() { return 'to_number'; }
         static type() { return NumberType; }
         static signatures() { return [[ValueType]]; }
@@ -105,7 +105,7 @@ const expressions: { [string]: Class<Expression> } = {
             return `this.toNumber(${args[0]})`;
         }
     },
-    'to_boolean': class extends LambdaExpression {
+    'to_boolean': class extends CompoundExpression {
         static opName() { return 'to_boolean'; }
         static type() { return BooleanType; }
         static signatures() { return [[ValueType]]; }
@@ -113,7 +113,7 @@ const expressions: { [string]: Class<Expression> } = {
             return `Boolean(${args[0]})`;
         }
     },
-    'to_rgba': class extends LambdaExpression {
+    'to_rgba': class extends CompoundExpression {
         static opName() { return 'to_rgba'; }
         static type() { return array(NumberType, 4); }
         static signatures() { return [[ColorType]]; }
@@ -123,19 +123,19 @@ const expressions: { [string]: Class<Expression> } = {
     },
 
     // color 'constructors'
-    'parse_color': class extends LambdaExpression {
+    'parse_color': class extends CompoundExpression {
         static opName() { return 'parse_color'; }
         static type() { return ColorType; }
         static signatures() { return [[StringType]]; }
         compileFromArgs(args) { return fromContext('parseColor', args); }
     },
-    'rgb': class extends LambdaExpression {
+    'rgb': class extends CompoundExpression {
         static opName() { return 'rgb'; }
         static type() { return ColorType; }
         static signatures() { return [[NumberType, NumberType, NumberType]]; }
         compileFromArgs(args) { return fromContext('rgba', args); }
     },
-    'rgba': class extends LambdaExpression {
+    'rgba': class extends CompoundExpression {
         static opName() { return 'rgb'; }
         static type() { return ColorType; }
         static signatures() { return [[NumberType, NumberType, NumberType, NumberType]]; }
@@ -143,7 +143,7 @@ const expressions: { [string]: Class<Expression> } = {
     },
 
     // object/array access
-    'get': class extends LambdaExpression {
+    'get': class extends CompoundExpression {
         static opName() { return 'get'; }
         static type() { return ValueType; }
         static signatures() { return [[StringType, nargs(1, ObjectType)]]; }
@@ -151,7 +151,7 @@ const expressions: { [string]: Class<Expression> } = {
             return `this.get(${args.length > 1 ? args[1] : 'props'}, ${args[0]}, ${args.length > 1 ? 'undefined' : '"feature.properties"'})`;
         }
     },
-    'has': class extends LambdaExpression {
+    'has': class extends CompoundExpression {
         static opName() { return 'has'; }
         static type() { return BooleanType; }
         static signatures() { return [[StringType, nargs(1, ObjectType)]]; }
@@ -159,13 +159,13 @@ const expressions: { [string]: Class<Expression> } = {
             return `this.has(${args.length > 1 ? args[1] : 'props'}, ${args[0]}, ${args.length > 1 ? 'undefined' : '"feature.properties"'})`;
         }
     },
-    'at': class extends LambdaExpression {
+    'at': class extends CompoundExpression {
         static opName() { return 'at'; }
         static type() { return typename('T'); }
         static signatures() { return [[NumberType, array(typename('T'))]]; }
         compileFromArgs(args) { return fromContext('at', args); }
     },
-    'length': class extends LambdaExpression {
+    'length': class extends CompoundExpression {
         static opName() { return 'length'; }
         static type() { return NumberType; }
         static signatures() {
@@ -182,7 +182,7 @@ const expressions: { [string]: Class<Expression> } = {
     },
 
     // // feature and map data
-    'properties': class extends LambdaExpression {
+    'properties': class extends CompoundExpression {
         static opName() { return 'properties'; }
         static type() { return ObjectType; }
         static signatures() { return [[]]; }
@@ -190,7 +190,7 @@ const expressions: { [string]: Class<Expression> } = {
             return 'this.as(props, "Object", "feature.properties")';
         }
     },
-    'geometry_type': class extends LambdaExpression {
+    'geometry_type': class extends CompoundExpression {
         static opName() { return 'geometry_type'; }
         static type() { return StringType; }
         static signatures() { return [[]]; }
@@ -198,7 +198,7 @@ const expressions: { [string]: Class<Expression> } = {
             return 'this.get(this.get(feature, "geometry", "feature"), "type", "feature.geometry")';
         }
     },
-    'id': class extends LambdaExpression {
+    'id': class extends CompoundExpression {
         static opName() { return 'id'; }
         static type() { return ValueType; }
         static signatures() { return [[]]; }
@@ -206,7 +206,7 @@ const expressions: { [string]: Class<Expression> } = {
             return 'this.get(feature, "id", "feature")';
         }
     },
-    'zoom': class extends LambdaExpression {
+    'zoom': class extends CompoundExpression {
         static opName() { return 'zoom'; }
         static type() { return NumberType; }
         static signatures() { return [[]]; }
@@ -237,7 +237,7 @@ const expressions: { [string]: Class<Expression> } = {
     '-': defineBinaryMathOp('-'),
     '/': defineBinaryMathOp('/'),
     '%': defineBinaryMathOp('%'),
-    '^': class extends LambdaExpression {
+    '^': class extends CompoundExpression {
         static opName() { return '^'; }
         static type() { return NumberType; }
         static signatures() { return [[NumberType, NumberType]]; }
@@ -262,7 +262,7 @@ const expressions: { [string]: Class<Expression> } = {
     '<=': defineComparisonOp('<='),
     '&&': defineBooleanOp('&&'),
     '||': defineBooleanOp('||'),
-    '!': class extends LambdaExpression {
+    '!': class extends CompoundExpression {
         static opName() { return '!'; }
         static type() { return BooleanType; }
         static signatures() { return [[BooleanType]]; }
@@ -272,7 +272,7 @@ const expressions: { [string]: Class<Expression> } = {
     },
 
     // string manipulation
-    'upcase': class extends LambdaExpression {
+    'upcase': class extends CompoundExpression {
         static opName() { return 'upcase'; }
         static type() { return StringType; }
         static signatures() { return [[StringType]]; }
@@ -280,7 +280,7 @@ const expressions: { [string]: Class<Expression> } = {
             return `(${args[0]}).toUpperCase()`;
         }
     },
-    'downcase': class extends LambdaExpression {
+    'downcase': class extends CompoundExpression {
         static opName() { return 'downcase'; }
         static type() { return StringType; }
         static signatures() { return [[StringType]]; }
@@ -288,7 +288,7 @@ const expressions: { [string]: Class<Expression> } = {
             return `(${args[0]}).toLowerCase()`;
         }
     },
-    'concat': class extends LambdaExpression {
+    'concat': class extends CompoundExpression {
         static opName() { return 'concat'; }
         static type() { return StringType; }
         static signatures() { return [[nargs(Infinity, ValueType)]]; }
@@ -298,7 +298,7 @@ const expressions: { [string]: Class<Expression> } = {
     },
 
     // decisions
-    'case': class extends LambdaExpression {
+    'case': class extends CompoundExpression {
         static opName() { return 'case'; }
         static type() { return typename('T'); }
         static signatures() { return [[nargs(Infinity, BooleanType, typename('T')), typename('T')]]; }
@@ -315,7 +315,7 @@ const expressions: { [string]: Class<Expression> } = {
     },
     'match': MatchExpression,
 
-    'coalesce': class extends LambdaExpression {
+    'coalesce': class extends CompoundExpression {
         static opName() { return 'coalesce'; }
         static type() { return typename('T'); }
         static signatures() { return [[nargs(Infinity, typename('T'))]]; }
@@ -332,7 +332,7 @@ module.exports = expressions;
 function defineMathConstant(name) {
     const mathName = name.toUpperCase();
     assert(typeof Math[mathName] === 'number');
-    return class extends LambdaExpression {
+    return class extends CompoundExpression {
         static opName() { return name; }
         static type() { return NumberType; }
         static signatures() { return [[]]; }
@@ -346,7 +346,7 @@ function defineMathFunction(name: ExpressionName, arity: number, mathName?: stri
     assert(arity > 0);
     const args = [];
     while (arity-- > 0) args.push(NumberType);
-    return class extends LambdaExpression {
+    return class extends CompoundExpression {
         static opName() { return name; }
         static type() { return NumberType; }
         static signatures() { return [args]; }
@@ -358,7 +358,7 @@ function defineMathFunction(name: ExpressionName, arity: number, mathName?: stri
 
 function defineBinaryMathOp(name, isAssociative) {
     const args = isAssociative ? [nargs(Infinity, NumberType)] : [NumberType, NumberType];
-    return class extends LambdaExpression {
+    return class extends CompoundExpression {
         static opName() { return name; }
         static type() { return NumberType; }
         static signatures() { return [args]; }
@@ -371,7 +371,7 @@ function defineBinaryMathOp(name, isAssociative) {
 function defineComparisonOp(name) {
     const op = name === '==' ? '===' :
         name === '!=' ? '!==' : name;
-    return class extends LambdaExpression {
+    return class extends CompoundExpression {
         static opName() { return name; }
         static type() { return BooleanType; }
         static signatures() { return [[typename('T'), typename('T')]]; }
@@ -382,7 +382,7 @@ function defineComparisonOp(name) {
 }
 
 function defineBooleanOp(op) {
-    return class extends LambdaExpression {
+    return class extends CompoundExpression {
         static opName() { return op; }
         static type() { return BooleanType; }
         static signatures() { return [[nargs(Infinity, BooleanType)]]; }
@@ -393,7 +393,7 @@ function defineBooleanOp(op) {
 }
 
 function defineAssertion(name: ExpressionName, type: Type) {
-    return class extends LambdaExpression {
+    return class extends CompoundExpression {
         static opName() { return name; }
         static type() { return type; }
         static signatures() { return [[ValueType]]; }

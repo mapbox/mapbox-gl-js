@@ -7,15 +7,11 @@ const {
     array
 } = require('../types');
 
-const {
-    LambdaExpression,
-    ParsingError,
-    nargs
-} = require('../expression');
-
+const { ParsingError } = require('../expression');
+const { CompoundExpression, nargs } = require('../compound_expression');
 const LiteralExpression = require('./literal');
 
-class MatchExpression extends LambdaExpression {
+class MatchExpression extends CompoundExpression {
     constructor(key: *, type: *, args: *) {
         super(key, type, args);
     }
