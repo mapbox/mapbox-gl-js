@@ -2,6 +2,8 @@ uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
+uniform float u_anim_t;
+uniform bool u_reversed; 
 
 attribute vec2 a_pos;
 attribute vec3 a_normal;
@@ -20,7 +22,11 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
 
     base = max(0.0, base);
-    height = max(0.0, height);
+
+    if(!u_reversed)
+        height = mix(0.0, height, u_anim_t);
+    else
+        height = mix(0.0, height, 1.0 - u_anim_t);
 
     float ed = a_edgedistance; // use each attrib in order to not trip a VAO assert
     float t = mod(a_normal.x, 2.0);

@@ -1,4 +1,4 @@
-// @flow
+'use strict';
 
 const util = require('../util/util');
 
@@ -7,6 +7,7 @@ import type Evented from '../util/evented';
 import type Map from '../ui/map';
 import type Tile from './tile';
 import type TileCoord from './tile_coord';
+
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`,
@@ -73,6 +74,7 @@ export interface Source {
 
 const sourceTypes: {[string]: Class<Source>} = {
     'vector': require('../source/vector_tile_source'),
+    'vectoroffline': require('../source/vector_tile_offline_source'),
     'raster': require('../source/raster_tile_source'),
     'geojson': require('../source/geojson_source'),
     'video': require('../source/video_source'),
