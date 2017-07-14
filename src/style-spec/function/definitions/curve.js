@@ -8,12 +8,8 @@ const {
     typename
 } = require('../types');
 
-const {
-    ParsingError,
-    LambdaExpression,
-    nargs
-} = require('../expression');
-
+const { ParsingError } = require('../expression');
+const { CompoundExpression, nargs } = require('../compound_expression');
 const LiteralExpression = require('./literal');
 
 import type { Expression } from '../expression';
@@ -24,7 +20,7 @@ export type InterpolationType =
     { name: 'linear' } |
     { name: 'exponential', base: number }
 
-class CurveExpression extends LambdaExpression {
+class CurveExpression extends CompoundExpression {
     interpolation: InterpolationType;
     constructor(key: *, type: *, args: *, interpolation: InterpolationType) {
         super(key, type, args);
