@@ -13,10 +13,13 @@ const {
     ParsingContext,
     LambdaExpression
 } = require('../../../../src/style-spec/function/expression');
+const LiteralExpression = require('../../../../src/style-spec/function/definitions/literal');
 const typecheck = require('../../../../src/style-spec/function/type_check');
 
 function createParse(types) {
-    const definitions = {};
+    const definitions = {
+        'literal': LiteralExpression
+    };
     for (const fn in types) {
         definitions[fn] = class extends LambdaExpression {
             static getName() { return fn; }

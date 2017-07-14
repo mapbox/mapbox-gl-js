@@ -10,10 +10,11 @@ const {
 
 const {
     ParsingError,
-    LiteralExpression,
     LambdaExpression,
     nargs
 } = require('../expression');
+
+const LiteralExpression = require('./literal');
 
 import type { Expression } from '../expression';
 import type { Type } from '../types';

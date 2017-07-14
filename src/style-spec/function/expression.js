@@ -1,17 +1,8 @@
 // @flow
 
-const {
-    NullType,
-    StringType,
-    NumberType,
-    BooleanType,
-    typename
-} = require('./types');
+const { typename } = require('./types');
 
-const {Color, isValue, typeOf} = require('./values');
-
-import type { Value }  from './values';
-import type { Type, } from './types';
+import type { Type } from './types';
 import type { ExpressionName } from './expression_name';
 
 export type NArgs = { kind: 'nargs', types: Array<Type>, N: number };
@@ -86,48 +77,6 @@ class ParsingContext {
         const scope = bindings ? this.scope.concat(bindings) : this.scope;
         return new ParsingContext(this.definitions, path, ancestors, scope);
     }
-}
-
-class LiteralExpression implements Expression {
-    key: string;
-    type: Type;
-    value: Value;
-
-    constructor(key: *, type: Type, value: Value) {
-        this.key = key;
-        this.type = type;
-        this.value = value;
-    }
-
-    static parse(args: Array<mixed>, context: ParsingContext) {
-        if (args.length !== 1)
-            throw new ParsingError(context.key, `'literal' expression requires exactly one argument, but found ${args.length} instead.`);
-
-        if (!isValue(args[0]))
-            throw new ParsingError(context.key, `invalid value`);
-
-        const value = (args[0] : any);
-        const type = typeOf(value);
-
-        return new this(context.key, type, value);
-    }
-
-    compile() {
-        const value = JSON.stringify(this.value);
-        return typeof this.value === 'object' ?  `(${value})` : value;
-    }
-
-    serialize() {
-        if (this.value === null || typeof this.value === 'string' || typeof this.value === 'boolean' || typeof this.value === 'number') {
-            return this.value;
-        } else if (this.value instanceof Color) {
-            return ["rgba"].concat(this.value.value);
-        } else {
-            return ["literal", this.value];
-        }
-    }
-
-    visit(fn: (Expression) => void) { fn(this); }
 }
 
 class LambdaExpression implements Expression {
@@ -221,101 +170,14 @@ class Reference implements Expression {
     visit(fn: (Expression) => void) { fn(this); }
 }
 
-class LetExpression implements Expression {
-    key: string;
-    type: Type;
-    bindings: Array<[string, Expression]>;
-    result: Expression;
-
-    constructor(key: string, bindings: Array<[string, Expression]>, result: Expression) {
-        this.key = key;
-        this.type = result.type;
-        this.bindings = [].concat(bindings);
-        this.result = result;
-    }
-
-    compile() {
-        const names = [];
-        const values = [];
-        const errors = [];
-        for (const [name, expression] of this.bindings) {
-            names.push(name);
-            const value = expression.compile();
-            if (Array.isArray(value)) {
-                errors.push.apply(errors, value);
-            } else {
-                values.push(value);
-            }
-        }
-
-        const result = this.result.compile();
-        if (Array.isArray(result)) {
-            errors.push.apply(errors, result);
-            return errors;
-        }
-
-        if (errors.length > 0) return errors;
-
-        return `(function (${names.join(', ')}) {
-            return ${result};
-        }.bind(this))(${values.join(', ')})`;
-    }
-
-    serialize() {
-        const serialized = ['let'];
-        for (const [name, expression] of this.bindings) {
-            serialized.push(name, expression.serialize());
-        }
-        serialized.push(this.result.serialize());
-        return serialized;
-    }
-
-    visit(fn: (Expression) => void): void {
-        fn(this);
-        for (const binding of this.bindings) {
-            binding[1].visit(fn);
-        }
-        this.result.visit(fn);
-    }
-
-    static parse(args: Array<mixed>, context: ParsingContext) {
-        if (args.length < 3)
-            throw new ParsingError(context.key, `Expected at least 3 arguments, but found ${args.length} instead.`);
-
-        const bindings: Array<[string, Expression]> = [];
-        for (let i = 0; i < args.length - 1; i += 2) {
-            const name = args[i];
-            const key = context.path.concat(i + 1).join('.');
-            if (typeof name !== 'string')
-                throw new ParsingError(key, `Expected string, but found ${typeof name} instead`);
-
-            if (context.definitions[name])
-                throw new ParsingError(key, `"${name}" is reserved, so it cannot not be used as a "let" binding.`);
-
-            const value = parseExpression(args[i + 1], context.concat(i + 2, 'let.binding'));
-
-            bindings.push([name, value]);
-        }
-        const resultContext = context.concat(args.length, 'let.result', bindings);
-        const result = parseExpression(args[args.length - 1], resultContext);
-        return new this(context.key, bindings, result);
-    }
-}
-
 function parseExpression(expr: mixed, context: ParsingContext) : Expression {
     const key = context.key;
 
-    if (expr === null) {
-        return new LiteralExpression(key, NullType, expr);
-    } else if (typeof expr === 'undefined') {
-        throw new ParsingError(key, `'undefined' value invalid. Use null instead.`);
-    } else if (typeof expr === 'string') {
-        return new LiteralExpression(key, StringType, expr);
-    } else if (typeof expr === 'boolean') {
-        return new LiteralExpression(key, BooleanType, expr);
-    } else if (typeof expr === 'number') {
-        return new LiteralExpression(key, NumberType, expr);
-    } else if (Array.isArray(expr)) {
+    if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
+        expr = ['literal', expr];
+    }
+
+    if (Array.isArray(expr)) {
         if (expr.length === 0) {
             throw new ParsingError(key, `Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
         }
@@ -331,6 +193,8 @@ function parseExpression(expr: mixed, context: ParsingContext) : Expression {
         if (Expr) return Expr.parse(expr.slice(1), context);
 
         throw new ParsingError(`${key}[0]`, `Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`);
+    } else if (typeof expr === 'undefined') {
+        throw new ParsingError(key, `'undefined' value invalid. Use null instead.`);
     } else if (typeof expr === 'object') {
         throw new ParsingError(key, `Bare objects invalid. Use ["literal", {...}] instead.`);
     } else {
@@ -351,9 +215,7 @@ module.exports = {
     ParsingContext,
     ParsingError,
     parseExpression,
-    LiteralExpression,
     LambdaExpression,
-    LetExpression,
     Reference,
     nargs
 };
