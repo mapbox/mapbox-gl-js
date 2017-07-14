@@ -2,7 +2,6 @@
 
 const browser = require('../util/browser');
 const mat4 = require('@mapbox/gl-matrix').mat4;
-const FrameHistory = require('./frame_history');
 const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -51,7 +50,6 @@ class Painter {
     gl: WebGLRenderingContext;
     transform: Transform;
     _tileTextures: { [number]: Array<WebGLTexture> };
-    frameHistory: FrameHistory;
     numSublayers: number;
     depthEpsilon: number;
     lineWidthRange: [number, number];
@@ -89,8 +87,6 @@ class Painter {
         this.gl = gl;
         this.transform = transform;
         this._tileTextures = {};
-
-        this.frameHistory = new FrameHistory();
 
         this.setup();
 
@@ -256,8 +252,6 @@ class Painter {
         this.spriteAtlas.setSprite(style.sprite);
 
         this.glyphSource = style.glyphSource;
-
-        this.frameHistory.record(Date.now(), this.transform.zoom, style.getTransition().duration);
 
         this.prepareBuffers();
         this.clearColor();

@@ -108,7 +108,8 @@ function isVisible(anchorPos, placementZoom, clippingBuffer, painter) {
         x <= clippingBuffer[0] &&
         y >= -clippingBuffer[1] &&
         y <= clippingBuffer[1]);
-    return inPaddedViewport && painter.frameHistory.isVisible(placementZoom);
+    const isVisible = true;
+    return inPaddedViewport && isVisible;
 }
 
 /*

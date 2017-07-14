@@ -36,7 +36,7 @@ uniform highp float u_camera_to_center_distance;
 
 uniform vec2 u_texsize;
 
-varying vec4 v_data0;
+varying vec2 v_data0;
 varying vec3 v_data1;
 
 void main() {
@@ -55,7 +55,6 @@ void main() {
 
     highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
     highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
-    mediump float a_labelminzoom = angle_labelminzoom[1];
     float size;
 
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -107,8 +106,7 @@ void main() {
     float gamma_scale = gl_Position.w;
 
     vec2 tex = a_tex / u_texsize;
-    vec2 fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
 
-    v_data0 = vec4(tex.x, tex.y, fade_tex.x, fade_tex.y);
+    v_data0 = vec2(tex.x, tex.y);
     v_data1 = vec3(gamma_scale, size, a_new_opacity);
 }

@@ -26,7 +26,6 @@ uniform bool u_pitch_with_map;
 uniform vec2 u_texsize;
 
 varying vec2 v_tex;
-varying vec2 v_fade_tex;
 varying float v_fade_opacity;
 
 void main() {
@@ -40,7 +39,6 @@ void main() {
 
     highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
     highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
-    mediump float a_labelminzoom = angle_labelminzoom[1];
 
     float size;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -84,6 +82,5 @@ void main() {
     gl_Position = u_gl_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
-    v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
     v_fade_opacity = a_new_opacity;
 }

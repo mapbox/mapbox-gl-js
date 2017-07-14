@@ -6,10 +6,6 @@ function drawCollisionDebug(painter, sourceCache, layer, coords) {
     gl.enable(gl.STENCIL_TEST);
     const program = painter.useProgram('collisionBox');
 
-    gl.activeTexture(gl.TEXTURE1);
-    painter.frameHistory.bind(gl);
-    gl.uniform1i(program.u_fadetexture, 1);
-
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);

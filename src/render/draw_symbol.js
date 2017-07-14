@@ -155,10 +155,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
     }
 
-    gl.activeTexture(gl.TEXTURE1);
-    painter.frameHistory.bind(gl);
-    gl.uniform1i(program.u_fadetexture, 1);
-
     gl.uniform1f(program.u_pitch, tr.pitch / 360 * 2 * Math.PI);
 
     gl.uniform1i(program.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
