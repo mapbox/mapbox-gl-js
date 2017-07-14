@@ -1,19 +1,21 @@
+// @flow
 
 const window = require('./window');
 
 class AJAXError extends Error {
-    constructor(message, status) {
+    status: number;
+    constructor(message: string, status: number) {
         super(message);
         this.status = status;
     }
 }
 
-exports.getJSON = function(url, callback) {
-    const xhr = new window.XMLHttpRequest();
+exports.getJSON = function(url: string, callback: Callback<mixed>) {
+    const xhr: XMLHttpRequest = new window.XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onerror = function(e) {
-        callback(e);
+    xhr.onerror = function() {
+        callback(new Error(xhr.statusText));
     };
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
@@ -32,20 +34,21 @@ exports.getJSON = function(url, callback) {
     return xhr;
 };
 
-exports.getArrayBuffer = function(url, callback) {
-    const xhr = new window.XMLHttpRequest();
+exports.getArrayBuffer = function(url: string, callback: Callback<{data: ArrayBuffer, cacheControl: ?string, expires: ?string}>) {
+    const xhr: XMLHttpRequest = new window.XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'arraybuffer';
-    xhr.onerror = function(e) {
-        callback(e);
+    xhr.onerror = function() {
+        callback(new Error(xhr.statusText));
     };
     xhr.onload = function() {
-        if (xhr.response.byteLength === 0 && xhr.status === 200) {
+        const response: ArrayBuffer = xhr.response;
+        if (response.byteLength === 0 && xhr.status === 200) {
             return callback(new Error('http status 200 returned without content.'));
         }
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             callback(null, {
-                data: xhr.response,
+                data: response,
                 cacheControl: xhr.getResponseHeader('Cache-Control'),
                 expires: xhr.getResponseHeader('Expires')
             });
@@ -58,38 +61,41 @@ exports.getArrayBuffer = function(url, callback) {
 };
 
 function sameOrigin(url) {
-    const a = window.document.createElement('a');
+    const a: HTMLAnchorElement = window.document.createElement('a');
     a.href = url;
     return a.protocol === window.document.location.protocol && a.host === window.document.location.host;
 }
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
-exports.getImage = function(url, callback) {
+exports.getImage = function(url: string, callback: Callback<HTMLImageElement>) {
     // request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
     return exports.getArrayBuffer(url, (err, imgData) => {
-        if (err) return callback(err);
-        const img = new window.Image();
-        const URL = window.URL || window.webkitURL;
-        img.onload = () => {
-            callback(null, img);
-            URL.revokeObjectURL(img.src);
-        };
-        const blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
-        img.cacheControl = imgData.cacheControl;
-        img.expires = imgData.expires;
-        img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+        if (err) {
+            callback(err);
+        } else if (imgData) {
+            const img: HTMLImageElement = new window.Image();
+            const URL = window.URL || window.webkitURL;
+            img.onload = () => {
+                callback(null, img);
+                URL.revokeObjectURL(img.src);
+            };
+            const blob: Blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
+            (img : any).cacheControl = imgData.cacheControl;
+            (img : any).expires = imgData.expires;
+            img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+        }
     });
 };
 
-exports.getVideo = function(urls, callback) {
-    const video = window.document.createElement('video');
+exports.getVideo = function(urls: Array<string>, callback: Callback<HTMLVideoElement>) {
+    const video: HTMLVideoElement = window.document.createElement('video');
     video.onloadstart = function() {
         callback(null, video);
     };
     for (let i = 0; i < urls.length; i++) {
-        const s = window.document.createElement('source');
+        const s: HTMLSourceElement = window.document.createElement('source');
         if (!sameOrigin(urls[i])) {
             video.crossOrigin = 'Anonymous';
         }

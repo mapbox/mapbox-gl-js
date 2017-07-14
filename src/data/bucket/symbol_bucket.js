@@ -29,6 +29,21 @@ const WritingMode = Shaping.WritingMode;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
 
+import type {BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
+
+type SymbolBucketParameters = BucketParameters & {
+    sdfIcons: boolean,
+    iconsNeedLinear: boolean,
+    fontstack: any,
+    textSizeData: any,
+    iconSizeData: any,
+    placedGlyphArray: any,
+    placedIconArray: any,
+    glyphOffsetArray: any,
+    lineVertexArray: any,
+}
+
 const PlacedSymbolArray = createStructArrayType({
     members: [
         { type: 'Int16', name: 'anchorX' },
@@ -76,11 +91,11 @@ const symbolInterfaces = {
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
-            {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
-            {name: 'a_halo_color', property: 'text-halo-color', type: 'Uint8'},
-            {name: 'a_halo_width', property: 'text-halo-width', type: 'Uint16', multiplier: 10},
-            {name: 'a_halo_blur', property: 'text-halo-blur', type: 'Uint16', multiplier: 10},
-            {name: 'a_opacity', property: 'text-opacity', type: 'Uint8', multiplier: 255}
+            {name: 'fill_color', property: 'text-color', type: 'Uint8'},
+            {name: 'halo_color', property: 'text-halo-color', type: 'Uint8'},
+            {name: 'halo_width', property: 'text-halo-width', type: 'Uint16', multiplier: 10},
+            {name: 'halo_blur', property: 'text-halo-blur', type: 'Uint16', multiplier: 10},
+            {name: 'opacity', property: 'text-opacity', type: 'Uint8', multiplier: 255}
         ]
     },
     icon: {
@@ -88,19 +103,19 @@ const symbolInterfaces = {
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
-            {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
-            {name: 'a_halo_color', property: 'icon-halo-color', type: 'Uint8'},
-            {name: 'a_halo_width', property: 'icon-halo-width', type: 'Uint16', multiplier: 10},
-            {name: 'a_halo_blur', property: 'icon-halo-blur', type: 'Uint16', multiplier: 10},
-            {name: 'a_opacity', property: 'icon-opacity', type: 'Uint8', multiplier: 255}
+            {name: 'fill_color', property: 'icon-color', type: 'Uint8'},
+            {name: 'halo_color', property: 'icon-halo-color', type: 'Uint8'},
+            {name: 'halo_width', property: 'icon-halo-width', type: 'Uint16', multiplier: 10},
+            {name: 'halo_blur', property: 'icon-halo-blur', type: 'Uint16', multiplier: 10},
+            {name: 'opacity', property: 'icon-opacity', type: 'Uint8', multiplier: 255}
         ]
     },
     collisionBox: { // used to render collision boxes for debugging purposes
         layoutAttributes: [
-            {name: 'a_pos',        components: 2, type: 'Int16'},
-            {name: 'a_anchor_pos', components: 2, type: 'Int16'},
-            {name: 'a_extrude',    components: 2, type: 'Int16'},
-            {name: 'a_data',       components: 2, type: 'Uint8'}
+            {name: 'pos',        components: 2, type: 'Int16'},
+            {name: 'anchor_pos', components: 2, type: 'Int16'},
+            {name: 'extrude',    components: 2, type: 'Int16'},
+            {name: 'data',       components: 2, type: 'Uint8'}
         ],
         elementArrayType: createElementArrayType(2)
     }
@@ -233,8 +248,7 @@ class SymbolBucket {
         const stack = stacks[textFont] = stacks[textFont] || {};
         const globalProperties =  {zoom: this.zoom};
 
-        for (let i = 0; i < features.length; i++) {
-            const feature = features[i];
+        for (const {feature, index, sourceLayerIndex} of features) {
             if (!layer.filter(feature)) {
                 continue;
             }
@@ -263,8 +277,8 @@ class SymbolBucket {
             this.features.push({
                 text,
                 icon,
-                index: i,
-                sourceLayerIndex: feature.sourceLayerIndex,
+                index,
+                sourceLayerIndex,
                 geometry: loadGeometry(feature),
                 properties: feature.properties,
                 type: VectorTileFeature.types[feature.type]

@@ -254,9 +254,7 @@ class GeolocateControl extends Evented {
         if (this.options.showUserLocation) {
             this._dotElement = DOM.create('div', 'mapboxgl-user-location-dot');
 
-            // until https://github.com/mapbox/mapbox-gl-js/issues/2900, the offset is used to ensure the Marker is centered at the
-            // user's location, half of the .mapboxgl-user-location-dot width (including border).
-            this._userLocationDotMarker = new Marker(this._dotElement, { offset: [-10, -10] });
+            this._userLocationDotMarker = new Marker(this._dotElement);
 
             if (this.options.trackUserLocation) this._watchState = 'OFF';
         }

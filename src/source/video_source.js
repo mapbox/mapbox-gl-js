@@ -1,6 +1,11 @@
+// @flow
 
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');
+
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
+import type Evented from '../util/evented';
 
 /**
  * A data source containing video.
@@ -35,8 +40,12 @@ const ImageSource = require('./image_source');
  * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource {
+    options: VideoSourceSpecification;
+    urls: Array<string>;
+    video: HTMLVideoElement;
+    roundZoom: boolean;
 
-    constructor(id, options, dispatcher, eventedParent) {
+    constructor(id: string, options: VideoSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;
         this.type = 'video';
@@ -48,29 +57,31 @@ class VideoSource extends ImageSource {
         this.urls = options.urls;
 
         ajax.getVideo(options.urls, (err, video) => {
-            if (err) return this.fire('error', {error: err});
+            if (err) {
+                this.fire('error', {error: err});
+            } else if (video) {
+                this.video = video;
+                this.video.loop = true;
 
-            this.video = video;
-            this.video.loop = true;
+                let loopID;
 
-            let loopID;
+                // start repainting when video starts playing
+                this.video.addEventListener('playing', () => {
+                    loopID = this.map.style.animationLoop.set(Infinity);
+                    this.map._rerender();
+                });
 
-            // start repainting when video starts playing
-            this.video.addEventListener('playing', () => {
-                loopID = this.map.style.animationLoop.set(Infinity);
-                this.map._rerender();
-            });
+                // stop repainting when video stops
+                this.video.addEventListener('pause', () => {
+                    this.map.style.animationLoop.cancel(loopID);
+                });
 
-            // stop repainting when video stops
-            this.video.addEventListener('pause', () => {
-                this.map.style.animationLoop.cancel(loopID);
-            });
+                if (this.map) {
+                    this.video.play();
+                }
 
-            if (this.map) {
-                this.video.play();
+                this._finishLoading();
             }
-
-            this._finishLoading();
         });
     }
 
@@ -83,7 +94,7 @@ class VideoSource extends ImageSource {
         return this.video;
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         if (this.map) return;
         this.load();
         this.map = map;

@@ -7,14 +7,14 @@ const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
 const assert = require('assert');
 
-import type {TileCoord} from './tile_coord';
+import type TileCoord from './tile_coord';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {Actor} from '../util/actor';
-import type {StyleLayerIndex} from '../style/style_layer_index';
+import type StyleLayerIndex from '../style/style_layer_index';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
-} from '../source/source';
+} from '../source/worker_source';
 
 class WorkerTile {
     coord: TileCoord;
@@ -84,11 +84,9 @@ class WorkerTile {
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
-            for (let i = 0; i < sourceLayer.length; i++) {
-                const feature = sourceLayer.feature(i);
-                (feature: any).index = i;
-                (feature: any).sourceLayerIndex = sourceLayerIndex;
-                features.push(feature);
+            for (let index = 0; index < sourceLayer.length; index++) {
+                const feature = sourceLayer.feature(index);
+                features.push({ feature, index, sourceLayerIndex });
             }
 
             for (const family of layerFamilies[sourceLayerId]) {

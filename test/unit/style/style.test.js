@@ -857,8 +857,8 @@ test('Style#addLayer', (t) => {
 
         const layer = {
             id: 'dummy',
+            type: 'fill',
             source: 'dummy',
-            type: 'background',
             'source-layer': 'dummy'
         };
 

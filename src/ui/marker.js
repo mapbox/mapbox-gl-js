@@ -8,7 +8,7 @@ const smartWrap = require('../util/smart_wrap');
  * Creates a marker component
  * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
  * @param {Object=} options
- * @param {PointLike=} options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's top left corner. Negatives indicate left and up.
+ * @param {PointLike=} options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -114,6 +114,9 @@ class Marker {
         }
 
         if (popup) {
+            if (!('offset' in popup.options)) {
+                popup.options.offset = this._offset;
+            }
             this._popup = popup;
             this._popup.setLngLat(this._lngLat);
         }
@@ -158,7 +161,8 @@ class Marker {
         }
 
         this._pos = this._map.project(this._lngLat)
-            ._add(this._offset);
+            ._add(this._offset)
+            ._add({x: -this._element.offsetWidth / 2, y: -this._element.offsetHeight / 2});
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with

@@ -2,9 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8654"
-      },
       "width": 64,
       "height": 64
     }
@@ -18,10 +15,15 @@
         "features": [
           {
             "type": "Feature",
-            "properties": {"x": 0},
+            "properties": {
+              "x": 0
+            },
             "geometry": {
               "type": "Point",
-              "coordinates": [ 0, 0 ]
+              "coordinates": [
+                0,
+                0
+              ]
             }
           }
         ]
@@ -40,8 +42,20 @@
           "property": "x",
           "base": 99,
           "stops": [
-            [ {"zoom": 0, "value": 0}, 1 ],
-            [ {"zoom": 1, "value": 0}, 2 ]
+            [
+              {
+                "zoom": 0,
+                "value": 0
+              },
+              1
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": 0
+              },
+              2
+            ]
           ]
         },
         "icon-image": "dot.sdf"

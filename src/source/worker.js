@@ -10,6 +10,15 @@ const assert = require('assert');
 
 const globalRTLTextPlugin = require('./rtl_text_plugin');
 
+import type {
+    WorkerSource,
+    WorkerTileParameters,
+    WorkerTileCallback,
+    TileParameters,
+    RedoPlacementParameters,
+    RedoPlacementCallback
+} from '../source/worker_source';
+
 /**
  * @private
  */
@@ -45,11 +54,11 @@ class Worker {
         };
     }
 
-    setLayers(mapId, layers) {
+    setLayers(mapId: string, layers: Array<LayerSpecification>) {
         this.getLayerIndex(mapId).replace(layers);
     }
 
-    updateLayers(mapId, params) {
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>, symbolOrder: ?Array<string>}) {
         this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
     }
 

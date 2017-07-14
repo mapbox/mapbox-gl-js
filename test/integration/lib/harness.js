@@ -13,6 +13,7 @@ module.exports = function (directory, implementation, options, run) {
     const server = require('./server')();
 
     const tests = options.tests || [];
+    const ignores = options.ignores || {};
 
     function shouldRunTest(group, test) {
         if (tests.length === 0)
@@ -51,29 +52,30 @@ module.exports = function (directory, implementation, options, run) {
                 return;
             }
 
+            if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && group === 'debug') {
+                console.log(colors.gray(`* skipped ${group} ${test}`));
+                return;
+            }
+
+            const id = `${path.basename(directory)}/${group}/${test}`;
+            const ignored = ignores[id];
+            if (/^skip/.test(ignored)) {
+                console.log(colors.gray(`* skipped ${group} ${test} (${ignored})`));
+                return;
+            }
+
             const style = require(path.join(directory, group, test, 'style.json'));
 
             server.localizeURLs(style);
 
             const params = Object.assign({
-                group: group,
-                test: test,
+                group,
+                test,
                 width: 512,
                 height: 512,
                 pixelRatio: 1,
                 allowed: 0.00015
-            }, style.metadata && style.metadata.test);
-
-            if (implementation === 'native' && process.env.BUILDTYPE === 'Release' && params.group === 'debug') {
-                console.log(colors.gray(`* skipped ${params.group} ${params.test}`));
-                return;
-            }
-
-            const skipped = params.skipped && params.skipped[implementation];
-            if (skipped) {
-                console.log(colors.gray(`* skipped ${params.group} ${params.test} (${skipped})`));
-                return;
-            }
+            }, style.metadata && style.metadata.test, {ignored});
 
             if ('diff' in params) {
                 if (typeof params.diff === 'number') {
@@ -83,8 +85,6 @@ module.exports = function (directory, implementation, options, run) {
                 }
             }
 
-            params.ignored = params.ignored && implementation in params.ignored;
-
             q.defer((callback) => {
                 run(style, params, (err) => {
                     if (err) return callback(err);
@@ -92,11 +92,11 @@ module.exports = function (directory, implementation, options, run) {
                     if (params.ignored && !params.ok) {
                         params.color = '#9E9E9E';
                         params.status = 'ignored failed';
-                        console.log(colors.white(`* ignore ${params.group} ${params.test}`));
+                        console.log(colors.white(`* ignore ${params.group} ${params.test} (${params.ignored})`));
                     } else if (params.ignored) {
                         params.color = '#E8A408';
                         params.status = 'ignored passed';
-                        console.log(colors.yellow(`* ignore ${params.group} ${params.test}`));
+                        console.log(colors.yellow(`* ignore ${params.group} ${params.test} (${params.ignored})`));
                     } else if (!params.ok) {
                         params.color = 'red';
                         params.status = 'failed';

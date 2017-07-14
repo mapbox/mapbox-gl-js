@@ -14,7 +14,7 @@ const Throttler = require('../util/throttler');
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
 import type TileCoord from './tile_coord';
-import type {WorkerTileResult} from './source';
+import type {WorkerTileResult} from './worker_source';
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -54,6 +54,15 @@ class Tile {
     placementSource: any;
     workerID: number;
     vtLayers: {[string]: VectorTileLayer};
+
+    aborted: ?boolean;
+    boundsBuffer: any;
+    boundsVAO: any;
+    request: any;
+    texture: any;
+    sourceCache: any;
+    refreshedUponExpiration: boolean;
+    reloadCallback: any;
 
     /**
      * @param {TileCoord} coord

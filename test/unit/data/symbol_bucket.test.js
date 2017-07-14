@@ -53,7 +53,7 @@ test('SymbolBucket', (t) => {
 
     // add feature from bucket A
     const a = collision.grid.keys.length;
-    bucketA.populate([feature], options);
+    bucketA.populate([{feature}], options);
     bucketA.prepare(stacks, {});
     bucketA.place(collision);
 
@@ -62,7 +62,7 @@ test('SymbolBucket', (t) => {
 
     // add same feature from bucket B
     const a2 = collision.grid.keys.length;
-    bucketB.populate([feature], options);
+    bucketB.populate([{feature}], options);
     bucketB.prepare(stacks, {});
     bucketB.place(collision);
     const b2 = collision.grid.keys.length;
@@ -78,7 +78,7 @@ test('SymbolBucket integer overflow', (t) => {
     const bucket = bucketSetup();
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
-    bucket.populate([feature], options);
+    bucket.populate([{feature}], options);
     bucket.prepare(stacks, {});
     bucket.place(collision);
 
@@ -92,7 +92,7 @@ test('SymbolBucket redo placement', (t) => {
     const bucket = bucketSetup();
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
-    bucket.populate([feature], options);
+    bucket.populate([{feature}], options);
     bucket.prepare(stacks, {});
     bucket.place(collision);
     bucket.place(collision);
@@ -129,7 +129,7 @@ test('SymbolBucket#getPaintPropertyStatistics()', (t) => {
     });
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
-    bucket.populate([feature], options);
+    bucket.populate([{feature}], options);
     bucket.prepare(stacks, {
         dot: { displaySize: () => [10, 10], textureRect: { x: 0, y: 0, w: 10, h: 10 }, pixelRatio: 1 }
     });

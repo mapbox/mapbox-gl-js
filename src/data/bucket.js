@@ -8,7 +8,7 @@ import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type {ProgramInterface} from './program_configuration';
-import type FeatureIndex, {IndexedFeature} from './feature_index';
+import type FeatureIndex from './feature_index';
 import type {SerializedArrayGroup} from './array_group';
 
 export type BucketParameters = {
@@ -30,6 +30,12 @@ export type SerializedBucket = {
     zoom: number,
     layerIds: Array<string>,
     arrays: SerializedArrayGroup
+}
+
+export type IndexedFeature = {
+    feature: VectorTileFeature,
+    index: number,
+    sourceLayerIndex: number,
 }
 
 /**
@@ -104,10 +110,10 @@ class Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
-        for (const feature of features) {
+        for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0].filter(feature)) {
                 this.addFeature(feature);
-                options.featureIndex.insert(feature, this.index);
+                options.featureIndex.insert(feature, index, sourceLayerIndex, this.index);
             }
         }
     }

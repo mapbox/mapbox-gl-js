@@ -234,5 +234,15 @@ test('GeoJSONSource#serialize', (t) => {
         t.end();
     });
 
+    t.test('serialize source with additional options', (t) => {
+        const source = new GeoJSONSource('id', {data: {}, cluster: true}, mockDispatcher);
+        t.deepEqual(source.serialize(), {
+            type: 'geojson',
+            data: {},
+            cluster: true
+        });
+        t.end();
+    });
+
     t.end();
 });

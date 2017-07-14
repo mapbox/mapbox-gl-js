@@ -1,10 +1,7 @@
 {
   "version": 8,
   "metadata": {
-    "test": {
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8967"
-      },   
+    "test": {  
       "allowed": 0.005,
       "height": 512
     }

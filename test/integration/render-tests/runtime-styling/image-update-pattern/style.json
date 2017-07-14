@@ -17,10 +17,7 @@
         [
           "wait"
         ]
-      ],
-      "skipped": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/4804"
-      }
+      ]
     }
   },
   "sources": {

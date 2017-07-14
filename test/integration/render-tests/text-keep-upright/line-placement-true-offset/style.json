@@ -4,15 +4,20 @@
     "test": {
       "height": 64,
       "operations": [
-          [ "setBearing", 20 ],
-          [ "wait" ]
+        [
+          "setBearing",
+          20
         ],
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/9271"
-      }
+        [
+          "wait"
+        ]
+      ]
     }
   },
-  "center": [ 0, 0 ],
+  "center": [
+    0,
+    0
+  ],
   "zoom": 0,
   "sources": {
     "geojson": {
@@ -23,10 +28,22 @@
         "geometry": {
           "type": "LineString",
           "coordinates": [
-            [-20, -20],
-            [20, -20],
-            [20, 20],
-            [-20, 20]
+            [
+              -20,
+              -20
+            ],
+            [
+              20,
+              -20
+            ],
+            [
+              20,
+              20
+            ],
+            [
+              -20,
+              20
+            ]
           ]
         }
       }
@@ -54,7 +71,10 @@
           "Arial Unicode MS Bold"
         ],
         "text-keep-upright": true,
-        "text-offset": [0.2, -1]
+        "text-offset": [
+          0.2,
+          -1
+        ]
       }
     }
   ]

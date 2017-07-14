@@ -7,10 +7,7 @@
       "queryGeometry": [
         32,
         16
-      ],
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8007"
-      }
+      ]
     }
   },
   "sources": {
@@ -18,7 +15,10 @@
       "type": "geojson",
       "data": {
         "type": "Point",
-        "coordinates": [0, 0]
+        "coordinates": [
+          0,
+          0
+        ]
       }
     },
     "mapbox": {

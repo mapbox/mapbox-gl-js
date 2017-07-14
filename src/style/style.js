@@ -121,7 +121,7 @@ class Style extends Evented {
 
         this.on('data', (event) => {
             if (event.dataType === 'source' && event.sourceDataType === 'metadata') {
-                const source = this.sourceCaches[event.sourceId].getSource();
+                const source = !!this.sourceCaches[event.sourceId] && this.sourceCaches[event.sourceId].getSource();
                 if (source && source.vectorLayerIds) {
                     for (const layerId in this._layers) {
                         const layer = this._layers[layerId];
@@ -409,6 +409,7 @@ class Style extends Evented {
         const sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
         delete this._updatedSources[id];
+        sourceCache.fire('data', {sourceDataType: 'metadata', dataType:'source', sourceId: id});
         sourceCache.setEventedParent(null);
         sourceCache.clearTiles();
 
