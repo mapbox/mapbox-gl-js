@@ -167,7 +167,6 @@ class Tile {
         }
 
         collisionTile.setMatrix(posMatrix);
-        collisionTile.setCollisionBoxArray(this.collisionBoxArray);
 
         const symbolBuckets = [];
 

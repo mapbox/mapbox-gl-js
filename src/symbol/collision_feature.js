@@ -28,6 +28,8 @@ class CollisionFeature {
 
         this.boxStartIndex = collisionBoxArray.length;
 
+        this.collisionCircles = [];
+
         if (alignLine) {
 
             let height = y2 - y1;
@@ -186,6 +188,10 @@ class CollisionFeature {
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
                 featureIndex, sourceLayerIndex, bucketIndex,
                 0, 0, 0, 0, 0);
+
+            this.collisionCircles.push(boxAnchorPoint.x);
+            this.collisionCircles.push(boxAnchorPoint.y);
+            this.collisionCircles.push(boxSize / 2);
         }
     }
 }

@@ -6,7 +6,6 @@ const glmatrix = require('@mapbox/gl-matrix');
 
 const vec4 = glmatrix.vec4;
 const mat4 = glmatrix.mat4;
-const dimensions = 10000;
 
 const intersectionTests = require('../util/intersection_tests');
 
@@ -29,8 +28,8 @@ class CollisionTile {
 
     constructor(
         transform: Transform,
-        grid: any = new Grid(dimensions, 20, 12),
-        ignoredGrid: any = new Grid(dimensions, 48, 0)
+        grid: any = new Grid(transform.width, transform.height, 20),
+        ignoredGrid: any = new Grid(transform.width, transform.height, 20)
     ) {
         this.transform = transform;
         this.matrix = mat4.identity(mat4.create());
@@ -54,9 +53,7 @@ class CollisionTile {
      * @param avoidEdges
      * @private
      */
-    placeCollisionFeature(collisionBoxes: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): boolean {
-        const collisionBoxArray = this.collisionBoxArray;
-
+    placeCollisionBoxes(collisionBoxes: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): boolean {
         const placedCollisionBoxes = [];
         if (!collisionBoxes) {
             return placedCollisionBoxes;
@@ -64,13 +61,11 @@ class CollisionTile {
 
         for (let k = 0; k < collisionBoxes.length; k += 6) {
             const projectedPoint = this.projectPoint(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
-            const tileToViewport = projectedPoint.perspectiveRatio * dimensions / (pixelsToTileUnits * scale);
-            const xScale = tileToViewport / this.transform.width;
-            const yScale = tileToViewport / this.transform.height;
-            const tlX = collisionBoxes[k] * xScale + projectedPoint.point.x;
-            const tlY = collisionBoxes[k + 1] * yScale + projectedPoint.point.y;
-            const brX = collisionBoxes[k + 2] * xScale + projectedPoint.point.x;
-            const brY = collisionBoxes[k + 3] * yScale + projectedPoint.point.y;
+            const tileToViewport = projectedPoint.perspectiveRatio / (pixelsToTileUnits * scale);
+            const tlX = collisionBoxes[k] * tileToViewport + projectedPoint.point.x;
+            const tlY = collisionBoxes[k + 1] * tileToViewport + projectedPoint.point.y;
+            const brX = collisionBoxes[k + 2] * tileToViewport + projectedPoint.point.x;
+            const brY = collisionBoxes[k + 3] * tileToViewport + projectedPoint.point.y;
 
             placedCollisionBoxes.push(tlX);
             placedCollisionBoxes.push(tlY);
@@ -78,20 +73,41 @@ class CollisionTile {
             placedCollisionBoxes.push(brY);
 
             if (!allowOverlap) {
-                //const blockingBoxes = this.grid.query(box.bbox0, box.bbox1, box.bbox2, box.bbox3);
                 if (this.grid.hitTest(tlX, tlY, brX, brY)) {
                     return [];
                 }
-                // for (let i = 0; i < blockingBoxes.length; i++) {
-                //     const blocking = collisionBoxArray.get(blockingBoxes[i]);
-                //     if (this.boxesCollide(box, blocking)) {
-                //         return false;
-                //     }
-                // }
             }
         }
 
         return placedCollisionBoxes;
+    }
+
+    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): boolean {
+        const placedCollisionCircles = [];
+        if (!collisionCircles) {
+            return placedCollisionCircles;
+        }
+
+        for (let k = 0; k < collisionCircles.length; k += 3) {
+            const projectedPoint = this.projectPoint(new Point(collisionCircles[k], collisionCircles[k + 1]));
+            const x = projectedPoint.point.x;
+            const y = projectedPoint.point.y;
+
+            const tileToViewport = projectedPoint.perspectiveRatio / (pixelsToTileUnits * scale);
+            const radius = collisionCircles[k + 2] * tileToViewport;
+
+            placedCollisionCircles.push(x);
+            placedCollisionCircles.push(y);
+            placedCollisionCircles.push(radius);
+
+            if (!allowOverlap) {
+                if (this.grid.hitTestCircle(x, y, radius)) {
+                    return [];
+                }
+            }
+        }
+
+        return placedCollisionCircles;
     }
 
     queryRenderedSymbols(queryGeometry: any, scale: number): Array<any> {
@@ -107,7 +123,7 @@ class CollisionTile {
      * @param ignorePlacement
      * @private
      */
-    insertCollisionFeature(collisionBoxes: any, ignorePlacement: boolean) {
+    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionBoxes.length; k += 4) {
@@ -118,41 +134,19 @@ class CollisionTile {
         }
     }
 
-    setMatrix(matrix) {
-        this.matrix = matrix;
+    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean) {
+        const grid = ignorePlacement ? this.ignoredGrid : this.grid;
+
+        for (let k = 0; k < collisionCircles.length; k += 3) {
+            grid.insertCircle(0, collisionCircles[k],
+                collisionCircles[k + 1],
+                collisionCircles[k + 2]);
+        }
     }
 
-    setCollisionBoxArray(collisionBoxArray) {
-        this.collisionBoxArray = collisionBoxArray;
-        /*if (collisionBoxArray.length === 0) {
-            // the first time collisionBoxArray is passed to a CollisionTile
 
-            // tempCollisionBox
-            collisionBoxArray.emplaceBack();
-
-            const maxInt16 = 32767;
-            //left
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // top
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-        }
-
-        this.tempCollisionBox = collisionBoxArray.get(0);
-        this.edges = [
-            collisionBoxArray.get(1),
-            collisionBoxArray.get(2),
-            collisionBoxArray.get(3),
-            collisionBoxArray.get(4)
-        ];*/
+    setMatrix(matrix) {
+        this.matrix = matrix;
     }
 
     xytransformMat4(out, a, m) {
@@ -168,8 +162,8 @@ class CollisionTile {
         //vec4.transformMat4(p, p, this.matrix);
         this.xytransformMat4(p, p, this.matrix);
         const a = new Point(
-            ((p[0] / p[3] + 1) / 2) * dimensions,
-            ((-p[1] / p[3] + 1) / 2) * dimensions
+            ((p[0] / p[3] + 1) / 2) * this.transform.width,
+            ((-p[1] / p[3] + 1) / 2) * this.transform.height
         );
         return {
             point: a,
