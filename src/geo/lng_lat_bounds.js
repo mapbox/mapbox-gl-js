@@ -1,6 +1,8 @@
-'use strict';
+// @flow
 
 const LngLat = require('./lng_lat');
+
+import type {LngLatLike} from './lng_lat';
 
 /**
  * A `LngLatBounds` object represents a geographical bounding box,
@@ -20,7 +22,11 @@ const LngLat = require('./lng_lat');
  * var llb = new mapboxgl.LngLatBounds(sw, ne);
  */
 class LngLatBounds {
-    constructor(sw, ne) {
+    _ne: LngLat;
+    _sw: LngLat;
+
+    // This constructor is too flexible to type. It should not be so flexible.
+    constructor(sw: any, ne: any) {
         if (!sw) {
             return;
         } else if (ne) {
@@ -38,7 +44,7 @@ class LngLatBounds {
      * @param {LngLatLike} ne
      * @returns {LngLatBounds} `this`
      */
-    setNorthEast(ne) {
+    setNorthEast(ne: LngLatLike) {
         this._ne = ne instanceof LngLat ? new LngLat(ne.lng, ne.lat) : LngLat.convert(ne);
         return this;
     }
@@ -49,7 +55,7 @@ class LngLatBounds {
      * @param {LngLatLike} sw
      * @returns {LngLatBounds} `this`
      */
-    setSouthWest(sw) {
+    setSouthWest(sw: LngLatLike) {
         this._sw = sw instanceof LngLat ? new LngLat(sw.lng, sw.lat) : LngLat.convert(sw);
         return this;
     }
@@ -177,7 +183,7 @@ class LngLatBounds {
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
      */
-    toArray () {
+    toArray() {
         return [this._sw.toArray(), this._ne.toArray()];
     }
 
@@ -190,28 +196,42 @@ class LngLatBounds {
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
      */
-    toString () {
+    toString() {
         return `LngLatBounds(${this._sw.toString()}, ${this._ne.toString()})`;
+    }
+
+    /**
+     * Converts an array to a `LngLatBounds` object.
+     *
+     * If a `LngLatBounds` object is passed in, the function returns it unchanged.
+     *
+     * Internally, the function calls `LngLat#convert` to convert arrays to `LngLat` values.
+     *
+     * @param {LngLatBoundsLike} input An array of two coordinates to convert, or a `LngLatBounds` object to return.
+     * @returns {LngLatBounds} A new `LngLatBounds` object, if a conversion occurred, or the original `LngLatBounds` object.
+     * @example
+     * var arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
+     * var llb = mapboxgl.LngLatBounds.convert(arr);
+     * llb;   // = LngLatBounds {_sw: LngLat {lng: -73.9876, lat: 40.7661}, _ne: LngLat {lng: -73.9397, lat: 40.8002}}
+     */
+    static convert(input: LngLatBoundsLike): LngLatBounds {
+        if (!input || input instanceof LngLatBounds) return input;
+        return new LngLatBounds(input);
     }
 }
 
 /**
- * Converts an array to a `LngLatBounds` object.
+ * A {@link LngLatBounds} object or an array of {@link LngLatLike} objects in [sw, ne] order.
  *
- * If a `LngLatBounds` object is passed in, the function returns it unchanged.
- *
- * Internally, the function calls `LngLat#convert` to convert arrays to `LngLat` values.
- *
- * @param {LngLatBoundsLike} input An array of two coordinates to convert, or a `LngLatBounds` object to return.
- * @returns {LngLatBounds} A new `LngLatBounds` object, if a conversion occurred, or the original `LngLatBounds` object.
+ * @typedef {LngLatBounds | [LngLatLike, LngLatLike]} LngLatBoundsLike
  * @example
- * var arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
- * var llb = mapboxgl.LngLatBounds.convert(arr);
- * llb;   // = LngLatBounds {_sw: LngLat {lng: -73.9876, lat: 40.7661}, _ne: LngLat {lng: -73.9397, lat: 40.8002}}
+ * var v1 = new mapboxgl.LngLatBounds(
+ *   new mapboxgl.LngLat(-73.9876, 40.7661),
+ *   new mapboxgl.LngLat(-73.9397, 40.8002)
+ * );
+ * var v2 = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002])
+ * var v3 = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
  */
-LngLatBounds.convert = function (input) {
-    if (!input || input instanceof LngLatBounds) return input;
-    return new LngLatBounds(input);
-};
+export type LngLatBoundsLike = LngLatBounds | [LngLatLike, LngLatLike];
 
 module.exports = LngLatBounds;

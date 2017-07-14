@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 const util = require('../util/util');
 const Bucket = require('../data/bucket');
@@ -13,6 +13,9 @@ const Throttler = require('../util/throttler');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
+import type TileCoord from './tile_coord';
+import type {WorkerTileResult} from './source';
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -20,11 +23,44 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
  * @private
  */
 class Tile {
+    coord: TileCoord;
+    uid: number;
+    uses: number;
+    tileSize: number;
+    sourceMaxZoom: number;
+    buckets: {[string]: Bucket};
+    expirationTime: any;
+    expiredRequestCount: number;
+    state: 'loading'   // Tile data is in the process of loading.
+         | 'loaded'    // Tile data has been loaded. Tile can be rendered.
+         | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
+         | 'unloaded'  // Tile data has been deleted.
+         | 'errored'   // Tile data was not loaded because of an error.
+         | 'expired';  /* Tile data was previously loaded, but has expired per its
+                        * HTTP headers and is in the process of refreshing. */
+    placementThrottler: any;
+    timeAdded: any;
+    fadeEndTime: any;
+    rawTileData: ArrayBuffer;
+    collisionBoxArray: ?CollisionBoxArray;
+    collisionTile: ?CollisionTile;
+    featureIndex: ?FeatureIndex;
+    redoWhenDone: boolean;
+    angle: number;
+    pitch: number;
+    cameraToCenterDistance: number;
+    cameraToTileDistance: number;
+    showCollisionBoxes: boolean;
+    placementSource: any;
+    workerID: number;
+    vtLayers: {[string]: VectorTileLayer};
+
     /**
      * @param {TileCoord} coord
-     * @param {number} size
+     * @param size
+     * @param sourceMaxZoom
      */
-    constructor(coord, size, sourceMaxZoom) {
+    constructor(coord: any, size: number, sourceMaxZoom: number) {
         this.coord = coord;
         this.uid = util.uniqueId();
         this.uses = 0;
@@ -39,20 +75,12 @@ class Tile {
         // serving expired tiles.
         this.expiredRequestCount = 0;
 
-        // `this.state` must be one of
-        //
-        // - `loading`:   Tile data is in the process of loading.
-        // - `loaded`:    Tile data has been loaded. Tile can be rendered.
-        // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
-        // - `unloaded`:  Tile data has been deleted.
-        // - `errored`:   Tile data was not loaded because of an error.
-        // - `expired`:   Tile data was previously loaded, but has expired per its HTTP headers and is in the process of refreshing.
         this.state = 'loading';
 
         this.placementThrottler = new Throttler(300, this._immediateRedoPlacement.bind(this));
     }
 
-    registerFadeDuration(animationLoop, duration) {
+    registerFadeDuration(animationLoop: any, duration: number) {
         const fadeEndTime = duration + this.timeAdded;
         if (fadeEndTime < Date.now()) return;
         if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
@@ -67,10 +95,11 @@ class Tile {
      * to true. If the data is null, like in the case of an empty
      * GeoJSON tile, no-op but still set loaded to true.
      * @param {Object} data
+     * @param painter
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data, painter) {
+    loadVectorData(data: WorkerTileResult, painter: any) {
         if (this.hasData()) {
             this.unloadVectorData();
         }
@@ -88,8 +117,8 @@ class Tile {
         }
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
-        this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
+        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
+        this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
 
@@ -100,11 +129,14 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData(data, style) {
+    reloadSymbolData(data: WorkerTileResult, style: any) {
         if (this.state === 'unloaded') return;
 
-        this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
-        this.featureIndex.setCollisionTile(this.collisionTile);
+        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
+
+        if (this.featureIndex) {
+            this.featureIndex.setCollisionTile(this.collisionTile);
+        }
 
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
@@ -135,7 +167,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    redoPlacement(source) {
+    redoPlacement(source: any) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -201,18 +233,18 @@ class Tile {
         }, this.workerID);
     }
 
-    getBucket(layer) {
+    getBucket(layer: any) {
         return this.buckets[layer.id];
     }
 
-    querySourceFeatures(result, params) {
+    querySourceFeatures(result: any, params: any) {
         if (!this.rawTileData) return;
 
         if (!this.vtLayers) {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         }
 
-        const sourceLayer = params ? params.sourceLayer : undefined;
+        const sourceLayer = params ? params.sourceLayer : '';
         const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[sourceLayer];
 
         if (!layer) return;
@@ -234,7 +266,7 @@ class Tile {
         return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
     }
 
-    setExpiryData(data) {
+    setExpiryData(data: any) {
         const prior = this.expirationTime;
 
         if (data.cacheControl) {

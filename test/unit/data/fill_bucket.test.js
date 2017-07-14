@@ -56,7 +56,7 @@ test('FillBucket', (t) => {
 test('FillBucket segmentation', (t) => {
     // Stub ArrayGroup.MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    t.stub(ArrayGroup, 'MAX_VERTEX_ARRAY_LENGTH', 256);
+    t.stub(ArrayGroup, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
 
     const layer = new StyleLayer({
         id: 'test',
@@ -103,17 +103,6 @@ test('FillBucket segmentation', (t) => {
         primitiveOffset: 134,
         primitiveLength: 126
     });
-
-    t.equal(arrays.layerData.test.paintVertexArray.length, 266);
-    for (let i = 0; i < arrays.layerData.test.paintVertexArray.length; i++) {
-        const vertex = arrays.layerData.test.paintVertexArray.get(i);
-        t.deepEqual([
-            vertex['a_color0'],
-            vertex['a_color1'],
-            vertex['a_color2'],
-            vertex['a_color3']
-        ], [0, 0, 255, 255]);
-    }
 
     t.end();
 });

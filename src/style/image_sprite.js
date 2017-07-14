@@ -1,4 +1,3 @@
-'use strict';
 
 const Evented = require('../util/evented');
 const ajax = require('../util/ajax');

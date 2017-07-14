@@ -1,4 +1,3 @@
-'use strict';
 
 const Source = require('./source');
 const Tile = require('./tile');
@@ -35,7 +34,7 @@ class SourceCache extends Evented {
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
-            if (this._sourceLoaded && e.dataType === "source" && e.sourceDataType === 'content') {
+            if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
@@ -50,7 +49,7 @@ class SourceCache extends Evented {
         this._source = Source.create(id, options, dispatcher, this);
 
         this._tiles = {};
-        this._cache = new Cache(0, this.unloadTile.bind(this));
+        this._cache = new Cache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
         this._maxTileCacheSize = null;
@@ -97,16 +96,29 @@ class SourceCache extends Evented {
         return this._source;
     }
 
-    loadTile(tile, callback) {
+    pause() {
+        this._paused = true;
+    }
+
+    resume() {
+        if (!this._paused) return;
+        const shouldReload = this._shouldReloadOnResume;
+        this._paused = false;
+        this._shouldReloadOnResume = false;
+        if (shouldReload) this.reload();
+        if (this.transform) this.update(this.transform);
+    }
+
+    _loadTile(tile, callback) {
         return this._source.loadTile(tile, callback);
     }
 
-    unloadTile(tile) {
+    _unloadTile(tile) {
         if (this._source.unloadTile)
             return this._source.unloadTile(tile);
     }
 
-    abortTile(tile) {
+    _abortTile(tile) {
         if (this._source.abortTile)
             return this._source.abortTile(tile);
     }
@@ -139,13 +151,18 @@ class SourceCache extends Evented {
     }
 
     reload() {
+        if (this._paused) {
+            this._shouldReloadOnResume = true;
+            return;
+        }
+
         this._cache.reset();
         for (const i in this._tiles) {
-            this.reloadTile(i, 'reloading');
+            this._reloadTile(i, 'reloading');
         }
     }
 
-    reloadTile(id, state) {
+    _reloadTile(id, state) {
         const tile = this._tiles[id];
 
         // this potentially does not address all underlying
@@ -161,7 +178,7 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
-        this.loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
+        this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
     _tileLoaded(tile, id, previousState, err) {
@@ -221,7 +238,7 @@ class SourceCache extends Evented {
      * @returns {boolean} whether the operation was complete
      * @private
      */
-    findLoadedChildren(coord, maxCoveringZoom, retain) {
+    _findLoadedChildren(coord, maxCoveringZoom, retain) {
         let found = false;
 
         for (const id in this._tiles) {
@@ -308,7 +325,8 @@ class SourceCache extends Evented {
      */
     update(transform) {
         this.transform = transform;
-        if (!this._sourceLoaded) { return; }
+        if (!this._sourceLoaded || this._paused) { return; }
+
         let i;
         let coord;
         let tile;
@@ -351,7 +369,7 @@ class SourceCache extends Evented {
 
         for (i = 0; i < visibleCoords.length; i++) {
             coord = visibleCoords[i];
-            tile = this.addTile(coord);
+            tile = this._addTile(coord);
 
             retain[coord.id] = true;
 
@@ -360,10 +378,10 @@ class SourceCache extends Evented {
 
             // The tile we require is not yet loaded.
             // Retain child or parent tiles that cover the same area.
-            if (!this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
+            if (!this._findLoadedChildren(coord, maxCoveringZoom, retain)) {
                 parentTile = this.findLoadedParent(coord, minCoveringZoom, retain);
                 if (parentTile) {
-                    this.addTile(parentTile.coord);
+                    this._addTile(parentTile.coord);
                 }
             }
         }
@@ -383,12 +401,12 @@ class SourceCache extends Evented {
                 // fadeEndTime is in the future, then this tile is still
                 // fading in. Find tiles to cross-fade with it.
                 if (typeof tile.fadeEndTime === 'undefined' || tile.fadeEndTime >= Date.now()) {
-                    if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
+                    if (this._findLoadedChildren(coord, maxCoveringZoom, retain)) {
                         retain[id] = true;
                     }
                     parentTile = this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
                     if (parentTile) {
-                        this.addTile(parentTile.coord);
+                        this._addTile(parentTile.coord);
                     }
                 }
             }
@@ -408,7 +426,7 @@ class SourceCache extends Evented {
         // Remove the tiles we don't need anymore.
         const remove = util.keysDifference(this._tiles, retain);
         for (i = 0; i < remove.length; i++) {
-            this.removeTile(+remove[i]);
+            this._removeTile(+remove[i]);
         }
     }
 
@@ -418,7 +436,7 @@ class SourceCache extends Evented {
      * @returns {Tile} the added Tile.
      * @private
      */
-    addTile(tileCoord) {
+    _addTile(tileCoord) {
         let tile = this._tiles[tileCoord.id];
         if (tile)
             return tile;
@@ -438,7 +456,7 @@ class SourceCache extends Evented {
             const zoom = tileCoord.z;
             const overscaling = zoom > this._source.maxzoom ? Math.pow(2, zoom - this._source.maxzoom) : 1;
             tile = new Tile(tileCoord, this._source.tileSize * overscaling, this._source.maxzoom);
-            this.loadTile(tile, this._tileLoaded.bind(this, tile, tileCoord.id, tile.state));
+            this._loadTile(tile, this._tileLoaded.bind(this, tile, tileCoord.id, tile.state));
         }
 
         tile.uses++;
@@ -452,7 +470,7 @@ class SourceCache extends Evented {
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
-                this.reloadTile(id, 'expired');
+                this._reloadTile(id, 'expired');
                 this._timers[id] = undefined;
             }, expiryTimeout);
         }
@@ -474,7 +492,7 @@ class SourceCache extends Evented {
      * @returns {undefined} nothing
      * @private
      */
-    removeTile(id) {
+    _removeTile(id) {
         const tile = this._tiles[id];
         if (!tile)
             return;
@@ -497,8 +515,8 @@ class SourceCache extends Evented {
             this._setCacheInvalidationTimer(wrappedId, tile);
         } else {
             tile.aborted = true;
-            this.abortTile(tile);
-            this.unloadTile(tile);
+            this._abortTile(tile);
+            this._unloadTile(tile);
         }
     }
 
@@ -507,8 +525,11 @@ class SourceCache extends Evented {
      * @private
      */
     clearTiles() {
+        this._shouldReloadOnResume = false;
+        this._paused = false;
+
         for (const id in this._tiles)
-            this.removeTile(id);
+            this._removeTile(id);
         this._cache.reset();
     }
 
@@ -609,7 +630,7 @@ function compareKeyZoom(a, b) {
 }
 
 function isRasterType(type) {
-    return type === 'raster' || type === 'image' || type === 'video';
+    return type === 'raster' || type === 'image' || type === 'video' || type === 'normal';
 }
 
 module.exports = SourceCache;

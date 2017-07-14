@@ -1,4 +1,3 @@
-'use strict';
 
 const refProperties = require('./util/ref_properties'),
     stringify = require('fast-stable-stringify');

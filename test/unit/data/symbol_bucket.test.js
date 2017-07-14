@@ -73,7 +73,7 @@ test('SymbolBucket', (t) => {
 
 test('SymbolBucket integer overflow', (t) => {
     t.stub(util, 'warnOnce');
-    t.stub(SymbolBucket, 'MAX_INSTANCES', 5);
+    t.stub(SymbolBucket, 'MAX_INSTANCES').value(5);
 
     const bucket = bucketSetup();
     const options = {iconDependencies: {}, glyphDependencies: {}};
@@ -135,12 +135,9 @@ test('SymbolBucket#getPaintPropertyStatistics()', (t) => {
     });
     bucket.place(collision);
 
-    t.deepEqual(bucket.getPaintPropertyStatistics(), {
-        test: {
-            'text-halo-width': { max: 4 },
-            'icon-halo-width': { max: 5 }
-        }
-    });
+    const stats = bucket.getPaintPropertyStatistics().test;
+    t.deepEqual(stats['text-halo-width'], { max: 4 });
+    t.deepEqual(stats['icon-halo-width'], { max: 5 });
 
     t.end();
 });

@@ -1,4 +1,3 @@
-'use strict';
 
 const reference = require('./reference/latest.js');
 const sortObject = require('sort-object');

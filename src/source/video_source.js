@@ -1,4 +1,3 @@
-'use strict';
 
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');

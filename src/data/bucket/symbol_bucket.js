@@ -350,49 +350,54 @@ class SymbolBucket {
         let horizontalAlign = 0.5,
             verticalAlign = 0.5;
 
-        switch (layout['text-anchor']) {
-        case 'right':
-        case 'top-right':
-        case 'bottom-right':
-            horizontalAlign = 1;
-            break;
-        case 'left':
-        case 'top-left':
-        case 'bottom-left':
-            horizontalAlign = 0;
-            break;
-        }
-
-        switch (layout['text-anchor']) {
-        case 'bottom':
-        case 'bottom-right':
-        case 'bottom-left':
-            verticalAlign = 1;
-            break;
-        case 'top':
-        case 'top-right':
-        case 'top-left':
-            verticalAlign = 0;
-            break;
-        }
-
-        const justify = layout['text-justify'] === 'right' ? 1 :
-            layout['text-justify'] === 'left' ? 0 :
-            0.5;
+        
 
         const oneEm = 24;
         const lineHeight = layout['text-line-height'] * oneEm;
         const maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
-        const spacing = layout['text-letter-spacing'] * oneEm;
         const fontstack = this.fontstack = layout['text-font'].join(',');
         const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
-
+        
         for (const feature of this.features) {
 
             let shapedTextOrientations;
             if (feature.text) {
+                let textAnchor = this.layers[0].getLayoutValue('text-anchor', {zoom: this.zoom}, feature.properties);
+                
+                switch (textAnchor) {
+                case 'right':
+                case 'top-right':
+                case 'bottom-right':
+                    horizontalAlign = 1;
+                    break;
+                case 'left':
+                case 'top-left':
+                case 'bottom-left':
+                    horizontalAlign = 0;
+                    break;
+                }
+
+                switch (textAnchor) {
+                case 'bottom':
+                case 'bottom-right':
+                case 'bottom-left':
+                    verticalAlign = 1;
+                    break;
+                case 'top':
+                case 'top-right':
+                case 'top-left':
+                    verticalAlign = 0;
+                    break;
+                }
+
+                let textJustify = this.layers[0].getLayoutValue('text-justify', {zoom: this.zoom}, feature.properties);
+                const justify = textJustify === 'right' ? 1 :
+                    textJustify === 'left' ? 0 :
+                    0.5;
+
                 const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(feature.text);
                 const textOffset = this.layers[0].getLayoutValue('text-offset', {zoom: this.zoom}, feature.properties).map((t)=> t * oneEm);
+                const spacing = this.layers[0].getLayoutValue('text-letter-spacing', {zoom: this.zoom}, feature.properties) * oneEm;
                 const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
 
                 shapedTextOrientations = {

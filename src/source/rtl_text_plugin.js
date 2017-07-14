@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const ajax = require('../util/ajax');
@@ -48,3 +47,6 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
         }
     });
 };
+
+module.exports.applyArabicShaping = (null : ?Function);
+module.exports.processBidirectionalText = (null : ?Function);

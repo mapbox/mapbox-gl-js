@@ -1,4 +1,3 @@
-'use strict';
 
 const Evented = require('../util/evented');
 const util = require('../util/util');

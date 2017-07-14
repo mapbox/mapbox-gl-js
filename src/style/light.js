@@ -1,4 +1,3 @@
-'use strict';
 
 const styleSpec = require('../style-spec/reference/latest');
 const util = require('../util/util');

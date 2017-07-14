@@ -1,9 +1,12 @@
-'use strict';
+// @flow
 
 const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
+
+import type {BucketParameters} from '../bucket';
+import type {ProgramInterface} from '../program_configuration';
 
 const circleInterface = {
     layoutAttributes: [
@@ -12,13 +15,13 @@ const circleInterface = {
     elementArrayType: createElementArrayType(),
 
     paintAttributes: [
-        {property: 'circle-color',          type: 'Uint8'},
-        {property: 'circle-radius',         type: 'Uint16', multiplier: 10},
-        {property: 'circle-blur',           type: 'Uint16', multiplier: 10},
-        {property: 'circle-opacity',        type: 'Uint8',  multiplier: 255},
-        {property: 'circle-stroke-color',   type: 'Uint8'},
-        {property: 'circle-stroke-width',   type: 'Uint16', multiplier: 10},
-        {property: 'circle-stroke-opacity', type: 'Uint8',  multiplier: 255}
+        {property: 'circle-color'},
+        {property: 'circle-radius'},
+        {property: 'circle-blur'},
+        {property: 'circle-opacity'},
+        {property: 'circle-stroke-color'},
+        {property: 'circle-stroke-width'},
+        {property: 'circle-stroke-opacity'}
     ]
 };
 
@@ -36,11 +39,13 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * @private
  */
 class CircleBucket extends Bucket {
-    constructor(options) {
+    static programInterface: ProgramInterface;
+
+    constructor(options: BucketParameters) {
         super(options, circleInterface);
     }
 
-    addFeature(feature) {
+    addFeature(feature: VectorTileFeature) {
         const arrays = this.arrays;
 
         for (const ring of loadGeometry(feature)) {

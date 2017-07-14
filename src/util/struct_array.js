@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 // Note: all "sizes" are measured in bytes
@@ -10,18 +9,14 @@ module.exports = createStructArrayType;
 const viewTypes = {
     'Int8': Int8Array,
     'Uint8': Uint8Array,
-    'Uint8Clamped': Uint8ClampedArray,
     'Int16': Int16Array,
     'Uint16': Uint16Array,
     'Int32': Int32Array,
     'Uint32': Uint32Array,
-    'Float32': Float32Array,
-    'Float64': Float64Array
+    'Float32': Float32Array
 };
 
-/* eslint-disable no-undef */
-type ViewType = $Keys<typeof viewTypes>;
-/* eslint-enable no-undef */
+export type ViewType = $Keys<typeof viewTypes>;
 
 /**
  * @typedef {Object} StructMember
@@ -40,15 +35,17 @@ class Struct {
     _pos4: number;
     _pos8: number;
     _structArray: StructArray;
+
     // The following properties are defined on the prototype of sub classes.
     size: number;
     alignment: number;
+
     /**
      * @param {StructArray} structArray The StructArray the struct is stored in
      * @param {number} index The index of the struct in the StructArray.
      * @private
      */
-    constructor(structArray, index) {
+    constructor(structArray: StructArray, index: number) {
         this._structArray = structArray;
         this._pos1 = index * this.size;
         this._pos2 = this._pos1 / 2;
@@ -60,12 +57,32 @@ class Struct {
 const DEFAULT_CAPACITY = 128;
 const RESIZE_MULTIPLIER = 5;
 
-type StructArrayMember = {|
+export type StructArrayMember = {
     name: string,
     type: ViewType,
     components: number,
     offset: number
-|};
+};
+
+export type SerializedStructArray = {
+    length: number,
+    arrayBuffer: ArrayBuffer
+};
+
+export type SerializedStructArrayType = {
+    members: Array<StructArrayMember>,
+    alignment: number,
+    bytesPerElement: number
+};
+
+type StructArrayTypeParameters = {
+    members: $ReadOnlyArray<{
+        name: string,
+        type: ViewType,
+        +components?: number,
+    }>,
+    alignment?: number
+};
 
 /**
  * The StructArray class is inherited by the custom StructArrayType classes created with
@@ -86,13 +103,15 @@ class StructArray {
     uint32: ?Uint32Array;
     float32: ?Float32Array;
     float64: ?Float64Array;
-    // The following properties aer defined on the prototype.
+
+    // The following properties are defined on the prototype.
     members: Array<StructArrayMember>;
     StructType: typeof Struct;
     bytesPerElement: number;
     _usedTypes: Array<ViewType>;
     emplaceBack: Function;
-    constructor(serialized?: {arrayBuffer: ArrayBuffer, length: number}) {
+
+    constructor(serialized?: SerializedStructArray) {
         this.isTransferred = false;
 
         if (serialized !== undefined) {
@@ -112,7 +131,7 @@ class StructArray {
     /**
      * Serialize the StructArray type. This serializes the *type* not an instance of the type.
      */
-    static serialize() {
+    static serialize(): SerializedStructArrayType {
         return {
             members: this.prototype.members,
             alignment: this.prototype.StructType.prototype.alignment,
@@ -123,7 +142,7 @@ class StructArray {
     /**
      * Serialize this StructArray instance
      */
-    serialize(transferables: ?{push: (buffer: ArrayBuffer) => void}) {
+    serialize(transferables?: Array<Transferable>): SerializedStructArray {
         assert(!this.isTransferred);
 
         this._trim();
@@ -214,7 +233,9 @@ class StructArray {
     }
 }
 
-const structArrayTypeCache: {[key: string]: typeof StructArray} = {};
+export type { StructArray as StructArray };
+
+const structArrayTypeCache: {[key: string]: Class<StructArray>} = {};
 
 /**
  * `createStructArrayType` is used to create new `StructArray` types.
@@ -252,19 +273,14 @@ const structArrayTypeCache: {[key: string]: typeof StructArray} = {};
  * @private
  */
 
-function createStructArrayType(options: {|
-  members: Array<{type: ViewType, name: string, components?: number}>,
-  alignment?: number
-|}) {
-
+function createStructArrayType(options: StructArrayTypeParameters): Class<StructArray> {
     const key = JSON.stringify(options);
 
     if (structArrayTypeCache[key]) {
         return structArrayTypeCache[key];
     }
 
-    const alignment = (options.alignment === undefined) ?
-      1 : options.alignment;
+    const alignment = options.alignment === undefined ? 1 : options.alignment;
 
     let offset = 0;
     let maxSize = 0;

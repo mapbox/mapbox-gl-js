@@ -1,4 +1,3 @@
-'use strict';
 
 const colorSpaces = require('./color_spaces');
 const parseColor = require('../util/parse_color');

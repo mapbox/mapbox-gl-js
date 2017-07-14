@@ -1,4 +1,3 @@
-'use strict';
 
 module.exports = require('../style-spec/validate_style.min');
 

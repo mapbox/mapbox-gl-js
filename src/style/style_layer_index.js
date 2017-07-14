@@ -1,4 +1,3 @@
-'use strict';
 
 const StyleLayer = require('./style_layer');
 const util = require('../util/util');

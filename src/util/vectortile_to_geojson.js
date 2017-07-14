@@ -1,4 +1,3 @@
-'use strict';
 
 class Feature {
     constructor(vectorTileFeature, z, x, y) {

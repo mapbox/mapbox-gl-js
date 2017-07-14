@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 type Config = {|

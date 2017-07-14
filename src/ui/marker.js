@@ -1,4 +1,3 @@
-'use strict';
 
 const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');

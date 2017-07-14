@@ -1,4 +1,3 @@
-'use strict';
 
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -56,7 +55,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, keepUpright) {
+    rotationAlignment, pitchAlignment, keepUpright) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;

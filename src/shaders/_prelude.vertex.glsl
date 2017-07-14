@@ -16,25 +16,6 @@ precision highp float;
 
 #endif
 
-float evaluate_zoom_function_1(const vec4 values, const float t) {
-    if (t < 1.0) {
-        return mix(values[0], values[1], t);
-    } else if (t < 2.0) {
-        return mix(values[1], values[2], t - 1.0);
-    } else {
-        return mix(values[2], values[3], t - 2.0);
-    }
-}
-vec4 evaluate_zoom_function_4(const vec4 value0, const vec4 value1, const vec4 value2, const vec4 value3, const float t) {
-    if (t < 1.0) {
-        return mix(value0, value1, t);
-    } else if (t < 2.0) {
-        return mix(value1, value2, t - 1.0);
-    } else {
-        return mix(value2, value3, t - 2.0);
-    }
-}
-
 // Unpack a pair of values that have been packed into a single float.
 // The packed values are assumed to be 8-bit unsigned integers, and are
 // packed like so:
@@ -46,8 +27,8 @@ vec2 unpack_float(const float packedValue) {
 }
 
 
-// To minimize the number of attributes needed in the mapbox-gl-native shaders,
-// we encode a 4-component color into a pair of floats (i.e. a vec2) as follows:
+// To minimize the number of attributes needed, we encode a 4-component
+// color into a pair of floats (i.e. a vec2) as follows:
 // [ floor(color.r * 255) * 256 + color.g * 255,
 //   floor(color.b * 255) * 256 + color.g * 255 ]
 vec4 decode_color(const vec2 encodedColor) {

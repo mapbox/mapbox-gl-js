@@ -5,6 +5,7 @@ const StyleLayerIndex = require('../style/style_layer_index');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
+const VectorTileOfflineWorkerSource = require('./vector_tile_offline_worker_source');
 const assert = require('assert');
 
 const globalRTLTextPlugin = require('./rtl_text_plugin');
@@ -21,7 +22,8 @@ class Worker {
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
-            geojson: GeoJSONWorkerSource
+            geojson: GeoJSONWorkerSource,
+            vectoroffline: VectorTileOfflineWorkerSource
         };
 
         // [mapId][sourceType] => worker source instance
@@ -103,9 +105,6 @@ class Worker {
         try {
             if (!globalRTLTextPlugin.applyArabicShaping && !globalRTLTextPlugin.processBidirectionalText) {
                 this.self.importScripts(pluginURL);
-                if (!globalRTLTextPlugin.applyArabicShaping || !globalRTLTextPlugin.processBidirectionalText) {
-                    callback(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
-                }
             }
         } catch (e) {
             callback(e);

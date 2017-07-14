@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const wrap = require('../util/util').wrap;
@@ -24,6 +23,7 @@ const wrap = require('../util/util').wrap;
 class LngLat {
     lng: number;
     lat: number;
+
     constructor(lng: number, lat: number) {
         if (isNaN(lng) || isNaN(lat)) {
             throw new Error(`Invalid LngLat object: (${lng}, ${lat})`);
@@ -103,7 +103,7 @@ class LngLat {
      * var ll = mapboxgl.LngLat.convert(arr);
      * ll;   // = LngLat {lng: -73.9749, lat: 40.7736}
      */
-    static convert(input: mixed): LngLat {
+    static convert(input: LngLatLike): LngLat {
         if (input instanceof LngLat) {
             return input;
         }
@@ -117,6 +117,15 @@ class LngLat {
     }
 }
 
-/*:: export type LngLatLike = LngLat | {lng: number, lat: number} | [number, number]; */
+/**
+ * A {@link LngLat} object, an array of two numbers representing longitude and latitude,
+ * or an object with `lng` and `lat` properties.
+ *
+ * @typedef {LngLat | {lng: number, lat: number} | [number, number]} LngLatLike
+ * @example
+ * var v1 = new mapboxgl.LngLat(-122.420679, 37.772537);
+ * var v2 = [-122.420679, 37.772537];
+ */
+export type LngLatLike = LngLat | {lng: number, lat: number} | [number, number];
 
 module.exports = LngLat;

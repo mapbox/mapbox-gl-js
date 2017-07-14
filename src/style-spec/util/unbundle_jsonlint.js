@@ -1,4 +1,3 @@
-'use strict';
 
 // Turn jsonlint-lines-primitives objects into primitive objects
 module.exports = function unbundle(value) {

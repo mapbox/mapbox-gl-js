@@ -1,4 +1,3 @@
-'use strict';
 
 const ImageSource = require('./image_source');
 const window = require('../util/window');

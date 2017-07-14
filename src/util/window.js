@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 const jsdom = require('jsdom');
 const gl = require('gl');
