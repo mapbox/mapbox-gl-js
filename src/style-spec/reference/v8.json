@@ -120,6 +120,9 @@
         "vector": {
             "doc": "A vector tile source."
         },
+        "vectoroffline": {
+            "doc": "A vector tile source."
+        },
         "raster": {
             "doc": "A raster tile source."
         }
@@ -354,14 +357,23 @@
           "doc": "An extruded (3D) polygon.",
           "sdk-support": {
             "basic functionality": {
-              "js": "0.27.0",
-              "ios": "3.6.0",
-              "macos": "0.5.0"
+              "js": "0.27.0"
             }
           }
         },
         "raster": {
           "doc": "Raster map textures such as satellite imagery.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
+        "normal": {
+          "doc": "Normal mapping textures",
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
@@ -523,9 +535,7 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     }
@@ -815,8 +825,7 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "units": "factor of the original icon size",
-      "doc": "Scales the original size of the icon by the provided factor. The new pixel size of the image will be the original pixel size multiplied by `icon-size`. 1 is the original size; 3 triples the size of the image.",
+      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
       "requires": [
         "icon-image"
       ],
@@ -828,9 +837,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.35.0"
         }
       }
     },
@@ -918,9 +925,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.35.0"
         }
       }
     },
@@ -1025,33 +1030,6 @@
           "ios": "3.5.0",
           "macos": "0.4.0"
         }
-      }
-    },
-    "icon-pitch-alignment": {
-      "type": "enum",
-      "function": "piecewise-constant",
-      "zoom-function": true,
-      "values": {
-        "map": {
-            "doc": "The icon is aligned to the plane of the map."
-        },
-        "viewport": {
-            "doc": "The icon is aligned to the plane of the viewport."
-        },
-        "auto": {
-            "doc": "Automatically matches the value of `icon-rotation-alignment`."
-        }
-      },
-      "default": "auto",
-      "doc": "Orientation of icon when map is pitched.",
-      "requires": [
-        "icon-image"
-      ],
-      "sdk-support": {
-        "basic functionality": {
-          "js": "0.39.0"
-        },
-        "data-driven styling": {}
       }
     },
     "text-pitch-alignment": {
@@ -1189,9 +1167,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.35.0"
         }
       }
     },
@@ -1242,6 +1218,7 @@
       "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Text tracking amount.",
       "requires": [
         "text-field"
@@ -1253,13 +1230,16 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-justify": {
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "values": {
         "left": {
             "doc": "The text is aligned to the left."
@@ -1283,13 +1263,16 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-anchor": {
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "values": {
         "center": {
             "doc": "The center of the text is placed closest to the anchor."
@@ -1331,7 +1314,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-max-angle": {
@@ -1377,9 +1362,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.35.0"
         }
       }
     },
@@ -1489,9 +1472,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.35.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.35.0"
         }
       }
     },
@@ -1754,9 +1735,7 @@
       "example": "map",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     },
@@ -1773,9 +1752,7 @@
       "example": [1.5, 90, 80],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     },
@@ -1789,9 +1766,7 @@
       "doc": "Color tint for lighting extruded geometries.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     },
@@ -1807,9 +1782,7 @@
       "doc": "Intensity of lighting (on a scale from 0 to 1). Higher numbers will present as more extreme contrast.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     }
@@ -2003,9 +1976,7 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     },
@@ -2024,14 +1995,10 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         },
         "data-driven styling": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     },
@@ -2050,9 +2017,7 @@
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up (on the flat plane), respectively.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         },
         "data-driven styling": {}
       }
@@ -2076,9 +2041,7 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         },
         "data-driven styling": {}
       }
@@ -2091,9 +2054,7 @@
       "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         },
         "data-driven styling": {}
       }
@@ -2111,14 +2072,10 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         },
         "data-driven styling": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
     },
@@ -2138,16 +2095,41 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         },
         "data-driven styling": {
-          "js": "0.27.0",
-          "ios": "3.6.0",
-          "macos": "0.5.0"
+          "js": "0.27.0"
         }
       }
+    },
+    "fill-extrusion-duration": {
+      "type": "number",
+      "default": 3000,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "milliseconds",
+      "doc": "Extrusion animation duration.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-extrusion-animate": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Should the extrusion be animated?"
+    },
+    "fill-extrusion-animation-reversed": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Should the extrusion be reversed?"
     }
   },
   "paint_line": {
@@ -2260,7 +2242,6 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
-      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Stroke thickness.",
@@ -2553,27 +2534,6 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        },
-        "data-driven styling": {}
-      }
-    },
-    "circle-pitch-alignment": {
-      "type": "enum",
-      "function": "piecewise-constant",
-      "zoom-function": true,
-      "values": {
-        "map": {
-            "doc": "The circle is aligned to the plane of the map."
-        },
-        "viewport": {
-            "doc": "The circle is aligned to the plane of the viewport."
-        }
-      },
-      "default": "viewport",
-      "doc": "Orientation of circle when map is pitched.",
-      "sdk-support": {
-        "basic functionality": {
-          "js": "0.39.0"
         },
         "data-driven styling": {}
       }
@@ -3150,6 +3110,141 @@
       }
     },
     "raster-fade-duration": {
+      "type": "number",
+      "default": 300,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "milliseconds",
+      "doc": "Fade duration when a new tile is added.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "paint_normal": {
+    "normal-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the image will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-hue-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "degrees",
+      "doc": "Rotates hues around the color wheel.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-brightness-min": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Increase or reduce the brightness of the image. The value is the minimum brightness.",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-brightness-max": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Increase or reduce the brightness of the image. The value is the maximum brightness.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-saturation": {
+      "type": "number",
+      "doc": "Increase or reduce the saturation of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-contrast": {
+      "type": "number",
+      "doc": "Increase or reduce the contrast of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "normal-fade-duration": {
       "type": "number",
       "default": 300,
       "minimum": 0,

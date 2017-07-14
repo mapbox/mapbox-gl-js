@@ -27,8 +27,10 @@ function draw(painter, source, layer, coords) {
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    const now = Date.now();
     for (let i = 0; i < coords.length; i++) {
-        drawExtrusion(painter, source, layer, coords[i]);
+        var progress = getAnimationValue(source.getTile(coords[i]), layer, now);
+        drawExtrusion(painter, source, layer, coords[i], progress);
     }
 
     // Unbind the framebuffer as a render target and render it to the map
@@ -102,7 +104,8 @@ function renderTextureToMap(gl, painter, layer, texture) {
     gl.enable(gl.DEPTH_TEST);
 }
 
-function drawExtrusion(painter, source, layer, coord) {
+function drawExtrusion(painter, source, layer, coord, progress) {
+    const animProgress = progress || 1.0;
     const tile = source.getTile(coord);
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
@@ -124,12 +127,15 @@ function drawExtrusion(painter, source, layer, coord) {
         gl.uniform1f(program.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);
     }
 
-    painter.gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
         layer.paint['fill-extrusion-translate'],
         layer.paint['fill-extrusion-translate-anchor']
     ));
+
+    gl.uniform1f(program.u_anim_t, animProgress);
+    gl.uniform1i(program.u_reversed, layer.paint['fill-extrusion-animation-reversed']);
 
     setLight(program, painter);
 
@@ -152,4 +158,24 @@ function setLight(program, painter) {
     gl.uniform3fv(program.u_lightpos, lightPos);
     gl.uniform1f(program.u_lightintensity, light.calculated.intensity);
     gl.uniform3fv(program.u_lightcolor, light.calculated.color.slice(0, 3));
+}
+
+function getAnimationValue(tile, layer, now) {
+    const animationDuration = layer.paint['fill-extrusion-duration'];
+    const animate = layer.paint['fill-extrusion-animate'];
+    var progress = 1.0;
+
+    if (animate && tile.sourceCache && animationDuration > 0) {
+
+        progress = (now - tile.timeAdded) / animationDuration;
+        progress = (progress > 1.0 ? 1.0 : easeOutQuart(progress));
+
+    }
+
+    return progress;
+
+}
+
+function easeOutQuart(t) {
+    return 1-(--t)*t*t*t;
 }

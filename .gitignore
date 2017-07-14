@@ -1,8 +1,6 @@
 /docs/api
 /docs/style-spec/index.html
 /_site
-/dist/mapbox-gl-dev.js
-/dist/mapbox-gl.js
 *.js.map
 node_modules
 npm-debug.log

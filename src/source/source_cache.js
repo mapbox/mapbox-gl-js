@@ -630,7 +630,7 @@ function compareKeyZoom(a, b) {
 }
 
 function isRasterType(type) {
-    return type === 'raster' || type === 'image' || type === 'video';
+    return type === 'raster' || type === 'image' || type === 'video' || type === 'normal';
 }
 
 module.exports = SourceCache;
