@@ -157,7 +157,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    redoPlacement(source: any, collisionTile: ?CollisionTile, symbolOpacityIndex: any, layer: any, posMatrix: Float32Array, opacityOnly: boolean) {
+    redoPlacement(source: any, collisionTile: ?CollisionTile, symbolOpacityIndex: any, layer: any, posMatrix: Float32Array) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -175,9 +175,7 @@ class Tile {
 
         if (bucket) {
             //recalculateLayers(bucket, this.zoom);
-            if (!opacityOnly) {
-                bucket.place(collisionTile, this.showCollisionBoxes, source.map.transform.zoom, pixelsToTileUnits(this, 1, source.map.transform.zoom));
-            }
+            bucket.place(collisionTile, this.showCollisionBoxes, source.map.transform.zoom, pixelsToTileUnits(this, 1, source.map.transform.zoom));
             bucket.updateOpacities(symbolOpacityIndex, this.coord, this.sourceMaxZoom);
             symbolBuckets.push(bucket);
         }

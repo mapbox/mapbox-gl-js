@@ -3,7 +3,7 @@ const float PI = 3.141592653589793;
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec3 a_projected_pos;
-attribute float a_new_opacity;
+attribute vec2 a_fade_opacity;
 
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
@@ -33,6 +33,7 @@ uniform highp float u_pitch;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
+uniform float u_fade_change;
 
 uniform vec2 u_texsize;
 
@@ -48,7 +49,6 @@ void main() {
 
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;
-    a_new_opacity;
 
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;
@@ -106,7 +106,9 @@ void main() {
     float gamma_scale = gl_Position.w;
 
     vec2 tex = a_tex / u_texsize;
+    float fade_change = a_fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
+    float fade_opacity = max(0.0, min(1.0, a_fade_opacity[0] * 0.0001 + fade_change));
 
     v_data0 = vec2(tex.x, tex.y);
-    v_data1 = vec3(gamma_scale, size, a_new_opacity);
+    v_data1 = vec3(gamma_scale, size, fade_opacity);
 }

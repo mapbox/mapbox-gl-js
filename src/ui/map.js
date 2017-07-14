@@ -1537,9 +1537,7 @@ class Map extends Camera {
             (this.style.getNeedsPlacement() || browser.now() > (this._lastPlacement + 100))) {
             this._lastPlacement = browser.now();
             skippedCollisions = false;
-            this.style._redoPlacement(this.painter.transform, false);
-        } else {
-            this.style._redoPlacement(this.painter.transform, true);
+            this.style._redoPlacement(this.painter.transform);
         }
 
         // Actually draw

@@ -1,12 +1,16 @@
 const EXTENT = require('../data/extent');
 
 class OpacityIndex {
-    constructor(oldIndex) {
+    constructor(now, fadeDuration, oldIndex) {
         this.index = {};
         this.minzoom = Infinity;
         this.maxzoom = -Infinity;
         this.oldIndex = oldIndex;
-        this.fadeDuration = 300;
+
+        this.now = now;
+        this.fadeDuration = fadeDuration;
+        this.increment = (this.now - (this.oldIndex ? this.oldIndex.now : 0)) / this.fadeDuration;
+
         if (oldIndex) delete oldIndex.oldIndex;
     }
 
@@ -49,21 +53,25 @@ class OpacityIndex {
     }
 
     getAndSetOpacity(coord, anchor, sourceMaxZoom, targetOpacity, text) {
-        const now = Date.now();
-        let previousOpacity = (this.oldIndex ? this.oldIndex.query(coord, anchor, sourceMaxZoom, text) : undefined);
 
-        previousOpacity = previousOpacity || {
-            opacity: -0,
-            time: now
-        };
+        let newOpacity;
+        if (this.query(coord, anchor, sourceMaxZoom, text) !== undefined) {
+            // if this label already exists in a different tile, switch it to 0 instantly
+            newOpacity = {
+                opacity: 0,
+                targetOpacity: 0
+            };
+        } else {
+            const previous = (this.oldIndex ? this.oldIndex.query(coord, anchor, sourceMaxZoom, text) : undefined) || {
+                opacity: 0,
+                targetOpacity: 0
+            };
 
-        const increment = (now - previousOpacity.time) / this.fadeDuration * (targetOpacity === 1 ? 1 : -1);
-
-        const newOpacity = {
-            opacity: Math.max(0, Math.min(1, previousOpacity.opacity + increment)),
-            target: targetOpacity,
-            time: now
-        };
+            newOpacity = {
+                targetOpacity: targetOpacity,
+                opacity: Math.max(0, Math.min(1, previous.opacity + (previous.targetOpacity === 1 ? this.increment : -this.increment)))
+            };
+        }
 
         this.insert(coord, anchor, sourceMaxZoom, newOpacity, text);
         return newOpacity.opacity;
@@ -72,8 +80,14 @@ class OpacityIndex {
 
 class CombinedSymbolOpacityIndex {
     constructor(oldIndex) {
-        this.text = new OpacityIndex(oldIndex && oldIndex.text);
-        this.icon = new OpacityIndex(oldIndex && oldIndex.icon);
+        this.now = Date.now();
+        this.fadeDuration = 300;
+        this.text = new OpacityIndex(this.now, this.fadeDuration, oldIndex && oldIndex.text);
+        this.icon = new OpacityIndex(this.now, this.fadeDuration, oldIndex && oldIndex.icon);
+    }
+
+    getChangeSince(time) {
+        return (time - this.now) / this.fadeDuration;
     }
 }
 

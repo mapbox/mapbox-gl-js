@@ -168,6 +168,8 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
 
     gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
     gl.uniform1i(program.u_rotate_symbol, rotateInShader);
+
+    gl.uniform1f(program.u_fade_change, painter.style.symbolOpacityIndex.getChangeSince(Date.now()));
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {

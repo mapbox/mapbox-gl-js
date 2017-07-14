@@ -88,7 +88,7 @@ const dynamicLayoutAttributes = [
 ];
 
 const opacityAttributes = [
-    { name: 'a_new_opacity', components: 1, type: 'Float32' }
+    { name: 'a_fade_opacity', components: 2, type: 'Uint16' }
 ];
 
 const symbolInterfaces = {
@@ -639,22 +639,24 @@ class SymbolBucket {
 
             if (hasText) {
 
-                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, symbolInstance.placedText ? 1.0 : 0.0, symbolInstance.key);
+                const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
+                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, targetOpacity, symbolInstance.key);
                 // TODO handle vertical text properly by choosing the correct version here
                 const verticalOpacity = 0;
 
                 for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
-                    glyphOpacityArray.emplaceBack(opacity);
+                    glyphOpacityArray.emplaceBack(opacity * 10000, targetOpacity);
                 }
                 for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
-                    glyphOpacityArray.emplaceBack(verticalOpacity);
+                    glyphOpacityArray.emplaceBack(verticalOpacity * 10000, targetOpacity);
                 }
             }
 
             if (hasIcon) {
-                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, symbolInstance.placedIcon ? 1.0 : 0.0, symbolInstance.key);
+                const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
+                const opacity = symbolOpacityIndex.icon.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, targetOpacity, symbolInstance.key);
                 for (let i = 0; i < symbolInstance.numIconVertices; i++) {
-                    iconOpacityArray.emplaceBack(opacity);
+                    iconOpacityArray.emplaceBack(opacity * 10000, targetOpacity);
                 }
             }
 
