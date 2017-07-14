@@ -108,6 +108,34 @@ class TileCoord {
         }
     }
 
+    /**
+     *
+     * @memberof Map
+     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
+     * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
+     * @private
+     */
+    isChildOf(child) {
+        const children = this.children;
+        for (let i=0; i<children.length; i++) {
+            if (children[i].id === this.id) return true;
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
+     * @returns {TileCoord} result boolean describing whether or not `child` is a child tile of the root
+     * @private
+     */
+    childDifference(childTile) {
+        if (!this.isChildOf(childTile)) return new TileCoord(0, 0, 0);
+
+        const diffZ = this.z - childTile.z;
+        return new TileCoord(diffZ, x - (childTile.x << diffZ), y - (childTile.x << diffZ))
+    }
+
     static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
                  actualZ: number, renderWorldCopies: boolean | void) {
         if (renderWorldCopies === undefined) {
