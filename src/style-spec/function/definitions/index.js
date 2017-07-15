@@ -146,7 +146,12 @@ const expressions: { [string]: Class<Expression> } = {
     'get': class extends CompoundExpression {
         static opName() { return 'get'; }
         static type() { return ValueType; }
-        static signatures() { return [[StringType, nargs(1, ObjectType)]]; }
+        static signatures() {
+            return [
+                [StringType],
+                [StringType, ObjectType]
+            ];
+        }
         compileFromArgs(args) {
             return `this.get(${args.length > 1 ? args[1] : 'props'}, ${args[0]}, ${args.length > 1 ? 'undefined' : '"feature.properties"'})`;
         }
@@ -154,7 +159,12 @@ const expressions: { [string]: Class<Expression> } = {
     'has': class extends CompoundExpression {
         static opName() { return 'has'; }
         static type() { return BooleanType; }
-        static signatures() { return [[StringType, nargs(1, ObjectType)]]; }
+        static signatures() {
+            return [
+                [StringType],
+                [StringType, ObjectType]
+            ];
+        }
         compileFromArgs(args) {
             return `this.has(${args.length > 1 ? args[1] : 'props'}, ${args[0]}, ${args.length > 1 ? 'undefined' : '"feature.properties"'})`;
         }
