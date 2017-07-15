@@ -269,7 +269,7 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('moveend', () => {
+        this.on('move', () => {
             this.animationLoop.set(300); // text fading
             this._rerender();
         });
