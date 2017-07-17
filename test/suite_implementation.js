@@ -53,8 +53,9 @@ module.exports = function(style, options, _callback) {
             options.operations = [["wait"]];
         }
         applyOperations(map, options.operations, () => {
-            const w = options.width * window.devicePixelRatio;
-            const h = options.height * window.devicePixelRatio;
+            const viewport = gl.getParameter(gl.VIEWPORT);
+            const w = viewport[2];
+            const h = viewport[3];
 
             const pixels = new Uint8Array(w * h * 4);
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
