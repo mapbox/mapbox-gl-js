@@ -54,12 +54,6 @@ class LetExpression implements Expression {
         }
 
         const result = this.result.compile();
-        if (Array.isArray(result)) {
-            errors.push.apply(errors, result);
-            return errors;
-        }
-
-        if (errors.length > 0) return errors;
 
         return `(function (${names.join(', ')}) {
             return ${result};

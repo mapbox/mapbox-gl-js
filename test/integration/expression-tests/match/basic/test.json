@@ -1,21 +1,15 @@
 {
   "expression": [
-    "string",
+    "match",
     [
-      "match",
-      [
-        "string",
-        [
-          "get",
-          "x"
-        ]
-      ],
-      "a",
-      "Apple",
-      "b",
-      "Banana",
-      "Kumquat"
-    ]
+      "get",
+      "x"
+    ],
+    "a",
+    "Apple",
+    "b",
+    "Banana",
+    "Kumquat"
   ],
   "evaluate": [
     [

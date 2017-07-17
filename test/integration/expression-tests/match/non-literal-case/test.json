@@ -1,33 +1,24 @@
 {
   "expression": [
-    "string",
+    "match",
+    "x",
     [
-      "match",
+      "string",
       [
-        "string",
-        [
-          "get",
-          "x"
-        ]
-      ],
-      [
-        "string",
-        [
-          "get",
-          "y"
-        ]
-      ],
-      "thing one",
-      "thing two"
-    ]
+        "get",
+        "y"
+      ]
+    ],
+    "thing one",
+    "thing two"
   ],
   "expected": {
     "compileResult": {
       "result": "error",
       "errors": [
         {
-          "key": "[1][2]",
-          "error": "Match inputs must be either literal integer or string values or arrays of integer or string values."
+          "key": "[2]",
+          "error": "Branch labels must be null, numbers, strings, or booleans."
         }
       ]
     }

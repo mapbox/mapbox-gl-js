@@ -5,7 +5,7 @@ const { array, isGeneric, match } = require('./types');
 const assert = require('assert');
 const extend = require('../util/extend');
 
-import type { Expression, CompileError, ParsingContext, Scope }  from './expression';
+import type { Expression, ParsingContext, Scope }  from './expression';
 import type { ExpressionName } from './expression_name';
 import type { Type } from './types';
 
@@ -127,29 +127,20 @@ class CompoundExpression implements Expression {
         };
     }
 
-    compile(): string | Array<CompileError> {
-        const errors: Array<CompileError> = [];
+    compile(): string {
         const compiledArgs: Array<string> = [];
 
         const args = this.args;
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
             const compiledArg = arg.compile();
-            if (Array.isArray(compiledArg)) {
-                errors.push.apply(errors, compiledArg);
-            } else {
-                compiledArgs.push(`(${compiledArg})`);
-            }
-        }
-
-        if (errors.length > 0) {
-            return errors;
+            compiledArgs.push(`(${compiledArg})`);
         }
 
         return this.compileFromArgs(compiledArgs);
     }
 
-    compileFromArgs(_: Array<string>): string | Array<CompileError> {
+    compileFromArgs(_: Array<string>): string {
         throw new Error('Unimplemented');
     }
 

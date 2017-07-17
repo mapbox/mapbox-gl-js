@@ -1,27 +1,21 @@
 {
   "expression": [
-    "string",
+    "match",
     [
-      "match",
-      [
-        "string",
-        [
-          "get",
-          "x"
-        ]
-      ],
-      [],
-      "thing one",
-      "thing two"
-    ]
+      "get",
+      "x"
+    ],
+    [],
+    "thing one",
+    "thing two"
   ],
   "expected": {
     "compileResult": {
       "result": "error",
       "errors": [
         {
-          "key": "[1][2]",
-          "error": "Expected at least one input value."
+          "key": "[2]",
+          "error": "Expected at least one branch label."
         }
       ]
     }

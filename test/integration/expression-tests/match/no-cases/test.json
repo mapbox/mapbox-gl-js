@@ -1,23 +1,14 @@
 {
   "expression": [
-    "string",
-    [
-      "match",
-      [
-        "string",
-        [
-          "get",
-          "x"
-        ]
-      ]
-    ]
+    "match",
+    "x"
   ],
   "expected": {
     "compileResult": {
       "result": "error",
       "errors": [
         {
-          "key": "[1]",
+          "key": "",
           "error": "Expected at least 2 arguments, but found only 1."
         }
       ]

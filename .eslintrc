@@ -22,7 +22,7 @@
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
     "prefer-arrow-callback": "error",
-    "prefer-const": "error",
+    "prefer-const": ["error", {"destructuring": "all"}],
     "prefer-template": "error",
     "quotes": "off",
     "space-before-function-paren": "off",

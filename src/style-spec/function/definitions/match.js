@@ -1,115 +1,140 @@
 // @flow
 
-const assert = require('assert');
-
-const {
-    typename,
-    array,
-    match
-} = require('../types');
-
+const { ParsingError, parseExpression } = require('../expression');
+const { typename, match } = require('../types');
 const { typeOf } = require('../values');
 
-const { ParsingError } = require('../expression');
-const { CompoundExpression, nargs } = require('../compound_expression');
-const LiteralExpression = require('./literal');
+import type { Expression, Scope } from '../expression';
+import type { Type } from '../types';
 
-class MatchExpression extends CompoundExpression {
-    constructor(key: *, type: *, args: *) {
-        super(key, type, args);
+type Branches = Array<[Array<null | number | string | boolean>, Expression]>;
+
+class MatchExpression implements Expression {
+    key: string;
+    type: Type;
+
+    input: Expression;
+    branches: Branches;
+    otherwise: Expression;
+
+    constructor(key: string, input: Expression, branches: Branches, otherwise: Expression) {
+        this.key = key;
+        this.type = typename('T');
+        this.input = input;
+        this.branches = branches;
+        this.otherwise = otherwise;
     }
-
-    static opName() { return 'match'; }
-    static type() { return typename('T'); }
-    static signatures() { return [[typename('U'), nargs(Infinity, array(typename('U')), typename('T')), typename('T')]]; }
 
     static parse(args, context) {
         if (args.length < 2)
             throw new ParsingError(context.key, `Expected at least 2 arguments, but found only ${args.length}.`);
+        if (args.length % 2 !== 0)
+            throw new ParsingError(context.key, `Expected an even number of arguments.`);
 
-        const normalizedArgs = [args[0]];
+        const input = parseExpression(args[0], context.concat(1, 'match'));
 
-        // parse input/output pairs.
         let inputType;
-        for (let i = 1; i < args.length - 1; i++) {
-            const arg = args[i];
-            if (i % 2 === 1) {
-                // Match inputs are provided as either a literal value or a
-                // raw JSON array of literals.  Normalize these by wrapping
-                // them in an array literal `['literal', [...values]]`.
-                const inputGroup = Array.isArray(arg) ? arg : [arg];
-                if (inputGroup.length === 0)
-                    throw new ParsingError(`${context.key}[${i + 1}]`, 'Expected at least one input value.');
-                for (let j = 0; j < inputGroup.length; j++) {
-                    const inputValue = inputGroup[j];
-                    if (typeof inputValue === 'object')
-                        throw new ParsingError(
-                            `${context.key}[${i + 1}]`,
-                            'Match inputs must be either literal integer or string values or arrays of integer or string values.'
+        const branches = [];
+        for (let i = 1; i < args.length - 1; i += 2) {
+            let labels = args[i];
+            const value = args[i + 1];
 
-                        );
+            if (!Array.isArray(labels)) {
+                labels = [labels];
+            }
 
-                    const type = typeOf((inputValue: any));
-                    if (!inputType) {
-                        inputType = type;
-                    } else {
-                        const error = match(inputType, type);
-                        if (error)
-                            throw new ParsingError(
-                                `${context.key}[${i + 1}]`,
-                                error
-                            );
+            if (labels.length === 0) {
+                throw new ParsingError(`${context.key}[${i + 1}]`, 'Expected at least one branch label.');
+            }
+
+            for (const label of labels) {
+                if (label !== null && typeof label !== 'number' && typeof label !== 'string' && typeof label !== 'boolean') {
+                    throw new ParsingError(`${context.key}[${i + 1}]`, `Branch labels must be null, numbers, strings, or booleans.`);
+                } else if (!inputType) {
+                    inputType = typeOf(label);
+                } else {
+                    const error = match(inputType, typeOf(label));
+                    if (error) {
+                        throw new ParsingError(`${context.key}[${i + 1}]`, error);
                     }
                 }
-                normalizedArgs.push(['literal', inputGroup]);
-            } else {
-                normalizedArgs.push(arg);
             }
+
+            branches.push([labels, parseExpression(value, context.concat(i + 1, 'match'))]);
         }
 
-        normalizedArgs.push(args[args.length - 1]);
+        const otherwise = parseExpression(args[args.length - 1], context.concat(args.length, 'match'));
 
-        return super.parse(normalizedArgs, context);
+        return new MatchExpression(context.key, input, branches, otherwise);
     }
 
-    compileFromArgs(compiledArgs: Array<string>) {
-        const input = compiledArgs[0];
-        const inputs: Array<LiteralExpression> = [];
-        const outputs = [];
-        for (let i = 1; i < this.args.length - 1; i++) {
-            if (i % 2 === 1) {
-                assert(this.args[i] instanceof LiteralExpression);
-                inputs.push((this.args[i] : any));
-            } else {
-                outputs.push(`function () { return ${compiledArgs[i]} }.bind(this)`);
-            }
+    typecheck(expected: Type, scope: Scope) {
+        let result = this.input.typecheck(typename('T'), scope);
+        if (result.result === 'error') {
+            return result;
         }
 
-        // 'otherwise' case
-        outputs.push(`function () { return ${compiledArgs[compiledArgs.length - 1]} }.bind(this)`);
+        for (const [ , expression] of this.branches) {
+            const result = expression.typecheck(expected || typename('T'), scope);
 
-        // Construct a hash from input values (tagged with their type, to
-        // distinguish e.g. 0 from "0") to the index of the corresponding
-        // output. At evaluation time, look up this index and invoke the
-        // (thunked) output expression.
-        const inputMap = {};
-        for (let i = 0; i < inputs.length; i++) {
-            assert(typeof inputs[i] === 'object' && Array.isArray(inputs[i].value));
-            const values: Array<number|string|boolean> = (inputs[i].value: any);
-            for (const value of values) {
-                const type = typeof value;
-                inputMap[`${type}-${String(value)}`] = i;
+            if (result.result === 'error') {
+                return result;
             }
+
+            expected = result.expression.type;
+        }
+
+        result = this.otherwise.typecheck(expected || typename('T'), scope);
+        if (result.result === 'error') {
+            return result;
+        }
+
+        this.type = result.expression.type;
+
+        return {
+            result: 'success',
+            expression: this
+        };
+    }
+
+    compile() {
+        const input = this.input.compile();
+        const outputs = [`function () { return ${this.otherwise.compile()} }.bind(this)`];
+        const lookup = {};
+
+        for (const [labels, expression] of this.branches) {
+            for (const label of labels) {
+                lookup[`${typeOf(label).name}-${String(label)}`] = outputs.length;
+            }
+            outputs.push(`function () { return ${expression.compile()} }.bind(this)`);
         }
 
         return `(function () {
-            var outputs = [${outputs.join(', ')}];
-            var inputMap = ${JSON.stringify(inputMap)};
-            var input = ${input};
-            var outputIndex = inputMap[this.typeOf(input).toLowerCase() + '-' + input];
-            return typeof outputIndex === 'number' ? outputs[outputIndex]() :
-                outputs[${outputs.length - 1}]();
+            var o = [${outputs.join(', ')}];
+            var l = ${JSON.stringify(lookup)};
+            var i = ${input};
+            return o[l[this.typeOf(i) + '-' + i] || 0]();
         }.bind(this))()`;
+    }
+
+    serialize() {
+        const result = ['match'];
+        result.push(this.input.serialize());
+        for (const [labels, expression] of this.branches) {
+            result.push(labels);
+            result.push(expression.serialize());
+        }
+        result.push(this.otherwise.serialize());
+        return result;
+    }
+
+    visit(fn: (Expression) => void) {
+        fn(this);
+        this.input.visit(fn);
+        for (const [ , expression] of this.branches) {
+            expression.visit(fn);
+        }
+        this.otherwise.visit(fn);
     }
 }
 

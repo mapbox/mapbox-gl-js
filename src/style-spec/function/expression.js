@@ -4,11 +4,6 @@ const { typename, match } = require('./types');
 
 import type { Type } from './types';
 
-export type CompileError = {|
-    error: string,
-    key: string
-|}
-
 export type TypeError = {|
     error: string,
     key: string
@@ -30,7 +25,7 @@ export interface Expression {
     static parse(args: Array<mixed>, context: ParsingContext): Expression;
 
     typecheck(expected: Type, scope: Scope): TypecheckResult;
-    compile(): string | Array<CompileError>;
+    compile(): string;
 
     serialize(): any;
     visit(fn: (Expression) => void): void;

@@ -23,15 +23,22 @@ const { CompoundExpression, nargs } = require('../compound_expression');
 const LetExpression = require('./let');
 const LiteralExpression = require('./literal');
 const MatchExpression = require('./match');
+const CaseExpression = require('./case');
 const CurveExpression = require('./curve');
+const CoalesceExpression = require('./coalesce');
 
 import type { Expression } from '../expression';
 import type { Type } from '../types';
 import type { ExpressionName } from '../expression_name';
 
 const expressions: { [string]: Class<Expression> } = {
+    // special forms
     'let': LetExpression,
     'literal': LiteralExpression,
+    'case': CaseExpression,
+    'match': MatchExpression,
+    'coalesce': CoalesceExpression,
+    'curve': CurveExpression,
 
     'ln2': defineMathConstant('ln2'),
     'pi': defineMathConstant('pi'),
@@ -305,36 +312,7 @@ const expressions: { [string]: Class<Expression> } = {
         compileFromArgs(args) {
             return `[${args.join(', ')}].join('')`;
         }
-    },
-
-    // decisions
-    'case': class extends CompoundExpression {
-        static opName() { return 'case'; }
-        static type() { return typename('T'); }
-        static signatures() { return [[nargs(Infinity, BooleanType, typename('T')), typename('T')]]; }
-        compileFromArgs(args) {
-            const result = [];
-            while (args.length > 1) {
-                const c = args.splice(0, 2);
-                result.push(`${c[0]} ? ${c[1]}`);
-            }
-            assert(args.length === 1); // enforced by type checking
-            result.push(args[0]);
-            return result.join(':');
-        }
-    },
-    'match': MatchExpression,
-
-    'coalesce': class extends CompoundExpression {
-        static opName() { return 'coalesce'; }
-        static type() { return typename('T'); }
-        static signatures() { return [[nargs(Infinity, typename('T'))]]; }
-        compileFromArgs(args) {
-            return `this.coalesce(${args.map(a => `function () { return ${a} }.bind(this)`).join(', ')})`;
-        }
-    },
-
-    'curve': CurveExpression
+    }
 };
 
 module.exports = expressions;

@@ -13,11 +13,11 @@ const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
 
 import type { Type } from './types.js';
-import type { Expression, CompileError } from './expression.js';
+import type { Expression, TypeError } from './expression.js';
 
 type CompileErrors = {|
     result: 'error',
-    errors: Array<CompileError>
+    errors: Array<TypeError>
 |}
 
 type CompiledExpression = {|
