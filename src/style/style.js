@@ -871,7 +871,7 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform) {
+    _redoPlacement(transform, showCollisionBoxes) {
         console.time('redo placement');
         this.viewportCollisionTile = new CollisionTile(transform);
         this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
@@ -887,7 +887,7 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, this.symbolOpacityIndex, layer, posMatrices[id], transform);
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, this.symbolOpacityIndex, layer, posMatrices[id], transform);
             }
         }
         console.timeEnd('redo placement');

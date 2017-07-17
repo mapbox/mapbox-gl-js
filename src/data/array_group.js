@@ -97,6 +97,11 @@ class ArrayGroup {
             this.opacityVertexArray = new OpacityVertexArrayType();
         }
 
+        if (programInterface.collisionAttributes) {
+            const CollisionVertexArrayType = createVertexArrayType(programInterface.collisionAttributes);
+            this.collisionVertexArray = new CollisionVertexArrayType();
+        }
+
         const ElementArrayType = programInterface.elementArrayType;
         if (ElementArrayType) this.elementArray = new ElementArrayType();
 
@@ -160,6 +165,7 @@ class ArrayGroup {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             dynamicLayoutVertexArray: this.dynamicLayoutVertexArray && this.dynamicLayoutVertexArray.serialize(transferables),
             opacityVertexArray: this.opacityVertexArray && this.opacityVertexArray.serialize(transferables),
+            collisionVertexArray: this.collisionVertexArray && this.collisionVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
             paintVertexArrays: serializePaintVertexArrays(this.layerData, transferables),

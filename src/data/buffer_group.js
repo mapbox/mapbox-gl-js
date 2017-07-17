@@ -22,6 +22,7 @@ class BufferGroup {
     dynamicLayoutVertexArray: StructArray;
     dynamicLayoutVertexBuffer: Buffer;
     opacityVertexArray: StructArray;
+    collisionVertexArray: StructArray;
     opacityVertexBuffer: Buffer;
     elementBuffer: Buffer;
     elementBuffer2: Buffer;
@@ -48,6 +49,13 @@ class BufferGroup {
             const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.opacityAttributes);
             this.opacityVertexArray = new DynamicLayoutVertexArrayType(arrays.opacityVertexArray);
             this.opacityVertexBuffer = new Buffer(arrays.opacityVertexArray,
+                DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
+        }
+
+        if (arrays.collisionVertexArray && programInterface.collisionAttributes) {
+            const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.collisionAttributes);
+            this.collisionVertexArray = new DynamicLayoutVertexArrayType(arrays.collisionVertexArray);
+            this.collisionVertexBuffer = new Buffer(arrays.collisionVertexArray,
                 DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
         }
 

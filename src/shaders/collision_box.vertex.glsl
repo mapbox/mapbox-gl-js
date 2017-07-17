@@ -1,20 +1,21 @@
 attribute vec2 a_pos;
 attribute vec2 a_anchor_pos;
 attribute vec2 a_extrude;
-attribute vec2 a_data;
+attribute float a_placed;
 
 uniform mat4 u_matrix;
-uniform float u_scale;
+uniform vec2 u_extrude_scale;
+uniform float u_camera_to_center_distance;
 
-varying float v_max_zoom;
-varying float v_placement_zoom;
-varying vec2 v_fade_tex;
+varying float v_placed;
 
 void main() {
-    gl_Position = u_matrix * vec4(a_pos + a_extrude / u_scale, 0.0, 1.0);
+    vec4 projectedPoint = u_matrix * vec4(a_anchor_pos, 0, 1);
+    highp float camera_to_anchor_distance = projectedPoint.w;
+    highp float collision_perspective_ratio = 1.0 + 0.5 * ((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
-    v_max_zoom = a_data.x;
-    v_placement_zoom = a_data.y;
+    gl_Position = u_matrix * vec4(a_pos, 0.0, 1.0);
+    gl_Position.xy += a_extrude * u_extrude_scale * gl_Position.w / collision_perspective_ratio;
 
-    v_fade_tex = vec2((_placement_zoom / 255.0, 0.0);
+    v_placed = a_placed;
 }

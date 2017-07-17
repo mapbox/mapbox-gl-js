@@ -91,6 +91,10 @@ const opacityAttributes = [
     { name: 'a_fade_opacity', components: 2, type: 'Uint16' }
 ];
 
+const collisionAttributes = [
+    { name: 'a_placed', type: 'Uint8' }
+];
+
 const symbolInterfaces = {
     glyph: {
         layoutAttributes: layoutAttributes,
@@ -122,9 +126,9 @@ const symbolInterfaces = {
         layoutAttributes: [
             {name: 'a_pos',        components: 2, type: 'Int16'},
             {name: 'a_anchor_pos', components: 2, type: 'Int16'},
-            {name: 'a_extrude',    components: 2, type: 'Int16'},
-            {name: 'a_data',       components: 2, type: 'Uint8'}
+            {name: 'a_extrude',    components: 2, type: 'Int16'}
         ],
+        collisionAttributes: collisionAttributes,
         elementArrayType: createElementArrayType(2)
     }
 };
@@ -156,7 +160,8 @@ function addDynamicAttributes(dynamicLayoutVertexArray, p, angle, placementZoom)
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
 }
 
-function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoom, placementZoom) {
+function addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude) {
+    collisionVertexArray.emplaceBack(0, 0);
     return layoutVertexArray.emplaceBack(
         // pos
         point.x,
@@ -166,10 +171,7 @@ function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoo
         anchor.y,
         // extrude
         Math.round(extrude.x),
-        Math.round(extrude.y),
-        // data
-        maxZoom * 10,
-        placementZoom * 10);
+        Math.round(extrude.y));
 }
 
 /**
@@ -403,7 +405,7 @@ class SymbolBucket {
         });
     }
 
-    prepare(stacks: any, icons: any) {
+    prepare(stacks: any, icons: any, showCollisionBoxes: boolean) {
         this.symbolInstances = [];
 
         this.createArrays();
@@ -499,6 +501,8 @@ class SymbolBucket {
                 this.addFeature(feature, shapedTextOrientations, shapedIcon);
             }
         }
+
+        if (true || showCollisionBoxes) this.addToDebugBuffers();
     }
 
     /**
@@ -634,7 +638,6 @@ class SymbolBucket {
             const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
             const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
 
-            // Insert final placement into collision tree and add glyphs/icons to buffers
             if (!hasText && !hasIcon) continue;
 
             if (hasText) {
@@ -666,14 +669,22 @@ class SymbolBucket {
         if (iconOpacityArray) this.buffers.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
     }
 
+
+    updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, placed: boolean) {
+        if (!collisionVertexArray) {
+            return;
+        }
+        for (let k = 0; k < collisionBoxes.length; k += 6) {
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+        }
+    }
+
     place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
-
-        const glyphOpacityArray = this.buffers.glyph && this.buffers.glyph.opacityVertexArray;
-        const iconOpacityArray = this.buffers.icon && this.buffers.icon.opacityVertexArray;
-        if (glyphOpacityArray) glyphOpacityArray.clear();
-        if (iconOpacityArray) iconOpacityArray.clear();
 
         const layer = this.layers[0];
         const layout = layer.layout;
@@ -699,6 +710,9 @@ class SymbolBucket {
         }
 
         const scale = Math.pow(2, zoom - this.zoom);
+
+        const collisionArray = showCollisionBoxes && this.buffers.collisionBox && this.buffers.collisionBox.collisionVertexArray;
+        if (collisionArray) collisionArray.clear();
 
         for (const symbolInstance of this.symbolInstances) {
 
@@ -742,6 +756,7 @@ class SymbolBucket {
             if (!hasText && !hasIcon) continue;
 
             if (hasText) {
+                this.updateCollisionBoxes(collisionArray, symbolInstance.textCollisionBoxes, placeGlyph);
                 if (placeGlyph) {
                     symbolInstance.placedText = true;
                     collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement']);
@@ -752,6 +767,7 @@ class SymbolBucket {
             }
 
             if (hasIcon) {
+                this.updateCollisionBoxes(collisionArray, symbolInstance.iconCollisionBoxes, placeIcon);
                 if (placeIcon) {
                     symbolInstance.placedIcon = true;
                     collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement']);
@@ -762,7 +778,7 @@ class SymbolBucket {
 
         }
 
-        if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
+        if (collisionArray) this.buffers.collisionBox.collisionVertexBuffer.updateData(collisionArray.serialize());
     }
 
     addSymbols(arrays: any, quads: any, sizeVertex: any, lineOffset: any, alongLine: any, featureProperties: any, isVertical: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
@@ -817,45 +833,37 @@ class SymbolBucket {
         arrays.populatePaintArrays(featureProperties);
     }
 
-    addToDebugBuffers(collisionTile: any) {
+    addToDebugBuffers() {
         const arrays = this.arrays.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
-
-        const angle = -collisionTile.angle;
+        const collisionVertexArray = arrays.collisionVertexArray;
 
         for (const symbolInstance of this.symbolInstances) {
-            symbolInstance.textCollisionFeature = {boxStartIndex: symbolInstance.textBoxStartIndex, boxEndIndex: symbolInstance.textBoxEndIndex};
-            symbolInstance.iconCollisionFeature = {boxStartIndex: symbolInstance.iconBoxStartIndex, boxEndIndex: symbolInstance.iconBoxEndIndex};
-
             for (let i = 0; i < 2; i++) {
-                const feature = symbolInstance[i === 0 ? 'textCollisionFeature' : 'iconCollisionFeature'];
-                if (!feature) continue;
+                const collisionBoxes = symbolInstance[i === 0 ? 'textCollisionBoxes' : 'iconCollisionBoxes'];
+                if (!collisionBoxes) continue;
 
-                for (let b = feature.boxStartIndex; b < feature.boxEndIndex; b++) {
-                    const box = this.collisionBoxArray.get(b);
-                    if (collisionTile.perspectiveRatio === 1 && box.maxScale < 1) {
-                        // These boxes aren't used on unpitched maps
-                        // See CollisionTile#insertCollisionFeature
-                        continue;
-                    }
-                    const boxAnchorPoint = box.anchorPoint;
+                for (let k = 0; k < collisionBoxes.length; k += 6) {
+                    const boxAnchorPoint = new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]);
+                    const x1 = collisionBoxes[k];
+                    const y1 = collisionBoxes[k + 1];
+                    const x2 = collisionBoxes[k + 2];
+                    const y2 = collisionBoxes[k + 3];
 
-                    const tl = new Point(box.x1, box.y1)._rotate(angle);
-                    const tr = new Point(box.x2, box.y1)._rotate(angle);
-                    const bl = new Point(box.x1, box.y2)._rotate(angle);
-                    const br = new Point(box.x2, box.y2)._rotate(angle);
+                    const tl = new Point(x1, y1);
+                    const tr = new Point(x2, y1);
+                    const bl = new Point(x1, y2);
+                    const br = new Point(x2, y2);
 
-                    const maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
-                    const placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
                     const segment = arrays.prepareSegment(4);
                     const index = segment.vertexLength;
 
-                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tl, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tr, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, br, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, bl, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tl);
+                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tr);
+                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, br);
+                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, bl);
 
                     elementArray.emplaceBack(index, index + 1);
                     elementArray.emplaceBack(index + 1, index + 2);

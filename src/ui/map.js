@@ -1537,7 +1537,7 @@ class Map extends Camera {
             (this.style.getNeedsPlacement() || browser.now() > (this._lastPlacement + 100))) {
             this._lastPlacement = browser.now();
             skippedCollisions = false;
-            this.style._redoPlacement(this.painter.transform);
+            this.style._redoPlacement(this.painter.transform, this._showCollisionBoxes);
         }
 
         // Actually draw
@@ -1647,7 +1647,7 @@ class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this.style._redoPlacement(this.painter.transform);
+        this.style._redoPlacement(this.painter.transform, this._showCollisionBoxes);
     }
 
     /*
