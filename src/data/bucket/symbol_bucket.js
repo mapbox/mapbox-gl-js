@@ -422,34 +422,17 @@ class SymbolBucket {
 
         const layout = this.layers[0].layout;
 
-        let horizontalAlign = 0.5,
-            verticalAlign = 0.5;
-
-        switch (layout['text-anchor']) {
-        case 'right':
-        case 'top-right':
-        case 'bottom-right':
-            horizontalAlign = 1;
-            break;
-        case 'left':
-        case 'top-left':
-        case 'bottom-left':
-            horizontalAlign = 0;
-            break;
-        }
-
-        switch (layout['text-anchor']) {
-        case 'bottom':
-        case 'bottom-right':
-        case 'bottom-left':
-            verticalAlign = 1;
-            break;
-        case 'top':
-        case 'top-right':
-        case 'top-left':
-            verticalAlign = 0;
-            break;
-        }
+        const alignments = {
+            'top': {horizontalAlign: 0.5, verticalAlign: 0},
+            'top-left': {horizontalAlign: 0, verticalAlign: 0},
+            'top-right': {horizontalAlign: 1, verticalAlign: 0},
+            'bottom': {horizontalAlign: 0.5, verticalAlign: 1},
+            'bottom-left': {horizontalAlign: 0, verticalAlign: 1},
+            'bottom-right': {horizontalAlign: 1, verticalAlign: 1},
+            'center': {horizontalAlign: 0.5, verticalAlign: 0.5},
+            'right': {horizontalAlign: 1, verticalAlign: 0.5},
+            'left': {horizontalAlign: 0, verticalAlign: 0.5},
+        };
 
         const justify =
             layout['text-justify'] === 'right' ? 1 :
@@ -471,8 +454,8 @@ class SymbolBucket {
                 const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
 
                 shapedTextOrientations = {
-                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
-                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
+                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, alignments, layout['text-anchor'], justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
+                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, alignments, layout['text-anchor'], justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
                 };
             } else {
                 shapedTextOrientations = {};
@@ -498,7 +481,7 @@ class SymbolBucket {
             }
 
             if (shapedTextOrientations[WritingMode.horizontal] || shapedIcon) {
-                this.addFeature(feature, shapedTextOrientations, shapedIcon);
+                this.addFeature(feature, {[WritingMode.horizontal]: shapedTextOrientations[WritingMode.horizontal][layout['text-anchor']], [WritingMode.vertical]: shapedTextOrientations[WritingMode.vertical][layout['text-anchor']]}, shapedIcon);
             }
         }
 

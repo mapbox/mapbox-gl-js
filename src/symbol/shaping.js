@@ -49,26 +49,31 @@ function breakLines(text, lineBreakPoints) {
     return lines;
 }
 
-function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, writingMode) {
-    let logicalInput = text.trim();
-    if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
+function shapeText(text, glyphs, maxWidth, lineHeight, alignments, textAnchor, justify, spacing, translate, verticalHeight, writingMode) {
+    const shapings = {};
+    for (let anchor in alignments) {
+        // not doing multiple placements for vertical WritingMode yet
+        if (writingMode === WritingMode.vertical) anchor = textAnchor;
+        let logicalInput = text.trim();
+        if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
 
-    const positionedGlyphs = [];
-    const shaping = new Shaping(positionedGlyphs, logicalInput, translate[1], translate[1], translate[0], translate[0], writingMode);
+        const positionedGlyphs = [];
+        shapings[anchor] = new Shaping(positionedGlyphs, logicalInput, translate[1], translate[1], translate[0], translate[0], writingMode);
 
-    let lines;
-    if (rtlTextPlugin.processBidirectionalText) {
-        lines = rtlTextPlugin.processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
-    } else {
-        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+        let lines;
+        if (rtlTextPlugin.processBidirectionalText) {
+            lines = rtlTextPlugin.processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+        } else {
+            lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+        }
+
+        shapeLines(shapings[anchor], glyphs, lines, lineHeight, alignments[anchor].horizontalAlign, alignments[anchor].verticalAlign, justify, translate, writingMode, spacing, verticalHeight);
+
+        if (!positionedGlyphs.length)
+            return false;
+        if (writingMode === WritingMode.vertical) break;
     }
-
-    shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight);
-
-    if (!positionedGlyphs.length)
-        return false;
-
-    return shaping;
+    return shapings;
 }
 
 const whitespace = {

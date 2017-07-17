@@ -871,8 +871,8 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform, showCollisionBoxes) {
-        console.time('redo placement');
+    _redoPlacement(transform) {
+        // console.time('redo placement');
         this.viewportCollisionTile = new CollisionTile(transform);
         this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
 
@@ -890,7 +890,7 @@ class Style extends Evented {
                 this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, this.symbolOpacityIndex, layer, posMatrices[id], transform);
             }
         }
-        console.timeEnd('redo placement');
+        // console.timeEnd('redo placement');
     }
 
     // Callbacks from web workers
