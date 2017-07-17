@@ -46,8 +46,8 @@ class SpriteAtlas extends Evented {
         this.data = false;
         this.texture = 0; // WebGL ID
         this.filter = 0; // WebGL ID
-        this.width = width * browser.devicePixelRatio;
-        this.height = height * browser.devicePixelRatio;
+        this.width = Math.ceil(width * browser.devicePixelRatio);
+        this.height = Math.ceil(height * browser.devicePixelRatio);
         this.shelfPack = new ShelfPack(this.width, this.height);
         this.dirty = true;
     }
