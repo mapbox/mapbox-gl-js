@@ -61,11 +61,11 @@ class CollisionTile {
 
         for (let k = 0; k < collisionBoxes.length; k += 6) {
             const projectedPoint = this.projectPoint(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
-            const tileToViewport = projectedPoint.perspectiveRatio / (pixelsToTileUnits * scale);
-            const tlX = collisionBoxes[k] * tileToViewport + projectedPoint.point.x;
-            const tlY = collisionBoxes[k + 1] * tileToViewport + projectedPoint.point.y;
-            const brX = collisionBoxes[k + 2] * tileToViewport + projectedPoint.point.x;
-            const brY = collisionBoxes[k + 3] * tileToViewport + projectedPoint.point.y;
+            const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
+            const tlX = collisionBoxes[k] / tileToViewport + projectedPoint.point.x;
+            const tlY = collisionBoxes[k + 1] / tileToViewport + projectedPoint.point.y;
+            const brX = collisionBoxes[k + 2] / tileToViewport + projectedPoint.point.x;
+            const brY = collisionBoxes[k + 3] / tileToViewport + projectedPoint.point.y;
 
             placedCollisionBoxes.push(tlX);
             placedCollisionBoxes.push(tlY);
