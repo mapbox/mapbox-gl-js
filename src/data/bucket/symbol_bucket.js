@@ -454,8 +454,8 @@ class SymbolBucket {
                 const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
 
                 shapedTextOrientations = {
-                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, alignments, layout['text-anchor'], justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
-                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, alignments, layout['text-anchor'], justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
+                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, alignments, layout['text-anchor'], justify, spacingIfAllowed, textOffset, oneEm, textAlongLine, WritingMode.horizontal),
+                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, alignments, layout['text-anchor'], justify, spacingIfAllowed, textOffset, oneEm, textAlongLine, WritingMode.vertical)
                 };
             } else {
                 shapedTextOrientations = {};
@@ -481,7 +481,7 @@ class SymbolBucket {
             }
 
             if (shapedTextOrientations[WritingMode.horizontal] || shapedIcon) {
-                this.addFeature(feature, {[WritingMode.horizontal]: shapedTextOrientations[WritingMode.horizontal][layout['text-anchor']], [WritingMode.vertical]: shapedTextOrientations[WritingMode.vertical][layout['text-anchor']]}, shapedIcon);
+                this.addFeature(feature, shapedTextOrientations, shapedIcon);
             }
         }
 
@@ -543,7 +543,8 @@ class SymbolBucket {
             // symbols lower on the canvas are drawn on top of symbols near the top.
             // To preserve this order across tile boundaries these symbols can't
             // be drawn across tile boundaries. Instead they need to be included in
-            // the buffers for both tiles and clipped to tile boundaries at draw time.
+            // the buffers for bqoth tiles and clipped to tile boundaries at draw time.
+
             const addToBuffers = inside || mayOverlap;
             this.addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, this.layers[0],
                 addToBuffers, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
@@ -554,11 +555,13 @@ class SymbolBucket {
 
         if (symbolPlacement === 'line') {
             for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
+                const textAnchor = layout['text-anchor'];
+                if (!(shapedTextOrientations[WritingMode.vertical] || shapedTextOrientations[WritingMode.horizontal])) break;
                 const anchors = getAnchors(
                     line,
                     symbolMinDistance,
                     textMaxAngle,
-                    shapedTextOrientations[WritingMode.vertical] || shapedTextOrientations[WritingMode.horizontal],
+                    shapedTextOrientations[WritingMode.vertical][textAnchor] || shapedTextOrientations[WritingMode.horizontal][textAnchor],
                     shapedIcon,
                     glyphSize,
                     textMaxBoxScale,
@@ -566,7 +569,7 @@ class SymbolBucket {
                     EXTENT
                 );
                 for (const anchor of anchors) {
-                    const shapedText = shapedTextOrientations[WritingMode.horizontal];
+                    const shapedText = shapedTextOrientations[WritingMode.horizontal][textAnchor];
                     if (!shapedText || !this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
                         addSymbolInstance(line, anchor);
                     }
@@ -880,6 +883,8 @@ class SymbolBucket {
         textBoxScale: any, textPadding: any, textAlongLine: any, textOffset: any,
         iconBoxScale: any, iconPadding: any, iconAlongLine: any, iconOffset: any, globalProperties: any, featureProperties: any) {
 
+
+        // const textAnchor = layer.layout['text-anchor'];
         const lineStartIndex = this.lineVertexArray.length;
         for (let i = 0; i < line.length; i++) {
             this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
@@ -894,39 +899,47 @@ class SymbolBucket {
         let numGlyphVertices = 0;
         let numVerticalGlyphVertices = 0;
         let key = '';
+
         for (const writingModeString in shapedTextOrientations) {
-            const writingMode = parseInt(writingModeString, 10);
-            if (!shapedTextOrientations[writingMode]) continue;
-            key = shapedTextOrientations[writingMode].text;
-            glyphQuads = addToBuffers ?
-                getGlyphQuads(anchor, shapedTextOrientations[writingMode],
-                    layer, textAlongLine, globalProperties, featureProperties) :
-                [];
-            textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
+            for (let textAnchor in shapedTextOrientations[writingModeString]) {
+                if (textAlongLine) textAnchor = layer.layout['text-anchor'];
 
-            if (writingMode === WritingMode.vertical) {
-                numVerticalGlyphVertices = glyphQuads.length * 4;
-            } else {
-                numGlyphVertices = glyphQuads.length * 4;
+                const writingMode = parseInt(writingModeString, 10);
+                const currentShapings = shapedTextOrientations[writingMode][textAnchor];
+
+                if (!currentShapings) continue;
+                key = currentShapings.text;
+                glyphQuads = addToBuffers ?
+                    getGlyphQuads(anchor, currentShapings,
+                        layer, textAlongLine, globalProperties, featureProperties) :
+                    [];
+                textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, currentShapings, textBoxScale, textPadding, textAlongLine, false);
+
+                if (writingMode === WritingMode.vertical) {
+                    numVerticalGlyphVertices = glyphQuads.length * 4;
+                } else {
+                    numGlyphVertices = glyphQuads.length * 4;
+                }
+                const textSizeData = getSizeVertexData(layer,
+                    this.zoom,
+                    this.textSizeData.coveringZoomRange,
+                    'text-size',
+                    featureProperties);
+
+                this.addSymbols(
+                    this.arrays.glyph,
+                    glyphQuads,
+                    textSizeData,
+                    textOffset,
+                    textAlongLine,
+                    featureProperties,
+                    writingMode === WritingMode.vertical,
+                    anchor,
+                    lineStartIndex,
+                    lineLength,
+                    this.placedGlyphArray);
+                if (textAlongLine) break;
             }
-
-            const textSizeData = getSizeVertexData(layer,
-                this.zoom,
-                this.textSizeData.coveringZoomRange,
-                'text-size',
-                featureProperties);
-            this.addSymbols(
-                this.arrays.glyph,
-                glyphQuads,
-                textSizeData,
-                textOffset,
-                textAlongLine,
-                featureProperties,
-                writingMode === WritingMode.vertical,
-                anchor,
-                lineStartIndex,
-                lineLength,
-                this.placedGlyphArray);
         }
 
         const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;

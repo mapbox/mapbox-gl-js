@@ -871,7 +871,7 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform) {
+    _redoPlacement(transform, showCollisionBoxes) {
         // console.time('redo placement');
         this.viewportCollisionTile = new CollisionTile(transform);
         this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);

@@ -49,12 +49,12 @@ function breakLines(text, lineBreakPoints) {
     return lines;
 }
 
-function shapeText(text, glyphs, maxWidth, lineHeight, alignments, textAnchor, justify, spacing, translate, verticalHeight, writingMode) {
+function shapeText(text, glyphs, maxWidth, lineHeight, alignments, textAnchor, justify, spacing, translate, verticalHeight, textAlongLine, writingMode) {
     const shapings = {};
     for (let anchor in alignments) {
         // not doing multiple placements for vertical WritingMode yet
-        if (writingMode === WritingMode.vertical) anchor = textAnchor;
         let logicalInput = text.trim();
+        if (writingMode === WritingMode.vertical || textAlongLine) anchor = textAnchor;
         if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
 
         const positionedGlyphs = [];
@@ -71,7 +71,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, alignments, textAnchor, j
 
         if (!positionedGlyphs.length)
             return false;
-        if (writingMode === WritingMode.vertical) break;
+        if (writingMode === WritingMode.vertical || textAlongLine) break;
     }
     return shapings;
 }
