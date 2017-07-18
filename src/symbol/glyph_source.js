@@ -6,6 +6,7 @@ const GlyphAtlas = require('../symbol/glyph_atlas');
 const Protobuf = require('pbf');
 const TinySDF = require('@mapbox/tiny-sdf');
 const isChar = require('../util/is_char_in_unicode_block');
+const Evented = require('../util/evented');
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
 class SimpleGlyph {
@@ -25,17 +26,19 @@ class SimpleGlyph {
  *
  * @private
  */
-class GlyphSource {
+class GlyphSource extends Evented {
     /**
      * @param {string} url glyph template url
      */
-    constructor(url, localIdeographFontFamily) {
+    constructor(url, localIdeographFontFamily, eventedParent) {
+        super();
         this.url = url && normalizeURL(url);
         this.atlases = {};
         this.stacks = {};
         this.loading = {};
         this.localIdeographFontFamily = localIdeographFontFamily;
         this.tinySDFs = {};
+        this.setEventedParent(eventedParent);
     }
 
     getSimpleGlyphs(fontstack, glyphIDs, uid, callback) {
@@ -93,15 +96,19 @@ class GlyphSource {
         if (!remaining) callback(undefined, glyphs, fontstack);
 
         const onRangeLoaded = (err, range, data) => {
-            if (!err) {
-                const stack = this.stacks[fontstack].ranges[range] = data.stacks[0];
-                for (let i = 0; i < missingRanges[range].length; i++) {
-                    const glyphID = missingRanges[range][i];
-                    const glyph = stack.glyphs[glyphID];
-                    const rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
-                    if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
-                }
+            if (err) {
+                this.fire('error', { error: err });
+                return;
             }
+
+            const stack = this.stacks[fontstack].ranges[range] = data.stacks[0];
+            for (let i = 0; i < missingRanges[range].length; i++) {
+                const glyphID = missingRanges[range][i];
+                const glyph = stack.glyphs[glyphID];
+                const rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
+                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
+            }
+
             remaining--;
             if (!remaining) callback(undefined, glyphs, fontstack);
         };
