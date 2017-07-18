@@ -126,7 +126,8 @@ const symbolInterfaces = {
         layoutAttributes: [
             {name: 'a_pos',        components: 2, type: 'Int16'},
             {name: 'a_anchor_pos', components: 2, type: 'Int16'},
-            {name: 'a_extrude',    components: 2, type: 'Int16'}
+            {name: 'a_extrude',    components: 2, type: 'Int16'},
+            {name: 'a_is_circle', type: 'Uint8' }
         ],
         collisionAttributes: collisionAttributes,
         elementArrayType: createElementArrayType(2)
@@ -160,7 +161,7 @@ function addDynamicAttributes(dynamicLayoutVertexArray, p, angle, placementZoom)
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
 }
 
-function addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude) {
+function addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude, isCircle) {
     collisionVertexArray.emplaceBack(0, 0);
     return layoutVertexArray.emplaceBack(
         // pos
@@ -171,7 +172,9 @@ function addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, a
         anchor.y,
         // extrude
         Math.round(extrude.x),
-        Math.round(extrude.y));
+        Math.round(extrude.y),
+        // a_is_circle
+        isCircle ? 1 : 0);
 }
 
 /**
@@ -670,11 +673,18 @@ class SymbolBucket {
     }
 
 
-    updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, placed: boolean) {
+    updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, collisionCircles: any, placed: boolean) {
         if (!collisionVertexArray) {
             return;
         }
         for (let k = 0; k < collisionBoxes.length; k += 6) {
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+        }
+
+        for (let k = 0; k < collisionCircles.length; k += 3) {
             collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
             collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
             collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
@@ -732,7 +742,7 @@ class SymbolBucket {
 
             const placedGlyphCircles = hasText ?
                 collisionTile.placeCollisionCircles(symbolInstance.textCollisionCircles,
-                    layout['text-allow-overlap'], scale, pixelsToTileUnits) :
+                    layout['text-allow-overlap'], scale, pixelsToTileUnits, symbolInstance.key) :
                 [];
 
             const placedIconBoxes = hasIcon ?
@@ -756,21 +766,21 @@ class SymbolBucket {
             if (!hasText && !hasIcon) continue;
 
             if (hasText) {
-                this.updateCollisionBoxes(collisionArray, symbolInstance.textCollisionBoxes, placeGlyph);
+                this.updateCollisionBoxes(collisionArray, symbolInstance.textCollisionBoxes, symbolInstance.textCollisionCircles, placeGlyph);
                 if (placeGlyph) {
                     symbolInstance.placedText = true;
-                    collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement']);
-                    collisionTile.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement']);
+                    collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement'], symbolInstance.key);
+                    collisionTile.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], symbolInstance.key);
                 } else {
                     symbolInstance.placedText = false;
                 }
             }
 
             if (hasIcon) {
-                this.updateCollisionBoxes(collisionArray, symbolInstance.iconCollisionBoxes, placeIcon);
+                this.updateCollisionBoxes(collisionArray, symbolInstance.iconCollisionBoxes, [], placeIcon);
                 if (placeIcon) {
                     symbolInstance.placedIcon = true;
-                    collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement']);
+                    collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement'], symbolInstance.key);
                 } else {
                     symbolInstance.placedIcon = false;
                 }
@@ -833,6 +843,30 @@ class SymbolBucket {
         arrays.populatePaintArrays(featureProperties);
     }
 
+    addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, isCircle) {
+        const tl = new Point(x1, y1);
+        const tr = new Point(x2, y1);
+        const bl = new Point(x1, y2);
+        const br = new Point(x2, y2);
+
+
+        const segment = arrays.prepareSegment(4);
+        const index = segment.vertexLength;
+
+        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tl, isCircle);
+        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tr, isCircle);
+        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, br, isCircle);
+        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, bl, isCircle);
+
+        elementArray.emplaceBack(index, index + 1);
+        elementArray.emplaceBack(index + 1, index + 2);
+        elementArray.emplaceBack(index + 2, index + 3);
+        elementArray.emplaceBack(index + 3, index);
+
+        segment.vertexLength += 4;
+        segment.primitiveLength += 4;
+    }
+
     addToDebugBuffers() {
         const arrays = this.arrays.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
@@ -851,27 +885,23 @@ class SymbolBucket {
                     const x2 = collisionBoxes[k + 2];
                     const y2 = collisionBoxes[k + 3];
 
-                    const tl = new Point(x1, y1);
-                    const tr = new Point(x2, y1);
-                    const bl = new Point(x1, y2);
-                    const br = new Point(x2, y2);
+                    this.addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, false);
+                }
+            }
+            const collisionCircles = symbolInstance.textCollisionCircles;
+            if (collisionCircles) {
+                for (let k = 0; k < collisionCircles.length; k += 3) {
+                    const x = collisionCircles[k];
+                    const y = collisionCircles[k + 1];
+                    const radius = collisionCircles[k + 2];
+                    const boxAnchorPoint = new Point(x, y);
 
+                    const x1 = -radius;
+                    const x2 = radius;
+                    const y1 = -radius;
+                    const y2 = radius;
 
-                    const segment = arrays.prepareSegment(4);
-                    const index = segment.vertexLength;
-
-                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tl);
-                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tr);
-                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, br);
-                    addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, bl);
-
-                    elementArray.emplaceBack(index, index + 1);
-                    elementArray.emplaceBack(index + 1, index + 2);
-                    elementArray.emplaceBack(index + 2, index + 3);
-                    elementArray.emplaceBack(index + 3, index);
-
-                    segment.vertexLength += 4;
-                    segment.primitiveLength += 4;
+                    this.addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, true)
                 }
             }
         }

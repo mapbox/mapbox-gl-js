@@ -82,7 +82,7 @@ class CollisionTile {
         return placedCollisionBoxes;
     }
 
-    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): boolean {
+    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string): boolean {
         const placedCollisionCircles = [];
         if (!collisionCircles) {
             return placedCollisionCircles;
@@ -93,8 +93,8 @@ class CollisionTile {
             const x = projectedPoint.point.x;
             const y = projectedPoint.point.y;
 
-            const tileToViewport = projectedPoint.perspectiveRatio / (pixelsToTileUnits * scale);
-            const radius = collisionCircles[k + 2] * tileToViewport;
+            const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
+            const radius = collisionCircles[k + 2] / tileToViewport;
 
             placedCollisionCircles.push(x);
             placedCollisionCircles.push(y);
@@ -102,6 +102,7 @@ class CollisionTile {
 
             if (!allowOverlap) {
                 if (this.grid.hitTestCircle(x, y, radius)) {
+                    //console.log(key);
                     return [];
                 }
             }
@@ -123,22 +124,22 @@ class CollisionTile {
      * @param ignorePlacement
      * @private
      */
-    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean) {
+    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean, key: string) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionBoxes.length; k += 4) {
-            grid.insert(0, collisionBoxes[k],
+            grid.insert(key, collisionBoxes[k],
                 collisionBoxes[k + 1],
                 collisionBoxes[k + 2],
                 collisionBoxes[k + 3]);
         }
     }
 
-    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean) {
+    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean, key: string) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 3) {
-            grid.insertCircle(0, collisionCircles[k],
+            grid.insertCircle(key, collisionCircles[k],
                 collisionCircles[k + 1],
                 collisionCircles[k + 2]);
         }

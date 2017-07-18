@@ -12,7 +12,8 @@ function GridIndex(width, height, n) {
         boxCells.push([]);
         circleCells.push([]);
     }
-    this.keys = [];
+    this.circleKeys = [];
+    this.boxKeys = [];
     this.bboxes = [];
     this.circles = [];
 
@@ -28,7 +29,7 @@ function GridIndex(width, height, n) {
 
 GridIndex.prototype.insert = function(key, x1, y1, x2, y2) {
     this._forEachCell(x1, y1, x2, y2, this._insertBoxCell, this.boxUid++);
-    this.keys.push(key);
+    this.boxKeys.push(key);
     this.bboxes.push(x1);
     this.bboxes.push(y1);
     this.bboxes.push(x2);
@@ -44,7 +45,7 @@ GridIndex.prototype.insertCircle = function(key, x, y, radius) {
     var y1 = y - radius;
     var y2 = y + radius;
     this._forEachCell(x1, y1, x2, y2, this._insertCircleCell, this.circleUid++);
-    this.keys.push(key);
+    this.circleKeys.push(key);
     this.circles.push(x);
     this.circles.push(y);
     this.circles.push(radius);
@@ -114,19 +115,19 @@ GridIndex.prototype.hitTestCircle = function(x, y, radius) {
     return this._queryCircle(x, y, radius, true);
 }
 
-function CirclesCollide(x1, y1, r1, x2, y2, r2) {
+function CirclesCollide(x1, y1, r1, x2, y2, r2, debug) {
     var dx = x2 - x1;
     var dy = y2 - y1;
     var bothRadii = r1 + r2;
-    return bothRadii * bothRadii < dx * dx + dy * dy;
+    return (bothRadii * bothRadii) > (dx * dx + dy * dy);
 }
 
 function CircleAndRectCollide(x, y, radius, x1, y1, x2, y2) {
     // TODO: Lots of extra math here
     var circle = { x: x, y: y, r: radius };
-    var rectWidth = x2 - x1 / 2;
-    var rectHeight = y2 - y1 / 2;
-    var rect = { x: x1 + rectWidth, y: y1 + rectHeight, w: rectWidth, h: rectHeight };
+    var rectWidth = x2 - x1;
+    var rectHeight = y2 - y1;
+    var rect = { x: x1, y: y1, w: rectWidth, h: rectHeight };
     var distX = Math.abs(circle.x - rect.x - rect.w / 2);
     var distY = Math.abs(circle.y - rect.y - rect.h / 2);
 
@@ -199,10 +200,17 @@ GridIndex.prototype._hitTestCellCircle = function(x1, y1, x2, y2, cellIndex, res
         var circles = this.circles;
         for (var u = 0; u < circleCell.length; u++) {
             var offset = circleCell[u] * 3;
+            var keys = this.circleKeys;
             if (CirclesCollide(circles[offset],
                                      circles[offset + 1],
                                      circles[offset + 2],
                                      circle.x, circle.y, circle.radius)) {
+                // console.log("Collided against: " + keys[circleCell[u]]);
+                // console.log(`Placing: ${circle.x}, ${circle.y}, ${circle.radius} against ${circles[offset]}, ${circles[offset+1]}, ${circles[offset+2]}`);
+                // CirclesCollide(circles[offset],
+                //                          circles[offset + 1],
+                //                          circles[offset + 2],
+                //                          circle.x, circle.y, circle.radius, true);
                 result.push(true);
                 return true;
             }
