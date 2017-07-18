@@ -228,12 +228,12 @@ class Tile {
             cameraToTileDistance: this.cameraToTileDistance,
             showCollisionBoxes: this.showCollisionBoxes
         }, (_, data) => {
+            console.log('reloaded');
+            this.state = 'loaded';
             this.reloadSymbolData(data, this.placementSource.map.style);
-            if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
+            this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
             // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
             if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
-
-            this.state = 'loaded';
 
             if (this.redoWhenDone) {
                 this.redoWhenDone = false;

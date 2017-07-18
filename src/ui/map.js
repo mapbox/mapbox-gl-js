@@ -1049,7 +1049,7 @@ class Map extends Camera {
             const tiles = source._tiles;
             for (const t in tiles) {
                 const tile = tiles[t];
-                if (!(tile.state === 'loaded' || tile.state === 'errored' || tile.state === 'reloading')) return false;
+                if (!(tile.state === 'loaded' || tile.state === 'errored')) return false;
             }
         }
         return true;
