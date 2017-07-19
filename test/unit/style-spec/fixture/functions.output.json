@@ -157,5 +157,9 @@
   {
     "message": "layers[43].paint.fill-color.default: color expected, \"invalid\" found",
     "line": 839
+  },
+  {
+    "message": "layers[44].paint.fill-opacity.stops[1][0]: stop domain values must appear in ascending order",
+    "line": 857
   }
 ]

@@ -168,7 +168,7 @@ module.exports = function validateFunction(options) {
             return [new ValidationError(options.key, options.value, 'integer expected, found %s', value)];
         }
 
-        if (type === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {
+        if (functionType !== 'categorical' && type === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {
             return [new ValidationError(options.key, options.value, 'stop domain values must appear in ascending order')];
         } else {
             previousStopDomainValue = value;
