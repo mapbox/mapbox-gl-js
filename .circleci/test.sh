@@ -11,16 +11,16 @@ PATH=$(python -m site --user-base)/bin:${PATH}
 rm -rf coverage .nyc_output
 
 # run linters
-yarn run lint
-yarn run lint-docs
-yarn run lint-css
+npm run lint
+npm run lint-docs
+npm run lint-css
 
 # build and run build tests
-yarn run build-min
-yarn run build-dev
+npm run build-min
+npm run build-dev
 
 # run flow to check types
-yarn run test-flow
+npm run test-flow
 
 # run unit, render & query tests with coverage
 xvfb-run --server-args="-screen 0 1024x768x24" npm run test-cov
@@ -34,6 +34,6 @@ fi
 
 # upload benchmarks
 if [ "$CIRCLE_BRANCH" == "master" ]; then
-    yarn run build-benchmarks
+    npm run build-benchmarks
     aws s3 cp --acl public-read --content-type application/javascript bench/benchmarks_generated.js s3://mapbox-gl-js/master/benchmarks.js
 fi
