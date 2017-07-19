@@ -756,7 +756,7 @@ class Style extends Evented {
         if (params && params.layers) {
             if (!Array.isArray(params.layers)) {
                 this.fire('error', {error: 'parameters.layers must be an Array.'});
-                return;
+                return [];
             }
             for (const layerId of params.layers) {
                 const layer = this._layers[layerId];
@@ -764,7 +764,7 @@ class Style extends Evented {
                     // this layer is not in the style.layers array
                     this.fire('error', {error: `The layer '${layerId}' does not exist ` +
                         `in the map's style and cannot be queried for features.`});
-                    return;
+                    return [];
                 }
                 includedSources[layer.source] = true;
             }
