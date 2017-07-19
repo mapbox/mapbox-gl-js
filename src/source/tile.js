@@ -228,7 +228,6 @@ class Tile {
             cameraToTileDistance: this.cameraToTileDistance,
             showCollisionBoxes: this.showCollisionBoxes
         }, (_, data) => {
-            console.log('reloaded');
             this.state = 'loaded';
             this.reloadSymbolData(data, this.placementSource.map.style);
             this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
