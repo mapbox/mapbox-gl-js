@@ -4,10 +4,9 @@ const Point = require('point-geometry');
 const Grid = require('./grid_index_experimental');
 const glmatrix = require('@mapbox/gl-matrix');
 
-const vec4 = glmatrix.vec4;
 const mat4 = glmatrix.mat4;
 
-const intersectionTests = require('../util/intersection_tests');
+const projection = require('../symbol/projection'); // TODO: Split the main thread part of this code out so it doesn't get needlessly copied to the workers
 
 /**
  * A collision tile used to prevent symbols from overlapping. It keep tracks of
@@ -60,7 +59,7 @@ class CollisionTile {
         }
 
         for (let k = 0; k < collisionBoxes.length; k += 6) {
-            const projectedPoint = this.projectPoint(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
+            const projectedPoint = this.projectAndGetPerspectiveRatio(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
             const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
             const tlX = collisionBoxes[k] / tileToViewport + projectedPoint.point.x;
             const tlY = collisionBoxes[k + 1] / tileToViewport + projectedPoint.point.y;
@@ -82,27 +81,64 @@ class CollisionTile {
         return placedCollisionBoxes;
     }
 
-    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string): boolean {
+    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, posMatrix: any, pitchWithMap: boolean): boolean {
         const placedCollisionCircles = [];
         if (!collisionCircles) {
             return placedCollisionCircles;
         }
 
-        for (let k = 0; k < collisionCircles.length; k += 3) {
-            const projectedPoint = this.projectPoint(new Point(collisionCircles[k], collisionCircles[k + 1]));
-            const x = projectedPoint.point.x;
-            const y = projectedPoint.point.y;
+        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const perspectiveRatio = this.getPerspectiveRatio(tileUnitAnchorPoint);
 
-            const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
+        const projectionCache = {};
+        const fontScale = fontSize / 24;
+        const lineOffsetX = symbol.lineOffsetX * fontSize;
+        const lineOffsetY = symbol.lineOffsetY * fontSize;
+
+        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix);
+        const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
+            fontScale,
+            glyphOffsetArray,
+            lineOffsetX,
+            lineOffsetY,
+            /*flip*/ false,
+            labelPlaneAnchorPoint,
+            symbol,
+            lineVertexArray,
+            labelPlaneMatrix,
+            projectionCache);
+
+        for (let k = 0; k < collisionCircles.length; k += 5) {
+            const boxDistanceToAnchor = collisionCircles[k + 3];
+            if (!firstAndLastGlyph ||
+                (boxDistanceToAnchor < -firstAndLastGlyph.first.tileDistance) ||
+                (boxDistanceToAnchor > firstAndLastGlyph.last.tileDistance)) {
+                // Don't need to use this circle because the label doesn't extend this far
+                collisionCircles[k + 4] = true;
+                continue;
+            }
+
+            const projectedPoint = this.projectPoint(new Point(collisionCircles[k], collisionCircles[k + 1]));
+            const x = projectedPoint.x;
+            const y = projectedPoint.y;
+
+            const tileToViewport = perspectiveRatio * pixelsToTileUnits * scale;
             const radius = collisionCircles[k + 2] / tileToViewport;
 
+            // TODO: Don't skip the circle if it's the last one that's going to be used (this is a source of instability)
+            const dx = x - placedCollisionCircles[placedCollisionCircles.length - 3];
+            const dy = y - placedCollisionCircles[placedCollisionCircles.length - 2];
+            if (radius * radius * 2 > dx * dx + dy * dy) {
+                collisionCircles[k + 4] = true;
+                continue;
+            }
             placedCollisionCircles.push(x);
             placedCollisionCircles.push(y);
             placedCollisionCircles.push(radius);
+            collisionCircles[k + 4] = false;
 
             if (!allowOverlap) {
                 if (this.grid.hitTestCircle(x, y, radius)) {
-                    //console.log(key);
                     return [];
                 }
             }
@@ -150,18 +186,24 @@ class CollisionTile {
         this.matrix = matrix;
     }
 
-    xytransformMat4(out, a, m) {
-        const x = a[0], y = a[1];
-        out[0] = m[0] * x + m[4] * y + m[12];
-        out[1] = m[1] * x + m[5] * y + m[13];
-        out[3] = m[3] * x + m[7] * y + m[15];
-        return out;
+    getPerspectiveRatio(anchor) {
+        const p = [anchor.x, anchor.y, 0, 1];
+        projection.xyTransformMat4(p, p, this.matrix);
+        return 1 + 0.5 * ((p[3] / this.transform.cameraToCenterDistance) - 1);
     }
 
     projectPoint(point) {
         const p = [point.x, point.y, 0, 1];
-        //vec4.transformMat4(p, p, this.matrix);
-        this.xytransformMat4(p, p, this.matrix);
+        projection.xyTransformMat4(p, p, this.matrix);
+        return new Point(
+            ((p[0] / p[3] + 1) / 2) * this.transform.width,
+            ((-p[1] / p[3] + 1) / 2) * this.transform.height
+        );
+    }
+
+    projectAndGetPerspectiveRatio(point) {
+        const p = [point.x, point.y, 0, 1];
+        projection.xyTransformMat4(p, p, this.matrix);
         const a = new Point(
             ((p[0] / p[3] + 1) / 2) * this.transform.width,
             ((-p[1] / p[3] + 1) / 2) * this.transform.height

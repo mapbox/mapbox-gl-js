@@ -10,6 +10,7 @@ const featureFilter = require('../style-spec/feature_filter');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 const Throttler = require('../util/throttler');
+const projection = require('../symbol/projection');
 
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
@@ -174,7 +175,10 @@ class Tile {
 
         if (bucket) {
             //recalculateLayers(bucket, this.zoom);
-            bucket.place(collisionTile, showCollisionBoxes, source.map.transform.zoom, pixelsToTileUnits(this, 1, source.map.transform.zoom));
+            const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
+            const pixelRatio = pixelsToTileUnits(this, 1, source.map.transform.zoom);
+            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, source.map.transform, pixelRatio);
+            bucket.place(collisionTile, showCollisionBoxes, source.map.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix);
             bucket.updateOpacities(symbolOpacityIndex, this.coord, this.sourceMaxZoom);
             symbolBuckets.push(bucket);
         }

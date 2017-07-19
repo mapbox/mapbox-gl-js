@@ -8,7 +8,10 @@ const addDynamicAttributes = require('../data/bucket/symbol_bucket').addDynamicA
 module.exports = {
     updateLineLabels: updateLineLabels,
     getLabelPlaneMatrix: getLabelPlaneMatrix,
-    getGlCoordMatrix: getGlCoordMatrix
+    getGlCoordMatrix: getGlCoordMatrix,
+    project: project,
+    placeFirstAndLastGlyph: placeFirstAndLastGlyph,
+    xyTransformMat4: xyTransformMat4
 };
 
 /*
@@ -96,7 +99,7 @@ function getGlCoordMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pix
 
 function project(point, matrix) {
     const pos = [point.x, point.y, 0, 1];
-    vec4.transformMat4(pos, pos, matrix);
+    xyTransformMat4(pos, pos, matrix);
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
@@ -172,6 +175,27 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
     }
 }
 
+function placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache) {
+    const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
+    const lineStartIndex = symbol.lineStartIndex;
+    const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
+
+    const firstGlyphOffset = glyphOffsetArray.get(symbol.glyphStartIndex).offsetX;
+    const lastGlyphOffset = glyphOffsetArray.get(glyphEndIndex - 1).offsetX;
+
+    const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
+    if (!firstPlacedGlyph)
+        return null;
+
+    const lastPlacedGlyph = placeGlyphAlongLine(fontScale * lastGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
+    if (!lastPlacedGlyph)
+        return null;
+
+    return { first: firstPlacedGlyph, last: lastPlacedGlyph };
+}
+
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontSize;
@@ -180,33 +204,24 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     let placedGlyphs;
     if (symbol.numGlyphs > 1) {
         const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
-
-        // Place the first and the last glyph in the label first, so we can figure out
-        // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
-        const firstGlyphOffset = glyphOffsetArray.get(symbol.glyphStartIndex).offsetX;
-        const lastGlyphOffset = glyphOffsetArray.get(glyphEndIndex - 1).offsetX;
         const lineStartIndex = symbol.lineStartIndex;
         const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
 
-        const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-            lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
-        if (!firstPlacedGlyph)
+        // Place the first and the last glyph in the label first, so we can figure out
+        // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
+        const firstAndLastGlyph = placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache);
+        if (!firstAndLastGlyph) {
             return { notEnoughRoom: true };
-
-        const lastPlacedGlyph = placeGlyphAlongLine(fontScale * lastGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-            lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
-        if (!lastPlacedGlyph)
-            return { notEnoughRoom: true };
-
-        const firstPoint = project(firstPlacedGlyph.point, glCoordMatrix);
-        const lastPoint = project(lastPlacedGlyph.point, glCoordMatrix);
+        }
+        const firstPoint = project(firstAndLastGlyph.first.point, glCoordMatrix);
+        const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix);
 
         if (keepUpright && !flip &&
             (symbol.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x)) {
             return { needsFlipping: true };
         }
 
-        placedGlyphs = [firstPlacedGlyph];
+        placedGlyphs = [firstAndLastGlyph.first];
         for (let glyphIndex = symbol.glyphStartIndex + 1; glyphIndex < glyphEndIndex - 1; glyphIndex++) {
             const glyph = glyphOffsetArray.get(glyphIndex);
 
@@ -214,7 +229,7 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
             placedGlyphs.push(placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
                 lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache));
         }
-        placedGlyphs.push(lastPlacedGlyph);
+        placedGlyphs.push(firstAndLastGlyph.last);
     } else {
         // Only a single glyph to place
         // So, determine whether to flip based on projected angle of the line segment it's on
@@ -264,6 +279,7 @@ function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoin
         lineStartIndex + anchorSegment :
         lineStartIndex + anchorSegment + 1;
 
+    const initialIndex = currentIndex;
     let current = anchorPoint;
     let prev = anchorPoint;
     let distanceToPrev = 0;
@@ -298,9 +314,19 @@ function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoin
 
     const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
 
+    // TODO: Only used for collision detection, try to avoid work otherwise?
+    const currentVertex = lineVertexArray.get(currentIndex);
+    let prevTileDistance = 0;
+    if (currentIndex - dir !== initialIndex) {
+        prevTileDistance = lineVertexArray.get(currentIndex -= dir).tileUnitDistanceFromAnchor;
+    }
+
+    const tileDistance = prevTileDistance + (currentVertex.tileUnitDistanceFromAnchor - prevTileDistance) * segmentInterpolationT;
+
     return {
         point: p,
-        angle: segmentAngle
+        angle: segmentAngle,
+        tileDistance: tileDistance
     };
 }
 
@@ -312,4 +338,14 @@ function hideGlyphs(num, dynamicLayoutVertexArray) {
     for (let i = 0; i < num; i++) {
         addDynamicAttributes(dynamicLayoutVertexArray, offscreenPoint, 0, 25);
     }
+}
+
+// For line label layout, we're not using z output and our w input is always 1
+// This custom matrix transformation ignores those components to make projection faster
+function xyTransformMat4(out, a, m) {
+    const x = a[0], y = a[1];
+    out[0] = m[0] * x + m[4] * y + m[12];
+    out[1] = m[1] * x + m[5] * y + m[13];
+    out[3] = m[3] * x + m[7] * y + m[15];
+    return out;
 }
