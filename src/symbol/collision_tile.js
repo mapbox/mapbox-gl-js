@@ -125,12 +125,20 @@ class CollisionTile {
             const tileToViewport = perspectiveRatio * pixelsToTileUnits * scale;
             const radius = collisionCircles[k + 2] / tileToViewport;
 
-            // TODO: Don't skip the circle if it's the last one that's going to be used (this is a source of instability)
             const dx = x - placedCollisionCircles[placedCollisionCircles.length - 3];
             const dy = y - placedCollisionCircles[placedCollisionCircles.length - 2];
             if (radius * radius * 2 > dx * dx + dy * dy) {
-                collisionCircles[k + 4] = true;
-                continue;
+                if ((k + 8) < collisionCircles.length) {
+                    const nextBoxDistanceToAnchor = collisionCircles[k + 8];
+                    if ((nextBoxDistanceToAnchor > -firstAndLastGlyph.first.tileDistance) &&
+                    (nextBoxDistanceToAnchor < firstAndLastGlyph.last.tileDistance)) {
+                        // Hide significantly overlapping circles, unless this is the last one we can
+                        // use, in which case we want to keep it in place even if it's tightly packed
+                        // with the one before it.
+                        collisionCircles[k + 4] = true;
+                        continue;
+                    }
+                }
             }
             placedCollisionCircles.push(x);
             placedCollisionCircles.push(y);
