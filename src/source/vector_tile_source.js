@@ -107,7 +107,7 @@ class VectorTileSource extends Evented implements Source {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        if (!tile.workerID || tile.state === 'expired') {
+        if (tile.workerID === undefined || tile.state === 'expired') {
             tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
         } else if (tile.state === 'loading') {
             // schedule tile reloading after it has been loaded

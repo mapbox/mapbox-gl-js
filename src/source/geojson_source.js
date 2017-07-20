@@ -187,7 +187,7 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const message = !tile.workerID || tile.state === 'expired' ? 'loadTile' : 'reloadTile';
+        const message = tile.workerID === undefined || tile.state === 'expired' ? 'loadTile' : 'reloadTile';
         const params = {
             type: this.type,
             uid: tile.uid,

@@ -69,7 +69,7 @@ class Tile {
     cameraToTileDistance: number;
     showCollisionBoxes: boolean;
     placementSource: any;
-    workerID: number;
+    workerID: number | void;
     vtLayers: {[string]: VectorTileLayer};
     mask: Mask;
     aborted: ?boolean;
