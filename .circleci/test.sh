@@ -26,7 +26,8 @@ npm run test-flow
 xvfb-run --server-args="-screen 0 1024x768x24" npm run test-cov
 
 # send coverage report to coveralls
-# nyc report --reporter=lcov
+nyc report --reporter=lcov
+
 # this code works around a Coveralls / CircleCI bug triggered by tagged builds
 if [ -z "$CIRCLE_TAG" ]; then
     (node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info) || true
