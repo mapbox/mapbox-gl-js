@@ -26,6 +26,9 @@ function GridIndex(width, height, n) {
     this.circleUid = 0;
 }
 
+GridIndex.prototype.keysLength = function() {
+    return this.boxKeys.length + this.circleKeys.length;
+};
 
 GridIndex.prototype.insert = function(key, x1, y1, x2, y2) {
     this._forEachCell(x1, y1, x2, y2, this._insertBoxCell, this.boxUid++);
@@ -60,9 +63,8 @@ GridIndex.prototype._insertCircleCell = function(x1, y1, x2, y2, cellIndex, uid)
 };
 
 GridIndex.prototype._query = function(x1, y1, x2, y2, hitTest) {
-
     if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
-        return;
+        return hitTest ? false : [];
     }
     if (x1 <= 0 && y1 <= 0 && this.width <= x2 && this.height <= y2) {
         // We use `Array#slice` because `this.keys` may be a `Int32Array` and
@@ -72,7 +74,7 @@ GridIndex.prototype._query = function(x1, y1, x2, y2, hitTest) {
 
     } else {
         var result = [];
-        var seenUids = {};
+        var seenUids = { box: {}, circle: {} };
         this._forEachCell(x1, y1, x2, y2, hitTest ? this._hitTestCell : this._queryCell, result, seenUids);
         return hitTest ? result.length > 0 : result;
     }
@@ -97,7 +99,7 @@ GridIndex.prototype._queryCircle = function(x, y, radius, hitTest) {
 
     } else {
         var result = [];
-        var seenUids = {};
+        var seenUids = { box: {}, circle: {} };
         this._forEachCell(x1, y1, x2, y2, hitTest ? this._hitTestCellCircle : this._queryCellCircle, result, { x: x, y: y, radius: radius });
         return hitTest ? result.length > 0 : result;
     }
@@ -219,22 +221,43 @@ GridIndex.prototype._hitTestCellCircle = function(x1, y1, x2, y2, cellIndex, res
 };
 
 GridIndex.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, seenUids) {
-    var cell = this.cells[cellIndex];
-    if (cell !== null) {
-        var keys = this.keys;
+    var boxCell = this.boxCells[cellIndex];
+    if (boxCell !== null) {
         var bboxes = this.bboxes;
-        for (var u = 0; u < cell.length; u++) {
-            var uid = cell[u];
-            if (seenUids[uid] === undefined) {
-                var offset = uid * 4;
+        var boxKeys = this.boxKeys;
+        for (var u = 0; u < boxCell.length; u++) {
+            var boxUid = boxCell[u];
+            if (seenUids.box[boxUid] === undefined) {
+                var offset = boxUid * 4;
                 if ((x1 <= bboxes[offset + 2]) &&
                     (y1 <= bboxes[offset + 3]) &&
                     (x2 >= bboxes[offset + 0]) &&
                     (y2 >= bboxes[offset + 1])) {
-                    seenUids[uid] = true;
-                    result.push(keys[uid]);
+                    seenUids.box[boxUid] = true;
+                    result.push(boxKeys[boxUid]);
                 } else {
-                    seenUids[uid] = false;
+                    // TODO: I'm not sure why this true/false distinction was here...
+                    seenUids.box[boxUid] = false;
+                }
+            }
+        }
+    }
+    var circleCell = this.circleCells[cellIndex];
+    if (circleCell !== null) {
+        var circles = this.circles;
+        var circleKeys = this.circleKeys;
+        for (var u = 0; u < circleCell.length; u++) {
+            var circleUid = circleCell[u];
+            if (seenUids.circle[circleUid] === undefined) {
+                var offset = circleUid * 3;
+                if (CircleAndRectCollide(circles[offset],
+                                         circles[offset + 1],
+                                         circles[offset + 2],
+                                         x1, y1, x2, y2)) {
+                    seenUids.circle[circleUid] = true;
+                    result.push(true);
+                } else {
+                    seenUids.circle[circleUid] = false;
                 }
             }
         }

@@ -696,7 +696,7 @@ class SymbolBucket {
         }
     }
 
-    place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, posMatrix: any) {
+    place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, posMatrix: any, tileID: number) {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
@@ -789,8 +789,8 @@ class SymbolBucket {
                 this.updateCollisionBoxes(collisionArray, symbolInstance.textCollisionBoxes, symbolInstance.textCollisionCircles, placeGlyph);
                 if (placeGlyph) {
                     symbolInstance.placedText = true;
-                    collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement'], symbolInstance.key);
-                    collisionTile.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], symbolInstance.key);
+                    collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
+                    collisionTile.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
                 } else {
                     symbolInstance.placedText = false;
                 }
@@ -800,7 +800,7 @@ class SymbolBucket {
                 this.updateCollisionBoxes(collisionArray, symbolInstance.iconCollisionBoxes, [], placeIcon);
                 if (placeIcon) {
                     symbolInstance.placedIcon = true;
-                    collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement'], symbolInstance.key);
+                    collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
                 } else {
                     symbolInstance.placedIcon = false;
                 }

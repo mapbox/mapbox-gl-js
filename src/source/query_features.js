@@ -17,7 +17,9 @@ exports.rendered = function(sourceCache, styleLayers, queryGeometry, params, zoo
                 scale: tileIn.scale,
                 tileSize: tileIn.tile.tileSize,
                 bearing: bearing,
-                params: params
+                params: params,
+                tileSourceMaxZoom: tileIn.tile.sourceMaxZoom,
+                collisionBoxArray: tileIn.tile.collisionBoxArray
             }, styleLayers)});
     }
     return mergeRenderedFeatureLayers(renderedFeatureLayers);

@@ -7,6 +7,7 @@ const glmatrix = require('@mapbox/gl-matrix');
 const mat4 = glmatrix.mat4;
 
 const projection = require('../symbol/projection'); // TODO: Split the main thread part of this code out so it doesn't get needlessly copied to the workers
+const intersectionTests = require('../util/intersection_tests');
 
 /**
  * A collision tile used to prevent symbols from overlapping. It keep tracks of
@@ -19,8 +20,6 @@ class CollisionTile {
     grid: any;
     ignoredGrid: any;
     transform: Transform;
-    rotationMatrix: [number, number, number, number];
-    reverseRotationMatrix: [number, number, number, number];
     collisionBoxArray: any;
     tempCollisionBox: any;
     edges: Array<any>;
@@ -35,11 +34,6 @@ class CollisionTile {
 
         this.grid = grid;
         this.ignoredGrid = ignoredGrid;
-
-        const sin = Math.sin(this.transform.angle),
-            cos = Math.cos(this.transform.angle);
-        this.rotationMatrix = [cos, -sin, sin, cos];
-        this.reverseRotationMatrix = [cos, sin, -sin, cos];
     }
 
 
@@ -155,8 +149,86 @@ class CollisionTile {
         return placedCollisionCircles;
     }
 
-    queryRenderedSymbols(queryGeometry: any, scale: number): Array<any> {
+    queryRenderedSymbols(queryGeometry: any, scale: number, tileCoord: TileCoord, tileSourceMaxZoom: number, pixelsToTileUnits: number, collisionBoxArray: any) {
+        const sourceLayerFeatures = {};
+        const result = [];
 
+        if (queryGeometry.length === 0 || (this.grid.keysLength() === 0 && this.ignoredGrid.keysLength() === 0)) {
+            return result;
+        }
+
+        this.setMatrix(this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom));
+
+        const query = [];
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i < queryGeometry.length; i++) {
+            const ring = queryGeometry[i];
+            for (let k = 0; k < ring.length; k++) {
+                // It's a bit of a shame we have to go back and forth to tile coordinates since the original query was
+                // in screen coordinates, but this makes the query compatible with features which are still indexed in
+                // tile coordinates.
+                const p = this.projectPoint(ring[k]);
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x);
+                maxY = Math.max(maxY, p.y);
+                query.push(p);
+            }
+        }
+
+        const tileID = tileCoord.id;
+
+        const thisTileFeatures = []; // TODO: The current architecture duplicates lots of querying for boxes that cross multiple tiles
+        const features = this.grid.query(minX, minY, maxX, maxY);
+        for (let i = 0; i < features.length; i++) {
+            if (features[i].tileID === tileID) {
+                thisTileFeatures.push(features[i].boxIndex);
+            }
+        }
+        const ignoredFeatures = this.ignoredGrid.query(minX, minY, maxX, maxY);
+        for (let i = 0; i < ignoredFeatures.length; i++) {
+            if (ignoredFeatures[i].tileID === tileID) {
+                thisTileFeatures.push(ignoredFeatures[i].boxIndex);
+            }
+        }
+
+        for (let i = 0; i < features.length; i++) {
+            const blocking = collisionBoxArray.get(features[i]);
+            const sourceLayer = blocking.sourceLayerIndex;
+            const featureIndex = blocking.featureIndex;
+
+            // Skip already seen features.
+            if (sourceLayerFeatures[sourceLayer] === undefined) {
+                sourceLayerFeatures[sourceLayer] = {};
+            }
+            if (sourceLayerFeatures[sourceLayer][featureIndex]) continue;
+
+
+            // Check if query intersects with the feature box
+            // TODO: This is still treating collision circles as boxes (which means we're slightly more likely
+            // to include them in our results). Also we're kind of needlessly reprojecting the box here
+            const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPoint);
+            const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
+            const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
+            const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
+            const x2 = blocking.x2 / tileToViewport + projectedPoint.point.x;
+            const y2 = blocking.y2 / tileToViewport + projectedPoint.point.y;
+            const bbox = [
+                new Point(x1, y1),
+                new Point(x2, y1),
+                new Point(x2, y2),
+                new Point(x1, y2)
+            ];
+            if (!intersectionTests.polygonIntersectsPolygon(query, bbox)) continue;
+
+            sourceLayerFeatures[sourceLayer][featureIndex] = true;
+            result.push(features[i]);
+        }
+
+        return result;
     }
 
     /**
@@ -168,10 +240,11 @@ class CollisionTile {
      * @param ignorePlacement
      * @private
      */
-    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean, key: string) {
+    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionBoxes.length; k += 4) {
+            const key = { tileID: tileID, boxIndex: boxStartIndex + k / 4 };
             grid.insert(key, collisionBoxes[k],
                 collisionBoxes[k + 1],
                 collisionBoxes[k + 2],
@@ -179,10 +252,11 @@ class CollisionTile {
         }
     }
 
-    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean, key: string) {
+    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 3) {
+            const key = { tileID: tileID, boxIndex: boxStartIndex + k / 4 };
             grid.insertCircle(key, collisionCircles[k],
                 collisionCircles[k + 1],
                 collisionCircles[k + 2]);
