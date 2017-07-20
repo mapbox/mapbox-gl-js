@@ -49,7 +49,7 @@ function breakLines(text, lineBreakPoints) {
     return lines;
 }
 
-function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, writingMode) {
+function shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, justify, spacing, translate, verticalHeight, writingMode) {
     let logicalInput = text.trim();
     if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
 
@@ -63,7 +63,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
         lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
     }
 
-    shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight);
+    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, justify, translate, writingMode, spacing, verticalHeight);
 
     if (!positionedGlyphs.length)
         return false;
@@ -228,7 +228,39 @@ function determineLineBreaks(logicalInput, spacing, maxWidth, glyphs) {
             true));
 }
 
-function shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight) {
+function getAnchorAlignment(textAnchor) {
+    let horizontalAlign = 0.5, verticalAlign = 0.5;
+
+    switch (textAnchor) {
+    case 'right':
+    case 'top-right':
+    case 'bottom-right':
+        horizontalAlign = 1;
+        break;
+    case 'left':
+    case 'top-left':
+    case 'bottom-left':
+        horizontalAlign = 0;
+        break;
+    }
+
+    switch (textAnchor) {
+    case 'bottom':
+    case 'bottom-right':
+    case 'bottom-left':
+        verticalAlign = 1;
+        break;
+    case 'top':
+    case 'top-right':
+    case 'top-left':
+        verticalAlign = 0;
+        break;
+    }
+
+    return { horizontalAlign: horizontalAlign, verticalAlign: verticalAlign };
+}
+
+function shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, justify, translate, writingMode, spacing, verticalHeight) {
     // the y offset *should* be part of the font metadata
     const yOffset = -17;
 
@@ -274,14 +306,16 @@ function shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, vertica
         y += lineHeight;
     }
 
-    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length);
+    const anchorPosition = getAnchorAlignment(textAnchor);
+
+    align(positionedGlyphs, justify, anchorPosition.horizontalAlign, anchorPosition.verticalAlign, maxLineLength, lineHeight, lines.length);
 
     // Calculate the bounding box
     const height = lines.length * lineHeight;
 
-    shaping.top += -verticalAlign * height;
+    shaping.top += -anchorPosition.verticalAlign * height;
     shaping.bottom = shaping.top + height;
-    shaping.left += -horizontalAlign * maxLineLength;
+    shaping.left += -anchorPosition.horizontalAlign * maxLineLength;
     shaping.right = shaping.left + maxLineLength;
 }
 

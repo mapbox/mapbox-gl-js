@@ -402,35 +402,6 @@ class SymbolBucket {
 
         const layout = this.layers[0].layout;
 
-        let horizontalAlign = 0.5,
-            verticalAlign = 0.5;
-
-        switch (layout['text-anchor']) {
-        case 'right':
-        case 'top-right':
-        case 'bottom-right':
-            horizontalAlign = 1;
-            break;
-        case 'left':
-        case 'top-left':
-        case 'bottom-left':
-            horizontalAlign = 0;
-            break;
-        }
-
-        switch (layout['text-anchor']) {
-        case 'bottom':
-        case 'bottom-right':
-        case 'bottom-left':
-            verticalAlign = 1;
-            break;
-        case 'top':
-        case 'top-right':
-        case 'top-left':
-            verticalAlign = 0;
-            break;
-        }
-
         const justify =
             layout['text-justify'] === 'right' ? 1 :
             layout['text-justify'] === 'left' ? 0 : 0.5;
@@ -449,10 +420,11 @@ class SymbolBucket {
                 const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(feature.text);
                 const textOffset = this.layers[0].getLayoutValue('text-offset', {zoom: this.zoom}, feature.properties).map((t)=> t * oneEm);
                 const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
+                const textAnchor = this.layers[0].getLayoutValue('text-anchor', {zoom: this.zoom}, feature.properties);
 
                 shapedTextOrientations = {
-                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
-                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
+                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, textAnchor, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
+                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, textAnchor, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
                 };
             } else {
                 shapedTextOrientations = {};
