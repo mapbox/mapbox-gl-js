@@ -11,6 +11,7 @@ const FeatureIndex = require('../../../src/data/feature_index');
 const CollisionTile = require('../../../src/symbol/collision_tile');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
+const Evented = require('../../../src/util/evented');
 
 test('querySourceFeatures', (t) => {
     const features = [{
@@ -168,6 +169,29 @@ test('Tile#redoPlacement', (t) => {
 
         t.ok(tile.redoWhenDone);
         t.end();
+    });
+
+    test('reloaded tile fires a data event on completion', (t)=>{
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        tile.loadVectorData(createVectorData(), createPainter());
+        t.stub(tile, 'reloadSymbolData').returns(null);
+        const source = util.extend(new Evented(), {
+            type: 'vector',
+            dispatcher: {
+                send: (name, data, cb) => {
+                    if (name === 'redoPlacement') setTimeout(cb, 300);
+                }
+            },
+            map: {
+                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } },
+                painter: { tileExtentVAO: {vao: 0}}
+            }
+        });
+
+        tile.redoPlacement(source);
+        tile.placementSource.on('data', ()=>{
+            if (tile.state === 'loaded') t.end();
+        });
     });
 
     t.end();
