@@ -45,20 +45,11 @@ const CollisionBoxArray = createStructArrayType({
         { type: 'Int16', name: 'anchorPointX' },
         { type: 'Int16', name: 'anchorPointY' },
 
-        // the offset of the box from the label's anchor point
-        { type: 'Int16', name: 'offsetX' },
-        { type: 'Int16', name: 'offsetY' },
-
         // distances to the edges from the anchor
         { type: 'Int16', name: 'x1' },
         { type: 'Int16', name: 'y1' },
         { type: 'Int16', name: 'x2' },
         { type: 'Int16', name: 'y2' },
-
-        // the box is only valid for scales < maxScale.
-        // The box does not block other boxes at scales >= maxScale;
-        { type: 'Float32', name: 'unadjustedMaxScale' },
-        { type: 'Float32', name: 'maxScale' },
 
         // the index of the feature in the original vectortile
         { type: 'Uint32', name: 'featureIndex' },
@@ -67,13 +58,12 @@ const CollisionBoxArray = createStructArrayType({
         // the bucket the feature appears in
         { type: 'Uint16', name: 'bucketIndex' },
 
-        // rotated and scaled bbox used for indexing
-        { type: 'Int16', name: 'bbox0' },
-        { type: 'Int16', name: 'bbox1' },
-        { type: 'Int16', name: 'bbox2' },
-        { type: 'Int16', name: 'bbox3' },
+        // collision circles for lines store their distance to the anchor in tile units
+        // so that they can be ignored if the projected label doesn't extend into
+        // the box area
+        { type: 'Int16', name: 'radius' },
+        { type: 'Int16', name: 'distanceToAnchor' }
 
-        { type: 'Float32', name: 'placementScale' }
     ]
 });
 

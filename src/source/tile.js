@@ -11,6 +11,7 @@ const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 const Throttler = require('../util/throttler');
 const projection = require('../symbol/projection');
+const PlaceSymbols = require('../symbol/place_symbols');
 
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
@@ -133,12 +134,6 @@ class Tile {
      */
     reloadSymbolData(data: WorkerTileResult) {
         if (this.state === 'unloaded') return;
-
-        this.collisionTile = data.collisionTile;
-
-        if (this.featureIndex) {
-            this.featureIndex.setCollisionTile(this.collisionTile);
-        }
     }
 
     /**
@@ -169,8 +164,6 @@ class Tile {
 
         collisionTile.setMatrix(posMatrix);
 
-        const symbolBuckets = [];
-
         const bucket = this.getBucket(layer);
 
         if (bucket) {
@@ -178,17 +171,15 @@ class Tile {
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
             const pixelRatio = pixelsToTileUnits(this, 1, source.map.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, source.map.transform, pixelRatio);
-            bucket.place(collisionTile, showCollisionBoxes, source.map.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix);
-            bucket.updateOpacities(symbolOpacityIndex, this.coord, this.sourceMaxZoom);
-            symbolBuckets.push(bucket);
+            PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, source.map.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix, this.coord.id, this.collisionBoxArray);
+            PlaceSymbols.updateOpacities(bucket, symbolOpacityIndex, this.coord, this.sourceMaxZoom);
         }
 
-        const data = {
-            buckets: symbolBuckets,
-            collisionTile: collisionTile
-        };
+        this.collisionTile = collisionTile;
 
-        this.reloadSymbolData(data);
+        if (this.featureIndex) {
+            this.featureIndex.setCollisionTile(this.collisionTile);
+        }
         //if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (source.map) source.map.painter.tileExtentVAO.vao = null;

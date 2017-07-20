@@ -51,28 +51,11 @@ class CollisionFeature {
             }
 
         } else {
-            collisionBoxArray.emplaceBack(anchor.x, anchor.y, 0, 0, x1, y1, x2, y2, Infinity, Infinity, featureIndex, sourceLayerIndex, bucketIndex,
-                0, 0, 0, 0, 0);
+            collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex,
+                0, 0);
         }
 
         this.boxEndIndex = collisionBoxArray.length;
-    }
-
-    collisionBoxes(collisionBoxArray) {
-        if (this.collisionCircles.length > 0) {
-            return [];
-        }
-        const boxes = [];
-        for (let k = this.boxStartIndex; k < this.boxEndIndex; k++) {
-            const box = collisionBoxArray.get(k);
-            boxes.push(box.x1);
-            boxes.push(box.y1);
-            boxes.push(box.x2);
-            boxes.push(box.y2);
-            boxes.push(box.anchorPointX);
-            boxes.push(box.anchorPointY);
-        }
-        return boxes;
     }
 
     /**
@@ -188,16 +171,9 @@ class CollisionFeature {
             }
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
-                boxAnchorPoint.x - anchor.x, boxAnchorPoint.y - anchor.y,
-                -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
+                -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2,
                 featureIndex, sourceLayerIndex, bucketIndex,
-                0, 0, 0, 0, 0);
-
-            this.collisionCircles.push(boxAnchorPoint.x);
-            this.collisionCircles.push(boxAnchorPoint.y);
-            this.collisionCircles.push(boxSize / 2);
-            this.collisionCircles.push((boxDistanceToAnchor - firstBoxOffset) * 0.8);
-            this.collisionCircles.push(false);
+                boxSize / 2, (boxDistanceToAnchor - firstBoxOffset) * 0.8);
         }
     }
 }

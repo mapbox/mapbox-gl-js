@@ -24,8 +24,6 @@ const vectorTileFeatureTypes = require('vector-tile').VectorTileFeature.types;
 const createStructArrayType = require('../../util/struct_array');
 const verticalizePunctuation = require('../../util/verticalize_punctuation');
 
-const symbolSize = require('../../symbol/symbol_size');
-
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
 const WritingMode = Shaping.WritingMode;
@@ -162,22 +160,6 @@ function addDynamicAttributes(dynamicLayoutVertexArray, p, angle, placementZoom)
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
-}
-
-function addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude, isCircle) {
-    collisionVertexArray.emplaceBack(0, 0);
-    return layoutVertexArray.emplaceBack(
-        // pos
-        point.x,
-        point.y,
-        // a_anchor_pos
-        anchor.x,
-        anchor.y,
-        // extrude
-        Math.round(extrude.x),
-        Math.round(extrude.y),
-        // a_is_circle
-        isCircle ? 1 : 0);
 }
 
 /**
@@ -508,7 +490,9 @@ class SymbolBucket {
             }
         }
 
-        if (true || showCollisionBoxes) this.addToDebugBuffers();
+        // TODO: Only do this if showCollisionBoxes is set, but also make sure to reload tiles when the value
+        // changes since we don't generate buffers on placement anymore.
+        this.generateCollisionDebugBuffers();
     }
 
     /**
@@ -542,7 +526,6 @@ class SymbolBucket {
             textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
             iconBoxScale = this.tilePixelRatio * layoutIconSize,
             symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
-            avoidEdges = layout['symbol-avoid-edges'],
             textPadding = layout['text-padding'] * this.tilePixelRatio,
             iconPadding = layout['icon-padding'] * this.tilePixelRatio,
             textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
@@ -633,184 +616,6 @@ class SymbolBucket {
         return false;
     }
 
-    updateOpacities(symbolOpacityIndex: any, coord: any, sourceMaxZoom: number) {
-        const glyphOpacityArray = this.buffers.glyph && this.buffers.glyph.opacityVertexArray;
-        const iconOpacityArray = this.buffers.icon && this.buffers.icon.opacityVertexArray;
-        if (glyphOpacityArray) glyphOpacityArray.clear();
-        if (iconOpacityArray) iconOpacityArray.clear();
-
-        for (const symbolInstance of this.symbolInstances) {
-
-            const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
-            const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
-
-            if (!hasText && !hasIcon) continue;
-
-            if (hasText) {
-
-                const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
-                const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, targetOpacity, symbolInstance.key);
-                // TODO handle vertical text properly by choosing the correct version here
-                const verticalOpacity = 0;
-
-                for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
-                    glyphOpacityArray.emplaceBack(opacity * 10000, targetOpacity);
-                }
-                for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
-                    glyphOpacityArray.emplaceBack(verticalOpacity * 10000, targetOpacity);
-                }
-            }
-
-            if (hasIcon) {
-                const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
-                const opacity = symbolOpacityIndex.icon.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, targetOpacity, symbolInstance.key);
-                for (let i = 0; i < symbolInstance.numIconVertices; i++) {
-                    iconOpacityArray.emplaceBack(opacity * 10000, targetOpacity);
-                }
-            }
-
-        }
-
-        if (glyphOpacityArray) this.buffers.glyph.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
-        if (iconOpacityArray) this.buffers.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
-    }
-
-
-    updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, collisionCircles: any, placed: boolean) {
-        if (!collisionVertexArray) {
-            return;
-        }
-        for (let k = 0; k < collisionBoxes.length; k += 6) {
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-        }
-
-        for (let k = 0; k < collisionCircles.length; k += 5) {
-            const notUsed = collisionCircles[k + 4];
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
-            collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
-        }
-    }
-
-    place(collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, posMatrix: any, tileID: number) {
-        // Calculate which labels can be shown and when they can be shown and
-        // create the bufers used for rendering.
-
-        const layer = this.layers[0];
-        const layout = layer.layout;
-
-        const mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-            layout['text-ignore-placement'] || layout['icon-ignore-placement'];
-
-        // Sort symbols by their y position on the canvas so that the lower symbols
-        // are drawn on top of higher symbols.
-        // Don't sort symbols that won't overlap because it isn't necessary and
-        // because it causes more labels to pop in and out when rotating.
-        if (mayOverlap) {
-            const angle = collisionTile.angle;
-
-            const sin = Math.sin(angle),
-                cos = Math.cos(angle);
-
-            this.symbolInstances.sort((a, b) => {
-                const aRotated = (sin * a.anchor.x + cos * a.anchor.y) | 0;
-                const bRotated = (sin * b.anchor.x + cos * b.anchor.y) | 0;
-                return (aRotated - bRotated) || (b.featureIndex - a.featureIndex);
-            });
-        }
-
-        const scale = Math.pow(2, zoom - this.zoom);
-
-        const collisionArray = showCollisionBoxes && this.buffers.collisionBox && this.buffers.collisionBox.collisionVertexArray;
-        if (collisionArray) collisionArray.clear();
-
-        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(this.textSizeData, collisionTile.transform, layer, true);
-        //const partiallyEvaluatedIconSize = symbolSize.evaluateSizeForZoom(this.iconSizeData, collisionTile.transform, layer, false);
-
-        for (const symbolInstance of this.symbolInstances) {
-
-            const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
-            const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
-
-            const iconWithoutText = layout['text-optional'] || !hasText,
-                textWithoutIcon = layout['icon-optional'] || !hasIcon;
-
-
-            // Calculate the scales at which the text and icon can be placed without collision.
-            let placedGlyphBoxes = [];
-            let placedGlyphCircles = [];
-            if (hasText) {
-                placedGlyphBoxes = collisionTile.placeCollisionBoxes(symbolInstance.textCollisionBoxes,
-                    layout['text-allow-overlap'], scale, pixelsToTileUnits);
-
-                if (symbolInstance.textCollisionCircles) {
-                    const placedSymbol = this.placedGlyphArray.get(symbolInstance.placedTextSymbolIndex);
-                    const fontSize = symbolSize.evaluateSizeForFeature(this.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
-                    placedGlyphCircles = collisionTile.placeCollisionCircles(symbolInstance.textCollisionCircles,
-                        layout['text-allow-overlap'],
-                        scale,
-                        pixelsToTileUnits,
-                        symbolInstance.key,
-                        placedSymbol,
-                        this.lineVertexArray,
-                        this.glyphOffsetArray,
-                        fontSize,
-                        labelPlaneMatrix,
-                        posMatrix,
-                        layout['text-pitch-alignment'] === 'map');
-                }
-            }
-
-            const placedIconBoxes = hasIcon ?
-                collisionTile.placeCollisionBoxes(symbolInstance.iconCollisionBoxes,
-                    layout['icon-allow-overlap'], scale, pixelsToTileUnits) :
-                [];
-            let placeGlyph = placedGlyphBoxes.length > 0 || placedGlyphCircles.length > 0;
-            let placeIcon = placedIconBoxes.length > 0;
-
-            // Combine the scales for icons and text.
-            if (!iconWithoutText && !textWithoutIcon) {
-                placeIcon = placeGlyph = placeIcon && placeGlyph;
-            } else if (!textWithoutIcon) {
-                placeGlyph = placeIcon && placeGlyph;
-            } else if (!iconWithoutText) {
-                placeIcon = placeIcon && placeGlyph;
-            }
-
-
-            // Insert final placement into collision tree and add glyphs/icons to buffers
-            if (!hasText && !hasIcon) continue;
-
-            if (hasText) {
-                this.updateCollisionBoxes(collisionArray, symbolInstance.textCollisionBoxes, symbolInstance.textCollisionCircles, placeGlyph);
-                if (placeGlyph) {
-                    symbolInstance.placedText = true;
-                    collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
-                    collisionTile.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
-                } else {
-                    symbolInstance.placedText = false;
-                }
-            }
-
-            if (hasIcon) {
-                this.updateCollisionBoxes(collisionArray, symbolInstance.iconCollisionBoxes, [], placeIcon);
-                if (placeIcon) {
-                    symbolInstance.placedIcon = true;
-                    collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
-                } else {
-                    symbolInstance.placedIcon = false;
-                }
-            }
-
-        }
-
-        if (collisionArray) this.buffers.collisionBox.collisionVertexBuffer.updateData(collisionArray.serialize());
-    }
-
     addSymbols(arrays: any, quads: any, sizeVertex: any, lineOffset: any, alongLine: any, featureProperties: any, isVertical: any, labelAnchor: any, lineStartIndex: any, lineLength: any, placedSymbolArray: any) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
@@ -863,20 +668,31 @@ class SymbolBucket {
         arrays.populatePaintArrays(featureProperties);
     }
 
+    _addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude, isCircle) {
+        collisionVertexArray.emplaceBack(0, 0);
+        return layoutVertexArray.emplaceBack(
+            // pos
+            point.x,
+            point.y,
+            // a_anchor_pos
+            anchor.x,
+            anchor.y,
+            // extrude
+            Math.round(extrude.x),
+            Math.round(extrude.y),
+            // a_is_circle
+            isCircle ? 1 : 0);
+    }
+
+
     addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, isCircle) {
-        const tl = new Point(x1, y1);
-        const tr = new Point(x2, y1);
-        const bl = new Point(x1, y2);
-        const br = new Point(x2, y2);
-
-
         const segment = arrays.prepareSegment(4);
         const index = segment.vertexLength;
 
-        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tl, isCircle);
-        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, tr, isCircle);
-        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, br, isCircle);
-        addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, bl, isCircle);
+        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x1, y1), isCircle);
+        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x2, y1), isCircle);
+        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x2, y2), isCircle);
+        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x1, y2), isCircle);
 
         elementArray.emplaceBack(index, index + 1);
         elementArray.emplaceBack(index + 1, index + 2);
@@ -887,41 +703,30 @@ class SymbolBucket {
         segment.primitiveLength += 4;
     }
 
-    addToDebugBuffers() {
+    generateCollisionDebugBuffers() {
         const arrays = this.arrays.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
         const collisionVertexArray = arrays.collisionVertexArray;
 
         for (const symbolInstance of this.symbolInstances) {
+            symbolInstance.textCollisionFeature = {boxStartIndex: symbolInstance.textBoxStartIndex, boxEndIndex: symbolInstance.textBoxEndIndex};
+            symbolInstance.iconCollisionFeature = {boxStartIndex: symbolInstance.iconBoxStartIndex, boxEndIndex: symbolInstance.iconBoxEndIndex};
+
             for (let i = 0; i < 2; i++) {
-                const collisionBoxes = symbolInstance[i === 0 ? 'textCollisionBoxes' : 'iconCollisionBoxes'];
-                if (!collisionBoxes) continue;
+                const feature = symbolInstance[i === 0 ? 'textCollisionFeature' : 'iconCollisionFeature'];
+                if (!feature) continue;
 
-                for (let k = 0; k < collisionBoxes.length; k += 6) {
-                    const boxAnchorPoint = new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]);
-                    const x1 = collisionBoxes[k];
-                    const y1 = collisionBoxes[k + 1];
-                    const x2 = collisionBoxes[k + 2];
-                    const y2 = collisionBoxes[k + 3];
+                for (let b = feature.boxStartIndex; b < feature.boxEndIndex; b++) {
+                    const box = this.collisionBoxArray.get(b);
+                    const boxAnchorPoint = new Point(box.anchorPointX, box.anchorPointY);
+                    const x1 = box.x1;
+                    const y1 = box.y1;
+                    const x2 = box.x2;
+                    const y2 = box.y2;
 
+                    // TODO: The collision debug view can't draw circles yet, so we just draw the box that contains the circle
                     this.addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, false);
-                }
-            }
-            const collisionCircles = symbolInstance.textCollisionCircles;
-            if (collisionCircles) {
-                for (let k = 0; k < collisionCircles.length; k += 5) {
-                    const x = collisionCircles[k];
-                    const y = collisionCircles[k + 1];
-                    const radius = collisionCircles[k + 2];
-                    const boxAnchorPoint = new Point(x, y);
-
-                    const x1 = -radius;
-                    const x2 = radius;
-                    const y1 = -radius;
-                    const y2 = radius;
-
-                    this.addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, true)
                 }
             }
         }
@@ -1072,19 +877,12 @@ class SymbolBucket {
             (shapedTextOrientations[WritingMode.horizontal] ? WritingMode.horizontal : 0)
         );
 
-        const textCollisionBoxes = textCollisionFeature ? textCollisionFeature.collisionBoxes(collisionBoxArray) : [];
-        const textCollisionCircles = textCollisionFeature ? textCollisionFeature.collisionCircles : [];
-        const iconCollisionBoxes = iconCollisionFeature ? iconCollisionFeature.collisionBoxes(collisionBoxArray) : [];
-
         this.symbolInstances.push({
             key,
             textBoxStartIndex,
             textBoxEndIndex,
-            textCollisionBoxes,
-            textCollisionCircles,
             iconBoxStartIndex,
             iconBoxEndIndex,
-            iconCollisionBoxes,
             glyphQuads,
             iconQuads,
             textOffset,
@@ -1100,6 +898,44 @@ class SymbolBucket {
             placedTextSymbolIndex
         });
     }
+
+    // These flat arrays are meant to be quicker to iterate over than the source
+    // CollisionBoxArray
+    deserializeCollisionBoxes(collisionBoxArray, startIndex, endIndex) {
+        const boxes = [];
+        for (let k = startIndex; k < endIndex; k++) {
+            const box = collisionBoxArray.get(k);
+            if (box.radius !== 0) {
+                // This is actually an array of circles
+                return [];
+            }
+            boxes.push(box.x1);
+            boxes.push(box.y1);
+            boxes.push(box.x2);
+            boxes.push(box.y2);
+            boxes.push(box.anchorPointX);
+            boxes.push(box.anchorPointY);
+        }
+        return boxes;
+    }
+
+    deserializeCollisionCircles(collisionBoxArray, startIndex, endIndex) {
+        const circles = [];
+        for (let k = startIndex; k < endIndex; k++) {
+            const circle = collisionBoxArray.get(k);
+            if (circle.radius === 0) {
+                // This is actually an array of boxes
+                return [];
+            }
+            circles.push(circle.anchorPointX);
+            circles.push(circle.anchorPointY);
+            circles.push(circle.radius);
+            circles.push(circle.distanceToAnchor);
+            circles.push(false); // Last position is used to mark if the circle is actually used at render time
+        }
+        return circles;
+    }
+
 }
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
