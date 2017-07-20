@@ -214,11 +214,6 @@ class GeoJSONSource extends Evented implements Source {
 
             tile.loadVectorData(data, this.map.painter);
 
-            if (tile.redoWhenDone) {
-                tile.redoWhenDone = false;
-                tile.redoPlacement(this);
-            }
-
             return callback(null);
         }, this.workerID);
     }

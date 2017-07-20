@@ -3,6 +3,7 @@ const float PI = 3.141592653589793;
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec3 a_projected_pos;
+attribute vec2 a_fade_opacity;
 
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
@@ -12,7 +13,7 @@ uniform highp float u_camera_to_center_distance;
 uniform highp float u_pitch;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
-uniform highp float u_collision_y_stretch;
+uniform float u_fade_change;
 
 #pragma mapbox: define lowp float opacity
 
@@ -26,7 +27,7 @@ uniform bool u_pitch_with_map;
 uniform vec2 u_texsize;
 
 varying vec2 v_tex;
-varying vec2 v_fade_tex;
+varying float v_fade_opacity;
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
@@ -39,7 +40,6 @@ void main() {
 
     highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
     highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
-    mediump float a_labelminzoom = angle_labelminzoom[1];
 
     float size;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -83,11 +83,6 @@ void main() {
     gl_Position = u_gl_coord_matrix * vec4(projected_pos.xy / projected_pos.w + rotation_matrix * (a_offset / 64.0 * fontScale), 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
-    // See comments in symbol_sdf.vertex
-    highp float incidence_stretch  = camera_to_anchor_distance / (u_camera_to_center_distance * cos(u_pitch));
-    highp float collision_adjustment = max(1.0, incidence_stretch / u_collision_y_stretch);
-
-    highp float collision_perspective_ratio = 1.0 + 0.5*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
-    highp float perspective_zoom_adjust = floor(log2(collision_perspective_ratio * collision_adjustment) * 10.0);
-    v_fade_tex = vec2((a_labelminzoom + perspective_zoom_adjust) / 255.0, 0.0);
+    float fade_change = a_fade_opacity[1] == 1.0 ? u_fade_change : -u_fade_change;
+    v_fade_opacity = max(0.0, min(1.0, a_fade_opacity[0] * 0.0001 + fade_change));
 }

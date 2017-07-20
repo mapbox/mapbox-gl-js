@@ -269,7 +269,7 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('moveend', () => {
+        this.on('move', () => {
             this.animationLoop.set(300); // text fading
             this._rerender();
         });
@@ -311,6 +311,8 @@ class Map extends Camera {
 
         this.on('data', this._onData);
         this.on('dataloading', this._onDataLoading);
+
+        this._lastPlacement = 0;
     }
 
     /**
@@ -955,9 +957,9 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.off('rotate', this.style._redoPlacement);
-            this.off('pitch', this.style._redoPlacement);
-            this.off('move', this.style._redoPlacement);
+            //this.off('rotate', this.style._redoPlacement);
+            //this.off('pitch', this.style._redoPlacement);
+            //this.off('move', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -971,9 +973,9 @@ class Map extends Camera {
 
         this.style.setEventedParent(this, {style: this.style});
 
-        this.on('rotate', this.style._redoPlacement);
-        this.on('pitch', this.style._redoPlacement);
-        this.on('move', this.style._redoPlacement);
+        //this.on('rotate', this.style._redoPlacement);
+        //this.on('pitch', this.style._redoPlacement);
+        //this.on('move', this.style._redoPlacement);
 
         return this;
     }
@@ -1530,6 +1532,14 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
+        let skippedCollisions = true;
+        if (this.style &&
+            (this.style.getNeedsPlacement() || browser.now() > (this._lastPlacement + 100))) {
+            this._lastPlacement = browser.now();
+            skippedCollisions = false;
+            this.style._redoPlacement(this.painter.transform, this._showCollisionBoxes);
+        }
+
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
@@ -1548,7 +1558,7 @@ class Map extends Camera {
         this._frameId = null;
 
         // Flag an ongoing transition
-        if (!this.animationLoop.stopped()) {
+        if (!this.animationLoop.stopped() || skippedCollisions) {
             this._styleDirty = true;
         }
 
@@ -1637,7 +1647,7 @@ class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this.style._redoPlacement();
+        this.style._redoPlacement(this.painter.transform, this._showCollisionBoxes);
     }
 
     /*

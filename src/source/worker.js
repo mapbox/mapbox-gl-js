@@ -97,11 +97,6 @@ class Worker {
         }
     }
 
-    redoPlacement(mapId: string, params: RedoPlacementParameters & {type: string}, callback: RedoPlacementCallback) {
-        assert(params.type);
-        this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
-    }
-
     /**
      * Load a {@link WorkerSource} script at params.url.  The script is run
      * (using importScripts) with `registerWorkerSource` in scope, which is a

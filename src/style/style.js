@@ -23,6 +23,8 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
+const CollisionTile = require('../symbol/collision_tile');
+const OpacityIndex = require('../symbol/opacity_index');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -862,10 +864,34 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement() {
+    getNeedsPlacement() {
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].redoPlacement();
+            if (this.sourceCaches[id].getNeedsPlacement()) {
+                return true;
+            }
         }
+    }
+
+    _redoPlacement(transform, showCollisionBoxes) {
+        console.time('redo placement');
+        this.viewportCollisionTile = new CollisionTile(transform);
+        this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
+
+        const posMatrices = {};
+
+        for (let i = this._order.length - 1; i >= 0; i--) {
+            const layerId = this._order[i];
+            const layer = this._layers[layerId];
+            if (layer.type !== 'symbol') continue;
+
+            for (const id in this.sourceCaches) {
+                if (!posMatrices[id]) {
+                    posMatrices[id] = {};
+                }
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, this.symbolOpacityIndex, layer, posMatrices[id], transform);
+            }
+        }
+        console.timeEnd('redo placement');
     }
 
     // Callbacks from web workers

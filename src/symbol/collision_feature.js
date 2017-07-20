@@ -20,13 +20,15 @@ class CollisionFeature {
      * @param {number} padding The amount of padding to add around the label edges.
      * @param {boolean} alignLine Whether the label is aligned with the line or the viewport.
      */
-    constructor(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight) {
+    constructor(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight, key) {
         const y1 = shaped.top * boxScale - padding;
         const y2 = shaped.bottom * boxScale + padding;
         const x1 = shaped.left * boxScale - padding;
         const x2 = shaped.right * boxScale + padding;
 
         this.boxStartIndex = collisionBoxArray.length;
+
+        this.collisionCircles = [];
 
         if (alignLine) {
 
@@ -44,7 +46,7 @@ class CollisionFeature {
                     this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
                 } else {
                     // used for text labels that curve along a line
-                    this._addLineCollisionBoxes(collisionBoxArray, line, anchor, anchor.segment, length, height, featureIndex, sourceLayerIndex, bucketIndex);
+                    this._addLineCollisionBoxes(collisionBoxArray, line, anchor, anchor.segment, length, height, featureIndex, sourceLayerIndex, bucketIndex, key);
                 }
             }
 
@@ -54,6 +56,23 @@ class CollisionFeature {
         }
 
         this.boxEndIndex = collisionBoxArray.length;
+    }
+
+    collisionBoxes(collisionBoxArray) {
+        if (this.collisionCircles.length > 0) {
+            return [];
+        }
+        const boxes = [];
+        for (let k = this.boxStartIndex; k < this.boxEndIndex; k++) {
+            const box = collisionBoxArray.get(k);
+            boxes.push(box.x1);
+            boxes.push(box.y1);
+            boxes.push(box.x2);
+            boxes.push(box.y2);
+            boxes.push(box.anchorPointX);
+            boxes.push(box.anchorPointY);
+        }
+        return boxes;
     }
 
     /**
@@ -68,7 +87,7 @@ class CollisionFeature {
      *
      * @private
      */
-    _addLineCollisionBoxes(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
+    _addLineCollisionBoxes(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex, key) {
         const step = boxSize / 2;
         const nBoxes = Math.floor(labelLength / step);
         // We calculate line collision boxes out to 300% of what would normally be our
@@ -84,8 +103,7 @@ class CollisionFeature {
         let index = segment + 1;
         let anchorDistance = firstBoxOffset;
         const labelStartDistance = -labelLength / 2;
-        const paddingStartDistance = labelStartDistance - labelLength / 8;
-
+        const paddingStartDistance = labelStartDistance - labelLength / 4;
         // move backwards along the line to the first segment the label appears on
         do {
             index--;
@@ -131,7 +149,9 @@ class CollisionFeature {
                 index++;
 
                 // There isn't enough room before the end of the line.
-                if (index + 1 >= line.length) return;
+                if (index + 1 >= line.length) {
+                    return;
+                }
 
                 segmentLength = line[index].dist(line[index + 1]);
             }
@@ -172,6 +192,12 @@ class CollisionFeature {
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
                 featureIndex, sourceLayerIndex, bucketIndex,
                 0, 0, 0, 0, 0);
+
+            this.collisionCircles.push(boxAnchorPoint.x);
+            this.collisionCircles.push(boxAnchorPoint.y);
+            this.collisionCircles.push(boxSize / 2);
+            this.collisionCircles.push((boxDistanceToAnchor - firstBoxOffset) * 0.8);
+            this.collisionCircles.push(false);
         }
     }
 }

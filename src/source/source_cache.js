@@ -100,6 +100,10 @@ class SourceCache extends Evented {
         this._paused = true;
     }
 
+    getNeedsPlacement() {
+        return this._needsPlacement;
+    }
+
     resume() {
         if (!this._paused) return;
         const shouldReload = this._shouldReloadOnResume;
@@ -110,6 +114,7 @@ class SourceCache extends Evented {
     }
 
     _loadTile(tile, callback) {
+        this._needsPlacement = true;
         return this._source.loadTile(tile, callback);
     }
 
@@ -441,9 +446,10 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
+        this._needsPlacement = true;
+
         tile = this._cache.get(tileCoord.id);
         if (tile) {
-            tile.redoPlacement(this._source);
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 this._cacheTimers[tileCoord.id] = undefined;
@@ -506,8 +512,6 @@ class SourceCache extends Evented {
 
         if (tile.uses > 0)
             return;
-
-        tile.stopPlacementThrottler();
 
         if (tile.hasData()) {
             const wrappedId = tile.coord.wrapped().id;
@@ -588,11 +592,15 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement() {
+    redoPlacement(viewportCollisionTile, showCollisionBoxes, symbolOpacityIndex, layer, posMatrices, transform) {
+        this._needsPlacement = false;
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this._source);
+            if (!posMatrices[i]) {
+                posMatrices[i] = transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
+            }
+            tile.redoPlacement(this._source, showCollisionBoxes, viewportCollisionTile, symbolOpacityIndex, layer, posMatrices[i]);
         }
     }
 

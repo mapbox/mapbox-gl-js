@@ -116,7 +116,7 @@ class WorkerTile {
         }
 
 
-        const done = (collisionTile) => {
+        const done = () => {
             this.status = 'done';
 
             // collect data-driven paint property statistics from each bucket
@@ -130,7 +130,6 @@ class WorkerTile {
             callback(null, {
                 buckets: serializeBuckets(util.values(buckets), transferables),
                 featureIndex: featureIndex.serialize(transferables),
-                collisionTile: collisionTile.serialize(transferables),
                 collisionBoxArray: this.collisionBoxArray.serialize()
             }, transferables);
         };
@@ -145,7 +144,7 @@ class WorkerTile {
         }
 
         if (this.symbolBuckets.length === 0) {
-            return done(new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.collisionBoxArray));
+            return done();
         }
 
         let deps = 0;
@@ -156,21 +155,13 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
-                const collisionTile = new CollisionTile(
-                    this.angle,
-                    this.pitch,
-                    this.cameraToCenterDistance,
-                    this.cameraToTileDistance,
-                    this.collisionBoxArray);
-
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
 
                     bucket.prepare(stacks, icons);
-                    bucket.place(collisionTile, this.showCollisionBoxes);
                 }
 
-                done(collisionTile);
+                done();
             }
         };
 
@@ -191,39 +182,6 @@ class WorkerTile {
         } else {
             gotDependency();
         }
-    }
-
-    redoPlacement(angle: number, pitch: number, cameraToCenterDistance: number, cameraToTileDistance: number, showCollisionBoxes: boolean) {
-        this.angle = angle;
-        this.pitch = pitch;
-        this.cameraToCenterDistance = cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
-
-        if (this.status !== 'done') {
-            return {};
-        }
-
-        const collisionTile = new CollisionTile(
-            this.angle,
-            this.pitch,
-            this.cameraToCenterDistance,
-            this.cameraToTileDistance,
-            this.collisionBoxArray);
-
-        for (const bucket of this.symbolBuckets) {
-            recalculateLayers(bucket, this.zoom);
-
-            bucket.place(collisionTile, showCollisionBoxes);
-        }
-
-        const transferables = [];
-        return {
-            result: {
-                buckets: serializeBuckets(this.symbolBuckets, transferables),
-                collisionTile: collisionTile.serialize(transferables)
-            },
-            transferables: transferables
-        };
     }
 }
 

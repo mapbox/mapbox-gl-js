@@ -74,6 +74,7 @@ class ArrayGroup {
     globalProperties: {zoom: number};
     layoutVertexArray: StructArray;
     dynamicLayoutVertexArray: StructArray;
+    opacityVertexArray: StructArray;
     elementArray: StructArray;
     elementArray2: StructArray;
     layerData: {[string]: LayerData};
@@ -89,6 +90,16 @@ class ArrayGroup {
         if (programInterface.dynamicLayoutAttributes) {
             const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.dynamicLayoutAttributes);
             this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType();
+        }
+
+        if (programInterface.opacityAttributes) {
+            const OpacityVertexArrayType = createVertexArrayType(programInterface.opacityAttributes);
+            this.opacityVertexArray = new OpacityVertexArrayType();
+        }
+
+        if (programInterface.collisionAttributes) {
+            const CollisionVertexArrayType = createVertexArrayType(programInterface.collisionAttributes);
+            this.collisionVertexArray = new CollisionVertexArrayType();
         }
 
         const ElementArrayType = programInterface.elementArrayType;
@@ -152,6 +163,8 @@ class ArrayGroup {
         return {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             dynamicLayoutVertexArray: this.dynamicLayoutVertexArray && this.dynamicLayoutVertexArray.serialize(transferables),
+            opacityVertexArray: this.opacityVertexArray && this.opacityVertexArray.serialize(transferables),
+            collisionVertexArray: this.collisionVertexArray && this.collisionVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
             paintVertexArrays: serializePaintVertexArrays(this.layerData, transferables),
