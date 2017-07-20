@@ -175,7 +175,7 @@ test('Tile#redoPlacement', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(createVectorData(), createPainter());
         t.stub(tile, 'reloadSymbolData').returns(null);
-        const options = util.extend(new Evented(), {
+        const source = util.extend(new Evented(), {
             type: 'vector',
             dispatcher: {
                 send: (name, data, cb) => {
@@ -188,7 +188,7 @@ test('Tile#redoPlacement', (t) => {
             }
         });
 
-        tile.redoPlacement(options);
+        tile.redoPlacement(source);
         tile.placementSource.on('data', ()=>{
             if (tile.state === 'loaded') t.end();
         });
