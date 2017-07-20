@@ -402,10 +402,6 @@ class SymbolBucket {
 
         const layout = this.layers[0].layout;
 
-        const justify =
-            layout['text-justify'] === 'right' ? 1 :
-            layout['text-justify'] === 'left' ? 0 : 0.5;
-
         const oneEm = 24;
         const lineHeight = layout['text-line-height'] * oneEm;
         const maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
@@ -421,10 +417,11 @@ class SymbolBucket {
                 const textOffset = this.layers[0].getLayoutValue('text-offset', {zoom: this.zoom}, feature.properties).map((t)=> t * oneEm);
                 const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
                 const textAnchor = this.layers[0].getLayoutValue('text-anchor', {zoom: this.zoom}, feature.properties);
+                const textJustify = this.layers[0].getLayoutValue('text-justify', {zoom: this.zoom}, feature.properties);
 
                 shapedTextOrientations = {
-                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, textAnchor, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
-                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, textAnchor, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
+                    [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
+                    [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
                 };
             } else {
                 shapedTextOrientations = {};
