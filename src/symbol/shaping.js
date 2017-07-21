@@ -49,7 +49,7 @@ function breakLines(text, lineBreakPoints) {
     return lines;
 }
 
-function shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, justify, spacing, translate, verticalHeight, writingMode) {
+function shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacing, translate, verticalHeight, writingMode) {
     let logicalInput = text.trim();
     if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
 
@@ -63,7 +63,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, justify, spac
         lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
     }
 
-    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, justify, translate, writingMode, spacing, verticalHeight);
+    shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, translate, writingMode, spacing, verticalHeight);
 
     if (!positionedGlyphs.length)
         return false;
@@ -260,7 +260,7 @@ function getAnchorAlignment(textAnchor) {
     return { horizontalAlign: horizontalAlign, verticalAlign: verticalAlign };
 }
 
-function shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, justify, translate, writingMode, spacing, verticalHeight) {
+function shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, textJustify, translate, writingMode, spacing, verticalHeight) {
     // the y offset *should* be part of the font metadata
     const yOffset = -17;
 
@@ -269,6 +269,10 @@ function shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, justify, tra
 
     let maxLineLength = 0;
     const positionedGlyphs = shaping.positionedGlyphs;
+
+    const justify =
+        textJustify === 'right' ? 1 :
+        textJustify === 'left' ? 0 : 0.5;
 
     for (const i in lines) {
         const line = lines[i].trim();
@@ -319,7 +323,7 @@ function shapeLines(shaping, glyphs, lines, lineHeight, textAnchor, justify, tra
     shaping.right = shaping.left + maxLineLength;
 }
 
-// justify left = 0, right = 1, center = .5
+// justify right = 1, left = 0, center = 0.5
 function justifyLine(positionedGlyphs, glyphs, start, end, justify) {
     if (!justify)
         return;
