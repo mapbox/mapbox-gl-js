@@ -16,7 +16,7 @@
         "features": [
           {
             "type": "Feature",
-            "properties": { "x": 0 },
+            "properties": { "x": "right" },
             "geometry": {
               "type": "Point",
               "coordinates": [ -100, 0 ]
@@ -24,7 +24,7 @@
           },
           {
             "type": "Feature",
-            "properties": { "x": 1 },
+            "properties": { "x": "center" },
             "geometry": {
               "type": "Point",
               "coordinates": [ 0, 0 ]
@@ -32,7 +32,7 @@
           },
           {
             "type": "Feature",
-            "properties": { "x": 2 },
+            "properties": { "x": "left" },
             "geometry": {
               "type": "Point",
               "coordinates": [ 100, 0 ]
@@ -51,13 +51,8 @@
       "layout": {
         "text-field": "A very very long \n line label",
         "text-justify": {
-          "type": "categorical",
-          "property": "x",
-          "stops": [
-            [0, "right"],
-            [1, "center"],
-            [2, "left"]
-          ]
+          "type": "identity",
+          "property": "x"
         },
         "text-allow-overlap": true,
         "text-font": [
