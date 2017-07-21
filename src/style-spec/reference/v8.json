@@ -535,7 +535,6 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "property-function": true,
       "values": {
         "butt": {
             "doc": "A cap with a squared-off end which is drawn to the exact endpoint of the line."
@@ -563,7 +562,6 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "property-function": true,
       "values": {
         "bevel": {
             "doc": "A join with a squared-off end which is drawn beyond the endpoint of the line at a distance of one-half of the line's width."
