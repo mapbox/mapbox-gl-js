@@ -96,8 +96,8 @@ class LineBucket extends Bucket {
 
     addFeature(feature: VectorTileFeature) {
         const layout = this.layers[0].layout;
-        const join = layout['line-join'];
-        const cap = layout['line-cap'];
+        const join = this.layers[0].getLayoutValue('line-join', {zoom: this.zoom}, feature.properties);
+        const cap = this.layers[0].getLayoutValue('line-cap', {zoom: this.zoom}, feature.properties);
         const miterLimit = layout['line-miter-limit'];
         const roundLimit = layout['line-round-limit'];
 
