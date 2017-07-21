@@ -18,11 +18,12 @@ import type {Actor} from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 
 import type {LoadVectorDataCallback} from './vector_tile_worker_source';
+import type {RequestParameters} from '../util/ajax';
 
 export type GeoJSON = Object;
 
 export type LoadGeoJSONParameters = {
-    url?: string,
+    request?: RequestParameters,
     data?: string,
     source: string,
     superclusterOptions?: Object,
@@ -164,8 +165,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
-        if (params.url) {
-            ajax.getJSON(params.url, callback);
+        if (params.request) {
+            ajax.getJSON(params.request, callback);
         } else if (typeof params.data === 'string') {
             try {
                 return callback(null, JSON.parse(params.data));

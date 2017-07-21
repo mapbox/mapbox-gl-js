@@ -7,6 +7,7 @@ import type {SerializedBucket} from '../data/bucket';
 import type {SerializedFeatureIndex} from '../data/feature_index';
 import type {SerializedCollisionTile} from '../symbol/collision_tile';
 import type {SerializedStructArray} from '../util/struct_array';
+import type {RequestParameters} from '../util/ajax';
 
 export type TileParameters = {
     source: string,
@@ -23,7 +24,7 @@ export type PlacementConfig = {
 
 export type WorkerTileParameters = TileParameters & {
     coord: TileCoord,
-    url: string,
+    request: RequestParameters,
     zoom: number,
     maxZoom: number,
     tileSize: number,

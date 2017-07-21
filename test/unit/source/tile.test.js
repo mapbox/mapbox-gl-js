@@ -61,7 +61,7 @@ test('querySourceFeatures', (t) => {
         geojsonWrapper.name = '_geojsonTileLayer';
         tile.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
         result = [];
-        t.doesNotThrow(tile.querySourceFeatures(result));
+        t.doesNotThrow(() => { tile.querySourceFeatures(result); });
         t.equal(result.length, 0);
         t.end();
     });

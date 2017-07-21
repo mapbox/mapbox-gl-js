@@ -12,8 +12,13 @@ module.exports = function() {
 
     const evented = new Evented();
 
+    class StubMap extends Evented {
+        _transformRequest(url) {
+            return { url };
+        }
+    }
     const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
-    ajax.getJSON(stylesheetURL, (err, json) => {
+    ajax.getJSON({ url: stylesheetURL }, (err, json) => {
         if (err) {
             return evented.fire('error', {error: err});
         }
@@ -23,7 +28,7 @@ module.exports = function() {
 
         asyncTimesSeries(20, (callback) => {
             const timeStart = performance.now();
-            new Style(json)
+            new Style(json, new StubMap())
                 .on('error', (err) => {
                     evented.fire('error', { error: err });
                 })

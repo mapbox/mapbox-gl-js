@@ -25,6 +25,7 @@ const isSupported = require('mapbox-gl-supported');
 
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
+import type {RequestParameters} from '../util/ajax';
 
 /* eslint-disable no-use-before-define */
 type IControl = {
@@ -32,6 +33,9 @@ type IControl = {
     onRemove(map: Map): void;
 }
 /* eslint-enable no-use-before-define */
+
+type ResourceTypeEnum = $Keys<typeof ajax.ResourceType>;
+export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
 
 type MapOptions = {
     hash?: boolean,
@@ -60,7 +64,8 @@ type MapOptions = {
     bearing?: number,
     pitch?: number,
     renderWorldCopies?: boolean,
-    maxTileCacheSize?: number
+    maxTileCacheSize?: number,
+    transformRequest?: RequestTransformFunction
 };
 
 type MapEvent =
@@ -125,7 +130,9 @@ const defaultOptions = {
 
     refreshExpiredTiles: true,
 
-    maxTileCacheSize: null
+    maxTileCacheSize: null,
+
+    transformRequest: null
 };
 
 /**
@@ -196,13 +203,24 @@ const defaultOptions = {
  *   for locally overriding generation of glyphs in the 'CJK Unified Ideographs' and 'Hangul Syllables' ranges.
  *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
  *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (see [Use locally generated ideographs](https://www.mapbox.com/mapbox-gl-js/example/local-ideographs))
+ * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
+ *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
  *   center: [-122.420679, 37.772537],
  *   zoom: 13,
  *   style: style_object,
- *   hash: true
+ *   hash: true,
+ *   transformRequest: (url, resourceType)=> {
+ *     if(resourceType == 'Source' && url.startsWith('http://myHost') {
+ *       return {
+ *        url: url.replace('http', 'https'),
+ *        headers: { 'my-custom-header': true},
+ *        credentials: 'include'  // Include cookies for cross-origin requests
+ *      }
+ *     }
+ *   }
  * });
  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
@@ -221,6 +239,7 @@ class Map extends Camera {
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
+    _transformRequest: RequestTransformFunction;
 
     constructor(options: MapOptions) {
         options = util.extend({}, defaultOptions, options);
@@ -239,6 +258,9 @@ class Map extends Camera {
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
+
+        const transformRequestFn = options.transformRequest;
+        this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -1134,7 +1156,7 @@ class Map extends Camera {
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Function) {
-        ajax.getImage(url, callback);
+        ajax.getImage(this._transformRequest(url, ajax.ResourceType.Image), callback);
     }
 
     /**

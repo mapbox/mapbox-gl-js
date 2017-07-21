@@ -11,6 +11,7 @@ const Evented = require('../util/evented');
 
 import type {Glyph, GlyphStack} from '../util/glyphs';
 import type {Rect} from '../symbol/glyph_atlas';
+import type {RequestTransformFunction} from '../ui/map';
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
 class SimpleGlyph {
@@ -42,11 +43,12 @@ class GlyphSource extends Evented {
     loading: {[string]: {[number]: Array<Function>}};
     localIdeographFontFamily: string;
     tinySDFs: {[string]: TinySDF};
+    transformRequestCallback: RequestTransformFunction;
 
     /**
      * @param {string} url glyph template url
      */
-    constructor(url: string, localIdeographFontFamily: string, eventedParent?: Evented) {
+    constructor(url: string, localIdeographFontFamily: string, transformRequestCallback: RequestTransformFunction, eventedParent?: Evented) {
         super();
         this.url = url && normalizeURL(url);
         this.atlases = {};
@@ -55,6 +57,7 @@ class GlyphSource extends Evented {
         this.localIdeographFontFamily = localIdeographFontFamily;
         this.tinySDFs = {};
         this.setEventedParent(eventedParent);
+        this.transformRequestCallback = transformRequestCallback;
     }
 
     getSimpleGlyphs(fontstack: string, glyphIDs: Array<number>, uid: number, callback: (err: ?Error, glyphs: {[number]: SimpleGlyph}, fontstack: string) => void) {
@@ -163,7 +166,8 @@ class GlyphSource extends Evented {
     }
 
     loadPBF(url: string, callback: Callback<{data: ArrayBuffer}>) {
-        ajax.getArrayBuffer(url, callback);
+        const request  = this.transformRequestCallback ? this.transformRequestCallback(url, ajax.ResourceType.Glyphs) : { url };
+        ajax.getArrayBuffer(request, callback);
     }
 
     loadRange(fontstack: string, range: number, callback: (err: ?Error, range: ?number, glyphs: ?Glyphs) => void) {

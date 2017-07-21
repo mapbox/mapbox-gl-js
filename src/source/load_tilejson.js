@@ -5,7 +5,9 @@ const ajax = require('../util/ajax');
 const browser = require('../util/browser');
 const normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
-module.exports = function(options: any, callback: Callback<TileJSON>) {
+import type {RequestTransformFunction} from '../ui/map';
+
+module.exports = function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>) {
     const loaded = function(err, tileJSON: any) {
         if (err) {
             return callback(err);
@@ -22,7 +24,7 @@ module.exports = function(options: any, callback: Callback<TileJSON>) {
     };
 
     if (options.url) {
-        ajax.getJSON(normalizeURL(options.url), loaded);
+        ajax.getJSON(requestTransformFn(normalizeURL(options.url), ajax.ResourceType.Source), loaded);
     } else {
         browser.frame(() => loaded(null, options));
     }

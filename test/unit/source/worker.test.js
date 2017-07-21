@@ -16,7 +16,7 @@ test('load tile', (t) => {
             type: 'vector',
             source: 'source',
             uid: 0,
-            url: '/error' // Sinon fake server gives 404 responses by default
+            request: { url: '/error' }// Sinon fake server gives 404 responses by default 
         }, (err) => {
             t.ok(err);
             window.restore();
