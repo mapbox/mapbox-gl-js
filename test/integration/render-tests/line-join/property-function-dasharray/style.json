@@ -1,0 +1,144 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 64
+    }
+  },
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "join": "miter"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -36,
+                  16
+                ],
+                [
+                  -36,
+                  0
+                ],
+                [
+                  -20,
+                  -16
+                ],
+                [
+                  -20,
+                  16
+                ],
+                [
+                  -28,
+                  16
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "join": "round"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -8,
+                  16
+                ],
+                [
+                  -8,
+                  0
+                ],
+                [
+                  8,
+                  -16
+                ],
+                [
+                  8,
+                  16
+                ],
+                [
+                  0,
+                  16
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "join": "bevel"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  20,
+                  16
+                ],
+                [
+                  20,
+                  0
+                ],
+                [
+                  36,
+                  -16
+                ],
+                [
+                  36,
+                  16
+                ],
+                [
+                  28,
+                  16
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": {
+          "type": "categorical",
+          "property": "join",
+          "stops": [
+            [
+              "miter",
+              "miter"
+            ],
+            [
+              "round",
+              "round"
+            ],
+            [
+              "bevel",
+              "bevel"
+            ]
+          ]
+        }
+      },
+      "paint": {
+        "line-width": 8,
+        "line-dasharray": [1, 1]
+      }
+    }
+  ]
+}
