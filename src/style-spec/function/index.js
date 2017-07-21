@@ -212,7 +212,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 function evaluateIdentityFunction(parameters, propertySpec, input) {
     if (propertySpec.type === 'color') {
         input = parseColor(input);
-    } else if (getType(input) !== propertySpec.type) {
+    } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }
     return coalesce(input, parameters.default, propertySpec.default);
