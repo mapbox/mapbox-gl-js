@@ -42,21 +42,25 @@ map.on('load', function() {
         "source": "circles",
         "paint": {
             "circle-radius": {
-                property: "mapbox",
-                stops: [
-                    [{ zoom: 0, value: 0 }, 2],
-                    [{ zoom: 0, value: 100 }, 10],
-                    [{ zoom: 6, value: 0 }, 20],
-                    [{ zoom: 6, value: 100 }, 100]
+                "expression": [
+                    "curve",
+                    ["linear"],
+                    ["zoom"],
+                    0,
+                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, 2, 10, 10],
+                    6,
+                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, 20, 10, 100]
                 ]
             },
             "circle-color": {
-                property: "mapbox",
-                stops: [
-                    [{ zoom: 0, value: 0 }, 'red'],
-                    [{ zoom: 0, value: 100 }, 'violet'],
-                    [{ zoom: 6, value: 0 }, 'blue'],
-                    [{ zoom: 6, value: 100 }, 'green']
+                "expression": [
+                    "curve",
+                    ["linear"],
+                    ["zoom"],
+                    0,
+                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, ["parse_color", "red"], 6, ["parse_color", "green"]],
+                    6,
+                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, ["parse_color", "green"], 6, ["parse_color", "blue"]],
                 ]
             },
             "circle-pitch-scale": "map",
