@@ -10,17 +10,6 @@
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-0.1.1.tgz#1ceb3103cd668b16563b5492c0690c3f091c7491"
 
-"@mapbox/mapbox-gl-style-spec@file:src/style-spec":
-  version "9.0.0"
-  dependencies:
-    csscolorparser "~1.0.2"
-    fast-stable-stringify "^0.1.1"
-    jsonlint-lines-primitives "~1.6.0"
-    lodash.isequal "^3.0.4"
-    minimist "0.0.8"
-    rw "^1.3.3"
-    sort-object "^0.3.2"
-
 "@mapbox/mapbox-gl-test-suite@file:test/integration":
   version "0.0.0"
   dependencies:
