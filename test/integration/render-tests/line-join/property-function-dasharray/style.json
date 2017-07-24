@@ -117,22 +117,8 @@
       "source": "geojson",
       "layout": {
         "line-join": {
-          "type": "categorical",
-          "property": "join",
-          "stops": [
-            [
-              "miter",
-              "miter"
-            ],
-            [
-              "round",
-              "round"
-            ],
-            [
-              "bevel",
-              "bevel"
-            ]
-          ]
+          "type": "identity",
+          "property": "join"
         }
       },
       "paint": {
