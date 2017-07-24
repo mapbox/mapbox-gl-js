@@ -4,7 +4,7 @@ const interpolate = require('../style-spec/util/interpolate');
 const browser = require('../util/browser');
 const LngLat = require('../geo/lng_lat');
 const LngLatBounds = require('../geo/lng_lat_bounds');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const Evented = require('../util/evented');
 
 /**

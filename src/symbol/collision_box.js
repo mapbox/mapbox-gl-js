@@ -1,7 +1,7 @@
 // @flow
 
 const createStructArrayType = require('../util/struct_array');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 /**
  * A collision box represents an area of the map that that is covered by a

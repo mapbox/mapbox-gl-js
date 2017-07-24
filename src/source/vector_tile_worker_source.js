@@ -1,7 +1,7 @@
 // @flow
 
 const ajax = require('../util/ajax');
-const vt = require('vector-tile');
+const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');

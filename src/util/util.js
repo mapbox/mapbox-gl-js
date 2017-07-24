@@ -2,7 +2,7 @@
 
 const UnitBezier = require('@mapbox/unitbezier');
 const Coordinate = require('../geo/coordinate');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 /**
  * @module util

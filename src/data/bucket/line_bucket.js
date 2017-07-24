@@ -4,11 +4,11 @@ const Bucket = require('../bucket');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
-const vectorTileFeatureTypes = require('vector-tile').VectorTileFeature.types;
+const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
 
 import type {BucketParameters} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
-import type Point from 'point-geometry';
+import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../array_group';
 
 // NOTE ON EXTRUDE SCALE:

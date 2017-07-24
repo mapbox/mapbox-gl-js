@@ -1,7 +1,7 @@
 
 const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const smartWrap = require('../util/smart_wrap');
 
 /**

@@ -5,7 +5,7 @@ const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const Popup = require('../../../src/ui/popup');
 const LngLat = require('../../../src/geo/lng_lat');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 
 const containerWidth = 512;

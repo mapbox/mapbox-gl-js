@@ -1,5 +1,5 @@
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 module.exports = {
     getIconQuads: getIconQuads,

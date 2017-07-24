@@ -20,7 +20,7 @@ declare interface VectorTileFeature {
     toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
 }
 
-declare module "vector-tile" {
+declare module "@mapbox/vector-tile" {
     declare class VectorTileImpl {
         constructor(pbf: Pbf): VectorTile;
     }

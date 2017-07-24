@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const checkMaxAngle = require('../../../src/symbol/check_max_angle');
 const Anchor = require('../../../src/symbol/anchor');
 

@@ -1,7 +1,7 @@
 // @flow
 
-const Point = require('point-geometry');
-const toGeoJSON = require('vector-tile').VectorTileFeature.prototype.toGeoJSON;
+const Point = require('@mapbox/point-geometry');
+const toGeoJSON = require('@mapbox/vector-tile').VectorTileFeature.prototype.toGeoJSON;
 const EXTENT = require('../data/extent');
 
 // The feature type used by geojson-vt and supercluster. Should be extracted to

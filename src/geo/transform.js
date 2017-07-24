@@ -1,7 +1,7 @@
 // @flow
 
 const LngLat = require('./lng_lat'),
-    Point = require('point-geometry'),
+    Point = require('@mapbox/point-geometry'),
     Coordinate = require('./coordinate'),
     util = require('../util/util'),
     interp = require('../style-spec/util/interpolate'),
