@@ -293,7 +293,7 @@ function interpolationFactor(input, base, lowerValue, upperValue) {
     const progress = input - lowerValue;
 
     if (difference === 0) {
-        return Infinity;
+        return 0;
     } else if (base === 1) {
         return progress / difference;
     } else {
