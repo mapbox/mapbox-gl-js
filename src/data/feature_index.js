@@ -319,7 +319,7 @@ class FeatureIndex {
     // Get the given paint property value; if a feature is not provided and the
     // property is data-driven, then default to the maximum value that the
     // property takes in the (tile, layer) that this FeatureIndex is associated with
-    getPaintValue(property: string, layer: StyleLayer, feature: GeoJSONFeature) {
+    getPaintValue(property: string, layer: StyleLayer, feature: GeoJSONFeature): any {
         const featureConstant = layer.isPaintValueFeatureConstant(property);
         if (featureConstant || feature) {
             const featureProperties = feature ? feature.properties : {};
