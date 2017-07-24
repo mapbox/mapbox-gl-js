@@ -972,6 +972,57 @@ test('identity function', (t) => {
         t.end();
     });
 
+    t.test('valid enum', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'enum',
+            values: {
+                bar: {}
+            },
+            default: 'def'
+        });
+
+        t.equal(f(0, {foo: 'bar'}), 'bar');
+
+        t.end();
+    });
+
+    t.test('invalid enum, spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'enum',
+            values: {
+                bar: {}
+            },
+            default: 'def'
+        });
+
+        t.equal(f(0, {foo: 'baz'}), 'def');
+
+        t.end();
+    });
+
+    t.test('invalid type for enum, spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'enum',
+            values: {
+                bar: {}
+            },
+            default: 'def'
+        });
+
+        t.equal(f(0, {foo: 3}), 'def');
+
+        t.end();
+    });
+
     t.end();
 });
 
