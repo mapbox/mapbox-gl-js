@@ -1,3 +1,9 @@
+## 0.39.1 (July 24, 2017)
+
+### :bug: Bug fixes
+- Fix packaging issue in 0.39.0 [#5025](https://github.com/mapbox/mapbox-gl-js/issues/5025)
+- Correctly evaluate enum-based identity functions [#5023](https://github.com/mapbox/mapbox-gl-js/issues/5023)
+
 ## 0.39.0 (July 21, 2017)
 
 ### :warning: Breaking changes
