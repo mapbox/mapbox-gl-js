@@ -6,6 +6,8 @@ nvm use ${NODE_VERSION}
 set -e
 set -o pipefail
 
+git fetch --prune
+
 # add npm packages to $PATH
 PATH=$(pwd)/node_modules/.bin:$PATH
 
