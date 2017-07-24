@@ -564,6 +564,7 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "values": {
         "bevel": {
             "doc": "A join with a squared-off end which is drawn beyond the endpoint of the line at a distance of one-half of the line's width."
@@ -584,7 +585,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.40.0"
+        }
       }
     },
     "line-miter-limit": {
