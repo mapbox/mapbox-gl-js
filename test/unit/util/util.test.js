@@ -4,7 +4,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Coordinate = require('../../../src/geo/coordinate');
 const util = require('../../../src/util/util');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 test('util', (t) => {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');

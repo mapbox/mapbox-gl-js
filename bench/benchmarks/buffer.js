@@ -1,6 +1,6 @@
 'use strict';
 
-const VT = require('vector-tile');
+const VT = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const assert = require('assert');
 

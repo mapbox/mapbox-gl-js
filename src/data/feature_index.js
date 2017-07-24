@@ -1,14 +1,14 @@
 // @flow
 
 const assert = require('assert');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const loadGeometry = require('./load_geometry');
 const EXTENT = require('./extent');
 const featureFilter = require('../style-spec/feature_filter');
 const createStructArrayType = require('../util/struct_array');
 const Grid = require('grid-index');
 const DictionaryCoder = require('../util/dictionary_coder');
-const vt = require('vector-tile');
+const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;

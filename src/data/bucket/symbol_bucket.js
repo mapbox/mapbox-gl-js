@@ -1,6 +1,6 @@
 // @flow
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const ArrayGroup = require('../array_group');
 const BufferGroup = require('../buffer_group');
 const createElementArrayType = require('../element_array_type');
@@ -20,7 +20,7 @@ const loadGeometry = require('../load_geometry');
 const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
-const vectorTileFeatureTypes = require('vector-tile').VectorTileFeature.types;
+const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
 const createStructArrayType = require('../../util/struct_array');
 const verticalizePunctuation = require('../../util/verticalize_punctuation');
 
