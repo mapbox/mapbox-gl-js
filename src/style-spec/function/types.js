@@ -27,8 +27,7 @@ function typename(tn: string) : TypeName {
 function array(itemType: Type, N: ?number) : ArrayType {
     return {
         kind: 'array',
-        name: typeof N === 'number' ? `Array<${itemType.name}, ${N}>` :
-            itemType === ValueType ? 'Array' : `Array<${itemType.name}>`,
+        name: typeof N === 'number' ? `Array<${itemType.name}, ${N}>` : itemType === ValueType ? 'Array' : `Array<${itemType.name}>`,
         itemType,
         N
     };

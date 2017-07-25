@@ -89,14 +89,15 @@ exports.run = function (implementation, options, runExpressionTest) {
                     .join('');
             }
             if (compileOk && !evalOk) {
-                msg += expected.evaluateResults.map((expectedOutput, i) => {
-                    if (!deepEqual(expectedOutput, result.evaluateResults[i])) {
-                        return `f(${JSON.stringify(fixture.evaluate[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(result.evaluateResults[i])}`;
-                    }
-                    return false;
-                })
-                .filter(Boolean)
-                .join('\n');
+                msg += expected.evaluateResults
+                    .map((expectedOutput, i) => {
+                        if (!deepEqual(expectedOutput, result.evaluateResults[i])) {
+                            return `f(${JSON.stringify(fixture.evaluate[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(result.evaluateResults[i])}`;
+                        }
+                        return false;
+                    })
+                    .filter(Boolean)
+                    .join('\n');
             }
 
             params.difference = msg;
