@@ -126,7 +126,7 @@ exports.values = function<T>(obj: {[key: string]: T}): Array<T> {
  * @returns keys difference
  * @private
  */
-exports.keysDifference = function (obj: {[key: string]: mixed}, other: {[key: string]: mixed}): Array<string> {
+exports.keysDifference = function<S, T>(obj: {[key: string]: S}, other: {[key: string]: T}): Array<string> {
     const difference = [];
     for (const i in obj) {
         if (!(i in other)) {

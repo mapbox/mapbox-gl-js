@@ -5,6 +5,8 @@ const util = require('../../../src/util/util');
 const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const LngLat = require('../../../src/geo/lng_lat');
+const Tile = require('../../../src/source/tile');
+const TileCoord = require('../../../src/source/tile_coord');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedNum = fixed.Num;
@@ -304,7 +306,7 @@ test('Map', (t) => {
             map.on('load', ()=>{
 
                 map.addSource('geojson', createStyleSource());
-                map.style.sourceCaches.geojson._tiles.fakeTile = {state: 'loading'};
+                map.style.sourceCaches.geojson._tiles.fakeTile = new Tile(new TileCoord(0, 0, 0));
                 t.equal(map.areTilesLoaded(), false, 'returns false if tiles are loading');
                 map.style.sourceCaches.geojson._tiles.fakeTile.state = 'loaded';
                 t.equal(map.areTilesLoaded(), true, 'returns true if tiles are loaded');

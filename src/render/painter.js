@@ -317,7 +317,7 @@ class Painter {
                 }
             }
 
-            this.renderLayer(this, sourceCache, layer, coords);
+            this.renderLayer(this, (sourceCache : any), layer, coords);
             this.currentLayer += this.isOpaquePass ? -1 : 1;
         }
     }
