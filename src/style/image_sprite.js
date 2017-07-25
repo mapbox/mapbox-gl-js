@@ -28,7 +28,7 @@ class ImageSprite extends Evented {
     retina: boolean;
 
     data: ?{[string]: SpritePosition};
-    imgData: ?HTMLImageElement;
+    imgData: ?Uint8ClampedArray;
     width: ?number;
 
     constructor(base: string, eventedParent?: Evented) {
