@@ -93,8 +93,7 @@ class WorkerTile {
                 const layer = family[0];
 
                 assert(layer.source === this.source);
-
-                if (layer.minzoom && this.zoom < layer.minzoom) continue;
+                if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
