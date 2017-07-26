@@ -1,8 +1,27 @@
+// @flow
 
-module.exports = Glyphs;
+export type Glyph = {
+    id: number,
+    width: number,
+    height: number,
+    left: number,
+    top: number,
+    advance: number,
+    bitmap: Uint8ClampedArray
+};
 
-function Glyphs(pbf, end) {
-    this.stacks = pbf.readFields(readFontstacks, [], end);
+export type GlyphStack = {
+    name: string,
+    range: string,
+    glyphs: {[number]: Glyph}
+};
+
+class Glyphs {
+    stacks: Array<GlyphStack>;
+
+    constructor(pbf: any, end: any) {
+        this.stacks = pbf.readFields(readFontstacks, [], end);
+    }
 }
 
 function readFontstacks(tag, stacks, pbf) {
@@ -30,3 +49,5 @@ function readGlyph(tag, glyph, pbf) {
     else if (tag === 6) glyph.top = pbf.readSVarint();
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
+
+module.exports = Glyphs;

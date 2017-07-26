@@ -59,7 +59,7 @@ module.exports = {
         return function() { abort = true; };
     },
 
-    getImageData(img: CanvasImageSource) {
+    getImageData(img: CanvasImageSource): Uint8ClampedArray {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.width = img.width;
