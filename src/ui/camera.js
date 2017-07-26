@@ -555,6 +555,11 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
+            if (eventData !== undefined) {
+                eventData.finalEasingTick = (k === 1);
+                eventData.easing = true;
+            }
+
             this._fireMoveEvents(eventData);
 
         }, () => {
