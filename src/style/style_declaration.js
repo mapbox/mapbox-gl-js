@@ -20,15 +20,8 @@ class StyleDeclaration {
         this.isFeatureConstant = this.function.isFeatureConstant;
         this.isZoomConstant = this.function.isZoomConstant;
 
-        if (!this.isFeatureConstant && !this.isZoomConstant) {
+        if (!this.isZoomConstant) {
             this.stopZoomLevels = [].concat(this.function.zoomStops);
-        } else if (!this.isZoomConstant) {
-            this.stopZoomLevels = [];
-            for (const stop of this.value.stops) {
-                if (this.stopZoomLevels.indexOf(stop[0]) < 0) {
-                    this.stopZoomLevels.push(stop[0]);
-                }
-            }
         }
     }
 
