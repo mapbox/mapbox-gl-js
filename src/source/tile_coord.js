@@ -76,6 +76,14 @@ class TileCoord {
         return new TileCoord(this.z, this.x, this.y, 0);
     }
 
+    isLessThan(rhs: TileCoord) {
+        if (this.w < rhs.w) return true;
+        if (this.z < rhs.z) return true;
+        if (this.x < rhs.x) return true;
+        if (this.y < rhs.y) return true;
+        return false;
+    }
+
     // Return the coordinates of the tile's children
     children(sourceMaxZoom: number) {
 
@@ -115,25 +123,9 @@ class TileCoord {
      * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
      * @private
      */
-    isChildOf(child) {
-        const children = this.children;
-        for (let i=0; i<children.length; i++) {
-            if (children[i].id === this.id) return true;
-        }
-        return false;
-    }
-
-    /**
-     *
-     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
-     * @returns {TileCoord} result boolean describing whether or not `child` is a child tile of the root
-     * @private
-     */
-    childDifference(childTile) {
-        if (!this.isChildOf(childTile)) return new TileCoord(0, 0, 0);
-
-        const diffZ = this.z - childTile.z;
-        return new TileCoord(diffZ, x - (childTile.x << diffZ), y - (childTile.x << diffZ))
+    isChildOf(parent: any) {
+        // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
+        return parent.z === 0 || (parent.z < this.z && parent.x === (this.x >> (this.z - parent.z)) && parent.y === (this.y >> (this.z - parent.z)));
     }
 
     static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
