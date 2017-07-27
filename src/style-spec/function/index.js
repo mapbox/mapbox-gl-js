@@ -12,11 +12,10 @@ function createFunction(parameters, propertySpec) {
     if (!isFunctionDefinition(parameters)) {
         expr = convert.value(parameters, propertySpec);
     } else if (parameters.expression) {
-        expr = parameters.expression;
-        if (typeof propertySpec.default !== 'undefined') {
-            const specDefault = convert.value(propertySpec.default, propertySpec);
-            expr = ['coalesce', expr, specDefault];
-        }
+        const defaultValue = (typeof propertySpec.default !== 'undefined') ?
+            convert.value(propertySpec.default, propertySpec) :
+            null;
+        expr = ['coalesce', parameters.expression, defaultValue];
     } else {
         expr = convert.function(parameters, propertySpec);
     }
