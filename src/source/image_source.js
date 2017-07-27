@@ -7,6 +7,7 @@ const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
 const Evented = require('../util/evented');
 const ajax = require('../util/ajax');
+const browser = require('../util/browser');
 const EXTENT = require('../data/extent');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const VertexBuffer = require('../gl/vertex_buffer');
@@ -63,7 +64,7 @@ class ImageSource extends Evented implements Source {
     map: Map;
     texture: WebGLTexture;
     textureLoaded: boolean;
-    image: HTMLImageElement;
+    image: ImageData;
     centerCoord: Coordinate;
     coord: TileCoord;
     _boundsArray: RasterBoundsArray;
@@ -97,7 +98,7 @@ class ImageSource extends Evented implements Source {
             if (err) {
                 this.fire('error', {error: err});
             } else if (image) {
-                this.image = image;
+                this.image = browser.getImageData(image);
                 this._finishLoading();
             }
         });
@@ -181,7 +182,7 @@ class ImageSource extends Evented implements Source {
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
-    _prepareImage(gl: WebGLRenderingContext, image: HTMLImageElement | HTMLVideoElement | ImageData, resize?: boolean) {
+    _prepareImage(gl: WebGLRenderingContext, image: TexImageSource, resize?: boolean) {
         if (!this.boundsBuffer) {
             this.boundsBuffer = new VertexBuffer(gl, this._boundsArray);
         }

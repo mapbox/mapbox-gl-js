@@ -59,7 +59,7 @@ module.exports = {
         return function() { abort = true; };
     },
 
-    getImageData(img: CanvasImageSource): Uint8ClampedArray {
+    getImageData(img: CanvasImageSource): ImageData {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
         if (!context) {
@@ -68,7 +68,7 @@ module.exports = {
         canvas.width = img.width;
         canvas.height = img.height;
         context.drawImage(img, 0, 0, img.width, img.height);
-        return context.getImageData(0, 0, img.width, img.height).data;
+        return context.getImageData(0, 0, img.width, img.height);
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,

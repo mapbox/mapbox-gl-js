@@ -6,7 +6,6 @@ const PNG = require('pngjs').PNG;
 const Map = require('../src/ui/map');
 const window = require('../src/util/window');
 const browser = require('../src/util/browser');
-const util = require('../src/util/util');
 const rtlTextPlugin = require('../src/source/rtl_text_plugin');
 const rtlText = require('@mapbox/mapbox-gl-rtl-text');
 const fs = require('fs');
@@ -107,9 +106,8 @@ function applyOperations(map, operations, callback) {
         wait();
 
     } else if (operation[0] === 'addImage') {
-        const img = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
-        const options = util.extend({}, {height: img.height, width: img.width, pixelRatio: 1}, operation.length > 3 ? operation[3] : {});
-        map.addImage(operation[1], img.data, options);
+        const {data, width, height} = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
+        map.addImage(operation[1], {width, height, data: new Uint8Array(data)}, operation[3] || {});
         applyOperations(map, operations.slice(1), callback);
 
     } else {
@@ -171,8 +169,8 @@ ajax.getImage = function({ url }, callback) {
     });
 };
 
-browser.getImageData = function(img) {
-    return new Uint8Array(img.data);
+browser.getImageData = function({width, height, data}) {
+    return {width, height, data: new Uint8Array(data)};
 };
 
 // Hack: since node doesn't have any good video codec modules, just grab a png with
