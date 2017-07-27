@@ -7,6 +7,19 @@ module.exports = {
     place: place
 };
 
+function updateOpacity(symbolInstance, opacityState, targetOpacity) {
+    if (symbolInstance.isDuplicate) {
+        opacityState.opacity = 0;
+        opacityState.targetOpacity = 0;
+    } else {
+        const now = Date.now();
+        const increment = (now - opacityState.time) / 300;
+        opacityState.opacity = Math.max(0, Math.min(1, opacityState.opacity + (opacityState.targetOpacity === 1 ? increment : -increment)));
+        opacityState.targetOpacity = targetOpacity;
+        opacityState.time = now;
+    }
+}
+
 function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourceMaxZoom: number) {
     const glyphOpacityArray = bucket.buffers.glyph && bucket.buffers.glyph.opacityVertexArray;
     const iconOpacityArray = bucket.buffers.icon && bucket.buffers.icon.opacityVertexArray;
@@ -23,12 +36,14 @@ function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourc
         if (hasText) {
 
             const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
-            const opacity = symbolOpacityIndex.text.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, targetOpacity, symbolInstance.key);
+            const opacityState = symbolInstance.textOpacityState;
+            updateOpacity(symbolInstance, opacityState, targetOpacity);
+
             // TODO handle vertical text properly by choosing the correct version here
             const verticalOpacity = 0;
 
             for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
-                glyphOpacityArray.emplaceBack(opacity * 10000, targetOpacity);
+                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
             }
             for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
                 glyphOpacityArray.emplaceBack(verticalOpacity * 10000, targetOpacity);
@@ -37,9 +52,10 @@ function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourc
 
         if (hasIcon) {
             const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
-            const opacity = symbolOpacityIndex.icon.getAndSetOpacity(coord, symbolInstance.anchor, sourceMaxZoom, targetOpacity, symbolInstance.key);
+            const opacityState = symbolInstance.iconOpacityState;
+            updateOpacity(symbolInstance, opacityState, targetOpacity);
             for (let i = 0; i < symbolInstance.numIconVertices; i++) {
-                iconOpacityArray.emplaceBack(opacity * 10000, targetOpacity);
+                iconOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
             }
         }
 

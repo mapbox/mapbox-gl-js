@@ -877,6 +877,18 @@ class SymbolBucket {
             (shapedTextOrientations[WritingMode.horizontal] ? WritingMode.horizontal : 0)
         );
 
+        const textOpacityState = {
+            opacity: 0,
+            targetOpacity: 0,
+            time: 0
+        };
+
+        const iconOpacityState = {
+            opacity: 0,
+            targetOpacity: 0,
+            time: 0
+        };
+
         this.symbolInstances.push({
             key,
             textBoxStartIndex,
@@ -895,7 +907,9 @@ class SymbolBucket {
             numGlyphVertices,
             numVerticalGlyphVertices,
             numIconVertices,
-            placedTextSymbolIndex
+            placedTextSymbolIndex,
+            textOpacityState,
+            iconOpacityState
         });
     }
 

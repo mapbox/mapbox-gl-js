@@ -11,6 +11,7 @@ const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const ProgramConfiguration = require('../data/program_configuration');
+const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('./shaders');
 const assert = require('assert');
 
@@ -99,6 +100,8 @@ class Painter {
 
         this.basicFillProgramConfiguration = ProgramConfiguration.createStatic(['color', 'opacity']);
         this.emptyProgramConfiguration = new ProgramConfiguration();
+
+        this.crossTileSymbolIndex = new CrossTileSymbolIndex();
     }
 
     /*

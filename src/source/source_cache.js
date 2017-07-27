@@ -114,7 +114,6 @@ class SourceCache extends Evented {
     }
 
     _loadTile(tile, callback) {
-        this._needsPlacement = true;
         return this._source.loadTile(tile, callback);
     }
 
@@ -201,6 +200,9 @@ class SourceCache extends Evented {
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
+
+        this._needsPlacement = true;
+        tile.added();
     }
 
     /**
@@ -446,10 +448,11 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
-        this._needsPlacement = true;
 
         tile = this._cache.get(tileCoord.id);
         if (tile) {
+            this._needsPlacement = true;
+            tile.added();
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 this._cacheTimers[tileCoord.id] = undefined;
@@ -512,6 +515,9 @@ class SourceCache extends Evented {
 
         if (tile.uses > 0)
             return;
+
+        this._needsPlacement = true;
+        tile.removed();
 
         if (tile.hasData()) {
             const wrappedId = tile.coord.wrapped().id;

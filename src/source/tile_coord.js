@@ -86,6 +86,16 @@ class TileCoord {
             new TileCoord(z, x + 1, y + 1, this.w)
         ];
     }
+
+    isChildOf(coord, sourceMaxZoom) {
+        const parentZ = Math.min(sourceMaxZoom, coord.z);
+        const childZ = Math.min(sourceMaxZoom, this.z);
+        const scale = Math.pow(2, parentZ - childZ);
+        const x = this.x * scale;
+        const y = this.y * scale;
+        return (coord.x <= x && x < coord.x + 1 &&
+                coord.y <= y && y < coord.y + 1);
+    }
 }
 
 // Taken from polymaps src/Layer.js

@@ -124,6 +124,9 @@ class Tile {
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
+
+        this.crossTileSymbolIndex = painter.crossTileSymbolIndex;
+
     }
 
     /**
@@ -151,6 +154,25 @@ class Tile {
         this.collisionTile = null;
         this.featureIndex = null;
         this.state = 'unloaded';
+        this.crossTileSymbolIndex = null;
+    }
+
+    added() {
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket.layers[0].type === 'symbol') {
+                this.crossTileSymbolIndex.addTileLayer(id, this.coord, this.sourceMaxZoom, bucket.symbolInstances);
+            }
+        }
+    }
+
+    removed() {
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket.layers[0].type === 'symbol') {
+                this.crossTileSymbolIndex.removeTileLayer(id, this.coord, this.sourceMaxZoom);
+            }
+        }
     }
 
     redoPlacement(source: any, showCollisionBoxes: boolean, collisionTile: ?CollisionTile, symbolOpacityIndex: any, layer: any, posMatrix: Float32Array) {
