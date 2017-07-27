@@ -6,6 +6,7 @@ const Evented = require('../../../src/util/evented');
 const Transform = require('../../../src/geo/transform');
 const util = require('../../../src/util/util');
 const ajax = require('../../../src/util/ajax');
+const browser = require('../../../src/util/browser');
 
 function createSource(options) {
     options = util.extend({
@@ -29,7 +30,8 @@ class StubMap extends Evented {
 
 test('ImageSource', (t) => {
 
-    t.stub(ajax, 'getImage').callsFake((params, callback) => { callback(null, new ArrayBuffer(1)); });
+    t.stub(ajax, 'getImage').callsFake((params, callback) => callback(null, {}));
+    t.stub(browser, 'getImageData').callsFake(() => new ArrayBuffer(1));
 
     t.test('constructor', (t) => {
         const source = createSource({ url : '/image.png' });

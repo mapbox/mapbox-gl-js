@@ -3,7 +3,6 @@
 const ShelfPack = require('@mapbox/shelf-pack');
 const browser = require('../util/browser');
 const util = require('../util/util');
-const {HTMLImageElement} = require('../util/window');
 const Evented = require('../util/evented');
 const padding = 1;
 
@@ -116,31 +115,12 @@ class SpriteAtlas extends Evented {
         return rect;
     }
 
-    addImage(name: string, pixels: HTMLImageElement | $ArrayBufferView, options: { width: number, height: number, pixelRatio?: number, sdf?: boolean }) {
-        let width, height, pixelRatio;
-        if (pixels instanceof HTMLImageElement) {
-            width = pixels.width;
-            height = pixels.height;
-            pixels = browser.getImageData(pixels);
-            pixelRatio = 1;
-        } else {
-            width = options.width;
-            height = options.height;
-            pixelRatio = options.pixelRatio || 1;
-        }
-
-        if (ArrayBuffer.isView(pixels)) {
-            pixels = new Uint32Array(pixels.buffer);
-        }
-
-        if (!(pixels instanceof Uint32Array)) {
-            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement and ArrayBufferView.')});
-        }
-
+    addImage(name: string, image: {width: number, height: number, data: Uint8ClampedArray}, {pixelRatio, sdf}: {pixelRatio: number, sdf: boolean}) {
         if (this.images[name]) {
             return this.fire('error', {error: new Error('An image with this name already exists.')});
         }
 
+        const {width, height, data} = image;
         const rect = this.allocateImage(width, height);
         if (!rect) {
             return this.fire('error', {error: new Error('There is not enough space to add this image.')});
@@ -151,10 +131,10 @@ class SpriteAtlas extends Evented {
             width,
             height,
             pixelRatio,
-            sdf: options.sdf || false
+            sdf
         };
 
-        this.copy(pixels, width, rect, {x: 0, y: 0, width, height}, false);
+        this.copy(new Uint32Array(data.buffer), width, rect, {x: 0, y: 0, width, height}, false);
 
         this.fire('data', {dataType: 'style'});
     }
@@ -209,12 +189,12 @@ class SpriteAtlas extends Evented {
         };
         this.images[name] = image;
 
-        if (!this.sprite.imgData || !this.sprite.width) {
+        if (!this.sprite.imgData) {
             return null;
         }
 
-        const srcImg = new Uint32Array(this.sprite.imgData.buffer);
-        this.copy(srcImg, this.sprite.width, rect, pos, wrap);
+        const srcImg = new Uint32Array(this.sprite.imgData.data.buffer);
+        this.copy(srcImg, this.sprite.imgData.width, rect, pos, wrap);
 
         return spriteAtlasElement(image);
     }

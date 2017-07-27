@@ -3,6 +3,7 @@
 const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
+const {HTMLImageElement} = require('../util/window');
 const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
@@ -1141,20 +1142,23 @@ class Map extends Camera {
      *
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      * @see [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
-     * @param {string} name The name of the image.
-     * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
-     * @param {Object} [options] Required if and only if passing an `ArrayBufferView`
-     * @param {number} [options.width] The pixel width of the `ArrayBufferView` image
-     * @param {number} [options.height] The pixel height of the `ArrayBufferView` image
-     * @param {number} [options.pixelRatio] The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
-     * @param {boolean} [options.sdf] Whether the image should be interpreted as an SDF image
+     * @param id The ID of the image.
+     * @param data The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
+     * properties with the same format as `ImageData`.
+     * @param options
+     * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
+     * @param options.sdf Whether the image should be interpreted as an SDF image
      */
-    addImage(
-        name: string,
-        image: HTMLImageElement | $ArrayBufferView,
-        options?: {width: number, height: number, pixelRatio: number, sdf: boolean}
-    ) {
-        this.style.spriteAtlas.addImage(name, image, (options: any));
+    addImage(name: string, data: HTMLImageElement | {width: number, height: number, data: Uint8ClampedArray},
+             {pixelRatio = 1, sdf = false}: {pixelRatio?: number, sdf?: boolean} = {}) {
+        if (data instanceof HTMLImageElement) {
+            data = browser.getImageData(data);
+        } else if (data.width === undefined || data.height === undefined) {
+            return this.fire('error', {error: new Error(
+                'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
+                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')});
+        }
+        this.style.spriteAtlas.addImage(name, data, {pixelRatio, sdf});
     }
 
     /**
