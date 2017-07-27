@@ -31,8 +31,7 @@ class ImageSprite extends Evented {
 
     transformRequestFn: RequestTransformFunction;
     data: ?{[string]: SpritePosition};
-    imgData: ?Uint8ClampedArray;
-    width: ?number;
+    imgData: ?ImageData;
 
     constructor(base: string, transformRequestCallback: RequestTransformFunction, eventedParent?: Evented) {
         super();
@@ -59,9 +58,6 @@ class ImageSprite extends Evented {
                 this.fire('error', {error: err});
             } else if (img) {
                 this.imgData = browser.getImageData(img);
-
-                this.width = img.width;
-
                 if (this.data) this.fire('data', {dataType: 'style'});
             }
         });
@@ -81,7 +77,6 @@ class ImageSprite extends Evented {
             newSprite.on('data', () => {
                 this.data = newSprite.data;
                 this.imgData = newSprite.imgData;
-                this.width = newSprite.width;
                 this.retina = newSprite.retina;
             });
         }

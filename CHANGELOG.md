@@ -1,3 +1,11 @@
+## master
+
+### :warning: Breaking changes
+
+- `Map#addImage` now requires the image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and
+  `data` properties with the same format as `ImageData`. It no longer accepts a raw `ArrayBufferView` in the second
+  argument and `width` and `height` options in the third argument.
+
 ## 0.39.1 (July 24, 2017)
 
 ### :bug: Bug fixes
