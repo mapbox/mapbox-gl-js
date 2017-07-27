@@ -52,7 +52,7 @@ class RasterTileSource extends Evented implements Source {
 
     load() {
         this.fire('dataloading', {dataType: 'source'});
-        loadTileJSON(this._options, (err, tileJSON) => {
+        loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
             if (err) {
                 this.fire('error', err);
             } else if (tileJSON) {
@@ -69,8 +69,8 @@ class RasterTileSource extends Evented implements Source {
     }
 
     onAdd(map: Map) {
-        this.load();
         this.map = map;
+        this.load();
     }
 
     setBounds(bounds?: [number, number, number, number]) {
@@ -91,7 +91,7 @@ class RasterTileSource extends Evented implements Source {
     loadTile(tile: Tile, callback: Callback<void>) {
         const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
-        tile.request = ajax.getImage(url, (err, img) => {
+        tile.request = ajax.getImage(this.map._transformRequest(url, ajax.ResourceType.Tile), (err, img) => {
             delete tile.request;
 
             if (tile.aborted) {

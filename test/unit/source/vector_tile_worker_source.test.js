@@ -11,7 +11,7 @@ test('abortTile', (t) => {
         source.loadTile({
             source: 'source',
             uid: 0,
-            url: 'http://localhost:2900/abort'
+            request: { url: 'http://localhost:2900/abort' }
         }, t.fail);
 
         source.abortTile({

@@ -4,6 +4,7 @@ const Evented = require('../util/evented');
 const util = require('../util/util');
 const window = require('../util/window');
 const EXTENT = require('../data/extent');
+const ResourceType = require('../util/ajax').ResourceType;
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -138,8 +139,8 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     onAdd(map: Map) {
-        this.load();
         this.map = map;
+        this.load();
     }
 
     /**
@@ -170,7 +171,7 @@ class GeoJSONSource extends Evented implements Source {
         const options = util.extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
-            options.url = resolveURL(data);
+            options.request = this.map._transformRequest(resolveURL(data), ResourceType.Source);
         } else {
             options.data = JSON.stringify(data);
         }

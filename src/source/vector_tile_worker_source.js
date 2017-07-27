@@ -40,7 +40,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const xhr = ajax.getArrayBuffer(params.url, (err, response) => {
+    const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {

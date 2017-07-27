@@ -108,7 +108,7 @@ class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {url: string}, callback: Callback<void>) {
+    loadWorkerSource(map: string, params: { url: string }, callback: Callback<void>) {
         try {
             this.self.importScripts(params.url);
             callback();

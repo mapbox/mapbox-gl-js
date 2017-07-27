@@ -6,10 +6,11 @@ const TileCoord = require('../../../src/source/tile_coord');
 const window = require('../../../src/util/window');
 const Evented = require('../../../src/util/evented');
 
-function createSource(options) {
+function createSource(options, transformCallback) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
     source.onAdd({
-        transform: { angle: 0, pitch: 0, cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; }, showCollisionBoxes: false }
+        transform: { angle: 0, pitch: 0, cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; }, showCollisionBoxes: false },
+        _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
     });
 
     source.on('error', (e) => {
@@ -66,6 +67,19 @@ test('VectorTileSource', (t) => {
         });
 
         window.server.respond();
+    });
+
+    t.test('transforms the request for TileJSON URL', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        const transformSpy = t.spy((url) => {
+            return { url };
+        });
+
+        createSource({ url: "/source.json" }, transformSpy);
+        window.server.respond();
+        t.equal(transformSpy.getCall(0).args[0], '/source.json');
+        t.equal(transformSpy.getCall(0).args[1], 'Source');
+        t.end();
     });
 
     t.test('fires event with metadata property', (t) => {
@@ -134,7 +148,7 @@ test('VectorTileSource', (t) => {
 
             source.dispatcher.send = function(type, params) {
                 t.equal(type, 'loadTile');
-                t.equal(expectedURL, params.url);
+                t.equal(expectedURL, params.request.url);
                 t.end();
             };
 
@@ -146,6 +160,30 @@ test('VectorTileSource', (t) => {
 
     testScheme('xyz', 'http://example.com/10/5/5.png');
     testScheme('tms', 'http://example.com/10/5/1018.png');
+
+    t.test('transforms tile urls before requesting', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+
+        const source = createSource({ url: "/source.json" });
+        const transformSpy = t.spy(source.map, '_transformRequest');
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const tile = {
+                    coord: new TileCoord(10, 5, 5, 0),
+                    state: 'loading',
+                    loadVectorData: function () {},
+                    setExpiryData: function() {}
+                };
+                source.loadTile(tile, () => {});
+                t.ok(transformSpy.calledOnce);
+                t.equal(transformSpy.getCall(0).args[0], 'http://example.com/10/5/5.png');
+                t.equal(transformSpy.getCall(0).args[1], 'Tile');
+                t.end();
+            }
+        });
+
+        window.server.respond();
+    });
 
     t.test('reloads a loading tile properly', (t) => {
         const source = createSource({
