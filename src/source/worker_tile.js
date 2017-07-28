@@ -1,7 +1,7 @@
 // @flow
 
 const FeatureIndex = require('../data/feature_index');
-const CollisionTile = require('../symbol/collision_tile');
+const PrepareSymbol = require('../symbol/prepare_symbol');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
@@ -160,7 +160,7 @@ class WorkerTile {
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
 
-                    bucket.prepare(stacks, icons);
+                    PrepareSymbol.prepare(bucket, stacks, icons);
                 }
 
                 done();
