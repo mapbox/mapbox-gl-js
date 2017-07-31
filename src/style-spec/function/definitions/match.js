@@ -4,8 +4,11 @@ const assert = require('assert');
 
 const {
     typename,
-    array
+    array,
+    match
 } = require('../types');
+
+const { typeOf } = require('../values');
 
 const { ParsingError } = require('../expression');
 const { CompoundExpression, nargs } = require('../compound_expression');
@@ -27,6 +30,7 @@ class MatchExpression extends CompoundExpression {
         const normalizedArgs = [args[0]];
 
         // parse input/output pairs.
+        let inputType;
         for (let i = 1; i < args.length - 1; i++) {
             const arg = args[i];
             if (i % 2 === 1) {
@@ -40,10 +44,22 @@ class MatchExpression extends CompoundExpression {
                     const inputValue = inputGroup[j];
                     if (typeof inputValue === 'object')
                         throw new ParsingError(
-                            `${context.key}[${i + 1}][${j}]`,
-                            'Match inputs must be literal primitive values or arrays of literal primitive values.'
+                            `${context.key}[${i + 1}]`,
+                            'Match inputs must be either literal integer or string values or arrays of integer or string values.'
 
                         );
+
+                    const type = typeOf((inputValue: any));
+                    if (!inputType) {
+                        inputType = type;
+                    } else {
+                        const error = match(inputType, type);
+                        if (error)
+                            throw new ParsingError(
+                                `${context.key}[${i + 1}]`,
+                                error
+                            );
+                    }
                 }
                 normalizedArgs.push(['literal', inputGroup]);
             } else {

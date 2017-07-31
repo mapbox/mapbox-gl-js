@@ -93,7 +93,7 @@ module.exports = () => ({
 
     toNumber: function(value: Value) {
         const num = Number(value);
-        ensure(!isNaN(num), `Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
+        ensure(value !== null && !isNaN(num), `Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
         return num;
     },
 

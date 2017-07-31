@@ -49,16 +49,13 @@
   ],
   "expected": {
     "compileResult": {
-      "result": "success",
-      "isFeatureConstant": false,
-      "isZoomConstant": true,
-      "type": "String"
-    },
-    "evaluateResults": [
-      "the letter a",
-      "the number 0",
-      "otherwise",
-      "The Truth"
-    ]
+      "result": "error",
+      "errors": [
+        {
+          "key": "[4]",
+          "error": "Expected String but found Number instead."
+        }
+      ]
+    }
   }
 }

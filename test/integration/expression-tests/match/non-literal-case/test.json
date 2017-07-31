@@ -26,8 +26,8 @@
       "result": "error",
       "errors": [
         {
-          "key": "[1][2][1]",
-          "error": "Match inputs must be literal primitive values or arrays of literal primitive values."
+          "key": "[1][2]",
+          "error": "Match inputs must be either literal integer or string values or arrays of integer or string values."
         }
       ]
     }
