@@ -3,13 +3,13 @@
 const assert = require('assert');
 
 const {
+    NullType,
     NumberType,
     StringType,
     BooleanType,
     ColorType,
     ObjectType,
     ValueType,
-    typename,
     array
 } = require('../types');
 
@@ -176,18 +176,18 @@ const expressions: { [string]: Class<Expression> } = {
             return `this.has(${args.length > 1 ? args[1] : 'props'}, ${args[0]}, ${args.length > 1 ? 'undefined' : '"feature.properties"'})`;
         }
     },
-    'at': class extends CompoundExpression {
-        static opName() { return 'at'; }
-        static type() { return typename('T'); }
-        static signatures() { return [[NumberType, array(typename('T'))]]; }
-        compileFromArgs(args) { return fromContext('at', args); }
-    },
+    // 'at': class extends CompoundExpression {
+    //     static opName() { return 'at'; }
+    //     static type() { return typename('T'); }
+    //     static signatures() { return [[NumberType, array(typename('T'))]]; }
+    //     compileFromArgs(args) { return fromContext('at', args); }
+    // },
     'length': class extends CompoundExpression {
         static opName() { return 'length'; }
         static type() { return NumberType; }
         static signatures() {
             return [
-                [array(typename('T'))],
+                [array(ValueType)],
                 [StringType]
             ];
         }
@@ -362,7 +362,14 @@ function defineComparisonOp(name) {
     return class extends CompoundExpression {
         static opName() { return name; }
         static type() { return BooleanType; }
-        static signatures() { return [[typename('T'), typename('T')]]; }
+        static signatures() {
+            return [
+                [NumberType, NumberType],
+                [StringType, StringType],
+                [BooleanType, BooleanType],
+                [NullType, NullType]
+            ];
+        }
         compileFromArgs(args) {
             return `${args[0]} ${op} ${args[1]}`;
         }

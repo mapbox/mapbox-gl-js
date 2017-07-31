@@ -1,7 +1,7 @@
 // @flow
 
 const { ParsingError, parseExpression } = require('../expression');
-const { BooleanType, typename } = require('../types');
+const { BooleanType } = require('../types');
 
 import type { Expression, Scope } from '../expression';
 import type { Type } from '../types';
@@ -17,7 +17,7 @@ class CaseExpression implements Expression {
 
     constructor(key: string, branches: Branches, otherwise: Expression) {
         this.key = key;
-        this.type = typename('T');
+        this.type = branches[0][1].type;
         this.branches = branches;
         this.otherwise = otherwise;
     }
@@ -49,7 +49,7 @@ class CaseExpression implements Expression {
                 return result;
             }
 
-            result = expression.typecheck(expected || typename('T'), scope);
+            result = expression.typecheck(expected, scope);
             if (result.result === 'error') {
                 return result;
             }

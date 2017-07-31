@@ -1,6 +1,6 @@
 // @flow
 
-const { typename, match } = require('./types');
+const { match } = require('./types');
 
 import type { Type } from './types';
 
@@ -137,7 +137,7 @@ function parseExpression(expr: mixed, context: ParsingContext) : Expression {
         if (typeof op !== 'string') {
             throw new ParsingError(`${key}[0]`, `Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`);
         } else if (context.scope.has(op)) {
-            return new Reference(context.key, op, typename('T'));
+            return new Reference(context.key, op, context.scope.get(op).type);
         }
 
         const Expr = context.definitions[op];

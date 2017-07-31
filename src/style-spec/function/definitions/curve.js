@@ -2,8 +2,7 @@
 
 const {
     NumberType,
-    ColorType,
-    typename
+    ColorType
 } = require('../types');
 
 const { ParsingError, parseExpression } = require('../expression');
@@ -28,7 +27,7 @@ class CurveExpression implements Expression {
 
     constructor(key: string, interpolation: InterpolationType, input: Expression, stops: Stops) {
         this.key = key;
-        this.type = typename('T');
+        this.type = stops[0][1].type;
         this.interpolation = interpolation;
         this.input = input;
         this.stops = stops;
@@ -83,13 +82,13 @@ class CurveExpression implements Expression {
     }
 
     typecheck(expected: Type, scope: Scope) {
-        const result = this.input.typecheck(typename('T'), scope);
+        const result = this.input.typecheck(NumberType, scope);
         if (result.result === 'error') {
             return result;
         }
 
         for (const [ , expression] of this.stops) {
-            const result = expression.typecheck(expected || typename('T'), scope);
+            const result = expression.typecheck(expected, scope);
 
             if (result.result === 'error') {
                 return result;

@@ -5,8 +5,6 @@ const {
     parseExpression
 } = require('../expression');
 
-const { typename } = require('../types');
-
 import type { Type } from '../types';
 import type { Expression, ParsingContext, Scope }  from '../expression';
 
@@ -26,7 +24,7 @@ class LetExpression implements Expression {
     typecheck(expected: Type, scope: Scope) {
         const bindings = [];
         for (const [name, value] of this.bindings) {
-            const checkedValue = value.typecheck(typename('T'), scope);
+            const checkedValue = value.typecheck(value.type, scope);
             if (checkedValue.result === 'error') return checkedValue;
             bindings.push([name, checkedValue.expression]);
         }

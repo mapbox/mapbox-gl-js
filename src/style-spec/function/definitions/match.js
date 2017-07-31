@@ -1,7 +1,8 @@
 // @flow
 
+const assert = require('assert');
 const { ParsingError, parseExpression } = require('../expression');
-const { typename, match } = require('../types');
+const { match } = require('../types');
 const { typeOf } = require('../values');
 
 import type { Expression, Scope } from '../expression';
@@ -12,14 +13,16 @@ type Branches = Array<[Array<null | number | string | boolean>, Expression]>;
 class MatchExpression implements Expression {
     key: string;
     type: Type;
+    inputType: Type;
 
     input: Expression;
     branches: Branches;
     otherwise: Expression;
 
-    constructor(key: string, input: Expression, branches: Branches, otherwise: Expression) {
+    constructor(key: string, inputType: Type, input: Expression, branches: Branches, otherwise: Expression) {
         this.key = key;
-        this.type = typename('T');
+        this.type = branches[0][1].type;
+        this.inputType = inputType;
         this.input = input;
         this.branches = branches;
         this.otherwise = otherwise;
@@ -65,17 +68,18 @@ class MatchExpression implements Expression {
 
         const otherwise = parseExpression(args[args.length - 1], context.concat(args.length, 'match'));
 
-        return new MatchExpression(context.key, input, branches, otherwise);
+        assert(inputType);
+        return new MatchExpression(context.key, (inputType: any), input, branches, otherwise);
     }
 
     typecheck(expected: Type, scope: Scope) {
-        let result = this.input.typecheck(typename('T'), scope);
+        let result = this.input.typecheck(this.inputType, scope);
         if (result.result === 'error') {
             return result;
         }
 
         for (const [ , expression] of this.branches) {
-            const result = expression.typecheck(expected || typename('T'), scope);
+            const result = expression.typecheck(expected, scope);
 
             if (result.result === 'error') {
                 return result;
@@ -84,7 +88,7 @@ class MatchExpression implements Expression {
             expected = result.expression.type;
         }
 
-        result = this.otherwise.typecheck(expected || typename('T'), scope);
+        result = this.otherwise.typecheck(expected, scope);
         if (result.result === 'error') {
             return result;
         }

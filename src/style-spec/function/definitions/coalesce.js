@@ -1,7 +1,6 @@
 // @flow
 
 const { parseExpression } = require('../expression');
-const { typename } = require('../types');
 
 import type { Expression, Scope } from '../expression';
 import type { Type } from '../types';
@@ -13,7 +12,7 @@ class CoalesceExpression implements Expression {
 
     constructor(key: string, args: Array<Expression>) {
         this.key = key;
-        this.type = typename('T');
+        this.type = args[0].type;
         this.args = args;
     }
 
@@ -27,7 +26,7 @@ class CoalesceExpression implements Expression {
 
     typecheck(expected: Type, scope: Scope) {
         for (const arg of this.args) {
-            const result = arg.typecheck(expected || typename('T'), scope);
+            const result = arg.typecheck(expected, scope);
             if (result.result === 'error') {
                 return result;
             }

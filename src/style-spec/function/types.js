@@ -1,11 +1,8 @@
 // @flow
 
-const extend = require('../util/extend');
-
-export type Type = PrimitiveType | TypeName | ArrayType // eslint-disable-line no-use-before-define
+export type Type = PrimitiveType | ArrayType // eslint-disable-line no-use-before-define
 
 export type PrimitiveType = { kind: 'primitive', name: string }
-export type TypeName = { kind: 'typename', name: string, typename: string }
 export type ArrayType = { kind: 'array', name: string, itemType: Type, N: ?number }
 
 const NullType = primitive('Null');
@@ -20,10 +17,6 @@ function primitive(name) : PrimitiveType {
     return { kind: 'primitive', name };
 }
 
-function typename(tn: string) : TypeName {
-    return { kind: 'typename', name: `${tn}`, typename: tn };
-}
-
 function array(itemType: Type, N: ?number) : ArrayType {
     return {
         kind: 'array',
@@ -31,18 +24,6 @@ function array(itemType: Type, N: ?number) : ArrayType {
         itemType,
         N
     };
-}
-
-function isGeneric(type: Type, stack: Array<Type> = []) {
-    if (stack.indexOf(type) >= 0) { return false; }
-    if (type.kind === 'typename') {
-        return true;
-    } else if (type.kind === 'array') {
-        return isGeneric(type.itemType, stack.concat(type));
-    } else if (type.kind === 'nargs') {
-        return type.types.some((t) => isGeneric(t, stack.concat(type)));
-    }
-    return false;
 }
 
 /**
@@ -56,35 +37,9 @@ function isGeneric(type: Type, stack: Array<Type> = []) {
  */
 function match(
     expected: Type,
-    t: Type,
-    typenames: { [string]: Type } = {},
-    scope: 'expected' | 'actual' = 'expected'
+    t: Type
 ) {
     const errorMessage = `Expected ${expected.name} but found ${t.name} instead.`;
-
-    if (expected.kind === 'typename') {
-        if (
-            scope === 'expected' &&
-            !typenames[expected.typename] &&
-            !isGeneric(t) &&
-            t !== NullType
-        ) {
-            typenames[expected.typename] = t;
-        }
-        return null;
-    }
-
-    if (t.kind === 'typename') {
-        if (
-            scope === 'actual' &&
-            !typenames[t.typename] &&
-            !isGeneric(expected) &&
-            expected !== NullType
-        ) {
-            typenames[t.typename] = expected;
-        }
-        return null;
-    }
 
     // a `null` literal is allowed anywhere.
     if (t.name === 'Null') return null;
@@ -101,10 +56,7 @@ function match(
         ];
 
         for (const memberType of members) {
-            const mTypenames = extend({}, typenames);
-            const error = match(memberType, t, mTypenames, scope);
-            if (!error) {
-                extend(typenames, mTypenames);
+            if (!match(memberType, t)) {
                 return null;
             }
         }
@@ -115,7 +67,7 @@ function match(
         else return errorMessage;
     } else if (expected.kind === 'array') {
         if (t.kind === 'array') {
-            const error = match(expected.itemType, t.itemType, typenames, scope);
+            const error = match(expected.itemType, t.itemType);
             if (error) return `${errorMessage} (${error})`;
             else if (typeof expected.N === 'number' && expected.N !== t.N) return errorMessage;
             else return null;
@@ -135,8 +87,6 @@ module.exports = {
     ColorType,
     ObjectType,
     ValueType,
-    typename,
     array,
-    isGeneric,
     match
 };
