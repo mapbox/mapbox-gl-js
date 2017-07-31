@@ -7,11 +7,17 @@ const fs = require('fs');
 
 const linter = require('eslint').linter;
 
+const floatPrecision = 6; // in decimal sigfigs
+
 function deepEqual(a, b) {
     if (typeof a !== typeof b)
         return false;
-    if (typeof a === 'number')
-        return Math.abs(a - b) < 1e-10;
+    if (typeof a === 'number') {
+        if (a === 0) { return b === 0; }
+        const digits = 1 + Math.floor(Math.log10(Math.abs(a)));
+        const multiplier = Math.pow(10, floatPrecision - digits);
+        return Math.floor(a * multiplier) === Math.floor(b * multiplier);
+    }
     if (a === null || b === null || typeof a !== 'object')
         return a === b;
 
