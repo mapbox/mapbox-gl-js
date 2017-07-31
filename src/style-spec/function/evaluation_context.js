@@ -82,6 +82,11 @@ module.exports = () => ({
     },
 
     rgba: function (r: number, g: number, b: number, a?: number) {
+        ensure(r >= 0 && r <= 255 &&
+            g >= 0 && g <= 255 &&
+            b >= 0 && b <= 255, `Invalid rgba value [${[r, g, b, a || 1].join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`);
+        ensure(typeof a === 'undefined' ||
+            (a >= 0 && a <= 1), `Invalid rgba value [${[r, g, b, a || 1].join(', ')}]: 'a' must be between 0 and 1.`);
         return new Color(r / 255, g / 255, b / 255, a);
     },
 
