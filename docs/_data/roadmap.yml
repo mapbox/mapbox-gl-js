@@ -1,5 +1,5 @@
 ## date format: Month DD, YYYY
-updated_at: 'May 24, 2017'
+updated_at: 'August 1, 2017'
 roadmap_items:
   -
     term: "Active development"
@@ -12,11 +12,13 @@ roadmap_items:
         name: Arbitrary expressions for property functions
         issues: ["4715"]
       -
-        name: Data-driven (property functions) <code>line-width</code>
-        issues: ["3045"]
+        name: Viewport label placement
+        issues: ["4704","#4972"]
       -
-        name: Text legibiity improvements on tilted maps
-        issues: ["4547"]
+          name: Heatmaps
+          issues: ["4756"]
+
+
   -
     term: "Upcoming"
     description: "Things we hope to start building in the next several months."
@@ -25,11 +27,12 @@ roadmap_items:
         name: Property aggregation on clustered features
         issues: ["2412"]
       -
-        name: <code>Map#setCamera</code> method
-        issues: ["3583", "2801"]
-      -
         name: Custom source type API
         project: 2
       -
-        name: Patterns for loading and errored tiles
-        issues: [3280]
+        name: Ray picking for extrusion layers
+        issues: ["3122"]
+      -
+        name: Component based style composition
+        issues: ["4225"]
+
