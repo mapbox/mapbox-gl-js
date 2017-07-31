@@ -11,6 +11,7 @@ const EXTENT = require('../data/extent');
 
 import type {Source} from './source';
 import type Map from '../ui/map';
+import type Style from '../style/style';
 import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
@@ -30,6 +31,7 @@ class SourceCache extends Evented {
     id: string;
     dispatcher: Dispatcher;
     map: Map;
+    style: Style;
 
     _source: Source;
     _sourceLoaded: boolean;
@@ -44,6 +46,7 @@ class SourceCache extends Evented {
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string) => boolean;
+    used: boolean;
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
