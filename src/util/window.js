@@ -5,7 +5,7 @@ const gl = require('gl');
 const sinon = require('sinon');
 const util = require('./util');
 
-function restore() {
+function restore(): Window {
     // Remove previous window from module.exports
     const previousWindow = module.exports;
     if (previousWindow.close) previousWindow.close();
