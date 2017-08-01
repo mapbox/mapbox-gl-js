@@ -1,10 +1,10 @@
 // @flow
 
 const { ParsingError, parseExpression } = require('../expression');
-const { BooleanType } = require('../types');
+const { match, BooleanType } = require('../types');
 
 import type { Expression, Scope } from '../expression';
-import type { Type } from '../types';
+import type { Type, TypeError } from '../types';
 
 type Branches = Array<[Expression, Expression]>;
 
@@ -40,34 +40,33 @@ class CaseExpression implements Expression {
         return new CaseExpression(context.key, branches, otherwise);
     }
 
-    typecheck(expected: Type, scope: Scope) {
+    typecheck(scope: Scope, errors: Array<TypeError>) {
         let result;
 
+        let outputType: Type = (null: any);
         for (const [test, expression] of this.branches) {
-            result = test.typecheck(BooleanType, scope);
-            if (result.result === 'error') {
-                return result;
-            }
+            result = test.typecheck(scope, errors);
+            if (!result) return null;
+            if (match(BooleanType, result.type, result.key, errors))
+                return null;
 
-            result = expression.typecheck(expected, scope);
-            if (result.result === 'error') {
-                return result;
+            result = expression.typecheck(scope, errors);
+            if (!result) return null;
+            if (!outputType) {
+                outputType = result.type;
+            } else {
+                if (match(outputType, result.type, result.key, errors))
+                    return null;
             }
-
-            expected = result.expression.type;
         }
 
-        result = this.otherwise.typecheck(expected, scope);
-        if (result.result === 'error') {
-            return result;
-        }
+        result = this.otherwise.typecheck(scope, errors);
+        if (!result) return null;
+        if (match(outputType, result.type, result.key, errors))
+            return null;
 
-        this.type = result.expression.type;
-
-        return {
-            result: 'success',
-            expression: this
-        };
+        this.type = outputType;
+        return this;
     }
 
     compile() {

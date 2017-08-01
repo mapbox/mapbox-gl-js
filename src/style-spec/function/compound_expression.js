@@ -4,9 +4,13 @@ const { parseExpression, Reference } = require('./expression');
 const { match } = require('./types');
 const assert = require('assert');
 
-import type { Expression, ParsingContext, Scope }  from './expression';
+import type {
+    Expression,
+    ParsingContext,
+    Scope
+}  from './expression';
 import type { ExpressionName } from './expression_name';
-import type { Type } from './types';
+import type { Type, TypeError } from './types';
 
 export type NArgs = { kind: 'nargs', types: Array<Type>, N: number };
 export type Signature = Array<Type | NArgs>;
@@ -26,15 +30,11 @@ class CompoundExpression implements Expression {
         return new this.constructor(this.key, type, args);
     }
 
-    typecheck(expected: Type, scope: Scope) {
+    typecheck(scope: Scope, errors: Array<TypeError>) {
         // Check if the expected type matches the expression's output type
-        const error = match(expected, this.type);
-        if (error) return { result: 'error', errors: [{ key: this.key, error }] };
-        expected = this.type;
-
-        let errors = [];
+        let signatureErrors = [];
         for (const params of this.constructor.signatures()) {
-            errors = [];
+            signatureErrors = [];
             // "Unroll" NArgs if present in the parameter list:
             // argCount = nargType.type.length * n + nonNargParameterCount
             // where n is the number of times the NArgs sequence must be
@@ -56,7 +56,7 @@ class CompoundExpression implements Expression {
             }
 
             if (expandedParams.length !== argValues.length) {
-                errors.push({
+                signatureErrors.push({
                     key: this.key,
                     error: `Expected ${expandedParams.length} arguments, but found ${argValues.length} instead.`
                 });
@@ -71,13 +71,10 @@ class CompoundExpression implements Expression {
                 if (arg instanceof Reference) {
                     arg = scope.get(arg.name);
                 }
-                const error = match(expandedParams[i], arg.type);
-                if (error) errors.push({ key: arg.key, error });
+                match(expandedParams[i], arg.type, arg.key, signatureErrors);
             }
 
-            // If we already have errors, return early so we don't get duplicates when
-            // we typecheck against the resolved argument types
-            if (errors.length) continue;
+            if (signatureErrors.length) continue;
 
             // recursively type check argument subexpressions
             const resolvedParams = [];
@@ -85,26 +82,26 @@ class CompoundExpression implements Expression {
             for (let i = 0; i < expandedParams.length; i++) {
                 const expected = expandedParams[i];
                 const arg = argValues[i];
-                const checked = arg.typecheck(expected, scope);
-                if (checked.result === 'error') {
-                    errors.push.apply(errors, checked.errors);
-                } else if (errors.length === 0) {
+                const checked = arg.typecheck(scope, signatureErrors);
+                if (!checked) continue;
+                const error = match(expected, checked.type, arg.key, signatureErrors);
+                if (error) {
+                    signatureErrors.push({key: checked.key, error});
+                }
+                if (signatureErrors.length === 0) {
                     resolvedParams.push(expected);
-                    checkedArgs.push(checked.expression);
+                    checkedArgs.push(checked);
                 }
             }
 
-            if (errors.length === 0) return {
-                result: 'success',
-                expression: this.applyType(expected, checkedArgs)
-            };
+            if (signatureErrors.length === 0) {
+                return this.applyType(this.type, checkedArgs);
+            }
         }
 
-        assert(errors.length > 0);
-        return {
-            result: 'error',
-            errors
-        };
+        assert(signatureErrors.length > 0);
+        errors.push.apply(errors, signatureErrors);
+        return null;
     }
 
     compile(): string {

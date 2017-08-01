@@ -1,6 +1,8 @@
 // @flow
 
+const assert = require('assert');
 const {
+    match,
     NumberType,
     ColorType
 } = require('../types');
@@ -8,7 +10,7 @@ const {
 const { ParsingError, parseExpression } = require('../expression');
 
 import type { Expression, Scope } from '../expression';
-import type { Type } from '../types';
+import type { Type, TypeError } from '../types';
 
 export type InterpolationType =
     { name: 'step' } |
@@ -81,41 +83,39 @@ class CurveExpression implements Expression {
         return new CurveExpression(context.key, interpolation, input, stops);
     }
 
-    typecheck(expected: Type, scope: Scope) {
-        const result = this.input.typecheck(NumberType, scope);
-        if (result.result === 'error') {
-            return result;
-        }
+    typecheck(scope: Scope, errors: Array<TypeError>) {
+        const result = this.input.typecheck(scope, errors);
+        if (!result) return null;
+        if (match(NumberType, result.type, result.key, errors))
+            return null;
 
+        let outputType: Type = (null: any);
         for (const [ , expression] of this.stops) {
-            const result = expression.typecheck(expected, scope);
-
-            if (result.result === 'error') {
-                return result;
+            const result = expression.typecheck(scope, errors);
+            if (!result) return null;
+            if (!outputType) {
+                outputType = result.type;
+            } else {
+                if (match(outputType, result.type, result.key, errors))
+                    return null;
             }
-
-            expected = result.expression.type;
         }
+
+        assert(outputType);
 
         if (this.interpolation.name !== 'step' &&
-            expected !== NumberType &&
-            expected !== ColorType &&
-            !(expected.kind === 'array' && expected.itemType === NumberType)) {
-            return {
-                result: 'error',
-                errors: [{
-                    key: this.stops[0][1].key,
-                    error: `Type ${expected.name} is not interpolatable, and thus cannot be used as a ${this.interpolation.name} curve's output type.`
-                }]
-            };
+            outputType !== NumberType &&
+            outputType !== ColorType &&
+            !(outputType.kind === 'array' && outputType.itemType === NumberType)) {
+            errors.push({
+                key: this.stops[0][1].key,
+                error: `Type ${outputType.name} is not interpolatable, and thus cannot be used as a ${this.interpolation.name} curve's output type.`
+            });
+            return null;
         }
 
-        this.type = expected;
-
-        return {
-            result: 'success',
-            expression: this
-        };
+        this.type = outputType;
+        return this;
     }
 
     compile() {

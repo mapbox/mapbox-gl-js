@@ -2,8 +2,11 @@
   "expression": [
     "match",
     [
-      "get",
-      "x"
+      "string",
+      [
+        "get",
+        "x"
+      ]
     ],
     "a",
     "Apple",

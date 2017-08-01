@@ -1,5 +1,6 @@
 // @flow
 
+const assert = require('assert');
 module.exports = compileExpression;
 
 const {
@@ -8,12 +9,12 @@ const {
     ParsingError,
     Scope
 } = require('./expression');
-
+const { match } = require('./types');
 const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
 
-import type { Type } from './types.js';
-import type { Expression, TypeError } from './expression.js';
+import type { Type, TypeError } from './types.js';
+import type { Expression } from './expression.js';
 
 type CompileErrors = {|
     result: 'error',
@@ -68,12 +69,25 @@ function compileExpression(
         throw e;
     }
 
-    const checked = parsed.typecheck(expectedType || parsed.type, new Scope());
-    if (checked.result === 'error') {
-        return checked;
+    const errors = [];
+    const checked = parsed.typecheck(new Scope(), errors);
+    if (!checked) {
+        assert(errors.length > 0);
+        return {
+            result: 'error',
+            errors
+        };
     }
 
-    const compiled = checked.expression.compile();
+    if (expectedType) {
+        const error = match(expectedType, checked.type);
+        if (error) return {
+            result: 'error',
+            errors: [{key: '', error: error}]
+        };
+    }
+
+    const compiled = checked.compile();
     if (typeof compiled === 'string') {
         const fn = new Function('mapProperties', 'feature', `
 mapProperties = mapProperties || {};
@@ -85,9 +99,9 @@ return this.unwrap(${compiled})
             result: 'success',
             function: fn.bind(evaluationContext()),
             functionSource: compiled,
-            isFeatureConstant: isFeatureConstant(checked.expression),
-            isZoomConstant: isZoomConstant(checked.expression),
-            expression: checked.expression
+            isFeatureConstant: isFeatureConstant(checked),
+            isZoomConstant: isZoomConstant(checked),
+            expression: checked
         };
     }
 

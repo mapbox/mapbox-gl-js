@@ -5,6 +5,11 @@ export type Type = PrimitiveType | ArrayType // eslint-disable-line no-use-befor
 export type PrimitiveType = { kind: 'primitive', name: string }
 export type ArrayType = { kind: 'array', name: string, itemType: Type, N: ?number }
 
+export type TypeError = {|
+    error: string,
+    key: string
+|}
+
 const NullType = primitive('Null');
 const NumberType = primitive('Number');
 const StringType = primitive('String');
@@ -37,9 +42,11 @@ function array(itemType: Type, N: ?number) : ArrayType {
  */
 function match(
     expected: Type,
-    t: Type
-) {
-    const errorMessage = `Expected ${expected.name} but found ${t.name} instead.`;
+    t: Type,
+    key?: string,
+    errors?: Array<TypeError>
+): ?string {
+    let error = `Expected ${expected.name} but found ${t.name} instead.`;
 
     // a `null` literal is allowed anywhere.
     if (t.name === 'Null') return null;
@@ -61,18 +68,28 @@ function match(
             }
         }
 
-        return errorMessage;
+        if (key && errors) errors.push({key, error});
+        return error;
     } if (expected.kind === 'primitive') {
         if (t === expected) return null;
-        else return errorMessage;
+        if (key && errors) errors.push({key, error});
+        return error;
     } else if (expected.kind === 'array') {
         if (t.kind === 'array') {
-            const error = match(expected.itemType, t.itemType);
-            if (error) return `${errorMessage} (${error})`;
-            else if (typeof expected.N === 'number' && expected.N !== t.N) return errorMessage;
-            else return null;
+            const itemError = match(expected.itemType, t.itemType, key, errors);
+            if (itemError) {
+                error = `${error} (${itemError})`;
+                if (key && errors) errors.push({key, error});
+                return error;
+            } else if (typeof expected.N === 'number' && expected.N !== t.N) {
+                if (key && errors) errors.push({key, error});
+                return error;
+            } else {
+                return null;
+            }
         } else {
-            return errorMessage;
+            if (key && errors) errors.push({key, error});
+            return error;
         }
     }
 

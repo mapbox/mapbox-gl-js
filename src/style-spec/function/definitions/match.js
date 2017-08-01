@@ -6,7 +6,7 @@ const { match } = require('../types');
 const { typeOf } = require('../values');
 
 import type { Expression, Scope } from '../expression';
-import type { Type } from '../types';
+import type { Type, TypeError } from '../types';
 
 type Branches = Array<[Array<null | number | string | boolean>, Expression]>;
 
@@ -72,33 +72,32 @@ class MatchExpression implements Expression {
         return new MatchExpression(context.key, (inputType: any), input, branches, otherwise);
     }
 
-    typecheck(expected: Type, scope: Scope) {
-        let result = this.input.typecheck(this.inputType, scope);
-        if (result.result === 'error') {
-            return result;
-        }
+    typecheck(scope: Scope, errors: Array<TypeError>) {
+        let result = this.input.typecheck(scope, errors);
+        if (!result) return null;
+        if (match(this.inputType, this.input.type, this.input.key, errors))
+            return null;
 
+        let outputType: Type = (null: any);
         for (const [ , expression] of this.branches) {
-            const result = expression.typecheck(expected, scope);
+            const result = expression.typecheck(scope, errors);
+            if (!result) return null;
 
-            if (result.result === 'error') {
-                return result;
+            if (!outputType) {
+                outputType = result.type;
+            } else if (match(outputType, result.type, result.key, errors)) {
+                return null;
             }
-
-            expected = result.expression.type;
         }
 
-        result = this.otherwise.typecheck(expected, scope);
-        if (result.result === 'error') {
-            return result;
+        result = this.otherwise.typecheck(scope, errors);
+        if (!result) return null;
+        if (match(outputType, result.type, result.key, errors)) {
+            return null;
         }
 
-        this.type = result.expression.type;
-
-        return {
-            result: 'success',
-            expression: this
-        };
+        this.type = result.type;
+        return this;
     }
 
     compile() {

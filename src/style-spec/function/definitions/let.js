@@ -5,7 +5,7 @@ const {
     parseExpression
 } = require('../expression');
 
-import type { Type } from '../types';
+import type { Type, TypeError } from '../types';
 import type { Expression, ParsingContext, Scope }  from '../expression';
 
 class LetExpression implements Expression {
@@ -21,20 +21,17 @@ class LetExpression implements Expression {
         this.result = result;
     }
 
-    typecheck(expected: Type, scope: Scope) {
+    typecheck(scope: Scope, errors: Array<TypeError>) {
         const bindings = [];
         for (const [name, value] of this.bindings) {
-            const checkedValue = value.typecheck(value.type, scope);
-            if (checkedValue.result === 'error') return checkedValue;
-            bindings.push([name, checkedValue.expression]);
+            const checkedValue = value.typecheck(scope, errors);
+            if (!checkedValue) return null;
+            bindings.push([name, checkedValue]);
         }
         const nextScope = scope.concat(bindings);
-        const checkedResult = this.result.typecheck(expected, nextScope);
-        if (checkedResult.result === 'error') return checkedResult;
-        return {
-            result: 'success',
-            expression: new LetExpression(this.key, bindings, checkedResult.expression)
-        };
+        const checkedResult = this.result.typecheck(nextScope, errors);
+        if (!checkedResult) return null;
+        return new LetExpression(this.key, bindings, checkedResult);
     }
 
     compile() {

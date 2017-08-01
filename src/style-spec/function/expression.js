@@ -1,30 +1,17 @@
 // @flow
 
-const { match } = require('./types');
-
 import type { Type } from './types';
 
-export type TypeError = {|
-    error: string,
-    key: string
-|}
-
-export type TypecheckResult = {|
-    result: 'success',
-    expression: Expression
-|} | {|
-    result: 'error',
-    errors: Array<TypeError>
-|}
-
 /*::
+import type { TypeError } from './types';
+
 export interface Expression {
     key: string;
     type: Type;
 
     static parse(args: Array<mixed>, context: ParsingContext): Expression;
 
-    typecheck(expected: Type, scope: Scope): TypecheckResult;
+    typecheck(scope: Scope, Array<TypeError>): ?Expression;
     compile(): string;
 
     serialize(): any;
@@ -102,14 +89,9 @@ class Reference implements Expression {
         this.name = name;
     }
 
-    typecheck(expected: Type, scope: Scope) {
+    typecheck(scope: Scope) {
         const referee = scope.get(this.name);
-        const error = match(expected, referee.type);
-        if (error) return { result: 'error', errors: [{key: this.key, error }] };
-        return {
-            result: 'success',
-            expression: new Reference(this.key, this.name, referee.type)
-        };
+        return new Reference(this.key, this.name, referee.type);
     }
 
     compile() { return this.name; }
