@@ -62,6 +62,7 @@
     "eslint-plugin-flowtype": "^2.34.0",
     "eslint-plugin-html": "^3.0.0",
     "flow-bin": "^0.48.0",
+    "flow-coverage-report": "^0.3.0",
     "flow-remove-types": "^1.0.4",
     "github-slugger": "^1.1.1",
     "gl": "^4.0.1",
@@ -136,6 +137,7 @@
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
+    "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
   },
