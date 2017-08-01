@@ -1,3 +1,4 @@
+// @flow
 
 const glMatrix = require('@mapbox/gl-matrix');
 const Buffer = require('../data/buffer');
@@ -8,9 +9,14 @@ const mat3 = glMatrix.mat3;
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
+import type TileCoord from '../source/tile_coord';
+
 module.exports = draw;
 
-function draw(painter, source, layer, coords) {
+function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<TileCoord>) {
     if (painter.isOpaquePass) return;
     if (layer.paint['fill-extrusion-opacity'] === 0) return;
 

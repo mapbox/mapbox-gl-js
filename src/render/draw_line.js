@@ -1,18 +1,14 @@
+// @flow
 
 const browser = require('../util/browser');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
-/**
- * Draw a line. Under the hood this will read elements from
- * a tile, dash textures from a lineAtlas, and style properties from a layer.
- * @param {Object} painter
- * @param {Object} layer
- * @param {Object} posMatrix
- * @param {Tile} tile
- * @returns {undefined} draws with the painter
- * @private
- */
-module.exports = function drawLine(painter, sourceCache, layer, coords) {
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type LineStyleLayer from '../style/style_layer/line_style_layer';
+import type TileCoord from '../source/tile_coord';
+
+module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<TileCoord>) {
     if (painter.isOpaquePass) return;
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -91,8 +87,8 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
             gl.activeTexture(gl.TEXTURE0);
             painter.lineAtlas.bind(gl);
 
-            gl.uniform1f(program.u_tex_y_a, posA.y);
-            gl.uniform1f(program.u_tex_y_b, posB.y);
+            gl.uniform1f(program.u_tex_y_a, (posA : any).y);
+            gl.uniform1f(program.u_tex_y_b, (posB : any).y);
             gl.uniform1f(program.u_mix, dasharray.t);
 
         } else if (image) {
@@ -100,10 +96,10 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
             gl.activeTexture(gl.TEXTURE0);
             painter.spriteAtlas.bind(gl, true);
 
-            gl.uniform2fv(program.u_pattern_tl_a, imagePosA.tl);
-            gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
-            gl.uniform2fv(program.u_pattern_tl_b, imagePosB.tl);
-            gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
+            gl.uniform2fv(program.u_pattern_tl_a, (imagePosA : any).tl);
+            gl.uniform2fv(program.u_pattern_br_a, (imagePosA : any).br);
+            gl.uniform2fv(program.u_pattern_tl_b, (imagePosB : any).tl);
+            gl.uniform2fv(program.u_pattern_br_b, (imagePosB : any).br);
             gl.uniform1f(program.u_fade, image.t);
         }
     }
