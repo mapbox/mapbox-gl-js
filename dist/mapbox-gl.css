@@ -132,7 +132,7 @@
     0% { -ms-transform: rotate(0deg); }
     100% { -ms-transform: rotate(360deg); }
 }
-@-keyframes mapboxgl-spin {
+@keyframes mapboxgl-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
