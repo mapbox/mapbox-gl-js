@@ -19,6 +19,7 @@ class CoalesceExpression implements Expression {
     }
 
     static parse(args, context) {
+        args = args.slice(1);
         const parsedArgs = [];
         for (const arg of args) {
             parsedArgs.push(parseExpression(arg, context.concat(1 + parsedArgs.length, 'coalesce')));
@@ -28,6 +29,7 @@ class CoalesceExpression implements Expression {
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
         let outputType;
+        const checkedArgs = [];
         for (const arg of this.args) {
             const result = arg.typecheck(scope, errors);
             if (!result) return null;
@@ -37,11 +39,10 @@ class CoalesceExpression implements Expression {
                 if (match(outputType, result.type, result.key, errors))
                     return null;
             }
+            checkedArgs.push(result);
         }
-
         assert(outputType);
-        this.type = (outputType: any);
-        return this;
+        return new CoalesceExpression(this.key, checkedArgs);
     }
 
     compile() {

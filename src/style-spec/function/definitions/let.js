@@ -73,6 +73,7 @@ class LetExpression implements Expression {
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
+        args = args.slice(1);
         if (args.length < 3)
             throw new ParsingError(context.key, `Expected at least 3 arguments, but found ${args.length} instead.`);
 

@@ -29,6 +29,7 @@ class MatchExpression implements Expression {
     }
 
     static parse(args, context) {
+        args = args.slice(1);
         if (args.length < 2)
             throw new ParsingError(context.key, `Expected at least 2 arguments, but found only ${args.length}.`);
         if (args.length % 2 !== 0)
@@ -73,13 +74,14 @@ class MatchExpression implements Expression {
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
-        let result = this.input.typecheck(scope, errors);
-        if (!result) return null;
-        if (match(this.inputType, this.input.type, this.input.key, errors))
+        const input = this.input.typecheck(scope, errors);
+        if (!input) return null;
+        if (match(this.inputType, input.type, input.key, errors))
             return null;
 
         let outputType: Type = (null: any);
-        for (const [ , expression] of this.branches) {
+        const branches = [];
+        for (const [key, expression] of this.branches) {
             const result = expression.typecheck(scope, errors);
             if (!result) return null;
 
@@ -88,16 +90,17 @@ class MatchExpression implements Expression {
             } else if (match(outputType, result.type, result.key, errors)) {
                 return null;
             }
+
+            branches.push([key, result]);
         }
 
-        result = this.otherwise.typecheck(scope, errors);
-        if (!result) return null;
-        if (match(outputType, result.type, result.key, errors)) {
+        const otherwise = this.otherwise.typecheck(scope, errors);
+        if (!otherwise) return null;
+        if (match(outputType, otherwise.type, otherwise.key, errors)) {
             return null;
         }
 
-        this.type = result.type;
-        return this;
+        return new MatchExpression(this.key, this.inputType, input, branches, otherwise);
     }
 
     compile() {

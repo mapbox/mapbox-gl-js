@@ -19,13 +19,13 @@ class LiteralExpression implements Expression {
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
-        if (args.length !== 1)
-            throw new ParsingError(context.key, `'literal' expression requires exactly one argument, but found ${args.length} instead.`);
+        if (args.length !== 2)
+            throw new ParsingError(context.key, `'literal' expression requires exactly one argument, but found ${args.length - 1} instead.`);
 
-        if (!isValue(args[0]))
+        if (!isValue(args[1]))
             throw new ParsingError(context.key, `invalid value`);
 
-        const value = (args[0] : any);
+        const value = (args[1] : any);
         const type = typeOf(value);
 
         return new this(context.key, type, value);

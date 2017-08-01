@@ -36,6 +36,7 @@ class CurveExpression implements Expression {
     }
 
     static parse(args, context) {
+        args = args.slice(1);
         if (args.length < 4)
             throw new ParsingError(context.key, `Expected at least 2 arguments, but found only ${args.length}.`);
 
@@ -84,13 +85,14 @@ class CurveExpression implements Expression {
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
-        const result = this.input.typecheck(scope, errors);
-        if (!result) return null;
-        if (match(NumberType, result.type, result.key, errors))
+        const input = this.input.typecheck(scope, errors);
+        if (!input) return null;
+        if (match(NumberType, input.type, input.key, errors))
             return null;
 
         let outputType: Type = (null: any);
-        for (const [ , expression] of this.stops) {
+        const stops = [];
+        for (const [stop, expression] of this.stops) {
             const result = expression.typecheck(scope, errors);
             if (!result) return null;
             if (!outputType) {
@@ -99,6 +101,7 @@ class CurveExpression implements Expression {
                 if (match(outputType, result.type, result.key, errors))
                     return null;
             }
+            stops.push([stop, result]);
         }
 
         assert(outputType);
@@ -114,8 +117,7 @@ class CurveExpression implements Expression {
             return null;
         }
 
-        this.type = outputType;
-        return this;
+        return new CurveExpression(this.key, this.interpolation, input, stops);
     }
 
     compile() {

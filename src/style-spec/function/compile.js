@@ -9,6 +9,7 @@ const {
     ParsingError,
     Scope
 } = require('./expression');
+const { CompoundExpression } = require('./compound_expression');
 const { match } = require('./types');
 const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
@@ -114,16 +115,18 @@ return this.unwrap(${compiled})
 function isFeatureConstant(e: Expression) {
     let result = true;
     e.visit((expression) => {
-        if (expression instanceof definitions['get']) {
-            result = result && (expression.args.length > 1);
-        } else if (expression instanceof definitions['has']) {
-            result = result && (expression.args.length > 1);
-        } else {
-            result = result && !(
-                expression instanceof definitions['properties'] ||
-                expression instanceof definitions['geometry_type'] ||
-                expression instanceof definitions['id']
-            );
+        if (expression instanceof CompoundExpression) {
+            if (expression.name === 'get') {
+                result = result && (expression.args.length > 1);
+            } else if (expression.name === 'has') {
+                result = result && (expression.args.length > 1);
+            } else {
+                result = result && !(
+                    expression.name === 'properties' ||
+                    expression.name === 'geometry_type' ||
+                    expression.name === 'id'
+                );
+            }
         }
     });
     return result;
@@ -132,7 +135,7 @@ function isFeatureConstant(e: Expression) {
 function isZoomConstant(e: Expression) {
     let result = true;
     e.visit((expression) => {
-        if (expression instanceof definitions['zoom']) result = false;
+        if (expression.name === 'zoom') result = false;
     });
     return result;
 }

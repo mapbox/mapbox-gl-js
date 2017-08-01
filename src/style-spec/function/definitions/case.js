@@ -23,6 +23,7 @@ class CaseExpression implements Expression {
     }
 
     static parse(args, context) {
+        args = args.slice(1);
         if (args.length < 3)
             throw new ParsingError(context.key, `Expected at least 3 arguments, but found only ${args.length}.`);
         if (args.length % 2 === 0)
@@ -41,32 +42,31 @@ class CaseExpression implements Expression {
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
-        let result;
-
         let outputType: Type = (null: any);
+        const checkedBranches = [];
         for (const [test, expression] of this.branches) {
-            result = test.typecheck(scope, errors);
-            if (!result) return null;
-            if (match(BooleanType, result.type, result.key, errors))
+            const checkedTest = test.typecheck(scope, errors);
+            if (!checkedTest) return null;
+            if (match(BooleanType, checkedTest.type, checkedTest.key, errors))
                 return null;
 
-            result = expression.typecheck(scope, errors);
-            if (!result) return null;
+            const checkedResult = expression.typecheck(scope, errors);
+            if (!checkedResult) return null;
             if (!outputType) {
-                outputType = result.type;
+                outputType = checkedResult.type;
             } else {
-                if (match(outputType, result.type, result.key, errors))
+                if (match(outputType, checkedResult.type, checkedResult.key, errors))
                     return null;
             }
+            checkedBranches.push([checkedTest, checkedResult]);
         }
 
-        result = this.otherwise.typecheck(scope, errors);
-        if (!result) return null;
-        if (match(outputType, result.type, result.key, errors))
+        const checkedOtherwise = this.otherwise.typecheck(scope, errors);
+        if (!checkedOtherwise) return null;
+        if (match(outputType, checkedOtherwise.type, checkedOtherwise.key, errors))
             return null;
 
-        this.type = outputType;
-        return this;
+        return new CaseExpression(this.key, checkedBranches, checkedOtherwise);
     }
 
     compile() {

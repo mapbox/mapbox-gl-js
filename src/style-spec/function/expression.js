@@ -123,9 +123,11 @@ function parseExpression(expr: mixed, context: ParsingContext) : Expression {
         }
 
         const Expr = context.definitions[op];
-        if (Expr) return Expr.parse(expr.slice(1), context);
+        if (Expr) {
+            return Expr.parse(expr, context);
+        }
 
-        throw new ParsingError(`${key}[0]`, `Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`);
+        throw new ParsingError(`${context.key}[0]`, `Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`);
     } else if (typeof expr === 'undefined') {
         throw new ParsingError(key, `'undefined' value invalid. Use null instead.`);
     } else if (typeof expr === 'object') {
