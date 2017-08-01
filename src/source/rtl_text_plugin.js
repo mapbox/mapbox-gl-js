@@ -24,7 +24,7 @@ module.exports.registerForPluginAvailability = function(
 
 // Exposed so it can be stubbed out by tests
 module.exports.createBlobURL = function(response: Object) {
-    return window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
+    return window.URL.createObjectURL(new window.Blob([response.data], {type: "text/javascript"}));
 };
 // Only exposed for tests
 module.exports.clearRTLTextPlugin = function() {

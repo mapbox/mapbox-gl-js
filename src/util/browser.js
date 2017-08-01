@@ -62,6 +62,9 @@ module.exports = {
     getImageData(img: CanvasImageSource): Uint8ClampedArray {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
+        if (!context) {
+            throw new Error('failed to create canvas 2d context');
+        }
         canvas.width = img.width;
         canvas.height = img.height;
         context.drawImage(img, 0, 0, img.width, img.height);
