@@ -133,6 +133,8 @@ class Style extends Evented {
                 }
             }
         });
+
+        this._currentPlacementIndex = 0;
     }
 
     _validateLayer(layer) {
@@ -869,17 +871,29 @@ class Style extends Evented {
                 return true;
             }
         }
+        return false;
     }
 
-    _redoPlacement(transform, showCollisionBoxes) {
-        console.time('redo placement');
-        this.viewportCollisionTile = new CollisionTile(transform);
-        this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
+    _redoPlacement(transform, showCollisionBoxes, forceFullPlacement) {
+        // TODO: There are sure to be bugs depending on this boolean flag for when to do a full placement...
+        // Make style aware itself of when it needs to re-build?
 
         const posMatrices = {};
 
-        for (let i = this._order.length - 1; i >= 0; i--) {
-            const layerId = this._order[i];
+        if (forceFullPlacement || !this._currentPlacementIndex || this._currentPlacementIndex < 0) {
+            this._currentPlacementIndex = this._order.length - 1;
+            this.viewportCollisionTile = new CollisionTile(transform.clone());
+            this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
+            this._fullPlacementStart = browser.now();
+            this._fullPlacementElapsed = 0;
+        }
+
+        const startPlacement = browser.now();
+        let placedLayers = 0;
+
+        while (this._currentPlacementIndex >= 0) {
+            const layerId = this._order[this._currentPlacementIndex--];
+            placedLayers++;
             const layer = this._layers[layerId];
             if (layer.type !== 'symbol') continue;
 
@@ -889,8 +903,16 @@ class Style extends Evented {
                 }
                 this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, this.symbolOpacityIndex, layer, posMatrices[id], transform);
             }
+            if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
+                const elapsed = browser.now() - startPlacement;
+                this._fullPlacementElapsed += elapsed;
+                console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+                return true;
+            }
         }
-        console.timeEnd('redo placement');
+        this._fullPlacementElapsed += browser.now() - startPlacement;
+        console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time`);
+        return false;
     }
 
     // Callbacks from web workers

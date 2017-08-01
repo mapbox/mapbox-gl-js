@@ -97,7 +97,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateInShader, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData);
+            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateInShader, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData, bucket.symbolOpacityIndex);
         }
 
         painter.enableTileClippingMask(coord);
@@ -124,7 +124,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
-function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateInShader, pitchWithMap, fontstack, iconsNeedLinear, sizeData) {
+function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateInShader, pitchWithMap, fontstack, iconsNeedLinear, sizeData, symbolOpacityIndex) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -169,7 +169,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
     gl.uniform1i(program.u_rotate_symbol, rotateInShader);
 
-    gl.uniform1f(program.u_fade_change, painter.style.symbolOpacityIndex.getChangeSince(Date.now()));
+    gl.uniform1f(program.u_fade_change, symbolOpacityIndex.getChangeSince(Date.now()));
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {

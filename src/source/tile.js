@@ -9,7 +9,6 @@ const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
-const Throttler = require('../util/throttler');
 const projection = require('../symbol/projection');
 const PlaceSymbols = require('../symbol/place_symbols');
 
@@ -130,16 +129,6 @@ class Tile {
     }
 
     /**
-     * Replace this tile's symbol buckets with fresh data.
-     * @param {Object} data
-     * @returns {undefined}
-     * @private
-     */
-    reloadSymbolData(data: WorkerTileResult) {
-        if (this.state === 'unloaded') return;
-    }
-
-    /**
      * Release any data or WebGL resources referenced by this tile.
      * @returns {undefined}
      * @private
@@ -191,9 +180,10 @@ class Tile {
         if (bucket) {
             //recalculateLayers(bucket, this.zoom);
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
-            const pixelRatio = pixelsToTileUnits(this, 1, source.map.transform.zoom);
-            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, source.map.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, source.map.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix, this.coord.id, this.collisionBoxArray);
+            const pixelRatio = pixelsToTileUnits(this, 1, collisionTile.transform.zoom);
+            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionTile.transform, pixelRatio);
+            bucket.symbolOpacityIndex = symbolOpacityIndex;
+            PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, collisionTile.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix, this.coord.id, this.collisionBoxArray);
             PlaceSymbols.updateOpacities(bucket, symbolOpacityIndex, this.coord, this.sourceMaxZoom);
         }
 
