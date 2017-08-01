@@ -4,6 +4,7 @@ const util = require('../util/util');
 const EXTENT = require('./extent');
 const assert = require('assert');
 
+import type Point from '@mapbox/point-geometry';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -30,7 +31,7 @@ const boundsLookup = {
  *   in the specified number of bits.
  * @private
  */
-module.exports = function loadGeometry(feature: VectorTileFeature, bits?: number) {
+module.exports = function loadGeometry(feature: VectorTileFeature, bits?: number): Array<Array<Point>> {
     const bounds = boundsLookup[bits || 16];
     assert(bounds);
 
