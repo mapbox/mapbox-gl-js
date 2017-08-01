@@ -226,21 +226,35 @@ const defaultOptions = {
  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 class Map extends Camera {
-
+    style: any;
+    painter: Painter;
     animationLoop: AnimationLoop;
+
     _classes: Array<string>;
     _container: HTMLElement;
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
+    _controlPositions: {[string]: HTMLElement};
     _classOptions: ?{transition: boolean};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
-    _showOverdrawInspector: ?boolean;
+    _showOverdrawInspector: boolean;
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
     _transformRequest: RequestTransformFunction;
+    _maxTileCacheSize: number;
+    _frameId: any;
+    _styleDirty: ?boolean;
+    _sourcesDirty: ?boolean;
+    _loaded: boolean;
+    _trackResize: boolean;
+    _preserveDrawingBuffer: boolean;
+    _failIfMajorPerformanceCaveat: boolean;
+    _refreshExpiredTiles: boolean;
+    _hash: Hash;
+    _delegatedListeners: any;
 
     constructor(options: MapOptions) {
         options = util.extend({}, defaultOptions, options);
@@ -555,8 +569,8 @@ class Map extends Camera {
             this.transform._constrain();
             this._update();
         } else if (lnglatbounds === null || lnglatbounds === undefined) {
-            this.transform.lngRange = [];
-            this.transform.latRange = [];
+            this.transform.lngRange = null;
+            this.transform.latRange = null;
             this._update();
         }
         return this;
@@ -776,6 +790,8 @@ class Map extends Camera {
                 }
             }
         }
+
+        return this;
     }
 
     /**
