@@ -111,11 +111,19 @@ const symbolInterfaces = {
         layoutAttributes: [
             {name: 'a_pos',        components: 2, type: 'Int16'},
             {name: 'a_anchor_pos', components: 2, type: 'Int16'},
-            {name: 'a_extrude',    components: 2, type: 'Int16'},
-            {name: 'a_is_circle', type: 'Uint8' }
+            {name: 'a_extrude',    components: 2, type: 'Int16'}
         ],
         collisionAttributes: collisionAttributes,
         elementArrayType: createElementArrayType(2)
+    },
+    collisionCircle: { // used to render collision circles for debugging purposes
+        layoutAttributes: [
+            {name: 'a_pos',        components: 2, type: 'Int16'},
+            {name: 'a_anchor_pos', components: 2, type: 'Int16'},
+            {name: 'a_extrude',    components: 2, type: 'Int16'}
+        ],
+        collisionAttributes: collisionAttributes,
+        elementArrayType: createElementArrayType(3)
     }
 };
 
@@ -176,7 +184,8 @@ class SymbolBucket {
     static programInterfaces: {
         glyph: ProgramInterface,
         icon: ProgramInterface,
-        collisionBox: ProgramInterface
+        collisionBox: ProgramInterface,
+        collisionCircle: ProgramInterface
     };
 
     static MAX_INSTANCES: number;
@@ -368,6 +377,7 @@ class SymbolBucket {
             if (this.buffers.icon) this.buffers.icon.destroy();
             if (this.buffers.glyph) this.buffers.glyph.destroy();
             if (this.buffers.collisionBox) this.buffers.collisionBox.destroy();
+            if (this.buffers.collisionCircle) this.buffers.collisionCircle.destroy();
             this.buffers = null;
         }
     }
@@ -434,7 +444,7 @@ class SymbolBucket {
         arrays.populatePaintArrays(featureProperties);
     }
 
-    _addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude, isCircle) {
+    _addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, point, anchor, extrude) {
         collisionVertexArray.emplaceBack(0, 0);
         return layoutVertexArray.emplaceBack(
             // pos
@@ -445,36 +455,42 @@ class SymbolBucket {
             anchor.y,
             // extrude
             Math.round(extrude.x),
-            Math.round(extrude.y),
-            // a_is_circle
-            isCircle ? 1 : 0);
+            Math.round(extrude.y));
     }
 
 
-    addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, isCircle) {
+    addCollisionDebugVertices(x1, y1, x2, y2, bucketArrays, boxAnchorPoint, symbolInstance, isCircle) {
+        const arrays = isCircle ? bucketArrays.collisionCircle : bucketArrays.collisionBox;
+
         const segment = arrays.prepareSegment(4);
         const index = segment.vertexLength;
 
-        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x1, y1), isCircle);
-        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x2, y1), isCircle);
-        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x2, y2), isCircle);
-        this._addCollisionBoxVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x1, y2), isCircle);
-
-        elementArray.emplaceBack(index, index + 1);
-        elementArray.emplaceBack(index + 1, index + 2);
-        elementArray.emplaceBack(index + 2, index + 3);
-        elementArray.emplaceBack(index + 3, index);
-
-        segment.vertexLength += 4;
-        segment.primitiveLength += 4;
-    }
-
-    generateCollisionDebugBuffers() {
-        const arrays = this.arrays.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
         const collisionVertexArray = arrays.collisionVertexArray;
 
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x1, y1));
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x2, y1));
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x2, y2));
+        this._addCollisionDebugVertex(layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance.anchor, new Point(x1, y2));
+
+        segment.vertexLength += 4;
+        if (isCircle) {
+            elementArray.emplaceBack(index, index + 1, index + 2);
+            elementArray.emplaceBack(index, index + 2, index + 3);
+
+            segment.primitiveLength += 2;
+        } else {
+            elementArray.emplaceBack(index, index + 1);
+            elementArray.emplaceBack(index + 1, index + 2);
+            elementArray.emplaceBack(index + 2, index + 3);
+            elementArray.emplaceBack(index + 3, index);
+
+            segment.primitiveLength += 4;
+        }
+    }
+
+    generateCollisionDebugBuffers() {
         for (const symbolInstance of this.symbolInstances) {
             symbolInstance.textCollisionFeature = {boxStartIndex: symbolInstance.textBoxStartIndex, boxEndIndex: symbolInstance.textBoxEndIndex};
             symbolInstance.iconCollisionFeature = {boxStartIndex: symbolInstance.iconBoxStartIndex, boxEndIndex: symbolInstance.iconBoxEndIndex};
@@ -491,8 +507,9 @@ class SymbolBucket {
                     const x2 = box.x2;
                     const y2 = box.y2;
 
-                    // TODO: The collision debug view can't draw circles yet, so we just draw the box that contains the circle
-                    this.addCollisionBoxVertices(x1, y1, x2, y2, layoutVertexArray, collisionVertexArray, boxAnchorPoint, symbolInstance, arrays, elementArray, false);
+                    // If the radius > 0, this collision box is actually a circle
+                    // The data we add to the buffers is exactly the same, but we'll render with a different shader.
+                    this.addCollisionDebugVertices(x1, y1, x2, y2, this.arrays, boxAnchorPoint, symbolInstance, box.radius > 0);
                 }
             }
         }

@@ -6,7 +6,7 @@ const glmatrix = require('@mapbox/gl-matrix');
 
 const mat4 = glmatrix.mat4;
 
-const projection = require('../symbol/projection'); // TODO: Split the main thread part of this code out so it doesn't get needlessly copied to the workers
+const projection = require('../symbol/projection');
 const intersectionTests = require('../util/intersection_tests');
 
 /**

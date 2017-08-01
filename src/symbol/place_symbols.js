@@ -66,7 +66,7 @@ function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourc
 }
 
 
-function updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, collisionCircles: any, placed: boolean) {
+function updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, placed: boolean) {
     if (!collisionVertexArray) {
         return;
     }
@@ -75,6 +75,12 @@ function updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, co
         collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+    }
+}
+
+function updateCollisionCircles(collisionVertexArray: any, collisionCircles: any, placed: boolean) {
+    if (!collisionVertexArray) {
+        return;
     }
 
     for (let k = 0; k < collisionCircles.length; k += 5) {
@@ -85,7 +91,6 @@ function updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, co
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
     }
 }
-
 
 function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, posMatrix: any, tileID: number, collisionBoxArray: any) {
     // Calculate which labels can be shown and when they can be shown and
@@ -116,8 +121,11 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: n
 
     const scale = Math.pow(2, zoom - bucket.zoom);
 
-    const collisionArray = showCollisionBoxes && bucket.buffers.collisionBox && bucket.buffers.collisionBox.collisionVertexArray;
-    if (collisionArray) collisionArray.clear();
+    const collisionDebugBoxArray = showCollisionBoxes && bucket.buffers.collisionBox && bucket.buffers.collisionBox.collisionVertexArray;
+    if (collisionDebugBoxArray) collisionDebugBoxArray.clear();
+
+    const collisionDebugCircleArray = showCollisionBoxes && bucket.buffers.collisionCircle && bucket.buffers.collisionCircle.collisionVertexArray;
+    if (collisionDebugCircleArray) collisionDebugCircleArray.clear();
 
     const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, collisionTile.transform, layer, true);
     //const partiallyEvaluatedIconSize = symbolSize.evaluateSizeForZoom(bucket.iconSizeData, collisionTile.transform, layer, false);
@@ -186,7 +194,8 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: n
         if (!hasText && !hasIcon) continue;
 
         if (hasText) {
-            updateCollisionBoxes(collisionArray, symbolInstance.textCollisionBoxes, symbolInstance.textCollisionCircles, placeGlyph);
+            updateCollisionBoxes(collisionDebugBoxArray, symbolInstance.textCollisionBoxes, placeGlyph);
+            updateCollisionCircles(collisionDebugCircleArray, symbolInstance.textCollisionCircles, placeGlyph);
             if (placeGlyph) {
                 symbolInstance.placedText = true;
                 collisionTile.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
@@ -197,7 +206,7 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: n
         }
 
         if (hasIcon) {
-            updateCollisionBoxes(collisionArray, symbolInstance.iconCollisionBoxes, [], placeIcon);
+            updateCollisionBoxes(collisionDebugBoxArray, symbolInstance.iconCollisionBoxes, placeIcon);
             if (placeIcon) {
                 symbolInstance.placedIcon = true;
                 collisionTile.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
@@ -208,5 +217,6 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: n
 
     }
 
-    if (collisionArray) bucket.buffers.collisionBox.collisionVertexBuffer.updateData(collisionArray.serialize());
+    if (collisionDebugBoxArray) bucket.buffers.collisionBox.collisionVertexBuffer.updateData(collisionDebugBoxArray.serialize());
+    if (collisionDebugCircleArray) bucket.buffers.collisionCircle.collisionVertexBuffer.updateData(collisionDebugCircleArray.serialize());
 }

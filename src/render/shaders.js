@@ -18,6 +18,10 @@ module.exports = {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/collision_box.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/collision_box.vertex.glsl', 'utf8')
     },
+    collisionCircle: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/collision_circle.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/collision_circle.vertex.glsl', 'utf8')
+    },
     debug: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/debug.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/debug.vertex.glsl', 'utf8')
