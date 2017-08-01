@@ -1,6 +1,9 @@
+// @flow
 
 const util = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
+
+import type StyleDeclaration from './style_declaration';
 
 const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 0 };
 
@@ -8,8 +11,22 @@ const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 
  * Represents a transition between two declarations
  */
 class StyleTransition {
+    declaration: StyleDeclaration;
+    startTime: number;
+    endTime: number;
+    oldTransition: ?StyleTransition;
+    duration: number;
+    delay: number;
+    zoomTransitioned: boolean;
+    interp: Function;
+    zoomHistory: any;
+    loopID: any;
 
-    constructor(reference, declaration, oldTransition, options, zoomHistory) {
+    constructor(reference: any,
+                declaration: StyleDeclaration,
+                oldTransition: ?StyleTransition,
+                options: TransitionSpecification,
+                zoomHistory?: {}) {
         this.declaration = declaration;
         this.startTime = this.endTime = (new Date()).getTime();
 
@@ -39,7 +56,7 @@ class StyleTransition {
     /*
      * Return the value of the transitioning property.
      */
-    calculate(globalProperties, featureProperties, time) {
+    calculate(globalProperties: {zoom: number}, featureProperties?: {}, time?: number) {
         const value = this._calculateTargetValue(globalProperties, featureProperties);
 
         if (this.instant())
@@ -50,12 +67,12 @@ class StyleTransition {
         if (time >= this.endTime)
             return value;
 
-        const oldValue = this.oldTransition.calculate(globalProperties, featureProperties, this.startTime);
+        const oldValue = (this.oldTransition: any).calculate(globalProperties, featureProperties, this.startTime);
         const t = util.easeCubicInOut((time - this.startTime - this.delay) / this.duration);
         return this.interp(oldValue, value, t);
     }
 
-    _calculateTargetValue(globalProperties, featureProperties) {
+    _calculateTargetValue(globalProperties: {zoom: number}, featureProperties?: {}) {
         if (!this.zoomTransitioned)
             return this.declaration.calculate(globalProperties, featureProperties);
 

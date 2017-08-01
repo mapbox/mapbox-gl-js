@@ -1,14 +1,26 @@
+// @flow
 
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
+
+type StyleFunction = (zoom?: number, featureProperties?: {}) => any;
 
 /**
  * A style property declaration
  * @private
  */
 class StyleDeclaration {
+    value: any;
+    isFunction: boolean;
+    isFeatureConstant: boolean;
+    isZoomConstant: boolean;
+    json: mixed;
+    minimum: number;
+    function: StyleFunction;
+    stopZoomLevels: Array<number>;
+    _functionInterpolationT: StyleFunction;
 
-    constructor(reference, value) {
+    constructor(reference: any, value: any) {
         this.value = util.clone(value);
         this.isFunction = createFunction.isFunctionDefinition(value);
 
@@ -48,7 +60,7 @@ class StyleDeclaration {
         }
     }
 
-    calculate(globalProperties, featureProperties) {
+    calculate(globalProperties?: {zoom: number}, featureProperties?: {}) {
         const value = this.function(globalProperties && globalProperties.zoom, featureProperties || {});
         if (this.minimum !== undefined && value < this.minimum) {
             return this.minimum;
@@ -65,7 +77,7 @@ class StyleDeclaration {
      * Only valid for composite functions.
      * @private
      */
-    calculateInterpolationT(globalProperties) {
+    calculateInterpolationT(globalProperties: {zoom: number}) {
         if (this.isFeatureConstant || this.isZoomConstant) return 0;
         return this._functionInterpolationT(globalProperties && globalProperties.zoom, {});
     }
