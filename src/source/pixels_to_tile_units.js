@@ -2,7 +2,7 @@
 
 const EXTENT = require('../data/extent');
 
-import type Tile from './tile';
+import type TileCoord from './tile_coord';
 
 /**
  * Converts a pixel value at a the given zoom level to tile units.
@@ -13,12 +13,9 @@ import type Tile from './tile';
  * For example, a translation by 30 pixels at zoom 6.5 will be a
  * translation by pixelsToTileUnits(30, 6.5) tile units.
  *
- * @param tile a {Tile object} will work well, but any object that follows the format {coord: {TileCord object}, tileSize: {number}} will work
- * @param pixelValue
- * @param z
  * @returns value in tile units
  * @private
  */
-module.exports = function(tile: Tile, pixelValue: number, z: number): number {
+module.exports = function(tile: {coord: TileCoord, tileSize: number}, pixelValue: number, z: number): number {
     return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.coord.z)));
 };
