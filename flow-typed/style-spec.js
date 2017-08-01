@@ -3,6 +3,11 @@
 declare type ColorSpecification = string;
 declare type FilterSpecification = Array<any>;
 
+declare type TransitionSpecification = {
+    duration?: number,
+    delay?: number
+};
+
 declare type StyleSpecification = {|
     "version": 8,
     "name"?: string,
