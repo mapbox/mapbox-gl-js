@@ -92,7 +92,7 @@ function updateCollisionCircles(collisionVertexArray: any, collisionCircles: any
     }
 }
 
-function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, posMatrix: any, tileID: number, collisionBoxArray: any) {
+function place(bucket: any, collisionTile: any, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, posMatrix: any, tileID: number, collisionBoxArray: any) {
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
@@ -168,8 +168,7 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: any, zoom: n
                     bucket.glyphOffsetArray,
                     fontSize,
                     labelPlaneMatrix,
-                    posMatrix,
-                    layout['text-pitch-alignment'] === 'map');
+                    showCollisionBoxes);
             }
         }
 

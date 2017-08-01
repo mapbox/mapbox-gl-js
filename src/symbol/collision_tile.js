@@ -75,7 +75,7 @@ class CollisionTile {
         return placedCollisionBoxes;
     }
 
-    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, posMatrix: any, pitchWithMap: boolean): boolean {
+    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean): boolean {
         const placedCollisionCircles = [];
         if (!collisionCircles) {
             return placedCollisionCircles;
@@ -101,6 +101,8 @@ class CollisionTile {
             lineVertexArray,
             labelPlaneMatrix,
             projectionCache);
+
+        let collisionDetected = false;
 
         for (let k = 0; k < collisionCircles.length; k += 5) {
             const boxDistanceToAnchor = collisionCircles[k + 3];
@@ -141,12 +143,18 @@ class CollisionTile {
 
             if (!allowOverlap) {
                 if (this.grid.hitTestCircle(x, y, radius)) {
-                    return [];
+                    if (!showCollisionCircles) {
+                        return [];
+                    } else {
+                        // Don't early exit if we're showing the debug circles because we still want to calculate
+                        // which circles are in use
+                        collisionDetected = true;
+                    }
                 }
             }
         }
 
-        return placedCollisionCircles;
+        return collisionDetected ? [] : placedCollisionCircles;
     }
 
     queryRenderedSymbols(queryGeometry: any, scale: number, tileCoord: TileCoord, tileSourceMaxZoom: number, pixelsToTileUnits: number, collisionBoxArray: any) {
