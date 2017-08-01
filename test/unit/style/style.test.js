@@ -723,6 +723,23 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('#4040 does not mutate source property when provided inline', (t) => {
+        const style = new Style(createStyleJSON());
+        style.on('style.load', () => {
+            const source = {
+                "type": "geojson",
+                "data": {
+                    "type": "Point",
+                    "coordinates": [ 0, 0]
+                }
+            };
+            const layer = {id: 'inline-source-layer', type: 'circle', source: source };
+            style.addLayer(layer);
+            t.deepEqual(layer.source, source);
+            t.end();
+        });
+    });
+
     t.test('reloads source', (t) => {
         const style = new Style(util.extend(createStyleJSON(), {
             "sources": {
