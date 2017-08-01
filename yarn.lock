@@ -6676,9 +6676,9 @@ vm-browserify@~0.0.1:
   dependencies:
     indexof "0.0.1"
 
-vt-pbf@^2.1.3:
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/vt-pbf/-/vt-pbf-2.1.3.tgz#de403e1dd3af363924b469ca713a81d60673223c"
+vt-pbf@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/vt-pbf/-/vt-pbf-3.0.0.tgz#2e12b2ac447d52190e895d325ec39b293cc3a93b"
   dependencies:
     "@mapbox/point-geometry" "0.1.0"
     "@mapbox/vector-tile" "^1.3.0"
