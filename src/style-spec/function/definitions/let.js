@@ -8,7 +8,7 @@ const {
 import type { Type, TypeError } from '../types';
 import type { Expression, ParsingContext, Scope }  from '../expression';
 
-class LetExpression implements Expression {
+class Let implements Expression {
     key: string;
     type: Type;
     bindings: Array<[string, Expression]>;
@@ -31,7 +31,7 @@ class LetExpression implements Expression {
         const nextScope = scope.concat(bindings);
         const checkedResult = this.result.typecheck(nextScope, errors);
         if (!checkedResult) return null;
-        return new LetExpression(this.key, bindings, checkedResult);
+        return new Let(this.key, bindings, checkedResult);
     }
 
     compile() {
@@ -97,4 +97,4 @@ class LetExpression implements Expression {
     }
 }
 
-module.exports = LetExpression;
+module.exports = Let;

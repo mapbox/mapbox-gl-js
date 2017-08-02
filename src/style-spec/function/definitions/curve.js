@@ -19,7 +19,7 @@ export type InterpolationType =
 
 type Stops = Array<[number, Expression]>;
 
-class CurveExpression implements Expression {
+class Curve implements Expression {
     key: string;
     type: Type;
 
@@ -81,7 +81,7 @@ class CurveExpression implements Expression {
             stops.push([label, parseExpression(value, context.concat(i + 4, 'curve'))]);
         }
 
-        return new CurveExpression(context.key, interpolation, input, stops);
+        return new Curve(context.key, interpolation, input, stops);
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
@@ -117,7 +117,7 @@ class CurveExpression implements Expression {
             return null;
         }
 
-        return new CurveExpression(this.key, this.interpolation, input, stops);
+        return new Curve(this.key, this.interpolation, input, stops);
     }
 
     compile() {
@@ -166,4 +166,4 @@ class CurveExpression implements Expression {
     }
 }
 
-module.exports = CurveExpression;
+module.exports = Curve;

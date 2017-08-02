@@ -7,7 +7,7 @@ import type { Type } from '../types';
 import type { Value }  from '../values';
 import type { Expression, ParsingContext }  from '../expression';
 
-class LiteralExpression implements Expression {
+class Literal implements Expression {
     key: string;
     type: Type;
     value: Value;
@@ -53,4 +53,4 @@ class LiteralExpression implements Expression {
     visit(fn: (Expression) => void) { fn(this); }
 }
 
-module.exports = LiteralExpression;
+module.exports = Literal;

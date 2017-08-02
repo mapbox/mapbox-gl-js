@@ -8,7 +8,7 @@ import type { Type, TypeError } from '../types';
 
 type Branches = Array<[Expression, Expression]>;
 
-class CaseExpression implements Expression {
+class Case implements Expression {
     key: string;
     type: Type;
 
@@ -38,7 +38,7 @@ class CaseExpression implements Expression {
 
         const otherwise = parseExpression(args[args.length - 1], context.concat(args.length, 'match'));
 
-        return new CaseExpression(context.key, branches, otherwise);
+        return new Case(context.key, branches, otherwise);
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
@@ -66,7 +66,7 @@ class CaseExpression implements Expression {
         if (match(outputType, checkedOtherwise.type, checkedOtherwise.key, errors))
             return null;
 
-        return new CaseExpression(this.key, checkedBranches, checkedOtherwise);
+        return new Case(this.key, checkedBranches, checkedOtherwise);
     }
 
     compile() {
@@ -98,4 +98,4 @@ class CaseExpression implements Expression {
     }
 }
 
-module.exports = CaseExpression;
+module.exports = Case;

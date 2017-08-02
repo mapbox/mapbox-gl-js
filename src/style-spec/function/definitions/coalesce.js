@@ -7,7 +7,7 @@ const { match } = require('../types');
 import type { Expression, Scope } from '../expression';
 import type { Type, TypeError } from '../types';
 
-class CoalesceExpression implements Expression {
+class Coalesce implements Expression {
     key: string;
     type: Type;
     args: Array<Expression>;
@@ -24,7 +24,7 @@ class CoalesceExpression implements Expression {
         for (const arg of args) {
             parsedArgs.push(parseExpression(arg, context.concat(1 + parsedArgs.length, 'coalesce')));
         }
-        return new CoalesceExpression(context.key, parsedArgs);
+        return new Coalesce(context.key, parsedArgs);
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
@@ -42,7 +42,7 @@ class CoalesceExpression implements Expression {
             checkedArgs.push(result);
         }
         assert(outputType);
-        return new CoalesceExpression(this.key, checkedArgs);
+        return new Coalesce(this.key, checkedArgs);
     }
 
     compile() {
@@ -61,4 +61,4 @@ class CoalesceExpression implements Expression {
     }
 }
 
-module.exports = CoalesceExpression;
+module.exports = Coalesce;

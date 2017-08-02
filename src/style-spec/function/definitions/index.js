@@ -14,24 +14,24 @@ const {
 } = require('../types');
 
 const { CompoundExpression, varargs } = require('../compound_expression');
-const LetExpression = require('./let');
-const LiteralExpression = require('./literal');
-const MatchExpression = require('./match');
-const CaseExpression = require('./case');
-const CurveExpression = require('./curve');
-const CoalesceExpression = require('./coalesce');
+const Let = require('./let');
+const Literal = require('./literal');
+const Match = require('./match');
+const Case = require('./case');
+const Curve = require('./curve');
+const Coalesce = require('./coalesce');
 
 import type { Expression } from '../expression';
 import type { Type } from '../types';
 
 const expressions: { [string]: Class<Expression> } = {
     // special forms
-    'let': LetExpression,
-    'literal': LiteralExpression,
-    'case': CaseExpression,
-    'match': MatchExpression,
-    'coalesce': CoalesceExpression,
-    'curve': CurveExpression,
+    'let': Let,
+    'literal': Literal,
+    'case': Case,
+    'match': Match,
+    'coalesce': Coalesce,
+    'curve': Curve,
 };
 
 CompoundExpression.register(expressions, {

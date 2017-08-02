@@ -10,7 +10,7 @@ import type { Type, TypeError } from '../types';
 
 type Branches = Array<[Array<null | number | string | boolean>, Expression]>;
 
-class MatchExpression implements Expression {
+class Match implements Expression {
     key: string;
     type: Type;
     inputType: Type;
@@ -70,7 +70,7 @@ class MatchExpression implements Expression {
         const otherwise = parseExpression(args[args.length - 1], context.concat(args.length, 'match'));
 
         assert(inputType);
-        return new MatchExpression(context.key, (inputType: any), input, branches, otherwise);
+        return new Match(context.key, (inputType: any), input, branches, otherwise);
     }
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
@@ -100,7 +100,7 @@ class MatchExpression implements Expression {
             return null;
         }
 
-        return new MatchExpression(this.key, this.inputType, input, branches, otherwise);
+        return new Match(this.key, this.inputType, input, branches, otherwise);
     }
 
     compile() {
@@ -144,4 +144,4 @@ class MatchExpression implements Expression {
     }
 }
 
-module.exports = MatchExpression;
+module.exports = Match;
