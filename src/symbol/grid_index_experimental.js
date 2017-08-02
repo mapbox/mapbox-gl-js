@@ -2,8 +2,6 @@
 
 module.exports = GridIndex;
 
-var NUM_PARAMS = 3;
-
 function GridIndex(width, height, n) {
     var boxCells = this.boxCells = [];
     var circleCells = this.circleCells = [];
@@ -40,9 +38,8 @@ GridIndex.prototype.insert = function(key, x1, y1, x2, y2) {
 };
 
 GridIndex.prototype.insertCircle = function(key, x, y, radius) {
-    // TODO: Use some sort of circle rasterization algorithm here to avoid cells outside
-    // the circle's radius. For now it's OK for us to just be conservative and check all
-    // cells with the square that holds the circle
+    // Insert circle into grid for all cells in the circumscribing square
+    // It's more than necessary (by a factor of 4/PI), but fast to insert
     var x1 = x - radius;
     var x2 = x + radius;
     var y1 = y - radius;
@@ -81,9 +78,8 @@ GridIndex.prototype._query = function(x1, y1, x2, y2, hitTest) {
 };
 
 GridIndex.prototype._queryCircle = function(x, y, radius, hitTest) {
-    // TODO: Use some sort of circle rasterization algorithm here to avoid cells outside
-    // the circle's radius. For now it's OK for us to just be conservative and check all
-    // cells with the square that holds the circle
+    // Insert circle into grid for all cells in the circumscribing square
+    // It's more than necessary (by a factor of 4/PI), but fast to insert
     var x1 = x - radius;
     var x2 = x + radius;
     var y1 = y - radius;
@@ -91,18 +87,16 @@ GridIndex.prototype._queryCircle = function(x, y, radius, hitTest) {
     if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
         return;
     }
-    if (x1 <= 0 && y1 <= 0 && this.width <= x2 && this.height <= y2) {
-        // We use `Array#slice` because `this.keys` may be a `Int32Array` and
-        // some browsers (Safari and IE) do not support `TypedArray#slice`
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/slice#Browser_compatibility
-        return Array.prototype.slice.call(this.boxKeys).concat(this.circleKeys);
 
-    } else {
-        var result = [];
-        var seenUids = { box: {}, circle: {} };
-        this._forEachCell(x1, y1, x2, y2, hitTest ? this._hitTestCellCircle : this._queryCellCircle, result, { x: x, y: y, radius: radius });
-        return hitTest ? result.length > 0 : result;
-    }
+    // Box query early exits if the bounding box is larger than the grid, but we don't do
+    // the equivalent calculation for circle queries because early exit is less likely
+    // and the calculation is more expensive
+    var result = [];
+    var circleArgs = {
+        circle: { x: x, y: y, radius: radius },
+        seenUids: { box: {}, circle: {} } };
+    this._forEachCell(x1, y1, x2, y2, hitTest ? this._hitTestCellCircle : this._queryCellCircle, result, circleArgs);
+    return hitTest ? result.length > 0 : result;
 };
 
 GridIndex.prototype.query = function(x1, y1, x2, y2) {
@@ -117,7 +111,7 @@ GridIndex.prototype.hitTestCircle = function(x, y, radius) {
     return this._queryCircle(x, y, radius, true);
 }
 
-function CirclesCollide(x1, y1, r1, x2, y2, r2, debug) {
+function CirclesCollide(x1, y1, r1, x2, y2, r2) {
     var dx = x2 - x1;
     var dy = y2 - y1;
     var bothRadii = r1 + r2;
@@ -125,46 +119,46 @@ function CirclesCollide(x1, y1, r1, x2, y2, r2, debug) {
 }
 
 function CircleAndRectCollide(x, y, radius, x1, y1, x2, y2) {
-    // TODO: Lots of extra math here
     var circle = { x: x, y: y, r: radius };
-    var rectWidth = x2 - x1;
-    var rectHeight = y2 - y1;
-    var rect = { x: x1, y: y1, w: rectWidth, h: rectHeight };
-    var distX = Math.abs(circle.x - rect.x - rect.w / 2);
-    var distY = Math.abs(circle.y - rect.y - rect.h / 2);
 
-    if (distX > (rect.w / 2 + circle.r)) {
-        return false;
-    }
-    if (distY > (rect.h / 2 + circle.r)) {
+    var halfRectWidth = (x2 - x1) / 2;
+    var distX = Math.abs(circle.x - (x1 + halfRectWidth));
+    if (distX > (halfRectWidth + circle.r)) {
         return false;
     }
 
-    if (distX <= (rect.w / 2)) {
-        return true;
+    var halfRectHeight = (y2 - y1) / 2;
+    var distY = Math.abs(circle.y - (y1 + halfRectHeight));
+    if (distY > (halfRectHeight + circle.r)) {
+        return false;
     }
-    if (distY <= (rect.h / 2)) {
+
+    if (distX <= halfRectWidth || distY <= halfRectHeight) {
         return true;
     }
 
-    var dx = distX - rect.w / 2;
-    var dy = distY - rect.h / 2;
+    var dx = distX - halfRectWidth;
+    var dy = distY - halfRectHeight;
     return (dx * dx + dy * dy <= (circle.r * circle.r));
 }
 
 
-GridIndex.prototype._hitTestCell = function(x1, y1, x2, y2, cellIndex, result) {
+GridIndex.prototype._hitTestCell = function(x1, y1, x2, y2, cellIndex, result, seenUids) {
     var boxCell = this.boxCells[cellIndex];
     if (boxCell !== null) {
         var bboxes = this.bboxes;
         for (var u = 0; u < boxCell.length; u++) {
-            var offset = boxCell[u] * 4;
-            if ((x1 <= bboxes[offset + 2]) &&
-                (y1 <= bboxes[offset + 3]) &&
-                (x2 >= bboxes[offset + 0]) &&
-                (y2 >= bboxes[offset + 1])) {
-                result.push(true);
-                return true;
+            var boxUid = boxCell[u];
+            if (!seenUids.box[boxUid]) {
+                seenUids.box[boxUid] = true;
+                var offset = boxUid * 4;
+                if ((x1 <= bboxes[offset + 2]) &&
+                    (y1 <= bboxes[offset + 3]) &&
+                    (x2 >= bboxes[offset + 0]) &&
+                    (y2 >= bboxes[offset + 1])) {
+                    result.push(true);
+                    return true;
+                }
             }
         }
     }
@@ -172,27 +166,37 @@ GridIndex.prototype._hitTestCell = function(x1, y1, x2, y2, cellIndex, result) {
     if (circleCell !== null) {
         var circles = this.circles;
         for (var u = 0; u < circleCell.length; u++) {
-            var offset = circleCell[u] * 3;
-            if (CircleAndRectCollide(circles[offset],
-                                     circles[offset + 1],
-                                     circles[offset + 2],
-                                     x1, y1, x2, y2)) {
-                result.push(true);
-                return true;
+            var circleUid = circleCell[u];
+            if (!seenUids.circle[circleUid]) {
+                seenUids.circle[circleUid] = true;
+                var offset = circleUid * 3;
+                if (CircleAndRectCollide(circles[offset],
+                                         circles[offset + 1],
+                                         circles[offset + 2],
+                                         x1, y1, x2, y2)) {
+                    result.push(true);
+                    return true;
+                }
             }
         }
     }
 };
 
-GridIndex.prototype._hitTestCellCircle = function(x1, y1, x2, y2, cellIndex, result, circle) {
+GridIndex.prototype._hitTestCellCircle = function(x1, y1, x2, y2, cellIndex, result, circleArgs) {
+    var circle = circleArgs.circle;
+    var seenUids = circleArgs.seenUids;
     var boxCell = this.boxCells[cellIndex];
     if (boxCell !== null) {
         var bboxes = this.bboxes;
         for (var u = 0; u < boxCell.length; u++) {
-            var offset = boxCell[u] * 4;
-            if (CircleAndRectCollide(circle.x, circle.y, circle.radius, bboxes[offset + 0], bboxes[offset + 1], bboxes[offset + 2], bboxes[offset + 3])) {
-                result.push(true);
-                return true;
+            var boxUid = boxCell[u];
+            if (!seenUids.box[boxUid]) {
+                seenUids.box[boxUid] = true;
+                var offset = boxUid * 4;
+                if (CircleAndRectCollide(circle.x, circle.y, circle.radius, bboxes[offset + 0], bboxes[offset + 1], bboxes[offset + 2], bboxes[offset + 3])) {
+                    result.push(true);
+                    return true;
+                }
             }
         }
     }
@@ -201,20 +205,18 @@ GridIndex.prototype._hitTestCellCircle = function(x1, y1, x2, y2, cellIndex, res
     if (circleCell !== null) {
         var circles = this.circles;
         for (var u = 0; u < circleCell.length; u++) {
-            var offset = circleCell[u] * 3;
-            var keys = this.circleKeys;
-            if (CirclesCollide(circles[offset],
-                                     circles[offset + 1],
-                                     circles[offset + 2],
-                                     circle.x, circle.y, circle.radius)) {
-                // console.log("Collided against: " + keys[circleCell[u]]);
-                // console.log(`Placing: ${circle.x}, ${circle.y}, ${circle.radius} against ${circles[offset]}, ${circles[offset+1]}, ${circles[offset+2]}`);
-                // CirclesCollide(circles[offset],
-                //                          circles[offset + 1],
-                //                          circles[offset + 2],
-                //                          circle.x, circle.y, circle.radius, true);
-                result.push(true);
-                return true;
+            var circleUid = circleCell[u];
+            if (!seenUids.circle[circleUid]) {
+                seenUids.circle[circleUid] = true;
+                var offset = circleUid * 3;
+                var keys = this.circleKeys;
+                if (CirclesCollide(circles[offset],
+                                         circles[offset + 1],
+                                         circles[offset + 2],
+                                         circle.x, circle.y, circle.radius)) {
+                    result.push(true);
+                    return true;
+                }
             }
         }
     }
@@ -227,17 +229,14 @@ GridIndex.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, see
         var boxKeys = this.boxKeys;
         for (var u = 0; u < boxCell.length; u++) {
             var boxUid = boxCell[u];
-            if (seenUids.box[boxUid] === undefined) {
+            if (!seenUids.box[boxUid]) {
+                seenUids.box[boxUid] = true;
                 var offset = boxUid * 4;
                 if ((x1 <= bboxes[offset + 2]) &&
                     (y1 <= bboxes[offset + 3]) &&
                     (x2 >= bboxes[offset + 0]) &&
                     (y2 >= bboxes[offset + 1])) {
-                    seenUids.box[boxUid] = true;
                     result.push(boxKeys[boxUid]);
-                } else {
-                    // TODO: I'm not sure why this true/false distinction was here...
-                    seenUids.box[boxUid] = false;
                 }
             }
         }
@@ -248,16 +247,14 @@ GridIndex.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, see
         var circleKeys = this.circleKeys;
         for (var u = 0; u < circleCell.length; u++) {
             var circleUid = circleCell[u];
-            if (seenUids.circle[circleUid] === undefined) {
+            if (!seenUids.circle[circleUid]) {
                 var offset = circleUid * 3;
+                seenUids.circle[circleUid] = true;
                 if (CircleAndRectCollide(circles[offset],
                                          circles[offset + 1],
                                          circles[offset + 2],
                                          x1, y1, x2, y2)) {
-                    seenUids.circle[circleUid] = true;
                     result.push(true);
-                } else {
-                    seenUids.circle[circleUid] = false;
                 }
             }
         }
