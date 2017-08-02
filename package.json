@@ -134,7 +134,7 @@
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/*-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
     "test-unit": "tap --reporter dot --no-coverage test/unit",
-    "test-render": "node test/render.test.js",
+    "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
