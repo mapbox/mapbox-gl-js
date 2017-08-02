@@ -5,21 +5,18 @@ module.exports = compileExpression;
 
 const {
     parseExpression,
-    ParsingContext,
-    ParsingError,
-    Scope
+    ParsingContext
 } = require('./expression');
 const { CompoundExpression } = require('./compound_expression');
-const { match } = require('./types');
 const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
 
-import type { Type, TypeError } from './types.js';
-import type { Expression } from './expression.js';
+import type { Type } from './types.js';
+import type { Expression, ParsingError } from './expression.js';
 
 type CompileErrors = {|
     result: 'error',
-    errors: Array<TypeError>
+    errors: Array<ParsingError>
 |}
 
 type CompiledExpression = {|
@@ -57,38 +54,17 @@ function compileExpression(
     expr: mixed,
     expectedType?: Type
 ): CompiledExpression | CompileErrors {
-    let parsed;
-    try {
-        parsed = parseExpression(expr, new ParsingContext(definitions));
-    } catch (e) {
-        if (e instanceof ParsingError) {
-            return {
-                result: 'error',
-                errors: [{key: e.key, error: e.message}]
-            };
-        }
-        throw e;
-    }
-
-    const errors = [];
-    const checked = parsed.typecheck(new Scope(), errors);
-    if (!checked) {
-        assert(errors.length > 0);
+    const context = new ParsingContext(definitions);
+    const parsed = parseExpression(expr, context, expectedType);
+    if (!parsed) {
+        assert(context.errors.length > 0);
         return {
             result: 'error',
-            errors
+            errors: context.errors
         };
     }
 
-    if (expectedType) {
-        const error = match(expectedType, checked.type);
-        if (error) return {
-            result: 'error',
-            errors: [{key: '', error: error}]
-        };
-    }
-
-    const compiled = checked.compile();
+    const compiled = parsed.compile();
     if (typeof compiled === 'string') {
         const fn = new Function('mapProperties', 'feature', `
 mapProperties = mapProperties || {};
@@ -100,9 +76,9 @@ return this.unwrap(${compiled})
             result: 'success',
             function: fn.bind(evaluationContext()),
             functionSource: compiled,
-            isFeatureConstant: isFeatureConstant(checked),
-            isZoomConstant: isZoomConstant(checked),
-            expression: checked
+            isFeatureConstant: isFeatureConstant(parsed),
+            isZoomConstant: isZoomConstant(parsed),
+            expression: parsed
         };
     }
 

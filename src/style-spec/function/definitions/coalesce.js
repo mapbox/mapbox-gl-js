@@ -1,11 +1,9 @@
 // @flow
 
-const assert = require('assert');
 const { parseExpression } = require('../expression');
-const { match } = require('../types');
 
-import type { Expression, Scope } from '../expression';
-import type { Type, TypeError } from '../types';
+import type { Expression } from '../expression';
+import type { Type } from '../types';
 
 class Coalesce implements Expression {
     key: string;
@@ -20,29 +18,16 @@ class Coalesce implements Expression {
 
     static parse(args, context) {
         args = args.slice(1);
+        let outputType;
         const parsedArgs = [];
         for (const arg of args) {
-            parsedArgs.push(parseExpression(arg, context.concat(1 + parsedArgs.length, 'coalesce')));
+            const argContext = context.concat(1 + parsedArgs.length, 'coalesce');
+            const parsed = parseExpression(arg, argContext, outputType);
+            if (!parsed) return null;
+            outputType = parsed.type;
+            parsedArgs.push(parsed);
         }
         return new Coalesce(context.key, parsedArgs);
-    }
-
-    typecheck(scope: Scope, errors: Array<TypeError>) {
-        let outputType;
-        const checkedArgs = [];
-        for (const arg of this.args) {
-            const result = arg.typecheck(scope, errors);
-            if (!result) return null;
-            if (!outputType) {
-                outputType = result.type;
-            } else {
-                if (match(outputType, result.type, result.key, errors))
-                    return null;
-            }
-            checkedArgs.push(result);
-        }
-        assert(outputType);
-        return new Coalesce(this.key, checkedArgs);
     }
 
     compile() {

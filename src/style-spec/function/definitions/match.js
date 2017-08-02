@@ -1,12 +1,11 @@
 // @flow
 
 const assert = require('assert');
-const { ParsingError, parseExpression } = require('../expression');
-const { match } = require('../types');
+const { parseExpression, match } = require('../expression');
 const { typeOf } = require('../values');
 
-import type { Expression, Scope } from '../expression';
-import type { Type, TypeError } from '../types';
+import type { Expression } from '../expression';
+import type { Type } from '../types';
 
 type Branches = Array<[Array<null | number | string | boolean>, Expression]>;
 
@@ -31,13 +30,12 @@ class Match implements Expression {
     static parse(args, context) {
         args = args.slice(1);
         if (args.length < 2)
-            throw new ParsingError(context.key, `Expected at least 2 arguments, but found only ${args.length}.`);
+            return context.error(`Expected at least 2 arguments, but found only ${args.length}.`);
         if (args.length % 2 !== 0)
-            throw new ParsingError(context.key, `Expected an even number of arguments.`);
-
-        const input = parseExpression(args[0], context.concat(1, 'match'));
+            return context.error(`Expected an even number of arguments.`);
 
         let inputType;
+        let outputType;
         const branches = [];
         for (let i = 1; i < args.length - 1; i += 2) {
             let labels = args[i];
@@ -47,60 +45,36 @@ class Match implements Expression {
                 labels = [labels];
             }
 
+            const labelContext = context.concat(i + 1, 'match');
             if (labels.length === 0) {
-                throw new ParsingError(`${context.key}[${i + 1}]`, 'Expected at least one branch label.');
+                return labelContext.error('Expected at least one branch label.');
             }
 
             for (const label of labels) {
                 if (label !== null && typeof label !== 'number' && typeof label !== 'string' && typeof label !== 'boolean') {
-                    throw new ParsingError(`${context.key}[${i + 1}]`, `Branch labels must be null, numbers, strings, or booleans.`);
+                    return labelContext.error(`Branch labels must be null, numbers, strings, or booleans.`);
                 } else if (!inputType) {
                     inputType = typeOf(label);
-                } else {
-                    const error = match(inputType, typeOf(label));
-                    if (error) {
-                        throw new ParsingError(`${context.key}[${i + 1}]`, error);
-                    }
+                } else if (match(inputType, typeOf(label), labelContext)) {
+                    return null;
                 }
             }
 
-            branches.push([labels, parseExpression(value, context.concat(i + 1, 'match'))]);
-        }
-
-        const otherwise = parseExpression(args[args.length - 1], context.concat(args.length, 'match'));
-
-        assert(inputType);
-        return new Match(context.key, (inputType: any), input, branches, otherwise);
-    }
-
-    typecheck(scope: Scope, errors: Array<TypeError>) {
-        const input = this.input.typecheck(scope, errors);
-        if (!input) return null;
-        if (match(this.inputType, input.type, input.key, errors))
-            return null;
-
-        let outputType: Type = (null: any);
-        const branches = [];
-        for (const [key, expression] of this.branches) {
-            const result = expression.typecheck(scope, errors);
+            const result = parseExpression(value, context.concat(i + 1, 'match'), outputType);
             if (!result) return null;
+            outputType = result.type;
 
-            if (!outputType) {
-                outputType = result.type;
-            } else if (match(outputType, result.type, result.key, errors)) {
-                return null;
-            }
-
-            branches.push([key, result]);
+            branches.push([labels, result]);
         }
 
-        const otherwise = this.otherwise.typecheck(scope, errors);
+        const input = parseExpression(args[0], context.concat(1, 'match'), inputType);
+        if (!input) return null;
+
+        const otherwise = parseExpression(args[args.length - 1], context.concat(args.length, 'match'), outputType);
         if (!otherwise) return null;
-        if (match(outputType, otherwise.type, otherwise.key, errors)) {
-            return null;
-        }
 
-        return new Match(this.key, this.inputType, input, branches, otherwise);
+        assert(inputType && outputType);
+        return new Match(context.key, (inputType: any), input, branches, otherwise);
     }
 
     compile() {

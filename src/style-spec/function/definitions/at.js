@@ -4,12 +4,11 @@ const { parseExpression, ParsingError } = require('../expression');
 const {
     array,
     ValueType,
-    NumberType,
-    match
+    NumberType
 } = require('../types');
 
 import type { Expression, Scope } from '../expression';
-import type { Type, ArrayType, TypeError } from '../types';
+import type { Type, ArrayType } from '../types';
 
 class At implements Expression {
     key: string;
@@ -28,24 +27,13 @@ class At implements Expression {
         if (args.length !== 3)
             throw new ParsingError(context.key, `Expected 2 arguments, but found ${args.length - 1} instead.`);
 
-        const index = parseExpression(args[1], context.concat(1, 'at'));
-        const input = parseExpression(args[2], context.concat(2, 'at'));
+        const index = parseExpression(args[1], context.concat(1, 'at'), NumberType);
+        const input = parseExpression(args[2], context.concat(2, 'at'), array(ValueType));
 
-        return new At(context.key, ValueType, index, input);
-    }
-
-    typecheck(scope: Scope, errors: Array<TypeError>) {
-        const index = this.index.typecheck(scope, errors);
-        if (!index) return null;
-        if (match(NumberType, index.type, index.key, errors))
-            return null;
-        const input = this.input.typecheck(scope, errors);
-        if (!input) return null;
-        if (match(array(ValueType), input.type, input.key, errors))
-            return null;
+        if (!index || !input) return null;
 
         const t: ArrayType = (input.type: any);
-        return new At(this.key, t.itemType, index, input);
+        return new At(context.key, t.itemType, index, input);
     }
 
     compile() {

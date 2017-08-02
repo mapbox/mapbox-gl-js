@@ -39,6 +39,9 @@ function createFunction(parameters, propertySpec) {
                     curve = curve.args[0];
                 } else if (curve instanceof LetExpression) {
                     curve = curve.result;
+                } else {
+                    // Prevented by validation.
+                    throw new Error('Invalid "zoom" expression.');
                 }
             }
             const curveArgs = [].concat(curve.args);

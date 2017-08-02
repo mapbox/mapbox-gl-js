@@ -1,6 +1,5 @@
 // @flow
 
-const { ParsingError } = require('../expression');
 const { Color, isValue, typeOf } = require('../values');
 
 import type { Type } from '../types';
@@ -20,10 +19,10 @@ class Literal implements Expression {
 
     static parse(args: Array<mixed>, context: ParsingContext) {
         if (args.length !== 2)
-            throw new ParsingError(context.key, `'literal' expression requires exactly one argument, but found ${args.length - 1} instead.`);
+            return context.error(`'literal' expression requires exactly one argument, but found ${args.length - 1} instead.`);
 
         if (!isValue(args[1]))
-            throw new ParsingError(context.key, `invalid value`);
+            context.error(`invalid value`);
 
         const value = (args[1] : any);
         const type = typeOf(value);

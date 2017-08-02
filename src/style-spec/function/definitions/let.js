@@ -1,12 +1,8 @@
 // @flow
 
-const {
-    ParsingError,
-    parseExpression
-} = require('../expression');
-
-import type { Type, TypeError } from '../types';
-import type { Expression, ParsingContext, Scope }  from '../expression';
+const { parseExpression } = require('../expression');
+import type { Type } from '../types';
+import type { Expression, ParsingContext }  from '../expression';
 
 class Let implements Expression {
     key: string;
@@ -19,19 +15,6 @@ class Let implements Expression {
         this.type = result.type;
         this.bindings = [].concat(bindings);
         this.result = result;
-    }
-
-    typecheck(scope: Scope, errors: Array<TypeError>) {
-        const bindings = [];
-        for (const [name, value] of this.bindings) {
-            const checkedValue = value.typecheck(scope, errors);
-            if (!checkedValue) return null;
-            bindings.push([name, checkedValue]);
-        }
-        const nextScope = scope.concat(bindings);
-        const checkedResult = this.result.typecheck(nextScope, errors);
-        if (!checkedResult) return null;
-        return new Let(this.key, bindings, checkedResult);
     }
 
     compile() {
@@ -75,25 +58,28 @@ class Let implements Expression {
     static parse(args: Array<mixed>, context: ParsingContext) {
         args = args.slice(1);
         if (args.length < 3)
-            throw new ParsingError(context.key, `Expected at least 3 arguments, but found ${args.length} instead.`);
+            return context.error(`Expected at least 3 arguments, but found ${args.length} instead.`);
 
         const bindings: Array<[string, Expression]> = [];
         for (let i = 0; i < args.length - 1; i += 2) {
             const name = args[i];
-            const key = context.path.concat(i + 1).join('.');
             if (typeof name !== 'string')
-                throw new ParsingError(key, `Expected string, but found ${typeof name} instead`);
+                return context.error(`Expected string, but found ${typeof name} instead`, i + 1);
 
             if (context.definitions[name])
-                throw new ParsingError(key, `"${name}" is reserved, so it cannot not be used as a "let" binding.`);
+                return context.error(`"${name}" is reserved, so it cannot not be used as a "let" binding.`, i + 1);
 
             const value = parseExpression(args[i + 1], context.concat(i + 2, 'let.binding'));
+            if (!value) return null;
 
             bindings.push([name, value]);
         }
+
         const resultContext = context.concat(args.length, 'let.result', bindings);
         const result = parseExpression(args[args.length - 1], resultContext);
-        return new this(context.key, bindings, result);
+        if (!result) return null;
+
+        return new Let(context.key, bindings, result);
     }
 }
 

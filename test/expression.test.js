@@ -17,11 +17,12 @@ expressionSuite.run('js', {tests: tests}, (fixture) => {
     const testResult = {
         compileResult: util.pick(compiled, ['result', 'functionSource', 'isFeatureConstant', 'isZoomConstant', 'errors'])
     };
-    if (compiled.result === 'success') testResult.compileResult.type = compiled.expression.type.name;
+    if (compiled.result === 'success') {
+        testResult.compileResult.type = compiled.expression.type.name;
 
-    if (compiled.result === 'success' && fixture.evaluate) {
+        const evaluate = fixture.evaluate || [];
         const evaluateResults = [];
-        for (const input of fixture.evaluate) {
+        for (const input of evaluate) {
             try {
                 const output = compiled.function.apply(null, input);
                 evaluateResults.push(output);
@@ -36,6 +37,11 @@ expressionSuite.run('js', {tests: tests}, (fixture) => {
         if (evaluateResults.length) {
             testResult.evaluateResults = evaluateResults;
         }
+    } else {
+        testResult.compileResult.errors = testResult.compileResult.errors.map((err) => ({
+            key: err.key,
+            error: err.message
+        }));
     }
 
     return testResult;

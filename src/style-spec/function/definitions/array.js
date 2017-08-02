@@ -1,17 +1,16 @@
 // @flow
 
-const { parseExpression, ParsingError } = require('../expression');
+const { parseExpression } = require('../expression');
 const {
     array,
     ValueType,
     StringType,
     NumberType,
-    BooleanType,
-    match
+    BooleanType
 } = require('../types');
 
-import type { Expression, Scope } from '../expression';
-import type { ArrayType, TypeError } from '../types';
+import type { Expression } from '../expression';
+import type { ArrayType } from '../types';
 
 const types = {
     string: StringType,
@@ -32,16 +31,14 @@ class ArrayAssertion implements Expression {
 
     static parse(args, context) {
         if (args.length < 2 || args.length > 4)
-            throw new ParsingError(context.key, `Expected 1, 2, or 3 arguments, but found ${args.length - 1} instead.`);
-
-        const input = parseExpression(args[args.length - 1], context.concat(args.length - 1, 'array'));
+            return context.error(`Expected 1, 2, or 3 arguments, but found ${args.length - 1} instead.`);
 
         let itemType;
         let N;
         if (args.length > 2) {
             const type = args[1];
             if (!(type in types))
-                throw new ParsingError(`${context.key}[1]`, 'The item type argument of "array" must be one of string, number, boolean');
+                return context.error('The item type argument of "array" must be one of string, number, boolean', 1);
             itemType = types[type];
         } else {
             itemType = ValueType;
@@ -53,20 +50,17 @@ class ArrayAssertion implements Expression {
                 args[2] < 0 ||
                 args[2] !== Math.floor(args[2])
             ) {
-                throw new ParsingError(`${context.key}[2]`, 'The length argument to "array" must be a positive integer literal');
+                return context.error('The length argument to "array" must be a positive integer literal', 2);
             }
             N = args[2];
         }
 
-        return new ArrayAssertion(context.key, array(itemType, N), input);
-    }
+        const type = array(itemType, N);
 
-    typecheck(scope: Scope, errors: Array<TypeError>) {
-        const checkedInput = this.input.typecheck(scope, errors);
-        if (!checkedInput) return null;
-        if (match(ValueType, checkedInput.type, checkedInput.key, errors))
-            return null;
-        return new ArrayAssertion(this.key, this.type, checkedInput);
+        const input = parseExpression(args[args.length - 1], context.concat(args.length - 1, 'array'), ValueType);
+        if (!input) return null;
+
+        return new ArrayAssertion(context.key, type, input);
     }
 
     compile() {

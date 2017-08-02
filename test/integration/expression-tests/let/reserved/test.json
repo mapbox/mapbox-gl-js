@@ -12,7 +12,7 @@
       "result": "error",
       "errors": [
         {
-          "key": "1",
+          "key": "[1]",
           "error": "\"zoom\" is reserved, so it cannot not be used as a \"let\" binding."
         }
       ]
