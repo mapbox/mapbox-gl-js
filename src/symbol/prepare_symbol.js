@@ -265,7 +265,7 @@ function addSymbolInstance(bucket: any,
                            globalProperties: any,
                            featureProperties: any) {
 
-    const lineArray = bucket._addToLineVertexArray(anchor, line);
+    const lineArray = bucket.addToLineVertexArray(anchor, line);
 
     let textCollisionFeature, iconCollisionFeature;
     let placedTextSymbolIndex;

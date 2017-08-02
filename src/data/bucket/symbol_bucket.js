@@ -515,14 +515,9 @@ class SymbolBucket {
         }
     }
 
-    _addToLineVertexArray(anchor: Anchor, line: any) {
+    addToLineVertexArray(anchor: Anchor, line: any) {
         const lineStartIndex = this.lineVertexArray.length;
-        if (anchor.segment === undefined) {
-            // TODO: Horizontal label, I think we just need to add this to keep the arrays in sync but not sure what this is for....
-            for (let i = 0; i < line.length; i++) {
-                this.lineVertexArray.emplaceBack(line[i].x, line[i].y, 0);
-            }
-        } else {
+        if (anchor.segment !== undefined) {
             let sumForwardLength = anchor.dist(line[anchor.segment + 1]);
             let sumBackwardLength = anchor.dist(line[anchor.segment]);
             const vertices = {};
