@@ -1,7 +1,10 @@
+// @flow
 
 const DOM = require('../../util/dom');
 const window = require('../../util/window');
 const util = require('../../util/util');
+
+import type Map from '../map';
 
 const className = 'mapboxgl-ctrl';
 
@@ -16,6 +19,12 @@ const className = 'mapboxgl-ctrl';
  * @see [Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class NavigationControl {
+    _map: Map;
+    _container: HTMLElement;
+    _zoomInButton: HTMLElement;
+    _zoomOutButton: HTMLElement;
+    _compass: HTMLElement;
+    _compassArrow: HTMLElement;
 
     constructor() {
         util.bindAll([
@@ -28,7 +37,7 @@ class NavigationControl {
         this._compassArrow.style.transform = rotate;
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this._map = map;
         this._container = DOM.create('div', `${className} ${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
@@ -40,8 +49,8 @@ class NavigationControl {
         this._compassArrow = DOM.create('span', `${className}-compass-arrow`, this._compass);
 
         this._compass.addEventListener('mousedown', this._onCompassDown.bind(this));
-        this._onCompassMove = this._onCompassMove.bind(this);
-        this._onCompassUp = this._onCompassUp.bind(this);
+
+        util.bindAll(['_onCompassMove', '_onCompassUp'], this);
 
         this._map.on('rotate', this._rotateCompassArrow);
         this._rotateCompassArrow();
@@ -50,16 +59,16 @@ class NavigationControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        DOM.remove(this._container);
         this._map.off('rotate', this._rotateCompassArrow);
-        this._map = undefined;
+        this._map = (undefined : any);
     }
 
-    _onContextMenu(e) {
+    _onContextMenu(e: MouseEvent) {
         e.preventDefault();
     }
 
-    _onCompassDown(e) {
+    _onCompassDown(e: MouseEvent) {
         if (e.button !== 0) return;
 
         DOM.disableDrag();
@@ -70,14 +79,14 @@ class NavigationControl {
         e.stopPropagation();
     }
 
-    _onCompassMove(e) {
+    _onCompassMove(e: MouseEvent) {
         if (e.button !== 0) return;
 
         this._map.getCanvasContainer().dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     }
 
-    _onCompassUp(e) {
+    _onCompassUp(e: MouseEvent) {
         if (e.button !== 0) return;
 
         window.document.removeEventListener('mousemove', this._onCompassMove);
@@ -88,7 +97,7 @@ class NavigationControl {
         e.stopPropagation();
     }
 
-    _createButton(className, ariaLabel, fn) {
+    _createButton(className: string, ariaLabel: string, fn: () => mixed) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
         a.setAttribute('aria-label', ariaLabel);

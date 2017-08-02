@@ -1,14 +1,14 @@
-type Position = [number, number] | [number, number, number];
+type GeoJSONPosition = [number, number] | [number, number, number];
 type Geometry<T, C> = { type: T, coordinates: C }
 
-declare type      GeoJSONPoint = Geometry<     'Point',       Position>;
-declare type GeoJSONMultiPoint = Geometry<'MultiPoint', Array<Position>>;
+declare type      GeoJSONPoint = Geometry<     'Point',       GeoJSONPosition>;
+declare type GeoJSONMultiPoint = Geometry<'MultiPoint', Array<GeoJSONPosition>>;
 
-declare type      GeoJSONLineString = Geometry<     'LineString',       Array<Position>>;
-declare type GeoJSONMultiLineString = Geometry<'MultiLineString', Array<Array<Position>>>;
+declare type      GeoJSONLineString = Geometry<     'LineString',       Array<GeoJSONPosition>>;
+declare type GeoJSONMultiLineString = Geometry<'MultiLineString', Array<Array<GeoJSONPosition>>>;
 
-declare type      GeoJSONPolygon = Geometry<     'Polygon',       Array<Array<Position>>>;
-declare type GeoJSONMultiPolygon = Geometry<'MultiPolygon', Array<Array<Array<Position>>>>;
+declare type      GeoJSONPolygon = Geometry<     'Polygon',       Array<Array<GeoJSONPosition>>>;
+declare type GeoJSONMultiPolygon = Geometry<'MultiPolygon', Array<Array<Array<GeoJSONPosition>>>>;
 
 declare type GeoJSONGeometry =
     | GeoJSONPoint

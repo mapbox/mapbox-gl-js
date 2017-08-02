@@ -28,10 +28,22 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {RequestParameters} from '../util/ajax';
 import type {StyleOptions} from '../style/style';
 
+import type ScrollZoomHandler from './handler/scroll_zoom';
+import type BoxZoomHandler from './handler/box_zoom';
+import type DragRotateHandler from './handler/drag_rotate';
+import type DragPanHandler from './handler/drag_pan';
+import type KeyboardHandler from './handler/keyboard';
+import type DoubleClickZoomHandler from './handler/dblclick_zoom';
+import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+
+type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
 /* eslint-disable no-use-before-define */
 type IControl = {
-    onAdd(map: Map): void;
+    onAdd(map: Map): HTMLElement;
     onRemove(map: Map): void;
+
+    +getDefaultPosition?: () => ControlPosition;
 }
 /* eslint-enable no-use-before-define */
 
@@ -45,7 +57,7 @@ type MapOptions = {
     bearingSnap?: number,
     classes?: Array<string>,
     attributionControl?: boolean,
-    logoPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+    logoPosition?: ControlPosition,
     failIfMajorPerformanceCaveat?: boolean,
     preserveDrawingBuffer?: boolean,
     refreshExpiredTiles?: boolean,
@@ -93,7 +105,15 @@ type MapEvent =
     | 'data'
     | 'dataloading'
     | 'rotate'
-    | 'pitch';
+    | 'pitch'
+    | 'resize'
+    | 'error'
+    | 'data'
+    | 'styledata'
+    | 'sourcedata'
+    | 'dataloading'
+    | 'styledataloading'
+    | 'sourcedataloading';
 
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
@@ -226,7 +246,7 @@ const defaultOptions = {
  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 class Map extends Camera {
-    style: any;
+    style: Style;
     painter: Painter;
     animationLoop: AnimationLoop;
 
@@ -255,6 +275,14 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+
+    scrollZoom: ScrollZoomHandler;
+    boxZoom: BoxZoomHandler;
+    dragRotate: DragRotateHandler;
+    dragPan: DragPanHandler;
+    keyboard: KeyboardHandler;
+    doubleClickZoom: DoubleClickZoomHandler;
+    touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
         options = util.extend({}, defaultOptions, options);
@@ -363,7 +391,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control, position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right') {
+    addControl(control: IControl, position?: ControlPosition) {
         if (position === undefined && control.getDefaultPosition) {
             position = control.getDefaultPosition();
         }
@@ -1004,7 +1032,7 @@ class Map extends Camera {
         }
 
         if (!style) {
-            this.style = null;
+            this.style = (null : any);
             return this;
         } else if (style instanceof Style) {
             this.style = style;
@@ -1055,7 +1083,7 @@ class Map extends Camera {
      * @see [Style circles using data-driven styling](https://www.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
      * @see [Set a point after Geocoder result](https://www.mapbox.com/mapbox-gl-js/example/point-from-geocoder-result/)
      */
-    addSource(id: string, source: any) {
+    addSource(id: string, source: SourceSpecification) {
         this.style.addSource(id, source);
         this._update(true);
         return this;
@@ -1156,7 +1184,7 @@ class Map extends Camera {
         image: HTMLImageElement | $ArrayBufferView,
         options?: {width: number, height: number, pixelRatio: number}
     ) {
-        this.style.spriteAtlas.addImage(name, image, options);
+        this.style.spriteAtlas.addImage(name, image, (options : any));
     }
 
     /**
@@ -1195,7 +1223,7 @@ class Map extends Camera {
      * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
      * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
-    addLayer(layer: any, before?: string) {
+    addLayer(layer: LayerSpecification, before?: string) {
         this.style.addLayer(layer, before);
         this._update(true);
         return this;
@@ -1255,7 +1283,7 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: Array<any>) {
+    setFilter(layer: string, filter: FilterSpecification) {
         this.style.setFilter(layer, filter);
         this._update(true);
         return this;
@@ -1350,11 +1378,11 @@ class Map extends Camera {
     /**
      * Sets the any combination of light values.
      *
-     * @param {Object} options Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @returns {Map} `this`
      */
-    setLight(lightOptions: any) {
-        this.style.setLight(lightOptions);
+    setLight(light: LightSpecification) {
+        this.style.setLight(light);
         this._update(true);
         return this;
     }

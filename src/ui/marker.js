@@ -1,14 +1,20 @@
+// @flow
 
 const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
 const smartWrap = require('../util/smart_wrap');
+const {bindAll} = require('../util/util');
+
+import type Map from './map';
+import type Popup from './popup';
+import type {LngLatLike} from "../geo/lng_lat";
 
 /**
  * Creates a marker component
- * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
- * @param {Object=} options
- * @param {PointLike=} options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+ * @param element DOM element to use as a marker (creates a div element by default)
+ * @param options
+ * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -16,12 +22,17 @@ const smartWrap = require('../util/smart_wrap');
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
 class Marker {
+    _map: Map;
+    _offset: Point;
+    _element: HTMLElement;
+    _popup: ?Popup;
+    _lngLat: LngLat;
+    _pos: Point;
 
-    constructor(element, options) {
+    constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
         this._offset = Point.convert(options && options.offset || [0, 0]);
 
-        this._update = this._update.bind(this);
-        this._onMapClick = this._onMapClick.bind(this);
+        bindAll(['_update', '_onMapClick'], this);
 
         if (!element) element = DOM.create('div');
         element.classList.add('mapboxgl-marker');
@@ -35,7 +46,7 @@ class Marker {
      * @param {Map} map
      * @returns {Marker} `this`
      */
-    addTo(map) {
+    addTo(map: Map) {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
@@ -63,7 +74,7 @@ class Marker {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
             this._map.off('moveend', this._update);
-            this._map = null;
+            this._map = (null : any);
         }
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
@@ -85,12 +96,11 @@ class Marker {
 
     /**
      * Set the marker's geographical position and move it.
-     * @param {LngLat} lnglat
      * @returns {Marker} `this`
      */
-    setLngLat(lnglat) {
+    setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
-        this._pos = null;
+        this._pos = (null : any);
         if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update();
         return this;
@@ -102,12 +112,11 @@ class Marker {
 
     /**
      * Binds a Popup to the Marker
-     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup
+     * @param popup an instance of the `Popup` class. If undefined or null, any popup
      * set on this `Marker` instance is unset
      * @returns {Marker} `this`
      */
-
-    setPopup(popup) {
+    setPopup(popup: ?Popup) {
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
@@ -124,7 +133,7 @@ class Marker {
         return this;
     }
 
-    _onMapClick(event) {
+    _onMapClick(event: any) {
         const targetElement = event.originalEvent.target;
         const element = this._element;
 
@@ -153,7 +162,7 @@ class Marker {
         else popup.addTo(this._map);
     }
 
-    _update(e) {
+    _update(e: any) {
         if (!this._map) return;
 
         if (this._map.transform.renderWorldCopies) {
@@ -162,7 +171,7 @@ class Marker {
 
         this._pos = this._map.project(this._lngLat)
             ._add(this._offset)
-            ._add({x: -this._element.offsetWidth / 2, y: -this._element.offsetHeight / 2});
+            ._add(new Point(-this._element.offsetWidth / 2, -this._element.offsetHeight / 2));
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with

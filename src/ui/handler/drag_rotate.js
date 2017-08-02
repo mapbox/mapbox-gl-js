@@ -1,7 +1,11 @@
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+
+import type Map from '../map';
+import type Point from '@mapbox/point-geometry';
 
 const inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -19,7 +23,18 @@ const inertiaLinearity = 0.25,
  * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
  */
 class DragRotateHandler {
-    constructor(map, options) {
+    _map: Map;
+    _el: HTMLElement;
+    _enabled: boolean;
+    _active: boolean;
+    _bearingSnap: number;
+    _pitchWithRotate: boolean;
+    _pos: Point;
+    _startPos: Point;
+    _inertia: Array<[number, number]>;
+    _center: Point;
+
+    constructor(map: Map, options: any) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._bearingSnap = options.bearingSnap;
@@ -75,7 +90,7 @@ class DragRotateHandler {
         this._enabled = false;
     }
 
-    _onDown(e) {
+    _onDown(e: MouseEvent) {
         if (this._ignoreEvent(e)) return;
         if (this.isActive()) return;
 
@@ -92,7 +107,7 @@ class DragRotateHandler {
         e.preventDefault();
     }
 
-    _onMove(e) {
+    _onMove(e: MouseEvent) {
         if (this._ignoreEvent(e)) return;
 
         if (!this.isActive()) {
@@ -132,11 +147,11 @@ class DragRotateHandler {
         this._pos = p2;
     }
 
-    _onUp(e) {
+    _onUp(e: MouseEvent) {
         if (this._ignoreEvent(e)) return;
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onUp);
-        window.removeEventListener('blur', this._onUp);
+        window.removeEventListener('blur', (this._onUp : any));
 
         if (!this.isActive()) return;
 
@@ -197,11 +212,11 @@ class DragRotateHandler {
         }, { originalEvent: e });
     }
 
-    _fireEvent(type, e) {
+    _fireEvent(type: string, e: Event) {
         return this._map.fire(type, { originalEvent: e });
     }
 
-    _ignoreEvent(e) {
+    _ignoreEvent(e: any) {
         const map = this._map;
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
@@ -212,14 +227,14 @@ class DragRotateHandler {
             const buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
                 button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
             let eventButton = e.button;
-            if (typeof InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
+            if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
                 window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
                 // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
                 // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
                 // using Control + left click
                 eventButton = 0;
             }
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : !this.isActive() && eventButton !== button);
+            return (e.type === 'mousemove' ? (e.buttons & buttons) === 0 : !this.isActive() && eventButton !== button);
         }
     }
 

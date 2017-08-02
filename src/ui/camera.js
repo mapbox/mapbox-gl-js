@@ -386,7 +386,7 @@ class Camera extends Evented {
             return 0;
         }), ["bottom", "left", "right", "top"])) {
             util.warnOnce("options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'");
-            return;
+            return this;
         }
 
         bounds = LngLatBounds.convert(bounds);
@@ -410,7 +410,7 @@ class Camera extends Evented {
 
         if (scaleY < 0 || scaleX < 0) {
             util.warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
-            return;
+            return this;
         }
 
         options.center = tr.unproject(nw.add(se).div(2));

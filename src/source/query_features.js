@@ -9,7 +9,7 @@ import type Coordinate from '../geo/coordinate';
 exports.rendered = function(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Coordinate>,
-                            params: { filter: any, layers: Array<string> },
+                            params: { filter: FilterSpecification, layers: Array<string> },
                             zoom: number,
                             bearing: number) {
     const tilesIn = sourceCache.tilesIn(queryGeometry);

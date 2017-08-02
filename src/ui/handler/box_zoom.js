@@ -1,8 +1,11 @@
+// @flow
 
 const DOM = require('../../util/dom');
 const LngLatBounds = require('../../geo/lng_lat_bounds');
 const util = require('../../util/util');
 const window = require('../../util/window');
+
+import type Map from '../map';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
@@ -11,8 +14,15 @@ const window = require('../../util/window');
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class BoxZoomHandler {
+    _map: Map;
+    _el: HTMLElement;
+    _container: HTMLElement;
+    _enabled: boolean;
+    _active: boolean;
+    _startPos: any;
+    _box: HTMLElement;
 
-    constructor(map) {
+    constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._container = map.getContainer();
@@ -74,7 +84,7 @@ class BoxZoomHandler {
         this._enabled = false;
     }
 
-    _onMouseDown(e) {
+    _onMouseDown(e: MouseEvent) {
         if (!(e.shiftKey && e.button === 0)) return;
 
         window.document.addEventListener('mousemove', this._onMouseMove, false);
@@ -86,7 +96,7 @@ class BoxZoomHandler {
         this._active = true;
     }
 
-    _onMouseMove(e) {
+    _onMouseMove(e: MouseEvent) {
         const p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e);
 
@@ -107,7 +117,7 @@ class BoxZoomHandler {
         this._box.style.height = `${maxY - minY}px`;
     }
 
-    _onMouseUp(e) {
+    _onMouseUp(e: MouseEvent) {
         if (e.button !== 0) return;
 
         const p0 = this._startPos,
@@ -127,7 +137,7 @@ class BoxZoomHandler {
         }
     }
 
-    _onKeyDown(e) {
+    _onKeyDown(e: KeyboardEvent) {
         if (e.keyCode === 27) {
             this._finish();
             this._fireEvent('boxzoomcancel', e);
@@ -144,14 +154,14 @@ class BoxZoomHandler {
         this._container.classList.remove('mapboxgl-crosshair');
 
         if (this._box) {
-            this._box.parentNode.removeChild(this._box);
-            this._box = null;
+            DOM.remove(this._box);
+            this._box = (null : any);
         }
 
         DOM.enableDrag();
     }
 
-    _fireEvent(type, e) {
+    _fireEvent(type: string, e: Event) {
         return this._map.fire(type, { originalEvent: e });
     }
 }

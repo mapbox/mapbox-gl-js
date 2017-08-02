@@ -100,7 +100,17 @@ const layerTypes = Object.keys(spec.layer.type.values);
 fs.writeFileSync('flow-typed/style-spec.js', `// Generated code; do not edit. Edit build/generate-flow-typed-style-spec.js instead.
 
 declare type ColorSpecification = string;
-declare type FilterSpecification = Array<any>;
+
+declare type FilterSpecification =
+    | ['has', string]
+    | ['!has', string]
+    | ['==', string, string | number | boolean]
+    | ['!=', string, string | number | boolean]
+    | ['>', string, string | number | boolean]
+    | ['>=', string, string | number | boolean]
+    | ['<', string, string | number | boolean]
+    | ['<=', string, string | number | boolean]
+    | Array<string | FilterSpecification>; // Can't type in, !in, all, any, none -- https://github.com/facebook/flow/issues/2443
 
 declare type TransitionSpecification = {
     duration?: number,

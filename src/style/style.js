@@ -248,7 +248,7 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _applyClasses(classes?: Array<string>, options: {}) {
+    _applyClasses(classes?: Array<string>, options: ?{}) {
         if (!this._loaded) return;
 
         classes = classes || [];
@@ -334,7 +334,7 @@ class Style extends Evented {
     /**
      * Apply queued style updates in a batch
      */
-    update(classes: Array<string>, options: {}) {
+    update(classes: Array<string>, options: ?{}) {
         if (!this._changed) return;
 
         const updatedIds = Object.keys(this._updatedLayers);
@@ -547,7 +547,7 @@ class Style extends Evented {
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
      */
-    moveLayer(id: string, before: string) {
+    moveLayer(id: string, before?: string) {
         this._checkLoaded();
         this._changed = true;
 
@@ -650,7 +650,7 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
-    setFilter(layerId: string, filter: any) {
+    setFilter(layerId: string, filter: FilterSpecification) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -868,7 +868,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification, transitionOptions: {}) {
+    setLight(lightOptions: LightSpecification, transitionOptions?: {}) {
         this._checkLoaded();
 
         const light = this.light.getLight();

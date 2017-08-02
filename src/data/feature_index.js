@@ -41,7 +41,7 @@ type QueryParameters = {
     tileSize: number,
     queryGeometry: Array<Array<{x: number, y: number}>>,
     params: {
-        filter: any,
+        filter: FilterSpecification,
         layers: Array<string>,
     }
 }

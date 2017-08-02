@@ -45,6 +45,7 @@ export interface Source {
     minzoom: number,
     maxzoom: number,
     tileSize: number,
+    attribution?: string,
 
     roundZoom?: boolean,
     reparseOverscaled?: boolean,
