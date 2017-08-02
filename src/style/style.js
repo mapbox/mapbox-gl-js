@@ -497,6 +497,7 @@ class Style extends Evented {
 
         if (typeof layerObject.source === 'object') {
             this.addSource(id, layerObject.source);
+            layerObject = util.clone(layerObject);
             layerObject = (util.extend(layerObject, {source: id}): any);
         }
 
