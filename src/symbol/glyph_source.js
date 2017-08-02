@@ -30,6 +30,8 @@ class SimpleGlyph {
     }
 }
 
+export type {SimpleGlyph as SimpleGlyph};
+
 /**
  * A glyph source has a URL from which to load new glyphs and manages
  * GlyphAtlases in which to store glyphs used by the requested fontstacks

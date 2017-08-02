@@ -117,7 +117,7 @@ class StyleLayer extends Evented {
         );
     }
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
+    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties): any {
         const specification = this._layoutSpecifications[name];
         const declaration = this._layoutDeclarations[name];
 
@@ -170,7 +170,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
+    getPaintValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties): any {
         const specification = this._paintSpecifications[name];
         const transition = this._paintTransitions[name];
 

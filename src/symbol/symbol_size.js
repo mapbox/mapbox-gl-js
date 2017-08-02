@@ -1,16 +1,29 @@
+// @flow
 
 const interpolate = require('../style-spec/util/interpolate');
+const {interpolationFactor} = require('../style-spec/function');
 const util = require('../util/util');
-const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const assert = require('assert');
 
+import type StyleLayer from '../style/style_layer';
+
 module.exports = {
-    evaluateSizeForFeature: evaluateSizeForFeature,
-    evaluateSizeForZoom: evaluateSizeForZoom
+    evaluateSizeForFeature,
+    evaluateSizeForZoom
 };
 
+type SizeData = {
+    isFeatureConstant: boolean,
+    isZoomConstant: boolean,
+    functionBase: number,
+    coveringZoomRange: [number, number],
+    coveringStopValues: [number, number],
+    layoutSize: number
+};
 
-function evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol) {
+function evaluateSizeForFeature(sizeData: SizeData,
+                                partiallyEvaluatedSize: { uSize: number, uSizeT: number },
+                                symbol: { lowerSize: number, upperSize: number}) {
     const part = partiallyEvaluatedSize;
     if (sizeData.isFeatureConstant) {
         return part.uSize;
@@ -23,7 +36,10 @@ function evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol) {
     }
 }
 
-function evaluateSizeForZoom(sizeData, tr, layer, isText) {
+function evaluateSizeForZoom(sizeData: SizeData,
+                             tr: { zoom: number },
+                             layer: StyleLayer,
+                             isText: boolean) {
     const sizeUniforms = {};
     if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
         // composite function

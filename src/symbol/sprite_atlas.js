@@ -31,7 +31,7 @@ type Image = {
     sdf: boolean
 };
 
-type SpriteAtlasElement = {
+export type SpriteAtlasElement = {
     sdf: boolean,
     pixelRatio: number,
     isNativePixelRatio: boolean,
