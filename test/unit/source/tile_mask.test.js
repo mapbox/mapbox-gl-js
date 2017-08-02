@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const updateTileMasks = require('../../../src/render/tile_mask').updateTileMasks;
+const updateTileMasks = require('../../../src/render/tile_mask');
 const TileCoord = require('../../../src/source/tile_coord');
 
 

@@ -53,7 +53,7 @@ const TileCoord = require('../source/tile_coord');
 // 2/1/3, since it is not a descendant of it.
 
 
-exports.updateTileMasks = function(renderableTiles) {
+module.exports = function(renderableTiles) {
     const sortedRenderables = util.objectValues(renderableTiles).sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
