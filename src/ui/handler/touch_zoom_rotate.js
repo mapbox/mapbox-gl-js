@@ -1,7 +1,11 @@
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+
+import type Map from '../map';
+import type Point from '@mapbox/point-geometry';
 
 const inertiaLinearity = 0.15,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -17,7 +21,18 @@ const inertiaLinearity = 0.15,
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class TouchZoomRotateHandler {
-    constructor(map) {
+    _map: Map;
+    _el: HTMLElement;
+    _enabled: boolean;
+    _aroundCenter: boolean;
+    _rotationDisabled: boolean;
+    _startVec: Point;
+    _startScale: number;
+    _startBearing: number;
+    _gestureIntent: 'rotate' | 'zoom' | void;
+    _inertia: Array<[number, number, Point]>;
+
+    constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
@@ -48,7 +63,7 @@ class TouchZoomRotateHandler {
      * @example
      *   map.touchZoomRotate.enable({ around: 'center' });
      */
-    enable(options) {
+    enable(options: any) {
         if (this.isEnabled()) return;
         this._el.classList.add('mapboxgl-touch-zoom-rotate');
         this._el.addEventListener('touchstart', this._onStart, false);
@@ -91,7 +106,7 @@ class TouchZoomRotateHandler {
         this._rotationDisabled = false;
     }
 
-    _onStart(e) {
+    _onStart(e: TouchEvent) {
         if (e.touches.length !== 2) return;
 
         const p0 = DOM.mousePos(this._el, e.touches[0]),
@@ -107,7 +122,7 @@ class TouchZoomRotateHandler {
         window.document.addEventListener('touchend', this._onEnd, false);
     }
 
-    _onMove(e) {
+    _onMove(e: TouchEvent) {
         if (e.touches.length !== 2) return;
 
         const p0 = DOM.mousePos(this._el, e.touches[0]),
@@ -137,7 +152,7 @@ class TouchZoomRotateHandler {
             }
 
         } else {
-            const param = { duration: 0, around: map.unproject(p) };
+            const param: Object = { duration: 0, around: map.unproject(p) };
 
             if (this._gestureIntent === 'rotate') {
                 param.bearing = this._startBearing + bearing;
@@ -156,7 +171,7 @@ class TouchZoomRotateHandler {
         e.preventDefault();
     }
 
-    _onEnd(e) {
+    _onEnd(e: TouchEvent) {
         window.document.removeEventListener('touchmove', this._onMove);
         window.document.removeEventListener('touchend', this._onEnd);
         this._drainInertiaBuffer();
