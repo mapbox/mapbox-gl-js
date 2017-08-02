@@ -16,6 +16,7 @@ const {
 const { CompoundExpression, varargs } = require('../compound_expression');
 const Let = require('./let');
 const Literal = require('./literal');
+const ArrayAssertion = require('./array');
 const Match = require('./match');
 const Case = require('./case');
 const Curve = require('./curve');
@@ -28,6 +29,7 @@ const expressions: { [string]: Class<Expression> } = {
     // special forms
     'let': Let,
     'literal': Literal,
+    'array': ArrayAssertion,
     'case': Case,
     'match': Match,
     'coalesce': Coalesce,

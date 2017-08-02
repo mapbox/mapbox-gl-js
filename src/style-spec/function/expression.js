@@ -7,7 +7,7 @@ import type { TypeError } from './types';
 
 export interface Expression {
     key: string;
-    type: Type;
+    +type: Type;
 
     static parse(args: Array<mixed>, context: ParsingContext): Expression;
 
