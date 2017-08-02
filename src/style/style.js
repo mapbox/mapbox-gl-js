@@ -874,6 +874,12 @@ class Style extends Evented {
         return false;
     }
 
+    _generateCollisionBoxes() {
+        for (const id in this.sourceCaches) {
+            this._reloadSource(id);
+        }
+    }
+
     _redoPlacement(transform, showCollisionBoxes, forceFullPlacement) {
         // TODO: There are sure to be bugs depending on this boolean flag for when to do a full placement...
         // Make style aware itself of when it needs to re-build?

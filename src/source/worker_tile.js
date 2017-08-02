@@ -160,7 +160,7 @@ class WorkerTile {
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
 
-                    PrepareSymbol.prepare(bucket, stacks, icons);
+                    PrepareSymbol.prepare(bucket, stacks, icons, this.showCollisionBoxes);
                 }
 
                 done();

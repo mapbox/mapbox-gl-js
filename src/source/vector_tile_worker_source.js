@@ -134,6 +134,7 @@ class VectorTileWorkerSource implements WorkerSource {
             vtSource = this;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
+            workerTile.showCollisionBoxes = params.showCollisionBoxes;
 
             if (workerTile.status === 'parsing') {
                 workerTile.reloadCallback = callback;

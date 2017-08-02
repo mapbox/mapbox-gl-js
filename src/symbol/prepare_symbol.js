@@ -117,9 +117,9 @@ function prepare(bucket: any, stacks: any, icons: any, showCollisionBoxes: boole
         }
     }
 
-    // TODO: Only do bucket if showCollisionBoxes is set, but also make sure to reload tiles when the value
-    // changes since we don't generate buffers on placement anymore.
-    bucket.generateCollisionDebugBuffers();
+    if (showCollisionBoxes) {
+        bucket.generateCollisionDebugBuffers();
+    }
 }
 
 
