@@ -18,8 +18,8 @@
       "result": "error",
       "errors": [
         {
-          "key": "[2]",
-          "error": "Expected String but found Value instead."
+          "key": "",
+          "error": "Expected arguments of type (Number, Number) | (Boolean, Boolean) | (String, String) | (Null, Null), but found (String, Value) instead."
         }
       ]
     }

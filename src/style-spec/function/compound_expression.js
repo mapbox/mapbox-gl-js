@@ -40,47 +40,55 @@ class CompoundExpression implements Expression {
 
     typecheck(scope: Scope, errors: Array<TypeError>) {
         // Check if the expected type matches the expression's output type
-        let signatureErrors = [];
-
         const overloads = Array.isArray(this.definition) ?
             [[this.definition[1], this.definition[2]]] :
             this.definition.overloads;
 
+        let signatureErrors = [];
+        const args = [];
+        for (const arg of this.args) {
+            const checked = arg.typecheck(scope, errors);
+            if (!checked) return null;
+            args.push(checked);
+        }
+
         for (const [params, compileFromArgs] of overloads) {
             signatureErrors = [];
-            const argValues = this.args;
-            const checkedArgs = [];
             if (Array.isArray(params)) {
-                if (params.length !== argValues.length) {
+                if (params.length !== args.length) {
                     signatureErrors.push({
                         key: this.key,
-                        error: `Expected ${params.length} arguments, but found ${argValues.length} instead.`
+                        error: `Expected ${params.length} arguments, but found ${args.length} instead.`
                     });
                     continue;
                 }
-                for (let i = 0; i < argValues.length; i++) {
-                    const arg = argValues[i].typecheck(scope, signatureErrors);
-                    if (arg && !match(params[i], arg.type, arg.key, signatureErrors)) {
-                        checkedArgs.push(arg);
-                    }
-                }
-            } else {
-                for (let i = 0; i < argValues.length; i++) {
-                    const arg = argValues[i].typecheck(scope, signatureErrors);
-                    if (arg && !match(params.type, arg.type, arg.key, signatureErrors)) {
-                        checkedArgs.push(arg);
-                    }
-                }
+            }
+
+            for (let i = 0; i < args.length; i++) {
+                const expected = Array.isArray(params) ? params[i] : params.type;
+                match(expected, args[i].type, args[i].key, signatureErrors);
             }
 
             if (signatureErrors.length === 0) {
                 return new CompoundExpression(this.key, this.name,
-                    [this.type, params, compileFromArgs], checkedArgs);
+                    [this.type, params, compileFromArgs], args);
             }
         }
 
         assert(signatureErrors.length > 0);
-        errors.push.apply(errors, signatureErrors);
+
+        if (overloads.length === 1) {
+            errors.push.apply(errors, signatureErrors);
+        } else {
+            const signatures = overloads
+                .map(([params]) => stringifySignature(params))
+                .join(' | ');
+            const actualTypes = args
+                .map(arg => arg.type.name)
+                .join(', ');
+            errors.push({key: this.key, error: `Expected arguments of type ${signatures}, but found (${actualTypes}) instead.`});
+        }
+
         return null;
     }
 
@@ -139,6 +147,14 @@ class CompoundExpression implements Expression {
 
 function varargs(type: Type): Varargs {
     return { type };
+}
+
+function stringifySignature(signature: Signature): string {
+    if (Array.isArray(signature)) {
+        return `(${signature.map(param => param.name).join(', ')})`;
+    } else {
+        return `(${signature.type.name}...)`;
+    }
 }
 
 module.exports = {
