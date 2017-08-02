@@ -33,7 +33,7 @@ class Let implements Expression {
 
         const result = this.result.compile();
 
-        return `(function (${names.join(', ')}) {
+        return `(function (${names.map(Let.escape).join(', ')}) {
             return ${result};
         }.bind(this))(${values.join(', ')})`;
     }
@@ -80,6 +80,10 @@ class Let implements Expression {
         if (!result) return null;
 
         return new Let(context.key, bindings, result);
+    }
+
+    static escape(name: string) :string {
+        return `_${name.replace(/[^a-zA-Z_a-zA-Z_0-9]/g, '_')}`;
     }
 }
 

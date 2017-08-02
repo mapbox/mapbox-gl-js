@@ -99,34 +99,6 @@ class ParsingContext {
     }
 }
 
-class Reference implements Expression {
-    key: string;
-    type: Type;
-    name: string;
-
-    constructor(key: string, name: string, type: Type) {
-        // TODO: move this check to parse()
-        if (!/^[a-zA-Z_]+[a-zA-Z_0-9]*$/.test(name))
-            throw new ParsingError(key, `Invalid identifier ${name}.`);
-        this.key = key;
-        this.type = type;
-        this.name = name;
-    }
-
-    typecheck(scope: Scope) {
-        const referee = scope.get(this.name);
-        return new Reference(this.key, this.name, referee.type);
-    }
-
-    compile() { return this.name; }
-
-    serialize() {
-        return [this.name];
-    }
-
-    accept(visitor: Visitor<Expression>) { visitor.visit(this); }
-}
-
 function parseExpression(expr: mixed, context: ParsingContext, expectedType?: Type) : ?Expression {
     if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
         expr = ['literal', expr];
@@ -141,13 +113,6 @@ function parseExpression(expr: mixed, context: ParsingContext, expectedType?: Ty
         if (typeof op !== 'string') {
             context.error(`Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`, 0);
             return null;
-        } else if (context.scope.has(op)) {
-            const parsed = new Reference(context.key, op, context.scope.get(op).type);
-            if (expectedType && match(expectedType, parsed.type, context)) {
-                return null;
-            } else {
-                return parsed;
-            }
         }
 
         const Expr = context.definitions[op];
@@ -240,6 +205,5 @@ module.exports = {
     ParsingContext,
     ParsingError,
     parseExpression,
-    match,
-    Reference
+    match
 };

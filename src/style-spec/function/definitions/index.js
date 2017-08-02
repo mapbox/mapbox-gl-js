@@ -15,6 +15,7 @@ const {
 
 const { CompoundExpression, varargs } = require('../compound_expression');
 const Let = require('./let');
+const Var = require('./var');
 const Literal = require('./literal');
 const ArrayAssertion = require('./array');
 const At = require('./at');
@@ -29,6 +30,7 @@ import type { Type } from '../types';
 const expressions: { [string]: Class<Expression> } = {
     // special forms
     'let': Let,
+    'var': Var,
     'literal': Literal,
     'array': ArrayAssertion,
     'at': At,
