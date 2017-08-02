@@ -5,7 +5,8 @@ const rtlTextPlugin = require('../source/rtl_text_plugin');
 
 const WritingMode = {
     horizontal: 1,
-    vertical: 2
+    vertical: 2,
+    horizontalOnly: 3
 };
 
 module.exports = {

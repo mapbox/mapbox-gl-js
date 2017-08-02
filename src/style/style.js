@@ -916,7 +916,9 @@ class Style extends Evented {
                 return true;
             }
         }
-        this._fullPlacementElapsed += browser.now() - startPlacement;
+        const elapsed = browser.now() - startPlacement;
+        this._fullPlacementElapsed += elapsed;
+        console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
         console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time`);
         return false;
     }

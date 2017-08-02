@@ -4,6 +4,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
 const symbolSize = require('./symbol_size');
 const addDynamicAttributes = require('../data/bucket/symbol_bucket').addDynamicAttributes;
+const WritingMode = require('../symbol/shaping').WritingMode;
 
 module.exports = {
     updateLineLabels: updateLineLabels,
@@ -134,13 +135,22 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
     const lineVertexArray = bucket.lineVertexArray;
     const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
 
+    let useVertical = false;
+
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
+        if (symbol.writingMode === WritingMode.vertical && !useVertical) {
+            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+            continue;
+        }
+        // Awkward... but we're counting on the paired "vertical" symbol coming immediately after its horizontal counterpart
+        useVertical = false;
 
         const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
+        // TODO: If a label is collided and completely faded out, we should be able to stop calculating positions for it as well
         if (!isVisible(anchorPos, symbol.placementZoom, clippingBuffer, painter)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
@@ -160,7 +170,9 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         const placeUnflipped = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
             bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache);
 
-        if (placeUnflipped.notEnoughRoom ||
+        useVertical = placeUnflipped.useVertical;
+
+        if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
              placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
                  bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache).notEnoughRoom)) {
@@ -216,9 +228,22 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const firstPoint = project(firstAndLastGlyph.first.point, glCoordMatrix);
         const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix);
 
-        if (keepUpright && !flip &&
-            (symbol.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x)) {
-            return { needsFlipping: true };
+        if (keepUpright && !flip) {
+            if (symbol.writingMode === WritingMode.horizontal) {
+                // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
+                // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
+                // and vertical versions can have slightly different projections which could lead to angles where both or
+                // neither showed.
+                if (Math.abs(lastPoint.y - firstPoint.y) > Math.abs(lastPoint.x - firstPoint.x)) {
+                    return { useVertical: true };
+                }
+            }
+
+            if (symbol.writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
+                // Includes "horizontalOnly" case for labels without vertical glyphs
+                return { needsFlipping: true };
+            }
+
         }
 
         placedGlyphs = [firstAndLastGlyph.first];

@@ -39,14 +39,13 @@ function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourc
             const opacityState = symbolInstance.textOpacityState;
             updateOpacity(symbolInstance, opacityState, targetOpacity);
 
-            // TODO handle vertical text properly by choosing the correct version here
-            const verticalOpacity = 0;
-
             for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
                 glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
             }
+            // Vertical text fades in/out on collision the same way as corresponding
+            // horizontal text. Switch between vertical/horizontal should be instantaneous
             for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
-                glyphOpacityArray.emplaceBack(verticalOpacity * 10000, targetOpacity);
+                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
             }
         }
 

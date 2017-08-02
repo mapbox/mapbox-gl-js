@@ -76,21 +76,20 @@ function prepare(bucket: any, stacks: any, icons: any, showCollisionBoxes: boole
     const spacing = layout['text-letter-spacing'] * oneEm;
     const fontstack = bucket.fontstack = layout['text-font'].join(',');
     const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+    const keepUpright = layout['text-keep-upright'];
 
     for (const feature of bucket.features) {
 
-        let shapedTextOrientations;
+        const shapedTextOrientations = {};
         if (feature.text) {
             const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(feature.text);
             const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom}, feature.properties).map((t)=> t * oneEm);
             const spacingIfAllowed = scriptDetection.allowsLetterSpacing(feature.text) ? spacing : 0;
 
-            shapedTextOrientations = {
-                [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal),
-                [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical)
-            };
-        } else {
-            shapedTextOrientations = {};
+            shapedTextOrientations.horizontal = shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
+            if (allowsVerticalWritingMode && textAlongLine && keepUpright) {
+                shapedTextOrientations.vertical = shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical);
+            }
         }
 
         let shapedIcon;
@@ -112,7 +111,7 @@ function prepare(bucket: any, stacks: any, icons: any, showCollisionBoxes: boole
             }
         }
 
-        if (shapedTextOrientations[WritingMode.horizontal] || shapedIcon) {
+        if (shapedTextOrientations.horizontal || shapedIcon) {
             addFeature(bucket, feature, shapedTextOrientations, shapedIcon);
         }
     }
@@ -192,7 +191,7 @@ function addFeature(bucket: any, feature: any, shapedTextOrientations: any, shap
                 line,
                 symbolMinDistance,
                 textMaxAngle,
-                shapedTextOrientations[WritingMode.vertical] || shapedTextOrientations[WritingMode.horizontal],
+                shapedTextOrientations.horizontal,
                 shapedIcon,
                 glyphSize,
                 textMaxBoxScale,
@@ -200,7 +199,7 @@ function addFeature(bucket: any, feature: any, shapedTextOrientations: any, shap
                 EXTENT
             );
             for (const anchor of anchors) {
-                const shapedText = shapedTextOrientations[WritingMode.horizontal];
+                const shapedText = shapedTextOrientations.horizontal;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
                     addSymbolInstanceAtAnchor(line, anchor);
                 }
@@ -224,6 +223,34 @@ function addFeature(bucket: any, feature: any, shapedTextOrientations: any, shap
             }
         }
     }
+}
+
+
+function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAlongLine, globalProperties, featureProperties, textOffset, lineArray, writingMode) {
+    const glyphQuads = addToBuffers ?
+        getGlyphQuads(anchor, shapedText,
+            layer, textAlongLine, globalProperties, featureProperties) :
+        [];
+
+    const textSizeData = getSizeVertexData(layer,
+        bucket.zoom,
+        bucket.textSizeData.coveringZoomRange,
+        'text-size',
+        featureProperties);
+    bucket.addSymbols(
+        bucket.arrays.glyph,
+        glyphQuads,
+        textSizeData,
+        textOffset,
+        textAlongLine,
+        featureProperties,
+        writingMode,
+        anchor,
+        lineArray.lineStartIndex,
+        lineArray.lineLength,
+        bucket.placedGlyphArray);
+
+    return glyphQuads.length * 4;
 }
 
 
@@ -269,56 +296,32 @@ function addSymbolInstance(bucket: any,
 
     let textCollisionFeature, iconCollisionFeature;
     let placedTextSymbolIndex;
-    let iconQuads = [];
-    let glyphQuads = [];
 
     let numIconVertices = 0;
     let numGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
-    let key = '';
-    for (const writingModeString in shapedTextOrientations) {
-        const writingMode = parseInt(writingModeString, 10);
-        if (!shapedTextOrientations[writingMode]) continue;
-        key = shapedTextOrientations[writingMode].text;
-        glyphQuads = addToBuffers ?
-            getGlyphQuads(anchor, shapedTextOrientations[writingMode],
-                layer, textAlongLine, globalProperties, featureProperties) :
-            [];
-        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false, key);
+    const key = shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '';
+    if (shapedTextOrientations.horizontal) {
+        // As a collision approximation, we can use either the vetical or the horizontal version of the feature
+        // We're counting on the two versions having similar dimensions
+        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, false, key);
+        numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, featureProperties, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly);
 
-        if (writingMode === WritingMode.vertical) {
-            numVerticalGlyphVertices = glyphQuads.length * 4;
-        } else {
-            numGlyphVertices = glyphQuads.length * 4;
+        // This index is used to calculate the position of this feature at collision detection time
+        placedTextSymbolIndex = bucket.placedGlyphArray.length - 1;
+
+        if (shapedTextOrientations.vertical) {
+            numVerticalGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, featureProperties, textOffset, lineArray, WritingMode.vertical);
         }
-
-        const textSizeData = getSizeVertexData(layer,
-            bucket.zoom,
-            bucket.textSizeData.coveringZoomRange,
-            'text-size',
-            featureProperties);
-        bucket.addSymbols(
-            bucket.arrays.glyph,
-            glyphQuads,
-            textSizeData,
-            textOffset,
-            textAlongLine,
-            featureProperties,
-            writingMode === WritingMode.vertical,
-            anchor,
-            lineArray.lineStartIndex,
-            lineArray.lineLength,
-            bucket.placedGlyphArray);
-        placedTextSymbolIndex = bucket.placedGlyphArray.length - 1; // TODO: Make bucket work for vertical
     }
 
     const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
     if (shapedIcon) {
-        iconQuads = addToBuffers ?
+        const iconQuads = addToBuffers ?
             getIconQuads(anchor, shapedIcon, layer,
-                iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
+                iconAlongLine, shapedTextOrientations.horizontal,
                 globalProperties, featureProperties) :
             [];
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
@@ -351,11 +354,6 @@ function addSymbolInstance(bucket: any,
     if (textBoxEndIndex > SymbolBucket.MAX_INSTANCES) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
     if (iconBoxEndIndex > SymbolBucket.MAX_INSTANCES) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
 
-    const writingModes = (
-        (shapedTextOrientations[WritingMode.vertical] ? WritingMode.vertical : 0) |
-        (shapedTextOrientations[WritingMode.horizontal] ? WritingMode.horizontal : 0)
-    );
-
     const textOpacityState = {
         opacity: 0,
         targetOpacity: 0,
@@ -374,15 +372,12 @@ function addSymbolInstance(bucket: any,
         textBoxEndIndex,
         iconBoxStartIndex,
         iconBoxEndIndex,
-        glyphQuads,
-        iconQuads,
         textOffset,
         iconOffset,
         anchor,
         line,
         featureIndex,
         featureProperties,
-        writingModes,
         numGlyphVertices,
         numVerticalGlyphVertices,
         numIconVertices,
