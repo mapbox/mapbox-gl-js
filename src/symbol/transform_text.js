@@ -1,7 +1,10 @@
+// @flow
 
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 
-module.exports = function(text, layer, globalProperties, featureProperties) {
+import type StyleLayer from '../style/style_layer';
+
+module.exports = function(text: string, layer: StyleLayer, globalProperties: Object, featureProperties: Object) {
     const transform = layer.getLayoutValue('text-transform', globalProperties, featureProperties);
     if (transform === 'uppercase') {
         text = text.toLocaleUpperCase();
