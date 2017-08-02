@@ -114,18 +114,20 @@ return this.unwrap(${compiled})
 
 function isFeatureConstant(e: Expression) {
     let result = true;
-    e.visit((expression) => {
-        if (expression instanceof CompoundExpression) {
-            if (expression.name === 'get') {
-                result = result && (expression.args.length > 1);
-            } else if (expression.name === 'has') {
-                result = result && (expression.args.length > 1);
-            } else {
-                result = result && !(
-                    expression.name === 'properties' ||
-                    expression.name === 'geometry_type' ||
-                    expression.name === 'id'
-                );
+    e.accept({
+        visit: (expression) => {
+            if (expression instanceof CompoundExpression) {
+                if (expression.name === 'get') {
+                    result = result && (expression.args.length > 1);
+                } else if (expression.name === 'has') {
+                    result = result && (expression.args.length > 1);
+                } else {
+                    result = result && !(
+                        expression.name === 'properties' ||
+                        expression.name === 'geometry_type' ||
+                        expression.name === 'id'
+                    );
+                }
             }
         }
     });
@@ -134,8 +136,10 @@ function isFeatureConstant(e: Expression) {
 
 function isZoomConstant(e: Expression) {
     let result = true;
-    e.visit((expression) => {
-        if (expression.name === 'zoom') result = false;
+    e.accept({
+        visit: (expression) => {
+            if (expression.name === 'zoom') result = false;
+        }
     });
     return result;
 }

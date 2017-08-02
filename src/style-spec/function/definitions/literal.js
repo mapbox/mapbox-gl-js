@@ -50,7 +50,7 @@ class Literal implements Expression {
         }
     }
 
-    visit(fn: (Expression) => void) { fn(this); }
+    accept(visitor: Visitor<Expression>) { visitor.visit(this); }
 }
 
 module.exports = Literal;

@@ -104,9 +104,9 @@ class CompoundExpression implements Expression {
         return [ name ].concat(args);
     }
 
-    visit(fn: (Expression) => void) {
-        fn(this);
-        this.args.forEach(a => a.visit(fn));
+    accept(visitor: Visitor<Expression>) {
+        visitor.visit(this);
+        this.args.forEach(a => a.accept(visitor));
     }
 
     // default parse; overridden by some subclasses

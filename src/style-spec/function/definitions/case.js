@@ -88,13 +88,13 @@ class Case implements Expression {
         return result;
     }
 
-    visit(fn: (Expression) => void) {
-        fn(this);
+    accept(visitor: Visitor<Expression>) {
+        visitor.visit(this);
         for (const [test, expression] of this.branches) {
-            test.visit(fn);
-            expression.visit(fn);
+            test.accept(visitor);
+            expression.accept(visitor);
         }
-        this.otherwise.visit(fn);
+        this.otherwise.accept(visitor);
     }
 }
 

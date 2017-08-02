@@ -134,13 +134,13 @@ class Match implements Expression {
         return result;
     }
 
-    visit(fn: (Expression) => void) {
-        fn(this);
-        this.input.visit(fn);
+    accept(visitor: Visitor<Expression>) {
+        visitor.visit(this);
+        this.input.accept(visitor);
         for (const [ , expression] of this.branches) {
-            expression.visit(fn);
+            expression.accept(visitor);
         }
-        this.otherwise.visit(fn);
+        this.otherwise.accept(visitor);
     }
 }
 

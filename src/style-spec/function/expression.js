@@ -15,7 +15,7 @@ export interface Expression {
     compile(): string;
 
     serialize(): any;
-    visit(fn: (Expression) => void): void;
+    accept(Visitor<Expression>): void;
 }
 */
 
@@ -100,7 +100,7 @@ class Reference implements Expression {
         return [this.name];
     }
 
-    visit(fn: (Expression) => void) { fn(this); }
+    accept(visitor: Visitor<Expression>) { visitor.visit(this); }
 }
 
 function parseExpression(expr: mixed, context: ParsingContext) : Expression {

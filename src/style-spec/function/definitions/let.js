@@ -64,12 +64,12 @@ class Let implements Expression {
         return serialized;
     }
 
-    visit(fn: (Expression) => void): void {
-        fn(this);
+    accept(visitor: Visitor<Expression>) {
+        visitor.visit(this);
         for (const binding of this.bindings) {
-            binding[1].visit(fn);
+            binding[1].accept(visitor);
         }
-        this.result.visit(fn);
+        this.result.accept(visitor);
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
