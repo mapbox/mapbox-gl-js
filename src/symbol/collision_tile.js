@@ -100,7 +100,8 @@ class CollisionTile {
             symbol,
             lineVertexArray,
             labelPlaneMatrix,
-            projectionCache);
+            projectionCache,
+            /*return tile distance*/ true);
 
         let collisionDetected = false;
 
