@@ -184,7 +184,7 @@ class SourceCache extends Evented {
         }
     }
 
-    _reloadTile(id: string|number, state: TileState) {
+    _reloadTile(id: string | number, state: TileState) {
         const tile = this._tiles[id];
 
         // this potentially does not address all underlying
@@ -203,7 +203,7 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile: Tile, id: string|number, previousState: TileState, err: ?Error) {
+    _tileLoaded(tile: Tile, id: string | number, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
             if (err.status !== 404) this._source.fire('error', {tile: tile, error: err});
@@ -230,7 +230,7 @@ class SourceCache extends Evented {
     /**
      * Get a specific tile by id
      */
-    getTileByID(id: string|number): Tile {
+    getTileByID(id: string | number): Tile {
         return this._tiles[id];
     }
 
@@ -354,7 +354,7 @@ class SourceCache extends Evented {
         if (!this.used) {
             visibleCoords = [];
         } else if (this._source.coord) {
-            visibleCoords = transform.getVisibleWrappedCoordinates((this._source.coord : any));
+            visibleCoords = transform.getVisibleWrappedCoordinates((this._source.coord: any));
         } else {
             visibleCoords = transform.coveringTiles({
                 tileSize: this._source.tileSize,
@@ -365,7 +365,7 @@ class SourceCache extends Evented {
             });
 
             if (this._source.hasTile) {
-                visibleCoords = visibleCoords.filter((coord) => (this._source.hasTile : any)(coord));
+                visibleCoords = visibleCoords.filter((coord) => (this._source.hasTile: any)(coord));
             }
         }
 
@@ -441,7 +441,7 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
-        tile = this._cache.get((tileCoord.id : any));
+        tile = this._cache.get((tileCoord.id: any));
         if (tile) {
             tile.redoPlacement(this._source);
             if (this._cacheTimers[tileCoord.id]) {
@@ -460,7 +460,7 @@ class SourceCache extends Evented {
         }
 
         // Impossible, but silence flow.
-        if (!tile) return (null : any);
+        if (!tile) return (null: any);
 
         tile.uses++;
         this._tiles[tileCoord.id] = tile;
@@ -469,7 +469,7 @@ class SourceCache extends Evented {
         return tile;
     }
 
-    _setTileReloadTimer(id: string|number, tile: Tile) {
+    _setTileReloadTimer(id: string | number, tile: Tile) {
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
@@ -479,11 +479,11 @@ class SourceCache extends Evented {
         }
     }
 
-    _setCacheInvalidationTimer(id: string|number, tile: Tile) {
+    _setCacheInvalidationTimer(id: string | number, tile: Tile) {
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
-                this._cache.remove((id : any));
+                this._cache.remove((id: any));
                 delete this._cacheTimers[id];
             }, expiryTimeout);
         }
@@ -493,7 +493,7 @@ class SourceCache extends Evented {
      * Remove a tile, given its id, from the pyramid
      * @private
      */
-    _removeTile(id: string|number) {
+    _removeTile(id: string | number) {
         const tile = this._tiles[id];
         if (!tile)
             return;
@@ -512,7 +512,7 @@ class SourceCache extends Evented {
 
         if (tile.hasData()) {
             const wrappedId = tile.coord.wrapped().id;
-            this._cache.add((wrappedId : any), tile);
+            this._cache.add((wrappedId: any), tile);
             this._setCacheInvalidationTimer(wrappedId, tile);
         } else {
             tile.aborted = true;

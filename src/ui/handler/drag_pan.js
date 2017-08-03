@@ -184,7 +184,7 @@ class DragPanHandler {
         this._onUp(e);
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onMouseUp);
-        window.removeEventListener('blur', (this._onMouseUp : any));
+        window.removeEventListener('blur', (this._onMouseUp: any));
     }
 
     _onTouchEnd(e: TouchEvent) {

@@ -19,7 +19,7 @@ module.exports = function classifyRings(rings: Array<Array<Point>>, maxRings: nu
         const area = calculateSignedArea(rings[i]);
         if (area === 0) continue;
 
-        (rings[i] : any).area = Math.abs(area);
+        (rings[i]: any).area = Math.abs(area);
 
         if (ccw === undefined) ccw = area < 0;
 
@@ -28,7 +28,7 @@ module.exports = function classifyRings(rings: Array<Array<Point>>, maxRings: nu
             polygon = [rings[i]];
 
         } else {
-            (polygon : any).push(rings[i]);
+            (polygon: any).push(rings[i]);
         }
     }
     if (polygon) polygons.push(polygon);

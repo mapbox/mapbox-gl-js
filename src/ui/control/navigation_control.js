@@ -61,7 +61,7 @@ class NavigationControl {
     onRemove() {
         DOM.remove(this._container);
         this._map.off('rotate', this._rotateCompassArrow);
-        this._map = (undefined : any);
+        this._map = (undefined: any);
     }
 
     _onContextMenu(e: MouseEvent) {

@@ -115,7 +115,7 @@ class GeolocateControl extends Evented {
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
             window.navigator.geolocation.clearWatch(this._geolocationWatchID);
-            this._geolocationWatchID = (undefined : any);
+            this._geolocationWatchID = (undefined: any);
         }
 
         // clear the marker from the map
@@ -124,7 +124,7 @@ class GeolocateControl extends Evented {
         }
 
         DOM.remove(this._container);
-        this._map = (undefined : any);
+        this._map = (undefined: any);
     }
 
     _onSuccess(position: Position) {

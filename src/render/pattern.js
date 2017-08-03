@@ -35,7 +35,7 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     assert(imagePosA && imagePosB);
 
     gl.uniform1i(program.u_image, 0);
-    gl.uniform2fv(program.u_pattern_tl_a, (imagePosA : any).tl);
+    gl.uniform2fv(program.u_pattern_tl_a, (imagePosA: any).tl);
     gl.uniform2fv(program.u_pattern_br_a, (imagePosA: any).br);
     gl.uniform2fv(program.u_pattern_tl_b, (imagePosB: any).tl);
     gl.uniform2fv(program.u_pattern_br_b, (imagePosB: any).br);

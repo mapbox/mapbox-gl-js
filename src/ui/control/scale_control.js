@@ -52,7 +52,7 @@ class ScaleControl {
     onRemove() {
         DOM.remove(this._container);
         this._map.off('move', this._onMove);
-        this._map = (undefined : any);
+        this._map = (undefined: any);
     }
 }
 

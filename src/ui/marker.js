@@ -74,7 +74,7 @@ class Marker {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
             this._map.off('moveend', this._update);
-            this._map = (null : any);
+            this._map = (null: any);
         }
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
@@ -100,7 +100,7 @@ class Marker {
      */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
-        this._pos = (null : any);
+        this._pos = (null: any);
         if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update();
         return this;

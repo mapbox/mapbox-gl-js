@@ -37,7 +37,7 @@ exports.enableDrag = function () {
 
 const transformProp = testProp(['transform', 'WebkitTransform']);
 exports.setTransform = function(el: HTMLElement, value: string) {
-    (el.style : any)[transformProp] = value;
+    (el.style: any)[transformProp] = value;
 };
 
 // Suppress the next click, but only if it's immediate.

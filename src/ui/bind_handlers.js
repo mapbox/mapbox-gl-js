@@ -23,9 +23,9 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     let tapped = null;
 
     for (const name in handlers) {
-        (map : any)[name] = new handlers[name](map, options);
+        (map: any)[name] = new handlers[name](map, options);
         if (options.interactive && options[name]) {
-            (map : any)[name].enable(options[name]);
+            (map: any)[name].enable(options[name]);
         }
     }
 
@@ -112,7 +112,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     function onClick(e: MouseEvent) {
         const pos = DOM.mousePos(el, e);
 
-        if (pos.equals((startPos : any))) {
+        if (pos.equals((startPos: any))) {
             fireMouseEvent('click', e);
         }
     }

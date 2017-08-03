@@ -155,7 +155,7 @@ class GlyphSource extends Evented {
                 fontWeight = '200';
             }
             assert(this.localIdeographFontFamily);
-            tinySDF = this.tinySDFs[fontstack] = this.createTinySDF((this.localIdeographFontFamily : any), fontWeight);
+            tinySDF = this.tinySDFs[fontstack] = this.createTinySDF((this.localIdeographFontFamily: any), fontWeight);
         }
 
         return {
@@ -192,7 +192,7 @@ class GlyphSource extends Evented {
 
             assert(this.url);
             const rangeName = `${range * 256}-${range * 256 + 255}`;
-            const url = glyphUrl(fontstack, rangeName, (this.url : any));
+            const url = glyphUrl(fontstack, rangeName, (this.url: any));
 
             this.loadPBF(url, (err, response) => {
                 if (err) {

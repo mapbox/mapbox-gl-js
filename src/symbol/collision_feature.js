@@ -55,12 +55,12 @@ class CollisionFeature {
 
                 if (straight) {
                     // used for icon labels that are aligned with the line, but don't curve along it
-                    const vector = line[anchor.segment + 1].sub(line[(anchor.segment : any)])._unit()._mult(length);
+                    const vector = line[anchor.segment + 1].sub(line[(anchor.segment: any)])._unit()._mult(length);
                     const straightLine = [anchor.sub(vector), anchor.add(vector)];
                     this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
                 } else {
                     // used for text labels that curve along a line
-                    this._addLineCollisionBoxes(collisionBoxArray, line, anchor, (anchor.segment : any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
+                    this._addLineCollisionBoxes(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
                 }
             }
 

@@ -89,7 +89,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        const bucket: SymbolBucket = (tile.getBucket(layer) : any);
+        const bucket: SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
         const buffers = isText ? bucket.buffers.glyph : bucket.buffers.icon;
         if (!buffers || !buffers.segments.length) continue;
@@ -123,7 +123,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.u_collision_y_stretch, (tile.collisionTile : any).yStretch);
+        gl.uniform1f(program.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
 
