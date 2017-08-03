@@ -95,7 +95,7 @@ class Popup extends Evented {
             this._content.parentNode.removeChild(this._content);
         }
 
-        if (this._container) {
+        if (this._container && this._container.parentNode) {
             this._container.parentNode.removeChild(this._container);
             delete this._container;
         }
