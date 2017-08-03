@@ -74,6 +74,7 @@ module.exports = function (directory, implementation, options, run) {
                 width: 512,
                 height: 512,
                 pixelRatio: 1,
+                recycleMap: options.recycleMap || false,
                 allowed: 0.00015
             }, style.metadata && style.metadata.test, {ignored});
 
