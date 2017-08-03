@@ -10,7 +10,7 @@ import type LineBucket from '../data/bucket/line_bucket';
 import type TileCoord from '../source/tile_coord';
 
 module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<TileCoord>) {
-    if (painter.isOpaquePass) return;
+    if (painter.renderPass !== 'translucent') return;
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 

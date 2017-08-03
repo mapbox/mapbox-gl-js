@@ -14,15 +14,14 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    const isOpaque =
-        !layer.paint['fill-pattern'] &&
+    const pass = (!layer.paint['fill-pattern'] &&
         layer.isPaintValueFeatureConstant('fill-color') &&
         layer.isPaintValueFeatureConstant('fill-opacity') &&
         layer.paint['fill-color'][3] === 1 &&
-        layer.paint['fill-opacity'] === 1;
+        layer.paint['fill-opacity'] === 1) ? 'opaque' : 'translucent';
 
     // Draw fill
-    if (painter.isOpaquePass === isOpaque) {
+    if (painter.renderPass === pass) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         painter.setDepthSublayer(1);
@@ -30,7 +29,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     }
 
     // Draw stroke
-    if (!painter.isOpaquePass && layer.paint['fill-antialias']) {
+    if (painter.renderPass === 'translucent' && layer.paint['fill-antialias']) {
         painter.lineWidth(2);
         painter.depthMask(false);
 

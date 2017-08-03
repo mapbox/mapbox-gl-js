@@ -39,6 +39,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
             bearing, pixelsToTileUnits);
         return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
+
+    has3DPass() {
+        return this.paint['fill-extrusion-opacity'] !== 0 && this.layout['visibility'] !== 'none';
+    }
 }
 
 module.exports = FillExtrusionStyleLayer;

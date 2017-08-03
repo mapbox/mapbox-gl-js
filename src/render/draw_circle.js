@@ -12,7 +12,7 @@ import type TileCoord from '../source/tile_coord';
 module.exports = drawCircles;
 
 function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<TileCoord>) {
-    if (painter.isOpaquePass) return;
+    if (painter.renderPass !== 'translucent') return;
 
     const gl = painter.gl;
 

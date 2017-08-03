@@ -14,6 +14,7 @@ const PosArray = require('../data/pos_array');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const shaders = require('../shaders');
 const Program = require('./program');
+const RenderTexture = require('./render_texture');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -34,6 +35,8 @@ import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
 import type SpriteAtlas from '../symbol/sprite_atlas';
 import type GlyphSource from '../symbol/glyph_source';
+
+export type RenderPass = '3d' | 'opaque' | 'translucent';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -60,8 +63,10 @@ class Painter {
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
-    viewportTexture: WebGLTexture;
-    viewportFbo: WebGLFramebuffer;
+    viewportFrames: Array<RenderTexture>;
+    prerenderedFrames: { [string]: ?RenderTexture };
+    depthRbo: WebGLRenderbuffer;
+    depthRboAttached: boolean;
     _depthMask: boolean;
     tileExtentBuffer: VertexBuffer;
     tileExtentVAO: VertexArrayObject;
@@ -79,7 +84,7 @@ class Painter {
     spriteAtlas: SpriteAtlas;
     glyphSource: GlyphSource;
     depthRange: number;
-    isOpaquePass: boolean;
+    renderPass: RenderPass;
     currentLayer: number;
     id: string;
     _showOverdrawInspector: boolean;
@@ -90,6 +95,8 @@ class Painter {
         this.gl = gl;
         this.transform = transform;
         this._tileTextures = {};
+        this.prerenderedFrames = {};
+        this.viewportFrames = [];
 
         this.frameHistory = new FrameHistory();
 
@@ -117,13 +124,15 @@ class Painter {
         this.height = height * browser.devicePixelRatio;
         gl.viewport(0, 0, this.width, this.height);
 
-        if (this.viewportTexture) {
-            this.gl.deleteTexture(this.viewportTexture);
-            this.viewportTexture = null;
+        for (const frame of this.viewportFrames) {
+            this.gl.deleteTexture(frame.texture);
+            this.gl.deleteFramebuffer(frame.fbo);
         }
-        if (this.viewportFbo) {
-            this.gl.deleteFramebuffer(this.viewportFbo);
-            this.viewportFbo = null;
+        this.viewportFrames = [];
+
+        if (this.depthRbo) {
+            this.gl.deleteRenderbuffer(this.depthRbo);
+            this.depthRbo = null;
         }
     }
 
@@ -257,9 +266,6 @@ class Painter {
 
         this.frameHistory.record(Date.now(), this.transform.zoom, style.getTransition().duration);
 
-        this.clearColor();
-        this.clearDepth();
-
         for (const id in this.style.sourceCaches) {
             const sourceCache = this.style.sourceCaches[id];
             if (sourceCache.used) {
@@ -267,14 +273,139 @@ class Painter {
             }
         }
 
+        const layerIds = this.style._order;
+
+        // 3D pass
+        // We first create a renderbuffer that we'll use to preserve depth
+        // results across 3D layers, then render each 3D layer to its own
+        // framebuffer/texture, which we'll use later in the translucent pass
+        // to render to the main framebuffer. By doing this before we render to
+        // the main framebuffer we won't have to do an expensive framebuffer
+        // restore mid-render pass.
+        // The most important distinction of the 3D pass is that we use the
+        // depth buffer in an entirely different way (to represent 3D space)
+        // than we do in the 2D pass (to preserve layer order).
+        this.renderPass = '3d';
+        {
+            const gl = this.gl;
+            // We'll wait and only attach the depth renderbuffer if we think we're
+            // rendering something.
+            let first = true;
+
+            let sourceCache;
+            let coords = [];
+
+            for (let i = 0; i < layerIds.length; i++) {
+                const layer = this.style._layers[layerIds[i]];
+
+                if (!layer.has3DPass() || layer.isHidden(this.transform.zoom)) continue;
+
+                if (layer.source !== (sourceCache && sourceCache.id)) {
+                    sourceCache = this.style.sourceCaches[layer.source];
+                    coords = [];
+
+                    if (sourceCache) {
+                        this.clearStencil();
+                        coords = sourceCache.getVisibleCoordinates();
+                    }
+
+                    coords.reverse();
+                }
+
+                if (!coords.length) continue;
+
+                this._setup3DRenderbuffer();
+
+                const renderTarget = this.viewportFrames.pop() || new RenderTexture(this);
+                renderTarget.attachDepthRenderbuffer(this.depthRbo);
+
+                if (first) {
+                    this.clearDepth();
+                    first = false;
+                }
+
+                this.renderLayer(this, (sourceCache: any), layer, coords);
+
+                renderTarget.detachDepthRenderbuffer();
+                this.prerenderedFrames[layer.id] = renderTarget;
+            }
+
+            if (this.depthRboAttached) gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        }
+
+        // Clear buffers in preparation for drawing to the main framebuffer
+        this.clearColor();
+        this.clearDepth();
+
         this.showOverdrawInspector(options.showOverdrawInspector);
 
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
-        this.isOpaquePass = true;
-        this.renderPass();
-        this.isOpaquePass = false;
-        this.renderPass();
+        // Opaque pass
+        // Draw opaque layers top-to-bottom first.
+        this.renderPass = 'opaque';
+        {
+            let sourceCache;
+            let coords = [];
+
+            this.currentLayer = layerIds.length - 1;
+
+            if (!this._showOverdrawInspector) {
+                this.gl.disable(this.gl.BLEND);
+            }
+
+            for (this.currentLayer; this.currentLayer >= 0; this.currentLayer--) {
+                const layer = this.style._layers[layerIds[this.currentLayer]];
+
+                if (layer.source !== (sourceCache && sourceCache.id)) {
+                    sourceCache = this.style.sourceCaches[layer.source];
+                    coords = [];
+
+                    if (sourceCache) {
+                        this.clearStencil();
+                        coords = sourceCache.getVisibleCoordinates();
+                        if (sourceCache.getSource().isTileClipped) {
+                            this._renderTileClippingMasks(coords);
+                        }
+                    }
+                }
+
+                this.renderLayer(this, (sourceCache: any), layer, coords);
+            }
+        }
+
+        // Translucent pass
+        // Draw all other layers bottom-to-top.
+        this.renderPass = 'translucent';
+        {
+            let sourceCache;
+            let coords = [];
+
+            this.gl.enable(this.gl.BLEND);
+
+            this.currentLayer = 0;
+
+            for (this.currentLayer; this.currentLayer < layerIds.length; this.currentLayer++) {
+                const layer = this.style._layers[layerIds[this.currentLayer]];
+
+                if (layer.source !== (sourceCache && sourceCache.id)) {
+                    sourceCache = this.style.sourceCaches[layer.source];
+                    coords = [];
+
+                    if (sourceCache) {
+                        this.clearStencil();
+                        coords = sourceCache.getVisibleCoordinates();
+                        if (sourceCache.getSource().isTileClipped) {
+                            this._renderTileClippingMasks(coords);
+                        }
+                    }
+
+                    coords.reverse();
+                }
+
+                this.renderLayer(this, (sourceCache: any), layer, coords);
+            }
+        }
 
         if (this.options.showTileBoundaries) {
             const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
@@ -284,45 +415,17 @@ class Painter {
         }
     }
 
-    renderPass() {
-        const layerIds = this.style._order;
-
-        let sourceCache;
-        let coords = [];
-
-        this.currentLayer = this.isOpaquePass ? layerIds.length - 1 : 0;
-
-        if (this.isOpaquePass) {
-            if (!this._showOverdrawInspector) {
-                this.gl.disable(this.gl.BLEND);
-            }
-        } else {
-            this.gl.enable(this.gl.BLEND);
+    _setup3DRenderbuffer() {
+        // All of the 3D textures will use the same depth renderbuffer.
+        if (!this.depthRbo) {
+            const gl = this.gl;
+            this.depthRbo = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthRbo);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         }
 
-        for (let i = 0; i < layerIds.length; i++) {
-            const layer = this.style._layers[layerIds[this.currentLayer]];
-
-            if (layer.source !== (sourceCache && sourceCache.id)) {
-                sourceCache = this.style.sourceCaches[layer.source];
-                coords = [];
-
-                if (sourceCache) {
-                    this.clearStencil();
-                    coords = sourceCache.getVisibleCoordinates();
-                    if (sourceCache.getSource().isTileClipped) {
-                        this._renderTileClippingMasks(coords);
-                    }
-                }
-
-                if (!this.isOpaquePass) {
-                    coords.reverse();
-                }
-            }
-
-            this.renderLayer(this, (sourceCache: any), layer, coords);
-            this.currentLayer += this.isOpaquePass ? -1 : 1;
-        }
+        this.depthRboAttached = true;
     }
 
     depthMask(mask: boolean) {
