@@ -48,7 +48,7 @@ class ImageSprite extends Evented {
             if (err) {
                 this.fire('error', {error: err});
             } else if (data) {
-                this.data = (data : any);
+                this.data = (data: any);
                 if (this.imgData) this.fire('data', {dataType: 'style'});
             }
         });

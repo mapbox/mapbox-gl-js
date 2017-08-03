@@ -158,7 +158,7 @@ class Style extends Evented {
         };
 
         if (typeof stylesheet === 'string') {
-            ajax.getJSON(transformRequest(mapbox.normalizeStyleURL(stylesheet), ajax.ResourceType.Style), (stylesheetLoaded : any));
+            ajax.getJSON(transformRequest(mapbox.normalizeStyleURL(stylesheet), ajax.ResourceType.Style), (stylesheetLoaded: any));
         } else {
             browser.frame(() => stylesheetLoaded(null, stylesheet));
         }
@@ -302,7 +302,7 @@ class Style extends Evented {
 
     _updateZoomHistory(z: number) {
 
-        const zh: ZoomHistory = (this.zoomHistory : any);
+        const zh: ZoomHistory = (this.zoomHistory: any);
 
         if (zh.lastIntegerZoom === undefined) {
             // first time
@@ -418,7 +418,7 @@ class Style extends Evented {
                 // `this.stylesheet`, which we update below
                 return;
             }
-            (this : any)[op.command].apply(this, op.args);
+            (this: any)[op.command].apply(this, op.args);
         });
 
         this.stylesheet = nextState;

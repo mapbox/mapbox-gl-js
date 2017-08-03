@@ -157,7 +157,7 @@ class Popup extends Evented {
      */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
-        this._pos = (null : any);
+        this._pos = (null: any);
         this._update();
         return this;
     }

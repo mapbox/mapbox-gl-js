@@ -144,7 +144,7 @@ class Bucket {
     destroy() {
         if (this.buffers) {
             this.buffers.destroy();
-            (this : any).buffers = null;
+            (this: any).buffers = null;
         }
     }
 }

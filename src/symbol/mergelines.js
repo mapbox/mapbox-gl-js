@@ -60,7 +60,7 @@ module.exports = function (features: Array<SymbolFeature>) {
             delete rightIndex[rightKey];
 
             rightIndex[getKey(text, mergedFeatures[i].geometry, true)] = i;
-            mergedFeatures[j].geometry = (null : any);
+            mergedFeatures[j].geometry = (null: any);
 
         } else if (leftKey in rightIndex) {
             // found mergeable line adjacent to the start of the current line, merge

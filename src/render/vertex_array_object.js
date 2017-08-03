@@ -31,7 +31,7 @@ class VertexArrayObject {
          dynamicVertexBuffer: any) {
 
         if (gl.extVertexArrayObject === undefined) {
-            (gl : any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
+            (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
         }
 
         const isFreshBindRequired = (
@@ -48,7 +48,7 @@ class VertexArrayObject {
             this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
             this.gl = gl;
         } else {
-            (gl : any).extVertexArrayObject.bindVertexArrayOES(this.vao);
+            (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
 
             if (dynamicVertexBuffer) {
                 // The buffer may have been updated. Rebind to upload data.
@@ -69,8 +69,8 @@ class VertexArrayObject {
 
         if (gl.extVertexArrayObject) {
             if (this.vao) this.destroy();
-            this.vao = (gl : any).extVertexArrayObject.createVertexArrayOES();
-            (gl : any).extVertexArrayObject.bindVertexArrayOES(this.vao);
+            this.vao = (gl: any).extVertexArrayObject.createVertexArrayOES();
+            (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
             numPrevAttributes = 0;
 
             // store the arguments so that we can verify them when the vao is bound again
@@ -82,7 +82,7 @@ class VertexArrayObject {
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
 
         } else {
-            numPrevAttributes = (gl : any).currentNumAttributes || 0;
+            numPrevAttributes = (gl: any).currentNumAttributes || 0;
 
             // Disable all attributes from the previous program that aren't used in
             // the new program. Note: attribute indices are *not* program specific!
@@ -116,12 +116,12 @@ class VertexArrayObject {
             elementBuffer.bind(gl);
         }
 
-        (gl : any).currentNumAttributes = numNextAttributes;
+        (gl: any).currentNumAttributes = numNextAttributes;
     }
 
     destroy() {
         if (this.vao) {
-            (this.gl : any).extVertexArrayObject.deleteVertexArrayOES(this.vao);
+            (this.gl: any).extVertexArrayObject.deleteVertexArrayOES(this.vao);
             this.vao = null;
         }
     }

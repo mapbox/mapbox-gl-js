@@ -57,16 +57,16 @@ class FullscreenControl {
 
     onRemove() {
         DOM.remove(this._container);
-        this._map = (null : any);
+        this._map = (null: any);
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _checkFullscreenSupport() {
         return !!(
             window.document.fullscreenEnabled ||
-            (window.document : any).mozFullscreenEnabled ||
-            (window.document : any).msFullscreenEnabled ||
-            (window.document : any).webkitFullscreenEnabled
+            (window.document: any).mozFullscreenEnabled ||
+            (window.document: any).msFullscreenEnabled ||
+            (window.document: any).webkitFullscreenEnabled
         );
     }
 
@@ -85,9 +85,9 @@ class FullscreenControl {
     _changeIcon() {
         const fullscreenElement =
             window.document.fullscreenElement ||
-            (window.document : any).mozFullScreenElement ||
-            (window.document : any).webkitFullscreenElement ||
-            (window.document : any).msFullscreenElement;
+            (window.document: any).mozFullScreenElement ||
+            (window.document: any).webkitFullscreenElement ||
+            (window.document: any).msFullscreenElement;
 
         if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
@@ -99,22 +99,22 @@ class FullscreenControl {
     _onClickFullscreen() {
         if (this._isFullscreen()) {
             if (window.document.exitFullscreen) {
-                (window.document : any).exitFullscreen();
+                (window.document: any).exitFullscreen();
             } else if (window.document.mozCancelFullScreen) {
-                (window.document : any).mozCancelFullScreen();
+                (window.document: any).mozCancelFullScreen();
             } else if (window.document.msExitFullscreen) {
-                (window.document : any).msExitFullscreen();
+                (window.document: any).msExitFullscreen();
             } else if (window.document.webkitCancelFullScreen) {
-                (window.document : any).webkitCancelFullScreen();
+                (window.document: any).webkitCancelFullScreen();
             }
         } else if (this._mapContainer.requestFullscreen) {
             this._mapContainer.requestFullscreen();
         } else if (this._mapContainer.mozRequestFullScreen) {
-            (this._mapContainer : any).mozRequestFullScreen();
+            (this._mapContainer: any).mozRequestFullScreen();
         } else if (this._mapContainer.msRequestFullscreen) {
-            (this._mapContainer : any).msRequestFullscreen();
+            (this._mapContainer: any).msRequestFullscreen();
         } else if (this._mapContainer.webkitRequestFullscreen) {
-            (this._mapContainer : any).webkitRequestFullscreen();
+            (this._mapContainer: any).webkitRequestFullscreen();
         }
     }
 }

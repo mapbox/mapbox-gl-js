@@ -87,8 +87,8 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
             gl.activeTexture(gl.TEXTURE0);
             painter.lineAtlas.bind(gl);
 
-            gl.uniform1f(program.u_tex_y_a, (posA : any).y);
-            gl.uniform1f(program.u_tex_y_b, (posB : any).y);
+            gl.uniform1f(program.u_tex_y_a, (posA: any).y);
+            gl.uniform1f(program.u_tex_y_b, (posB: any).y);
             gl.uniform1f(program.u_mix, dasharray.t);
 
         } else if (image) {
@@ -96,10 +96,10 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
             gl.activeTexture(gl.TEXTURE0);
             painter.spriteAtlas.bind(gl, true);
 
-            gl.uniform2fv(program.u_pattern_tl_a, (imagePosA : any).tl);
-            gl.uniform2fv(program.u_pattern_br_a, (imagePosA : any).br);
-            gl.uniform2fv(program.u_pattern_tl_b, (imagePosB : any).tl);
-            gl.uniform2fv(program.u_pattern_br_b, (imagePosB : any).br);
+            gl.uniform2fv(program.u_pattern_tl_a, (imagePosA: any).tl);
+            gl.uniform2fv(program.u_pattern_br_a, (imagePosA: any).br);
+            gl.uniform2fv(program.u_pattern_tl_b, (imagePosB: any).tl);
+            gl.uniform2fv(program.u_pattern_br_b, (imagePosB: any).br);
             gl.uniform1f(program.u_fade, image.t);
         }
     }

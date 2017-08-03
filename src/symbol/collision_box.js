@@ -100,7 +100,7 @@ const CollisionBoxArray = createStructArrayType({
 });
 
 // https://github.com/facebook/flow/issues/285
-(Object.defineProperty : any)(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
+(Object.defineProperty: any)(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
     get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
 

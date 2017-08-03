@@ -151,7 +151,7 @@ class ScrollZoomHandler {
         let scale = 2 / (1 + Math.exp(-Math.abs(delta / 100)));
         if (delta < 0 && scale !== 0) scale = 1 / scale;
 
-        const fromScale = map.ease ? (map.ease : any).to : map.transform.scale,
+        const fromScale = map.ease ? (map.ease: any).to : map.transform.scale,
             targetZoom = map.transform.scaleZoom(fromScale * scale);
 
         map.zoomTo(targetZoom, {

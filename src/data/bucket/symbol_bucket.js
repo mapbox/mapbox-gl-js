@@ -418,7 +418,7 @@ class SymbolBucket {
             if (this.buffers.icon) this.buffers.icon.destroy();
             if (this.buffers.glyph) this.buffers.glyph.destroy();
             if (this.buffers.collisionBox) this.buffers.collisionBox.destroy();
-            this.buffers = (null : any);
+            this.buffers = (null: any);
         }
     }
 
@@ -1076,7 +1076,7 @@ function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featur
     ) {
         // source function
         return [
-            10 * layer.getLayoutValue(sizeProperty, ({} : any), featureProperties)
+            10 * layer.getLayoutValue(sizeProperty, ({}: any), featureProperties)
         ];
     } else if (
         !layer.isLayoutValueZoomConstant(sizeProperty) &&

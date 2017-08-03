@@ -774,7 +774,7 @@ class Map extends Camera {
         this._delegatedListeners[type].push(delegatedListener);
 
         for (const event in delegatedListener.delegates) {
-            this.on((event : any), delegatedListener.delegates[event]);
+            this.on((event: any), delegatedListener.delegates[event]);
         }
 
         return this;
@@ -811,7 +811,7 @@ class Map extends Camera {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.layer === layer && delegatedListener.listener === listener) {
                     for (const event in delegatedListener.delegates) {
-                        this.off((event : any), delegatedListener.delegates[event]);
+                        this.off((event: any), delegatedListener.delegates[event]);
                     }
                     listeners.splice(i, 1);
                     return this;
@@ -896,7 +896,7 @@ class Map extends Camera {
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
-    queryRenderedFeatures(...args: [PointLike|[PointLike, PointLike], Object] | [PointLike|[PointLike, PointLike]] | [Object]) {
+    queryRenderedFeatures(...args: [PointLike | [PointLike, PointLike], Object] | [PointLike | [PointLike, PointLike]] | [Object]) {
         let params = {};
         let geometry;
 
@@ -925,7 +925,7 @@ class Map extends Camera {
         }
     }
 
-    _makeQueryGeometry(pointOrBox?: PointLike|[PointLike, PointLike]) {
+    _makeQueryGeometry(pointOrBox?: PointLike | [PointLike, PointLike]) {
         if (pointOrBox === undefined) {
             // bounds was omitted: use full viewport
             pointOrBox = [
@@ -1032,7 +1032,7 @@ class Map extends Camera {
         }
 
         if (!style) {
-            this.style = (null : any);
+            this.style = (null: any);
             return this;
         } else if (style instanceof Style) {
             this.style = style;
@@ -1184,7 +1184,7 @@ class Map extends Camera {
         image: HTMLImageElement | $ArrayBufferView,
         options?: {width: number, height: number, pixelRatio: number}
     ) {
-        this.style.spriteAtlas.addImage(name, image, (options : any));
+        this.style.spriteAtlas.addImage(name, image, (options: any));
     }
 
     /**

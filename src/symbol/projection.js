@@ -207,7 +207,7 @@ function placeGlyphsAlongLine(symbol,
                               lineVertexArray: any,
                               dynamicLayoutVertexArray,
                               anchorPoint: Point,
-                              projectionCache:  {[number]: Point}) {
+                              projectionCache: {[number]: Point}) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontSize;
     const lineOffsetY = symbol.lineOffsetY * fontSize;

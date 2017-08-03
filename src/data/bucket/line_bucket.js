@@ -139,10 +139,10 @@ class LineBucket extends Bucket {
             endCap = isPolygon ? 'butt' : cap;
         let startOfLine = true;
         let currentVertex;
-        let prevVertex = ((undefined : any): Point);
-        let nextVertex = ((undefined : any): Point);
-        let prevNormal = ((undefined : any): Point);
-        let nextNormal = ((undefined : any): Point);
+        let prevVertex = ((undefined: any): Point);
+        let nextVertex = ((undefined: any): Point);
+        let prevNormal = ((undefined: any): Point);
+        let nextNormal = ((undefined: any): Point);
         let offsetA;
         let offsetB;
 

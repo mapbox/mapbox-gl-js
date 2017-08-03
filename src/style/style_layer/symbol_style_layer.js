@@ -30,7 +30,7 @@ class SymbolStyleLayer extends StyleLayer {
     createBucket(parameters: BucketParameters) {
         // Eventually we need to make SymbolBucket conform to the Bucket interface.
         // Hack around it with casts for now.
-        return (new SymbolBucket((parameters : any)) : any);
+        return (new SymbolBucket((parameters: any)): any);
     }
 }
 

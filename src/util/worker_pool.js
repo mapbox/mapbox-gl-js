@@ -39,7 +39,7 @@ class WorkerPool {
             this.workers.forEach((w) => {
                 w.terminate();
             });
-            this.workers = (null : any);
+            this.workers = (null: any);
         }
     }
 }

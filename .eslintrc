@@ -1,8 +1,11 @@
 {
-  "extends": "mourner",
+  "extends": [
+    "mourner",
+    "plugin:flowtype/recommended"
+  ],
   "parser": "babel-eslint",
   "parserOptions": {
-    "sourceType": "script",
+    "sourceType": "script"
   },
   "plugins": [
     "flowtype"
