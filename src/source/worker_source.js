@@ -1,7 +1,7 @@
 // @flow
 
 import type TileCoord from './tile_coord';
-import type {Actor} from '../util/actor';
+import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {SerializedBucket} from '../data/bucket';
 import type {SerializedFeatureIndex} from '../data/feature_index';

@@ -18,21 +18,20 @@ import type {
     RedoPlacementCallback
 } from '../source/worker_source';
 
+import type {WorkerGlobalScopeInterface} from '../util/web_worker';
+
 /**
  * @private
  */
 class Worker {
-    self: WorkerGlobalScope & {
-        registerWorkerSource: (string, Class<WorkerSource>) => void,
-        registerRTLTextPlugin: (any) => void
-    };
+    self: WorkerGlobalScopeInterface;
     actor: Actor;
     layerIndexes: { [string]: StyleLayerIndex };
     workerSourceTypes: { [string]: Class<WorkerSource> };
     workerSources: { [string]: { [string]: WorkerSource } };
 
-    constructor(self: WorkerGlobalScope) {
-        this.self = (self: any); // Needs a cast because we're going to extend it with `register*` methods.
+    constructor(self: WorkerGlobalScopeInterface) {
+        this.self = self;
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
@@ -150,13 +149,13 @@ class Worker {
                 }
             };
 
-            this.workerSources[mapId][type] = new this.workerSourceTypes[type](actor, this.getLayerIndex(mapId));
+            this.workerSources[mapId][type] = new this.workerSourceTypes[type]((actor: any), this.getLayerIndex(mapId));
         }
 
         return this.workerSources[mapId][type];
     }
 }
 
-module.exports = function createWorker(self: WorkerGlobalScope) {
+module.exports = function createWorker(self: WorkerGlobalScopeInterface) {
     return new Worker(self);
 };

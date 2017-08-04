@@ -15,6 +15,12 @@
     "block-scoped-var": "error",
     "consistent-return": "off",
     "flowtype/define-flow-type": 1,
+    "flowtype/require-valid-file-annotation": [
+      2,
+      "always", {
+        "annotationStyle": "line"
+      }
+    ],
     "global-require": "off",
     "key-spacing": "off",
     "no-eq-null": "off",
