@@ -7,11 +7,14 @@ module.exports = {
     place: place
 };
 
-function updateOpacity(symbolInstance, opacityState, targetOpacity, opacityUpdateTime) {
+function updateOpacity(symbolInstance, opacityState, targetOpacity, opacityUpdateTime, lastOpacityChange) {
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;
     } else {
+        if (opacityState.targetOpacity !== targetOpacity) {
+            lastOpacityChange.start = opacityUpdateTime;
+        }
         const increment = (opacityUpdateTime - opacityState.time) / 300;
         opacityState.opacity = Math.max(0, Math.min(1, opacityState.opacity + (opacityState.targetOpacity === 1 ? increment : -increment)));
         opacityState.targetOpacity = targetOpacity;
@@ -19,7 +22,7 @@ function updateOpacity(symbolInstance, opacityState, targetOpacity, opacityUpdat
     }
 }
 
-function updateOpacities(bucket: any, coord: any) {
+function updateOpacities(bucket: any, coord: any, lastOpacityChange: any) {
     const glyphOpacityArray = bucket.buffers.glyph && bucket.buffers.glyph.opacityVertexArray;
     const iconOpacityArray = bucket.buffers.icon && bucket.buffers.icon.opacityVertexArray;
     if (glyphOpacityArray) glyphOpacityArray.clear();
@@ -37,7 +40,7 @@ function updateOpacities(bucket: any, coord: any) {
         if (hasText) {
             const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
             const opacityState = symbolInstance.textOpacityState;
-            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime);
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, lastOpacityChange);
             for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
                 const placedSymbol = bucket.placedGlyphArray.get(placedTextSymbolIndex);
                 // If this label is completely faded, mark it so that we don't have to calculate
@@ -58,7 +61,7 @@ function updateOpacities(bucket: any, coord: any) {
         if (hasIcon) {
             const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
             const opacityState = symbolInstance.iconOpacityState;
-            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime);
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, lastOpacityChange);
             for (let i = 0; i < symbolInstance.numIconVertices; i++) {
                 iconOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
             }

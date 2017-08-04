@@ -270,7 +270,6 @@ class Map extends Camera {
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
         this.on('move', () => {
-            this.animationLoop.set(300); // text fading
             this._rerender();
         });
 
@@ -313,6 +312,7 @@ class Map extends Camera {
         this.on('dataloading', this._onDataLoading);
 
         this._lastPlacement = 0;
+        this._lastOpacityChange = { start: 0 };
         this._placementInProgress = false;
     }
 
@@ -1539,7 +1539,7 @@ class Map extends Camera {
             (this._placementInProgress || needsPlacement || browser.now() > (this._lastPlacement + 100))) {
             this._lastPlacement = browser.now();
             pendingCollisionDetection = this._placementInProgress =
-                this.style._redoPlacement(this.painter.transform, this._showCollisionBoxes, needsPlacement);
+                this.style._redoPlacement(this.painter.transform, this._showCollisionBoxes, needsPlacement, this._lastOpacityChange);
         }
 
         // Actually draw
@@ -1560,7 +1560,7 @@ class Map extends Camera {
         this._frameId = null;
 
         // Flag an ongoing transition
-        if (!this.animationLoop.stopped() || pendingCollisionDetection) {
+        if (!this.animationLoop.stopped() || pendingCollisionDetection || this._lastOpacityChange.start + 300 > Date.now()) {
             this._styleDirty = true;
         }
 
