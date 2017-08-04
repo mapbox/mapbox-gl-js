@@ -139,7 +139,10 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
-        if (symbol.writingMode === WritingMode.vertical && !useVertical) {
+        // Don't do calculations for vertical glyphs unless the previous symbol was horizontal
+        // and we determined that vertical glyphs were necessary.
+        // Also don't do calculations for symbols that are collided and fully faded out
+        if (symbol.hidden || symbol.writingMode === WritingMode.vertical && !useVertical) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
@@ -150,7 +153,6 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        // TODO: If a label is collided and completely faded out, we should be able to stop calculating positions for it as well
         if (!isVisible(anchorPos, symbol.placementZoom, clippingBuffer, painter)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;

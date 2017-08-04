@@ -44,7 +44,8 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Float32', name: 'lineOffsetX' },
         { type: 'Float32', name: 'lineOffsetY' },
         { type: 'Float32', name: 'placementZoom' },
-        { type: 'Uint8', name: 'writingMode' }
+        { type: 'Uint8', name: 'writingMode' },
+        { type: 'Uint8', name: 'hidden' }
     ]
 });
 
@@ -439,7 +440,7 @@ class SymbolBucket {
             lineStartIndex, lineLength, labelAnchor.segment,
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
-            placementZoom, writingMode);
+            placementZoom, writingMode, false);
 
         arrays.populatePaintArrays(featureProperties);
     }

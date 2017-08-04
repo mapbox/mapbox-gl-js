@@ -295,7 +295,7 @@ function addSymbolInstance(bucket: any,
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
     let textCollisionFeature, iconCollisionFeature;
-    let placedTextSymbolIndex;
+    const placedTextSymbolIndices = [];
 
     let numIconVertices = 0;
     let numGlyphVertices = 0;
@@ -307,11 +307,13 @@ function addSymbolInstance(bucket: any,
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, false, key);
         numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, featureProperties, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly);
 
-        // This index is used to calculate the position of this feature at collision detection time
-        placedTextSymbolIndex = bucket.placedGlyphArray.length - 1;
+        // The placedGlyphArray is used at render time in drawTileSymbols
+        // These indices allow access to the array at collision detection time
+        placedTextSymbolIndices.push(bucket.placedGlyphArray.length - 1);
 
         if (shapedTextOrientations.vertical) {
             numVerticalGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, featureProperties, textOffset, lineArray, WritingMode.vertical);
+            placedTextSymbolIndices.push(bucket.placedGlyphArray.length - 1);
         }
     }
 
@@ -381,7 +383,7 @@ function addSymbolInstance(bucket: any,
         numGlyphVertices,
         numVerticalGlyphVertices,
         numIconVertices,
-        placedTextSymbolIndex,
+        placedTextSymbolIndices,
         textOpacityState,
         iconOpacityState
     });
