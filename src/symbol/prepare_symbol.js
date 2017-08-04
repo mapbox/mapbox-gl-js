@@ -164,7 +164,7 @@ function addFeature(bucket: any, feature: any, shapedTextOrientations: any, shap
         textRepeatDistance = symbolMinDistance / 2;
 
     const addSymbolInstanceAtAnchor = (line, anchor) => {
-        const inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
+        const inside = !(anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT);
 
         if (!inside) return;
 
