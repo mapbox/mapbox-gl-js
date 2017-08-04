@@ -377,7 +377,7 @@ class GeolocateControl extends Evented {
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
-        this._geolocationWatchID = (undefined : any);
+        this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
         this._geolocateButton.setAttribute('aria-pressed', 'false');
 

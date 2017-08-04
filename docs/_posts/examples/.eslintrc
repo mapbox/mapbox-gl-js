@@ -8,8 +8,9 @@
     "d3": true
   },
   "rules": {
+    "flowtype/require-valid-file-annotation": [0],
     "strict": "off",
-    "no-unused-vars": ["error", {varsIgnorePattern: "map|popup"}],
+    "no-unused-vars": ["error", {"varsIgnorePattern": "map|popup"}],
     "no-loop-func": "off",
     "no-var": "off",
     "prefer-arrow-callback": "off",

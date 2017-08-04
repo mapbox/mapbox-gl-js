@@ -3,13 +3,15 @@
 const assert = require('assert');
 const WebWorker = require('./web_worker');
 
+import type {WorkerInterface} from './web_worker';
+
 /**
  * Constructs a worker pool.
  * @private
  */
 class WorkerPool {
     active: {[number]: boolean};
-    workers: Array<WebWorker>;
+    workers: Array<WorkerInterface>;
 
     constructor() {
         this.active = {};

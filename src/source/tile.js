@@ -267,7 +267,7 @@ class Tile {
             const feature = layer.feature(i);
             if (filter(feature)) {
                 const geojsonFeature = new GeoJSONFeature(feature, this.coord.z, this.coord.x, this.coord.y);
-                geojsonFeature.tile = coord;
+                (geojsonFeature: any).tile = coord;
                 result.push(geojsonFeature);
             }
         }

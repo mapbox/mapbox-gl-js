@@ -296,7 +296,7 @@ class FeatureIndex {
                 }
 
                 const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-                geojsonFeature.layer = styleLayer.serialize();
+                (geojsonFeature: any).layer = styleLayer.serialize();
                 let layerResult = result[layerID];
                 if (layerResult === undefined) {
                     layerResult = result[layerID] = [];
@@ -319,7 +319,7 @@ class FeatureIndex {
     // Get the given paint property value; if a feature is not provided and the
     // property is data-driven, then default to the maximum value that the
     // property takes in the (tile, layer) that this FeatureIndex is associated with
-    getPaintValue(property: string, layer: StyleLayer, feature: GeoJSONFeature) {
+    getPaintValue(property: string, layer: StyleLayer, feature?: VectorTileFeature) {
         const featureConstant = layer.isPaintValueFeatureConstant(property);
         if (featureConstant || feature) {
             const featureProperties = feature ? feature.properties : {};

@@ -1,3 +1,4 @@
+// @flow
 
 const browser = require('../util/browser');
 const mat4 = require('@mapbox/gl-matrix').mat4;
@@ -6,9 +7,13 @@ const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const PosArray = require('../data/pos_array');
 
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type TileCoord from '../source/tile_coord';
+
 module.exports = drawDebug;
 
-function drawDebug(painter, sourceCache, coords) {
+function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<TileCoord>) {
     for (let i = 0; i < coords.length; i++) {
         drawDebugTile(painter, sourceCache, coords[i]);
     }

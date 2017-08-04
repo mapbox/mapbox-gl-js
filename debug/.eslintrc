@@ -1,5 +1,6 @@
 {
   "rules": {
+    "flowtype/require-valid-file-annotation": [0],
     "prefer-arrow-callback": "off",
     "no-var": "off",
     "strict": "off",
