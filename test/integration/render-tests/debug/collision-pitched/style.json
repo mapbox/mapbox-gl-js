@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "debug": true,
       "width": 500,
       "height": 500
     }
