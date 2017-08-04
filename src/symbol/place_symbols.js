@@ -7,24 +7,25 @@ module.exports = {
     place: place
 };
 
-function updateOpacity(symbolInstance, opacityState, targetOpacity) {
+function updateOpacity(symbolInstance, opacityState, targetOpacity, opacityUpdateTime) {
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;
     } else {
-        const now = Date.now();
-        const increment = (now - opacityState.time) / 300;
+        const increment = (opacityUpdateTime - opacityState.time) / 300;
         opacityState.opacity = Math.max(0, Math.min(1, opacityState.opacity + (opacityState.targetOpacity === 1 ? increment : -increment)));
         opacityState.targetOpacity = targetOpacity;
-        opacityState.time = now;
+        opacityState.time = opacityUpdateTime;
     }
 }
 
-function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourceMaxZoom: number) {
+function updateOpacities(bucket: any, coord: any) {
     const glyphOpacityArray = bucket.buffers.glyph && bucket.buffers.glyph.opacityVertexArray;
     const iconOpacityArray = bucket.buffers.icon && bucket.buffers.icon.opacityVertexArray;
     if (glyphOpacityArray) glyphOpacityArray.clear();
     if (iconOpacityArray) iconOpacityArray.clear();
+
+    bucket.fadeStartTime = Date.now();
 
     for (const symbolInstance of bucket.symbolInstances) {
 
@@ -36,7 +37,7 @@ function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourc
         if (hasText) {
             const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
             const opacityState = symbolInstance.textOpacityState;
-            updateOpacity(symbolInstance, opacityState, targetOpacity);
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime);
             for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
                 const placedSymbol = bucket.placedGlyphArray.get(placedTextSymbolIndex);
                 // If this label is completely faded, mark it so that we don't have to calculate
@@ -57,7 +58,7 @@ function updateOpacities(bucket: any, symbolOpacityIndex: any, coord: any, sourc
         if (hasIcon) {
             const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
             const opacityState = symbolInstance.iconOpacityState;
-            updateOpacity(symbolInstance, opacityState, targetOpacity);
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime);
             for (let i = 0; i < symbolInstance.numIconVertices; i++) {
                 iconOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
             }

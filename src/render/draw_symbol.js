@@ -97,7 +97,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateInShader, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData, bucket.symbolOpacityIndex);
+            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateInShader, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData);
         }
 
         painter.enableTileClippingMask(coord);
@@ -116,6 +116,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
+        gl.uniform1f(program.u_fade_change, (Date.now() - bucket.fadeStartTime) / 300);
+
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
 
         prevFontstack = bucket.fontstack;
@@ -124,7 +126,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
-function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateInShader, pitchWithMap, fontstack, iconsNeedLinear, sizeData, symbolOpacityIndex) {
+function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateInShader, pitchWithMap, fontstack, iconsNeedLinear, sizeData) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -168,8 +170,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
 
     gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
     gl.uniform1i(program.u_rotate_symbol, rotateInShader);
-
-    gl.uniform1f(program.u_fade_change, symbolOpacityIndex.getChangeSince(Date.now()));
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {

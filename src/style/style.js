@@ -24,7 +24,6 @@ const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 const CollisionTile = require('../symbol/collision_tile');
-const OpacityIndex = require('../symbol/opacity_index');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -889,7 +888,6 @@ class Style extends Evented {
         if (forceFullPlacement || !this._currentPlacementIndex || this._currentPlacementIndex < 0) {
             this._currentPlacementIndex = this._order.length - 1;
             this.viewportCollisionTile = new CollisionTile(transform.clone());
-            this.symbolOpacityIndex = new OpacityIndex(this.symbolOpacityIndex);
             this._fullPlacementStart = browser.now();
             this._fullPlacementElapsed = 0;
         }
@@ -907,7 +905,7 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, this.symbolOpacityIndex, layer, posMatrices[id], transform);
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, layer, posMatrices[id], transform);
             }
             if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
                 const elapsed = browser.now() - startPlacement;
