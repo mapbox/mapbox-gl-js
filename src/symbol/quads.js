@@ -167,12 +167,21 @@ function getGlyphQuads(anchor: Anchor,
         const bl  = new Point(x1, y2);
         const br = new Point(x2, y2);
 
-        const center = new Point(builtInOffset[0] - halfAdvance, glyph.advance / 2);
-        if (positionedGlyph.angle !== 0) {
-            tl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            tr._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            bl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            br._sub(center)._rotate(positionedGlyph.angle)._add(center);
+        if (alongLine && positionedGlyph.vertical) {
+            // Vertical-supporting glyphs are laid out in 24x24 point boxes (1 square em)
+            // In horizontal orientation, the y values for glyphs are below the midline
+            // and we use a "yOffset" of -17 to pull them up to the middle.
+            // By rotating counter-clockwise around the point at the center of the left
+            // edge of a 24x24 layout box centered below the midline, we align the center
+            // of the glyphs with the horizontal midline, so the yOffset is no longer
+            // necessary, but we also pull the glyph to the left along the x axis
+            const center = new Point(-halfAdvance, halfAdvance);
+            const verticalRotation = -Math.PI / 2;
+            const xOffsetCorrection = new Point(5, 0);
+            tl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            tr._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            bl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            br._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
         }
 
         if (textRotate) {

@@ -24,7 +24,7 @@ export type PositionedGlyph = {
     x: number,
     y: number,
     glyph: SimpleGlyph,
-    angle: number
+    vertical: boolean
 };
 
 // A collection of positioned glyphs and some metadata
@@ -344,10 +344,10 @@ function shapeLines(shaping: Shaping,
             if (!glyph) continue;
 
             if (!scriptDetection.charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
-                positionedGlyphs.push({codePoint, x, y, glyph, angle: 0});
+                positionedGlyphs.push({codePoint, x, y, glyph, vertical: false});
                 x += glyph.advance + spacing;
             } else {
-                positionedGlyphs.push({codePoint, x, y: 0, glyph, angle: -Math.PI / 2});
+                positionedGlyphs.push({codePoint, x, y: 0, glyph, vertical: true});
                 x += verticalHeight + spacing;
             }
         }
