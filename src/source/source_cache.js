@@ -337,6 +337,7 @@ class SourceCache extends Evented {
         let coord;
         let tile;
         let parentTile;
+        let covered;
 
         this.updateCacheSize(transform);
 
@@ -354,13 +355,13 @@ class SourceCache extends Evented {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        let visibleCoords;
+        let idealTileCoords;
         if (!this.used) {
-            visibleCoords = [];
+            idealTileCoords = [];
         } else if (this._source.coord) {
-            visibleCoords = transform.getVisibleWrappedCoordinates((this._source.coord: any));
+            idealTileCoords = transform.getVisibleWrappedCoordinates((this._source.coord: any));
         } else {
-            visibleCoords = transform.coveringTiles({
+            idealTileCoords = transform.coveringTiles({
                 tileSize: this._source.tileSize,
                 minzoom: this._source.minzoom,
                 maxzoom: this._source.maxzoom,
@@ -369,25 +370,79 @@ class SourceCache extends Evented {
             });
 
             if (this._source.hasTile) {
-                visibleCoords = visibleCoords.filter((coord) => (this._source.hasTile: any)(coord));
+                idealTileCoords = idealTileCoords.filter((coord) => (this._source.hasTile: any)(coord));
             }
         }
 
-        for (i = 0; i < visibleCoords.length; i++) {
-            coord = visibleCoords[i];
+
+        const checked = {};
+        for (i = 0; i < idealTileCoords.length; i++) {
+            coord = idealTileCoords[i];
             tile = this._addTile(coord);
+            let parentIsLoaded = false;
+            if (tile.hasData()) {
+                retain[coord.id] = true;
+            } else {
+                // The tile we require is not yet loaded or does not exist.
+                // We are now attempting to load child and parent tiles.
+                parentIsLoaded = tile.isLoaded();
 
-            retain[coord.id] = true;
+                // The tile isn't loaded yet, but retain it anyway because it's an ideal tile.
+                retain[coord.id] = true;
+                covered = true;
+                const overscaledZ = zoom + 1;
+                if (overscaledZ > this._source.maxzoom) {
+                    // We're looking for an overzoomed child tile.
+                    const childCoord = coord.children(this._source.maxzoom)[0];
+                    const childTile = this.getTile(childCoord);
+                    if (!!childTile && childTile.hasData()) {
+                        retain[childCoord.id] = true;
+                    } else {
+                        covered = false;
+                    }
+                } else {
+                    // Check all four actual child tiles.
+                    const children = coord.children(this._source.maxzoom);
+                    for (let j = 0; j < children.length; j++) {
+                        const childCoord = children[i];
+                        const childTile = childCoord ? this.getTile(childCoord) : null;
 
-            if (tile.hasData())
-                continue;
+                        if (!!childTile && childTile.hasData()) {
+                            retain[childCoord.id] = true;
+                        } else {
+                            covered = false;
+                        }
+                    }
+                }
 
-            // The tile we require is not yet loaded.
-            // Retain child or parent tiles that cover the same area.
-            if (!this._findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                parentTile = this.findLoadedParent(coord, minCoveringZoom, retain);
-                if (parentTile) {
-                    this._addTile(parentTile.coord);
+                if (!covered) {
+                    // We couldn't find child tiles that entirely cover the ideal tile.
+                    for (let overscaledZ = zoom - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
+                        const parentId = coord.scaledTo(overscaledZ);
+                        if (checked[parentId.id]) {
+                            // Break parent tile ascent, this route has been previously checked by another child.
+                            break;
+                        } else {
+                            checked[parentId.id] = true;
+                        }
+
+
+                        tile = this.getTile(parentId);
+
+                        if (!tile && parentIsLoaded) {
+                            tile = this._addTile(parentId);
+                        }
+
+                        if (tile) {
+                            retain[parentId.id] = true;
+                            // Save the current values, since they're the parent of the next iteration
+                            // of the parent tile ascent loop.
+                            parentIsLoaded = tile.isLoaded();
+                            if (tile.hasData()) {
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -428,7 +483,6 @@ class SourceCache extends Evented {
         for (fadedParent in parentsForFading) {
             retain[fadedParent] = true;
         }
-
         // Remove the tiles we don't need anymore.
         const remove = util.keysDifference(this._tiles, retain);
         for (i = 0; i < remove.length; i++) {

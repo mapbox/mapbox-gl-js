@@ -102,6 +102,10 @@ class Tile {
         animationLoop.set(this.fadeEndTime - Date.now());
     }
 
+    isLoaded() {
+        return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
+    }
+
     /**
      * Given a data object with a 'buffers' property, load it into
      * this tile's elementGroups and buffers properties and set loaded

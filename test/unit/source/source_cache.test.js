@@ -407,7 +407,12 @@ test('SourceCache#update', (t) => {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        const sourceCache = createSourceCache({});
+        const sourceCache = createSourceCache({
+            loadTile: (tile, callback)=>{
+                tile.state = 'loaded';
+                callback(null);
+            }
+        });
 
         sourceCache.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {

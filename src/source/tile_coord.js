@@ -95,6 +95,14 @@ class TileCoord {
         ];
     }
 
+    scaledTo(targetZ: number) {
+        if (targetZ <= this.z) {
+            return new TileCoord(targetZ, this.x >> (this.z - targetZ), this.y >> (this.z - targetZ), this.w); // parent or same
+        } else {
+            return new TileCoord(targetZ, this.x << (targetZ - this.z), this.y << (targetZ - this.z), this.w); // child
+        }
+    }
+
     static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
                  actualZ: number, renderWorldCopies: boolean | void) {
         if (renderWorldCopies === undefined) {
