@@ -4,6 +4,7 @@ const Point = require('@mapbox/point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
 const intersectionTests = require('../util/intersection_tests');
+const CollisionBoxArray = require('../symbol/collision_box');
 
 import type CollisionBoxArray, {CollisionBox} from './collision_box';
 
