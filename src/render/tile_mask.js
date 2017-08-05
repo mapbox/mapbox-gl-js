@@ -1,6 +1,9 @@
+// @flow
 
-const util = require('../util/util');
 const TileCoord = require('../source/tile_coord');
+
+import type Tile from './../source/tile';
+
 
 // Updates the TileMasks for all renderable tiles. A TileMask describes all regions
 // within that tile that are *not* covered by other renderable tiles.
@@ -53,8 +56,8 @@ const TileCoord = require('../source/tile_coord');
 // 2/1/3, since it is not a descendant of it.
 
 
-module.exports = function(renderableTiles) {
-    const sortedRenderables = util.objectValues(renderableTiles).sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
+module.exports = function(renderableTiles: Array<Tile>) {
+    const sortedRenderables = renderableTiles.sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
         const mask = [];
@@ -70,7 +73,7 @@ module.exports = function(renderableTiles) {
     }
 };
 
-function computeTileMasks(rootTile, ref, childArray, lowerBound, mask) {
+function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array<Tile>, lowerBound: TileCoord, mask: Array<number>) {
     // If the reference or any of its children is found in the list, we need to recurse.
     for (let i = 0; i < childArray.length; i++) {
         const childTile = childArray[i];
@@ -79,7 +82,7 @@ function computeTileMasks(rootTile, ref, childArray, lowerBound, mask) {
             return;
         } else if (childTile.coord.isChildOf(ref)) {
             // There's at least one child tile that is masked out, so recursively descend
-            const children = ref.children();
+            const children = ref.children(Infinity);
             for (let j = 0; j < children.length; j++) {
                 const child = children[j];
                 computeTileMasks(rootTile, child, childArray.slice(i), lowerBound, mask);
