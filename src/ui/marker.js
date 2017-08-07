@@ -9,6 +9,7 @@ const {bindAll} = require('../util/util');
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
+import type {MapMouseEvent} from './events';
 
 /**
  * Creates a marker component
@@ -27,7 +28,7 @@ class Marker {
     _element: HTMLElement;
     _popup: ?Popup;
     _lngLat: LngLat;
-    _pos: Point;
+    _pos: ?Point;
 
     constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
         this._offset = Point.convert(options && options.offset || [0, 0]);
@@ -74,7 +75,7 @@ class Marker {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
             this._map.off('moveend', this._update);
-            this._map = (null: any);
+            delete this._map;
         }
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
@@ -100,7 +101,7 @@ class Marker {
      */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
-        this._pos = (null: any);
+        this._pos = null;
         if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update();
         return this;
@@ -133,11 +134,11 @@ class Marker {
         return this;
     }
 
-    _onMapClick(event: any) {
+    _onMapClick(event: MapMouseEvent) {
         const targetElement = event.originalEvent.target;
         const element = this._element;
 
-        if (this._popup && (targetElement === element || element.contains(targetElement))) {
+        if (this._popup && (targetElement === element || element.contains((targetElement: any)))) {
             this.togglePopup();
         }
     }
@@ -162,7 +163,7 @@ class Marker {
         else popup.addTo(this._map);
     }
 
-    _update(e: any) {
+    _update(e?: {type: 'move' | 'moveend'}) {
         if (!this._map) return;
 
         if (this._map.transform.renderWorldCopies) {

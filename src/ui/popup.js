@@ -19,6 +19,13 @@ const defaultOptions = {
 export type Anchor = 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type Offset = number | PointLike | {[Anchor]: PointLike};
 
+export type PopupOptions = {
+    closeButton: boolean,
+    closeOnClick: boolean,
+    anchor: Anchor,
+    offset: Offset
+};
+
 /**
  * A popup component.
  *
@@ -61,15 +68,15 @@ export type Offset = number | PointLike | {[Anchor]: PointLike};
  */
 class Popup extends Evented {
     _map: Map;
-    options: any;
+    options: PopupOptions;
     _content: HTMLElement;
     _container: HTMLElement;
     _closeButton: HTMLElement;
     _tip: HTMLElement;
     _lngLat: LngLat;
-    _pos: Point;
+    _pos: ?Point;
 
-    constructor(options: any) {
+    constructor(options: PopupOptions) {
         super();
         this.options = util.extend(Object.create(defaultOptions), options);
         util.bindAll(['_update', '_onClickClose'], this);
@@ -157,7 +164,7 @@ class Popup extends Evented {
      */
     setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
-        this._pos = (null: any);
+        this._pos = null;
         this._update();
         return this;
     }
@@ -255,7 +262,7 @@ class Popup extends Evented {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat);
+        const pos = this._pos = this._map.project(this._lngLat);
 
         let anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
@@ -264,17 +271,17 @@ class Popup extends Evented {
             const width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (this._pos.y + offset.bottom.y < height) {
+            if (pos.y + offset.bottom.y < height) {
                 anchor = ['top'];
-            } else if (this._pos.y > this._map.transform.height - height) {
+            } else if (pos.y > this._map.transform.height - height) {
                 anchor = ['bottom'];
             } else {
                 anchor = [];
             }
 
-            if (this._pos.x < width / 2) {
+            if (pos.x < width / 2) {
                 anchor.push('left');
-            } else if (this._pos.x > this._map.transform.width - width / 2) {
+            } else if (pos.x > this._map.transform.width - width / 2) {
                 anchor.push('right');
             }
 
@@ -285,7 +292,7 @@ class Popup extends Evented {
             }
         }
 
-        const offsetedPos = this._pos.add(offset[anchor]).round();
+        const offsetedPos = pos.add(offset[anchor]).round();
 
         const anchorTranslate = {
             'top': 'translate(-50%,0)',

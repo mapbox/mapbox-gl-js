@@ -18,13 +18,9 @@ import type Transform from '../geo/transform';
  * map center changes by ±360° due to automatic wrapping, and when about to go off screen,
  * should wrap just enough to avoid doing so.
  *
- * @param lngLat
- * @param {Point} priorPos
- * @param {Transform} transform
- * @return LngLat
  * @private
  */
-module.exports = function(lngLat: LngLat, priorPos: Point, transform: Transform) {
+module.exports = function(lngLat: LngLat, priorPos: ?Point, transform: Transform): LngLat {
     lngLat = new LngLat(lngLat.lng, lngLat.lat);
 
     // First, try shifting one world in either direction, and see if either is closer to the
