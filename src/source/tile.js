@@ -366,7 +366,7 @@ class Tile {
         }
     }
 
-    setMask(mask: any) {
+    setMask(mask: Array<number>) {
 
         // don't redo buffer work if the mask is the same;
         if (util.deepEqual(this.mask, mask)) return;
@@ -382,14 +382,14 @@ class Tile {
             const maskCoord = TileCoord.fromID(mask[i]);
             const vertexExtent = EXTENT >> maskCoord.z;
             const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
-            const brVertex = new Point(tlVertex.x * vertexExtent, tlVertex.y * vertexExtent);
+            const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);
+
 
             maskedBoundsArray.emplaceBack(tlVertex.x, tlVertex.y, tlVertex.x, tlVertex.y);
             maskedBoundsArray.emplaceBack(brVertex.x, tlVertex.y, brVertex.x, tlVertex.y);
             maskedBoundsArray.emplaceBack(tlVertex.x, brVertex.y, tlVertex.x, brVertex.y);
             maskedBoundsArray.emplaceBack(brVertex.x, brVertex.y, brVertex.x, brVertex.y);
         }
-
         this.maskedRasterBoundsBuffer = Buffer.fromStructArray(maskedBoundsArray, Buffer.BufferType.VERTEX);
         this.maskedRasterBoundsVAO = new VertexArrayObject();
 

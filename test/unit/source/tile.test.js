@@ -132,6 +132,73 @@ test('querySourceFeatures', (t) => {
     t.end();
 });
 
+test('Tile#setMask', (t) => {
+
+    t.test('simple mask', (t)=>{
+        const tile = new Tile(0, 0, 0);
+        tile.setMask([new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id]);
+        const vertexBuffer = new Int16Array(tile.maskedRasterBoundsBuffer.arrayBuffer);
+        t.deepEqual(vertexBuffer, [ // 1/0/1
+            0, 0, 0, 0,
+            4096, 0, 4096, 0,
+            0, 4096, 0, 4096,
+            4096, 4096, 4096, 4096,
+            // 1/1/1
+            4096, 4096, 4096, 4096,
+            8192, 4096, 8192, 4096,
+            4096, 8192, 4096, 8192,
+            8192, 8192, 8192, 8192]);
+        t.end();
+    });
+
+    t.test('complex mask', (t) => {
+        const tile = new Tile(0, 0, 0);
+        tile.setMask([new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
+            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id]);
+        const vertexBuffer = new Int16Array(tile.maskedRasterBoundsBuffer.arrayBuffer);
+        t.deepEqual(vertexBuffer, [
+            // 1/0/1
+            0, 4096, 0, 4096,
+            4096, 4096, 4096, 4096,
+            0, 8192, 0, 8192,
+            4096, 8192, 4096, 8192,
+
+            // 1/1/0
+            4096, 0, 4096, 0,
+            8192, 0, 8192, 0,
+            4096, 4096, 4096, 4096,
+            8192, 4096, 8192, 4096,
+
+            // 2/2/3
+            4096, 6144, 4096, 6144,
+            6144, 6144, 6144, 6144,
+            4096, 8192, 4096, 8192,
+            6144, 8192, 6144, 8192,
+
+            // 2/3/2
+            6144, 4096, 6144, 4096,
+            8192, 4096, 8192, 4096,
+            6144, 6144, 6144, 6144,
+            8192, 6144, 8192, 6144,
+
+            // 3/6/7
+            6144, 7168, 6144, 7168,
+            7168, 7168, 7168, 7168,
+            6144, 8192, 6144, 8192,
+            7168, 8192, 7168, 8192,
+
+            // 3/7/6
+            7168, 6144, 7168, 6144,
+            8192, 6144, 8192, 6144,
+            7168, 7168, 7168, 7168,
+            8192, 7168, 8192, 7168 ]);
+        t.end();
+
+    });
+    t.end();
+
+});
+
 test('Tile#redoPlacement', (t) => {
 
     test('redoPlacement on an empty tile', (t) => {
