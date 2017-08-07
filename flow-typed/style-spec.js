@@ -18,6 +18,33 @@ declare type TransitionSpecification = {
     delay?: number
 };
 
+// Note: doesn't capture interpolatable vs. non-interpolatable types.
+
+declare type CameraFunctionSpecification<T> =
+    | { type: 'exponential', stops: Array<[number, T]> }
+    | { type: 'interval',    stops: Array<[number, T]> };
+
+declare type SourceFunctionSpecification<T> =
+    | { type: 'exponential', stops: Array<[number, T]>, property: string, default?: T }
+    | { type: 'interval',    stops: Array<[number, T]>, property: string, default?: T }
+    | { type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T }
+    | { type: 'identity', property: string, default?: T };
+
+declare type CompositeFunctionSpecification<T> =
+    | { type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
+    | { type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
+    | { type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T };
+
+declare type PropertyValueSpecification<T> =
+    | T
+    | CameraFunctionSpecification<T>;
+
+declare type DataDrivenPropertyValueSpecification<T> =
+    | T
+    | CameraFunctionSpecification<T>
+    | SourceFunctionSpecification<T>
+    | CompositeFunctionSpecification<T>;
+
 declare type StyleSpecification = {|
     "version": 8,
     "name"?: string,
@@ -35,10 +62,10 @@ declare type StyleSpecification = {|
 |}
 
 declare type LightSpecification = {|
-    "anchor"?: "map" | "viewport",
-    "position"?: [number, number, number],
-    "color"?: ColorSpecification,
-    "intensity"?: number
+    "anchor"?: PropertyValueSpecification<"map" | "viewport">,
+    "position"?: PropertyValueSpecification<[number, number, number]>,
+    "color"?: PropertyValueSpecification<ColorSpecification>,
+    "intensity"?: PropertyValueSpecification<number>
 |}
 
 declare type TileSourceSpecification = {
@@ -97,13 +124,13 @@ declare type FillLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "fill-antialias"?: boolean,
-        "fill-opacity"?: number,
-        "fill-color"?: ColorSpecification,
-        "fill-outline-color"?: ColorSpecification,
-        "fill-translate"?: [number, number],
-        "fill-translate-anchor"?: "map" | "viewport",
-        "fill-pattern"?: string
+        "fill-antialias"?: PropertyValueSpecification<boolean>,
+        "fill-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-outline-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-translate"?: PropertyValueSpecification<[number, number]>,
+        "fill-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "fill-pattern"?: PropertyValueSpecification<string>
     |},
     "paint"?: {|
         "visibility"?: "visible" | "none"
@@ -120,22 +147,22 @@ declare type LineLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "line-opacity"?: number,
-        "line-color"?: ColorSpecification,
-        "line-translate"?: [number, number],
-        "line-translate-anchor"?: "map" | "viewport",
-        "line-width"?: number,
-        "line-gap-width"?: number,
-        "line-offset"?: number,
-        "line-blur"?: number,
-        "line-dasharray"?: Array<number>,
-        "line-pattern"?: string
+        "line-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "line-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "line-translate"?: PropertyValueSpecification<[number, number]>,
+        "line-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "line-width"?: DataDrivenPropertyValueSpecification<number>,
+        "line-gap-width"?: DataDrivenPropertyValueSpecification<number>,
+        "line-offset"?: DataDrivenPropertyValueSpecification<number>,
+        "line-blur"?: DataDrivenPropertyValueSpecification<number>,
+        "line-dasharray"?: PropertyValueSpecification<Array<number>>,
+        "line-pattern"?: PropertyValueSpecification<string>
     |},
     "paint"?: {|
-        "line-cap"?: "butt" | "round" | "square",
-        "line-join"?: "bevel" | "round" | "miter",
-        "line-miter-limit"?: number,
-        "line-round-limit"?: number,
+        "line-cap"?: PropertyValueSpecification<"butt" | "round" | "square">,
+        "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter">,
+        "line-miter-limit"?: PropertyValueSpecification<number>,
+        "line-round-limit"?: PropertyValueSpecification<number>,
         "visibility"?: "visible" | "none"
     |}
 |}
@@ -150,57 +177,57 @@ declare type SymbolLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "icon-opacity"?: number,
-        "icon-color"?: ColorSpecification,
-        "icon-halo-color"?: ColorSpecification,
-        "icon-halo-width"?: number,
-        "icon-halo-blur"?: number,
-        "icon-translate"?: [number, number],
-        "icon-translate-anchor"?: "map" | "viewport",
-        "text-opacity"?: number,
-        "text-color"?: ColorSpecification,
-        "text-halo-color"?: ColorSpecification,
-        "text-halo-width"?: number,
-        "text-halo-blur"?: number,
-        "text-translate"?: [number, number],
-        "text-translate-anchor"?: "map" | "viewport"
+        "icon-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "icon-halo-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "icon-halo-width"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-translate"?: PropertyValueSpecification<[number, number]>,
+        "icon-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "text-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "text-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "text-halo-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "text-halo-width"?: DataDrivenPropertyValueSpecification<number>,
+        "text-halo-blur"?: DataDrivenPropertyValueSpecification<number>,
+        "text-translate"?: PropertyValueSpecification<[number, number]>,
+        "text-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">
     |},
     "paint"?: {|
-        "symbol-placement"?: "point" | "line",
-        "symbol-spacing"?: number,
-        "symbol-avoid-edges"?: boolean,
-        "icon-allow-overlap"?: boolean,
-        "icon-ignore-placement"?: boolean,
-        "icon-optional"?: boolean,
-        "icon-rotation-alignment"?: "map" | "viewport" | "auto",
-        "icon-size"?: number,
-        "icon-text-fit"?: "none" | "width" | "height" | "both",
-        "icon-text-fit-padding"?: [number, number, number, number],
-        "icon-image"?: string,
-        "icon-rotate"?: number,
-        "icon-padding"?: number,
-        "icon-keep-upright"?: boolean,
-        "icon-offset"?: [number, number],
-        "icon-pitch-alignment"?: "map" | "viewport" | "auto",
-        "text-pitch-alignment"?: "map" | "viewport" | "auto",
-        "text-rotation-alignment"?: "map" | "viewport" | "auto",
-        "text-field"?: string,
-        "text-font"?: Array<string>,
-        "text-size"?: number,
-        "text-max-width"?: number,
-        "text-line-height"?: number,
-        "text-letter-spacing"?: number,
-        "text-justify"?: "left" | "center" | "right",
-        "text-anchor"?: "center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right",
-        "text-max-angle"?: number,
-        "text-rotate"?: number,
-        "text-padding"?: number,
-        "text-keep-upright"?: boolean,
-        "text-transform"?: "none" | "uppercase" | "lowercase",
-        "text-offset"?: [number, number],
-        "text-allow-overlap"?: boolean,
-        "text-ignore-placement"?: boolean,
-        "text-optional"?: boolean,
+        "symbol-placement"?: PropertyValueSpecification<"point" | "line">,
+        "symbol-spacing"?: PropertyValueSpecification<number>,
+        "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
+        "icon-allow-overlap"?: PropertyValueSpecification<boolean>,
+        "icon-ignore-placement"?: PropertyValueSpecification<boolean>,
+        "icon-optional"?: PropertyValueSpecification<boolean>,
+        "icon-rotation-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
+        "icon-size"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-text-fit"?: PropertyValueSpecification<"none" | "width" | "height" | "both">,
+        "icon-text-fit-padding"?: PropertyValueSpecification<[number, number, number, number]>,
+        "icon-image"?: DataDrivenPropertyValueSpecification<string>,
+        "icon-rotate"?: DataDrivenPropertyValueSpecification<number>,
+        "icon-padding"?: PropertyValueSpecification<number>,
+        "icon-keep-upright"?: PropertyValueSpecification<boolean>,
+        "icon-offset"?: DataDrivenPropertyValueSpecification<[number, number]>,
+        "icon-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
+        "text-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
+        "text-rotation-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
+        "text-field"?: DataDrivenPropertyValueSpecification<string>,
+        "text-font"?: PropertyValueSpecification<Array<string>>,
+        "text-size"?: DataDrivenPropertyValueSpecification<number>,
+        "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
+        "text-line-height"?: PropertyValueSpecification<number>,
+        "text-letter-spacing"?: DataDrivenPropertyValueSpecification<number>,
+        "text-justify"?: DataDrivenPropertyValueSpecification<"left" | "center" | "right">,
+        "text-anchor"?: DataDrivenPropertyValueSpecification<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
+        "text-max-angle"?: PropertyValueSpecification<number>,
+        "text-rotate"?: DataDrivenPropertyValueSpecification<number>,
+        "text-padding"?: PropertyValueSpecification<number>,
+        "text-keep-upright"?: PropertyValueSpecification<boolean>,
+        "text-transform"?: DataDrivenPropertyValueSpecification<"none" | "uppercase" | "lowercase">,
+        "text-offset"?: DataDrivenPropertyValueSpecification<[number, number]>,
+        "text-allow-overlap"?: PropertyValueSpecification<boolean>,
+        "text-ignore-placement"?: PropertyValueSpecification<boolean>,
+        "text-optional"?: PropertyValueSpecification<boolean>,
         "visibility"?: "visible" | "none"
     |}
 |}
@@ -215,17 +242,17 @@ declare type CircleLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "circle-radius"?: number,
-        "circle-color"?: ColorSpecification,
-        "circle-blur"?: number,
-        "circle-opacity"?: number,
-        "circle-translate"?: [number, number],
-        "circle-translate-anchor"?: "map" | "viewport",
-        "circle-pitch-scale"?: "map" | "viewport",
-        "circle-pitch-alignment"?: "map" | "viewport",
-        "circle-stroke-width"?: number,
-        "circle-stroke-color"?: ColorSpecification,
-        "circle-stroke-opacity"?: number
+        "circle-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "circle-blur"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-opacity"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-translate"?: PropertyValueSpecification<[number, number]>,
+        "circle-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "circle-pitch-scale"?: PropertyValueSpecification<"map" | "viewport">,
+        "circle-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport">,
+        "circle-stroke-width"?: DataDrivenPropertyValueSpecification<number>,
+        "circle-stroke-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "circle-stroke-opacity"?: DataDrivenPropertyValueSpecification<number>
     |},
     "paint"?: {|
         "visibility"?: "visible" | "none"
@@ -242,13 +269,13 @@ declare type FillExtrusionLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "fill-extrusion-opacity"?: number,
-        "fill-extrusion-color"?: ColorSpecification,
-        "fill-extrusion-translate"?: [number, number],
-        "fill-extrusion-translate-anchor"?: "map" | "viewport",
-        "fill-extrusion-pattern"?: string,
-        "fill-extrusion-height"?: number,
-        "fill-extrusion-base"?: number
+        "fill-extrusion-opacity"?: PropertyValueSpecification<number>,
+        "fill-extrusion-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-extrusion-translate"?: PropertyValueSpecification<[number, number]>,
+        "fill-extrusion-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "fill-extrusion-pattern"?: PropertyValueSpecification<string>,
+        "fill-extrusion-height"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-base"?: DataDrivenPropertyValueSpecification<number>
     |},
     "paint"?: {|
         "visibility"?: "visible" | "none"
@@ -265,13 +292,13 @@ declare type RasterLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "raster-opacity"?: number,
-        "raster-hue-rotate"?: number,
-        "raster-brightness-min"?: number,
-        "raster-brightness-max"?: number,
-        "raster-saturation"?: number,
-        "raster-contrast"?: number,
-        "raster-fade-duration"?: number
+        "raster-opacity"?: PropertyValueSpecification<number>,
+        "raster-hue-rotate"?: PropertyValueSpecification<number>,
+        "raster-brightness-min"?: PropertyValueSpecification<number>,
+        "raster-brightness-max"?: PropertyValueSpecification<number>,
+        "raster-saturation"?: PropertyValueSpecification<number>,
+        "raster-contrast"?: PropertyValueSpecification<number>,
+        "raster-fade-duration"?: PropertyValueSpecification<number>
     |},
     "paint"?: {|
         "visibility"?: "visible" | "none"
@@ -285,9 +312,9 @@ declare type BackgroundLayerSpecification = {|
     "minzoom"?: number,
     "maxzoom"?: number,
     "layout"?: {|
-        "background-color"?: ColorSpecification,
-        "background-pattern"?: string,
-        "background-opacity"?: number
+        "background-color"?: PropertyValueSpecification<ColorSpecification>,
+        "background-pattern"?: PropertyValueSpecification<string>,
+        "background-opacity"?: PropertyValueSpecification<number>
     |},
     "paint"?: {|
         "visibility"?: "visible" | "none"
