@@ -419,3 +419,17 @@ test('Popup#addTo is idempotent (#1811)', (t) => {
     t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').textContent, "Test");
     t.end();
 });
+
+test('Popup#remove is idempotent (#2395)', (t) => {
+    const map = createMap();
+
+    new Popup({closeButton: false})
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map)
+        .remove()
+        .remove();
+
+    t.equal(map.getContainer().querySelectorAll('.mapboxgl-popup').length, 0);
+    t.end();
+});
