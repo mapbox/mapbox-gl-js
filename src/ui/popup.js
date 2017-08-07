@@ -227,8 +227,8 @@ class Popup extends Evented {
     }
 
     _createContent() {
-        if (this._content && this._content.parentNode) {
-            this._content.parentNode.removeChild(this._content);
+        if (this._content) {
+            DOM.remove(this._content);
         }
 
         this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
