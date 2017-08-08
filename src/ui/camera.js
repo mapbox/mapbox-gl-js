@@ -928,33 +928,4 @@ class Camera extends Evented {
     }
 }
 
-/**
- * Fired whenever the map's pitch (tilt) begins a change as
- * the result of either user interaction or methods such as {@link Map#flyTo} .
- *
- * @event pitchstart
- * @memberof Map
- * @instance
- * @property {MapEventData} data
- */
-
-/**
- * Fired whenever the map's pitch (tilt) changes as.
- * the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event pitch
- * @memberof Map
- * @instance
- * @property {MapEventData} data
- */
-
-/**
- * Fired immediately after the map's pitch (tilt) finishes changing as
- * the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event pitchend
- * @memberof Map
- * @instance
- * @property {MapEventData} data
- */
 module.exports = Camera;

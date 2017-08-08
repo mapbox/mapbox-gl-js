@@ -164,34 +164,3 @@ class ScrollZoomHandler {
 }
 
 module.exports = ScrollZoomHandler;
-
-/**
- * Fired just before the map begins a transition from one zoom level to another,
- * as the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event zoomstart
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired repeatedly during an animated transition from one zoom level to another,
- * as the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event zoom
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- * @see [Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
- */
-
-/**
- * Fired just after the map completes a transition from one zoom level to another,
- * as the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event zoomend
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */

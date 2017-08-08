@@ -249,30 +249,3 @@ class DragRotateHandler {
 }
 
 module.exports = DragRotateHandler;
-
-/**
- * Fired when a "drag to rotate" interaction starts. See {@link DragRotateHandler}.
- *
- * @event rotatestart
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired repeatedly during a "drag to rotate" interaction. See {@link DragRotateHandler}.
- *
- * @event rotate
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired when a "drag to rotate" interaction ends. See {@link DragRotateHandler}.
- *
- * @event rotateend
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
