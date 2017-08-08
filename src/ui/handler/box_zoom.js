@@ -167,39 +167,3 @@ class BoxZoomHandler {
 }
 
 module.exports = BoxZoomHandler;
-
-/**
- * @typedef {Object} MapBoxZoomEvent
- * @property {MouseEvent} originalEvent
- * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
- *   This property is only provided for `boxzoomend` events.
- */
-
-/**
- * Fired when a "box zoom" interaction starts. See {@link BoxZoomHandler}.
- *
- * @event boxzoomstart
- * @memberof Map
- * @instance
- * @property {MapBoxZoomEvent} data
- */
-
-/**
- * Fired when a "box zoom" interaction ends.  See {@link BoxZoomHandler}.
- *
- * @event boxzoomend
- * @memberof Map
- * @instance
- * @type {Object}
- * @property {MapBoxZoomEvent} data
- */
-
-/**
- * Fired when the user cancels a "box zoom" interaction, or when the bounding box does not meet the minimum size threshold.
- * See {@link BoxZoomHandler}.
- *
- * @event boxzoomcancel
- * @memberof Map
- * @instance
- * @property {MapBoxZoomEvent} data
- */

@@ -223,30 +223,3 @@ class DragPanHandler {
 }
 
 module.exports = DragPanHandler;
-
-/**
- * Fired when a "drag to pan" interaction starts. See {@link DragPanHandler}.
- *
- * @event dragstart
- * @memberof Map
- * @instance
- * @property {{originalEvent: DragEvent}} data
- */
-
-/**
- * Fired repeatedly during a "drag to pan" interaction. See {@link DragPanHandler}.
- *
- * @event drag
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired when a "drag to pan" interaction ends. See {@link DragPanHandler}.
- *
- * @event dragend
- * @memberof Map
- * @instance
- * @property {{originalEvent: DragEvent}} data
- */
