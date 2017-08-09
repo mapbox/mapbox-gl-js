@@ -135,9 +135,11 @@
       "value": "string",
       "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
     },
-    "bounds":{
-      "type":"array",
-      "value":"number",
+    "bounds": {
+      "type": "array",
+      "value": "number",
+      "length": 4,
+      "default": [-180, -85.0511, 180, 85.0511],
       "doc": "An array containing the longitude and latitude of the southwest and northeast corners of the source's bounding box in the following order: `[sw.lng, sw.lat, ne.lng, ne.lat]`. When this property is included in a source, no tiles outside of the given bounds are requested by Mapbox GL."
     },
     "minzoom": {

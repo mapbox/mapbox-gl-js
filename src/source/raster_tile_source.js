@@ -46,6 +46,8 @@ class RasterTileSource extends Evented implements Source {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
+        if (this.bounds) this.setBounds(this.bounds);
+
         this._options = util.extend({}, options);
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     }
@@ -74,8 +76,8 @@ class RasterTileSource extends Evented implements Source {
     }
 
     setBounds(bounds?: [number, number, number, number]) {
-        this.bounds = bounds;
         if (bounds) {
+            this.bounds = bounds;
             this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
         }
     }

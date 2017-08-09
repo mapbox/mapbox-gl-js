@@ -42,8 +42,9 @@ class VectorTileSource extends Evented implements Source {
         this.tileSize = 512;
         this.reparseOverscaled = true;
         this.isTileClipped = true;
-        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+        if (this.bounds) this.setBounds(this.bounds);
 
+        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
         this._options = util.extend({ type: 'vector' }, options);
 
         if (this.tileSize !== 512) {
@@ -73,8 +74,8 @@ class VectorTileSource extends Evented implements Source {
     }
 
     setBounds(bounds?: [number, number, number, number]) {
-        this.bounds = bounds;
         if (bounds) {
+            this.bounds = bounds;
             this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
         }
     }
