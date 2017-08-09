@@ -31,9 +31,9 @@ module.exports = function validateLayer(options) {
         }
     }
 
-    if ('ref' in layer) {
+    if (layer.hasOwnProperty('ref')) {
         ['type', 'source', 'source-layer', 'filter', 'layout'].forEach((p) => {
-            if (p in layer) {
+            if (layer.hasOwnProperty(p)) {
                 errors.push(new ValidationError(key, layer[p], '"%s" is prohibited for ref layers', p));
             }
         });
