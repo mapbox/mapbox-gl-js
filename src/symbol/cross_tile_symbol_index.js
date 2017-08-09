@@ -57,9 +57,12 @@ class CrossTileSymbolLayerIndex {
 
     addTile(coord, sourceMaxZoom, symbolInstances) {
 
-        const zooms = Object.keys(this.indexes).sort();
-        const minZoom = zooms[0];
-        const maxZoom = zooms[zooms.length - 1];
+        let minZoom = 25;
+        let maxZoom = 0;
+        for (const zoom in this.indexes) {
+            minZoom = Math.min(zoom, minZoom);
+            maxZoom = Math.max(zoom, maxZoom);
+        }
 
         const tileIndex = new TileLayerIndex(coord, sourceMaxZoom, symbolInstances);
 
@@ -97,8 +100,9 @@ class CrossTileSymbolLayerIndex {
             delete this.indexes[coord.z];
         }
 
-        const zooms = Object.keys(this.indexes).sort();
-        const minZoom = zooms[0];
+        const minZoom = Object.keys(this.indexes).reduce((minZoom, zoom) => {
+            return Math.min(minZoom, zoom);
+        }, 25);
 
         let parentCoord = coord;
         for (let z = coord.z - 1; z >= minZoom; z--) {
