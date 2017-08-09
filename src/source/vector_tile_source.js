@@ -42,11 +42,11 @@ class VectorTileSource extends Evented implements Source {
         this.tileSize = 512;
         this.reparseOverscaled = true;
         this.isTileClipped = true;
-        if (this.bounds) this.setBounds(this.bounds);
 
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
         this._options = util.extend({ type: 'vector' }, options);
 
+        if (options.bounds) this.setBounds(options.bounds);
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
         }

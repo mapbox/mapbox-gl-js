@@ -46,10 +46,10 @@ class RasterTileSource extends Evented implements Source {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
-        if (this.bounds) this.setBounds(this.bounds);
 
         this._options = util.extend({}, options);
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+        if (options.bounds) this.setBounds(options.bounds);
     }
 
     load() {
