@@ -1,7 +1,11 @@
 const EXTENT = require('../data/extent');
 const assert = require('assert');
 
-const roundingFactor = 512 / EXTENT;
+// Round anchor positions to roughly 8 pixel grid
+// Whatever rounding factor we choose, it will be possible
+// to miss duplicate symbols right at the edge of grid lines.
+// Ideally we should look up surrounding grid positions
+const roundingFactor = 512 / EXTENT / 8;
 
 class TileLayerIndex {
     constructor(coord, sourceMaxZoom, symbolInstances) {
