@@ -1,5 +1,39 @@
 const EXTENT = require('../data/extent');
+const OpacityState = require('./opacity_state');
 const assert = require('assert');
+
+/*
+    The CrossTileSymbolIndex generally works on the assumption that
+    a conceptual "unique symbol" can be identified by the text of
+    the label combined with the anchor point. The goal is to keep
+    symbol opacity states (determined by collision detection animations)
+    consistent as we switch tile resolutions.
+
+    Whenever we add a label, we look for duplicates at lower resolution,
+    and if we find one, we copy its opacity state. If we find duplicates
+    at higher resolution, we mark the added label as "blocked".
+
+    When we remove a label that's currently showing, we look for duplicates
+    at higher resolution, and if we find one we copy our opacity state
+    to that label.
+
+    The code mostly assumes that at any given time a "unique symbol" will have
+    one "non-duplicate" entry, and that the rest of the entries in the
+    index will all be marked as duplicate. This is not necessarily true:
+
+    (1) The code searches child/parent hierarchies for duplicates, but it
+        is possible for the source to contain symbols with anchors on tile
+        boundaries, where the symbol does not stay in the same hierarchy
+        at all zoom levels.
+    (2) A high resolution tile may contain two symbols with the same label
+        but different anchor points. At lower resolution, both of those
+        symbols will appear to be the same.
+
+    In the cases that violate our assumptions, copying opacities between
+    zoom levels won't work as expected. However, the highest resolution
+    tile should always "win", so that after some fade flicker the right
+    label will show.
+*/
 
 // Round anchor positions to roughly 8 pixel grid
 // Whatever rounding factor we choose, it will be possible
@@ -16,21 +50,12 @@ class TileLayerIndex {
         for (const symbolInstance of symbolInstances) {
             const key = this.getKey(symbolInstance, coord, coord.z);
             this.symbolInstances[key] = symbolInstance;
-            symbolInstance.isDuplicate = undefined;
+            symbolInstance.isDuplicate = false;
             // If we don't pick up an opacity from our parent or child tiles
             // Reset so that symbols in cached tiles fade in the same
             // way as freshly loaded tiles
-            symbolInstance.textOpacityState = {
-                opacity: 0,
-                targetOpacity: 0,
-                time: 0
-            };
-
-            symbolInstance.iconOpacityState = {
-                opacity: 0,
-                targetOpacity: 0,
-                time: 0
-            };
+            symbolInstance.textOpacityState = new OpacityState();
+            symbolInstance.iconOpacityState = new OpacityState();
         }
     }
 
@@ -71,8 +96,10 @@ class CrossTileSymbolLayerIndex {
             const zoomIndexes = this.indexes[z];
             for (const id in zoomIndexes) {
                 const childIndex = zoomIndexes[id];
-                if (!childIndex.coord.isChildOf(coord)) continue;
-                this.blockLabels(childIndex, tileIndex);
+                if (!childIndex.coord.isChildOf(coord, sourceMaxZoom)) continue;
+                // Mark labels in this tile blocked, and don't copy opacity state
+                // into this tile
+                this.blockLabels(childIndex, tileIndex, false);
             }
         }
 
@@ -82,7 +109,9 @@ class CrossTileSymbolLayerIndex {
             parentCoord = parentCoord.parent(sourceMaxZoom);
             const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
             if (parentIndex) {
-                this.blockLabels(tileIndex, parentIndex);
+                // Mark labels in the parent tile blocked, and copy opacity state
+                // into this tile
+                this.blockLabels(tileIndex, parentIndex, true);
             }
         }
 
@@ -112,7 +141,7 @@ class CrossTileSymbolLayerIndex {
         }
     }
 
-    blockLabels(childIndex, parentIndex) {
+    blockLabels(childIndex, parentIndex, copyParentOpacity) {
         for (const key in childIndex.symbolInstances) {
             const symbolInstance = childIndex.symbolInstances[key];
 
@@ -125,11 +154,12 @@ class CrossTileSymbolLayerIndex {
                     if (!parentSymbolInstance.isDuplicate) {
                         parentSymbolInstance.isDuplicate = true;
 
+                        // If the child label is the one being added to the index,
                         // copy the parent's opacity to the child
-                        assert(symbolInstance.isDuplicate !== false);
-                        symbolInstance.isDuplicate = false;
-                        symbolInstance.textOpacityState = parentSymbolInstance.textOpacityState;
-                        symbolInstance.iconOpacityState = parentSymbolInstance.iconOpacityState;
+                        if (copyParentOpacity) {
+                            symbolInstance.textOpacityState = parentSymbolInstance.textOpacityState.clone();
+                            symbolInstance.iconOpacityState = parentSymbolInstance.iconOpacityState.clone();
+                        }
                     }
                 }
             }
@@ -146,13 +176,13 @@ class CrossTileSymbolLayerIndex {
 
                 const parentSymbolInstance = parentIndex.get(symbolInstance, childIndex.coord);
                 if (parentSymbolInstance !== undefined) {
-                    // this label is now unblocked, copy it's opacity state
-                    assert(parentSymbolInstance.isDuplicate !== false);
+                    // this label is now unblocked, copy its opacity state
                     parentSymbolInstance.isDuplicate = false;
-                    parentSymbolInstance.textOpacityState = symbolInstance.textOpacityState;
-                    parentSymbolInstance.iconOpacityState = symbolInstance.iconOpacityState;
+                    parentSymbolInstance.textOpacityState = symbolInstance.textOpacityState.clone();
+                    parentSymbolInstance.iconOpacityState = symbolInstance.iconOpacityState.clone();
 
-                    // mark it as duplicate now so that it doesn't unblock any other layers
+                    // mark child as duplicate so that it doesn't unblock further tiles at lower res
+                    // in the remaining calls to unblockLabels before it's fully removed
                     symbolInstance.isDuplicate = true;
                 }
             }

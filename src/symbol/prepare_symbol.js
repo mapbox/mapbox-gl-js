@@ -5,6 +5,7 @@ const getAnchors = require('./get_anchors');
 const Quads = require('./quads');
 const Shaping = require('./shaping');
 const clipLine = require('./clip_line');
+const OpacityState = require('./opacity_state');
 const util = require('../util/util');
 const scriptDetection = require('../util/script_detection');
 
@@ -356,17 +357,8 @@ function addSymbolInstance(bucket: any,
     if (textBoxEndIndex > SymbolBucket.MAX_INSTANCES) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
     if (iconBoxEndIndex > SymbolBucket.MAX_INSTANCES) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
 
-    const textOpacityState = {
-        opacity: 0,
-        targetOpacity: 0,
-        time: 0
-    };
-
-    const iconOpacityState = {
-        opacity: 0,
-        targetOpacity: 0,
-        time: 0
-    };
+    const textOpacityState = new OpacityState();
+    const iconOpacityState = new OpacityState();
 
     bucket.symbolInstances.push({
         key,
