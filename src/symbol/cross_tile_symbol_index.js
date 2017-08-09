@@ -13,6 +13,20 @@ class TileLayerIndex {
             const key = this.getKey(symbolInstance, coord, coord.z);
             this.symbolInstances[key] = symbolInstance;
             symbolInstance.isDuplicate = undefined;
+            // If we don't pick up an opacity from our parent or child tiles
+            // Reset so that symbols in cached tiles fade in the same
+            // way as freshly loaded tiles
+            symbolInstance.textOpacityState = {
+                opacity: 0,
+                targetOpacity: 0,
+                time: 0
+            };
+
+            symbolInstance.iconOpacityState = {
+                opacity: 0,
+                targetOpacity: 0,
+                time: 0
+            };
         }
     }
 
