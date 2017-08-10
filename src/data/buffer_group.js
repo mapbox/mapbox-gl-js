@@ -23,10 +23,7 @@ class BufferGroup {
     dynamicLayoutVertexBuffer: Buffer;
     elementBuffer: Buffer;
     elementBuffer2: Buffer;
-    layerData: {[string]: {
-        programConfiguration: ProgramConfiguration,
-        paintVertexBuffer: ?Buffer
-    }};
+    programConfigurations: {[string]: ProgramConfiguration};
     segments: Array<any>;
     segments2: Array<any>;
 
@@ -52,12 +49,12 @@ class BufferGroup {
                 programInterface.elementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
         }
 
-        this.layerData = {};
+        this.programConfigurations = {};
         for (const layer of layers) {
             const array = arrays.paintVertexArrays && arrays.paintVertexArrays[layer.id];
             const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-            const paintVertexBuffer = array ? new Buffer(array.array, array.type, Buffer.BufferType.VERTEX) : null;
-            this.layerData[layer.id] = {programConfiguration, paintVertexBuffer};
+            programConfiguration.paintVertexBuffer = array ? new Buffer(array.array, array.type, Buffer.BufferType.VERTEX) : null;
+            this.programConfigurations[layer.id] = programConfiguration;
         }
 
         this.segments = arrays.segments;
@@ -65,7 +62,7 @@ class BufferGroup {
 
         for (const segments of [this.segments, this.segments2]) {
             for (const segment of segments || []) {
-                segment.vaos = util.mapObject(this.layerData, () => new VertexArrayObject());
+                segment.vaos = util.mapObject(this.programConfigurations, () => new VertexArrayObject());
             }
         }
     }
@@ -82,8 +79,8 @@ class BufferGroup {
         if (this.elementBuffer2) {
             this.elementBuffer2.destroy();
         }
-        for (const layerId in this.layerData) {
-            const paintVertexBuffer = this.layerData[layerId].paintVertexBuffer;
+        for (const layerId in this.programConfigurations) {
+            const paintVertexBuffer = this.programConfigurations[layerId].paintVertexBuffer;
             if (paintVertexBuffer) {
                 paintVertexBuffer.destroy();
             }
