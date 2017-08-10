@@ -33,8 +33,14 @@ module.exports = function (directory, implementation, options, run) {
     q.defer(server.listen);
 
     fs.readdirSync(directory).forEach((group) => {
-        if (group === 'index.html' || group === 'results.html.tmpl' || group[0] === '.')
+        if (
+            group === 'index.html' ||
+            group === 'results.html.tmpl' ||
+            group === 'result_item.html.tmpl' ||
+            group[0] === '.'
+        ) {
             return;
+        }
 
         fs.readdirSync(path.join(directory, group)).forEach((test) => {
             if (!shouldRunTest(group, test))
@@ -169,11 +175,34 @@ module.exports = function (directory, implementation, options, run) {
                 failedCount, (100 * failedCount / totalCount).toFixed(1));
         }
 
-        const resultsTemplate = template(fs.readFileSync(path.join(directory, 'results.html.tmpl'), 'utf8'));
-        const p = path.join(directory, 'index.html');
-        fs.writeFileSync(p, resultsTemplate({results: results}));
-        console.log(`Results at: ${p}`);
+        const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
+        const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
-        process.exit(failedCount === 0 ? 0 : 1);
+        const failed = results.filter(r => /failed/.test(r.status));
+        const [pre, post] = resultsTemplate({ failed })
+            .split('<!-- results go here -->');
+
+        const p = path.join(directory, 'index.html');
+        const out = fs.createWriteStream(p);
+
+        const q = queue(1);
+        q.defer(write, out, pre);
+        for (const r of results) {
+            q.defer(write, out, itemTemplate({ r, hasFailedTests: failed.length > 0 }));
+        }
+        q.defer(write, out, post);
+        q.await(() => {
+            out.end();
+            console.log(`Results at: ${p}`);
+            process.exit(failedCount === 0 ? 0 : 1);
+        });
     });
 };
+
+function write(stream, data, cb) {
+    if (!stream.write(data)) {
+        stream.once('drain', cb);
+    } else {
+        process.nextTick(cb);
+    }
+}
