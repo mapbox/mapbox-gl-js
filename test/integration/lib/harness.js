@@ -193,8 +193,10 @@ module.exports = function (directory, implementation, options, run) {
         q.defer(write, out, post);
         q.await(() => {
             out.end();
-            console.log(`Results at: ${p}`);
-            process.exit(failedCount === 0 ? 0 : 1);
+            out.on('close', () => {
+                console.log(`Results at: ${p}`);
+                process.exit(failedCount === 0 ? 0 : 1);
+            });
         });
     });
 };
