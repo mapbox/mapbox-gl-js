@@ -46,7 +46,6 @@ class VectorTileSource extends Evented implements Source {
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
         this._options = util.extend({ type: 'vector' }, options);
 
-        if (options.bounds) this.setBounds(options.bounds);
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
         }
@@ -62,7 +61,7 @@ class VectorTileSource extends Evented implements Source {
                 this.fire('error', err);
             } else if (tileJSON) {
                 util.extend(this, tileJSON);
-                this.setBounds(tileJSON.bounds);
+                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
@@ -71,13 +70,6 @@ class VectorTileSource extends Evented implements Source {
                 this.fire('data', {dataType: 'source', sourceDataType: 'content'});
             }
         });
-    }
-
-    setBounds(bounds?: [number, number, number, number]) {
-        if (bounds) {
-            this.bounds = bounds;
-            this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
-        }
     }
 
     hasTile(coord: TileCoord) {

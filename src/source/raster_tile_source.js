@@ -49,7 +49,6 @@ class RasterTileSource extends Evented implements Source {
 
         this._options = util.extend({}, options);
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-        if (options.bounds) this.setBounds(options.bounds);
     }
 
     load() {
@@ -59,7 +58,7 @@ class RasterTileSource extends Evented implements Source {
                 this.fire('error', err);
             } else if (tileJSON) {
                 util.extend(this, tileJSON);
-                this.setBounds(tileJSON.bounds);
+                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
@@ -73,13 +72,6 @@ class RasterTileSource extends Evented implements Source {
     onAdd(map: Map) {
         this.load();
         this.map = map;
-    }
-
-    setBounds(bounds?: [number, number, number, number]) {
-        if (bounds) {
-            this.bounds = bounds;
-            this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
-        }
     }
 
     serialize() {
