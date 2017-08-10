@@ -3,6 +3,7 @@
 const createVertexArrayType = require('./vertex_array_type');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
+const Buffer = require('./buffer');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray} from '../util/struct_array';
@@ -217,6 +218,11 @@ class ProgramConfiguration {
     interface: ?ProgramInterface;
     PaintVertexArray: Class<StructArray>;
 
+    layer: StyleLayer;
+    paintVertexArray: StructArray;
+    paintPropertyStatistics: PaintPropertyStatistics;
+    paintVertexBuffer: ?Buffer;
+
     constructor() {
         this.binders = {};
         this.cacheKey = '';
@@ -256,6 +262,7 @@ class ProgramConfiguration {
 
         self.PaintVertexArray = createVertexArrayType(attributes);
         self.interface = programInterface;
+        self.layer = layer;
 
         return self;
     }
@@ -285,18 +292,18 @@ class ProgramConfiguration {
         return paintPropertyStatistics;
     }
 
-    populatePaintArray(layer: StyleLayer,
-                       paintArray: StructArray,
-                       statistics: PaintPropertyStatistics,
-                       length: number,
+    populatePaintArray(length: number,
                        featureProperties: Object) {
+        const paintArray = this.paintVertexArray;
+        if (paintArray.bytesPerElement === 0) return;
+
         const start = paintArray.length;
         paintArray.resize(length);
 
         for (const name in this.binders) {
             this.binders[name].populatePaintArray(
-                layer, paintArray,
-                statistics,
+                this.layer, paintArray,
+                this.paintPropertyStatistics,
                 start, length,
                 featureProperties);
         }
@@ -314,6 +321,14 @@ class ProgramConfiguration {
         for (const name in this.binders) {
             this.binders[name].setUniforms(gl, program, layer, globalProperties);
         }
+    }
+
+    serialize(transferables?: Array<Transferable>) {
+        const inputArray = this.paintVertexArray;
+        if (inputArray.length === 0) return null;
+        const array = inputArray.serialize(transferables);
+        const type = inputArray.constructor.serialize();
+        return {array, type};
     }
 }
 

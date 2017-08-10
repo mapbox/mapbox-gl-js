@@ -31,22 +31,22 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
 
-        const layerData = bucket.buffers.layerData[layer.id];
+        const programConfiguration = bucket.buffers.programConfigurations[layer.id];
         const prevProgram = painter.currentProgram;
-        const program = painter.useProgram(programId, layerData.programConfiguration);
+        const program = painter.useProgram(programId, programConfiguration);
         const programChanged = firstTile || program !== prevProgram;
         const tileRatioChanged = prevTileZoom !== tile.coord.z;
 
         if (programChanged) {
-            layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
         }
-        drawLineTile(program, painter, tile, bucket.buffers, layer, coord, layerData, programChanged, tileRatioChanged);
+        drawLineTile(program, painter, tile, bucket.buffers, layer, coord, programConfiguration, programChanged, tileRatioChanged);
         prevTileZoom = tile.coord.z;
         firstTile = false;
     }
 };
 
-function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, programChanged, tileRatioChanged) {
+function drawLineTile(program, painter, tile, buffers, layer, coord, programConfiguration, programChanged, tileRatioChanged) {
     const gl = painter.gl;
     const dasharray = layer.paint['line-dasharray'];
     const image = layer.paint['line-pattern'];
@@ -112,7 +112,7 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
     gl.uniform1f(program.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
     for (const segment of buffers.segments) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, layerData.paintVertexBuffer, segment.vertexOffset);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }

@@ -4,7 +4,7 @@ const ProgramConfiguration = require('./program_configuration');
 const createVertexArrayType = require('./vertex_array_type');
 
 import type StyleLayer from '../style/style_layer';
-import type {ProgramInterface, PaintPropertyStatistics} from './program_configuration';
+import type {ProgramInterface} from './program_configuration';
 import type {
     StructArray,
     SerializedStructArray,
@@ -40,13 +40,6 @@ export type SerializedArrayGroup = {
     segments2: Array<Object>
 }
 
-type LayerData = {
-    layer: StyleLayer,
-    programConfiguration: ProgramConfiguration,
-    paintVertexArray: StructArray,
-    paintPropertyStatistics: PaintPropertyStatistics
-}
-
 /**
  * A class that manages vertex and element arrays for a bucket. It handles initialization,
  * serialization for transfer to the main thread, and certain intervening mutations.
@@ -76,7 +69,7 @@ class ArrayGroup {
     dynamicLayoutVertexArray: StructArray;
     elementArray: StructArray;
     elementArray2: StructArray;
-    layerData: {[string]: LayerData};
+    programConfigurations: {[string]: ProgramConfiguration};
     segments: Array<Segment>;
     segments2: Array<Segment>;
 
@@ -97,16 +90,12 @@ class ArrayGroup {
         const ElementArrayType2 = programInterface.elementArrayType2;
         if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
-        this.layerData = {};
+        this.programConfigurations = {};
         for (const layer of layers) {
-            const programConfiguration = ProgramConfiguration.createDynamic(
-                programInterface, layer, zoom);
-            this.layerData[layer.id] = {
-                layer: layer,
-                programConfiguration: programConfiguration,
-                paintVertexArray: new programConfiguration.PaintVertexArray(),
-                paintPropertyStatistics: programConfiguration.createPaintPropertyStatistics()
-            };
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+            programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
+            programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
+            this.programConfigurations[layer.id] = programConfiguration;
         }
 
         this.segments = [];
@@ -132,13 +121,8 @@ class ArrayGroup {
     }
 
     populatePaintArrays(featureProperties: Object) {
-        for (const key in this.layerData) {
-            const layerData = this.layerData[key];
-            if (layerData.paintVertexArray.bytesPerElement === 0) continue;
-            layerData.programConfiguration.populatePaintArray(
-                layerData.layer,
-                layerData.paintVertexArray,
-                layerData.paintPropertyStatistics,
+        for (const key in this.programConfigurations) {
+            this.programConfigurations[key].populatePaintArray(
                 this.layoutVertexArray.length,
                 featureProperties);
         }
@@ -154,21 +138,19 @@ class ArrayGroup {
             dynamicLayoutVertexArray: this.dynamicLayoutVertexArray && this.dynamicLayoutVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
-            paintVertexArrays: serializePaintVertexArrays(this.layerData, transferables),
+            paintVertexArrays: serializePaintVertexArrays(this.programConfigurations, transferables),
             segments: this.segments,
             segments2: this.segments2
         };
     }
 }
 
-function serializePaintVertexArrays(layerData: {[string]: LayerData}, transferables?: Array<Transferable>) {
+function serializePaintVertexArrays(programConfigurations: {[string]: ProgramConfiguration}, transferables?: Array<Transferable>) {
     const paintVertexArrays = {};
-    for (const layerId in layerData) {
-        const inputArray = layerData[layerId].paintVertexArray;
-        if (inputArray.length === 0) continue;
-        const array = inputArray.serialize(transferables);
-        const type = inputArray.constructor.serialize();
-        paintVertexArrays[layerId] = {array, type};
+    for (const layerId in programConfigurations) {
+        const serialized = programConfigurations[layerId].serialize(transferables);
+        if (!serialized) continue;
+        paintVertexArrays[layerId] = serialized;
     }
     return paintVertexArrays;
 }
