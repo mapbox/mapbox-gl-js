@@ -3,7 +3,7 @@
 const Buffer = require('./buffer');
 const {ProgramConfigurationSet} = require('./program_configuration');
 const createVertexArrayType = require('./vertex_array_type');
-const VertexArrayObject = require('../render/vertex_array_object');
+const {SegmentVector} = require('./segment');
 
 import type StyleLayer from '../style/style_layer';
 import type {ProgramInterface} from './program_configuration';
@@ -23,8 +23,8 @@ class BufferGroup {
     elementBuffer: Buffer;
     elementBuffer2: Buffer;
     programConfigurations: ProgramConfigurationSet;
-    segments: Array<any>;
-    segments2: Array<any>;
+    segments: SegmentVector;
+    segments2: SegmentVector;
 
     constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays: SerializedArrayGroup) {
         const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
@@ -50,17 +50,11 @@ class BufferGroup {
 
         this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.paintVertexArrays);
 
-        this.segments = arrays.segments;
-        this.segments2 = arrays.segments2;
+        this.segments = new SegmentVector(arrays.segments);
+        this.segments.createVAOs(layers);
 
-        for (const segments of [this.segments, this.segments2]) {
-            for (const segment of segments || []) {
-                segment.vaos = {};
-                for (const layer of layers) {
-                    segment.vaos[layer.id] = new VertexArrayObject();
-                }
-            }
-        }
+        this.segments2 = new SegmentVector(arrays.segments2);
+        this.segments2.createVAOs(layers);
     }
 
     destroy() {
@@ -76,13 +70,8 @@ class BufferGroup {
             this.elementBuffer2.destroy();
         }
         this.programConfigurations.destroy();
-        for (const segments of [this.segments, this.segments2]) {
-            for (const segment of segments || []) {
-                for (const k in segment.vaos) {
-                    segment.vaos[k].destroy();
-                }
-            }
-        }
+        this.segments.destroy();
+        this.segments2.destroy();
     }
 }
 

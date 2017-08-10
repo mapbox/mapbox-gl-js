@@ -10,7 +10,7 @@ const {packUint8ToFloat} = require('../../shaders/encode_attribute');
 import type {BucketParameters} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
 import type Point from '@mapbox/point-geometry';
-import type {Segment} from '../array_group';
+import type {Segment} from '../segment';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.

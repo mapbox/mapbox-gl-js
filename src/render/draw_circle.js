@@ -54,7 +54,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             layer.paint['circle-translate-anchor']
         ));
 
-        for (const segment of buffers.segments) {
+        for (const segment of buffers.segments.get()) {
             segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
             gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
         }

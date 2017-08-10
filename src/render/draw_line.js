@@ -111,7 +111,7 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, programConf
 
     gl.uniform1f(program.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
-    for (const segment of buffers.segments) {
+    for (const segment of buffers.segments.get()) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }

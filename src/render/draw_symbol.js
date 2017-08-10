@@ -92,7 +92,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const bucket: SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
         const buffers = isText ? bucket.buffers.glyph : bucket.buffers.icon;
-        if (!buffers || !buffers.segments.length) continue;
+        if (!buffers || !buffers.segments.get().length) continue;
         const programConfiguration = buffers.programConfigurations.get(layer.id);
 
         const isSDF = isText || bucket.sdfIcons;
@@ -208,7 +208,7 @@ function drawSymbolElements(buffers, layer, gl, program) {
     const programConfiguration = buffers.programConfigurations.get(layer.id);
     const paintVertexBuffer = programConfiguration && programConfiguration.paintVertexBuffer;
 
-    for (const segment of buffers.segments) {
+    for (const segment of buffers.segments.get()) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
