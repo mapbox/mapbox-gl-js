@@ -2,7 +2,9 @@
 
 const {ProgramConfigurationSet} = require('./program_configuration');
 const createVertexArrayType = require('./vertex_array_type');
+const {SegmentVector} = require('./segment');
 
+import type {Segment} from './segment';
 import type StyleLayer from '../style/style_layer';
 import type {ProgramInterface} from './program_configuration';
 import type {
@@ -10,22 +12,6 @@ import type {
     SerializedStructArray,
     SerializedStructArrayType
 } from '../util/struct_array';
-
-class Segment {
-    vertexOffset: number;
-    primitiveOffset: number;
-    vertexLength: number;
-    primitiveLength: number;
-
-    constructor(vertexOffset: number, primitiveOffset: number) {
-        this.vertexOffset = vertexOffset;
-        this.primitiveOffset = primitiveOffset;
-        this.vertexLength = 0;
-        this.primitiveLength = 0;
-    }
-}
-
-export type {Segment as Segment};
 
 export type SerializedArrayGroup = {
     layoutVertexArray: SerializedStructArray,
@@ -62,16 +48,14 @@ export type SerializedArrayGroup = {
  * @private
  */
 class ArrayGroup {
-    static MAX_VERTEX_ARRAY_LENGTH: number;
-
     globalProperties: {zoom: number};
     layoutVertexArray: StructArray;
     dynamicLayoutVertexArray: StructArray;
     elementArray: StructArray;
     elementArray2: StructArray;
     programConfigurations: ProgramConfigurationSet;
-    segments: Array<Segment>;
-    segments2: Array<Segment>;
+    segments: SegmentVector;
+    segments2: SegmentVector;
 
     constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number) {
         this.globalProperties = {zoom};
@@ -92,26 +76,16 @@ class ArrayGroup {
 
         this.programConfigurations = new ProgramConfigurationSet(programInterface, layers, zoom);
 
-        this.segments = [];
-        this.segments2 = [];
+        this.segments = new SegmentVector();
+        this.segments2 = new SegmentVector();
     }
 
     prepareSegment(numVertices: number): Segment {
-        let segment = this.segments[this.segments.length - 1];
-        if (!segment || segment.vertexLength + numVertices > ArrayGroup.MAX_VERTEX_ARRAY_LENGTH) {
-            segment = new Segment(this.layoutVertexArray.length, this.elementArray.length);
-            this.segments.push(segment);
-        }
-        return segment;
+        return this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.elementArray);
     }
 
     prepareSegment2(numVertices: number): Segment {
-        let segment = this.segments2[this.segments2.length - 1];
-        if (!segment || segment.vertexLength + numVertices > ArrayGroup.MAX_VERTEX_ARRAY_LENGTH) {
-            segment = new Segment(this.layoutVertexArray.length, this.elementArray2.length);
-            this.segments2.push(segment);
-        }
-        return segment;
+        return this.segments2.prepareSegment(numVertices, this.layoutVertexArray, this.elementArray2);
     }
 
     populatePaintArrays(featureProperties: Object) {
@@ -129,18 +103,10 @@ class ArrayGroup {
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
             paintVertexArrays: this.programConfigurations.serialize(transferables),
-            segments: this.segments,
-            segments2: this.segments2
+            segments: this.segments.get(),
+            segments2: this.segments2.get()
         };
     }
 }
-
-/**
- * The maximum size of a vertex array. This limit is imposed by WebGL's 16 bit
- * addressing of vertex buffers.
- * @private
- * @readonly
- */
-ArrayGroup.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
 
 module.exports = ArrayGroup;

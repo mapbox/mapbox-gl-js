@@ -38,7 +38,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         gl.uniform1f(program.u_pitch, painter.transform.pitch / 360 * 2 * Math.PI);
         gl.uniform1f(program.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
 
-        for (const segment of buffers.segments) {
+        for (const segment of buffers.segments.get()) {
             segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
             gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
         }

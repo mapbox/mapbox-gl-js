@@ -67,7 +67,7 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, buffers, firstTi
 
     const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, programConfiguration, layer, tile, coord, firstTile);
 
-    for (const segment of buffers.segments) {
+    for (const segment of buffers.segments.get()) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
@@ -81,7 +81,7 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers, first
     const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
     gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    for (const segment of buffers.segments2) {
+    for (const segment of buffers.segments2.get()) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer2, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
     }
