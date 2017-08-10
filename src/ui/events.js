@@ -162,8 +162,39 @@ export type MapEvent =
      */
     | 'dblclick'
 
+    /**
+     * Fired when a pointing device (usually a mouse) enters a visible portion of a specified layer from
+     * outside that layer or outside the map canvas. This event can only be listened for via the three-argument
+     * version of {@link Map#on}, where the second argument specifies the desired layer.
+     *
+     * @event mouseenter
+     * @memberof Map
+     * @instance
+     * @property {MapMouseEvent} data
+     */
     | 'mouseenter'
+
+    /**
+     * Fired when a pointing device (usually a mouse) leaves a visible portion of a specified layer, or leaves
+     * the map canvas. This event can only be listened for via the three-argument version of {@link Map#on},
+     * where the second argument specifies the desired layer.
+     *
+     * @event mouseleave
+     * @memberof Map
+     * @instance
+     * @property {MapMouseEvent} data
+     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     */
     | 'mouseleave'
+
+    /**
+     * Synonym for `mouseenter`.
+     *
+     * @event mouseover
+     * @memberof Map
+     * @instance
+     * @property {MapMouseEvent} data
+     */
     | 'mouseover'
 
     /**
@@ -173,7 +204,6 @@ export type MapEvent =
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
-     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      */
     | 'mouseout'
 
