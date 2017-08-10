@@ -49,12 +49,12 @@ function updateOpacities(bucket: any, coord: any, lastOpacityChange: any) {
             }
 
             for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
-                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
+                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, opacityState.targetOpacity);
             }
             // Vertical text fades in/out on collision the same way as corresponding
             // horizontal text. Switch between vertical/horizontal should be instantaneous
             for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
-                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
+                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, opacityState.targetOpacity);
             }
         }
 
@@ -63,7 +63,7 @@ function updateOpacities(bucket: any, coord: any, lastOpacityChange: any) {
             const opacityState = symbolInstance.iconOpacityState;
             updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, lastOpacityChange);
             for (let i = 0; i < symbolInstance.numIconVertices; i++) {
-                iconOpacityArray.emplaceBack(opacityState.opacity * 10000, targetOpacity);
+                iconOpacityArray.emplaceBack(opacityState.opacity * 10000, opacityState.targetOpacity);
             }
         }
 
