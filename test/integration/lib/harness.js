@@ -175,7 +175,7 @@ module.exports = function (directory, implementation, options, run) {
                 failedCount, (100 * failedCount / totalCount).toFixed(1));
         }
 
-        const resultsTemplate = template(fs.readFileSync(path.join(directory, 'results.html.tmpl'), 'utf8'));
+        const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
         const failed = results.filter(r => /failed/.test(r.status));
