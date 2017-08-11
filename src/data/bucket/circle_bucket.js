@@ -1,12 +1,14 @@
 // @flow
 
-const Bucket = require('../bucket');
+const ArrayGroup = require('../array_group');
+const BufferGroup = require('../buffer_group');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
-import type {BucketParameters} from '../bucket';
+import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
+import type StyleLayer from '../../style/style_layer';
 
 const circleInterface = {
     layoutAttributes: [
@@ -38,11 +40,59 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * vector that is where it points.
  * @private
  */
-class CircleBucket extends Bucket {
+class CircleBucket implements Bucket {
     static programInterface: ProgramInterface;
 
+    index: number;
+    zoom: number;
+    overscaling: number;
+    layers: Array<StyleLayer>;
+    buffers: BufferGroup;
+    arrays: ArrayGroup;
+
     constructor(options: BucketParameters) {
-        super(options, circleInterface);
+        this.zoom = options.zoom;
+        this.overscaling = options.overscaling;
+        this.layers = options.layers;
+        this.index = options.index;
+
+        if (options.arrays) {
+            this.buffers = new BufferGroup(circleInterface, options.layers, options.zoom, options.arrays);
+        } else {
+            this.arrays = new ArrayGroup(circleInterface, options.layers, options.zoom);
+        }
+    }
+
+    populate(features: Array<IndexedFeature>, options: PopulateParameters) {
+        for (const {feature, index, sourceLayerIndex} of features) {
+            if (this.layers[0].filter(feature)) {
+                this.addFeature(feature);
+                options.featureIndex.insert(feature, index, sourceLayerIndex, this.index);
+            }
+        }
+    }
+
+    getPaintPropertyStatistics() {
+        return this.arrays.programConfigurations.getPaintPropertyStatistics();
+    }
+
+    isEmpty() {
+        return this.arrays.isEmpty();
+    }
+
+    serialize(transferables?: Array<Transferable>): SerializedBucket {
+        return {
+            zoom: this.zoom,
+            layerIds: this.layers.map((l) => l.id),
+            arrays: this.arrays.serialize(transferables)
+        };
+    }
+
+    destroy() {
+        if (this.buffers) {
+            this.buffers.destroy();
+            (this: any).buffers = null;
+        }
     }
 
     addFeature(feature: VectorTileFeature) {

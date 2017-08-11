@@ -12,6 +12,7 @@ const vec3 = glMatrix.vec3;
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
+import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import type TileCoord from '../source/tile_coord';
 
 module.exports = draw;
@@ -110,7 +111,7 @@ function renderTextureToMap(gl, painter, layer, texture) {
 
 function drawExtrusion(painter, source, layer, coord) {
     const tile = source.getTile(coord);
-    const bucket = tile.getBucket(layer);
+    const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
     if (!bucket) return;
 
     const buffers = bucket.buffers;

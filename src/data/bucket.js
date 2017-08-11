@@ -1,13 +1,11 @@
 // @flow
 
-const ArrayGroup = require('./array_group');
-const BufferGroup = require('./buffer_group');
 const util = require('../util/util');
 
 import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
-import type {ProgramInterface} from './program_configuration';
+import type {PaintPropertyStatistics} from './program_configuration';
 import type FeatureIndex from './feature_index';
 import type {SerializedArrayGroup} from './array_group';
 
@@ -39,10 +37,10 @@ export type IndexedFeature = {
 }
 
 /**
- * The `Bucket` class is the single point of knowledge about turning vector
+ * The `Bucket` interface is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
  *
- * `Bucket` is an abstract class. A subclass exists for each style layer type.
+ * `Bucket` is an abstract interface. An implementation exists for each style layer type.
  * Create a bucket via the `StyleLayer#createBucket` method.
  *
  * The concrete bucket types, using layout options from the style layer,
@@ -61,17 +59,24 @@ export type IndexedFeature = {
  *
  * @private
  */
-class Bucket {
-    index: number;
-    zoom: number;
-    overscaling: number;
-    layers: Array<StyleLayer>;
-    buffers: BufferGroup;
-    arrays: ArrayGroup;
+export interface Bucket {
+    populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
+    getPaintPropertyStatistics(): PaintPropertyStatistics;
+    isEmpty(): boolean;
+    serialize(transferables?: Array<Transferable>): SerializedBucket;
 
-    +addFeature: (feature: VectorTileFeature) => void;
+    /**
+     * Release the WebGL resources associated with the buffers. Note that because
+     * buckets are shared between layers having the same layout properties, they
+     * must be destroyed in groups (all buckets for a tile, or all symbol buckets).
+     *
+     * @private
+     */
+    destroy(): void;
+}
 
-    static deserialize(input: Array<SerializedBucket>, style: Style): {[string]: Bucket} {
+module.exports = {
+    deserialize(input: Array<SerializedBucket>, style: Style): {[string]: Bucket} {
         const output = {};
 
         // Guard against the case where the map's style has been set to null while
@@ -95,58 +100,4 @@ class Bucket {
 
         return output;
     }
-
-    constructor(options: BucketParameters, programInterface: ProgramInterface) {
-        this.zoom = options.zoom;
-        this.overscaling = options.overscaling;
-        this.layers = options.layers;
-        this.index = options.index;
-
-        if (options.arrays) {
-            this.buffers = new BufferGroup(programInterface, options.layers, options.zoom, options.arrays);
-        } else {
-            this.arrays = new ArrayGroup(programInterface, options.layers, options.zoom);
-        }
-    }
-
-    populate(features: Array<IndexedFeature>, options: PopulateParameters) {
-        for (const {feature, index, sourceLayerIndex} of features) {
-            if (this.layers[0].filter(feature)) {
-                this.addFeature(feature);
-                options.featureIndex.insert(feature, index, sourceLayerIndex, this.index);
-            }
-        }
-    }
-
-    getPaintPropertyStatistics() {
-        return this.arrays.programConfigurations.getPaintPropertyStatistics();
-    }
-
-    isEmpty() {
-        return this.arrays.isEmpty();
-    }
-
-    serialize(transferables?: Array<Transferable>): SerializedBucket {
-        return {
-            zoom: this.zoom,
-            layerIds: this.layers.map((l) => l.id),
-            arrays: this.arrays.serialize(transferables)
-        };
-    }
-
-    /**
-     * Release the WebGL resources associated with the buffers. Note that because
-     * buckets are shared between layers having the same layout properties, they
-     * must be destroyed in groups (all buckets for a tile, or all symbol buckets).
-     *
-     * @private
-     */
-    destroy() {
-        if (this.buffers) {
-            this.buffers.destroy();
-            (this: any).buffers = null;
-        }
-    }
-}
-
-module.exports = Bucket;
+};

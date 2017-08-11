@@ -24,7 +24,7 @@ const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.
 const createStructArrayType = require('../../util/struct_array');
 const verticalizePunctuation = require('../../util/verticalize_punctuation');
 
-import type {BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
+import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
 import type CollisionBoxArray, {CollisionBox} from '../../symbol/collision_box';
 import type CollisionTile from '../../symbol/collision_tile';
@@ -228,7 +228,7 @@ function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoo
  *
  * @private
  */
-class SymbolBucket {
+class SymbolBucket implements Bucket {
     static programInterfaces: {
         glyph: ProgramInterface,
         icon: ProgramInterface,

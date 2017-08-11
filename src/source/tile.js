@@ -1,7 +1,8 @@
 // @flow
 
 const util = require('../util/util');
-const Bucket = require('../data/bucket');
+const deserializeBucket = require('../data/bucket').deserialize;
+const SymbolBucket = require('../data/bucket/symbol_bucket');
 const FeatureIndex = require('../data/feature_index');
 const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
@@ -13,6 +14,8 @@ const Throttler = require('../util/throttler');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
+import type {Bucket} from '../data/bucket';
+import type StyleLayer from '../style/style_layer';
 import type TileCoord from './tile_coord';
 import type {WorkerTileResult} from './worker_source';
 
@@ -131,7 +134,7 @@ class Tile {
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
         this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
-        this.buckets = Bucket.deserialize(data.buckets, painter.style);
+        this.buckets = deserializeBucket(data.buckets, painter.style);
     }
 
     /**
@@ -152,14 +155,14 @@ class Tile {
 
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (bucket.layers[0].type === 'symbol') {
+            if (bucket instanceof SymbolBucket) {
                 bucket.destroy();
                 delete this.buckets[id];
             }
         }
 
         // Add new symbol buckets
-        util.extend(this.buckets, Bucket.deserialize(data.buckets, style));
+        util.extend(this.buckets, deserializeBucket(data.buckets, style));
     }
 
     /**
@@ -244,7 +247,7 @@ class Tile {
         }, this.workerID);
     }
 
-    getBucket(layer: any) {
+    getBucket(layer: StyleLayer) {
         return this.buckets[layer.id];
     }
 
