@@ -879,7 +879,7 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform, showCollisionBoxes, forceFullPlacement, lastOpacityChange) {
+    _redoPlacement(transform, showCollisionBoxes, forceFullPlacement, collisionFadeTimes) {
         // TODO: There are sure to be bugs depending on this boolean flag for when to do a full placement...
         // Make style aware itself of when it needs to re-build?
 
@@ -905,7 +905,7 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, layer, posMatrices[id], transform, lastOpacityChange);
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
             }
             if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
                 const elapsed = browser.now() - startPlacement;

@@ -36,7 +36,8 @@ module.exports = function(style, options, _callback) {
         classes: options.classes,
         interactive: false,
         attributionControl: false,
-        preserveDrawingBuffer: true
+        preserveDrawingBuffer: true,
+        collisionFadeDuration: 0
     });
 
     // Configure the map to never stop the render loop

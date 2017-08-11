@@ -164,7 +164,7 @@ class Tile {
         }
     }
 
-    redoPlacement(source: any, showCollisionBoxes: boolean, collisionTile: ?CollisionTile, layer: any, posMatrix: Float32Array, lastOpacityChange: any) {
+    redoPlacement(source: any, showCollisionBoxes: boolean, collisionTile: ?CollisionTile, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -183,7 +183,7 @@ class Tile {
             const pixelRatio = pixelsToTileUnits(this, 1, collisionTile.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionTile.transform, pixelRatio);
             PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, collisionTile.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix, this.coord.id, this.collisionBoxArray);
-            PlaceSymbols.updateOpacities(bucket, this.coord, lastOpacityChange);
+            PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
         }
 
         this.collisionTile = collisionTile;
