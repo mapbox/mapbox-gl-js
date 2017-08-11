@@ -54,7 +54,7 @@ class CollisionTile {
 
         for (let k = 0; k < collisionBoxes.length; k += 6) {
             const projectedPoint = this.projectAndGetPerspectiveRatio(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
-            const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
+            const tileToViewport = pixelsToTileUnits * scale / projectedPoint.perspectiveRatio;
             const tlX = collisionBoxes[k] / tileToViewport + projectedPoint.point.x;
             const tlY = collisionBoxes[k + 1] / tileToViewport + projectedPoint.point.y;
             const brX = collisionBoxes[k + 2] / tileToViewport + projectedPoint.point.x;
@@ -220,7 +220,7 @@ class CollisionTile {
             // TODO: This is still treating collision circles as boxes (which means we're slightly more likely
             // to include them in our results). Also we're kind of needlessly reprojecting the box here
             const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPoint);
-            const tileToViewport = projectedPoint.perspectiveRatio * pixelsToTileUnits * scale;
+            const tileToViewport = pixelsToTileUnits * scale / projectedPoint.perspectiveRatio;
             const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
             const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
             const x2 = blocking.x2 / tileToViewport + projectedPoint.point.x;
@@ -301,7 +301,7 @@ class CollisionTile {
         );
         return {
             point: a,
-            perspectiveRatio: 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance)
+            perspectiveRatio: 0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3])
         };
     }
 
