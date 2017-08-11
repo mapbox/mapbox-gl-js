@@ -4,6 +4,7 @@ const createVertexArrayType = require('./vertex_array_type');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const Buffer = require('./buffer');
+const util = require('../util/util');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray} from '../util/struct_array';
@@ -292,8 +293,7 @@ class ProgramConfiguration {
         return paintPropertyStatistics;
     }
 
-    populatePaintArray(length: number,
-                       featureProperties: Object) {
+    populatePaintArray(length: number, featureProperties: Object) {
         const paintArray = this.paintVertexArray;
         if (paintArray.bytesPerElement === 0) return;
 
@@ -332,4 +332,68 @@ class ProgramConfiguration {
     }
 }
 
-module.exports = ProgramConfiguration;
+class ProgramConfigurationSet {
+    programConfigurations: {[string]: ProgramConfiguration};
+
+    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number) {
+        this.programConfigurations = {};
+        for (const layer of layers) {
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+            programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
+            programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
+            this.programConfigurations[layer.id] = programConfiguration;
+        }
+    }
+
+    static deserialize(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays) {
+        const self = Object.create(ProgramConfigurationSet.prototype);
+        self.programConfigurations = {};
+        for (const layer of layers) {
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+            const array = arrays[layer.id];
+            if (array) {
+                programConfiguration.paintVertexBuffer = new Buffer(array.array, array.type, Buffer.BufferType.VERTEX);
+            }
+            self.programConfigurations[layer.id] = programConfiguration;
+        }
+        return self;
+    }
+
+    populatePaintArrays(length: number, featureProperties: Object) {
+        for (const key in this.programConfigurations) {
+            this.programConfigurations[key].populatePaintArray(length, featureProperties);
+        }
+    }
+
+    getPaintPropertyStatistics() {
+        return util.mapObject(this.programConfigurations, config => config.paintPropertyStatistics);
+    }
+
+    serialize(transferables?: Array<Transferable>) {
+        const paintVertexArrays = {};
+        for (const layerId in this.programConfigurations) {
+            const serialized = this.programConfigurations[layerId].serialize(transferables);
+            if (!serialized) continue;
+            paintVertexArrays[layerId] = serialized;
+        }
+        return paintVertexArrays;
+    }
+
+    get(layerId: string) {
+        return this.programConfigurations[layerId];
+    }
+
+    destroy() {
+        for (const layerId in this.programConfigurations) {
+            const paintVertexBuffer = this.programConfigurations[layerId].paintVertexBuffer;
+            if (paintVertexBuffer) {
+                paintVertexBuffer.destroy();
+            }
+        }
+    }
+}
+
+module.exports = {
+    ProgramConfiguration,
+    ProgramConfigurationSet
+};

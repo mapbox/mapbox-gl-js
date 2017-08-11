@@ -89,7 +89,7 @@ test('Bucket', (t) => {
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
 
-        const paintVertex = bucket.arrays.programConfigurations.layerid.paintVertexArray;
+        const paintVertex = bucket.arrays.programConfigurations.get('layerid').paintVertexArray;
         t.equal(paintVertex.length, 1);
         const p0 = paintVertex.get(0);
         t.equal(p0.a_opacity, 17);
@@ -119,8 +119,8 @@ test('Bucket', (t) => {
         bucket.populate([{feature: createFeature(17, 42)}], createOptions());
 
         const v0 = bucket.arrays.layoutVertexArray.get(0);
-        const a0 = bucket.arrays.programConfigurations.one.paintVertexArray.get(0);
-        const b0 = bucket.arrays.programConfigurations.two.paintVertexArray.get(0);
+        const a0 = bucket.arrays.programConfigurations.get('one').paintVertexArray.get(0);
+        const b0 = bucket.arrays.programConfigurations.get('two').paintVertexArray.get(0);
         t.equal(a0.a_opacity, 17);
         t.equal(b0.a_opacity, 17);
         t.equal(v0.a_box0, 34);
@@ -182,7 +182,7 @@ test('Bucket', (t) => {
         t.equal(bucket.arrays.layoutVertexArray.arrayBuffer, transferables[0]);
         t.equal(bucket.arrays.elementArray.arrayBuffer, transferables[1]);
         t.equal(bucket.arrays.elementArray2.arrayBuffer, transferables[2]);
-        t.equal(bucket.arrays.programConfigurations.layerid.paintVertexArray.arrayBuffer, transferables[3]);
+        t.equal(bucket.arrays.programConfigurations.get('layerid').paintVertexArray.arrayBuffer, transferables[3]);
 
         t.end();
     });

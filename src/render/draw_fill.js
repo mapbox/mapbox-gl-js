@@ -63,7 +63,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
 
 function drawFillTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
     const gl = painter.gl;
-    const programConfiguration = buffers.programConfigurations[layer.id];
+    const programConfiguration = buffers.programConfigurations.get(layer.id);
 
     const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, programConfiguration, layer, tile, coord, firstTile);
 
@@ -75,7 +75,7 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, buffers, firstTi
 
 function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
     const gl = painter.gl;
-    const programConfiguration = buffers.programConfigurations[layer.id];
+    const programConfiguration = buffers.programConfigurations.get(layer.id);
     const usePattern = layer.paint['fill-pattern'] && !layer.getPaintProperty('fill-outline-color');
 
     const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
