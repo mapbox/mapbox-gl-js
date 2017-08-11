@@ -4,6 +4,7 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';
 import type TileCoord from '../source/tile_coord';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
 
 module.exports = drawCollisionDebug;
 
@@ -19,9 +20,9 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer);
+        const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        const buffers = (bucket.buffers: any).collisionBox;
+        const buffers = bucket.buffers.collisionBox;
         if (!buffers) continue;
 
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);

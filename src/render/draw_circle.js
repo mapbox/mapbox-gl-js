@@ -6,6 +6,7 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type CircleStyleLayer from '../style/style_layer/circle_style_layer';
+import type CircleBucket from '../data/bucket/circle_bucket';
 import type TileCoord from '../source/tile_coord';
 
 module.exports = drawCircles;
@@ -26,7 +27,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const coord = coords[i];
 
         const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer);
+        const bucket: ?CircleBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
         const buffers = bucket.buffers;

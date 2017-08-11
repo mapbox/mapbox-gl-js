@@ -5,6 +5,7 @@ const pattern = require('./pattern');
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillStyleLayer from '../style/style_layer/fill_style_layer';
+import type FillBucket from '../data/bucket/fill_bucket';
 import type TileCoord from '../source/tile_coord';
 
 module.exports = drawFill;
@@ -52,7 +53,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
     let firstTile = true;
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer);
+        const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
         painter.enableTileClippingMask(coord);

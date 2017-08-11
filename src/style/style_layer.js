@@ -8,7 +8,7 @@ const validateStyle = require('./validate_style');
 const parseColor = require('./../style-spec/util/parse_color');
 const Evented = require('../util/evented');
 
-import type Bucket, {BucketParameters} from '../data/bucket';
+import type {Bucket, BucketParameters} from '../data/bucket';
 
 export type GlobalProperties = {
     zoom: number

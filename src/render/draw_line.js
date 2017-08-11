@@ -6,6 +6,7 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
+import type LineBucket from '../data/bucket/line_bucket';
 import type TileCoord from '../source/tile_coord';
 
 module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<TileCoord>) {
@@ -28,7 +29,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer);
+        const bucket: ?LineBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
         const programConfiguration = bucket.buffers.programConfigurations.get(layer.id);
