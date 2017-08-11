@@ -4,7 +4,7 @@ const assert = require('assert');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 import type Painter from './painter';
-import type {Program} from './program';
+import type Program from './program';
 import type TileCoord from '../source/tile_coord';
 
 type CrossFaded<T> = {

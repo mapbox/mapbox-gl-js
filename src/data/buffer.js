@@ -7,7 +7,7 @@ import type {
     SerializedStructArrayType
 } from '../util/struct_array';
 
-import type {Program} from '../render/program';
+import type Program from '../render/program';
 
 /**
  * @enum {string} AttributeType

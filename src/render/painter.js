@@ -13,7 +13,7 @@ const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const shaders = require('../shaders');
-const assert = require('assert');
+const Program = require('./program');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -29,7 +29,6 @@ const draw = {
 import type Transform from '../geo/transform';
 import type Tile from '../source/tile';
 import type TileCoord from '../source/tile_coord';
-import type {Program} from './program';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
@@ -417,74 +416,11 @@ class Painter {
         }
     }
 
-    createProgram(name: string, configuration: ProgramConfiguration): Program {
-        const gl = this.gl;
-        const program = gl.createProgram();
-
-        const defines = configuration.defines().concat(
-            `#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}`);
-        if (this._showOverdrawInspector) {
-            defines.push('#define OVERDRAW_INSPECTOR;');
-        }
-
-        const fragmentSource = defines.concat(shaders.prelude.fragmentSource, shaders[name].fragmentSource).join('\n');
-        const vertexSource = defines.concat(shaders.prelude.vertexSource, shaders[name].vertexSource).join('\n');
-
-        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, fragmentSource);
-        gl.compileShader(fragmentShader);
-        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader): any));
-        gl.attachShader(program, fragmentShader);
-
-        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, vertexSource);
-        gl.compileShader(vertexShader);
-        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader): any));
-        gl.attachShader(program, vertexShader);
-
-        // Manually bind layout attributes in the order defined by their
-        // ProgramInterface so that we don't dynamically link an unused
-        // attribute at position 0, which can cause rendering to fail for an
-        // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration.interface ? configuration.interface.layoutAttributes : [];
-        for (let i = 0; i < layoutAttributes.length; i++) {
-            gl.bindAttribLocation(program, i, layoutAttributes[i].name);
-        }
-
-        gl.linkProgram(program);
-        assert(gl.getProgramParameter(program, gl.LINK_STATUS), (gl.getProgramInfoLog(program): any));
-
-        const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-        const result = {
-            program,
-            numAttributes,
-            attributes: {},
-            uniforms: {}
-        };
-
-        for (let i = 0; i < numAttributes; i++) {
-            const attribute = gl.getActiveAttrib(program, i);
-            if (attribute) {
-                result.attributes[attribute.name] = gl.getAttribLocation(program, attribute.name);
-            }
-        }
-
-        const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-        for (let i = 0; i < numUniforms; i++) {
-            const uniform = gl.getActiveUniform(program, i);
-            if (uniform) {
-                result.uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name);
-            }
-        }
-
-        return result;
-    }
-
     _createProgramCached(name: string, programConfiguration: ProgramConfiguration): Program {
         this.cache = this.cache || {};
         const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
-            this.cache[key] = this.createProgram(name, programConfiguration);
+            this.cache[key] = new Program(this.gl, shaders[name], programConfiguration, this._showOverdrawInspector);
         }
         return this.cache[key];
     }
