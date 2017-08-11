@@ -7,7 +7,7 @@ import type {
     SerializedStructArrayType
 } from '../util/struct_array';
 
-import type {Program} from './program_configuration';
+import type {Program} from '../render/program';
 
 /**
  * @enum {string} AttributeType
@@ -96,7 +96,7 @@ class Buffer {
     enableAttributes(gl: WebGLRenderingContext, program: Program) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
-            const attribIndex: number | void = program[member.name];
+            const attribIndex: number | void = program.attributes[member.name];
             if (attribIndex !== undefined) {
                 gl.enableVertexAttribArray(attribIndex);
             }
@@ -112,7 +112,7 @@ class Buffer {
     setVertexAttribPointers(gl: WebGLRenderingContext, program: Program, vertexOffset: number) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
-            const attribIndex: number | void = program[member.name];
+            const attribIndex: number | void = program.attributes[member.name];
 
             if (attribIndex !== undefined) {
                 gl.vertexAttribPointer(

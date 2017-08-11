@@ -4,7 +4,7 @@ const assert = require('assert');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 import type Painter from './painter';
-import type {Program} from '../data/program_configuration';
+import type {Program} from './program';
 import type TileCoord from '../source/tile_coord';
 
 type CrossFaded<T> = {
@@ -34,17 +34,17 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     const imagePosB = painter.spriteAtlas.getPattern(image.to);
     assert(imagePosA && imagePosB);
 
-    gl.uniform1i(program.u_image, 0);
-    gl.uniform2fv(program.u_pattern_tl_a, (imagePosA: any).tl);
-    gl.uniform2fv(program.u_pattern_br_a, (imagePosA: any).br);
-    gl.uniform2fv(program.u_pattern_tl_b, (imagePosB: any).tl);
-    gl.uniform2fv(program.u_pattern_br_b, (imagePosB: any).br);
-    gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
-    gl.uniform1f(program.u_mix, image.t);
-    gl.uniform2fv(program.u_pattern_size_a, (imagePosA: any).displaySize);
-    gl.uniform2fv(program.u_pattern_size_b, (imagePosB: any).displaySize);
-    gl.uniform1f(program.u_scale_a, image.fromScale);
-    gl.uniform1f(program.u_scale_b, image.toScale);
+    gl.uniform1i(program.uniforms.u_image, 0);
+    gl.uniform2fv(program.uniforms.u_pattern_tl_a, (imagePosA: any).tl);
+    gl.uniform2fv(program.uniforms.u_pattern_br_a, (imagePosA: any).br);
+    gl.uniform2fv(program.uniforms.u_pattern_tl_b, (imagePosB: any).tl);
+    gl.uniform2fv(program.uniforms.u_pattern_br_b, (imagePosB: any).br);
+    gl.uniform2fv(program.uniforms.u_texsize, painter.spriteAtlas.getPixelSize());
+    gl.uniform1f(program.uniforms.u_mix, image.t);
+    gl.uniform2fv(program.uniforms.u_pattern_size_a, (imagePosA: any).displaySize);
+    gl.uniform2fv(program.uniforms.u_pattern_size_b, (imagePosB: any).displaySize);
+    gl.uniform1f(program.uniforms.u_scale_a, image.fromScale);
+    gl.uniform1f(program.uniforms.u_scale_b, image.toScale);
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);
@@ -53,7 +53,7 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
 exports.setTile = function (tile: {coord: TileCoord, tileSize: number}, painter: Painter, program: Program) {
     const gl = painter.gl;
 
-    gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
+    gl.uniform1f(program.uniforms.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
 
     const numTiles = Math.pow(2, tile.coord.z);
     const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
@@ -62,6 +62,6 @@ exports.setTile = function (tile: {coord: TileCoord, tileSize: number}, painter:
     const pixelY = tileSizeAtNearestZoom * tile.coord.y;
 
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
-    gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
-    gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
+    gl.uniform2f(program.uniforms.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
+    gl.uniform2f(program.uniforms.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
 };

@@ -64,53 +64,53 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
             const widthA = posA.width * dasharray.fromScale;
             const widthB = posB.width * dasharray.toScale;
 
-            gl.uniform2f(program.u_patternscale_a, tileRatio / widthA, -posA.height / 2);
-            gl.uniform2f(program.u_patternscale_b, tileRatio / widthB, -posB.height / 2);
-            gl.uniform1f(program.u_sdfgamma, painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2);
+            gl.uniform2f(program.uniforms.u_patternscale_a, tileRatio / widthA, -posA.height / 2);
+            gl.uniform2f(program.uniforms.u_patternscale_b, tileRatio / widthB, -posB.height / 2);
+            gl.uniform1f(program.uniforms.u_sdfgamma, painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2);
 
         } else if (image) {
             imagePosA = painter.spriteAtlas.getPattern(image.from);
             imagePosB = painter.spriteAtlas.getPattern(image.to);
             if (!imagePosA || !imagePosB) return;
 
-            gl.uniform2f(program.u_pattern_size_a, imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosB.displaySize[1]);
-            gl.uniform2f(program.u_pattern_size_b, imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]);
-            gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
+            gl.uniform2f(program.uniforms.u_pattern_size_a, imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosB.displaySize[1]);
+            gl.uniform2f(program.uniforms.u_pattern_size_b, imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]);
+            gl.uniform2fv(program.uniforms.u_texsize, painter.spriteAtlas.getPixelSize());
         }
 
-        gl.uniform2f(program.u_gl_units_to_pixels, 1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]);
+        gl.uniform2f(program.uniforms.u_gl_units_to_pixels, 1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]);
     }
 
     if (programChanged) {
 
         if (dasharray) {
-            gl.uniform1i(program.u_image, 0);
+            gl.uniform1i(program.uniforms.u_image, 0);
             gl.activeTexture(gl.TEXTURE0);
             painter.lineAtlas.bind(gl);
 
-            gl.uniform1f(program.u_tex_y_a, (posA: any).y);
-            gl.uniform1f(program.u_tex_y_b, (posB: any).y);
-            gl.uniform1f(program.u_mix, dasharray.t);
+            gl.uniform1f(program.uniforms.u_tex_y_a, (posA: any).y);
+            gl.uniform1f(program.uniforms.u_tex_y_b, (posB: any).y);
+            gl.uniform1f(program.uniforms.u_mix, dasharray.t);
 
         } else if (image) {
-            gl.uniform1i(program.u_image, 0);
+            gl.uniform1i(program.uniforms.u_image, 0);
             gl.activeTexture(gl.TEXTURE0);
             painter.spriteAtlas.bind(gl, true);
 
-            gl.uniform2fv(program.u_pattern_tl_a, (imagePosA: any).tl);
-            gl.uniform2fv(program.u_pattern_br_a, (imagePosA: any).br);
-            gl.uniform2fv(program.u_pattern_tl_b, (imagePosB: any).tl);
-            gl.uniform2fv(program.u_pattern_br_b, (imagePosB: any).br);
-            gl.uniform1f(program.u_fade, image.t);
+            gl.uniform2fv(program.uniforms.u_pattern_tl_a, (imagePosA: any).tl);
+            gl.uniform2fv(program.uniforms.u_pattern_br_a, (imagePosA: any).br);
+            gl.uniform2fv(program.uniforms.u_pattern_tl_b, (imagePosB: any).tl);
+            gl.uniform2fv(program.uniforms.u_pattern_br_b, (imagePosB: any).br);
+            gl.uniform1f(program.uniforms.u_fade, image.t);
         }
     }
 
     painter.enableTileClippingMask(coord);
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
-    gl.uniform1f(program.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
+    gl.uniform1f(program.uniforms.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
     for (const segment of bucket.segments.get()) {
         segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);

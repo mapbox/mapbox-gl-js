@@ -29,7 +29,7 @@ const draw = {
 import type Transform from '../geo/transform';
 import type Tile from '../source/tile';
 import type TileCoord from '../source/tile_coord';
-import type {Program} from '../data/program_configuration';
+import type {Program} from './program';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
@@ -227,7 +227,7 @@ class Painter {
             gl.stencilFunc(gl.ALWAYS, id, 0xFF);
 
             const program = this.useProgram('fill', this.basicFillProgramConfiguration);
-            gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
+            gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
             // Draw the clipping mask
             this.tileExtentVAO.bind(gl, program, this.tileExtentBuffer);
@@ -455,12 +455,17 @@ class Painter {
         assert(gl.getProgramParameter(program, gl.LINK_STATUS), (gl.getProgramInfoLog(program): any));
 
         const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-        const result = {program, numAttributes};
+        const result = {
+            program,
+            numAttributes,
+            attributes: {},
+            uniforms: {}
+        };
 
         for (let i = 0; i < numAttributes; i++) {
             const attribute = gl.getActiveAttrib(program, i);
             if (attribute) {
-                result[attribute.name] = gl.getAttribLocation(program, attribute.name);
+                result.attributes[attribute.name] = gl.getAttribLocation(program, attribute.name);
             }
         }
 
@@ -468,7 +473,7 @@ class Painter {
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(program, i);
             if (uniform) {
-                result[uniform.name] = gl.getUniformLocation(program, uniform.name);
+                result.uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name);
             }
         }
 

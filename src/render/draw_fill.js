@@ -80,7 +80,7 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
     const usePattern = layer.paint['fill-pattern'] && !layer.getPaintProperty('fill-outline-color');
 
     const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
-    gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     for (const segment of bucket.segments2.get()) {
         segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer2, programConfiguration.paintVertexBuffer, segment.vertexOffset);
@@ -104,7 +104,7 @@ function setFillProgram(programId, usePattern, painter, programConfiguration, la
         }
         pattern.setTile(tile, painter, program);
     }
-    painter.gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+    painter.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,
         layer.paint['fill-translate'],
         layer.paint['fill-translate-anchor']
