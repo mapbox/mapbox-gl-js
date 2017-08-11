@@ -108,21 +108,21 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         painter.enableTileClippingMask(coord);
 
-        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
-        gl.uniformMatrix4fv(program.u_gl_coord_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
+        gl.uniformMatrix4fv(program.uniforms.u_gl_coord_matrix, false, painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true));
 
         if (alongLine) {
-            gl.uniformMatrix4fv(program.u_label_plane_matrix, false, identityMat4);
+            gl.uniformMatrix4fv(program.uniforms.u_label_plane_matrix, false, identityMat4);
             symbolProjection.updateLineLabels(bucket, coord.posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, s, layer);
         } else {
-            gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
+            gl.uniformMatrix4fv(program.uniforms.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
+        gl.uniform1f(program.uniforms.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
 
@@ -137,12 +137,12 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     const gl = painter.gl;
     const tr = painter.transform;
 
-    gl.uniform1i(program.u_pitch_with_map, pitchWithMap ? 1 : 0);
+    gl.uniform1i(program.uniforms.u_pitch_with_map, pitchWithMap ? 1 : 0);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.uniform1i(program.u_texture, 0);
+    gl.uniform1i(program.uniforms.u_texture, 0);
 
-    gl.uniform1f(program.u_is_text, isText ? 1 : 0);
+    gl.uniform1f(program.uniforms.u_is_text, isText ? 1 : 0);
 
     if (isText) {
         // use the fonstack used when parsing the tile, not the fontstack
@@ -151,7 +151,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         if (!glyphAtlas) return;
 
         glyphAtlas.updateTexture(gl);
-        gl.uniform2f(program.u_texsize, glyphAtlas.width, glyphAtlas.height);
+        gl.uniform2f(program.uniforms.u_texsize, glyphAtlas.width, glyphAtlas.height);
     } else {
         const mapMoving = painter.options.rotating || painter.options.zooming;
         const iconSizeScaled = !layer.isLayoutValueFeatureConstant('icon-size') ||
@@ -160,26 +160,26 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         const iconScaled = iconSizeScaled || iconsNeedLinear;
         const iconTransformed = pitchWithMap || tr.pitch !== 0;
         painter.spriteAtlas.bind(gl, isSDF || mapMoving || iconScaled || iconTransformed);
-        gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
+        gl.uniform2fv(program.uniforms.u_texsize, painter.spriteAtlas.getPixelSize());
     }
 
     gl.activeTexture(gl.TEXTURE1);
     painter.frameHistory.bind(gl);
-    gl.uniform1i(program.u_fadetexture, 1);
+    gl.uniform1i(program.uniforms.u_fadetexture, 1);
 
-    gl.uniform1f(program.u_pitch, tr.pitch / 360 * 2 * Math.PI);
+    gl.uniform1f(program.uniforms.u_pitch, tr.pitch / 360 * 2 * Math.PI);
 
-    gl.uniform1i(program.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
-    gl.uniform1i(program.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
+    gl.uniform1i(program.uniforms.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
+    gl.uniform1i(program.uniforms.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
 
-    gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
+    gl.uniform1f(program.uniforms.u_camera_to_center_distance, tr.cameraToCenterDistance);
 
     const size = symbolSize.evaluateSizeForZoom(sizeData, tr, layer, isText);
-    if (size.uSizeT !== undefined) gl.uniform1f(program.u_size_t, size.uSizeT);
-    if (size.uSize !== undefined) gl.uniform1f(program.u_size, size.uSize);
+    if (size.uSizeT !== undefined) gl.uniform1f(program.uniforms.u_size_t, size.uSizeT);
+    if (size.uSize !== undefined) gl.uniform1f(program.uniforms.u_size, size.uSize);
 
-    gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
-    gl.uniform1i(program.u_rotate_symbol, rotateInShader ? 1 : 0);
+    gl.uniform1f(program.uniforms.u_aspect_ratio, tr.width / tr.height);
+    gl.uniform1i(program.uniforms.u_rotate_symbol, rotateInShader ? 1 : 0);
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
@@ -191,14 +191,14 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
         const haloWidthProperty = `${isText ? 'text' : 'icon'}-halo-width`;
         const hasHalo = !layer.isPaintValueFeatureConstant(haloWidthProperty) || layer.paint[haloWidthProperty];
         const gammaScale = (pitchWithMap ? Math.cos(tr._pitch) * tr.cameraToCenterDistance : 1);
-        gl.uniform1f(program.u_gamma_scale, gammaScale);
+        gl.uniform1f(program.uniforms.u_gamma_scale, gammaScale);
 
         if (hasHalo) { // Draw halo underneath the text.
-            gl.uniform1f(program.u_is_halo, 1);
+            gl.uniform1f(program.uniforms.u_is_halo, 1);
             drawSymbolElements(buffers, layer, gl, program);
         }
 
-        gl.uniform1f(program.u_is_halo, 0);
+        gl.uniform1f(program.uniforms.u_is_halo, 0);
     }
 
     drawSymbolElements(buffers, layer, gl, program);

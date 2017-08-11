@@ -28,8 +28,8 @@ function drawDebugTile(painter, sourceCache, coord) {
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');
 
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
-    gl.uniform4f(program.u_color, 1, 0, 0, 1);
+    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
+    gl.uniform4f(program.uniforms.u_color, 1, 0, 0, 1);
     painter.debugVAO.bind(gl, program, painter.debugBuffer);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
 
@@ -41,7 +41,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     const debugTextBuffer = Buffer.fromStructArray(debugTextArray, Buffer.BufferType.VERTEX);
     const debugTextVAO = new VertexArrayObject();
     debugTextVAO.bind(gl, program, debugTextBuffer);
-    gl.uniform4f(program.u_color, 1, 1, 1, 1);
+    gl.uniform4f(program.uniforms.u_color, 1, 1, 1, 1);
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
@@ -50,12 +50,12 @@ function drawDebugTile(painter, sourceCache, coord) {
     const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (let i = 0; i < translations.length; i++) {
         const translation = translations[i];
-        gl.uniformMatrix4fv(program.u_matrix, false, mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]));
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]));
         gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
     }
 
-    gl.uniform4f(program.u_color, 0, 0, 0, 1);
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    gl.uniform4f(program.uniforms.u_color, 0, 0, 0, 1);
+    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
 }
 

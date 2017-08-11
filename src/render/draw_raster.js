@@ -44,14 +44,14 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     tile.registerFadeDuration(painter.style.animationLoop, layer.paint['raster-fade-duration']);
 
     const program = painter.useProgram('raster');
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
     // color parameters
-    gl.uniform1f(program.u_brightness_low, layer.paint['raster-brightness-min']);
-    gl.uniform1f(program.u_brightness_high, layer.paint['raster-brightness-max']);
-    gl.uniform1f(program.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
-    gl.uniform1f(program.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
-    gl.uniform3fv(program.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
+    gl.uniform1f(program.uniforms.u_brightness_low, layer.paint['raster-brightness-min']);
+    gl.uniform1f(program.uniforms.u_brightness_high, layer.paint['raster-brightness-max']);
+    gl.uniform1f(program.uniforms.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
+    gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
+    gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
     const parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
         fade = getFadeValues(tile, parentTile, layer, painter.transform);
@@ -73,13 +73,13 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     }
 
     // cross-fade parameters
-    gl.uniform2fv(program.u_tl_parent, parentTL || [0, 0]);
-    gl.uniform1f(program.u_scale_parent, parentScaleBy || 1);
-    gl.uniform1f(program.u_buffer_scale, 1);
-    gl.uniform1f(program.u_fade_t, fade.mix);
-    gl.uniform1f(program.u_opacity, fade.opacity * layer.paint['raster-opacity']);
-    gl.uniform1i(program.u_image0, 0);
-    gl.uniform1i(program.u_image1, 1);
+    gl.uniform2fv(program.uniforms.u_tl_parent, parentTL || [0, 0]);
+    gl.uniform1f(program.uniforms.u_scale_parent, parentScaleBy || 1);
+    gl.uniform1f(program.uniforms.u_buffer_scale, 1);
+    gl.uniform1f(program.uniforms.u_fade_t, fade.mix);
+    gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint['raster-opacity']);
+    gl.uniform1i(program.uniforms.u_image0, 0);
+    gl.uniform1i(program.uniforms.u_image1, 1);
 
     const buffer = tile.boundsBuffer || painter.rasterBoundsBuffer;
     const vao = tile.boundsVAO || painter.rasterBoundsVAO;

@@ -7,6 +7,7 @@ const Buffer = require('./buffer');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray, SerializedStructArray, SerializedStructArrayType} from '../util/struct_array';
+import type {Program} from '../render/program';
 
 type LayoutAttribute = {
     name: string,
@@ -30,10 +31,6 @@ export type ProgramInterface = {
     dynamicLayoutAttributes?: Array<LayoutAttribute>,
     paintAttributes?: Array<PaintAttribute>,
     elementArrayType2?: Class<StructArray>
-}
-
-export type Program = {
-    [string]: any
 }
 
 function packColor(color: [number, number, number, number]): [number, number] {
@@ -83,9 +80,9 @@ class ConstantBinder implements Binder {
     setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, {zoom}: { zoom: number }) {
         const value = layer.getPaintValue(this.property, { zoom: this.useIntegerZoom ? Math.floor(zoom) : zoom });
         if (this.type === 'color') {
-            gl.uniform4fv(program[`u_${this.name}`], value);
+            gl.uniform4fv(program.uniforms[`u_${this.name}`], value);
         } else {
-            gl.uniform1f(program[`u_${this.name}`], value);
+            gl.uniform1f(program.uniforms[`u_${this.name}`], value);
         }
     }
 }
@@ -132,7 +129,7 @@ class SourceFunctionBinder implements Binder {
     }
 
     setUniforms(gl: WebGLRenderingContext, program: Program) {
-        gl.uniform1f(program[`a_${this.name}_t`], 0);
+        gl.uniform1f(program.uniforms[`a_${this.name}_t`], 0);
     }
 }
 
@@ -188,7 +185,7 @@ class CompositeFunctionBinder implements Binder {
 
     setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, {zoom}: { zoom: number }) {
         const f = interpolationFactor(this.useIntegerZoom ? Math.floor(zoom) : zoom, 1, this.zoom, this.zoom + 1);
-        gl.uniform1f(program[`a_${this.name}_t`], f);
+        gl.uniform1f(program.uniforms[`a_${this.name}_t`], f);
     }
 }
 
