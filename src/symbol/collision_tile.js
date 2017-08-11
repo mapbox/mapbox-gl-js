@@ -301,7 +301,7 @@ class CollisionTile {
         );
         return {
             point: a,
-            perspectiveRatio: 1 + 0.5 * ((p[3] / this.transform.cameraToCenterDistance) - 1)
+            perspectiveRatio: 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance)
         };
     }
 

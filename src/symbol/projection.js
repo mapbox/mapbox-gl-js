@@ -159,7 +159,7 @@ function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, 
         }
 
         const cameraToAnchorDistance = anchorPos[3];
-        const perspectiveRatio = 1 + 0.5 * ((cameraToAnchorDistance / painter.transform.cameraToCenterDistance) - 1);
+        const perspectiveRatio = 0.5 + 0.5 * (cameraToAnchorDistance / painter.transform.cameraToCenterDistance);
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ?
