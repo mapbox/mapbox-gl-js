@@ -7,7 +7,7 @@ const Buffer = require('./buffer');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray, SerializedStructArray, SerializedStructArrayType} from '../util/struct_array';
-import type {Program} from '../render/program';
+import type Program from '../render/program';
 
 type LayoutAttribute = {
     name: string,
