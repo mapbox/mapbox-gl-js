@@ -910,14 +910,14 @@ class Style extends Evented {
             if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
                 const elapsed = browser.now() - startPlacement;
                 this._fullPlacementElapsed += elapsed;
-                console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+                //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
                 return true;
             }
         }
         const elapsed = browser.now() - startPlacement;
         this._fullPlacementElapsed += elapsed;
-        console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
-        console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time`);
+        //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+        //console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time`);
         return false;
     }
 
