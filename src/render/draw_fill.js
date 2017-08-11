@@ -57,33 +57,33 @@ function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
         if (!bucket) continue;
 
         painter.enableTileClippingMask(coord);
-        drawFn(painter, sourceCache, layer, tile, coord, bucket.buffers, firstTile);
+        drawFn(painter, sourceCache, layer, tile, coord, bucket, firstTile);
         firstTile = false;
     }
 }
 
-function drawFillTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
+function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
     const gl = painter.gl;
-    const programConfiguration = buffers.programConfigurations.get(layer.id);
+    const programConfiguration = bucket.programConfigurations.get(layer.id);
 
     const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, programConfiguration, layer, tile, coord, firstTile);
 
-    for (const segment of buffers.segments.get()) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
+    for (const segment of bucket.segments.get()) {
+        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }
 
-function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
+function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
     const gl = painter.gl;
-    const programConfiguration = buffers.programConfigurations.get(layer.id);
+    const programConfiguration = bucket.programConfigurations.get(layer.id);
     const usePattern = layer.paint['fill-pattern'] && !layer.getPaintProperty('fill-outline-color');
 
     const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
     gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    for (const segment of buffers.segments2.get()) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer2, programConfiguration.paintVertexBuffer, segment.vertexOffset);
+    for (const segment of bucket.segments2.get()) {
+        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer2, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
     }
 }

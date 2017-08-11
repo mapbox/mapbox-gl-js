@@ -84,20 +84,18 @@ test('FillBucket segmentation', (t) => {
         createPolygon(128)
     ]));
 
-    const arrays = bucket.arrays;
-
     // Each polygon must fit entirely within a segment, so we expect the
     // first segment to include the first feature and the first polygon
     // of the second feature, and the second segment to include the
     // second polygon of the second feature.
-    t.equal(arrays.layoutVertexArray.length, 266);
-    t.deepEqual(arrays.segments.get()[0], {
+    t.equal(bucket.layoutVertexArray.length, 266);
+    t.deepEqual(bucket.segments.get()[0], {
         vertexOffset: 0,
         vertexLength: 138,
         primitiveOffset: 0,
         primitiveLength: 134
     });
-    t.deepEqual(arrays.segments.get()[1], {
+    t.deepEqual(bucket.segments.get()[1], {
         vertexOffset: 138,
         vertexLength: 128,
         primitiveOffset: 134,

@@ -27,10 +27,10 @@ export type PaintPropertyStatistics = {
 
 export type ProgramInterface = {
     layoutAttributes: Array<LayoutAttribute>,
+    elementArrayType: Class<StructArray>,
     dynamicLayoutAttributes?: Array<LayoutAttribute>,
     paintAttributes?: Array<PaintAttribute>,
-    elementArrayType?: Class<StructArray>,
-    elementArrayType2?: Class<StructArray>,
+    elementArrayType2?: Class<StructArray>
 }
 
 export type Program = {

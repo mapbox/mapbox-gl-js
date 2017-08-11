@@ -1,18 +1,21 @@
 // @flow
 
-const ArrayGroup = require('../array_group');
-const BufferGroup = require('../buffer_group');
+const {SegmentVector} = require('../segment');
+const Buffer = require('../buffer');
+const {ProgramConfigurationSet} = require('../program_configuration');
+const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
 const {packUint8ToFloat} = require('../../shaders/encode_attribute');
 
-import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
+import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../segment';
+import type {StructArray} from '../../util/struct_array';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -83,6 +86,9 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
         (linesofar * LINE_DISTANCE_SCALE) >> 6);
 }
 
+const LayoutVertexArrayType = createVertexArrayType(lineInterface.layoutAttributes);
+const ElementArrayType = lineInterface.elementArrayType;
+
 /**
  * @private
  */
@@ -98,19 +104,33 @@ class LineBucket implements Bucket {
     zoom: number;
     overscaling: number;
     layers: Array<StyleLayer>;
-    buffers: BufferGroup;
-    arrays: ArrayGroup;
 
-    constructor(options: BucketParameters) {
+    layoutVertexArray: StructArray;
+    layoutVertexBuffer: Buffer;
+
+    elementArray: StructArray;
+    elementBuffer: Buffer;
+
+    programConfigurations: ProgramConfigurationSet;
+    segments: SegmentVector;
+
+    constructor(options: any) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.index = options.index;
 
-        if (options.arrays) {
-            this.buffers = new BufferGroup(lineInterface, options.layers, options.zoom, options.arrays);
+        if (options.layoutVertexArray) {
+            this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
+            this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+            this.programConfigurations = ProgramConfigurationSet.deserialize(lineInterface, options.layers, options.zoom, options.paintVertexArrays);
+            this.segments = new SegmentVector(options.segments);
+            this.segments.createVAOs(options.layers);
         } else {
-            this.arrays = new ArrayGroup(lineInterface, options.layers, options.zoom);
+            this.layoutVertexArray = new LayoutVertexArrayType();
+            this.elementArray = new ElementArrayType();
+            this.programConfigurations = new ProgramConfigurationSet(lineInterface, options.layers, options.zoom);
+            this.segments = new SegmentVector();
         }
     }
 
@@ -124,26 +144,29 @@ class LineBucket implements Bucket {
     }
 
     getPaintPropertyStatistics() {
-        return this.arrays.programConfigurations.getPaintPropertyStatistics();
+        return this.programConfigurations.getPaintPropertyStatistics();
     }
 
     isEmpty() {
-        return this.arrays.isEmpty();
+        return this.layoutVertexArray.length === 0;
     }
 
     serialize(transferables?: Array<Transferable>): SerializedBucket {
         return {
             zoom: this.zoom,
             layerIds: this.layers.map((l) => l.id),
-            arrays: this.arrays.serialize(transferables)
+            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
+            elementArray: this.elementArray.serialize(transferables),
+            paintVertexArrays: this.programConfigurations.serialize(transferables),
+            segments: this.segments.get(),
         };
     }
 
     destroy() {
-        if (this.buffers) {
-            this.buffers.destroy();
-            (this: any).buffers = null;
-        }
+        this.layoutVertexBuffer.destroy();
+        this.elementBuffer.destroy();
+        this.programConfigurations.destroy();
+        this.segments.destroy();
     }
 
     addFeature(feature: VectorTileFeature) {
@@ -180,10 +203,9 @@ class LineBucket implements Bucket {
         const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
         const firstVertex = vertices[first];
-        const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
-        const segment = arrays.prepareSegment(len * 10);
+        const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.elementArray);
 
         this.distance = 0;
 
@@ -423,7 +445,7 @@ class LineBucket implements Bucket {
             startOfLine = false;
         }
 
-        arrays.populatePaintArrays(featureProperties);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, featureProperties);
     }
 
     /**
@@ -444,9 +466,8 @@ class LineBucket implements Bucket {
                      round: boolean,
                      segment: Segment) {
         let extrude;
-        const arrays = this.arrays;
-        const layoutVertexArray = arrays.layoutVertexArray;
-        const elementArray = arrays.elementArray;
+        const layoutVertexArray = this.layoutVertexArray;
+        const elementArray = this.elementArray;
 
         extrude = normal.clone();
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
@@ -496,9 +517,8 @@ class LineBucket implements Bucket {
                       lineTurnsLeft: boolean,
                       segment: Segment) {
         extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-        const arrays = this.arrays;
-        const layoutVertexArray = arrays.layoutVertexArray;
-        const elementArray = arrays.elementArray;
+        const layoutVertexArray = this.layoutVertexArray;
+        const elementArray = this.elementArray;
 
         addLineVertex(layoutVertexArray, currentVertex, extrude, false, lineTurnsLeft, 0, distance);
         this.e3 = segment.vertexLength++;
