@@ -148,8 +148,8 @@ function updateLineLabels(bucket: SymbolBucket,
     const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 
     const dynamicLayoutVertexArray = isText ?
-        bucket.buffers.glyph.dynamicLayoutVertexArray :
-        bucket.buffers.icon.dynamicLayoutVertexArray;
+        bucket.text.dynamicLayoutVertexArray :
+        bucket.icon.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
 
     const lineVertexArray = bucket.lineVertexArray;
@@ -190,9 +190,9 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 
     if (isText) {
-        bucket.buffers.glyph.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
+        bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
     } else {
-        bucket.buffers.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
+        bucket.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
     }
 }
 

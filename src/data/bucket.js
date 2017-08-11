@@ -7,15 +7,13 @@ import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type {PaintPropertyStatistics} from './program_configuration';
 import type FeatureIndex from './feature_index';
-import type {SerializedArrayGroup} from './array_group';
 
 export type BucketParameters = {
     index: number,
     layers: Array<StyleLayer>,
     zoom: number,
     overscaling: number,
-    collisionBoxArray: CollisionBoxArray,
-    arrays?: SerializedArrayGroup
+    collisionBoxArray: CollisionBoxArray
 }
 
 export type PopulateParameters = {
@@ -26,8 +24,7 @@ export type PopulateParameters = {
 
 export type SerializedBucket = {
     zoom: number,
-    layerIds: Array<string>,
-    arrays: SerializedArrayGroup
+    layerIds: Array<string>
 }
 
 export type IndexedFeature = {

@@ -1,8 +1,10 @@
 // @flow
 
 const Point = require('@mapbox/point-geometry');
-const ArrayGroup = require('../array_group');
-const BufferGroup = require('../buffer_group');
+const {SegmentVector} = require('../segment');
+const Buffer = require('../buffer');
+const {ProgramConfigurationSet} = require('../program_configuration');
+const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const EXTENT = require('../extent');
 const {packUint8ToFloat} = require('../../shaders/encode_attribute');
@@ -28,7 +30,11 @@ import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters} from 
 import type {ProgramInterface} from '../program_configuration';
 import type CollisionBoxArray, {CollisionBox} from '../../symbol/collision_box';
 import type CollisionTile from '../../symbol/collision_tile';
-import type {StructArray} from '../../util/struct_array';
+import type {
+    StructArray,
+    SerializedStructArray,
+    SerializedStructArrayType
+} from '../../util/struct_array';
 import type StyleLayer from '../../style/style_layer';
 import type {Shaping, PositionedIcon} from '../../symbol/shaping';
 import type {SymbolQuad} from '../../symbol/quads';
@@ -120,7 +126,7 @@ const dynamicLayoutAttributes = [
 ];
 
 const symbolInterfaces = {
-    glyph: {
+    text: {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         elementArrayType: elementArrayType,
@@ -198,6 +204,83 @@ function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoo
         placementZoom * 10);
 }
 
+type SerializedSymbolBuffer = {
+    layoutVertexArray: SerializedStructArray,
+    dynamicLayoutVertexArray: SerializedStructArray,
+    elementArray: SerializedStructArray,
+    paintVertexArrays: {[string]: {
+        array: SerializedStructArray,
+        type: SerializedStructArrayType
+    }},
+    segments: Array<Object>,
+};
+
+class SymbolBuffers {
+    layoutVertexArray: StructArray;
+    layoutVertexBuffer: Buffer;
+
+    elementArray: StructArray;
+    elementBuffer: Buffer;
+
+    programConfigurations: ProgramConfigurationSet;
+    segments: SegmentVector;
+
+    dynamicLayoutVertexArray: StructArray;
+    dynamicLayoutVertexBuffer: Buffer;
+
+    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays?: SerializedSymbolBuffer) {
+        const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
+        const ElementArrayType = programInterface.elementArrayType;
+
+        if (arrays) {
+            this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
+            this.elementBuffer = new Buffer(arrays.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+            this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.paintVertexArrays);
+            this.segments = new SegmentVector(arrays.segments);
+            this.segments.createVAOs(layers);
+        } else {
+            this.layoutVertexArray = new LayoutVertexArrayType();
+            this.elementArray = new ElementArrayType();
+            this.programConfigurations = new ProgramConfigurationSet(programInterface, layers, zoom);
+            this.segments = new SegmentVector();
+        }
+
+        if (!programInterface.dynamicLayoutAttributes) {
+            return;
+        }
+
+        const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.dynamicLayoutAttributes);
+
+        if (arrays) {
+            this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType(arrays.dynamicLayoutVertexArray);
+            this.dynamicLayoutVertexBuffer = new Buffer(arrays.dynamicLayoutVertexArray,
+                DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
+        } else {
+            this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType();
+        }
+    }
+
+    serialize(transferables?: Array<Transferable>): SerializedSymbolBuffer {
+        return {
+            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
+            elementArray: this.elementArray.serialize(transferables),
+            paintVertexArrays: this.programConfigurations.serialize(transferables),
+            segments: this.segments.get(),
+            dynamicLayoutVertexArray: this.dynamicLayoutVertexArray && this.dynamicLayoutVertexArray.serialize(transferables),
+        };
+    }
+
+    destroy() {
+        this.layoutVertexBuffer.destroy();
+        this.elementBuffer.destroy();
+        this.programConfigurations.destroy();
+        this.segments.destroy();
+        if (this.dynamicLayoutVertexBuffer) {
+            this.dynamicLayoutVertexBuffer.destroy();
+        }
+    }
+}
+
 /**
  * Unlike other buckets, which simply implement #addFeature with type-specific
  * logic for (essentially) triangulating feature geometries, SymbolBucket
@@ -230,7 +313,7 @@ function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoo
  */
 class SymbolBucket implements Bucket {
     static programInterfaces: {
-        glyph: ProgramInterface,
+        text: ProgramInterface,
         icon: ProgramInterface,
         collisionBox: ProgramInterface
     };
@@ -246,8 +329,6 @@ class SymbolBucket implements Bucket {
     sdfIcons: boolean;
     iconsNeedLinear: boolean;
     fontstack: string;
-    symbolInterfaces: typeof symbolInterfaces;
-    buffers: {[string]: BufferGroup};
     textSizeData: any;
     iconSizeData: any;
     placedGlyphArray: StructArray;
@@ -255,14 +336,16 @@ class SymbolBucket implements Bucket {
     glyphOffsetArray: StructArray;
     lineVertexArray: StructArray;
     features: Array<SymbolFeature>;
-    arrays: {glyph: ArrayGroup, icon: ArrayGroup, collisionBox: ArrayGroup};
     symbolInstances: Array<SymbolInstance>;
     tilePixelRatio: number;
     compareText: {[string]: Array<Point>};
 
+    text: SymbolBuffers;
+    icon: SymbolBuffers;
+    collisionBox: SymbolBuffers;
+
     constructor(options: SymbolBucketParameters) {
         this.collisionBoxArray = options.collisionBoxArray;
-
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
@@ -271,19 +354,12 @@ class SymbolBucket implements Bucket {
         this.iconsNeedLinear = options.iconsNeedLinear;
         this.fontstack = options.fontstack;
 
-        // Set up 'program interfaces' dynamically based on the layer's style
-        // properties (specifically its text-size properties).
-        const layer = this.layers[0];
-        this.symbolInterfaces = symbolInterfaces;
-
         // deserializing a bucket created on a worker thread
-        if (options.arrays) {
-            this.buffers = {};
-            for (const id in options.arrays) {
-                if (options.arrays[id]) {
-                    this.buffers[id] = new BufferGroup(this.symbolInterfaces[id], options.layers, options.zoom, options.arrays[id]);
-                }
-            }
+        if (options.text) {
+            this.text = new SymbolBuffers(symbolInterfaces.text, options.layers, options.zoom, options.text);
+            this.icon = new SymbolBuffers(symbolInterfaces.icon, options.layers, options.zoom, options.icon);
+            this.collisionBox = new SymbolBuffers(symbolInterfaces.collisionBox, options.layers, options.zoom, options.collisionBox);
+
             this.textSizeData = options.textSizeData;
             this.iconSizeData = options.iconSizeData;
 
@@ -293,6 +369,7 @@ class SymbolBucket implements Bucket {
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
 
         } else {
+            const layer = this.layers[0];
             this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
             this.iconSizeData = getSizeData(this.zoom, layer, 'icon-size');
         }
@@ -380,17 +457,17 @@ class SymbolBucket implements Bucket {
     }
 
     isEmpty() {
-        return this.arrays.icon.isEmpty() &&
-            this.arrays.glyph.isEmpty() &&
-            this.arrays.collisionBox.isEmpty();
+        return this.icon.layoutVertexArray.length === 0 &&
+            this.text.layoutVertexArray.length === 0 &&
+            this.collisionBox.layoutVertexArray.length === 0;
     }
 
     getPaintPropertyStatistics() {
         const statistics = {};
         for (const layer of this.layers) {
             statistics[layer.id] = util.extend({},
-                this.arrays.icon.programConfigurations.get(layer.id).paintPropertyStatistics,
-                this.arrays.glyph.programConfigurations.get(layer.id).paintPropertyStatistics
+                this.icon.programConfigurations.get(layer.id).paintPropertyStatistics,
+                this.text.programConfigurations.get(layer.id).paintPropertyStatistics
             );
         }
         return statistics;
@@ -409,23 +486,16 @@ class SymbolBucket implements Bucket {
             placedIconArray: this.placedIconArray.serialize(transferables),
             glyphOffsetArray: this.glyphOffsetArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
-            arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
+            text: this.text.serialize(transferables),
+            icon: this.icon.serialize(transferables),
+            collisionBox: this.collisionBox.serialize(transferables)
         };
     }
 
     destroy() {
-        if (this.buffers) {
-            if (this.buffers.icon) this.buffers.icon.destroy();
-            if (this.buffers.glyph) this.buffers.glyph.destroy();
-            if (this.buffers.collisionBox) this.buffers.collisionBox.destroy();
-            this.buffers = (null: any);
-        }
-    }
-
-    createArrays() {
-        this.arrays = util.mapObject(this.symbolInterfaces, (programInterface) => {
-            return new ArrayGroup(programInterface, this.layers, this.zoom);
-        });
+        this.text.destroy();
+        this.icon.destroy();
+        this.collisionBox.destroy();
     }
 
     prepare(stacks: any, icons: any) {
@@ -635,7 +705,9 @@ class SymbolBucket implements Bucket {
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
-        this.createArrays();
+        this.text = new SymbolBuffers(symbolInterfaces.text, this.layers, this.zoom);
+        this.icon = new SymbolBuffers(symbolInterfaces.icon, this.layers, this.zoom);
+        this.collisionBox = new SymbolBuffers(symbolInterfaces.collisionBox, this.layers, this.zoom);
 
         this.placedGlyphArray = new PlacedSymbolArray();
         this.placedIconArray = new PlacedSymbolArray();
@@ -734,7 +806,7 @@ class SymbolBucket implements Bucket {
                         'text-size',
                         symbolInstance.featureProperties);
                     this.addSymbols(
-                        this.arrays.glyph,
+                        this.text,
                         symbolInstance.glyphQuads,
                         glyphScale,
                         textSizeData,
@@ -761,7 +833,7 @@ class SymbolBucket implements Bucket {
                         'icon-size',
                         symbolInstance.featureProperties);
                     this.addSymbols(
-                        this.arrays.icon,
+                        this.icon,
                         symbolInstance.iconQuads,
                         iconScale,
                         iconSizeData,
@@ -784,7 +856,7 @@ class SymbolBucket implements Bucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays: ArrayGroup,
+    addSymbols(arrays: SymbolBuffers,
                quads: Array<SymbolQuad>,
                scale: number,
                sizeVertex: any,
@@ -826,7 +898,7 @@ class SymbolBucket implements Bucket {
                 br = symbol.br,
                 tex = symbol.tex;
 
-            const segment = arrays.prepareSegment(4);
+            const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.elementArray);
             const index = segment.vertexLength;
 
             const y = symbol.glyphOffset[1];
@@ -853,11 +925,11 @@ class SymbolBucket implements Bucket {
             lineOffset[0], lineOffset[1],
             placementZoom, useVerticalMode);
 
-        arrays.populatePaintArrays(featureProperties);
+        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, featureProperties);
     }
 
     addToDebugBuffers(collisionTile: CollisionTile) {
-        const arrays = this.arrays.collisionBox;
+        const arrays = this.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
 
@@ -889,7 +961,7 @@ class SymbolBucket implements Bucket {
                     const maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                     const placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                    const segment = arrays.prepareSegment(4);
+                    const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.elementArray);
                     const index = segment.vertexLength;
 
                     addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tl, maxZoom, placementZoom);

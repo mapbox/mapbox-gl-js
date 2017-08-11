@@ -22,8 +22,6 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         const tile = sourceCache.getTile(coord);
         const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
-        const buffers = bucket.buffers.collisionBox;
-        if (!buffers) continue;
 
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
@@ -39,8 +37,8 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         gl.uniform1f(program.u_pitch, painter.transform.pitch / 360 * 2 * Math.PI);
         gl.uniform1f(program.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
 
-        for (const segment of buffers.segments.get()) {
-            segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
+        for (const segment of bucket.collisionBox.segments.get()) {
+            segment.vaos[layer.id].bind(gl, program, bucket.collisionBox.layoutVertexBuffer, bucket.collisionBox.elementBuffer, null, segment.vertexOffset);
             gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
         }
     }

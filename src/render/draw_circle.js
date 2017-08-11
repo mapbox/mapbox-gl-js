@@ -30,8 +30,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const bucket: ?CircleBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
-        const buffers = bucket.buffers;
-        const programConfiguration = buffers.programConfigurations.get(layer.id);
+        const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('circle', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
@@ -55,8 +54,8 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             layer.paint['circle-translate-anchor']
         ));
 
-        for (const segment of buffers.segments.get()) {
-            segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
+        for (const segment of bucket.segments.get()) {
+            segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
             gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
         }
     }

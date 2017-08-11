@@ -1,14 +1,17 @@
 // @flow
 
-const ArrayGroup = require('../array_group');
-const BufferGroup = require('../buffer_group');
+const {SegmentVector} = require('../segment');
+const Buffer = require('../buffer');
+const {ProgramConfigurationSet} = require('../program_configuration');
+const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
-import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
+import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
+import type {StructArray} from '../../util/struct_array';
 
 const circleInterface = {
     layoutAttributes: [
@@ -33,6 +36,9 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
         (y * 2) + ((extrudeY + 1) / 2));
 }
 
+const LayoutVertexArrayType = createVertexArrayType(circleInterface.layoutAttributes);
+const ElementArrayType = circleInterface.elementArrayType;
+
 /**
  * Circles are represented by two triangles.
  *
@@ -47,19 +53,33 @@ class CircleBucket implements Bucket {
     zoom: number;
     overscaling: number;
     layers: Array<StyleLayer>;
-    buffers: BufferGroup;
-    arrays: ArrayGroup;
 
-    constructor(options: BucketParameters) {
+    layoutVertexArray: StructArray;
+    layoutVertexBuffer: Buffer;
+
+    elementArray: StructArray;
+    elementBuffer: Buffer;
+
+    programConfigurations: ProgramConfigurationSet;
+    segments: SegmentVector;
+
+    constructor(options: any) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.index = options.index;
 
-        if (options.arrays) {
-            this.buffers = new BufferGroup(circleInterface, options.layers, options.zoom, options.arrays);
+        if (options.layoutVertexArray) {
+            this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
+            this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+            this.programConfigurations = ProgramConfigurationSet.deserialize(circleInterface, options.layers, options.zoom, options.paintVertexArrays);
+            this.segments = new SegmentVector(options.segments);
+            this.segments.createVAOs(options.layers);
         } else {
-            this.arrays = new ArrayGroup(circleInterface, options.layers, options.zoom);
+            this.layoutVertexArray = new LayoutVertexArrayType();
+            this.elementArray = new ElementArrayType();
+            this.programConfigurations = new ProgramConfigurationSet(circleInterface, options.layers, options.zoom);
+            this.segments = new SegmentVector();
         }
     }
 
@@ -73,31 +93,32 @@ class CircleBucket implements Bucket {
     }
 
     getPaintPropertyStatistics() {
-        return this.arrays.programConfigurations.getPaintPropertyStatistics();
+        return this.programConfigurations.getPaintPropertyStatistics();
     }
 
     isEmpty() {
-        return this.arrays.isEmpty();
+        return this.layoutVertexArray.length === 0;
     }
 
     serialize(transferables?: Array<Transferable>): SerializedBucket {
         return {
             zoom: this.zoom,
             layerIds: this.layers.map((l) => l.id),
-            arrays: this.arrays.serialize(transferables)
+            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
+            elementArray: this.elementArray.serialize(transferables),
+            paintVertexArrays: this.programConfigurations.serialize(transferables),
+            segments: this.segments.get(),
         };
     }
 
     destroy() {
-        if (this.buffers) {
-            this.buffers.destroy();
-            (this: any).buffers = null;
-        }
+        this.layoutVertexBuffer.destroy();
+        this.elementBuffer.destroy();
+        this.programConfigurations.destroy();
+        this.segments.destroy();
     }
 
     addFeature(feature: VectorTileFeature) {
-        const arrays = this.arrays;
-
         for (const ring of loadGeometry(feature)) {
             for (const point of ring) {
                 const x = point.x;
@@ -115,23 +136,23 @@ class CircleBucket implements Bucket {
                 // │ 0     1 │
                 // └─────────┘
 
-                const segment = arrays.prepareSegment(4);
+                const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.elementArray);
                 const index = segment.vertexLength;
 
-                addCircleVertex(arrays.layoutVertexArray, x, y, -1, -1);
-                addCircleVertex(arrays.layoutVertexArray, x, y, 1, -1);
-                addCircleVertex(arrays.layoutVertexArray, x, y, 1, 1);
-                addCircleVertex(arrays.layoutVertexArray, x, y, -1, 1);
+                addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
+                addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
+                addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
+                addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
 
-                arrays.elementArray.emplaceBack(index, index + 1, index + 2);
-                arrays.elementArray.emplaceBack(index, index + 3, index + 2);
+                this.elementArray.emplaceBack(index, index + 1, index + 2);
+                this.elementArray.emplaceBack(index, index + 3, index + 2);
 
                 segment.vertexLength += 4;
                 segment.primitiveLength += 2;
             }
         }
 
-        arrays.populatePaintArrays(feature.properties);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature.properties);
     }
 }
 
