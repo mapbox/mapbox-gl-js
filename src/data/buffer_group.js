@@ -1,8 +1,7 @@
 // @flow
 
-const util = require('../util/util');
 const Buffer = require('./buffer');
-const ProgramConfiguration = require('./program_configuration');
+const {ProgramConfigurationSet} = require('./program_configuration');
 const createVertexArrayType = require('./vertex_array_type');
 const VertexArrayObject = require('../render/vertex_array_object');
 
@@ -23,7 +22,7 @@ class BufferGroup {
     dynamicLayoutVertexBuffer: Buffer;
     elementBuffer: Buffer;
     elementBuffer2: Buffer;
-    programConfigurations: {[string]: ProgramConfiguration};
+    programConfigurations: ProgramConfigurationSet;
     segments: Array<any>;
     segments2: Array<any>;
 
@@ -49,20 +48,17 @@ class BufferGroup {
                 programInterface.elementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
         }
 
-        this.programConfigurations = {};
-        for (const layer of layers) {
-            const array = arrays.paintVertexArrays && arrays.paintVertexArrays[layer.id];
-            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-            programConfiguration.paintVertexBuffer = array ? new Buffer(array.array, array.type, Buffer.BufferType.VERTEX) : null;
-            this.programConfigurations[layer.id] = programConfiguration;
-        }
+        this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.paintVertexArrays);
 
         this.segments = arrays.segments;
         this.segments2 = arrays.segments2;
 
         for (const segments of [this.segments, this.segments2]) {
             for (const segment of segments || []) {
-                segment.vaos = util.mapObject(this.programConfigurations, () => new VertexArrayObject());
+                segment.vaos = {};
+                for (const layer of layers) {
+                    segment.vaos[layer.id] = new VertexArrayObject();
+                }
             }
         }
     }
@@ -79,12 +75,7 @@ class BufferGroup {
         if (this.elementBuffer2) {
             this.elementBuffer2.destroy();
         }
-        for (const layerId in this.programConfigurations) {
-            const paintVertexBuffer = this.programConfigurations[layerId].paintVertexBuffer;
-            if (paintVertexBuffer) {
-                paintVertexBuffer.destroy();
-            }
-        }
+        this.programConfigurations.destroy();
         for (const segments of [this.segments, this.segments2]) {
             for (const segment of segments || []) {
                 for (const k in segment.vaos) {

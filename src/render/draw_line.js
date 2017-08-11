@@ -31,7 +31,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
 
-        const programConfiguration = bucket.buffers.programConfigurations[layer.id];
+        const programConfiguration = bucket.buffers.programConfigurations.get(layer.id);
         const prevProgram = painter.currentProgram;
         const program = painter.useProgram(programId, programConfiguration);
         const programChanged = firstTile || program !== prevProgram;

@@ -93,7 +93,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (!bucket) continue;
         const buffers = isText ? bucket.buffers.glyph : bucket.buffers.icon;
         if (!buffers || !buffers.segments.length) continue;
-        const programConfiguration = buffers.programConfigurations[layer.id];
+        const programConfiguration = buffers.programConfigurations.get(layer.id);
 
         const isSDF = isText || bucket.sdfIcons;
 
@@ -205,7 +205,7 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
 }
 
 function drawSymbolElements(buffers, layer, gl, program) {
-    const programConfiguration = buffers.programConfigurations[layer.id];
+    const programConfiguration = buffers.programConfigurations.get(layer.id);
     const paintVertexBuffer = programConfiguration && programConfiguration.paintVertexBuffer;
 
     for (const segment of buffers.segments) {

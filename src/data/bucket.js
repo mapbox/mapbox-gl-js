@@ -119,7 +119,7 @@ class Bucket {
     }
 
     getPaintPropertyStatistics() {
-        return util.mapObject(this.arrays.programConfigurations, config => config.paintPropertyStatistics);
+        return this.arrays.programConfigurations.getPaintPropertyStatistics();
     }
 
     isEmpty() {

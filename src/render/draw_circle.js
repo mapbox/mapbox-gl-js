@@ -30,7 +30,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         if (!bucket) continue;
 
         const buffers = bucket.buffers;
-        const programConfiguration = buffers.programConfigurations[layer.id];
+        const programConfiguration = buffers.programConfigurations.get(layer.id);
         const program = painter.useProgram('circle', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 

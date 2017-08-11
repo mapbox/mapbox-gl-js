@@ -1,6 +1,6 @@
 // @flow
 
-const ProgramConfiguration = require('./program_configuration');
+const {ProgramConfigurationSet} = require('./program_configuration');
 const createVertexArrayType = require('./vertex_array_type');
 
 import type StyleLayer from '../style/style_layer';
@@ -69,7 +69,7 @@ class ArrayGroup {
     dynamicLayoutVertexArray: StructArray;
     elementArray: StructArray;
     elementArray2: StructArray;
-    programConfigurations: {[string]: ProgramConfiguration};
+    programConfigurations: ProgramConfigurationSet;
     segments: Array<Segment>;
     segments2: Array<Segment>;
 
@@ -90,13 +90,7 @@ class ArrayGroup {
         const ElementArrayType2 = programInterface.elementArrayType2;
         if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
-        this.programConfigurations = {};
-        for (const layer of layers) {
-            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-            programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
-            programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
-            this.programConfigurations[layer.id] = programConfiguration;
-        }
+        this.programConfigurations = new ProgramConfigurationSet(programInterface, layers, zoom);
 
         this.segments = [];
         this.segments2 = [];
@@ -121,11 +115,7 @@ class ArrayGroup {
     }
 
     populatePaintArrays(featureProperties: Object) {
-        for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArray(
-                this.layoutVertexArray.length,
-                featureProperties);
-        }
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, featureProperties);
     }
 
     isEmpty() {
@@ -138,21 +128,11 @@ class ArrayGroup {
             dynamicLayoutVertexArray: this.dynamicLayoutVertexArray && this.dynamicLayoutVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
-            paintVertexArrays: serializePaintVertexArrays(this.programConfigurations, transferables),
+            paintVertexArrays: this.programConfigurations.serialize(transferables),
             segments: this.segments,
             segments2: this.segments2
         };
     }
-}
-
-function serializePaintVertexArrays(programConfigurations: {[string]: ProgramConfiguration}, transferables?: Array<Transferable>) {
-    const paintVertexArrays = {};
-    for (const layerId in programConfigurations) {
-        const serialized = programConfigurations[layerId].serialize(transferables);
-        if (!serialized) continue;
-        paintVertexArrays[layerId] = serialized;
-    }
-    return paintVertexArrays;
 }
 
 /**

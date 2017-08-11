@@ -118,7 +118,7 @@ function drawExtrusion(painter, source, layer, coord) {
 
     const image = layer.paint['fill-extrusion-pattern'];
 
-    const programConfiguration = buffers.programConfigurations[layer.id];
+    const programConfiguration = buffers.programConfigurations.get(layer.id);
     const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
