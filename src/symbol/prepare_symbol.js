@@ -303,7 +303,7 @@ function addSymbolInstance(bucket: any,
     let numVerticalGlyphVertices = 0;
     const key = shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '';
     if (shapedTextOrientations.horizontal) {
-        // As a collision approximation, we can use either the vetical or the horizontal version of the feature
+        // As a collision approximation, we can use either the vertical or the horizontal version of the feature
         // We're counting on the two versions having similar dimensions
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, false, key);
         numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, featureProperties, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly);
