@@ -74,7 +74,6 @@ class CircleBucket implements Bucket {
             this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
             this.programConfigurations = ProgramConfigurationSet.deserialize(circleInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
-            this.segments.createVAOs(options.layers);
         } else {
             this.layoutVertexArray = new LayoutVertexArrayType();
             this.elementArray = new ElementArrayType();
