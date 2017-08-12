@@ -68,10 +68,14 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTil
 
     const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, programConfiguration, layer, tile, coord, firstTile);
 
-    for (const segment of bucket.segments.get()) {
-        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
-        gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
-    }
+    program.draw(
+        gl,
+        gl.TRIANGLES,
+        layer.id,
+        bucket.layoutVertexBuffer,
+        bucket.elementBuffer,
+        bucket.segments,
+        programConfiguration);
 }
 
 function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
@@ -82,10 +86,14 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
     const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    for (const segment of bucket.segments2.get()) {
-        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer2, programConfiguration.paintVertexBuffer, segment.vertexOffset);
-        gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
-    }
+    program.draw(
+        gl,
+        gl.LINES,
+        layer.id,
+        bucket.layoutVertexBuffer,
+        bucket.elementBuffer2,
+        bucket.segments2,
+        programConfiguration);
 }
 
 function setFillProgram(programId, usePattern, painter, programConfiguration, layer, tile, coord, firstTile) {

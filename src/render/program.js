@@ -3,10 +3,17 @@
 const browser = require('../util/browser');
 const shaders = require('../shaders');
 const assert = require('assert');
-
 const {ProgramConfiguration} = require('../data/program_configuration');
 
+import type {SegmentVector} from '../data/segment';
+import type Buffer from '../data/buffer';
+
+export type DrawMode =
+    | $PropertyType<WebGLRenderingContext, 'LINES'>
+    | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>;
+
 class Program {
+    gl: WebGLRenderingContext;
     program: WebGLProgram;
     uniforms: {[string]: WebGLUniformLocation};
     attributes: {[string]: number};
@@ -16,6 +23,7 @@ class Program {
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
                 showOverdrawInspector: boolean) {
+        this.gl = gl;
         this.program = gl.createProgram();
 
         const defines = configuration.defines().concat(
@@ -69,6 +77,38 @@ class Program {
             if (uniform) {
                 this.uniforms[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
             }
+        }
+    }
+
+    draw(gl: WebGLRenderingContext,
+         drawMode: DrawMode,
+         layerID: string,
+         layoutVertexBuffer: Buffer,
+         elementBuffer: Buffer,
+         segments: SegmentVector,
+         configuration: ?ProgramConfiguration,
+         dynamicLayoutBuffer: ?Buffer) {
+
+        const primitiveSize = {
+            [gl.LINES]: 2,
+            [gl.TRIANGLES]: 3
+        }[drawMode];
+
+        for (const segment of segments.get()) {
+            segment.vaos[layerID].bind(
+                gl,
+                this,
+                layoutVertexBuffer,
+                elementBuffer,
+                configuration && configuration.paintVertexBuffer,
+                segment.vertexOffset,
+                dynamicLayoutBuffer);
+
+            gl.drawElements(
+                drawMode,
+                segment.primitiveLength * primitiveSize,
+                gl.UNSIGNED_SHORT,
+                segment.primitiveOffset * primitiveSize * 2);
         }
     }
 }

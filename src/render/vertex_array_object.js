@@ -2,13 +2,16 @@
 
 const assert = require('assert');
 
+import type Program from './program';
+import type Buffer from '../data/buffer';
+
 class VertexArrayObject {
-    boundProgram: any;
-    boundVertexBuffer: any;
-    boundVertexBuffer2: any;
-    boundElementBuffer: any;
-    boundVertexOffset: any;
-    boundDynamicVertexBuffer: any;
+    boundProgram: ?Program;
+    boundVertexBuffer: ?Buffer;
+    boundVertexBuffer2: ?Buffer;
+    boundElementBuffer: ?Buffer;
+    boundVertexOffset: ?number;
+    boundDynamicVertexBuffer: ?Buffer;
     vao: any;
     gl: WebGLRenderingContext;
 
@@ -23,12 +26,12 @@ class VertexArrayObject {
     }
 
     bind(gl: WebGLRenderingContext,
-         program: any,
-         layoutVertexBuffer: any,
-         elementBuffer: any,
-         vertexBuffer2: any,
-         vertexOffset: any,
-         dynamicVertexBuffer: any) {
+         program: Program,
+         layoutVertexBuffer: Buffer,
+         elementBuffer: ?Buffer,
+         vertexBuffer2: ?Buffer,
+         vertexOffset: ?number,
+         dynamicVertexBuffer: ?Buffer) {
 
         if (gl.extVertexArrayObject === undefined) {
             (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");

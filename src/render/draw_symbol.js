@@ -205,11 +205,13 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
 }
 
 function drawSymbolElements(buffers, layer, gl, program) {
-    const programConfiguration = buffers.programConfigurations.get(layer.id);
-    const paintVertexBuffer = programConfiguration && programConfiguration.paintVertexBuffer;
-
-    for (const segment of buffers.segments.get()) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer);
-        gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
-    }
+    program.draw(
+        gl,
+        gl.TRIANGLES,
+        layer.id,
+        buffers.layoutVertexBuffer,
+        buffers.elementBuffer,
+        buffers.segments,
+        buffers.programConfigurations.get(layer.id),
+        buffers.dynamicLayoutVertexBuffer);
 }
