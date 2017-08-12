@@ -37,9 +37,12 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
         gl.uniform1f(program.uniforms.u_pitch, painter.transform.pitch / 360 * 2 * Math.PI);
         gl.uniform1f(program.uniforms.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
 
-        for (const segment of bucket.collisionBox.segments.get()) {
-            segment.vaos[layer.id].bind(gl, program, bucket.collisionBox.layoutVertexBuffer, bucket.collisionBox.elementBuffer, null, segment.vertexOffset);
-            gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
-        }
+        program.draw(
+            gl,
+            gl.LINES,
+            layer.id,
+            bucket.collisionBox.layoutVertexBuffer,
+            bucket.collisionBox.elementBuffer,
+            bucket.collisionBox.segments);
     }
 }

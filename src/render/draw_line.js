@@ -112,8 +112,12 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
     gl.uniform1f(program.uniforms.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
-    for (const segment of bucket.segments.get()) {
-        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
-        gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
-    }
+    program.draw(
+        gl,
+        gl.TRIANGLES,
+        layer.id,
+        bucket.layoutVertexBuffer,
+        bucket.elementBuffer,
+        bucket.segments,
+        programConfiguration);
 }

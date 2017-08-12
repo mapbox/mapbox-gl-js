@@ -138,10 +138,14 @@ function drawExtrusion(painter, source, layer, coord) {
 
     setLight(program, painter);
 
-    for (const segment of bucket.segments.get()) {
-        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
-        gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
-    }
+    program.draw(
+        gl,
+        gl.TRIANGLES,
+        layer.id,
+        bucket.layoutVertexBuffer,
+        bucket.elementBuffer,
+        bucket.segments,
+        programConfiguration);
 }
 
 function setLight(program, painter) {
