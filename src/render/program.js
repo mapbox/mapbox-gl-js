@@ -4,6 +4,7 @@ const browser = require('../util/browser');
 const shaders = require('../shaders');
 const assert = require('assert');
 const {ProgramConfiguration} = require('../data/program_configuration');
+const VertexArrayObject = require('./vertex_array_object');
 
 import type {SegmentVector} from '../data/segment';
 import type Buffer from '../data/buffer';
@@ -95,7 +96,10 @@ class Program {
         }[drawMode];
 
         for (const segment of segments.get()) {
-            segment.vaos[layerID].bind(
+            const vaos = segment.vaos || (segment.vaos = {});
+            const vao = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
+
+            vao.bind(
                 gl,
                 this,
                 layoutVertexBuffer,

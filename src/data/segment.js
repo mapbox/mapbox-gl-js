@@ -1,9 +1,7 @@
 // @flow
 
-const VertexArrayObject = require('../render/vertex_array_object');
-
+import type VertexArrayObject from '../render/vertex_array_object';
 import type {StructArray} from '../util/struct_array';
-import type StyleLayer from '../style/style_layer';
 
 export type Segment = {
     vertexOffset: number,
@@ -36,15 +34,6 @@ class SegmentVector {
 
     get() {
         return this.segments;
-    }
-
-    createVAOs(layers: Array<StyleLayer>) {
-        for (const segment of this.segments) {
-            segment.vaos = {};
-            for (const layer of layers) {
-                segment.vaos[layer.id] = new VertexArrayObject();
-            }
-        }
     }
 
     destroy() {

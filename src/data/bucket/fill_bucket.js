@@ -67,9 +67,7 @@ class FillBucket implements Bucket {
             this.elementBuffer2 = new Buffer(options.elementArray2, ElementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
             this.programConfigurations = ProgramConfigurationSet.deserialize(fillInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
-            this.segments.createVAOs(options.layers);
             this.segments2 = new SegmentVector(options.segments2);
-            this.segments2.createVAOs(options.layers);
         } else {
             this.layoutVertexArray = new LayoutVertexArrayType();
             this.elementArray = new ElementArrayType();
