@@ -170,9 +170,7 @@ class Marker {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat)
-            ._add(this._offset)
-            ._add(new Point(-this._element.offsetWidth / 2, -this._element.offsetHeight / 2));
+        this._pos = this._map.project(this._lngLat)._add(this._offset);
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -181,7 +179,7 @@ class Marker {
             this._pos = this._pos.round();
         }
 
-        DOM.setTransform(this._element, `translate(${this._pos.x}px, ${this._pos.y}px)`);
+        DOM.setTransform(this._element, `translate(-50%, -50%) translate(${this._pos.x}px, ${this._pos.y}px)`);
     }
 }
 
