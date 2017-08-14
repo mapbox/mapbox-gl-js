@@ -2,6 +2,7 @@
 
 const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
+const assert = require('assert');
 
 import type {GlobalProperties, FeatureProperties} from '../style_layer';
 import type {BucketParameters} from '../../data/bucket';
@@ -31,6 +32,15 @@ class SymbolStyleLayer extends StyleLayer {
         // Eventually we need to make SymbolBucket conform to the Bucket interface.
         // Hack around it with casts for now.
         return (new SymbolBucket((parameters: any)): any);
+    }
+
+    queryRadius(): number {
+        return 0;
+    }
+
+    queryIntersectsFeature(): boolean {
+        assert(false); // Should take a different path in FeatureIndex
+        return false;
     }
 }
 

@@ -5,7 +5,6 @@ const util = require('../util/util');
 import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
-import type {PaintPropertyStatistics} from './program_configuration';
 import type FeatureIndex from './feature_index';
 
 export type BucketParameters = {
@@ -58,7 +57,6 @@ export type IndexedFeature = {
  */
 export interface Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
-    getPaintPropertyStatistics(): PaintPropertyStatistics;
     isEmpty(): boolean;
     serialize(transferables?: Array<Transferable>): SerializedBucket;
 

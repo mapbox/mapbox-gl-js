@@ -65,7 +65,7 @@ class FillBucket implements Bucket {
             this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
             this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
             this.elementBuffer2 = new Buffer(options.elementArray2, ElementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
-            this.programConfigurations = ProgramConfigurationSet.deserialize(fillInterface, options.layers, options.zoom, options.paintVertexArrays);
+            this.programConfigurations = ProgramConfigurationSet.deserialize(fillInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
             this.segments.createVAOs(options.layers);
             this.segments2 = new SegmentVector(options.segments2);
@@ -89,10 +89,6 @@ class FillBucket implements Bucket {
         }
     }
 
-    getPaintPropertyStatistics() {
-        return this.programConfigurations.getPaintPropertyStatistics();
-    }
-
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
@@ -104,7 +100,7 @@ class FillBucket implements Bucket {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             elementArray: this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2.serialize(transferables),
-            paintVertexArrays: this.programConfigurations.serialize(transferables),
+            programConfigurations: this.programConfigurations.serialize(transferables),
             segments: this.segments.get(),
             segments2: this.segments2.get()
         };

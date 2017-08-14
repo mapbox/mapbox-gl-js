@@ -2,9 +2,12 @@
 
 const StyleLayer = require('../style_layer');
 const FillBucket = require('../../data/bucket/fill_bucket');
+const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
+const {translateDistance, translate} = require('../query_utils');
 
 import type {GlobalProperties, FeatureProperties} from '../style_layer';
 import type {BucketParameters} from '../../data/bucket';
+import type Point from '@mapbox/point-geometry';
 
 class FillStyleLayer extends StyleLayer {
 
@@ -69,6 +72,23 @@ class FillStyleLayer extends StyleLayer {
 
     createBucket(parameters: BucketParameters) {
         return new FillBucket(parameters);
+    }
+
+    queryRadius(): number {
+        return translateDistance(this.paint['fill-translate']);
+    }
+
+    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+                           feature: VectorTileFeature,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           bearing: number,
+                           pixelsToTileUnits: number): boolean {
+        const translatedPolygon = translate(queryGeometry,
+            this.getPaintValue('fill-translate', {zoom}, feature.properties),
+            this.getPaintValue('fill-translate-anchor', {zoom}, feature.properties),
+            bearing, pixelsToTileUnits);
+        return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 }
 
