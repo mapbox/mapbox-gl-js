@@ -18,6 +18,7 @@ import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type TileCoord from './tile_coord';
 import type {WorkerTileResult} from './worker_source';
+import type Point from '@mapbox/point-geometry';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -249,6 +250,23 @@ class Tile {
 
     getBucket(layer: StyleLayer) {
         return this.buckets[layer.id];
+    }
+
+    queryRenderedFeatures(styleLayers: {[string]: StyleLayer},
+                          queryGeometry: Array<Array<Point>>,
+                          scale: number,
+                          params: { filter: FilterSpecification, layers: Array<string> },
+                          bearing: number): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+        if (!this.featureIndex)
+            return {};
+
+        return this.featureIndex.query({
+            queryGeometry,
+            bearing,
+            params,
+            scale,
+            tileSize: this.tileSize,
+        }, styleLayers);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {

@@ -17,21 +17,18 @@ exports.rendered = function(sourceCache: SourceCache,
     tilesIn.sort(sortTilesIn);
 
     const renderedFeatureLayers = [];
-    for (let r = 0; r < tilesIn.length; r++) {
-        const tileIn = tilesIn[r];
-        const featureIndex = tileIn.tile.featureIndex;
-        if (!featureIndex) continue;
-
+    for (const tileIn of tilesIn) {
         renderedFeatureLayers.push({
             wrappedTileID: tileIn.coord.wrapped().id,
-            queryResults: featureIndex.query({
-                queryGeometry: tileIn.queryGeometry,
-                scale: tileIn.scale,
-                tileSize: tileIn.tile.tileSize,
-                bearing: bearing,
-                params: params
-            }, styleLayers)});
+            queryResults: tileIn.tile.queryRenderedFeatures(
+                styleLayers,
+                tileIn.queryGeometry,
+                tileIn.scale,
+                params,
+                bearing)
+        });
     }
+
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
