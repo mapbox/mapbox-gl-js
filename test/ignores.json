@@ -13,6 +13,7 @@
   "render-tests/geojson/inline-linestring-fill": "current behavior is arbitrary",
   "render-tests/raster-loading/missing": "https://github.com/mapbox/mapbox-gl-js/issues/4257",
   "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
+  "render-tests/runtime-styling/image-add-alpha": ":sob:",
   "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804"
 }
