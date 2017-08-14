@@ -27,13 +27,12 @@ const createStructArrayType = require('../../util/struct_array');
 const verticalizePunctuation = require('../../util/verticalize_punctuation');
 
 import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
-import type {ProgramInterface} from '../program_configuration';
+import type {ProgramInterface, SerializedProgramConfiguration} from '../program_configuration';
 import type CollisionBoxArray, {CollisionBox} from '../../symbol/collision_box';
 import type CollisionTile from '../../symbol/collision_tile';
 import type {
     StructArray,
-    SerializedStructArray,
-    SerializedStructArrayType
+    SerializedStructArray
 } from '../../util/struct_array';
 import type StyleLayer from '../../style/style_layer';
 import type {Shaping, PositionedIcon} from '../../symbol/shaping';
@@ -208,10 +207,7 @@ type SerializedSymbolBuffer = {
     layoutVertexArray: SerializedStructArray,
     dynamicLayoutVertexArray: SerializedStructArray,
     elementArray: SerializedStructArray,
-    paintVertexArrays: {[string]: {
-        array: SerializedStructArray,
-        type: SerializedStructArrayType
-    }},
+    programConfigurations: {[string]: ?SerializedProgramConfiguration},
     segments: Array<Object>,
 };
 
@@ -235,7 +231,7 @@ class SymbolBuffers {
         if (arrays) {
             this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
             this.elementBuffer = new Buffer(arrays.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
-            this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.paintVertexArrays);
+            this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.programConfigurations);
             this.segments = new SegmentVector(arrays.segments);
             this.segments.createVAOs(layers);
         } else {
@@ -264,7 +260,7 @@ class SymbolBuffers {
         return {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             elementArray: this.elementArray.serialize(transferables),
-            paintVertexArrays: this.programConfigurations.serialize(transferables),
+            programConfigurations: this.programConfigurations.serialize(transferables),
             segments: this.segments.get(),
             dynamicLayoutVertexArray: this.dynamicLayoutVertexArray && this.dynamicLayoutVertexArray.serialize(transferables),
         };
@@ -460,17 +456,6 @@ class SymbolBucket implements Bucket {
         return this.icon.layoutVertexArray.length === 0 &&
             this.text.layoutVertexArray.length === 0 &&
             this.collisionBox.layoutVertexArray.length === 0;
-    }
-
-    getPaintPropertyStatistics() {
-        const statistics = {};
-        for (const layer of this.layers) {
-            statistics[layer.id] = util.extend({},
-                this.icon.programConfigurations.get(layer.id).paintPropertyStatistics,
-                this.text.programConfigurations.get(layer.id).paintPropertyStatistics
-            );
-        }
-        return statistics;
     }
 
     serialize(transferables?: Array<Transferable>) {

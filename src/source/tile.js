@@ -252,7 +252,7 @@ class Tile {
         return this.buckets[layer.id];
     }
 
-    queryRenderedFeatures(styleLayers: {[string]: StyleLayer},
+    queryRenderedFeatures(layers: {[string]: StyleLayer},
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
@@ -260,13 +260,23 @@ class Tile {
         if (!this.featureIndex)
             return {};
 
+        // Determine the additional radius needed factoring in property functions
+        let additionalRadius = 0;
+        for (const id in layers) {
+            const bucket = this.getBucket(layers[id]);
+            if (bucket) {
+                additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
+            }
+        }
+
         return this.featureIndex.query({
             queryGeometry,
             bearing,
             params,
             scale,
+            additionalRadius,
             tileSize: this.tileSize,
-        }, styleLayers);
+        }, layers);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {

@@ -78,7 +78,7 @@ class FillExtrusionBucket implements Bucket {
         if (options.layoutVertexArray) {
             this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
             this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
-            this.programConfigurations = ProgramConfigurationSet.deserialize(fillExtrusionInterface, options.layers, options.zoom, options.paintVertexArrays);
+            this.programConfigurations = ProgramConfigurationSet.deserialize(fillExtrusionInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
             this.segments.createVAOs(options.layers);
         } else {
@@ -98,10 +98,6 @@ class FillExtrusionBucket implements Bucket {
         }
     }
 
-    getPaintPropertyStatistics() {
-        return this.programConfigurations.getPaintPropertyStatistics();
-    }
-
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
@@ -112,7 +108,7 @@ class FillExtrusionBucket implements Bucket {
             layerIds: this.layers.map((l) => l.id),
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             elementArray: this.elementArray.serialize(transferables),
-            paintVertexArrays: this.programConfigurations.serialize(transferables),
+            programConfigurations: this.programConfigurations.serialize(transferables),
             segments: this.segments.get(),
         };
     }

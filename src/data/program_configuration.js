@@ -4,10 +4,9 @@ const createVertexArrayType = require('./vertex_array_type');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const Buffer = require('./buffer');
-const util = require('../util/util');
 
 import type StyleLayer from '../style/style_layer';
-import type {ViewType, StructArray} from '../util/struct_array';
+import type {ViewType, StructArray, SerializedStructArray, SerializedStructArrayType} from '../util/struct_array';
 
 type LayoutAttribute = {
     name: string,
@@ -193,6 +192,12 @@ class CompositeFunctionBinder implements Binder {
     }
 }
 
+export type SerializedProgramConfiguration = {
+    array: SerializedStructArray,
+    type: SerializedStructArrayType,
+    statistics: PaintPropertyStatistics
+};
+
 /**
  * ProgramConfiguration contains the logic for binding style layer properties and tile
  * layer feature data into GL program uniforms and vertex attributes.
@@ -323,12 +328,24 @@ class ProgramConfiguration {
         }
     }
 
-    serialize(transferables?: Array<Transferable>) {
-        const inputArray = this.paintVertexArray;
-        if (inputArray.length === 0) return null;
-        const array = inputArray.serialize(transferables);
-        const type = inputArray.constructor.serialize();
-        return {array, type};
+    serialize(transferables?: Array<Transferable>): ?SerializedProgramConfiguration {
+        if (this.paintVertexArray.length === 0) {
+            return null;
+        }
+        return {
+            array: this.paintVertexArray.serialize(transferables),
+            type: this.paintVertexArray.constructor.serialize(),
+            statistics: this.paintPropertyStatistics
+        };
+    }
+
+    static deserialize(programInterface: ProgramInterface, layer: StyleLayer, zoom: number, serialized: ?SerializedProgramConfiguration) {
+        const self = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+        if (serialized) {
+            self.paintVertexBuffer = new Buffer(serialized.array, serialized.type, Buffer.BufferType.VERTEX);
+            self.paintPropertyStatistics = serialized.statistics;
+        }
+        return self;
     }
 }
 
@@ -345,16 +362,12 @@ class ProgramConfigurationSet {
         }
     }
 
-    static deserialize(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays) {
+    static deserialize(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays: {+[string]: ?SerializedProgramConfiguration}) {
         const self = Object.create(ProgramConfigurationSet.prototype);
         self.programConfigurations = {};
         for (const layer of layers) {
-            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-            const array = arrays[layer.id];
-            if (array) {
-                programConfiguration.paintVertexBuffer = new Buffer(array.array, array.type, Buffer.BufferType.VERTEX);
-            }
-            self.programConfigurations[layer.id] = programConfiguration;
+            self.programConfigurations[layer.id] =
+                ProgramConfiguration.deserialize(programInterface, layer, zoom, arrays[layer.id]);
         }
         return self;
     }
@@ -365,18 +378,14 @@ class ProgramConfigurationSet {
         }
     }
 
-    getPaintPropertyStatistics() {
-        return util.mapObject(this.programConfigurations, config => config.paintPropertyStatistics);
-    }
-
     serialize(transferables?: Array<Transferable>) {
-        const paintVertexArrays = {};
+        const result = {};
         for (const layerId in this.programConfigurations) {
             const serialized = this.programConfigurations[layerId].serialize(transferables);
             if (!serialized) continue;
-            paintVertexArrays[layerId] = serialized;
+            result[layerId] = serialized;
         }
-        return paintVertexArrays;
+        return result;
     }
 
     get(layerId: string) {

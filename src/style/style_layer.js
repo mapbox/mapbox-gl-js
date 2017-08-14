@@ -9,6 +9,7 @@ const parseColor = require('./../style-spec/util/parse_color');
 const Evented = require('../util/evented');
 
 import type {Bucket, BucketParameters} from '../data/bucket';
+import type Point from '@mapbox/point-geometry';
 
 export type GlobalProperties = {
     zoom: number
@@ -43,6 +44,13 @@ class StyleLayer extends Evented {
     _layoutFunctions: any;
 
     +createBucket: (parameters: BucketParameters) => Bucket;
+    +queryRadius: (bucket: Bucket) => number;
+    +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
+                              feature: VectorTileFeature,
+                              geometry: Array<Array<Point>>,
+                              zoom: number,
+                              bearing: number,
+                              pixelsToTileUnits: number) => boolean;
 
     constructor(layer: LayerSpecification) {
         super();
