@@ -19,6 +19,7 @@ jobs:
     docker:
       - image: mbgl/ci:r4-linux-gl-js
     working_directory: ~/mapbox-gl-js
+    resource_class: large
     steps:
       - checkout
       - restore_cache:
