@@ -8,6 +8,7 @@ const Cache = require('../util/lru_cache');
 const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
 const EXTENT = require('../data/extent');
+const Point = require('@mapbox/point-geometry');
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -609,16 +610,14 @@ SourceCache.maxUnderzooming = 3;
 
 /**
  * Convert a coordinate to a point in a tile's coordinate space.
- * @returns {Object} position
  * @private
  */
-function coordinateToTilePoint(tileCoord: TileCoord, sourceMaxZoom: number, coord: Coordinate) {
+function coordinateToTilePoint(tileCoord: TileCoord, sourceMaxZoom: number, coord: Coordinate): Point {
     const zoomedCoord = coord.zoomTo(Math.min(tileCoord.z, sourceMaxZoom));
-    return {
-        x: (zoomedCoord.column - (tileCoord.x + tileCoord.w * Math.pow(2, tileCoord.z))) * EXTENT,
-        y: (zoomedCoord.row - tileCoord.y) * EXTENT
-    };
-
+    return new Point(
+        (zoomedCoord.column - (tileCoord.x + tileCoord.w * Math.pow(2, tileCoord.z))) * EXTENT,
+        (zoomedCoord.row - tileCoord.y) * EXTENT
+    );
 }
 
 function compareKeyZoom(a, b) {

@@ -39,7 +39,7 @@ type QueryParameters = {
     scale: number,
     bearing: number,
     tileSize: number,
-    queryGeometry: Array<Array<{x: number, y: number}>>,
+    queryGeometry: Array<Array<Point>>,
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
@@ -183,11 +183,7 @@ class FeatureIndex {
             additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
         }
 
-        const queryGeometry = args.queryGeometry.map((q) => {
-            return q.map((p) => {
-                return new Point(p.x, p.y);
-            });
-        });
+        const queryGeometry = args.queryGeometry;
 
         let minX = Infinity;
         let minY = Infinity;
