@@ -72,5 +72,14 @@ test('Marker', (t) => {
         t.end();
     });
 
+    t.test('togglePopup returns Marker instance', (t) => {
+        const map = createMap();
+        const element = window.document.createElement('div');
+        const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
+        marker.setPopup(new Popup());
+        t.ok(marker.togglePopup() instanceof Marker);
+        t.end();
+    });
+
     t.end();
 });

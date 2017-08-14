@@ -158,9 +158,10 @@ class Marker {
     togglePopup() {
         const popup = this._popup;
 
-        if (!popup) return;
+        if (!popup) return this;
         else if (popup.isOpen()) popup.remove();
         else popup.addTo(this._map);
+        return this;
     }
 
     _update(e?: {type: 'move' | 'moveend'}) {
