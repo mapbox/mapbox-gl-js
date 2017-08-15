@@ -9,7 +9,7 @@ const Evented = require('../../../src/util/evented');
 function createSource(options, transformCallback) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
     source.onAdd({
-        transform: { angle: 0, pitch: 0, cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; }, showCollisionBoxes: false },
+        transform: { showCollisionBoxes: false },
         _transformRequest: transformCallback ? transformCallback : (url) => { return { url }; }
     });
 
