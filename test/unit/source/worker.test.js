@@ -16,7 +16,7 @@ test('load tile', (t) => {
             type: 'vector',
             source: 'source',
             uid: 0,
-            request: { url: '/error' }// Sinon fake server gives 404 responses by default 
+            request: { url: '/error' }// Sinon fake server gives 404 responses by default
         }, (err) => {
             t.ok(err);
             window.restore();
@@ -26,18 +26,6 @@ test('load tile', (t) => {
     });
 
     t.end();
-});
-
-test('redo placement', (t) => {
-    const worker = new Worker(_self);
-    _self.registerWorkerSource('test', function() {
-        this.redoPlacement = function(options) {
-            t.ok(options.mapbox);
-            t.end();
-        };
-    });
-
-    worker.redoPlacement(0, {type: 'test', mapbox: true});
 });
 
 test('isolates different instances\' data', (t) => {
