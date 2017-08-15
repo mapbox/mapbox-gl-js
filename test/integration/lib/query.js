@@ -97,7 +97,10 @@ exports.run = function (implementation, options, query) {
                 drawAxisAlignedLine([b[0], a[1]], [a[0], a[1]], data, width, height, color);
             }
 
-            const actual = path.join(dir, 'actual.png');
+            const actualJSON = path.join(dir, 'actual.json');
+            fs.writeFile(actualJSON, JSON.stringify(results, null, 2), () => {});
+
+            const actualPNG = path.join(dir, 'actual.png');
 
             const png = new PNG({
                 width: params.width * params.pixelRatio,
@@ -107,9 +110,9 @@ exports.run = function (implementation, options, query) {
             png.data = data;
 
             png.pack()
-                .pipe(fs.createWriteStream(actual))
+                .pipe(fs.createWriteStream(actualPNG))
                 .on('finish', () => {
-                    params.actual = fs.readFileSync(actual).toString('base64');
+                    params.actual = fs.readFileSync(actualPNG).toString('base64');
                     done();
                 });
         });
