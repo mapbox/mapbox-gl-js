@@ -7,15 +7,14 @@ workflows:
       - build:
           filters:
             tags:
-              only: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
-      - release:
-          requires:
-            - build
+              ignore: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
+      - build-and-release:
           filters:
             tags:
               only: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
             branches:
               ignore: /.*/
+
 
 jobs:
   build:
@@ -44,7 +43,7 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
-  release:
+  build-and-release:
     docker:
       - image: mbgl/ci:r4-linux-gl-js
     working_directory: ~/mapbox-gl-js
@@ -62,8 +61,13 @@ jobs:
             - '.eslintcache'
             - 'node_modules'
       - run:
-          name: build-release
-          command: yarn run build-min
+          name: run tests
+          command: |
+            bash ./.circleci/test.sh
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/query-tests/index.html"
       - run:
           name: deploy
           when: on_success
