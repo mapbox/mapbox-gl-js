@@ -380,7 +380,8 @@ function addSymbolInstance(bucket: SymbolBucket,
         numIconVertices,
         placedTextSymbolIndices,
         textOpacityState,
-        iconOpacityState
+        iconOpacityState,
+        isDuplicate: false
     });
 }
 
