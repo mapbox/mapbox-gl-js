@@ -9,6 +9,7 @@ test('computeTileMasks', (t) => {
     class Tile {
         constructor(z, x, y, w) {
             this.coord = new TileCoord(z, x, y, w);
+            this.sourceMaxZoom = 16;
         }
 
         setMask(mask) {
