@@ -78,8 +78,8 @@ class VertexArrayObject {
               vertexBuffer2: any,
               vertexOffset: any,
               dynamicVertexBuffer: any,
-			  opacityVertexBuffer: any,
-			  collisionVertexBuffer: any) {
+              opacityVertexBuffer: any,
+              collisionVertexBuffer: any) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
