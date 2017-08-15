@@ -1,12 +1,6 @@
 #!/bin/bash
 
 set -eu
-set -o pipefail
-
-PACKAGE_JSON_VERSION=`node -e "console.log(require('./package.json').version)"`
-
-echo $PACKAGE_JSON_VERSION
-echo $CIRCLE_TAG
 
 if [ -z $CIRCLE_TAG ]; then
     echo '$CIRCLE_TAG must be set'
