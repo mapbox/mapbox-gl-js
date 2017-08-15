@@ -18,24 +18,10 @@ module.exports = drawSymbols;
 function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
 
-    const drawAcrossEdges =
-        !layer.layout['text-allow-overlap'] &&
-        !layer.layout['icon-allow-overlap'] &&
-        !layer.layout['text-ignore-placement'] &&
-        !layer.layout['icon-ignore-placement'];
-
     const gl = painter.gl;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
-    //
-    // Layers with features that may be drawn overlapping aren't clipped. These
-    // layers are sorted in the y direction, and to draw the correct ordering near
-    // tile edges the icons are included in both tiles and clipped when drawing.
-    if (drawAcrossEdges) {
-        gl.disable(gl.STENCIL_TEST);
-    } else {
-        gl.enable(gl.STENCIL_TEST);
-    }
+    gl.disable(gl.STENCIL_TEST);
 
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -138,7 +124,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.uniforms.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.uniforms.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
+        gl.uniform1f(program.uniforms.u_fade_change, painter.options.collisionFadeDuration ? ((Date.now() - bucket.fadeStartTime) / painter.options.collisionFadeDuration) : 1);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }
@@ -154,10 +140,6 @@ function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pit
     gl.uniform1i(program.uniforms.u_pitch_with_map, pitchWithMap ? 1 : 0);
 
     gl.uniform1f(program.uniforms.u_is_text, isText ? 1 : 0);
-
-    gl.activeTexture(gl.TEXTURE1);
-    painter.frameHistory.bind(gl);
-    gl.uniform1i(program.uniforms.u_fadetexture, 1);
 
     gl.uniform1f(program.uniforms.u_pitch, tr.pitch / 360 * 2 * Math.PI);
 
@@ -207,5 +189,6 @@ function drawSymbolElements(buffers, layer, gl, program) {
         buffers.indexBuffer,
         buffers.segments,
         buffers.programConfigurations.get(layer.id),
-        buffers.dynamicLayoutVertexBuffer);
+        buffers.dynamicLayoutVertexBuffer,
+        buffers.opacityVertexBuffer);
 }
