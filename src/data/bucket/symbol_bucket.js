@@ -15,6 +15,7 @@ const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.
 const createStructArrayType = require('../../util/struct_array');
 const verticalizePunctuation = require('../../util/verticalize_punctuation');
 const Anchor = require('../../symbol/anchor');
+const OpacityState = require('../../symbol/opacity_state');
 
 import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
 import type {ProgramInterface, SerializedProgramConfiguration} from '../program_configuration';
@@ -38,7 +39,7 @@ type SymbolBucketParameters = BucketParameters & {
     lineVertexArray: StructArray,
 }
 
-type SymbolInstance = {
+export type SymbolInstance = {
     key: string,
     textBoxStartIndex: number,
     textBoxEndIndex: number,
@@ -52,7 +53,10 @@ type SymbolInstance = {
     featureProperties: Object,
     writingModes: number,
     textCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
-    iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number}
+    iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
+    isDuplicate: boolean;
+    textOpacityState: OpacityState;
+    iconOpacityState: OpacityState;
 };
 
 export type SymbolFeature = {
