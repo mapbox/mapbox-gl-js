@@ -2,7 +2,6 @@
 
 const browser = require('../util/browser');
 const mat4 = require('@mapbox/gl-matrix').mat4;
-const FrameHistory = require('./frame_history');
 const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -12,6 +11,7 @@ const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const {ProgramConfiguration} = require('../data/program_configuration');
+const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('../shaders');
 const assert = require('assert');
 
@@ -40,7 +40,8 @@ type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
     rotating: boolean,
-    zooming: boolean
+    zooming: boolean,
+    collisionFadeDuration: number
 }
 
 /**
@@ -53,7 +54,6 @@ class Painter {
     gl: WebGLRenderingContext;
     transform: Transform;
     _tileTextures: { [number]: Array<WebGLTexture> };
-    frameHistory: FrameHistory;
     numSublayers: number;
     depthEpsilon: number;
     lineWidthRange: [number, number];
@@ -86,13 +86,12 @@ class Painter {
     _showOverdrawInspector: boolean;
     cache: { [string]: Program };
     currentProgram: Program;
+    crossTileSymbolIndex: CrossTileSymbolIndex;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.gl = gl;
         this.transform = transform;
         this._tileTextures = {};
-
-        this.frameHistory = new FrameHistory();
 
         this.setup();
 
@@ -105,6 +104,8 @@ class Painter {
 
         this.basicFillProgramConfiguration = ProgramConfiguration.createBasicFill();
         this.emptyProgramConfiguration = new ProgramConfiguration();
+
+        this.crossTileSymbolIndex = new CrossTileSymbolIndex();
     }
 
     /*
@@ -258,8 +259,6 @@ class Painter {
         this.spriteAtlas.setSprite(style.sprite);
 
         this.glyphSource = style.glyphSource;
-
-        this.frameHistory.record(Date.now(), this.transform.zoom, style.getTransition().duration);
 
         this.prepareBuffers();
         this.clearColor();

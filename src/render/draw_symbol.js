@@ -122,7 +122,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
+        gl.uniform1f(program.u_fade_change, painter.options.collisionFadeDuration ? ((Date.now() - bucket.fadeStartTime) / painter.options.collisionFadeDuration) : 1);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
 
@@ -162,10 +162,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         painter.spriteAtlas.bind(gl, isSDF || mapMoving || iconScaled || iconTransformed);
         gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
     }
-
-    gl.activeTexture(gl.TEXTURE1);
-    painter.frameHistory.bind(gl);
-    gl.uniform1i(program.u_fadetexture, 1);
 
     gl.uniform1f(program.u_pitch, tr.pitch / 360 * 2 * Math.PI);
 
@@ -209,7 +205,7 @@ function drawSymbolElements(buffers, layer, gl, program) {
     const paintVertexBuffer = programConfiguration && programConfiguration.paintVertexBuffer;
 
     for (const segment of buffers.segments.get()) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset, buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }

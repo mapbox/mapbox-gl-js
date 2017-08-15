@@ -122,7 +122,8 @@ const defaultOptions = {
 
     maxTileCacheSize: null,
 
-    transformRequest: null
+    transformRequest: null,
+    collisionFadeDuration: 300
 };
 
 /**
@@ -244,6 +245,9 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _placementInProgress: boolean;
+    _lastPlacement: number;
+    _collisionFadeTimes: any;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -307,8 +311,7 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('moveend', () => {
-            this.animationLoop.set(300); // text fading
+        this.on('move', () => {
             this._rerender();
         });
 
@@ -349,6 +352,13 @@ class Map extends Camera {
 
         this.on('data', this._onData);
         this.on('dataloading', this._onDataLoading);
+
+        this._lastPlacement = 0;
+        this._collisionFadeTimes = {
+            latestStart: 0,
+            duration: options.collisionFadeDuration
+        };
+        this._placementInProgress = false;
     }
 
     /**
@@ -995,9 +1005,6 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.off('rotate', this.style._redoPlacement);
-            this.off('pitch', this.style._redoPlacement);
-            this.off('move', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -1010,10 +1017,6 @@ class Map extends Camera {
         }
 
         this.style.setEventedParent(this, {style: this.style});
-
-        this.on('rotate', this.style._redoPlacement);
-        this.on('pitch', this.style._redoPlacement);
-        this.on('move', this.style._redoPlacement);
 
         return this;
     }
@@ -1552,12 +1555,22 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
+        let pendingCollisionDetection = false;
+        const needsPlacement = this.style.getNeedsPlacement();
+        if (this.style &&
+            (this._placementInProgress || needsPlacement || browser.now() > (this._lastPlacement + 100))) {
+            this._lastPlacement = browser.now();
+            pendingCollisionDetection = this._placementInProgress =
+                this.style._redoPlacement(this.painter.transform, this.showCollisionBoxes, needsPlacement, this._collisionFadeTimes);
+        }
+
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.rotating,
-            zooming: this.zooming
+            zooming: this.zooming,
+            collisionFadeDuration: this._collisionFadeTimes.duration
         });
 
         this.fire('render');
@@ -1570,7 +1583,7 @@ class Map extends Camera {
         this._frameId = null;
 
         // Flag an ongoing transition
-        if (!this.animationLoop.stopped()) {
+        if (!this.animationLoop.stopped() || pendingCollisionDetection || this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration > Date.now()) {
             this._styleDirty = true;
         }
 
@@ -1659,7 +1672,11 @@ class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this.style._redoPlacement();
+        if (value) {
+            // When we turn collision boxes on we have to generate them for existing tiles
+            // When we turn them off, there's no cost to leaving existing boxes in place
+            this.style._generateCollisionBoxes();
+        }
     }
 
     /*

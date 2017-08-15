@@ -9,6 +9,8 @@ class VertexArrayObject {
     boundElementBuffer: any;
     boundVertexOffset: any;
     boundDynamicVertexBuffer: any;
+    boundOpacityVertexBuffer: any;
+    boundCollisionVertexBuffer: any;
     vao: any;
     gl: WebGLRenderingContext;
 
@@ -28,7 +30,9 @@ class VertexArrayObject {
          elementBuffer: any,
          vertexBuffer2: any,
          vertexOffset: any,
-         dynamicVertexBuffer: any) {
+         dynamicVertexBuffer: any,
+         opacityVertexBuffer: any,
+         collisionVertexBuffer: any) {
 
         if (gl.extVertexArrayObject === undefined) {
             (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -41,11 +45,13 @@ class VertexArrayObject {
             this.boundVertexBuffer2 !== vertexBuffer2 ||
             this.boundElementBuffer !== elementBuffer ||
             this.boundVertexOffset !== vertexOffset ||
-            this.boundDynamicVertexBuffer !== dynamicVertexBuffer
+            this.boundDynamicVertexBuffer !== dynamicVertexBuffer ||
+            this.boundOpacityVertexBuffer !== opacityVertexBuffer ||
+            this.boundCollisionVertexBuffer !== collisionVertexBuffer
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
+            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, opacityVertexBuffer, collisionVertexBuffer);
             this.gl = gl;
         } else {
             (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
@@ -53,6 +59,14 @@ class VertexArrayObject {
             if (dynamicVertexBuffer) {
                 // The buffer may have been updated. Rebind to upload data.
                 dynamicVertexBuffer.bind(gl);
+            }
+
+            if (opacityVertexBuffer) {
+                opacityVertexBuffer.bind(gl);
+            }
+
+            if (collisionVertexBuffer) {
+                collisionVertexBuffer.bind(gl);
             }
         }
     }
@@ -63,7 +77,9 @@ class VertexArrayObject {
               elementBuffer: any,
               vertexBuffer2: any,
               vertexOffset: any,
-              dynamicVertexBuffer: any) {
+              dynamicVertexBuffer: any,
+			  opacityVertexBuffer: any,
+			  collisionVertexBuffer: any) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -80,6 +96,8 @@ class VertexArrayObject {
             this.boundElementBuffer = elementBuffer;
             this.boundVertexOffset = vertexOffset;
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
+            this.boundOpacityVertexBuffer = opacityVertexBuffer;
+            this.boundCollisionVertexBuffer = collisionVertexBuffer;
 
         } else {
             numPrevAttributes = (gl: any).currentNumAttributes || 0;
@@ -101,6 +119,12 @@ class VertexArrayObject {
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.enableAttributes(gl, program);
         }
+        if (opacityVertexBuffer) {
+            opacityVertexBuffer.enableAttributes(gl, program);
+        }
+        if (collisionVertexBuffer) {
+            collisionVertexBuffer.enableAttributes(gl, program);
+        }
 
         layoutVertexBuffer.bind(gl);
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
@@ -111,6 +135,14 @@ class VertexArrayObject {
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.bind(gl);
             dynamicVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (opacityVertexBuffer) {
+            opacityVertexBuffer.bind(gl);
+            opacityVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (collisionVertexBuffer) {
+            collisionVertexBuffer.bind(gl);
+            collisionVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (elementBuffer) {
             elementBuffer.bind(gl);
