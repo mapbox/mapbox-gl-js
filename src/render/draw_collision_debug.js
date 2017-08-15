@@ -5,41 +5,47 @@ import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';
 import type TileCoord from '../source/tile_coord';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = drawCollisionDebug;
 
-function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
+function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>, drawCircles: boolean) {
     const gl = painter.gl;
-    gl.enable(gl.STENCIL_TEST);
-    const program = painter.useProgram('collisionBox');
-
-    gl.activeTexture(gl.TEXTURE1);
-    painter.frameHistory.bind(gl);
-    gl.uniform1i(program.u_fadetexture, 1);
-
+    const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);
         const bucket: ?SymbolBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
+        const buffers = drawCircles ? bucket.collisionCircle : bucket.collisionBox;
+        if (!buffers) continue;
 
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
-        painter.enableTileClippingMask(coord);
+        if (!drawCircles) {
+            painter.lineWidth(1);
+        }
 
-        painter.lineWidth(1);
-        gl.uniform1f(program.u_scale, Math.pow(2, painter.transform.zoom - tile.coord.z));
-        gl.uniform1f(program.u_zoom, painter.transform.zoom * 10);
-        const maxZoom = Math.max(0, Math.min(25, tile.coord.z + Math.log((tile.collisionTile: any).maxScale) / Math.LN2));
-        gl.uniform1f(program.u_maxzoom, maxZoom * 10);
-
-        gl.uniform1f(program.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
-        gl.uniform1f(program.u_pitch, painter.transform.pitch / 360 * 2 * Math.PI);
         gl.uniform1f(program.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
+        const pixelRatio = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        const scale = Math.pow(2, painter.transform.zoom - tile.coord.z);
+        gl.uniform1f(program.u_pixels_to_tile_units, pixelRatio);
+        gl.uniform2f(program.u_extrude_scale,
+            painter.transform.pixelsToGLUnits[0] / (pixelRatio * scale),
+            painter.transform.pixelsToGLUnits[1] / (pixelRatio * scale));
 
-        for (const segment of bucket.collisionBox.segments.get()) {
-            segment.vaos[layer.id].bind(gl, program, bucket.collisionBox.layoutVertexBuffer, bucket.collisionBox.elementBuffer, null, segment.vertexOffset);
-            gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
+        for (const segment of buffers.segments.get()) {
+            segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset, null, null, buffers.collisionVertexBuffer);
+            if (drawCircles) {
+                gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
+            } else {
+                gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
+            }
         }
     }
+}
+
+function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
+    drawCollisionDebugGeometry(painter, sourceCache, layer, coords, false);
+    drawCollisionDebugGeometry(painter, sourceCache, layer, coords, true);
 }
