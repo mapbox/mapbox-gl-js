@@ -62,6 +62,21 @@ class Transform {
         this._unmodified = true;
     }
 
+    clone(): Transform {
+        const clone = new Transform(this._minZoom, this._maxZoom, this._renderWorldCopies);
+        clone.tileSize = this.tileSize;
+        clone.latRange = this.latRange;
+        clone.width = this.width;
+        clone.height = this.height;
+        clone._center = this._center;
+        clone.zoom = this.zoom;
+        clone.angle = this.angle;
+        clone._fov = this._fov;
+        clone._pitch = this._pitch;
+        clone._unmodified = this._unmodified;
+        return clone;
+    }
+
     get minZoom(): number { return this._minZoom; }
     set minZoom(zoom: number) {
         if (this._minZoom === zoom) return;
