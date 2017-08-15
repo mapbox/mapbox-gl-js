@@ -7,13 +7,16 @@ workflows:
       - build:
           filters:
             tags:
-              only: /.*/
+              only: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
       - release:
           requires:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
+            branches:
+              ignore: /.*/
+
 jobs:
   build:
     docker:
