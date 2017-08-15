@@ -3,6 +3,7 @@ const float PI = 3.141592653589793;
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec3 a_projected_pos;
+attribute float a_fade_opacity;
 
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
@@ -32,12 +33,12 @@ uniform highp float u_pitch;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
-uniform highp float u_collision_y_stretch;
+uniform float u_fade_change;
 
 uniform vec2 u_texsize;
 
-varying vec4 v_data0;
-varying vec2 v_data1;
+varying vec2 v_data0;
+varying vec3 v_data1;
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -52,9 +53,7 @@ void main() {
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;
 
-    highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
-    highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
-    mediump float a_labelminzoom = angle_labelminzoom[1];
+    highp float segment_angle = -a_projected_pos[2];
     float size;
 
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
@@ -106,29 +105,10 @@ void main() {
     float gamma_scale = gl_Position.w;
 
     vec2 tex = a_tex / u_texsize;
-    // incidence_stretch is the ratio of how much y space a label takes up on a tile while drawn perpendicular to the viewport vs
-    //  how much space it would take up if it were drawn flat on the tile
-    // Using law of sines, camera_to_anchor/sin(ground_angle) = camera_to_center/sin(incidence_angle)
-    // sin(incidence_angle) = 1/incidence_stretch
-    // Incidence angle 90 -> head on, sin(incidence_angle) = 1, no incidence stretch
-    // Incidence angle 1 -> very oblique, sin(incidence_angle) =~ 0, lots of incidence stretch
-    // ground_angle = u_pitch + PI/2 -> sin(ground_angle) = cos(u_pitch)
-    // This 2D calculation is only exactly correct when gl_Position.x is in the center of the viewport,
-    //  but it's a close enough approximation for our purposes
-    highp float incidence_stretch  = camera_to_anchor_distance / (u_camera_to_center_distance * cos(u_pitch));
-    // incidence_stretch only applies to the y-axis, but without re-calculating the collision tile, we can't
-    // adjust the size of only one axis. So, we do a crude approximation at placement time to get the aspect ratio
-    // about right, and then do the rest of the adjustment here: there will be some extra padding on the x-axis,
-    // but hopefully not too much.
-    // Never make the adjustment less than 1.0: instead of allowing collisions on the x-axis, be conservative on
-    // the y-axis.
-    highp float collision_adjustment = max(1.0, incidence_stretch / u_collision_y_stretch);
+    vec2 fade_opacity = unpack_opacity(a_fade_opacity);
+    float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
+    float interpolated_fade_opacity = max(0.0, min(1.0, fade_opacity[0] + fade_change));
 
-    // Floor to 1/10th zoom to dodge precision issues that can cause partially hidden labels
-    highp float collision_perspective_ratio = 1.0 + 0.5*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
-    highp float perspective_zoom_adjust = floor(log2(collision_perspective_ratio * collision_adjustment) * 10.0);
-    vec2 fade_tex = vec2((a_labelminzoom + perspective_zoom_adjust) / 255.0, 0.0);
-
-    v_data0 = vec4(tex.x, tex.y, fade_tex.x, fade_tex.y);
-    v_data1 = vec2(gamma_scale, size);
+    v_data0 = vec2(tex.x, tex.y);
+    v_data1 = vec3(gamma_scale, size, interpolated_fade_opacity);
 }
