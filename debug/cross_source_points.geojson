@@ -1,0 +1,57 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -77.01,
+                    38.90
+                ]
+            },
+            "properties": {
+                "name": "GeoJSON Source 1"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -77.01,
+                    38.89
+                ]
+            },
+            "properties": {
+                "name": "GeoJSON Source 2"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -77.03,
+                    38.90
+                ]
+            },
+            "properties": {
+                "name": "GeoJSON Source 3"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -77.03,
+                    38.89
+                ]
+            },
+            "properties": {
+                "name": "GeoJSON Source 4"
+            }
+        }
+    ]
+}
