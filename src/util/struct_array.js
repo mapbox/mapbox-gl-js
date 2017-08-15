@@ -334,6 +334,20 @@ function createStructArrayType(options: StructArrayTypeParameters): Class<Struct
 
     structArrayTypeCache[key] = StructArrayType;
 
+    for (const member of members) {
+        for (let c = 0; c < member.components; c++) {
+            let name = `get${member.name}`;
+            if (member.components > 1) {
+                name += c;
+            }
+            if (name in StructArrayType.prototype) {
+                throw new Error(`${name} is a reserved name and cannot be used as a member name.`);
+            }
+            // $FlowFixMe
+            StructArrayType.prototype[name] = createIndexedMemberComponentGetter(member, c, size);
+        }
+    }
+
     return StructArrayType;
 }
 
@@ -395,6 +409,13 @@ function createMemberComponentString(member, component) {
     const componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
     const index = `${elementOffset} + ${componentOffset}`;
     return `this._structArray.${getArrayViewName(member.type)}[${index}]`;
+}
+
+function createIndexedMemberComponentGetter(member, component, size) {
+    const componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
+    const componentStride = size / sizeOf(member.type);
+    return new Function('index',
+        `return this.${getArrayViewName(member.type)}[index * ${componentStride} + ${componentOffset}];`);
 }
 
 function createAccessors(member, c) {
