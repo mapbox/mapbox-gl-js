@@ -4,6 +4,11 @@ const assert = require('assert');
 const WhooTS = require('@mapbox/whoots-js');
 const Coordinate = require('../geo/coordinate');
 
+/**
+ * @module TileCoord
+ * @private
+ */
+
 class TileCoord {
     z: number;
     x: number;
@@ -123,15 +128,15 @@ class TileCoord {
     }
 
     /**
-     *
-     * @memberof Map
-     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
+     * @param {TileCoord} parent TileCoord that is potentially a parent of this TileCoord
+     * @param {number} sourceMaxZoom x and y coordinates only shift with z up to sourceMaxZoom
      * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
-     * @private
      */
-    isChildOf(parent: any) {
+    isChildOf(parent: TileCoord, sourceMaxZoom: number) {
+        const parentZ = Math.min(sourceMaxZoom, parent.z);
+        const childZ = Math.min(sourceMaxZoom, this.z);
         // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
-        return parent.z === 0 || (parent.z < this.z && parent.x === (this.x >> (this.z - parent.z)) && parent.y === (this.y >> (this.z - parent.z)));
+        return parent.z === 0 || (parent.z < this.z && parent.x === (this.x >> (childZ - parentZ)) && parent.y === (this.y >> (childZ - parentZ)));
     }
 
     static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
