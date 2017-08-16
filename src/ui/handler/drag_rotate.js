@@ -224,8 +224,7 @@ class DragRotateHandler {
         if (e.touches) {
             return (e.touches.length > 1);
         } else {
-            const buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
-                button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
+            const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
             let eventButton = e.button;
             if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
                 window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
@@ -234,7 +233,7 @@ class DragRotateHandler {
                 // using Control + left click
                 eventButton = 0;
             }
-            return (e.type === 'mousemove' ? (e.buttons & buttons) === 0 : !this.isActive() && eventButton !== button);
+            return e.type !== 'mousemove' && !this.isActive() && eventButton !== button;
         }
     }
 
