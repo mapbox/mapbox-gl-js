@@ -61,32 +61,32 @@ test('CollisionFeature', (t) => {
         t.end();
     });
 
-    test('boxes for handling pitch underzooming have scale < 1', (t) => {
+    test('boxes for handling pitch underzooming', (t) => {
         const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         const anchor = new Anchor(505, 95, 0, 1);
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
-        const maxScales = pluckMaxScales(cf);
-        t.deepEqual(maxScales, [
-            0.37037035822868347,
-            0.43478259444236755,
-            0.5263158082962036,
-            0.6666666865348816,
-            0.9090909361839294,
-            1.4285714626312256,
-            2,
-            3.3333332538604736,
-            10,
-            Infinity,
-            10,
-            3.3333332538604736,
-            2,
-            1.4285714626312256,
-            1.1111111640930176,
-            0.9090909361839294,
-            0.6666666865348816,
-            0.5263158082962036,
-            0.43478259444236755,
-            0.37037035822868347]);
+        const distancesToAnchor = pluckDistancesToAnchor(cf);
+        t.deepEqual(distancesToAnchor, [
+            -112,
+            -96,
+            -80,
+            -64,
+            -48,
+            -32,
+            -24,
+            -16,
+            -8,
+            0,
+            8,
+            16,
+            24,
+            32,
+            40,
+            48,
+            64,
+            80,
+            96,
+            112]);
         t.end();
     });
 
@@ -178,10 +178,10 @@ test('CollisionFeature', (t) => {
         return result;
     }
 
-    function pluckMaxScales(cf) {
+    function pluckDistancesToAnchor(cf) {
         const result = [];
         for (let i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
-            result.push(collisionBoxArray.get(i).maxScale);
+            result.push(collisionBoxArray.get(i).distanceToAnchor);
         }
         return result;
     }
