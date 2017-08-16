@@ -94,7 +94,7 @@ class DragRotateHandler {
         if (this._ignoreEvent(e)) return;
         if (this.isActive()) return;
 
-        window.document.addEventListener('mousemove', this._onMove);
+        window.document.addEventListener('mousemove', this._onMove, {capture: true});
         window.document.addEventListener('mouseup', this._onUp);
         /* Deactivate DragRotate when the window looses focus. Otherwise if a mouseup occurs when the window isn't in focus, DragRotate will still be active even though the mouse is no longer pressed. */
         window.addEventListener('blur', this._onUp);
@@ -149,7 +149,7 @@ class DragRotateHandler {
 
     _onUp(e: MouseEvent) {
         if (this._ignoreEvent(e)) return;
-        window.document.removeEventListener('mousemove', this._onMove);
+        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
         window.removeEventListener('blur', (this._onUp: any));
 
