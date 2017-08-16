@@ -216,25 +216,22 @@ class DragRotateHandler {
         return this._map.fire(type, { originalEvent: e });
     }
 
-    _ignoreEvent(e: any) {
+    _ignoreEvent(e: MouseEvent) {
         const map = this._map;
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
         if (map.dragPan && map.dragPan.isActive()) return true;
-        if (e.touches) {
-            return (e.touches.length > 1);
-        } else {
-            const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
-            let eventButton = e.button;
-            if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
-                window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-                // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
-                // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
-                // using Control + left click
-                eventButton = 0;
-            }
-            return e.type !== 'mousemove' && !this.isActive() && eventButton !== button;
+
+        const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
+        let eventButton = e.button;
+        if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
+            window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+            // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
+            // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
+            // using Control + left click
+            eventButton = 0;
         }
+        return e.type !== 'mousemove' && !this.isActive() && eventButton !== button;
     }
 
     _drainInertiaBuffer() {
