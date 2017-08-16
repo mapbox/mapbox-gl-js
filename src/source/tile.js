@@ -195,7 +195,7 @@ class Tile {
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
             const pixelRatio = pixelsToTileUnits(this, 1, collisionTile.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionTile.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, collisionTile.transform.zoom, pixelRatio, labelPlaneMatrix, posMatrix, this.coord.id, this.collisionBoxArray);
+            PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, collisionTile.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, this.collisionBoxArray);
             PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
         }
 
