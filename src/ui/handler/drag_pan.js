@@ -207,9 +207,7 @@ class DragPanHandler {
             return (e.touches.length > 1);
         } else {
             if (e.ctrlKey) return true;
-            const buttons = 1,  // left button
-                button = 0;   // left button
-            return (e.type === 'mousemove' ? (e.buttons & buttons) === 0 : e.button && e.button !== button);
+            return e.type !== 'mousemove' && e.button && e.button !== 0; // left button
         }
     }
 
