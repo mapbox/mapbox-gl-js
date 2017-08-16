@@ -118,7 +118,6 @@ function project(point: Point, matrix: mat4): Point {
 }
 
 function isVisible(anchorPos: [number, number, number, number],
-                   placementZoom: number,
                    clippingBuffer: [number, number]) {
     const x = anchorPos[0] / anchorPos[3];
     const y = anchorPos[1] / anchorPos[3];
@@ -176,7 +175,7 @@ function updateLineLabels(bucket: SymbolBucket,
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        if (!isVisible(anchorPos, symbol.placementZoom, clippingBuffer)) {
+        if (!isVisible(anchorPos, clippingBuffer)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
@@ -299,9 +298,8 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         placedGlyphs = [singleGlyph];
     }
 
-    const placementZoom = symbol.placementZoom;
     for (const glyph: any of placedGlyphs) {
-        addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle, placementZoom);
+        addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle);
     }
     return {};
 }
@@ -399,7 +397,7 @@ const offscreenPoint = new Point(-Infinity, -Infinity);
 // because the dynamic buffer is paired with a static buffer that doesn't get updated.
 function hideGlyphs(num: number, dynamicLayoutVertexArray: any) {
     for (let i = 0; i < num; i++) {
-        addDynamicAttributes(dynamicLayoutVertexArray, offscreenPoint, 0, 25);
+        addDynamicAttributes(dynamicLayoutVertexArray, offscreenPoint, 0);
     }
 }
 

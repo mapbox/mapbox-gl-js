@@ -5,7 +5,6 @@ const Buffer = require('../buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
-const packUint8ToFloat = require('../../shaders/encode_attribute').packUint8ToFloat;
 const resolveTokens = require('../../util/token');
 const transformText = require('../../symbol/transform_text');
 const mergeLines = require('../../symbol/mergelines');
@@ -82,7 +81,6 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Uint16', name: 'upperSize' },
         { type: 'Float32', name: 'lineOffsetX' },
         { type: 'Float32', name: 'lineOffsetY' },
-        { type: 'Float32', name: 'placementZoom' },
         { type: 'Uint8', name: 'writingMode' },
         { type: 'Uint8', name: 'hidden' }
     ]
@@ -183,15 +181,13 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
     );
 }
 
-function addDynamicAttributes(dynamicLayoutVertexArray, p, angle, placementZoom) {
+function addDynamicAttributes(dynamicLayoutVertexArray, p, angle) {
     const twoPi = Math.PI * 2;
-    const angleAndZoom = packUint8ToFloat(
-        ((angle + twoPi) % twoPi) / twoPi * 255,
-        placementZoom * 10);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angleAndZoom);
+    const encodedAngle = ((angle + twoPi) % twoPi) / twoPi * 255;
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
 }
 
 type SerializedSymbolBuffer = {
@@ -553,9 +549,6 @@ class SymbolBucket implements Bucket {
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
-        const zoom = this.zoom;
-        const placementZoom = zoom;//Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
-
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
 
         for (const symbol of quads) {
@@ -575,7 +568,7 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
 
-            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0, placementZoom);
+            addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0);
             arrays.opacityVertexArray.emplaceBack(0);
             arrays.opacityVertexArray.emplaceBack(0);
             arrays.opacityVertexArray.emplaceBack(0);
@@ -595,7 +588,7 @@ class SymbolBucket implements Bucket {
             lineStartIndex, lineLength, labelAnchor.segment,
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
-            placementZoom, writingMode, false);
+            writingMode, false);
 
         arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, featureProperties);
     }
