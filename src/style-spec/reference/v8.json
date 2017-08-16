@@ -295,6 +295,25 @@
       "type": "string",
       "required": true,
       "doc": "HTML ID of the canvas from which to read pixels."
+    },
+    "contextType": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "2d": {
+          "doc" : "Source canvas is associated with a `2d` drawing context."
+        },
+        "webgl": {
+          "doc": "Source canvas is associated with a `webgl` drawing context."
+        },
+        "experimental-webgl": {
+          "doc": "Source canvas is associated with an `experimental-webgl` drawing context."
+        },
+        "webgl2": {
+          "doc": "Source canvas is associated with a `webgl2` drawing context."
+        }
+      },
+      "doc": "The context identifier defining the drawing context associated to the source canvas (see HTMLCanvasElement.getContext() documentation)."
     }
   },
   "layer": {

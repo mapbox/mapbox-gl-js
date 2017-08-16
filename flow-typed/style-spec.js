@@ -104,7 +104,8 @@ declare type CanvasSourceSpecification = {|
     "type": "canvas",
     "coordinates": [[number, number], [number, number], [number, number], [number, number]],
     "animate"?: boolean,
-    "canvas": string
+    "canvas": string,
+    "contextType": "2d" | "webgl" | "experimental-webgl" | "webgl2"
 |}
 
 declare type SourceSpecification =
