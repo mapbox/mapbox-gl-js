@@ -63,18 +63,17 @@ GridIndex.prototype._query = function(x1, y1, x2, y2, hitTest) {
     if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
         return hitTest ? false : [];
     }
+    var result = [];
     if (x1 <= 0 && y1 <= 0 && this.width <= x2 && this.height <= y2) {
         // We use `Array#slice` because `this.keys` may be a `Int32Array` and
         // some browsers (Safari and IE) do not support `TypedArray#slice`
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/slice#Browser_compatibility
-        return Array.prototype.slice.call(this.boxKeys).concat(this.circleKeys);
-
+        result = Array.prototype.slice.call(this.boxKeys).concat(this.circleKeys);
     } else {
-        var result = [];
         var seenUids = { box: {}, circle: {} };
         this._forEachCell(x1, y1, x2, y2, hitTest ? this._hitTestCell : this._queryCell, result, seenUids);
-        return hitTest ? result.length > 0 : result;
     }
+    return hitTest ? result.length > 0 : result;
 };
 
 GridIndex.prototype._queryCircle = function(x, y, radius, hitTest) {
@@ -85,7 +84,7 @@ GridIndex.prototype._queryCircle = function(x, y, radius, hitTest) {
     var y1 = y - radius;
     var y2 = y + radius;
     if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
-        return;
+        return hitTest ? false : [];
     }
 
     // Box query early exits if the bounding box is larger than the grid, but we don't do
