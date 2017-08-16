@@ -41,6 +41,7 @@ test('Map#on adds a listener for an event on a given layer', (t) => {
     const map = createMap();
     const features = [{}];
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
         t.deepEqual(options, {layers: ['layer']});
         return features;
@@ -63,6 +64,7 @@ test('Map#on adds a listener not triggered for events not matching any features'
     const map = createMap();
     const features = [];
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
         t.deepEqual(options, {layers: ['layer']});
         return features;
@@ -77,9 +79,24 @@ test('Map#on adds a listener not triggered for events not matching any features'
     t.end();
 });
 
+test(`Map#on adds a listener not triggered when the specified layer does not exiist`, (t) => {
+    const map = createMap();
+
+    t.stub(map, 'getLayer').returns(null);
+
+    const spy = t.spy();
+
+    map.on('click', 'layer', spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.notCalled);
+    t.end();
+});
+
 test('Map#on distinguishes distinct event types', (t) => {
     const map = createMap();
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
     const spyDown = t.spy((e) => {
@@ -104,6 +121,7 @@ test('Map#on distinguishes distinct layers', (t) => {
     const featuresA = [{}];
     const featuresB = [{}];
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
         return options.layers[0] === 'A' ? featuresA : featuresB;
     });
@@ -128,6 +146,7 @@ test('Map#on distinguishes distinct layers', (t) => {
 test('Map#on distinguishes distinct listeners', (t) => {
     const map = createMap();
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
     const spyA = t.spy();
@@ -145,6 +164,7 @@ test('Map#on distinguishes distinct listeners', (t) => {
 test('Map#off removes a delegated event listener', (t) => {
     const map = createMap();
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
     const spy = t.spy();
@@ -160,6 +180,7 @@ test('Map#off removes a delegated event listener', (t) => {
 test('Map#off distinguishes distinct event types', (t) => {
     const map = createMap();
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
     const spy = t.spy((e) => {
@@ -179,6 +200,7 @@ test('Map#off distinguishes distinct layers', (t) => {
     const map = createMap();
     const featuresA = [{}];
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
         t.deepEqual(options, {layers: ['A']});
         return featuresA;
@@ -200,6 +222,7 @@ test('Map#off distinguishes distinct layers', (t) => {
 test('Map#off distinguishes distinct listeners', (t) => {
     const map = createMap();
 
+    t.stub(map, 'getLayer').returns({});
     t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
     const spyA = t.spy();
@@ -216,10 +239,26 @@ test('Map#off distinguishes distinct listeners', (t) => {
 });
 
 ['mouseenter', 'mouseover'].forEach((event) => {
+    test(`Map#on ${event} does not fire if the specified layer does not exiist`, (t) => {
+        const map = createMap();
+
+        t.stub(map, 'getLayer').returns(null);
+
+        const spy = t.spy();
+
+        map.on(event, 'layer', spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
+
     test(`Map#on ${event} fires when entering the specified layer`, (t) => {
         const map = createMap();
         const features = [{}];
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
             t.deepEqual(options, {layers: ['layer']});
             return features;
@@ -241,6 +280,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#on ${event} does not fire on mousemove within the specified layer`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spy = t.spy();
@@ -256,6 +296,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#on ${event} fires when reentering the specified layer`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures')
             .onFirstCall().returns([{}])
             .onSecondCall().returns([])
@@ -275,6 +316,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#on ${event} fires when reentering the specified layer after leaving the canvas`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spy = t.spy();
@@ -293,6 +335,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
         const featuresA = [{}];
         const featuresB = [{}];
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
             return options.layers[0] === 'A' ? featuresA : featuresB;
         });
@@ -319,6 +362,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#on ${event} distinguishes distinct listeners`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spyA = t.spy();
@@ -336,6 +380,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#off ${event} removes a delegated event listener`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spy = t.spy();
@@ -352,6 +397,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
         const map = createMap();
         const featuresA = [{}];
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
             t.deepEqual(options, {layers: ['A']});
             return featuresA;
@@ -373,6 +419,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#off ${event} distinguishes distinct listeners`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spyA = t.spy();
@@ -390,9 +437,25 @@ test('Map#off distinguishes distinct listeners', (t) => {
 });
 
 ['mouseleave', 'mouseout'].forEach((event) => {
+    test(`Map#on ${event} does not fire if the specified layer does not exiist`, (t) => {
+        const map = createMap();
+
+        t.stub(map, 'getLayer').returns(null);
+
+        const spy = t.spy();
+
+        map.on(event, 'layer', spy);
+        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas());
+
+        t.ok(spy.notCalled);
+        t.end();
+    });
+
     test(`Map#on ${event} does not fire on mousemove when entering or within the specified layer`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spy = t.spy();
@@ -408,6 +471,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#on ${event} fires when exiting the specified layer`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures')
             .onFirstCall().returns([{}])
             .onSecondCall().returns([]);
@@ -429,6 +493,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#on ${event} fires when exiting the canvas`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures').returns([{}]);
 
         const spy = t.spy(function (e) {
@@ -448,6 +513,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
     test(`Map#off ${event} removes a delegated event listener`, (t) => {
         const map = createMap();
 
+        t.stub(map, 'getLayer').returns({});
         t.stub(map, 'queryRenderedFeatures')
             .onFirstCall().returns([{}])
             .onSecondCall().returns([]);

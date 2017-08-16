@@ -697,7 +697,7 @@ class Map extends Camera {
             if (type === 'mouseenter' || type === 'mouseover') {
                 let mousein = false;
                 const mousemove = (e) => {
-                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
                     if (!features.length) {
                         mousein = false;
                     } else if (!mousein) {
@@ -712,7 +712,7 @@ class Map extends Camera {
             } else if (type === 'mouseleave' || type === 'mouseout') {
                 let mousein = false;
                 const mousemove = (e) => {
-                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
                     if (features.length) {
                         mousein = true;
                     } else if (mousein) {
@@ -729,7 +729,7 @@ class Map extends Camera {
                 return {layer, listener, delegates: {mousemove, mouseout}};
             } else {
                 const delegate = (e) => {
-                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
                     if (features.length) {
                         listener.call(this, util.extend({features}, e));
                     }
