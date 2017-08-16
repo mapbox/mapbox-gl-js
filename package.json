@@ -24,7 +24,6 @@
     "bubleify": "^0.7.0",
     "csscolorparser": "~1.0.2",
     "earcut": "^2.0.3",
-    "fast-stable-stringify": "^0.1.1",
     "geojson-rewind": "^0.2.0",
     "geojson-vt": "^2.4.0",
     "grid-index": "^1.0.0",
