@@ -91,8 +91,20 @@ class DragRotateHandler {
     }
 
     _onDown(e: MouseEvent) {
-        if (this._ignoreEvent(e)) return;
+        if (this._map.boxZoom && this._map.boxZoom.isActive()) return;
+        if (this._map.dragPan && this._map.dragPan.isActive()) return;
         if (this.isActive()) return;
+
+        const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
+        let eventButton = e.button;
+        if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
+            window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+            // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
+            // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
+            // using Control + left click
+            eventButton = 0;
+        }
+        if (eventButton !== button) return;
 
         window.document.addEventListener('mousemove', this._onMove, {capture: true});
         window.document.addEventListener('mouseup', this._onUp);
@@ -108,8 +120,6 @@ class DragRotateHandler {
     }
 
     _onMove(e: MouseEvent) {
-        if (this._ignoreEvent(e)) return;
-
         if (!this.isActive()) {
             this._active = true;
             this._map.moving = true;
@@ -148,7 +158,6 @@ class DragRotateHandler {
     }
 
     _onUp(e: MouseEvent) {
-        if (this._ignoreEvent(e)) return;
         window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
         window.removeEventListener('blur', (this._onUp: any));
@@ -214,24 +223,6 @@ class DragRotateHandler {
 
     _fireEvent(type: string, e: Event) {
         return this._map.fire(type, { originalEvent: e });
-    }
-
-    _ignoreEvent(e: MouseEvent) {
-        const map = this._map;
-
-        if (map.boxZoom && map.boxZoom.isActive()) return true;
-        if (map.dragPan && map.dragPan.isActive()) return true;
-
-        const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
-        let eventButton = e.button;
-        if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
-            window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-            // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
-            // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
-            // using Control + left click
-            eventButton = 0;
-        }
-        return e.type !== 'mousemove' && !this.isActive() && eventButton !== button;
     }
 
     _drainInertiaBuffer() {
