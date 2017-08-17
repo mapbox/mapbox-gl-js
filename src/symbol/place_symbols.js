@@ -142,7 +142,7 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: boolean, zoo
             placedGlyphBoxes = collisionTile.placeCollisionBoxes(symbolInstance.textCollisionBoxes,
                 layout['text-allow-overlap'], scale, pixelsToTileUnits);
 
-            if (symbolInstance.textCollisionCircles) {
+            if (symbolInstance.textCollisionCircles && symbolInstance.textCollisionCircles.length) {
                 const placedSymbol = bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]);
                 const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
                 placedGlyphCircles = collisionTile.placeCollisionCircles(symbolInstance.textCollisionCircles,
