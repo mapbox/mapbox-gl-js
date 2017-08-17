@@ -50,7 +50,6 @@ export type SymbolInstance = {
     line: Array<Point>,
     featureIndex: number,
     featureProperties: Object,
-    writingModes: number,
     textCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     isDuplicate: boolean;
