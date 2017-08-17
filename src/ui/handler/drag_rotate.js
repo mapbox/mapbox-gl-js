@@ -27,6 +27,7 @@ class DragRotateHandler {
     _el: HTMLElement;
     _enabled: boolean;
     _active: boolean;
+    _button: 'right' | 'left';
     _bearingSnap: number;
     _pitchWithRotate: boolean;
     _pos: Point;
@@ -34,10 +35,16 @@ class DragRotateHandler {
     _inertia: Array<[number, number]>;
     _center: Point;
 
-    constructor(map: Map, options: any) {
+    constructor(map: Map, options: {
+        button?: 'right' | 'left',
+        element?: HTMLElement,
+        bearingSnap?: number,
+        pitchWithRotate?: boolean
+    }) {
         this._map = map;
-        this._el = map.getCanvasContainer();
-        this._bearingSnap = options.bearingSnap;
+        this._el = options.element || map.getCanvasContainer();
+        this._button = options.button || 'right';
+        this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
         util.bindAll([
@@ -45,7 +52,6 @@ class DragRotateHandler {
             '_onMove',
             '_onUp'
         ], this);
-
     }
 
     /**
@@ -95,16 +101,22 @@ class DragRotateHandler {
         if (this._map.dragPan && this._map.dragPan.isActive()) return;
         if (this.isActive()) return;
 
-        const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
-        let eventButton = e.button;
-        if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
-            window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-            // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
-            // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
-            // using Control + left click
-            eventButton = 0;
+        if (this._button === 'right') {
+            const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
+            let eventButton = e.button;
+            if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
+                window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+                // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
+                // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
+                // using Control + left click
+                eventButton = 0;
+            }
+            if (eventButton !== button) return;
+        } else {
+            if (e.ctrlKey || e.button !== 0) return;
         }
-        if (eventButton !== button) return;
+
+        DOM.disableDrag();
 
         window.document.addEventListener('mousemove', this._onMove, {capture: true});
         window.document.addEventListener('mouseup', this._onUp);
@@ -161,6 +173,8 @@ class DragRotateHandler {
         window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
         window.removeEventListener('blur', (this._onUp: any));
+
+        DOM.enableDrag();
 
         if (!this.isActive()) return;
 
