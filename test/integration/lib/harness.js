@@ -179,18 +179,18 @@ module.exports = function (directory, implementation, options, run) {
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
         const failed = results.filter(r => /failed/.test(r.status));
-        const [pre, post] = resultsTemplate({ failed })
+        const resultsShell = resultsTemplate({ failed })
             .split('<!-- results go here -->');
 
         const p = path.join(directory, 'index.html');
         const out = fs.createWriteStream(p);
 
         const q = queue(1);
-        q.defer(write, out, pre);
+        q.defer(write, out, resultsShell[0]);
         for (const r of results) {
             q.defer(write, out, itemTemplate({ r, hasFailedTests: failed.length > 0 }));
         }
-        q.defer(write, out, post);
+        q.defer(write, out, resultsShell[1]);
         q.await(() => {
             out.end();
             out.on('close', () => {
