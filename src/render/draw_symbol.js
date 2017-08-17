@@ -31,7 +31,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     // Layers with features that may be drawn overlapping aren't clipped. These
     // layers are sorted in the y direction, and to draw the correct ordering near
     // tile edges the icons are included in both tiles and clipped when drawing.
-    if (drawAcrossEdges) {
+    if (true || drawAcrossEdges) {
         gl.disable(gl.STENCIL_TEST);
     } else {
         gl.enable(gl.STENCIL_TEST);
