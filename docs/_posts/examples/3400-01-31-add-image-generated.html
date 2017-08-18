@@ -16,15 +16,15 @@ var map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v9'
 });
 
-map.on('load', () => {
+map.on('load', function () {
 
-    const width = 64; // The image will be 64 pixels square
-    const bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
-    const image = new Uint8Array(width * width * bytesPerPixel);
+    var width = 64; // The image will be 64 pixels square
+    var bytesPerPixel = 4; // Each pixel is represented by 4 bytes: red, green, blue, and alpha.
+    var image = new Uint8Array(width * width * bytesPerPixel);
 
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < width; y++) {
-            const offset = (y * width + x) * bytesPerPixel;
+            var offset = (y * width + x) * bytesPerPixel;
             image[offset + 0] = y / width * 255; // red
             image[offset + 1] = x / width * 255; // green
             image[offset + 2] = 128;             // blue
