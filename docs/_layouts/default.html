@@ -85,7 +85,7 @@ if (typeof L !== 'undefined' &&
 </script>
 <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
 {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
-{% if page.lightBackground %}
+{% if page.lightBackground or layout.lightBackground %}
 <script>
   window.addEventListener('DOMContentLoaded', function () {
     var shellMobileNavTriggerToggle = document.getElementById('mobile-nav-trigger-toggle');
