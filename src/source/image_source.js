@@ -174,11 +174,6 @@ class ImageSource extends Evented implements Source {
         return this;
     }
 
-    _setTile(tile: Tile) {
-        this.tiles[String(tile.coord.w)] = tile;
-        tile.buckets = {};
-    }
-
     prepare() {
         if (Object.keys(this.tiles).length === 0 || !this.image) return;
         this._prepareImage(this.map.painter.gl, this.image);
@@ -218,7 +213,8 @@ class ImageSource extends Evented implements Source {
         // If the world wraps, we may have multiple "wrapped" copies of the
         // single tile.
         if (this.coord && this.coord.toString() === tile.coord.toString()) {
-            this._setTile(tile);
+            this.tiles[String(tile.coord.w)] = tile;
+            tile.buckets = {};
             callback(null);
         } else {
             tile.state = 'errored';
