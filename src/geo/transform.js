@@ -74,6 +74,7 @@ class Transform {
         clone._fov = this._fov;
         clone._pitch = this._pitch;
         clone._unmodified = this._unmodified;
+        clone._calcMatrices();
         return clone;
     }
 
