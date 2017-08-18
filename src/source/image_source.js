@@ -67,6 +67,8 @@ class ImageSource extends Evented implements Source {
     centerCoord: Coordinate;
     coord: TileCoord;
     _tileCoords: Array<Point>;
+    boundsBuffer: VertexBuffer;
+    boundsVAO: VertexArrayObject;
 
     constructor(id: string, options: ImageSourceSpecification | VideoSourceSpecification | CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -159,22 +161,22 @@ class ImageSource extends Evented implements Source {
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('data', {dataType:'source', sourceDataType: 'content'});
-        return this;
-    }
-
-    _setTile(tile: Tile) {
-        this.tiles[String(tile.coord.w)] = tile;
         const array = new RasterBoundsArray();
         array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
         array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, EXTENT, 0);
         array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, EXTENT);
         array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, EXTENT, EXTENT);
 
-        tile.buckets = {};
+        this.boundsBuffer = VertexBuffer.fromStructArray(array);
+        this.boundsVAO = new VertexArrayObject();
 
-        tile.boundsBuffer = VertexBuffer.fromStructArray(array);
-        tile.boundsVAO = new VertexArrayObject();
+        this.fire('data', {dataType:'source', sourceDataType: 'content'});
+        return this;
+    }
+
+    _setTile(tile: Tile) {
+        this.tiles[String(tile.coord.w)] = tile;
+        tile.buckets = {};
     }
 
     prepare() {

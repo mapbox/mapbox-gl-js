@@ -63,8 +63,6 @@ class Tile {
     vtLayers: {[string]: VectorTileLayer};
 
     aborted: ?boolean;
-    boundsBuffer: any;
-    boundsVAO: any;
     request: any;
     texture: any;
     refreshedUponExpiration: boolean;

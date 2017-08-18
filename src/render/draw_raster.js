@@ -1,6 +1,7 @@
 // @flow
 
 const util = require('../util/util');
+const ImageSource = require('../source/image_source');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -81,10 +82,18 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform1i(program.uniforms.u_image0, 0);
     gl.uniform1i(program.uniforms.u_image1, 1);
 
-    const buffer = tile.boundsBuffer || painter.rasterBoundsBuffer;
-    const vao = tile.boundsVAO || painter.rasterBoundsVAO;
-    vao.bind(gl, program, buffer);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    const source = sourceCache.getSource();
+    if (source instanceof ImageSource) {
+        const buffer = source.boundsBuffer;
+        const vao = source.boundsVAO;
+        vao.bind(gl, program, buffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    } else {
+        const buffer = painter.rasterBoundsBuffer;
+        const vao = painter.rasterBoundsVAO;
+        vao.bind(gl, program, buffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    }
 }
 
 function spinWeights(angle) {
