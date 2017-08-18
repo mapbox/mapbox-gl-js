@@ -187,7 +187,7 @@ function addFeature(bucket: SymbolBucket, feature: SymbolFeature, intermediateSy
                 line,
                 symbolMinDistance,
                 textMaxAngle,
-                shapedTextOrientations.horizontal,
+                shapedTextOrientations.vertical || shapedTextOrientations.horizontal,
                 shapedIcon,
                 glyphSize,
                 textMaxBoxScale,
