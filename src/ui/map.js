@@ -1556,10 +1556,12 @@ class Map extends Camera {
         }
 
         let pendingCollisionDetection = false;
+        let skippedPlacement = true;
         const needsPlacement = this.style.getNeedsPlacement();
         if (this.style &&
             (this._placementInProgress || needsPlacement || browser.now() > (this._lastPlacement + 100))) {
             this._lastPlacement = browser.now();
+            skippedPlacement = false;
             pendingCollisionDetection = this._placementInProgress =
                 this.style._redoPlacement(this.painter.transform, this.showCollisionBoxes, needsPlacement, this._collisionFadeTimes);
         }
@@ -1573,6 +1575,11 @@ class Map extends Camera {
             collisionFadeDuration: this._collisionFadeTimes.duration
         });
 
+        // Flag an ongoing transition
+        if (!this.animationLoop.stopped() || skippedPlacement || pendingCollisionDetection || this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration > Date.now()) {
+            this._styleDirty = true;
+        }
+
         this.fire('render');
 
         if (this.loaded() && !this._loaded) {
@@ -1582,10 +1589,6 @@ class Map extends Camera {
 
         this._frameId = null;
 
-        // Flag an ongoing transition
-        if (!this.animationLoop.stopped() || pendingCollisionDetection || this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration > Date.now()) {
-            this._styleDirty = true;
-        }
 
         // Schedule another render frame if it's needed.
         //
