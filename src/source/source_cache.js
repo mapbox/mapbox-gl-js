@@ -211,7 +211,6 @@ class SourceCache extends Evented {
             return;
         }
 
-        tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);

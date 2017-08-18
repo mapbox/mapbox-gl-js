@@ -53,8 +53,8 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
-    const parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
-        fade = getFadeValues(tile, parentTile, layer, painter.transform);
+    const parentTile = sourceCache.findLoadedParent(coord, 0, {}),
+        fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
 
     let parentScaleBy, parentTL;
 
@@ -110,15 +110,15 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-function getFadeValues(tile, parentTile, layer, transform) {
+function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
     const fadeDuration = layer.paint['raster-fade-duration'];
 
-    if (tile.sourceCache && fadeDuration > 0) {
+    if (fadeDuration > 0) {
         const now = Date.now();
         const sinceTile = (now - tile.timeAdded) / fadeDuration;
         const sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-        const source = tile.sourceCache.getSource();
+        const source = sourceCache.getSource();
         const idealZ = transform.coveringZoomLevel({
             tileSize: source.tileSize,
             roundZoom: source.roundZoom
