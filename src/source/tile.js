@@ -67,7 +67,6 @@ class Tile {
     boundsVAO: any;
     request: any;
     texture: any;
-    sourceCache: any;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
 
