@@ -42,7 +42,7 @@ function restore(): Window {
     };
 
     window.useFakeHTMLCanvasGetContext = function() {
-        this.HTMLCanvasElement.prototype.getContext = sinon.stub().returns('2d');
+        this.HTMLCanvasElement.prototype.getContext = function() { return '2d'; };
     };
 
     window.useFakeXMLHttpRequest = function() {
@@ -55,7 +55,7 @@ function restore(): Window {
 
     window.restore = restore;
 
-    window.ImageData = window.ImageData || sinon.stub().returns(false);
+    window.ImageData = window.ImageData || function() { return false; };
 
     util.extend(module.exports, window);
 

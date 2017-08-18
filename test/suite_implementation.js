@@ -1,7 +1,6 @@
 'use strict';
 
 const ajax =  require('../src/util/ajax');
-const sinon = require('sinon');
 const request = require('request');
 const PNG = require('pngjs').PNG;
 const Map = require('../src/ui/map');
@@ -126,7 +125,7 @@ function cached(data, callback) {
     });
 }
 
-sinon.stub(ajax, 'getJSON').callsFake(({ url }, callback) => {
+ajax.getJSON = function({ url }, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request(url, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
@@ -142,9 +141,9 @@ sinon.stub(ajax, 'getJSON').callsFake(({ url }, callback) => {
             callback(error || new Error(response.statusCode));
         }
     });
-});
+};
 
-sinon.stub(ajax, 'getArrayBuffer').callsFake(({ url }, callback) => {
+ajax.getArrayBuffer = function({ url }, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request({ url, encoding: null }, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
@@ -154,9 +153,9 @@ sinon.stub(ajax, 'getArrayBuffer').callsFake(({ url }, callback) => {
             callback(error || new Error(response.statusCode));
         }
     });
-});
+};
 
-sinon.stub(ajax, 'getImage').callsFake(({ url }, callback) => {
+ajax.getImage = function({ url }, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request({ url, encoding: null }, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
@@ -169,15 +168,15 @@ sinon.stub(ajax, 'getImage').callsFake(({ url }, callback) => {
             callback(error || new Error(response.statusCode));
         }
     });
-});
+};
 
-sinon.stub(browser, 'getImageData').callsFake((img) => {
+browser.getImageData = function(img) {
     return new Uint8Array(img.data);
-});
+};
 
 // Hack: since node doesn't have any good video codec modules, just grab a png with
 // the first frame and fake the video API.
-sinon.stub(ajax, 'getVideo').callsFake((urls, callback) => {
+ajax.getVideo = function(urls, callback) {
     return request({ url: urls[0], encoding: null }, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             new PNG().parse(body, (err, png) => {
@@ -195,4 +194,4 @@ sinon.stub(ajax, 'getVideo').callsFake((urls, callback) => {
             callback(error || new Error(response.statusCode));
         }
     });
-});
+};
