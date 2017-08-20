@@ -31,7 +31,7 @@ class TileCoord {
         this.id = ((dim * dim * w + dim * this.y + this.x) * 32) + this.z;
 
         // for caching pos matrix calculation when rendering
-        (this : any).posMatrix = null;
+        (this: any).posMatrix = null;
     }
 
     toString() {

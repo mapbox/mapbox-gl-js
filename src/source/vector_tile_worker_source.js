@@ -1,7 +1,7 @@
 // @flow
 
 const ajax = require('../util/ajax');
-const vt = require('vector-tile');
+const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
@@ -15,7 +15,7 @@ import type {
     RedoPlacementCallback,
 } from '../source/worker_source';
 
-import type {Actor} from '../util/actor';
+import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 
 export type LoadVectorTileResult = {
@@ -40,7 +40,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const xhr = ajax.getArrayBuffer(params.url, (err, response) => {
+    const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {

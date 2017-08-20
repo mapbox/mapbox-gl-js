@@ -1,3 +1,4 @@
+// @flow
 
 const Evented = require('../../util/evented');
 const DOM = require('../../util/dom');
@@ -6,6 +7,8 @@ const util = require('../../util/util');
 const assert = require('assert');
 const LngLat = require('../../geo/lng_lat');
 const Marker = require('../marker');
+
+import type Map from '../map';
 
 const defaultOptions = {
     positionOptions: {
@@ -75,8 +78,18 @@ function checkGeolocationSupport(callback) {
  * }));
  */
 class GeolocateControl extends Evented {
+    _map: Map;
+    options: any;
+    _container: HTMLElement;
+    _dotElement: HTMLElement;
+    _geolocateButton: HTMLElement;
+    _geolocationWatchID: number;
+    _timeoutId: ?number;
+    _watchState: string;
+    _lastKnownPosition: any;
+    _userLocationDotMarker: Marker;
 
-    constructor(options) {
+    constructor(options: any) {
         super();
         this.options = util.extend({}, defaultOptions, options);
 
@@ -91,7 +104,7 @@ class GeolocateControl extends Evented {
         ], this);
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this._map = map;
         this._container = DOM.create('div', `${className} ${className}-group`);
         checkGeolocationSupport(this._setupUI);
@@ -102,7 +115,7 @@ class GeolocateControl extends Evented {
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
             window.navigator.geolocation.clearWatch(this._geolocationWatchID);
-            this._geolocationWatchID = undefined;
+            this._geolocationWatchID = (undefined: any);
         }
 
         // clear the marker from the map
@@ -110,11 +123,11 @@ class GeolocateControl extends Evented {
             this._userLocationDotMarker.remove();
         }
 
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
+        DOM.remove(this._container);
+        this._map = (undefined: any);
     }
 
-    _onSuccess(position) {
+    _onSuccess(position: Position) {
         if (this.options.trackUserLocation) {
             // keep a record of the position so that if the state is BACKGROUND and the user
             // clicks the button, we can move to ACTIVE_LOCK immediately without waiting for
@@ -161,7 +174,7 @@ class GeolocateControl extends Evented {
         this._finish();
     }
 
-    _updateCamera(position) {
+    _updateCamera(position: Position) {
         const center = new LngLat(position.coords.longitude, position.coords.latitude);
         const radius = position.coords.accuracy;
 
@@ -170,7 +183,7 @@ class GeolocateControl extends Evented {
         });
     }
 
-    _updateMarker(position) {
+    _updateMarker(position: ?Position) {
         if (position) {
             this._userLocationDotMarker.setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this._map);
         } else {
@@ -178,7 +191,7 @@ class GeolocateControl extends Evented {
         }
     }
 
-    _onError(error) {
+    _onError(error: PositionError) {
         if (this.options.trackUserLocation) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
@@ -235,10 +248,9 @@ class GeolocateControl extends Evented {
         this._timeoutId = undefined;
     }
 
-    _setupUI(supported) {
+    _setupUI(supported: boolean) {
         if (supported === false) return;
-        this._container.addEventListener('contextmenu',
-            e => e.preventDefault());
+        this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
         this._geolocateButton = DOM.create('button',
             `${className}-icon ${className}-geolocate`,
             this._container);
@@ -246,7 +258,7 @@ class GeolocateControl extends Evented {
         this._geolocateButton.setAttribute('aria-label', 'Geolocate');
 
         if (this.options.trackUserLocation) {
-            this._geolocateButton.setAttribute('aria-pressed', false);
+            this._geolocateButton.setAttribute('aria-pressed', 'false');
             this._watchState = 'OFF';
         }
 
@@ -347,7 +359,7 @@ class GeolocateControl extends Evented {
                 // enable watchPosition since watchState is not OFF and there is no watchPosition already running
 
                 this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
-                this._geolocateButton.setAttribute('aria-pressed', true);
+                this._geolocateButton.setAttribute('aria-pressed', 'true');
 
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, this.options.positionOptions);
@@ -365,9 +377,9 @@ class GeolocateControl extends Evented {
     _clearWatch() {
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
-        this._geolocationWatchID = undefined;
+        this._geolocationWatchID = (undefined: any);
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
-        this._geolocateButton.setAttribute('aria-pressed', false);
+        this._geolocateButton.setAttribute('aria-pressed', 'false');
 
         if (this.options.showUserLocation) {
             this._updateMarker(null);

@@ -5,7 +5,7 @@ const gl = require('gl');
 const sinon = require('sinon');
 const util = require('./util');
 
-function restore() {
+function restore(): Window {
     // Remove previous window from module.exports
     const previousWindow = module.exports;
     if (previousWindow.close) previousWindow.close();
@@ -42,7 +42,7 @@ function restore() {
     };
 
     window.useFakeHTMLCanvasGetContext = function() {
-        this.HTMLCanvasElement.prototype.getContext = sinon.stub().returns('2d');
+        this.HTMLCanvasElement.prototype.getContext = function() { return '2d'; };
     };
 
     window.useFakeXMLHttpRequest = function() {
@@ -55,7 +55,7 @@ function restore() {
 
     window.restore = restore;
 
-    window.ImageData = window.ImageData || sinon.stub().returns(false);
+    window.ImageData = window.ImageData || function() { return false; };
 
     util.extend(module.exports, window);
 

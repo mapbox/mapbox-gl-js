@@ -1,3 +1,8 @@
+// @flow
+
+const util = require('../../util/util');
+
+import type Map from '../map';
 
 /**
  * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
@@ -6,9 +11,15 @@
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class DoubleClickZoomHandler {
-    constructor(map) {
+    _map: Map;
+    _enabled: boolean;
+
+    constructor(map: Map) {
         this._map = map;
-        this._onDblClick = this._onDblClick.bind(this);
+
+        util.bindAll([
+            '_onDblClick',
+        ], this);
     }
 
     /**
@@ -44,7 +55,7 @@ class DoubleClickZoomHandler {
         this._enabled = false;
     }
 
-    _onDblClick(e) {
+    _onDblClick(e: any) {
         this._map.zoomTo(
             this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1),
             {around: e.lngLat},

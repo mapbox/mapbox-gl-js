@@ -1,9 +1,10 @@
 // @flow
 
 const util = require('../util/util');
-const Bucket = require('../data/bucket');
+const deserializeBucket = require('../data/bucket').deserialize;
+const SymbolBucket = require('../data/bucket/symbol_bucket');
 const FeatureIndex = require('../data/feature_index');
-const vt = require('vector-tile');
+const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
@@ -13,8 +14,20 @@ const Throttler = require('../util/throttler');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
+import type {Bucket} from '../data/bucket';
+import type StyleLayer from '../style/style_layer';
 import type TileCoord from './tile_coord';
 import type {WorkerTileResult} from './worker_source';
+import type Point from '@mapbox/point-geometry';
+
+export type TileState =
+    | 'loading'   // Tile data is in the process of loading.
+    | 'loaded'    // Tile data has been loaded. Tile can be rendered.
+    | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
+    | 'unloaded'  // Tile data has been deleted.
+    | 'errored'   // Tile data was not loaded because of an error.
+    | 'expired';  /* Tile data was previously loaded, but has expired per its
+                   * HTTP headers and is in the process of refreshing. */
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -31,13 +44,7 @@ class Tile {
     buckets: {[string]: Bucket};
     expirationTime: any;
     expiredRequestCount: number;
-    state: 'loading'   // Tile data is in the process of loading.
-         | 'loaded'    // Tile data has been loaded. Tile can be rendered.
-         | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
-         | 'unloaded'  // Tile data has been deleted.
-         | 'errored'   // Tile data was not loaded because of an error.
-         | 'expired';  /* Tile data was previously loaded, but has expired per its
-                        * HTTP headers and is in the process of refreshing. */
+    state: TileState;
     placementThrottler: any;
     timeAdded: any;
     fadeEndTime: any;
@@ -69,7 +76,7 @@ class Tile {
      * @param size
      * @param sourceMaxZoom
      */
-    constructor(coord: any, size: number, sourceMaxZoom: number) {
+    constructor(coord: TileCoord, size: number, sourceMaxZoom: number) {
         this.coord = coord;
         this.uid = util.uniqueId();
         this.uses = 0;
@@ -128,7 +135,7 @@ class Tile {
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
         this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
-        this.buckets = Bucket.deserialize(data.buckets, painter.style);
+        this.buckets = deserializeBucket(data.buckets, painter.style);
     }
 
     /**
@@ -149,14 +156,14 @@ class Tile {
 
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (bucket.layers[0].type === 'symbol') {
+            if (bucket instanceof SymbolBucket) {
                 bucket.destroy();
                 delete this.buckets[id];
             }
         }
 
         // Add new symbol buckets
-        util.extend(this.buckets, Bucket.deserialize(data.buckets, style));
+        util.extend(this.buckets, deserializeBucket(data.buckets, style));
     }
 
     /**
@@ -241,11 +248,38 @@ class Tile {
         }, this.workerID);
     }
 
-    getBucket(layer: any) {
+    getBucket(layer: StyleLayer) {
         return this.buckets[layer.id];
     }
 
-    querySourceFeatures(result: any, params: any) {
+    queryRenderedFeatures(layers: {[string]: StyleLayer},
+                          queryGeometry: Array<Array<Point>>,
+                          scale: number,
+                          params: { filter: FilterSpecification, layers: Array<string> },
+                          bearing: number): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+        if (!this.featureIndex)
+            return {};
+
+        // Determine the additional radius needed factoring in property functions
+        let additionalRadius = 0;
+        for (const id in layers) {
+            const bucket = this.getBucket(layers[id]);
+            if (bucket) {
+                additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
+            }
+        }
+
+        return this.featureIndex.query({
+            queryGeometry,
+            bearing,
+            params,
+            scale,
+            additionalRadius,
+            tileSize: this.tileSize,
+        }, layers);
+    }
+
+    querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
         if (!this.rawTileData) return;
 
         if (!this.vtLayers) {
@@ -264,7 +298,7 @@ class Tile {
             const feature = layer.feature(i);
             if (filter(feature)) {
                 const geojsonFeature = new GeoJSONFeature(feature, this.coord.z, this.coord.x, this.coord.y);
-                geojsonFeature.tile = coord;
+                (geojsonFeature: any).tile = coord;
                 result.push(geojsonFeature);
             }
         }

@@ -5,6 +5,8 @@ const ajax = require('../util/ajax');
 const browser = require('../util/browser');
 const normalizeURL = require('../util/mapbox').normalizeSpriteURL;
 
+import type {RequestTransformFunction} from '../ui/map';
+
 class SpritePosition {
     x: number;
     y: number;
@@ -27,28 +29,32 @@ class ImageSprite extends Evented {
     base: string;
     retina: boolean;
 
+    transformRequestFn: RequestTransformFunction;
     data: ?{[string]: SpritePosition};
-    imgData: ?HTMLImageElement;
+    imgData: ?Uint8ClampedArray;
     width: ?number;
 
-    constructor(base: string, eventedParent?: Evented) {
+    constructor(base: string, transformRequestCallback: RequestTransformFunction, eventedParent?: Evented) {
         super();
         this.base = base;
         this.retina = browser.devicePixelRatio > 1;
         this.setEventedParent(eventedParent);
+        this.transformRequestFn = transformRequestCallback;
 
         const format = this.retina ? '@2x' : '';
-
-        ajax.getJSON(normalizeURL(base, format, '.json'), (err, data) => {
+        let url = normalizeURL(base, format, '.json');
+        const jsonRequest = transformRequestCallback(url, ajax.ResourceType.SpriteJSON);
+        ajax.getJSON(jsonRequest, (err, data) => {
             if (err) {
                 this.fire('error', {error: err});
             } else if (data) {
-                this.data = (data : any);
+                this.data = (data: any);
                 if (this.imgData) this.fire('data', {dataType: 'style'});
             }
         });
-
-        ajax.getImage(normalizeURL(base, format, '.png'), (err, img) => {
+        url = normalizeURL(base, format, '.png');
+        const imageRequest = transformRequestCallback(url, ajax.ResourceType.SpriteImage);
+        ajax.getImage(imageRequest, (err, img) => {
             if (err) {
                 this.fire('error', {error: err});
             } else if (img) {
@@ -71,7 +77,7 @@ class ImageSprite extends Evented {
 
     resize(/*gl*/) {
         if (browser.devicePixelRatio > 1 !== this.retina) {
-            const newSprite = new ImageSprite(this.base);
+            const newSprite = new ImageSprite(this.base, this.transformRequestFn);
             newSprite.on('data', () => {
                 this.data = newSprite.data;
                 this.imgData = newSprite.imgData;

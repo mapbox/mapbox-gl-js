@@ -4,9 +4,9 @@ const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 const path = require('path');
 const Protobuf = require('pbf');
-const VectorTile = require('vector-tile').VectorTile;
-const Point = require('point-geometry');
-const ArrayGroup = require('../../../src/data/array_group');
+const VectorTile = require('@mapbox/vector-tile').VectorTile;
+const Point = require('@mapbox/point-geometry');
+const segment = require('../../../src/data/segment');
 const FillBucket = require('../../../src/data/bucket/fill_bucket');
 const StyleLayer = require('../../../src/style/style_layer');
 
@@ -54,9 +54,9 @@ test('FillBucket', (t) => {
 });
 
 test('FillBucket segmentation', (t) => {
-    // Stub ArrayGroup.MAX_VERTEX_ARRAY_LENGTH so we can test features
+    // Stub MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    t.stub(ArrayGroup, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
+    t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
 
     const layer = new StyleLayer({
         id: 'test',
@@ -84,20 +84,18 @@ test('FillBucket segmentation', (t) => {
         createPolygon(128)
     ]));
 
-    const arrays = bucket.arrays;
-
     // Each polygon must fit entirely within a segment, so we expect the
     // first segment to include the first feature and the first polygon
     // of the second feature, and the second segment to include the
     // second polygon of the second feature.
-    t.equal(arrays.layoutVertexArray.length, 266);
-    t.deepEqual(arrays.segments[0], {
+    t.equal(bucket.layoutVertexArray.length, 266);
+    t.deepEqual(bucket.segments.get()[0], {
         vertexOffset: 0,
         vertexLength: 138,
         primitiveOffset: 0,
         primitiveLength: 134
     });
-    t.deepEqual(arrays.segments[1], {
+    t.deepEqual(bucket.segments.get()[1], {
         vertexOffset: 138,
         vertexLength: 128,
         primitiveOffset: 134,

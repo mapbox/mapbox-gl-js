@@ -1,7 +1,7 @@
 // @flow
 
-const Point = require('point-geometry');
-const toGeoJSON = require('vector-tile').VectorTileFeature.prototype.toGeoJSON;
+const Point = require('@mapbox/point-geometry');
+const toGeoJSON = require('@mapbox/vector-tile').VectorTileFeature.prototype.toGeoJSON;
 const EXTENT = require('../data/extent');
 
 // The feature type used by geojson-vt and supercluster. Should be extracted to
@@ -91,8 +91,8 @@ class FeatureWrapper implements VectorTileFeature {
         return [x1, y1, x2, y2];
     }
 
-    toGeoJSON() {
-        return toGeoJSON.apply(this, arguments);
+    toGeoJSON(x: number, y: number, z: number) {
+        return toGeoJSON.call(this, x, y, z);
     }
 }
 
@@ -101,7 +101,7 @@ class GeoJSONWrapper implements VectorTile, VectorTileLayer {
     name: string;
     extent: number;
     length: number;
-    _features: Array<any>;
+    _features: Array<Feature>;
 
     constructor(features: Array<Feature>) {
         this.layers = { '_geojsonTileLayer': this };

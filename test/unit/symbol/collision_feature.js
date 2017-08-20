@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const CollisionFeature = require('../../../src/symbol/collision_feature');
 const Anchor = require('../../../src/symbol/anchor');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 
 test('CollisionFeature', (t) => {

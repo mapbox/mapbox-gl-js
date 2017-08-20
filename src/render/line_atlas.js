@@ -1,3 +1,4 @@
+// @flow
 
 const util = require('../util/util');
 
@@ -11,7 +12,16 @@ const util = require('../util/util');
  * @private
  */
 class LineAtlas {
-    constructor(width, height) {
+    width: number;
+    height: number;
+    nextRow: number;
+    bytes: number;
+    data: Uint8Array;
+    positions: {[string]: any};
+    dirty: boolean;
+    texture: WebGLTexture;
+
+    constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.nextRow = 0;
@@ -22,10 +32,6 @@ class LineAtlas {
         this.positions = {};
     }
 
-    setSprite(sprite) {
-        this.sprite = sprite;
-    }
-
     /**
      * Get or create a dash line pattern.
      *
@@ -34,8 +40,8 @@ class LineAtlas {
      * @returns {Object} position of dash texture in { y, height, width }
      * @private
      */
-    getDash(dasharray, round) {
-        const key = dasharray.join(",") + round;
+    getDash(dasharray: Array<number>, round: boolean) {
+        const key = dasharray.join(",") + String(round);
 
         if (!this.positions[key]) {
             this.positions[key] = this.addDash(dasharray, round);
@@ -43,7 +49,7 @@ class LineAtlas {
         return this.positions[key];
     }
 
-    addDash(dasharray, round) {
+    addDash(dasharray: Array<number>, round: boolean) {
 
         const n = round ? 7 : 0;
         const height = 2 * n + 1;
@@ -122,7 +128,7 @@ class LineAtlas {
         return pos;
     }
 
-    bind(gl) {
+    bind(gl: WebGLRenderingContext) {
         if (!this.texture) {
             this.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.texture);

@@ -69,7 +69,7 @@ class Buffer {
      * @param gl The WebGL context
      */
     bind(gl: WebGLRenderingContext) {
-        const type: number = (gl : any)[this.type];
+        const type: number = (gl: any)[this.type];
 
         if (!this.buffer) {
             this.gl = gl;
@@ -118,7 +118,7 @@ class Buffer {
                 gl.vertexAttribPointer(
                     attribIndex,
                     member.components,
-                    (gl : any)[AttributeType[member.type]],
+                    (gl: any)[AttributeType[member.type]],
                     false,
                     this.arrayType.bytesPerElement,
                     member.offset + (this.arrayType.bytesPerElement * vertexOffset || 0)

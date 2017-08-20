@@ -1,10 +1,14 @@
+// @flow
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
+
+import type Anchor from './anchor';
+import type {PositionedIcon, Shaping} from './shaping';
+import type StyleLayer from '../style/style_layer';
 
 module.exports = {
-    getIconQuads: getIconQuads,
-    getGlyphQuads: getGlyphQuads,
-    SymbolQuad: SymbolQuad
+    getIconQuads,
+    getGlyphQuads
 };
 
 /**
@@ -12,39 +16,40 @@ module.exports = {
  *
  * The zoom range the glyph can be shown is defined by minScale and maxScale.
  *
- * @param {Point} tl The offset of the top left corner from the anchor.
- * @param {Point} tr The offset of the top right corner from the anchor.
- * @param {Point} bl The offset of the bottom left corner from the anchor.
- * @param {Point} br The offset of the bottom right corner from the anchor.
- * @param {Object} tex The texture coordinates.
+ * @param tl The offset of the top left corner from the anchor.
+ * @param tr The offset of the top right corner from the anchor.
+ * @param bl The offset of the bottom left corner from the anchor.
+ * @param br The offset of the bottom right corner from the anchor.
+ * @param tex The texture coordinates.
  *
- * @class SymbolQuad
  * @private
  */
-function SymbolQuad(tl, tr, bl, br, tex, writingMode, glyphOffset) {
-    this.tl = tl;
-    this.tr = tr;
-    this.bl = bl;
-    this.br = br;
-    this.tex = tex;
-    this.writingMode = writingMode;
-    this.glyphOffset = glyphOffset;
-}
+export type SymbolQuad = {
+    tl: Point,
+    tr: Point,
+    bl: Point,
+    br: Point,
+    tex: {
+        x: number,
+        y: number,
+        w: number,
+        h: number
+    },
+    writingMode: any | void,
+    glyphOffset: [number, number]
+};
 
 /**
  * Create the quads used for rendering an icon.
- *
- * @param {Anchor} anchor
- * @param {PositionedIcon} shapedIcon
- * @param {StyleLayer} layer
- * @param {boolean} alongLine Whether the icon should be placed along the line.
- * @param {Shaping} shapedText Shaping for corresponding text
- * @param {Object} globalProperties
- * @param {Object} featureProperties
- * @returns {Array<SymbolQuad>}
  * @private
  */
-function getIconQuads(anchor, shapedIcon, layer, alongLine, shapedText, globalProperties, featureProperties) {
+function getIconQuads(anchor: Anchor,
+                      shapedIcon: PositionedIcon,
+                      layer: StyleLayer,
+                      alongLine: boolean,
+                      shapedText: Shaping,
+                      globalProperties: Object,
+                      featureProperties: Object): Array<SymbolQuad> {
     const image = shapedIcon.image;
     const layout = layer.layout;
 
@@ -111,22 +116,19 @@ function getIconQuads(anchor, shapedIcon, layer, alongLine, shapedText, globalPr
         h: image.textureRect.h + border * 2
     };
 
-    return [new SymbolQuad(tl, tr, bl, br, textureRect, undefined, [0, 0])];
+    return [{tl, tr, bl, br, tex: textureRect, writingMode: undefined, glyphOffset: [0, 0]}];
 }
 
 /**
  * Create the quads used for rendering a text label.
- *
- * @param {Anchor} anchor
- * @param {Shaping} shaping
- * @param {StyleLayer} layer
- * @param {boolean} alongLine Whether the label should be placed along the line.
- * @param {Object} globalProperties
- * @param {Object} featureProperties
- * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, featureProperties) {
+function getGlyphQuads(anchor: Anchor,
+                       shaping: Shaping,
+                       layer: StyleLayer,
+                       alongLine: boolean,
+                       globalProperties: Object,
+                       featureProperties: Object): Array<SymbolQuad> {
 
     const oneEm = 24;
     const textRotate = layer.getLayoutValue('text-rotate', globalProperties, featureProperties) * Math.PI / 180;
@@ -165,12 +167,21 @@ function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, feat
         const bl  = new Point(x1, y2);
         const br = new Point(x2, y2);
 
-        const center = new Point(builtInOffset[0] - halfAdvance, glyph.advance / 2);
-        if (positionedGlyph.angle !== 0) {
-            tl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            tr._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            bl._sub(center)._rotate(positionedGlyph.angle)._add(center);
-            br._sub(center)._rotate(positionedGlyph.angle)._add(center);
+        if (alongLine && positionedGlyph.vertical) {
+            // Vertical-supporting glyphs are laid out in 24x24 point boxes (1 square em)
+            // In horizontal orientation, the y values for glyphs are below the midline
+            // and we use a "yOffset" of -17 to pull them up to the middle.
+            // By rotating counter-clockwise around the point at the center of the left
+            // edge of a 24x24 layout box centered below the midline, we align the center
+            // of the glyphs with the horizontal midline, so the yOffset is no longer
+            // necessary, but we also pull the glyph to the left along the x axis
+            const center = new Point(-halfAdvance, halfAdvance);
+            const verticalRotation = -Math.PI / 2;
+            const xOffsetCorrection = new Point(5, 0);
+            tl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            tr._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            bl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            br._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
         }
 
         if (textRotate) {
@@ -184,7 +195,7 @@ function getGlyphQuads(anchor, shaping, layer, alongLine, globalProperties, feat
             br._matMult(matrix);
         }
 
-        quads.push(new SymbolQuad(tl, tr, bl, br, rect, shaping.writingMode, glyphOffset));
+        quads.push({tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset});
     }
 
     return quads;

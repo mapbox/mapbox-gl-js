@@ -1,3 +1,4 @@
+// @flow
 
 const ShelfPack = require('@mapbox/shelf-pack');
 const util = require('../util/util');
@@ -7,7 +8,25 @@ const DEFAULT_SIZE = 128;
 // must be "DEFAULT_SIZE * SIZE_GROWTH_RATE ^ n" for some integer n
 const MAX_SIZE = 2048;
 
+import type {Glyph} from '../util/glyphs';
+
+export type Rect = {
+    x: number,
+    y: number,
+    w: number,
+    h: number
+};
+
 class GlyphAtlas {
+    width: number;
+    height: number;
+    atlas: ShelfPack;
+    index: {[string]: Rect};
+    ids: {[string]: Array<number>};
+    data: Uint8Array;
+    dirty: boolean;
+    gl: WebGLRenderingContext;
+    texture: WebGLTexture;
 
     constructor() {
         this.width = DEFAULT_SIZE;
@@ -55,7 +74,7 @@ class GlyphAtlas {
         return rects;
     }
 
-    addGlyph(id, name, glyph, buffer) {
+    addGlyph(id: number, name: string, glyph: Glyph, buffer: number): ?Rect {
         if (!glyph) return null;
 
         const key = `${name}#${glyph.id}`;
@@ -135,7 +154,7 @@ class GlyphAtlas {
         this.data = new Uint8Array(buf);
     }
 
-    bind(gl) {
+    bind(gl: WebGLRenderingContext) {
         this.gl = gl;
         if (!this.texture) {
             this.texture = gl.createTexture();
@@ -151,7 +170,7 @@ class GlyphAtlas {
         }
     }
 
-    updateTexture(gl) {
+    updateTexture(gl: WebGLRenderingContext) {
         this.bind(gl);
         if (this.dirty) {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);

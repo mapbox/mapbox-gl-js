@@ -24,7 +24,7 @@ module.exports.registerForPluginAvailability = function(
 
 // Exposed so it can be stubbed out by tests
 module.exports.createBlobURL = function(response: Object) {
-    return window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
+    return window.URL.createObjectURL(new window.Blob([response.data], {type: "text/javascript"}));
 };
 // Only exposed for tests
 module.exports.clearRTLTextPlugin = function() {
@@ -38,7 +38,7 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
     }
     pluginRequested = true;
     module.exports.errorCallback = callback;
-    ajax.getArrayBuffer(pluginURL, (err, response) => {
+    ajax.getArrayBuffer({ url: pluginURL }, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {
@@ -48,5 +48,5 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
     });
 };
 
-module.exports.applyArabicShaping = (null : ?Function);
-module.exports.processBidirectionalText = (null : ?Function);
+module.exports.applyArabicShaping = (null: ?Function);
+module.exports.processBidirectionalText = (null: ?(string, Array<number>) => Array<string>);

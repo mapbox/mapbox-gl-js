@@ -4,6 +4,9 @@
       "jsx": true
     }
   },
+  "rules": {
+    "flowtype/require-valid-file-annotation": [0]
+  },
   "globals": {
     "React": false,
     "ReactDOM": false

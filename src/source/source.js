@@ -45,9 +45,11 @@ export interface Source {
     minzoom: number,
     maxzoom: number,
     tileSize: number,
+    attribution?: string,
 
     roundZoom?: boolean,
     reparseOverscaled?: boolean,
+    vectorLayerIds?: Array<string>,
 
     constructor(id: string, source: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented): Source;
 

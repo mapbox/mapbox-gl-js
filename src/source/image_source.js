@@ -4,7 +4,7 @@ const util = require('../util/util');
 const window = require('../util/window');
 const TileCoord = require('./tile_coord');
 const LngLat = require('../geo/lng_lat');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const Evented = require('../util/evented');
 const ajax = require('../util/ajax');
 const EXTENT = require('../data/extent');
@@ -91,7 +91,7 @@ class ImageSource extends Evented implements Source {
 
         this.url = this.options.url;
 
-        ajax.getImage(this.options.url, (err, image) => {
+        ajax.getImage(this.map._transformRequest(this.url, ajax.ResourceType.Image), (err, image) => {
             if (err) {
                 this.fire('error', {error: err});
             } else if (image) {
@@ -109,11 +109,8 @@ class ImageSource extends Evented implements Source {
     }
 
     onAdd(map: Map) {
-        this.load();
         this.map = map;
-        if (this.image) {
-            this.setCoordinates(this.coordinates);
-        }
+        this.load();
     }
 
     /**
@@ -168,12 +165,11 @@ class ImageSource extends Evented implements Source {
 
     _setTile(tile: Tile) {
         this.tiles[String(tile.coord.w)] = tile;
-        const maxInt16 = 32767;
         const array = new RasterBoundsArray();
         array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
-        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, maxInt16, 0);
-        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, maxInt16);
-        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, maxInt16, maxInt16);
+        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, EXTENT, 0);
+        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, EXTENT);
+        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, EXTENT, EXTENT);
 
         tile.buckets = {};
 
@@ -182,7 +178,7 @@ class ImageSource extends Evented implements Source {
     }
 
     prepare() {
-        if (Object.keys(this.tiles).length === 0 === 0 || !this.image) return;
+        if (Object.keys(this.tiles).length === 0 || !this.image) return;
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
@@ -231,7 +227,7 @@ class ImageSource extends Evented implements Source {
     serialize(): Object {
         return {
             type: 'image',
-            urls: this.url,
+            urls: this.options.url,
             coordinates: this.coordinates
         };
     }

@@ -4,12 +4,13 @@ const FeatureIndex = require('../data/feature_index');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
+const SymbolBucket = require('../data/bucket/symbol_bucket');
 const util = require('../util/util');
 const assert = require('assert');
 
 import type TileCoord from './tile_coord';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type {Actor} from '../util/actor';
+import type {Bucket} from '../data/bucket';
+import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {
     WorkerTileParameters,
@@ -62,7 +63,7 @@ class WorkerTile {
         const featureIndex = new FeatureIndex(this.coord, this.overscaling);
         featureIndex.bucketLayerIDs = [];
 
-        const buckets = {};
+        const buckets: {[string]: Bucket} = {};
 
         const options = {
             featureIndex: featureIndex,
@@ -93,8 +94,7 @@ class WorkerTile {
                 const layer = family[0];
 
                 assert(layer.source === this.source);
-
-                if (layer.minzoom && this.zoom < layer.minzoom) continue;
+                if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
@@ -119,12 +119,6 @@ class WorkerTile {
         const done = (collisionTile) => {
             this.status = 'done';
 
-            // collect data-driven paint property statistics from each bucket
-            featureIndex.paintPropertyStatistics = {};
-            for (const id in buckets) {
-                util.extend(featureIndex.paintPropertyStatistics, buckets[id].getPaintPropertyStatistics());
-            }
-
             const transferables = [];
 
             callback(null, {
@@ -140,7 +134,8 @@ class WorkerTile {
         for (let i = layerIndex.symbolOrder.length - 1; i >= 0; i--) {
             const bucket = buckets[layerIndex.symbolOrder[i]];
             if (bucket) {
-                this.symbolBuckets.push(bucket);
+                assert(bucket instanceof SymbolBucket);
+                this.symbolBuckets.push(((bucket: any): SymbolBucket));
             }
         }
 
@@ -227,14 +222,14 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(bucket, zoom) {
+function recalculateLayers(bucket: SymbolBucket, zoom: number) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
     for (const layer of bucket.layers) {
         layer.recalculate(zoom);
     }
 }
 
-function serializeBuckets(buckets, transferables) {
+function serializeBuckets(buckets: $ReadOnlyArray<Bucket>, transferables: Array<Transferable>) {
     return buckets
         .filter((b) => !b.isEmpty())
         .map((b) => b.serialize(transferables));

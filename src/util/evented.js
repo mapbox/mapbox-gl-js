@@ -39,7 +39,7 @@ class Evented {
      *   extended with `target` and `type` properties.
      * @returns {Object} `this`
      */
-    on(type: string, listener: Listener) {
+    on(type: *, listener: Listener) {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -53,7 +53,7 @@ class Evented {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} `this`
      */
-    off(type: string, listener: Listener) {
+    off(type: *, listener: Listener) {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -83,7 +83,7 @@ class Evented {
      * @param {Object} [data] Data to be passed to any listeners.
      * @returns {Object} `this`
      */
-    fire(type: string, data: Object) {
+    fire(type: string, data?: Object) {
         if (this.listens(type)) {
             data = util.extend({}, data, {type: type, target: this});
 

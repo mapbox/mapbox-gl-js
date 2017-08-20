@@ -1,9 +1,15 @@
+// @flow
 
 const util = require('../util/util');
 
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type StyleLayer from '../style/style_layer';
+import type TileCoord from '../source/tile_coord';
+
 module.exports = drawRaster;
 
-function drawRaster(painter, sourceCache, layer, coords) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
     if (painter.isOpaquePass) return;
 
     const gl = painter.gl;

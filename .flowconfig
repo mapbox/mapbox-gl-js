@@ -8,4 +8,4 @@
 unsafe.enable_getters_and_setters=true
 
 [version]
-0.48.0
+0.52.0

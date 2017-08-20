@@ -1,6 +1,9 @@
+// @flow
 
 const DOM = require('../util/dom');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
+
+import type Map from './map';
 
 const handlers = {
     scrollZoom: require('./handler/scroll_zoom'),
@@ -12,7 +15,7 @@ const handlers = {
     touchZoomRotate: require('./handler/touch_zoom_rotate')
 };
 
-module.exports = function bindHandlers(map, options) {
+module.exports = function bindHandlers(map: Map, options: {}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
@@ -20,9 +23,9 @@ module.exports = function bindHandlers(map, options) {
     let tapped = null;
 
     for (const name in handlers) {
-        map[name] = new handlers[name](map, options);
+        (map: any)[name] = new handlers[name](map, options);
         if (options.interactive && options[name]) {
-            map[name].enable(options[name]);
+            (map: any)[name].enable(options[name]);
         }
     }
 
@@ -38,11 +41,11 @@ module.exports = function bindHandlers(map, options) {
     el.addEventListener('dblclick', onDblClick, false);
     el.addEventListener('contextmenu', onContextMenu, false);
 
-    function onMouseOut(e) {
+    function onMouseOut(e: MouseEvent) {
         fireMouseEvent('mouseout', e);
     }
 
-    function onMouseDown(e) {
+    function onMouseDown(e: MouseEvent) {
         map.stop();
         startPos = DOM.mousePos(el, e);
         fireMouseEvent('mousedown', e);
@@ -50,7 +53,7 @@ module.exports = function bindHandlers(map, options) {
         mouseDown = true;
     }
 
-    function onMouseUp(e) {
+    function onMouseUp(e: MouseEvent) {
         const rotating = map.dragRotate && map.dragRotate.isActive();
 
         if (contextMenuEvent && !rotating) {
@@ -63,18 +66,18 @@ module.exports = function bindHandlers(map, options) {
         fireMouseEvent('mouseup', e);
     }
 
-    function onMouseMove(e) {
+    function onMouseMove(e: MouseEvent) {
         if (map.dragPan && map.dragPan.isActive()) return;
         if (map.dragRotate && map.dragRotate.isActive()) return;
 
-        let target = e.toElement || e.target;
+        let target: any = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
         fireMouseEvent('mousemove', e);
     }
 
-    function onTouchStart(e) {
+    function onTouchStart(e: TouchEvent) {
         map.stop();
         fireTouchEvent('touchstart', e);
 
@@ -90,15 +93,15 @@ module.exports = function bindHandlers(map, options) {
         }
     }
 
-    function onTouchMove(e) {
+    function onTouchMove(e: TouchEvent) {
         fireTouchEvent('touchmove', e);
     }
 
-    function onTouchEnd(e) {
+    function onTouchEnd(e: TouchEvent) {
         fireTouchEvent('touchend', e);
     }
 
-    function onTouchCancel(e) {
+    function onTouchCancel(e: TouchEvent) {
         fireTouchEvent('touchcancel', e);
     }
 
@@ -106,20 +109,20 @@ module.exports = function bindHandlers(map, options) {
         tapped = null;
     }
 
-    function onClick(e) {
+    function onClick(e: MouseEvent) {
         const pos = DOM.mousePos(el, e);
 
-        if (pos.equals(startPos)) {
+        if (pos.equals((startPos: any))) {
             fireMouseEvent('click', e);
         }
     }
 
-    function onDblClick(e) {
+    function onDblClick(e: MouseEvent) {
         fireMouseEvent('dblclick', e);
         e.preventDefault();
     }
 
-    function onContextMenu(e) {
+    function onContextMenu(e: MouseEvent) {
         const rotating = map.dragRotate && map.dragRotate.isActive();
         if (!mouseDown && !rotating) {
             // Windows: contextmenu fired on mouseup, so fire event now
@@ -157,29 +160,3 @@ module.exports = function bindHandlers(map, options) {
         });
     }
 };
-
-/**
- * @typedef {Object} MapMouseEvent
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {MouseEvent} originalEvent
- * @property {Point} point The pixel coordinates of the mouse event target, relative to the map
- *   and measured from the top left corner.
- * @property {LngLat} lngLat The geographic location on the map of the mouse event target.
- */
-
-/**
- * @typedef {Object} MapTouchEvent
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {TouchEvent} originalEvent
- * @property {Point} point The pixel coordinates of the center of the touch event points, relative to the map
- *   and measured from the top left corner.
- * @property {LngLat} lngLat The geographic location on the map of the center of the touch event points.
- * @property {Array<Point>} points The array of pixel coordinates corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property.
- * @property {Array<LngLat>} lngLats The geographical locations on the map corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property.
- */

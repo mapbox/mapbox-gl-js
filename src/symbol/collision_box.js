@@ -1,7 +1,29 @@
 // @flow
 
 const createStructArrayType = require('../util/struct_array');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
+
+export type CollisionBox = {
+    anchorPoint: Point,
+    anchorPointX: number,
+    anchorPointY: number,
+    offsetX: number,
+    offsetY: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    unadjustedMaxScale: number,
+    maxScale: number,
+    featureIndex: number,
+    sourceLayerIndex: number,
+    bucketIndex: number,
+    bbox0: number,
+    bbox1: number,
+    bbox2: number,
+    bbox3: number,
+    placementScale: number
+};
 
 /**
  * A collision box represents an area of the map that that is covered by a
@@ -78,7 +100,7 @@ const CollisionBoxArray = createStructArrayType({
 });
 
 // https://github.com/facebook/flow/issues/285
-(Object.defineProperty : any)(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
+(Object.defineProperty: any)(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
     get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
 

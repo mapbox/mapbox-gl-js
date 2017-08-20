@@ -11,7 +11,7 @@ const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
-const ProgramConfiguration = require('../data/program_configuration');
+const {ProgramConfiguration} = require('../data/program_configuration');
 const shaders = require('../shaders');
 const assert = require('assert');
 
@@ -38,7 +38,9 @@ import type GlyphSource from '../symbol/glyph_source';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
-    showTileBoundaries: boolean
+    showTileBoundaries: boolean,
+    rotating: boolean,
+    zooming: boolean
 }
 
 /**
@@ -162,9 +164,9 @@ class Painter {
 
         const rasterBoundsArray = new RasterBoundsArray();
         rasterBoundsArray.emplaceBack(0, 0, 0, 0);
-        rasterBoundsArray.emplaceBack(EXTENT, 0, 32767, 0);
-        rasterBoundsArray.emplaceBack(0, EXTENT, 0, 32767);
-        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, 32767, 32767);
+        rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
+        rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
+        rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
         this.rasterBoundsBuffer = Buffer.fromStructArray(rasterBoundsArray, Buffer.BufferType.VERTEX);
         this.rasterBoundsVAO = new VertexArrayObject();
 
@@ -317,7 +319,7 @@ class Painter {
                 }
             }
 
-            this.renderLayer(this, sourceCache, layer, coords);
+            this.renderLayer(this, (sourceCache: any), layer, coords);
             this.currentLayer += this.isOpaquePass ? -1 : 1;
         }
     }
@@ -353,7 +355,7 @@ class Painter {
      *
      * @returns {Float32Array} matrix
      */
-    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits: boolean) {
+    translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -482,7 +484,7 @@ class Painter {
         return this.cache[key];
     }
 
-    useProgram(name: string, programConfiguration: ProgramConfiguration): Program {
+    useProgram(name: string, programConfiguration?: ProgramConfiguration): Program {
         const gl = this.gl;
         const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
 

@@ -60,15 +60,18 @@ test('Marker', (t) => {
     t.test('marker centered by default', (t) => {
         const map = createMap();
         const element = window.document.createElement('div');
-        // jsdom workaround for element.style.width = '10px';
-        //                      element.style.height = '10px';
-        //                      element.style.border = '6px solid black';
-        Object.defineProperty(element, 'offsetWidth', {value: 6 + 10 + 6, configurable: true});
-        Object.defineProperty(element, 'offsetHeight', {value: 6 + 10 + 6, configurable: true});
-
         const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
-        const translate = Math.round((map.getContainer().offsetWidth / 2) - ((6 + 10 + 6) / 2));
-        t.equal(marker.getElement().style.transform, `translate(${translate}px, ${translate}px)`, 'Marker centered');
+        const translate = Math.round(map.getContainer().offsetWidth / 2);
+        t.equal(marker.getElement().style.transform, `translate(-50%, -50%) translate(${translate}px, ${translate}px)`, 'Marker centered');
+        t.end();
+    });
+
+    t.test('togglePopup returns Marker instance', (t) => {
+        const map = createMap();
+        const element = window.document.createElement('div');
+        const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
+        marker.setPopup(new Popup());
+        t.ok(marker.togglePopup() instanceof Marker);
         t.end();
     });
 

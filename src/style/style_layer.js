@@ -8,7 +8,8 @@ const validateStyle = require('./validate_style');
 const parseColor = require('./../style-spec/util/parse_color');
 const Evented = require('../util/evented');
 
-import type Bucket, {BucketParameters} from '../data/bucket';
+import type {Bucket, BucketParameters} from '../data/bucket';
+import type Point from '@mapbox/point-geometry';
 
 export type GlobalProperties = {
     zoom: number
@@ -43,6 +44,13 @@ class StyleLayer extends Evented {
     _layoutFunctions: any;
 
     +createBucket: (parameters: BucketParameters) => Bucket;
+    +queryRadius: (bucket: Bucket) => number;
+    +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
+                              feature: VectorTileFeature,
+                              geometry: Array<Array<Point>>,
+                              zoom: number,
+                              bearing: number,
+                              pixelsToTileUnits: number) => boolean;
 
     constructor(layer: LayerSpecification) {
         super();
@@ -117,7 +125,7 @@ class StyleLayer extends Evented {
         );
     }
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
+    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties): any {
         const specification = this._layoutSpecifications[name];
         const declaration = this._layoutDeclarations[name];
 
@@ -170,7 +178,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
+    getPaintValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties): any {
         const specification = this._paintSpecifications[name];
         const transition = this._paintTransitions[name];
 

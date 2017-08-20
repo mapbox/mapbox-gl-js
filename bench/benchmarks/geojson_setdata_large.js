@@ -14,7 +14,7 @@ module.exports = function() {
         evented.fire('log', {message: 'downloading large geojson'});
     }, 0);
 
-    ajax.getJSON('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson', (err, data) => {
+    ajax.getJSON({ url: 'http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson' }, (err, data) => {
         evented.fire('log', {message: 'starting test'});
 
         if (err) return evented.fire('error', {error: err});

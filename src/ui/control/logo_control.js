@@ -1,6 +1,9 @@
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+
+import type Map from '../map';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -12,12 +15,14 @@ const util = require('../../util/util');
 **/
 
 class LogoControl {
+    _map: Map;
+    _container: HTMLElement;
 
     constructor() {
         util.bindAll(['_updateLogo'], this);
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
@@ -33,7 +38,7 @@ class LogoControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        DOM.remove(this._container);
         this._map.off('sourcedata', this._updateLogo);
     }
 
@@ -41,7 +46,7 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo(e) {
+    _updateLogo(e: any) {
         if (!e || e.sourceDataType === 'metadata') {
             this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }

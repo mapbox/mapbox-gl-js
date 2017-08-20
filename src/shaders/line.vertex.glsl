@@ -12,7 +12,7 @@
 // #define scale 63.0
 #define scale 0.015873016
 
-attribute vec2 a_pos;
+attribute vec3 a_pos_normal;
 attribute vec4 a_data;
 
 uniform mat4 u_matrix;
@@ -41,20 +41,21 @@ void main() {
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
 
-    // We store the texture normals in the most insignificant bit
-    // transform y so that 0 => -1 and 1 => 1
+    vec2 pos = a_pos_normal.xy;
+
+    // transform y normal so that 0 => -1 and 1 => 1
     // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
     // y is 1 if the normal points up, and -1 if it points down
-    mediump vec2 normal = mod(a_pos, 2.0);
+    mediump vec2 normal = unpack_float(a_pos_normal.z);
     normal.y = sign(normal.y - 0.5);
+
     v_normal = normal;
 
-
-    // these transformations used to be applied in the JS and native code bases. 
-    // moved them into the shader for clarity and simplicity. 
+    // these transformations used to be applied in the JS and native code bases.
+    // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
     float halfwidth = width / 2.0;
-    offset = -1.0 * offset; 
+    offset = -1.0 * offset;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + ANTIALIASING;
@@ -70,9 +71,6 @@ void main() {
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
     mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
-
-    // Remove the texture normal bit to get the position
-    vec2 pos = floor(a_pos * 0.5);
 
     vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
     gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;

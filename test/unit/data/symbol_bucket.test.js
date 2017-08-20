@@ -4,7 +4,7 @@ const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 const path = require('path');
 const Protobuf = require('pbf');
-const VectorTile = require('vector-tile').VectorTile;
+const VectorTile = require('@mapbox/vector-tile').VectorTile;
 const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
 const CollisionTile = require('../../../src/symbol/collision_tile');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
@@ -12,7 +12,6 @@ const GlyphAtlas = require('../../../src/symbol/glyph_atlas');
 const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
 const featureFilter = require('../../../src/style-spec/feature_filter');
-const AnimationLoop = require('../../../src/style/animation_loop');
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -96,48 +95,6 @@ test('SymbolBucket redo placement', (t) => {
     bucket.prepare(stacks, {});
     bucket.place(collision);
     bucket.place(collision);
-
-    t.end();
-});
-
-
-test('SymbolBucket#getPaintPropertyStatistics()', (t) => {
-    const layer = new StyleLayer({
-        id: 'test',
-        type: 'symbol',
-        layout: {
-            'text-font': ['Test'],
-            'text-field': 'abcde',
-            'icon-image': 'dot',
-            'icon-allow-overlap': true,
-            'text-allow-overlap': true
-        },
-        paint: {
-            'text-halo-width': { property: 'scalerank', type: 'identity' },
-            'icon-halo-width': { property: 'foo', type: 'identity', default: 5 }
-        },
-        filter: featureFilter()
-    });
-
-    layer.updatePaintTransitions([], {}, { zoom: 5 }, new AnimationLoop(), {});
-
-    const bucket = new SymbolBucket({
-        overscaling: 1,
-        zoom: 0,
-        collisionBoxArray: collisionBoxArray,
-        layers: [layer]
-    });
-    const options = {iconDependencies: {}, glyphDependencies: {}};
-
-    bucket.populate([{feature}], options);
-    bucket.prepare(stacks, {
-        dot: { displaySize: () => [10, 10], textureRect: { x: 0, y: 0, w: 10, h: 10 }, pixelRatio: 1 }
-    });
-    bucket.place(collision);
-
-    const stats = bucket.getPaintPropertyStatistics().test;
-    t.deepEqual(stats['text-halo-width'], { max: 4 });
-    t.deepEqual(stats['icon-halo-width'], { max: 5 });
 
     t.end();
 });

@@ -1,7 +1,7 @@
 // @flow
 
 const LngLat = require('./lng_lat'),
-    Point = require('point-geometry'),
+    Point = require('@mapbox/point-geometry'),
     Coordinate = require('./coordinate'),
     util = require('../util/util'),
     interp = require('../style-spec/util/interpolate'),
@@ -29,7 +29,7 @@ class Transform {
     angle: number;
     rotationMatrix: Float64Array;
     zoomFraction: number;
-    pixelsToGLUnits: [number, number];
+    pixelsToGLUnits: Array<number>;
     cameraToCenterDistance: number;
     projMatrix: Float64Array;
     pixelMatrix: Float64Array;
@@ -158,7 +158,7 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @returns {number} zoom level
      */
-    coveringZoomLevel(options: {roundZoom: boolean, tileSize: number}) {
+    coveringZoomLevel(options: {roundZoom?: boolean, tileSize: number}) {
         return (options.roundZoom ? Math.round : Math.floor)(
             this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
         );
@@ -198,18 +198,18 @@ class Transform {
     coveringTiles(
         options: {
             tileSize: number,
-            minzoom: number,
-            maxzoom: number,
-            roundZoom: boolean,
-            reparseOverscaled: boolean,
-            renderWorldCopies: boolean
+            minzoom?: number,
+            maxzoom?: number,
+            roundZoom?: boolean,
+            reparseOverscaled?: boolean,
+            renderWorldCopies?: boolean
         }
     ) {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
-        if (z < options.minzoom) return [];
-        if (z > options.maxzoom) z = options.maxzoom;
+        if (options.minzoom !== undefined && z < options.minzoom) return [];
+        if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
         const centerCoord = this.pointCoordinate(this.centerPoint, z);
         const centerPoint = new Point(centerCoord.column - 0.5, centerCoord.row - 0.5);
@@ -379,7 +379,7 @@ class Transform {
      * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom: number) {
+    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number) {
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         const coord = tileCoord.toCoordinate(maxZoom);

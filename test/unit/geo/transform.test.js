@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const Transform = require('../../../src/geo/transform');
 const TileCoord = require('../../../src/source/tile_coord');
 const LngLat = require('../../../src/geo/lng_lat');

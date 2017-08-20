@@ -1,6 +1,6 @@
 'use strict';
 
-const VT = require('vector-tile');
+const VT = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const assert = require('assert');
 
@@ -24,7 +24,7 @@ module.exports = function run() {
     const evented = new Evented();
 
     const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
-    ajax.getJSON(stylesheetURL, (err, stylesheet) => {
+    ajax.getJSON({ url: stylesheetURL }, (err, stylesheet) => {
         if (err) return evented.fire('error', {error: err});
 
         evented.fire('log', {
@@ -82,6 +82,12 @@ module.exports = function run() {
     return evented;
 };
 
+class StubMap extends Evented {
+    _transformRequest(url) {
+        return { url };
+    }
+}
+
 function preloadAssets(stylesheet, callback) {
     const assets = {
         glyphs: {},
@@ -89,7 +95,7 @@ function preloadAssets(stylesheet, callback) {
         tiles: {}
     };
 
-    const style = new Style(stylesheet);
+    const style = new Style(stylesheet, new StubMap());
 
     style.on('style.load', () => {
         function getGlyphs(params, callback) {
@@ -107,7 +113,7 @@ function preloadAssets(stylesheet, callback) {
         }
 
         function getTile(url, callback) {
-            ajax.getArrayBuffer(url, (err, response) => {
+            ajax.getArrayBuffer({ url }, (err, response) => {
                 assets.tiles[url] = response.data;
                 callback(err, response.data);
             });

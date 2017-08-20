@@ -96,8 +96,8 @@ class VideoSource extends ImageSource {
 
     onAdd(map: Map) {
         if (this.map) return;
-        this.load();
         this.map = map;
+        this.load();
         if (this.video) {
             this.video.play();
             this.setCoordinates(this.coordinates);

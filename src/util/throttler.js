@@ -1,3 +1,4 @@
+// @flow
 
 const browser = require('./browser');
 
@@ -9,8 +10,12 @@ const browser = require('./browser');
  * @private
  */
 class Throttler {
+    frequency: number;
+    throttledFunction: () => void;
+    lastInvocation: number;
+    pendingInvocation: ?number;
 
-    constructor(frequency, throttledFunction) {
+    constructor(frequency: number, throttledFunction: () => void) {
         this.frequency = frequency;
         this.throttledFunction = throttledFunction;
         this.lastInvocation = 0;

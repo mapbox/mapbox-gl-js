@@ -9,11 +9,15 @@
   "render-tests/fill-extrusion-pattern/literal": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
   "render-tests/fill-extrusion-pattern/missing": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
   "render-tests/fill-extrusion-pattern/opacity": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
-  "render-tests/fill-outline-color/fill": "https://github.com/mapbox/mapbox-gl-js/issues/4601",
   "render-tests/geojson/inline-linestring-fill": "current behavior is arbitrary",
+  "render-tests/line-dasharray/zoom-history": "needs investigation",
   "render-tests/raster-loading/missing": "https://github.com/mapbox/mapbox-gl-js/issues/4257",
   "render-tests/raster-masking/overlapping": "https://github.com/mapbox/mapbox-gl-js/issues/5003",
   "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
+  "render-tests/runtime-styling/image-add-alpha": "failing on Circle CI 2.0, needs investigation",
   "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
-  "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804"
+  "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
+  "render-tests/text-pitch-alignment/auto-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
+  "render-tests/text-pitch-alignment/map-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
+  "render-tests/text-pitch-scaling/line-half": "https://github.com/mapbox/mapbox-gl-js/issues/5118"
 }

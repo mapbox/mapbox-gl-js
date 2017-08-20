@@ -1,10 +1,11 @@
 // @flow
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
-
 const intersectionTests = require('../util/intersection_tests');
+
+import type CollisionBoxArray, {CollisionBox} from './collision_box';
 
 export type SerializedCollisionTile = {|
     angle: number,
@@ -23,8 +24,8 @@ export type SerializedCollisionTile = {|
  * @private
  */
 class CollisionTile {
-    grid: any;
-    ignoredGrid: any;
+    grid: Grid;
+    ignoredGrid: Grid;
     perspectiveRatio: number;
     minScale: number;
     maxScale: number;
@@ -35,9 +36,9 @@ class CollisionTile {
     rotationMatrix: [number, number, number, number];
     reverseRotationMatrix: [number, number, number, number];
     yStretch: number;
-    collisionBoxArray: any;
-    tempCollisionBox: any;
-    edges: Array<any>;
+    collisionBoxArray: CollisionBoxArray;
+    tempCollisionBox: CollisionBox;
+    edges: Array<CollisionBox>;
 
     static deserialize(serialized: SerializedCollisionTile, collisionBoxArray: any) {
         return new CollisionTile(
@@ -57,8 +58,8 @@ class CollisionTile {
         cameraToCenterDistance: number,
         cameraToTileDistance: number,
         collisionBoxArray: any,
-        grid: any = new Grid(EXTENT, 12, 6),
-        ignoredGrid: any = new Grid(EXTENT, 12, 0)
+        grid: Grid = new Grid(EXTENT, 12, 6),
+        ignoredGrid: Grid = new Grid(EXTENT, 12, 0)
     ) {
         this.angle = angle;
         this.pitch = pitch;
@@ -98,18 +99,17 @@ class CollisionTile {
             // tempCollisionBox
             collisionBoxArray.emplaceBack();
 
-            const maxInt16 = 32767;
             //left
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -EXTENT, 0, EXTENT, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
             // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -maxInt16, 0, maxInt16, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -EXTENT, 0, EXTENT, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
             // top
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(0, 0, 0, 0, -EXTENT, 0, EXTENT, 0, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
             // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -maxInt16, 0, maxInt16, 0, Infinity, Infinity,
+            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -EXTENT, 0, EXTENT, 0, Infinity, Infinity,
                 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
 
@@ -142,13 +142,11 @@ class CollisionTile {
     /**
      * Find the scale at which the collisionFeature can be shown without
      * overlapping with other features.
-     *
-     * @param {CollisionFeature} collisionFeature
-     * @param allowOverlap
-     * @param avoidEdges
      * @private
      */
-    placeCollisionFeature(collisionFeature: any, allowOverlap: boolean, avoidEdges: boolean): number {
+    placeCollisionFeature(collisionFeature: {boxStartIndex: number, boxEndIndex: number},
+                          allowOverlap: boolean,
+                          avoidEdges: boolean): number {
 
         const collisionBoxArray = this.collisionBoxArray;
         let minPlacementScale = this.minScale;
@@ -157,7 +155,7 @@ class CollisionTile {
 
         for (let b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
 
-            const box = collisionBoxArray.get(b);
+            const box: CollisionBox = (collisionBoxArray.get(b): any);
 
             const anchorPoint = box.anchorPoint._matMult(rotationMatrix);
             const x = anchorPoint.x;
@@ -196,7 +194,7 @@ class CollisionTile {
                 const blockingBoxes = this.grid.query(x1, y1, x2, y2);
 
                 for (let i = 0; i < blockingBoxes.length; i++) {
-                    const blocking = collisionBoxArray.get(blockingBoxes[i]);
+                    const blocking: CollisionBox = (collisionBoxArray.get(blockingBoxes[i]): any);
                     const blockingAnchorPoint = blocking.anchorPoint._matMult(rotationMatrix);
 
                     minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
@@ -241,7 +239,7 @@ class CollisionTile {
         return minPlacementScale;
     }
 
-    queryRenderedSymbols(queryGeometry: any, scale: number): Array<any> {
+    queryRenderedSymbols(queryGeometry: Array<Array<Point>>, scale: number): Array<*> {
         const sourceLayerFeatures = {};
         const result = [];
 
@@ -288,7 +286,7 @@ class CollisionTile {
         const roundedScale = Math.pow(2, Math.ceil(Math.log(perspectiveScale) / Math.LN2 * 10) / 10);
 
         for (let i = 0; i < features.length; i++) {
-            const blocking = collisionBoxArray.get(features[i]);
+            const blocking: CollisionBox = (collisionBoxArray.get(features[i]): any);
             const sourceLayer = blocking.sourceLayerIndex;
             const featureIndex = blocking.featureIndex;
 
@@ -322,7 +320,11 @@ class CollisionTile {
         return result;
     }
 
-    getPlacementScale(minPlacementScale: number, anchorPoint: Point, box: any, blockingAnchorPoint: Point, blocking: any): number {
+    getPlacementScale(minPlacementScale: number,
+                      anchorPoint: Point,
+                      box: CollisionBox,
+                      blockingAnchorPoint: Point,
+                      blocking: CollisionBox): number {
 
         // Find the lowest scale at which the two boxes can fit side by side without overlapping.
         // Original algorithm:
@@ -368,18 +370,16 @@ class CollisionTile {
     /**
      * Remember this collisionFeature and what scale it was placed at to block
      * later features from overlapping with it.
-     *
-     * @param {CollisionFeature} collisionFeature
-     * @param minPlacementScale
-     * @param ignorePlacement
      * @private
      */
-    insertCollisionFeature(collisionFeature: any, minPlacementScale: number, ignorePlacement: boolean) {
+    insertCollisionFeature(collisionFeature: {boxStartIndex: number, boxEndIndex: number},
+                           minPlacementScale: number,
+                           ignorePlacement: boolean) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;
 
         for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
-            const box = collisionBoxArray.get(k);
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
             box.placementScale = minPlacementScale;
             if (minPlacementScale < this.maxScale &&
                 (this.perspectiveRatio === 1 || box.maxScale >= 1)) {

@@ -5,7 +5,7 @@ const fs = require('fs');
 // readFileSync calls must be written out long-form for brfs.
 /* eslint-disable prefer-template, no-path-concat */
 
-module.exports = {
+const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     prelude: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/_prelude.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/_prelude.vertex.glsl', 'utf8')
@@ -80,11 +80,11 @@ module.exports = {
 
 const re = /#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g;
 
-for (const programName in module.exports) {
-    const program = module.exports[programName];
-    const fragmentPragmas = {};
+for (const programName in shaders) {
+    const program = shaders[programName];
+    const fragmentPragmas: {[string]: boolean} = {};
 
-    program.fragmentSource = program.fragmentSource.replace(re, (match, operation, precision, type, name) => {
+    program.fragmentSource = program.fragmentSource.replace(re, (match: string, operation: string, precision: string, type: string, name: string) => {
         fragmentPragmas[name] = true;
         if (operation === 'define') {
             return `
@@ -94,7 +94,7 @@ varying ${precision} ${type} ${name};
 uniform ${precision} ${type} u_${name};
 #endif
 `;
-        } else if (operation === 'initialize') {
+        } else /* if (operation === 'initialize') */ {
             return `
 #ifdef HAS_UNIFORM_u_${name}
     ${precision} ${type} ${name} = u_${name};
@@ -103,7 +103,7 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    program.vertexSource = program.vertexSource.replace(re, (match, operation, precision, type, name) => {
+    program.vertexSource = program.vertexSource.replace(re, (match: string, operation: string, precision: string, type: string, name: string) => {
         const attrType = type === 'float' ? 'vec2' : 'vec4';
         if (fragmentPragmas[name]) {
             if (operation === 'define') {
@@ -116,7 +116,7 @@ varying ${precision} ${type} ${name};
 uniform ${precision} ${type} u_${name};
 #endif
 `;
-            } else if (operation === 'initialize') {
+            } else /* if (operation === 'initialize') */ {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
     ${name} = unpack_mix_${attrType}(a_${name}, a_${name}_t);
@@ -135,7 +135,7 @@ attribute ${precision} ${attrType} a_${name};
 uniform ${precision} ${type} u_${name};
 #endif
 `;
-            } else if (operation === 'initialize') {
+            } else /* if (operation === 'initialize') */ {
                 return `
 #ifndef HAS_UNIFORM_u_${name}
     ${precision} ${type} ${name} = unpack_mix_${attrType}(a_${name}, a_${name}_t);
@@ -147,3 +147,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 }
+
+module.exports = shaders;

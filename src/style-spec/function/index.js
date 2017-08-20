@@ -292,7 +292,9 @@ function interpolationFactor(input, base, lowerValue, upperValue) {
     const difference = upperValue - lowerValue;
     const progress = input - lowerValue;
 
-    if (base === 1) {
+    if (difference === 0) {
+        return 0;
+    } else if (base === 1) {
         return progress / difference;
     } else {
         return (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);

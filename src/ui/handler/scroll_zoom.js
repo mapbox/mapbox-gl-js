@@ -1,8 +1,12 @@
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const browser = require('../../util/browser');
 const window = require('../../util/window');
+
+import type Map from '../map';
+import type Point from '@mapbox/point-geometry';
 
 const ua = window.navigator.userAgent.toLowerCase(),
     firefox = ua.indexOf('firefox') !== -1,
@@ -14,7 +18,17 @@ const ua = window.navigator.userAgent.toLowerCase(),
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class ScrollZoomHandler {
-    constructor(map) {
+    _map: Map;
+    _el: HTMLElement;
+    _enabled: boolean;
+    _aroundCenter: boolean;
+    _time: number;
+    _pos: Point;
+    _type: 'wheel' | 'trackpad' | null;
+    _lastValue: number;
+    _timeout: ?number;
+
+    constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
@@ -44,7 +58,7 @@ class ScrollZoomHandler {
      * @example
      *  map.scrollZoom.enable({ around: 'center' })
      */
-    enable(options) {
+    enable(options: any) {
         if (this.isEnabled()) return;
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
@@ -65,8 +79,8 @@ class ScrollZoomHandler {
         this._enabled = false;
     }
 
-    _onWheel(e) {
-        let value;
+    _onWheel(e: any) {
+        let value = 0;
 
         if (e.type === 'wheel') {
             value = e.deltaY;
@@ -129,7 +143,7 @@ class ScrollZoomHandler {
         this._zoom(-this._lastValue);
     }
 
-    _zoom(delta, e) {
+    _zoom(delta: number, e?: Event) {
         if (delta === 0) return;
         const map = this._map;
 
@@ -137,7 +151,7 @@ class ScrollZoomHandler {
         let scale = 2 / (1 + Math.exp(-Math.abs(delta / 100)));
         if (delta < 0 && scale !== 0) scale = 1 / scale;
 
-        const fromScale = map.ease ? map.ease.to : map.transform.scale,
+        const fromScale = map.ease ? (map.ease: any).to : map.transform.scale,
             targetZoom = map.transform.scaleZoom(fromScale * scale);
 
         map.zoomTo(targetZoom, {
@@ -150,34 +164,3 @@ class ScrollZoomHandler {
 }
 
 module.exports = ScrollZoomHandler;
-
-/**
- * Fired just before the map begins a transition from one zoom level to another,
- * as the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event zoomstart
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired repeatedly during an animated transition from one zoom level to another,
- * as the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event zoom
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- * @see [Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
- */
-
-/**
- * Fired just after the map completes a transition from one zoom level to another,
- * as the result of either user interaction or methods such as {@link Map#flyTo}.
- *
- * @event zoomend
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */

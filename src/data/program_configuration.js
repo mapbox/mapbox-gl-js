@@ -3,9 +3,10 @@
 const createVertexArrayType = require('./vertex_array_type');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
+const Buffer = require('./buffer');
 
 import type StyleLayer from '../style/style_layer';
-import type {ViewType, StructArray} from '../util/struct_array';
+import type {ViewType, StructArray, SerializedStructArray, SerializedStructArrayType} from '../util/struct_array';
 
 type LayoutAttribute = {
     name: string,
@@ -25,10 +26,10 @@ export type PaintPropertyStatistics = {
 
 export type ProgramInterface = {
     layoutAttributes: Array<LayoutAttribute>,
+    elementArrayType: Class<StructArray>,
     dynamicLayoutAttributes?: Array<LayoutAttribute>,
     paintAttributes?: Array<PaintAttribute>,
-    elementArrayType?: Class<StructArray>,
-    elementArrayType2?: Class<StructArray>,
+    elementArrayType2?: Class<StructArray>
 }
 
 export type Program = {
@@ -191,6 +192,12 @@ class CompositeFunctionBinder implements Binder {
     }
 }
 
+export type SerializedProgramConfiguration = {
+    array: SerializedStructArray,
+    type: SerializedStructArrayType,
+    statistics: PaintPropertyStatistics
+};
+
 /**
  * ProgramConfiguration contains the logic for binding style layer properties and tile
  * layer feature data into GL program uniforms and vertex attributes.
@@ -216,6 +223,11 @@ class ProgramConfiguration {
     cacheKey: string;
     interface: ?ProgramInterface;
     PaintVertexArray: Class<StructArray>;
+
+    layer: StyleLayer;
+    paintVertexArray: StructArray;
+    paintPropertyStatistics: PaintPropertyStatistics;
+    paintVertexBuffer: ?Buffer;
 
     constructor() {
         this.binders = {};
@@ -256,6 +268,7 @@ class ProgramConfiguration {
 
         self.PaintVertexArray = createVertexArrayType(attributes);
         self.interface = programInterface;
+        self.layer = layer;
 
         return self;
     }
@@ -285,18 +298,17 @@ class ProgramConfiguration {
         return paintPropertyStatistics;
     }
 
-    populatePaintArray(layer: StyleLayer,
-                       paintArray: StructArray,
-                       statistics: PaintPropertyStatistics,
-                       length: number,
-                       featureProperties: Object) {
+    populatePaintArray(length: number, featureProperties: Object) {
+        const paintArray = this.paintVertexArray;
+        if (paintArray.bytesPerElement === 0) return;
+
         const start = paintArray.length;
         paintArray.resize(length);
 
         for (const name in this.binders) {
             this.binders[name].populatePaintArray(
-                layer, paintArray,
-                statistics,
+                this.layer, paintArray,
+                this.paintPropertyStatistics,
                 start, length,
                 featureProperties);
         }
@@ -315,6 +327,82 @@ class ProgramConfiguration {
             this.binders[name].setUniforms(gl, program, layer, globalProperties);
         }
     }
+
+    serialize(transferables?: Array<Transferable>): ?SerializedProgramConfiguration {
+        if (this.paintVertexArray.length === 0) {
+            return null;
+        }
+        return {
+            array: this.paintVertexArray.serialize(transferables),
+            type: this.paintVertexArray.constructor.serialize(),
+            statistics: this.paintPropertyStatistics
+        };
+    }
+
+    static deserialize(programInterface: ProgramInterface, layer: StyleLayer, zoom: number, serialized: ?SerializedProgramConfiguration) {
+        const self = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+        if (serialized) {
+            self.paintVertexBuffer = new Buffer(serialized.array, serialized.type, Buffer.BufferType.VERTEX);
+            self.paintPropertyStatistics = serialized.statistics;
+        }
+        return self;
+    }
 }
 
-module.exports = ProgramConfiguration;
+class ProgramConfigurationSet {
+    programConfigurations: {[string]: ProgramConfiguration};
+
+    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number) {
+        this.programConfigurations = {};
+        for (const layer of layers) {
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+            programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
+            programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
+            this.programConfigurations[layer.id] = programConfiguration;
+        }
+    }
+
+    static deserialize(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays: {+[string]: ?SerializedProgramConfiguration}) {
+        const self = Object.create(ProgramConfigurationSet.prototype);
+        self.programConfigurations = {};
+        for (const layer of layers) {
+            self.programConfigurations[layer.id] =
+                ProgramConfiguration.deserialize(programInterface, layer, zoom, arrays[layer.id]);
+        }
+        return self;
+    }
+
+    populatePaintArrays(length: number, featureProperties: Object) {
+        for (const key in this.programConfigurations) {
+            this.programConfigurations[key].populatePaintArray(length, featureProperties);
+        }
+    }
+
+    serialize(transferables?: Array<Transferable>) {
+        const result = {};
+        for (const layerId in this.programConfigurations) {
+            const serialized = this.programConfigurations[layerId].serialize(transferables);
+            if (!serialized) continue;
+            result[layerId] = serialized;
+        }
+        return result;
+    }
+
+    get(layerId: string) {
+        return this.programConfigurations[layerId];
+    }
+
+    destroy() {
+        for (const layerId in this.programConfigurations) {
+            const paintVertexBuffer = this.programConfigurations[layerId].paintVertexBuffer;
+            if (paintVertexBuffer) {
+                paintVertexBuffer.destroy();
+            }
+        }
+    }
+}
+
+module.exports = {
+    ProgramConfiguration,
+    ProgramConfigurationSet
+};

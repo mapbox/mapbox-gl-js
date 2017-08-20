@@ -1,9 +1,16 @@
+// @flow
 
 const pattern = require('./pattern');
 
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type FillStyleLayer from '../style/style_layer/fill_style_layer';
+import type FillBucket from '../data/bucket/fill_bucket';
+import type TileCoord from '../source/tile_coord';
+
 module.exports = drawFill;
 
-function drawFill(painter, sourceCache, layer, coords) {
+function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<TileCoord>) {
     const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
@@ -46,53 +53,53 @@ function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
     let firstTile = true;
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer);
+        const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
         painter.enableTileClippingMask(coord);
-        drawFn(painter, sourceCache, layer, tile, coord, bucket.buffers, firstTile);
+        drawFn(painter, sourceCache, layer, tile, coord, bucket, firstTile);
         firstTile = false;
     }
 }
 
-function drawFillTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
+function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
     const gl = painter.gl;
-    const layerData = buffers.layerData[layer.id];
+    const programConfiguration = bucket.programConfigurations.get(layer.id);
 
-    const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, layerData, layer, tile, coord, firstTile);
+    const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, programConfiguration, layer, tile, coord, firstTile);
 
-    for (const segment of buffers.segments) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, layerData.paintVertexBuffer, segment.vertexOffset);
+    for (const segment of bucket.segments.get()) {
+        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }
 
-function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
+function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
     const gl = painter.gl;
-    const layerData = buffers.layerData[layer.id];
+    const programConfiguration = bucket.programConfigurations.get(layer.id);
     const usePattern = layer.paint['fill-pattern'] && !layer.getPaintProperty('fill-outline-color');
 
-    const program = setFillProgram('fillOutline', usePattern, painter, layerData, layer, tile, coord, firstTile);
+    const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
     gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    for (const segment of buffers.segments2) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer2, layerData.paintVertexBuffer, segment.vertexOffset);
+    for (const segment of bucket.segments2.get()) {
+        segment.vaos[layer.id].bind(gl, program, bucket.layoutVertexBuffer, bucket.elementBuffer2, programConfiguration.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
     }
 }
 
-function setFillProgram(programId, usePattern, painter, layerData, layer, tile, coord, firstTile) {
+function setFillProgram(programId, usePattern, painter, programConfiguration, layer, tile, coord, firstTile) {
     let program;
     const prevProgram = painter.currentProgram;
     if (!usePattern) {
-        program = painter.useProgram(programId, layerData.programConfiguration);
+        program = painter.useProgram(programId, programConfiguration);
         if (firstTile || program !== prevProgram) {
-            layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
         }
     } else {
-        program = painter.useProgram(`${programId}Pattern`, layerData.programConfiguration);
+        program = painter.useProgram(`${programId}Pattern`, programConfiguration);
         if (firstTile || program !== prevProgram) {
-            layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
             pattern.prepare(layer.paint['fill-pattern'], painter, program);
         }
         pattern.setTile(tile, painter, program);

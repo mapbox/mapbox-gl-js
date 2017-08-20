@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const findPoleOfInaccessibility = require('../../../src/util/find_pole_of_inaccessibility');
 
 test('polygon_poi', (t) => {
