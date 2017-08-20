@@ -91,10 +91,8 @@ map.on('load', function() {
         url: "mapbox://" + mapId
     });
 
-    // First value is the default, used where the is no data
-    var stops = [["0", "rgba(0,0,0,0)"]];
-
     // Calculate color for each state based on the unemployment rate
+    var stops = [];
     data.forEach(function(row) {
         var green = ((row[dataStyleProp] / maxValue) * 255);
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
@@ -111,6 +109,7 @@ map.on('load', function() {
             "fill-color": {
                 "property": vtMatchProp,
                 "type": "categorical",
+                "default": "rgba(0,0,0,0)" //dont show features without a match
                 "stops": stops
             }
         }
