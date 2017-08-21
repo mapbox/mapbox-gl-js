@@ -49,6 +49,7 @@ const BenchmarksView = React.createClass({
 
     renderBenchmarkVersion: function(name, version) {
         const results = this.state.results[name][version];
+        const sampleData = results.samples ? results.samples.map(row => row.join(',')).join('\n') : null;
         return (
             <td id={name + version}
                 key={version}
@@ -56,6 +57,16 @@ const BenchmarksView = React.createClass({
                 {results.logs.map((log, index) => {
                     return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
                 })}
+                {sampleData ? (
+                    <details>
+                        <summary className='pad1 dark fill-green'>
+                            Sample Data
+                            <a className='icon clipboard'
+                                data-clipboard-text={sampleData}>Copy</a>
+                        </summary>
+                        <pre>{sampleData}</pre>
+                    </details>
+                ) : ''}
             </td>
         );
     },
@@ -151,6 +162,7 @@ const BenchmarksView = React.createClass({
             emitter.on('end', (event) => {
                 results.message = event.message;
                 results.status = 'ended';
+                results.samples = event.samples;
                 log('green', event.message);
                 callback();
 
