@@ -973,7 +973,7 @@ class Style extends Evented {
 
         const posMatrices = {};
 
-        if (forceFullPlacement || !this._currentPlacementIndex || this._currentPlacementIndex < 0) {
+        if (forceFullPlacement || typeof this._currentPlacementIndex === 'undefined' || this._currentPlacementIndex < 0) {
             this._currentPlacementIndex = this._order.length - 1;
             this.viewportCollisionTile = new CollisionTile(transform.clone());
             this._fullPlacementStart = browser.now();
@@ -984,6 +984,13 @@ class Style extends Evented {
         //let placedLayers = 0;
 
         while (this._currentPlacementIndex >= 0) {
+            if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
+                const elapsed = browser.now() - startPlacement;
+                this._fullPlacementElapsed += elapsed;
+                //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+                return true;
+            }
+
             const layerId = this._order[this._currentPlacementIndex--];
             //placedLayers++;
             const layer = this._layers[layerId];
@@ -994,12 +1001,6 @@ class Style extends Evented {
                     posMatrices[id] = {};
                 }
                 this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
-            }
-            if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
-                const elapsed = browser.now() - startPlacement;
-                this._fullPlacementElapsed += elapsed;
-                //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
-                return true;
             }
         }
         const elapsed = browser.now() - startPlacement;
