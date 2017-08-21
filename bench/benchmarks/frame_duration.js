@@ -41,15 +41,20 @@ module.exports = function(options) {
         let sum = 0;
         let count = 0;
         let countAbove16 = 0;
+        const samples = [];
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
             sum += result.sum;
             count += result.count;
             countAbove16 += result.countAbove16;
+            for (const value of result.samples) {
+                samples.push([zooms[i], value]);
+            }
         }
         evented.fire('end', {
             message: `${formatNumber(sum / count * 10) / 10} ms, ${formatNumber(countAbove16 / count * 100)}% > 16ms`,
-            score: sum / count
+            score: sum / count,
+            samples: [['zoom', 'frame']].concat(samples)
         });
     }
 
@@ -75,6 +80,7 @@ function measureFrameTime(options, zoom, callback) {
             let sum = 0;
             let count = 0;
             let countAbove16 = 0;
+            const samples = [];
             const start = performance.now();
 
             map._realrender = map._render;
@@ -87,6 +93,7 @@ function measureFrameTime(options, zoom, callback) {
                 const frameEnd = performance.now();
                 const duration = frameEnd - frameStart;
 
+                samples.push(duration);
                 sum += duration;
                 count++;
                 if (duration >= 16) countAbove16++;
@@ -98,7 +105,8 @@ function measureFrameTime(options, zoom, callback) {
                     callback(undefined, {
                         sum: sum,
                         count: count,
-                        countAbove16: countAbove16
+                        countAbove16: countAbove16,
+                        samples: samples
                     });
                 }
             };

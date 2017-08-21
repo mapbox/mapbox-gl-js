@@ -66,19 +66,27 @@ These events have no machine-semantic meaning.
 Fire the `end` event to indicate the benchmark has finished running and report
 its results.
 
-These events have both human-readable results (`message`) and machine-readable results (`score`). Smaller `score`s are "better."
+These events have both human-readable results (`message`) and machine-readable results (`score`). Smaller `score`s are "better."  Optionally, an array of raw sample data (`samples`) may also be included.
 
 ```js
 {
     message: string;
     score: number;
+    ?samples: Array
 }
 ```
 
 ```js
 benchmark.fire('end', {
     message: 'Average time is ' + formatNumber(averageTime)) + 'ms',
-    score: averageTime
+    score: averageTime,
+    samples: [
+        ['sample', 'value'],
+        [1, sample1Time],
+        [2, sample2Time],
+        [3, sample3Time],
+        ...
+    ]
 });
 ```
 
