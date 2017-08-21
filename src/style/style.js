@@ -188,8 +188,6 @@ class Style extends Evented {
                 }
             }
         });
-
-        this._currentPlacementIndex = 0;
     }
 
     _validateLayer(layer: StyleLayer) {
