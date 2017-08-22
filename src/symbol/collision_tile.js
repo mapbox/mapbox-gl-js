@@ -111,6 +111,9 @@ class CollisionTile {
                 (boxDistanceToAnchor - tileUnitRadius > firstAndLastGlyph.last.tileDistance)) {
                 // Don't need to use this circle because the label doesn't extend this far
                 collisionCircles[k + 4] = true;
+                placedCollisionCircles.push(0);
+                placedCollisionCircles.push(0);
+                placedCollisionCircles.push(0);
                 continue;
             }
 
@@ -132,6 +135,9 @@ class CollisionTile {
                         // use, in which case we want to keep it in place even if it's tightly packed
                         // with the one before it.
                         collisionCircles[k + 4] = true;
+                        placedCollisionCircles.push(0);
+                        placedCollisionCircles.push(0);
+                        placedCollisionCircles.push(0);
                         continue;
                     }
                 }
@@ -260,10 +266,12 @@ class CollisionTile {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 3) {
-            const key = { tileID: tileID, boxIndex: boxStartIndex + (k / 3) };
-            grid.insertCircle(key, collisionCircles[k],
-                collisionCircles[k + 1],
-                collisionCircles[k + 2]);
+            if (collisionCircles[k]) {
+                const key = { tileID: tileID, boxIndex: boxStartIndex + (k / 3) };
+                grid.insertCircle(key, collisionCircles[k],
+                    collisionCircles[k + 1],
+                    collisionCircles[k + 2]);
+            }
         }
     }
 
