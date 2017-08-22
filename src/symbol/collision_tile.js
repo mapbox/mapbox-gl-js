@@ -105,9 +105,10 @@ class CollisionTile {
 
         for (let k = 0; k < collisionCircles.length; k += 5) {
             const boxDistanceToAnchor = collisionCircles[k + 3];
+            const tileUnitRadius = collisionCircles[k + 2];
             if (!firstAndLastGlyph ||
                 (boxDistanceToAnchor < -firstAndLastGlyph.first.tileDistance) ||
-                (boxDistanceToAnchor > firstAndLastGlyph.last.tileDistance)) {
+                (boxDistanceToAnchor - tileUnitRadius > firstAndLastGlyph.last.tileDistance)) {
                 // Don't need to use this circle because the label doesn't extend this far
                 collisionCircles[k + 4] = true;
                 continue;
@@ -118,7 +119,7 @@ class CollisionTile {
             const y = projectedPoint.y;
 
             const tileToViewport = perspectiveRatio * pixelsToTileUnits * scale;
-            const radius = collisionCircles[k + 2] / tileToViewport;
+            const radius = tileUnitRadius / tileToViewport;
 
             const dx = x - placedCollisionCircles[placedCollisionCircles.length - 3];
             const dy = y - placedCollisionCircles[placedCollisionCircles.length - 2];
