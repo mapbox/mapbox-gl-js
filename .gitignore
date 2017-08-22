@@ -15,5 +15,6 @@ flow-coverage
 *-generated.js
 test/integration/**/index*.html
 test/integration/**/actual.png
+test/integration/**/actual.json
 test/integration/**/diff.png
 .eslintcache
