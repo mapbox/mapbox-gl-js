@@ -1579,7 +1579,7 @@ class Map extends Camera {
         });
 
         // Flag an ongoing transition
-        if (!this.animationLoop.stopped() || skippedPlacement || pendingCollisionDetection || this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration > Date.now()) {
+        if (skippedPlacement || pendingCollisionDetection || this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration > Date.now()) {
             this._styleDirty = true;
         }
 
@@ -1588,6 +1588,13 @@ class Map extends Camera {
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
             this.fire('load');
+        }
+
+        // We should set _styleDirty for ongoing animations before firing 'render',
+        // but the test suite currently assumes that it can read still images while animations are
+        // still ongoing. See https://github.com/mapbox/mapbox-gl-js/issues/3966
+        if (!this.animationLoop.stopped()) {
+            this._styleDirty = true;
         }
 
         this._frameId = null;
