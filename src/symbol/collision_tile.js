@@ -204,8 +204,8 @@ class CollisionTile {
             }
         }
 
-        for (let i = 0; i < features.length; i++) {
-            const blocking = collisionBoxArray.get(features[i]);
+        for (let i = 0; i < thisTileFeatures.length; i++) {
+            const blocking = collisionBoxArray.get(thisTileFeatures[i]);
             const sourceLayer = blocking.sourceLayerIndex;
             const featureIndex = blocking.featureIndex;
 
@@ -234,7 +234,7 @@ class CollisionTile {
             if (!intersectionTests.polygonIntersectsPolygon(query, bbox)) continue;
 
             sourceLayerFeatures[sourceLayer][featureIndex] = true;
-            result.push(features[i]);
+            result.push(thisTileFeatures[i]);
         }
 
         return result;
@@ -249,7 +249,7 @@ class CollisionTile {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionBoxes.length; k += 4) {
-            const key = { tileID: tileID, boxIndex: boxStartIndex + k / 4 };
+            const key = { tileID: tileID, boxIndex: boxStartIndex + (k / 4) };
             grid.insert(key, collisionBoxes[k],
                 collisionBoxes[k + 1],
                 collisionBoxes[k + 2],
@@ -261,7 +261,7 @@ class CollisionTile {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 3) {
-            const key = { tileID: tileID, boxIndex: boxStartIndex + k / 4 };
+            const key = { tileID: tileID, boxIndex: boxStartIndex + (k / 3) };
             grid.insertCircle(key, collisionCircles[k],
                 collisionCircles[k + 1],
                 collisionCircles[k + 2]);

@@ -253,7 +253,7 @@ GridIndex.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, see
                                          circles[offset + 1],
                                          circles[offset + 2],
                                          x1, y1, x2, y2)) {
-                    result.push(true);
+                    result.push(circleKeys[circleUid]);
                 }
             }
         }
