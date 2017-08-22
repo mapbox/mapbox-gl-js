@@ -113,7 +113,7 @@ function project(point: Point, matrix: mat4) {
     const w = pos[3];
     return {
         point: new Point(pos[0] / w, pos[1] / w),
-        distanceToCamera: w
+        signedDistanceFromCamera: w
     };
 }
 
@@ -264,9 +264,9 @@ function placeGlyphsAlongLine(symbol,
             const tileSegmentEnd = lineVertexArray.get(symbol.lineStartIndex + symbol.segment + 1);
             const projectedVertex = project(tileSegmentEnd, posMatrix);
             // We know the anchor will be in the viewport, but the end of the line segment may be
-            // past the plane of the camera, in which case we can use a point at any arbitrary (closer)
+            // behind the plane of the camera, in which case we can use a point at any arbitrary (closer)
             // point on the segment.
-            const b = (projectedVertex.distanceToCamera > 0) ?
+            const b = (projectedVertex.signedDistanceFromCamera > 0) ?
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, new Point(tileSegmentEnd.x, tileSegmentEnd.y), a, 1, posMatrix);
 
@@ -291,6 +291,10 @@ function placeGlyphsAlongLine(symbol,
 }
 
 function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: mat4) {
+    // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
+    // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
+    // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
+    // plane of the camera.
     const projectedUnitVertex = project(previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit()), projectionMatrix).point;
     const projectedUnitSegment = previousProjectedPoint.sub(projectedUnitVertex);
 
@@ -348,7 +352,7 @@ function placeGlyphAlongLine(offsetX: number,
         current = projectionCache[currentIndex];
         if (current === undefined) {
             const projection = project(lineVertexArray.get(currentIndex), labelPlaneMatrix);
-            if (projection.distanceToCamera > 0) {
+            if (projection.signedDistanceFromCamera > 0) {
                 current = projectionCache[currentIndex] = projection.point;
             } else {
                 // The vertex is behind the plane of the camera, so we can't project it
