@@ -116,7 +116,7 @@ class SpriteAtlas extends Evented {
         return rect;
     }
 
-    addImage(name: string, pixels: HTMLImageElement | $ArrayBufferView, options: { width: number, height: number, pixelRatio?: number }) {
+    addImage(name: string, pixels: HTMLImageElement | $ArrayBufferView, options: { width: number, height: number, pixelRatio?: number, sdf?: boolean }) {
         let width, height, pixelRatio;
         if (pixels instanceof HTMLImageElement) {
             width = pixels.width;
@@ -151,7 +151,7 @@ class SpriteAtlas extends Evented {
             width,
             height,
             pixelRatio,
-            sdf: false
+            sdf: options.sdf || false
         };
 
         this.copy(pixels, width, rect, {x: 0, y: 0, width, height}, false);

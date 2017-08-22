@@ -4,15 +4,11 @@
     "test": {
       "width": 64,
       "height": 64,
-      "pixelRatio": 1,
       "operations": [
         [
           "addImage",
-          "marker",
-          "./sprites/2x.png",
-          {
-            "pixelRatio": 2
-          }
+          "dot.sdf",
+          "./image/dot.sdf.png"
         ],
         [
           "addLayer",
@@ -21,7 +17,10 @@
             "type": "symbol",
             "source": "geometry",
             "layout": {
-              "icon-image": "marker"
+              "icon-image": "dot.sdf"
+            },
+            "paint": {
+              "icon-color": "red"
             }
           }
         ],
@@ -42,3 +41,4 @@
   },
   "layers": []
 }
+

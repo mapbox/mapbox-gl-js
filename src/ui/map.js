@@ -1147,11 +1147,12 @@ class Map extends Camera {
      * @param {number} [options.width] The pixel width of the `ArrayBufferView` image
      * @param {number} [options.height] The pixel height of the `ArrayBufferView` image
      * @param {number} [options.pixelRatio] The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
+     * @param {boolean} [options.sdf] Whether the image should be interpreted as an SDF image
      */
     addImage(
         name: string,
         image: HTMLImageElement | $ArrayBufferView,
-        options?: {width: number, height: number, pixelRatio: number}
+        options?: {width: number, height: number, pixelRatio: number, sdf: boolean}
     ) {
         this.style.spriteAtlas.addImage(name, image, (options: any));
     }
