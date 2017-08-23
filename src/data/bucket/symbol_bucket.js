@@ -5,7 +5,7 @@ const {SegmentVector} = require('../segment');
 const Buffer = require('../buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
-const createElementArrayType = require('../element_array_type');
+const {TriangleElementArray, LineElementArray} = require('../element_array_type');
 const EXTENT = require('../extent');
 const {packUint8ToFloat} = require('../../shaders/encode_attribute');
 const Anchor = require('../../symbol/anchor');
@@ -113,8 +113,6 @@ const LineVertexArray = createStructArrayType({
         { type: 'Int16', name: 'y' }
     ]});
 
-const elementArrayType = createElementArrayType();
-
 const layoutAttributes = [
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
     {name: 'a_data',        components: 4, type: 'Uint16'}
@@ -128,7 +126,7 @@ const symbolInterfaces = {
     text: {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
-        elementArrayType: elementArrayType,
+        elementArrayType: TriangleElementArray,
         paintAttributes: [
             {property: 'text-color', name: 'fill_color'},
             {property: 'text-halo-color', name: 'halo_color'},
@@ -140,7 +138,7 @@ const symbolInterfaces = {
     icon: {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
-        elementArrayType: elementArrayType,
+        elementArrayType: TriangleElementArray,
         paintAttributes: [
             {property: 'icon-color', name: 'fill_color'},
             {property: 'icon-halo-color', name: 'halo_color'},
@@ -156,7 +154,7 @@ const symbolInterfaces = {
             {name: 'a_extrude',    components: 2, type: 'Int16'},
             {name: 'a_data',       components: 2, type: 'Uint8'}
         ],
-        elementArrayType: createElementArrayType(2)
+        elementArrayType: LineElementArray
     }
 };
 

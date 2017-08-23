@@ -4,7 +4,7 @@ const {SegmentVector} = require('../segment');
 const Buffer = require('../buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
-const createElementArrayType = require('../element_array_type');
+const {TriangleElementArray} = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
@@ -64,7 +64,7 @@ const lineInterface = {
         {property: 'line-width'},
         {property: 'line-width', name: 'floorwidth', useIntegerZoom: true},
     ],
-    elementArrayType: createElementArrayType()
+    elementArrayType: TriangleElementArray
 };
 
 function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: boolean, up: boolean, dir: number, linesofar: number) {
