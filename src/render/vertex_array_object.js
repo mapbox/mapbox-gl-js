@@ -10,7 +10,7 @@ class VertexArrayObject {
     boundProgram: ?Program;
     boundVertexBuffer: ?VertexBuffer;
     boundVertexBuffer2: ?VertexBuffer;
-    boundElementBuffer: ?IndexBuffer;
+    boundIndexBuffer: ?IndexBuffer;
     boundVertexOffset: ?number;
     boundDynamicVertexBuffer: ?VertexBuffer;
     vao: any;
@@ -20,7 +20,7 @@ class VertexArrayObject {
         this.boundProgram = null;
         this.boundVertexBuffer = null;
         this.boundVertexBuffer2 = null;
-        this.boundElementBuffer = null;
+        this.boundIndexBuffer = null;
         this.boundVertexOffset = null;
         this.boundDynamicVertexBuffer = null;
         this.vao = null;
@@ -29,7 +29,7 @@ class VertexArrayObject {
     bind(gl: WebGLRenderingContext,
          program: Program,
          layoutVertexBuffer: VertexBuffer,
-         elementBuffer: ?IndexBuffer,
+         indexBuffer: ?IndexBuffer,
          vertexBuffer2: ?VertexBuffer,
          vertexOffset: ?number,
          dynamicVertexBuffer: ?VertexBuffer) {
@@ -43,13 +43,13 @@ class VertexArrayObject {
             this.boundProgram !== program ||
             this.boundVertexBuffer !== layoutVertexBuffer ||
             this.boundVertexBuffer2 !== vertexBuffer2 ||
-            this.boundElementBuffer !== elementBuffer ||
+            this.boundIndexBuffer !== indexBuffer ||
             this.boundVertexOffset !== vertexOffset ||
             this.boundDynamicVertexBuffer !== dynamicVertexBuffer
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
+            this.freshBind(gl, program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
             this.gl = gl;
         } else {
             (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
@@ -64,7 +64,7 @@ class VertexArrayObject {
     freshBind(gl: WebGLRenderingContext,
               program: Program,
               layoutVertexBuffer: VertexBuffer,
-              elementBuffer: ?IndexBuffer,
+              indexBuffer: ?IndexBuffer,
               vertexBuffer2: ?VertexBuffer,
               vertexOffset: ?number,
               dynamicVertexBuffer: ?VertexBuffer) {
@@ -81,7 +81,7 @@ class VertexArrayObject {
             this.boundProgram = program;
             this.boundVertexBuffer = layoutVertexBuffer;
             this.boundVertexBuffer2 = vertexBuffer2;
-            this.boundElementBuffer = elementBuffer;
+            this.boundIndexBuffer = indexBuffer;
             this.boundVertexOffset = vertexOffset;
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
 
@@ -116,8 +116,8 @@ class VertexArrayObject {
             dynamicVertexBuffer.bind(gl);
             dynamicVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
-        if (elementBuffer) {
-            elementBuffer.bind(gl);
+        if (indexBuffer) {
+            indexBuffer.bind(gl);
         }
 
         (gl: any).currentNumAttributes = numNextAttributes;

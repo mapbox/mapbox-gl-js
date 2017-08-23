@@ -29,8 +29,8 @@ Tile
   |    + ArrayGroup {
   |        globalProperties: { zoom }
   |        layoutVertexArray,
-  |        elementArray,
-  |        elementArray2,
+  |        indexArray,
+  |        indexArray2,
   |        layerData: {
   |          [style layer id]: {
   |            programConfiguration,

@@ -27,10 +27,10 @@ export type PaintPropertyStatistics = {
 
 export type ProgramInterface = {
     layoutAttributes: Array<LayoutAttribute>,
-    elementArrayType: Class<StructArray>,
+    indexArrayType: Class<StructArray>,
     dynamicLayoutAttributes?: Array<LayoutAttribute>,
     paintAttributes?: Array<PaintAttribute>,
-    elementArrayType2?: Class<StructArray>
+    indexArrayType2?: Class<StructArray>
 }
 
 function packColor(color: [number, number, number, number]): [number, number] {

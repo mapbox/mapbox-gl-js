@@ -18,12 +18,12 @@ class SegmentVector {
         this.segments = segments;
     }
 
-    prepareSegment(numVertices: number, layoutVertexArray: StructArray, elementArray: StructArray): Segment {
+    prepareSegment(numVertices: number, layoutVertexArray: StructArray, indexArray: StructArray): Segment {
         let segment: Segment = this.segments[this.segments.length - 1];
         if (!segment || segment.vertexLength + numVertices > module.exports.MAX_VERTEX_ARRAY_LENGTH) {
             segment = ({
                 vertexOffset: layoutVertexArray.length,
-                primitiveOffset: elementArray.length,
+                primitiveOffset: indexArray.length,
                 vertexLength: 0,
                 primitiveLength: 0
             }: any);

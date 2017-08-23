@@ -210,7 +210,7 @@ function drawSymbolElements(buffers, layer, gl, program) {
         gl.TRIANGLES,
         layer.id,
         buffers.layoutVertexBuffer,
-        buffers.elementBuffer,
+        buffers.indexBuffer,
         buffers.segments,
         buffers.programConfigurations.get(layer.id),
         buffers.dynamicLayoutVertexBuffer);

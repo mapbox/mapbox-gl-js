@@ -40,14 +40,14 @@ export type IndexedFeature = {
  * Create a bucket via the `StyleLayer#createBucket` method.
  *
  * The concrete bucket types, using layout options from the style layer,
- * transform feature geometries into vertex and element data for use by the
+ * transform feature geometries into vertex and index data for use by the
  * vertex shader.  They also (via `ProgramConfiguration`) use feature
  * properties and the zoom level to populate the attributes needed for
  * data-driven styling.
  *
  * Buckets are designed to be built on a worker thread and then serialized and
  * transferred back to the main thread for rendering.  On the worker side, a
- * bucket's vertex, element, and attribute data is stored in `bucket.arrays:
+ * bucket's vertex, index, and attribute data is stored in `bucket.arrays:
  * ArrayGroup`.  When a bucket's data is serialized and sent back to the main
  * thread, is gets deserialized (using `new Bucket(serializedBucketData)`, with
  * the array data now stored in `bucket.buffers: BufferGroup`.  BufferGroups
