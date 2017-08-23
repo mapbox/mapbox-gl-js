@@ -10,7 +10,6 @@ const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
-const Throttler = require('../util/throttler');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -45,7 +44,7 @@ class Tile {
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
-    placementThrottler: any;
+    placementTimeout: number;
     timeAdded: any;
     fadeEndTime: any;
     rawTileData: ArrayBuffer;
@@ -70,6 +69,7 @@ class Tile {
     sourceCache: any;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
+    requestRedoPlacementThrottled: Function;
 
     /**
      * @param {TileCoord} coord
@@ -93,7 +93,7 @@ class Tile {
 
         this.state = 'loading';
 
-        this.placementThrottler = new Throttler(300, this._immediateRedoPlacement.bind(this));
+        this.requestRedoPlacementThrottled = util.throttle(this.requestRedoPlacement.bind(this), 300);
     }
 
     registerFadeDuration(animationLoop: any, duration: number) {
@@ -221,10 +221,10 @@ class Tile {
         this.placementSource = source;
 
         this.state = 'reloading';
-        this.placementThrottler.invoke();
+        this.placementTimeout = this.requestRedoPlacementThrottled();
     }
 
-    _immediateRedoPlacement() {
+    requestRedoPlacement() {
         this.placementSource.dispatcher.send('redoPlacement', {
             type: this.placementSource.type,
             uid: this.uid,
@@ -243,7 +243,7 @@ class Tile {
 
             if (this.redoWhenDone) {
                 this.redoWhenDone = false;
-                this._immediateRedoPlacement();
+                this.requestRedoPlacement();
             }
         }, this.workerID);
     }
@@ -368,8 +368,10 @@ class Tile {
         }
     }
 
-    stopPlacementThrottler() {
-        this.placementThrottler.stop();
+    cancelPlacement() {
+        clearTimeout(this.placementTimeout);
+        this.placementTimeout = 0;
+
         if (this.state === 'reloading') {
             this.state = 'loaded';
         }
