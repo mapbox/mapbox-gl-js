@@ -1074,6 +1074,12 @@
         "icon-image"
       ],
       "sdk-support": {
+        "basic functionality": {
+          "js": "0.40.0"
+        },
+        "data-driven styling": {
+          "js": "0.40.0"
+        }
       }
     },
     "icon-pitch-alignment": {
