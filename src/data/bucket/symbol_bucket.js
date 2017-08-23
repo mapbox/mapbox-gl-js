@@ -2,7 +2,8 @@
 
 const Point = require('@mapbox/point-geometry');
 const {SegmentVector} = require('../segment');
-const Buffer = require('../buffer');
+const VertexBuffer = require('../../gl/vertex_buffer');
+const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleElementArray, LineElementArray} = require('../element_array_type');
@@ -211,24 +212,24 @@ type SerializedSymbolBuffer = {
 
 class SymbolBuffers {
     layoutVertexArray: StructArray;
-    layoutVertexBuffer: Buffer;
+    layoutVertexBuffer: VertexBuffer;
 
     elementArray: StructArray;
-    elementBuffer: Buffer;
+    elementBuffer: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet;
     segments: SegmentVector;
 
     dynamicLayoutVertexArray: StructArray;
-    dynamicLayoutVertexBuffer: Buffer;
+    dynamicLayoutVertexBuffer: VertexBuffer;
 
     constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays?: SerializedSymbolBuffer) {
         const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
         const ElementArrayType = programInterface.elementArrayType;
 
         if (arrays) {
-            this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
-            this.elementBuffer = new Buffer(arrays.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+            this.layoutVertexBuffer = new VertexBuffer(arrays.layoutVertexArray, LayoutVertexArrayType.serialize());
+            this.elementBuffer = new IndexBuffer(arrays.elementArray);
             this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.programConfigurations);
             this.segments = new SegmentVector(arrays.segments);
         } else {
@@ -246,8 +247,7 @@ class SymbolBuffers {
 
         if (arrays) {
             this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType(arrays.dynamicLayoutVertexArray);
-            this.dynamicLayoutVertexBuffer = new Buffer(arrays.dynamicLayoutVertexArray,
-                DynamicLayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX, true);
+            this.dynamicLayoutVertexBuffer = new VertexBuffer(arrays.dynamicLayoutVertexArray, DynamicLayoutVertexArrayType.serialize(), true);
         } else {
             this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType();
         }

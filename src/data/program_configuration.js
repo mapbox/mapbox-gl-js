@@ -3,7 +3,7 @@
 const createVertexArrayType = require('./vertex_array_type');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
-const Buffer = require('./buffer');
+const VertexBuffer = require('../gl/vertex_buffer');
 
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray, SerializedStructArray, SerializedStructArrayType} from '../util/struct_array';
@@ -224,7 +224,7 @@ class ProgramConfiguration {
     layer: StyleLayer;
     paintVertexArray: StructArray;
     paintPropertyStatistics: PaintPropertyStatistics;
-    paintVertexBuffer: ?Buffer;
+    paintVertexBuffer: ?VertexBuffer;
 
     constructor() {
         this.binders = {};
@@ -339,7 +339,7 @@ class ProgramConfiguration {
     static deserialize(programInterface: ProgramInterface, layer: StyleLayer, zoom: number, serialized: ?SerializedProgramConfiguration) {
         const self = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
         if (serialized) {
-            self.paintVertexBuffer = new Buffer(serialized.array, serialized.type, Buffer.BufferType.VERTEX);
+            self.paintVertexBuffer = new VertexBuffer(serialized.array, serialized.type);
             self.paintPropertyStatistics = serialized.statistics;
         }
         return self;

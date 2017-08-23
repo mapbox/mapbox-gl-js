@@ -7,7 +7,8 @@ const {ProgramConfiguration} = require('../data/program_configuration');
 const VertexArrayObject = require('./vertex_array_object');
 
 import type {SegmentVector} from '../data/segment';
-import type Buffer from '../data/buffer';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type IndexBuffer from '../gl/index_buffer';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -84,11 +85,11 @@ class Program {
     draw(gl: WebGLRenderingContext,
          drawMode: DrawMode,
          layerID: string,
-         layoutVertexBuffer: Buffer,
-         elementBuffer: Buffer,
+         layoutVertexBuffer: VertexBuffer,
+         elementBuffer: IndexBuffer,
          segments: SegmentVector,
          configuration: ?ProgramConfiguration,
-         dynamicLayoutBuffer: ?Buffer) {
+         dynamicLayoutBuffer: ?VertexBuffer) {
 
         const primitiveSize = {
             [gl.LINES]: 2,

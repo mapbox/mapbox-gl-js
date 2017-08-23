@@ -3,15 +3,16 @@
 const assert = require('assert');
 
 import type Program from './program';
-import type Buffer from '../data/buffer';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type IndexBuffer from '../gl/index_buffer';
 
 class VertexArrayObject {
     boundProgram: ?Program;
-    boundVertexBuffer: ?Buffer;
-    boundVertexBuffer2: ?Buffer;
-    boundElementBuffer: ?Buffer;
+    boundVertexBuffer: ?VertexBuffer;
+    boundVertexBuffer2: ?VertexBuffer;
+    boundElementBuffer: ?IndexBuffer;
     boundVertexOffset: ?number;
-    boundDynamicVertexBuffer: ?Buffer;
+    boundDynamicVertexBuffer: ?VertexBuffer;
     vao: any;
     gl: WebGLRenderingContext;
 
@@ -27,11 +28,11 @@ class VertexArrayObject {
 
     bind(gl: WebGLRenderingContext,
          program: Program,
-         layoutVertexBuffer: Buffer,
-         elementBuffer: ?Buffer,
-         vertexBuffer2: ?Buffer,
+         layoutVertexBuffer: VertexBuffer,
+         elementBuffer: ?IndexBuffer,
+         vertexBuffer2: ?VertexBuffer,
          vertexOffset: ?number,
-         dynamicVertexBuffer: ?Buffer) {
+         dynamicVertexBuffer: ?VertexBuffer) {
 
         if (gl.extVertexArrayObject === undefined) {
             (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -62,11 +63,11 @@ class VertexArrayObject {
 
     freshBind(gl: WebGLRenderingContext,
               program: Program,
-              layoutVertexBuffer: Buffer,
-              elementBuffer: ?Buffer,
-              vertexBuffer2: ?Buffer,
+              layoutVertexBuffer: VertexBuffer,
+              elementBuffer: ?IndexBuffer,
+              vertexBuffer2: ?VertexBuffer,
               vertexOffset: ?number,
-              dynamicVertexBuffer: ?Buffer) {
+              dynamicVertexBuffer: ?VertexBuffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 

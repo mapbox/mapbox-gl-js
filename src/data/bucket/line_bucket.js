@@ -1,7 +1,8 @@
 // @flow
 
 const {SegmentVector} = require('../segment');
-const Buffer = require('../buffer');
+const VertexBuffer = require('../../gl/vertex_buffer');
+const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleElementArray} = require('../element_array_type');
@@ -106,10 +107,10 @@ class LineBucket implements Bucket {
     layers: Array<StyleLayer>;
 
     layoutVertexArray: StructArray;
-    layoutVertexBuffer: Buffer;
+    layoutVertexBuffer: VertexBuffer;
 
     elementArray: StructArray;
-    elementBuffer: Buffer;
+    elementBuffer: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet;
     segments: SegmentVector;
@@ -121,8 +122,8 @@ class LineBucket implements Bucket {
         this.index = options.index;
 
         if (options.layoutVertexArray) {
-            this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
-            this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+            this.layoutVertexBuffer = new VertexBuffer(options.layoutVertexArray, LayoutVertexArrayType.serialize());
+            this.elementBuffer = new IndexBuffer(options.elementArray);
             this.programConfigurations = ProgramConfigurationSet.deserialize(lineInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
         } else {

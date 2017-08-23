@@ -1,7 +1,8 @@
 // @flow
 
 const {SegmentVector} = require('../segment');
-const Buffer = require('../buffer');
+const VertexBuffer = require('../../gl/vertex_buffer');
+const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {LineElementArray, TriangleElementArray} = require('../element_array_type');
@@ -41,13 +42,13 @@ class FillBucket implements Bucket {
     layers: Array<StyleLayer>;
 
     layoutVertexArray: StructArray;
-    layoutVertexBuffer: Buffer;
+    layoutVertexBuffer: VertexBuffer;
 
     elementArray: StructArray;
-    elementBuffer: Buffer;
+    elementBuffer: IndexBuffer;
 
     elementArray2: StructArray;
-    elementBuffer2: Buffer;
+    elementBuffer2: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet;
     segments: SegmentVector;
@@ -60,9 +61,9 @@ class FillBucket implements Bucket {
         this.index = options.index;
 
         if (options.layoutVertexArray) {
-            this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
-            this.elementBuffer = new Buffer(options.elementArray, TriangleElementArray.serialize(), Buffer.BufferType.ELEMENT);
-            this.elementBuffer2 = new Buffer(options.elementArray2, LineElementArray.serialize(), Buffer.BufferType.ELEMENT);
+            this.layoutVertexBuffer = new VertexBuffer(options.layoutVertexArray, LayoutVertexArrayType.serialize());
+            this.elementBuffer = new IndexBuffer(options.elementArray);
+            this.elementBuffer2 = new IndexBuffer(options.elementArray2);
             this.programConfigurations = ProgramConfigurationSet.deserialize(fillInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
             this.segments2 = new SegmentVector(options.segments2);

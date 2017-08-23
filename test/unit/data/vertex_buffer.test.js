@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Buffer = require('../../../src/data/buffer');
+const VertexBuffer = require('../../../src/gl/vertex_buffer');
 const StructArrayType = require('../../../src/util/struct_array');
 
-test('Buffer', (t) => {
+test('VertexBuffer', (t) => {
 
     const TestArray = new StructArrayType({
         members: [
@@ -21,7 +21,7 @@ test('Buffer', (t) => {
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
 
-        const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
+        const buffer = VertexBuffer.fromStructArray(array);
 
         t.deepEqual(buffer.attributes, [
             {
@@ -39,11 +39,8 @@ test('Buffer', (t) => {
         t.deepEqual(buffer.itemSize, 8);
         t.deepEqual(buffer.length, 3);
         t.ok(buffer.arrayBuffer);
-        t.equal(buffer.type, Buffer.BufferType.VERTEX);
         t.end();
-
     });
 
     t.end();
-
 });
