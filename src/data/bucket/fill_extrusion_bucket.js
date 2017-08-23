@@ -4,7 +4,7 @@ const {SegmentVector} = require('../segment');
 const Buffer = require('../buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
-const createElementArrayType = require('../element_array_type');
+const {TriangleElementArray} = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const earcut = require('earcut');
@@ -23,7 +23,7 @@ const fillExtrusionInterface = {
         {name: 'a_normal',       components: 3, type: 'Int16'},
         {name: 'a_edgedistance', components: 1, type: 'Int16'}
     ],
-    elementArrayType: createElementArrayType(3),
+    elementArrayType: TriangleElementArray,
 
     paintAttributes: [
         {property: 'fill-extrusion-base'},

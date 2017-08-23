@@ -4,7 +4,7 @@ const {SegmentVector} = require('../segment');
 const Buffer = require('../buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
-const createElementArrayType = require('../element_array_type');
+const {LineElementArray, TriangleElementArray} = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
@@ -20,8 +20,8 @@ const fillInterface = {
     layoutAttributes: [
         {name: 'a_pos', components: 2, type: 'Int16'}
     ],
-    elementArrayType: createElementArrayType(3),
-    elementArrayType2: createElementArrayType(2),
+    elementArrayType: TriangleElementArray,
+    elementArrayType2: LineElementArray,
 
     paintAttributes: [
         {property: 'fill-color'},
@@ -31,8 +31,6 @@ const fillInterface = {
 };
 
 const LayoutVertexArrayType = createVertexArrayType(fillInterface.layoutAttributes);
-const ElementArrayType = fillInterface.elementArrayType;
-const ElementArrayType2 = fillInterface.elementArrayType2;
 
 class FillBucket implements Bucket {
     static programInterface: ProgramInterface;
@@ -63,15 +61,15 @@ class FillBucket implements Bucket {
 
         if (options.layoutVertexArray) {
             this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
-            this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
-            this.elementBuffer2 = new Buffer(options.elementArray2, ElementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
+            this.elementBuffer = new Buffer(options.elementArray, TriangleElementArray.serialize(), Buffer.BufferType.ELEMENT);
+            this.elementBuffer2 = new Buffer(options.elementArray2, LineElementArray.serialize(), Buffer.BufferType.ELEMENT);
             this.programConfigurations = ProgramConfigurationSet.deserialize(fillInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
             this.segments2 = new SegmentVector(options.segments2);
         } else {
             this.layoutVertexArray = new LayoutVertexArrayType();
-            this.elementArray = new ElementArrayType();
-            this.elementArray2 = new ElementArrayType2();
+            this.elementArray = new TriangleElementArray();
+            this.elementArray2 = new LineElementArray();
             this.programConfigurations = new ProgramConfigurationSet(fillInterface, options.layers, options.zoom);
             this.segments = new SegmentVector();
             this.segments2 = new SegmentVector();

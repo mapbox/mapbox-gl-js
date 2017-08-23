@@ -4,7 +4,7 @@ const {SegmentVector} = require('../segment');
 const Buffer = require('../buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
-const createElementArrayType = require('../element_array_type');
+const {TriangleElementArray} = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
@@ -17,7 +17,7 @@ const circleInterface = {
     layoutAttributes: [
         {name: 'a_pos', components: 2, type: 'Int16'}
     ],
-    elementArrayType: createElementArrayType(),
+    elementArrayType: TriangleElementArray,
 
     paintAttributes: [
         {property: 'circle-color'},
@@ -37,7 +37,6 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
 }
 
 const LayoutVertexArrayType = createVertexArrayType(circleInterface.layoutAttributes);
-const ElementArrayType = circleInterface.elementArrayType;
 
 /**
  * Circles are represented by two triangles.
@@ -71,12 +70,12 @@ class CircleBucket implements Bucket {
 
         if (options.layoutVertexArray) {
             this.layoutVertexBuffer = new Buffer(options.layoutVertexArray, LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
-            this.elementBuffer = new Buffer(options.elementArray, ElementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+            this.elementBuffer = new Buffer(options.elementArray, TriangleElementArray.serialize(), Buffer.BufferType.ELEMENT);
             this.programConfigurations = ProgramConfigurationSet.deserialize(circleInterface, options.layers, options.zoom, options.programConfigurations);
             this.segments = new SegmentVector(options.segments);
         } else {
             this.layoutVertexArray = new LayoutVertexArrayType();
-            this.elementArray = new ElementArrayType();
+            this.elementArray = new TriangleElementArray();
             this.programConfigurations = new ProgramConfigurationSet(circleInterface, options.layers, options.zoom);
             this.segments = new SegmentVector();
         }
