@@ -6,6 +6,7 @@ const PNG = require('pngjs').PNG;
 const Map = require('../src/ui/map');
 const window = require('../src/util/window');
 const browser = require('../src/util/browser');
+const util = require('../src/util/util');
 const rtlTextPlugin = require('../src/source/rtl_text_plugin');
 const rtlText = require('@mapbox/mapbox-gl-rtl-text');
 const fs = require('fs');
@@ -107,8 +108,8 @@ function applyOperations(map, operations, callback) {
 
     } else if (operation[0] === 'addImage') {
         const img = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
-        const pixelRatio = operation.length > 3 ? operation[3] : 1;
-        map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: pixelRatio});
+        const options = util.extend({}, {height: img.height, width: img.width, pixelRatio: 1}, operation.length > 3 ? operation[3] : {});
+        map.addImage(operation[1], img.data, options);
         applyOperations(map, operations.slice(1), callback);
 
     } else {

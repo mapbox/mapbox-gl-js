@@ -4,15 +4,11 @@
     "test": {
       "width": 64,
       "height": 64,
-      "pixelRatio": 1,
       "operations": [
         [
           "addImage",
-          "marker",
-          "./sprites/2x.png",
-          {
-            "pixelRatio": 2
-          }
+          "line.sdf",
+          "./image/line.sdf.png"
         ],
         [
           "addLayer",
@@ -21,7 +17,7 @@
             "type": "symbol",
             "source": "geometry",
             "layout": {
-              "icon-image": "marker"
+              "icon-image": "line.sdf"
             }
           }
         ],
@@ -42,3 +38,4 @@
   },
   "layers": []
 }
+
