@@ -7,7 +7,7 @@ const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const util = require('../util/util');
-const Buffer = require('../data/buffer');
+const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
@@ -63,12 +63,12 @@ class Painter {
     viewportTexture: WebGLTexture;
     viewportFbo: WebGLFramebuffer;
     _depthMask: boolean;
-    tileExtentBuffer: Buffer;
+    tileExtentBuffer: VertexBuffer;
     tileExtentVAO: VertexArrayObject;
     tileExtentPatternVAO: VertexArrayObject;
-    debugBuffer: Buffer;
+    debugBuffer: VertexBuffer;
     debugVAO: VertexArrayObject;
-    rasterBoundsBuffer: Buffer;
+    rasterBoundsBuffer: VertexBuffer;
     rasterBoundsVAO: VertexArrayObject;
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
@@ -148,7 +148,7 @@ class Painter {
         tileExtentArray.emplaceBack(EXTENT, 0);
         tileExtentArray.emplaceBack(0, EXTENT);
         tileExtentArray.emplaceBack(EXTENT, EXTENT);
-        this.tileExtentBuffer = Buffer.fromStructArray(tileExtentArray, Buffer.BufferType.VERTEX);
+        this.tileExtentBuffer = VertexBuffer.fromStructArray(tileExtentArray);
         this.tileExtentVAO = new VertexArrayObject();
         this.tileExtentPatternVAO = new VertexArrayObject();
 
@@ -158,7 +158,7 @@ class Painter {
         debugArray.emplaceBack(EXTENT, EXTENT);
         debugArray.emplaceBack(0, EXTENT);
         debugArray.emplaceBack(0, 0);
-        this.debugBuffer = Buffer.fromStructArray(debugArray, Buffer.BufferType.VERTEX);
+        this.debugBuffer = VertexBuffer.fromStructArray(debugArray);
         this.debugVAO = new VertexArrayObject();
 
         const rasterBoundsArray = new RasterBoundsArray();
@@ -166,7 +166,7 @@ class Painter {
         rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
         rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
         rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-        this.rasterBoundsBuffer = Buffer.fromStructArray(rasterBoundsArray, Buffer.BufferType.VERTEX);
+        this.rasterBoundsBuffer = VertexBuffer.fromStructArray(rasterBoundsArray);
         this.rasterBoundsVAO = new VertexArrayObject();
 
         this.extTextureFilterAnisotropic = (

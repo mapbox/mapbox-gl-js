@@ -1,7 +1,7 @@
 // @flow
 
 const glMatrix = require('@mapbox/gl-matrix');
-const Buffer = require('../data/buffer');
+const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const PosArray = require('../data/pos_array');
 const pattern = require('./pattern');
@@ -100,7 +100,7 @@ function renderTextureToMap(gl, painter, layer, texture) {
     array.emplaceBack(1, 0);
     array.emplaceBack(0, 1);
     array.emplaceBack(1, 1);
-    const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
+    const buffer = VertexBuffer.fromStructArray(array);
 
     const vao = new VertexArrayObject();
     vao.bind(gl, program, buffer);

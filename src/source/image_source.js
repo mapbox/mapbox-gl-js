@@ -9,7 +9,7 @@ const Evented = require('../util/evented');
 const ajax = require('../util/ajax');
 const EXTENT = require('../data/extent');
 const RasterBoundsArray = require('../data/raster_bounds_array');
-const Buffer = require('../data/buffer');
+const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('../render/vertex_array_object');
 
 import type {Source} from './source';
@@ -173,7 +173,7 @@ class ImageSource extends Evented implements Source {
 
         tile.buckets = {};
 
-        tile.boundsBuffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
+        tile.boundsBuffer = VertexBuffer.fromStructArray(array);
         tile.boundsVAO = new VertexArrayObject();
     }
 
