@@ -7,8 +7,8 @@
       "operations": [
         [
           "addImage",
-          "dot.sdf",
-          "./image/dot.sdf.png",
+          "line.sdf",
+          "./image/line.sdf.png",
           {
             "sdf": true
           }
@@ -20,7 +20,7 @@
             "type": "symbol",
             "source": "geometry",
             "layout": {
-              "icon-image": "dot.sdf"
+              "icon-image": "line.sdf"
             },
             "paint": {
               "icon-color": "red"
