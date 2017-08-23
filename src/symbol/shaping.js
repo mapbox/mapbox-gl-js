@@ -38,7 +38,7 @@ export type Shaping = {
     writingMode: 1 | 2
 };
 
-type TextAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+type SymbolAnchor = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 type TextJustify = 'left' | 'center' | 'right';
 
 function breakLines(text: string, lineBreakPoints: Array<number>) {
@@ -59,7 +59,7 @@ function shapeText(text: string,
                    glyphs: {[number]: SimpleGlyph},
                    maxWidth: number,
                    lineHeight: number,
-                   textAnchor: TextAnchor,
+                   textAnchor: SymbolAnchor,
                    textJustify: TextJustify,
                    spacing: number,
                    translate: [number, number],
@@ -274,10 +274,10 @@ function determineLineBreaks(logicalInput: string,
             true));
 }
 
-function getAnchorAlignment(textAnchor: TextAnchor) {
+function getAnchorAlignment(anchor: SymbolAnchor) {
     let horizontalAlign = 0.5, verticalAlign = 0.5;
 
-    switch (textAnchor) {
+    switch (anchor) {
     case 'right':
     case 'top-right':
     case 'bottom-right':
@@ -290,7 +290,7 @@ function getAnchorAlignment(textAnchor: TextAnchor) {
         break;
     }
 
-    switch (textAnchor) {
+    switch (anchor) {
     case 'bottom':
     case 'bottom-right':
     case 'bottom-left':
@@ -310,7 +310,7 @@ function shapeLines(shaping: Shaping,
                     glyphs: {[number]: SimpleGlyph},
                     lines: Array<string>,
                     lineHeight: number,
-                    textAnchor: TextAnchor,
+                    textAnchor: SymbolAnchor,
                     textJustify: TextJustify,
                     writingMode: 1 | 2,
                     spacing: number,
@@ -417,12 +417,13 @@ export type PositionedIcon = {
     right: number
 };
 
-function shapeIcon(image: SpriteAtlasElement, iconOffset: [number, number]): PositionedIcon {
+function shapeIcon(image: SpriteAtlasElement, iconOffset: [number, number], iconAnchor: SymbolAnchor): PositionedIcon {
+    const {horizontalAlign, verticalAlign} = getAnchorAlignment(iconAnchor);
     const dx = iconOffset[0];
     const dy = iconOffset[1];
-    const x1 = dx - image.displaySize[0] / 2;
+    const x1 = dx - image.displaySize[0] * horizontalAlign;
     const x2 = x1 + image.displaySize[0];
-    const y1 = dy - image.displaySize[1] / 2;
+    const y1 = dy - image.displaySize[1] * verticalAlign;
     const y2 = y1 + image.displaySize[1];
     return {image, top: y1, bottom: y2, left: x1, right: x2};
 }
