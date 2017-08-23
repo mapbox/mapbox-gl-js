@@ -88,7 +88,6 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
 }
 
 const LayoutVertexArrayType = createVertexArrayType(lineInterface.layoutAttributes);
-const IndexArrayType = lineInterface.indexArrayType;
 
 /**
  * @private
@@ -114,6 +113,7 @@ class LineBucket implements Bucket {
 
     programConfigurations: ProgramConfigurationSet;
     segments: SegmentVector;
+    uploaded: boolean;
 
     constructor(options: any) {
         this.zoom = options.zoom;
@@ -121,17 +121,10 @@ class LineBucket implements Bucket {
         this.layers = options.layers;
         this.index = options.index;
 
-        if (options.layoutVertexArray) {
-            this.layoutVertexBuffer = new VertexBuffer(options.layoutVertexArray, LayoutVertexArrayType.serialize());
-            this.indexBuffer = new IndexBuffer(options.indexArray);
-            this.programConfigurations = ProgramConfigurationSet.deserialize(lineInterface, options.layers, options.zoom, options.programConfigurations);
-            this.segments = new SegmentVector(options.segments);
-        } else {
-            this.layoutVertexArray = new LayoutVertexArrayType();
-            this.indexArray = new IndexArrayType();
-            this.programConfigurations = new ProgramConfigurationSet(lineInterface, options.layers, options.zoom);
-            this.segments = new SegmentVector();
-        }
+        this.layoutVertexArray = new LayoutVertexArrayType(options.layoutVertexArray);
+        this.indexArray = new TriangleIndexArray(options.indexArray);
+        this.programConfigurations = new ProgramConfigurationSet(lineInterface, options.layers, options.zoom, options.programConfigurations);
+        this.segments = new SegmentVector(options.segments);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -158,7 +151,14 @@ class LineBucket implements Bucket {
         };
     }
 
+    upload(gl: WebGLRenderingContext) {
+        this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
+        this.indexBuffer = new IndexBuffer(gl, this.indexArray);
+        this.programConfigurations.upload(gl);
+    }
+
     destroy() {
+        if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();

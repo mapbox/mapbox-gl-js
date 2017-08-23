@@ -60,6 +60,9 @@ export interface Bucket {
     isEmpty(): boolean;
     serialize(transferables?: Array<Transferable>): SerializedBucket;
 
+    upload(gl: WebGLRenderingContext): void;
+    uploaded: boolean;
+
     /**
      * Release the WebGL resources associated with the buffers. Note that because
      * buckets are shared between layers having the same layout properties, they

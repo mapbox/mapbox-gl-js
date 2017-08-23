@@ -66,7 +66,7 @@ class ImageSource extends Evented implements Source {
     image: HTMLImageElement;
     centerCoord: Coordinate;
     coord: TileCoord;
-    _tileCoords: Array<Point>;
+    _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
     boundsVAO: VertexArrayObject;
 
@@ -154,21 +154,23 @@ class ImageSource extends Evented implements Source {
 
         // Transform the corner coordinates into the coordinate space of our
         // tile.
-        this._tileCoords = cornerZ0Coords.map((coord) => {
+        const tileCoords = cornerZ0Coords.map((coord) => {
             const zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        const array = new RasterBoundsArray();
-        array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
-        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, EXTENT, 0);
-        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, EXTENT);
-        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, EXTENT, EXTENT);
+        this._boundsArray = new RasterBoundsArray();
+        this._boundsArray.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
+        this._boundsArray.emplaceBack(tileCoords[1].x, tileCoords[1].y, EXTENT, 0);
+        this._boundsArray.emplaceBack(tileCoords[3].x, tileCoords[3].y, 0, EXTENT);
+        this._boundsArray.emplaceBack(tileCoords[2].x, tileCoords[2].y, EXTENT, EXTENT);
 
-        this.boundsBuffer = VertexBuffer.fromStructArray(array);
-        this.boundsVAO = new VertexArrayObject();
+        if (this.boundsBuffer) {
+            this.boundsBuffer.destroy();
+            delete this.boundsBuffer;
+        }
 
         this.fire('data', {dataType:'source', sourceDataType: 'content'});
         return this;
@@ -180,6 +182,14 @@ class ImageSource extends Evented implements Source {
     }
 
     _prepareImage(gl: WebGLRenderingContext, image: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement, resize?: boolean) {
+        if (!this.boundsBuffer) {
+            this.boundsBuffer = new VertexBuffer(gl, this._boundsArray);
+        }
+
+        if (!this.boundsVAO) {
+            this.boundsVAO = new VertexArrayObject();
+        }
+
         if (!this.textureLoaded) {
             this.textureLoaded = true;
             this.texture = gl.createTexture();

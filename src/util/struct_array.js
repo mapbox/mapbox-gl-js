@@ -69,13 +69,7 @@ export type SerializedStructArray = {
     arrayBuffer: ArrayBuffer
 };
 
-export type SerializedStructArrayType = {
-    members: Array<StructArrayMember>,
-    alignment: number,
-    bytesPerElement: number
-};
-
-type StructArrayTypeParameters = {
+export type StructArrayTypeParameters = {
     members: $ReadOnlyArray<{
         name: string,
         type: ViewType,
@@ -131,11 +125,10 @@ class StructArray {
     /**
      * Serialize the StructArray type. This serializes the *type* not an instance of the type.
      */
-    static serialize(): SerializedStructArrayType {
+    static serialize(): StructArrayTypeParameters {
         return {
             members: this.prototype.members,
-            alignment: this.prototype.StructType.prototype.alignment,
-            bytesPerElement: this.prototype.bytesPerElement
+            alignment: this.prototype.StructType.prototype.alignment
         };
     }
 

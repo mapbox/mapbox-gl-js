@@ -152,10 +152,14 @@ class SourceCache extends Evented {
         return this._source.serialize();
     }
 
+    prepare(gl: WebGLRenderingContext) {
+        if  (this._source.prepare) {
+            this._source.prepare();
+        }
 
-    prepare() {
-        if (this._sourceLoaded && this._source.prepare)
-            return this._source.prepare();
+        for (const i in this._tiles) {
+            this._tiles[i].upload(gl);
+        }
     }
 
     /**

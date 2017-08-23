@@ -3,8 +3,7 @@
 import type {
     StructArray,
     StructArrayMember,
-    SerializedStructArray,
-    SerializedStructArrayType
+    SerializedStructArray
 } from '../util/struct_array';
 
 import type Program from '../render/program';
@@ -30,60 +29,39 @@ const AttributeType = {
  * @private
  */
 class VertexBuffer {
-    arrayBuffer: ?ArrayBuffer;
     length: number;
     attributes: Array<StructArrayMember>;
     itemSize: number;
-    arrayType: SerializedStructArrayType;
     dynamicDraw: ?boolean;
     gl: WebGLRenderingContext;
-    buffer: ?WebGLBuffer;
+    buffer: WebGLBuffer;
 
     /**
-     * @param {Object} array A serialized StructArray.
-     * @param {Object} arrayType A serialized StructArrayType.
-     * @param {boolean} dynamicDraw Whether this buffer will be repeatedly updated.
+     * @param dynamicDraw Whether this buffer will be repeatedly updated.
      */
-    constructor(array: SerializedStructArray,
-                arrayType: SerializedStructArrayType,
-                dynamicDraw?: boolean) {
-        this.arrayBuffer = array.arrayBuffer;
+    constructor(gl: WebGLRenderingContext, array: StructArray, dynamicDraw?: boolean) {
         this.length = array.length;
-        this.attributes = arrayType.members;
-        this.itemSize = arrayType.bytesPerElement;
-        this.arrayType = arrayType;
+        this.attributes = array.members;
+        this.itemSize = array.bytesPerElement;
         this.dynamicDraw = dynamicDraw;
-    }
 
-    static fromStructArray(array: StructArray) {
-        return new VertexBuffer(array.serialize(), array.constructor.serialize());
-    }
+        this.gl = gl;
+        this.buffer = gl.createBuffer();
+        this.gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        this.gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
-    /**
-     * Bind this buffer to a WebGL context.
-     * @param gl The WebGL context
-     */
-    bind(gl: WebGLRenderingContext) {
-        if (!this.buffer) {
-            this.gl = gl;
-            this.buffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, this.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
-
-            // dump array buffer once it's bound to gl
-            this.arrayBuffer = null;
-        } else {
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-
-            if (this.dynamicDraw && this.arrayBuffer) {
-                gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.arrayBuffer);
-                this.arrayBuffer = null;
-            }
+        if (!this.dynamicDraw) {
+            delete array.arrayBuffer;
         }
     }
 
+    bind() {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+    }
+
     updateData(array: SerializedStructArray) {
-        this.arrayBuffer = array.arrayBuffer;
+        this.bind();
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
     enableAttributes(gl: WebGLRenderingContext, program: Program) {
@@ -113,8 +91,8 @@ class VertexBuffer {
                     member.components,
                     (gl: any)[AttributeType[member.type]],
                     false,
-                    this.arrayType.bytesPerElement,
-                    member.offset + (this.arrayType.bytesPerElement * (vertexOffset || 0))
+                    this.itemSize,
+                    member.offset + (this.itemSize * (vertexOffset || 0))
                 );
             }
         }
@@ -126,6 +104,7 @@ class VertexBuffer {
     destroy() {
         if (this.buffer) {
             this.gl.deleteBuffer(this.buffer);
+            delete this.buffer;
         }
     }
 }

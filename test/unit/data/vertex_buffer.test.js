@@ -16,12 +16,13 @@ test('VertexBuffer', (t) => {
 
 
     t.test('constructs itself', (t) => {
+        const gl = require('gl')(10, 10);
         const array = new TestArray();
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
 
-        const buffer = VertexBuffer.fromStructArray(array);
+        const buffer = new VertexBuffer(gl, array);
 
         t.deepEqual(buffer.attributes, [
             {
@@ -38,7 +39,6 @@ test('VertexBuffer', (t) => {
 
         t.deepEqual(buffer.itemSize, 8);
         t.deepEqual(buffer.length, 3);
-        t.ok(buffer.arrayBuffer);
         t.end();
     });
 

@@ -211,6 +211,7 @@ type SerializedSymbolBuffer = {
 };
 
 class SymbolBuffers {
+    programInterface: ProgramInterface;
     layoutVertexArray: StructArray;
     layoutVertexBuffer: VertexBuffer;
 
@@ -224,32 +225,19 @@ class SymbolBuffers {
     dynamicLayoutVertexBuffer: VertexBuffer;
 
     constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays?: SerializedSymbolBuffer) {
+        this.programInterface = programInterface;
+
         const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
         const IndexArrayType = programInterface.indexArrayType;
 
-        if (arrays) {
-            this.layoutVertexBuffer = new VertexBuffer(arrays.layoutVertexArray, LayoutVertexArrayType.serialize());
-            this.indexBuffer = new IndexBuffer(arrays.indexArray);
-            this.programConfigurations = ProgramConfigurationSet.deserialize(programInterface, layers, zoom, arrays.programConfigurations);
-            this.segments = new SegmentVector(arrays.segments);
-        } else {
-            this.layoutVertexArray = new LayoutVertexArrayType();
-            this.indexArray = new IndexArrayType();
-            this.programConfigurations = new ProgramConfigurationSet(programInterface, layers, zoom);
-            this.segments = new SegmentVector();
-        }
+        this.layoutVertexArray = new LayoutVertexArrayType(arrays && arrays.layoutVertexArray);
+        this.indexArray = new IndexArrayType(arrays && arrays.indexArray);
+        this.programConfigurations = new ProgramConfigurationSet(programInterface, layers, zoom, arrays && arrays.programConfigurations);
+        this.segments = new SegmentVector(arrays && arrays.segments);
 
-        if (!programInterface.dynamicLayoutAttributes) {
-            return;
-        }
-
-        const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.dynamicLayoutAttributes);
-
-        if (arrays) {
-            this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType(arrays.dynamicLayoutVertexArray);
-            this.dynamicLayoutVertexBuffer = new VertexBuffer(arrays.dynamicLayoutVertexArray, DynamicLayoutVertexArrayType.serialize(), true);
-        } else {
-            this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType();
+        if (programInterface.dynamicLayoutAttributes) {
+            const DynamicLayoutVertexArrayType = createVertexArrayType(programInterface.dynamicLayoutAttributes);
+            this.dynamicLayoutVertexArray = new DynamicLayoutVertexArrayType(arrays && arrays.dynamicLayoutVertexArray);
         }
     }
 
@@ -263,7 +251,18 @@ class SymbolBuffers {
         };
     }
 
+    upload(gl: WebGLRenderingContext) {
+        this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
+        this.indexBuffer = new IndexBuffer(gl, this.indexArray);
+        this.programConfigurations.upload(gl);
+
+        if (this.programInterface.dynamicLayoutAttributes) {
+            this.dynamicLayoutVertexBuffer = new VertexBuffer(gl, this.dynamicLayoutVertexArray, true);
+        }
+    }
+
     destroy() {
+        if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.programConfigurations.destroy();
@@ -336,6 +335,7 @@ class SymbolBucket implements Bucket {
     text: SymbolBuffers;
     icon: SymbolBuffers;
     collisionBox: SymbolBuffers;
+    uploaded: boolean;
 
     constructor(options: SymbolBucketParameters) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -472,6 +472,12 @@ class SymbolBucket implements Bucket {
             icon: this.icon.serialize(transferables),
             collisionBox: this.collisionBox.serialize(transferables)
         };
+    }
+
+    upload(gl: WebGLRenderingContext) {
+        this.text.upload(gl);
+        this.icon.upload(gl);
+        this.collisionBox.upload(gl);
     }
 
     destroy() {
