@@ -235,6 +235,8 @@ class Tile {
             cameraToTileDistance: this.cameraToTileDistance,
             showCollisionBoxes: this.showCollisionBoxes
         }, (_, data) => {
+            if (this.state !== 'reloading') return;
+
             this.state = 'loaded';
             this.reloadSymbolData(data, this.placementSource.map.style);
             this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
@@ -242,6 +244,7 @@ class Tile {
             if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
 
             if (this.redoWhenDone) {
+                this.state = 'reloading';
                 this.redoWhenDone = false;
                 this._immediateRedoPlacement();
             }
