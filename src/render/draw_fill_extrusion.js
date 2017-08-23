@@ -143,7 +143,7 @@ function drawExtrusion(painter, source, layer, coord) {
         gl.TRIANGLES,
         layer.id,
         bucket.layoutVertexBuffer,
-        bucket.elementBuffer,
+        bucket.indexBuffer,
         bucket.segments,
         programConfiguration);
 }

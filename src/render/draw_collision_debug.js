@@ -42,7 +42,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
             gl.LINES,
             layer.id,
             bucket.collisionBox.layoutVertexBuffer,
-            bucket.collisionBox.elementBuffer,
+            bucket.collisionBox.indexBuffer,
             bucket.collisionBox.segments);
     }
 }

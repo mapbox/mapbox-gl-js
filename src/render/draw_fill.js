@@ -73,7 +73,7 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTil
         gl.TRIANGLES,
         layer.id,
         bucket.layoutVertexBuffer,
-        bucket.elementBuffer,
+        bucket.indexBuffer,
         bucket.segments,
         programConfiguration);
 }
@@ -91,7 +91,7 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
         gl.LINES,
         layer.id,
         bucket.layoutVertexBuffer,
-        bucket.elementBuffer2,
+        bucket.indexBuffer2,
         bucket.segments2,
         programConfiguration);
 }

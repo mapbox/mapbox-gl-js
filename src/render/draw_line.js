@@ -117,7 +117,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         gl.TRIANGLES,
         layer.id,
         bucket.layoutVertexBuffer,
-        bucket.elementBuffer,
+        bucket.indexBuffer,
         bucket.segments,
         programConfiguration);
 }

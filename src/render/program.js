@@ -86,7 +86,7 @@ class Program {
          drawMode: DrawMode,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
-         elementBuffer: IndexBuffer,
+         indexBuffer: IndexBuffer,
          segments: SegmentVector,
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer) {
@@ -104,7 +104,7 @@ class Program {
                 gl,
                 this,
                 layoutVertexBuffer,
-                elementBuffer,
+                indexBuffer,
                 configuration && configuration.paintVertexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer);

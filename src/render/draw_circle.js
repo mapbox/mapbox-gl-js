@@ -59,7 +59,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             gl.TRIANGLES,
             layer.id,
             bucket.layoutVertexBuffer,
-            bucket.elementBuffer,
+            bucket.indexBuffer,
             bucket.segments,
             programConfiguration);
     }
