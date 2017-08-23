@@ -1,35 +1,38 @@
 // @flow
 
-import type {SerializedStructArray} from '../util/struct_array';
+import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
 
 class IndexBuffer {
-    arrayBuffer: ?ArrayBuffer;
-    length: number;
     gl: WebGLRenderingContext;
-    buffer: ?WebGLBuffer;
+    buffer: WebGLBuffer;
 
-    constructor(array: SerializedStructArray) {
-        this.arrayBuffer = array.arrayBuffer;
-        this.length = array.length;
+    constructor(gl: WebGLRenderingContext, array: TriangleIndexArray | LineIndexArray) {
+        this.gl = gl;
+        this.buffer = gl.createBuffer();
+
+        // The bound index buffer is part of vertex array object state. We don't want to
+        // modify whatever VAO happens to be currently bound, so make sure the default
+        // vertex array provided by the context is bound instead.
+        if (gl.extVertexArrayObject === undefined) {
+            (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
+        }
+        if (gl.extVertexArrayObject) {
+            (gl: any).extVertexArrayObject.bindVertexArrayOES(null);
+        }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, gl.STATIC_DRAW);
+        delete array.arrayBuffer;
     }
 
-    bind(gl: WebGLRenderingContext) {
-        if (!this.buffer) {
-            this.gl = gl;
-            this.buffer = gl.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.arrayBuffer, gl.STATIC_DRAW);
-
-            // dump array buffer once it's bound to gl
-            this.arrayBuffer = null;
-        } else {
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
-        }
+    bind() {
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffer);
     }
 
     destroy() {
         if (this.buffer) {
             this.gl.deleteBuffer(this.buffer);
+            delete this.buffer;
         }
     }
 }

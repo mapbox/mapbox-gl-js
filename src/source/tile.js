@@ -249,6 +249,16 @@ class Tile {
         return this.buckets[layer.id];
     }
 
+    upload(gl: WebGLRenderingContext) {
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (!bucket.uploaded) {
+                bucket.upload(gl);
+                bucket.uploaded = true;
+            }
+        }
+    }
+
     queryRenderedFeatures(layers: {[string]: StyleLayer},
                           queryGeometry: Array<Array<Point>>,
                           scale: number,

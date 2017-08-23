@@ -56,7 +56,7 @@ class VertexArrayObject {
 
             if (dynamicVertexBuffer) {
                 // The buffer may have been updated. Rebind to upload data.
-                dynamicVertexBuffer.bind(gl);
+                dynamicVertexBuffer.bind();
             }
         }
     }
@@ -106,18 +106,18 @@ class VertexArrayObject {
             dynamicVertexBuffer.enableAttributes(gl, program);
         }
 
-        layoutVertexBuffer.bind(gl);
+        layoutVertexBuffer.bind();
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         if (vertexBuffer2) {
-            vertexBuffer2.bind(gl);
+            vertexBuffer2.bind();
             vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (dynamicVertexBuffer) {
-            dynamicVertexBuffer.bind(gl);
+            dynamicVertexBuffer.bind();
             dynamicVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (indexBuffer) {
-            indexBuffer.bind(gl);
+            indexBuffer.bind();
         }
 
         (gl: any).currentNumAttributes = numNextAttributes;

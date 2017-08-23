@@ -6,7 +6,7 @@ const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat
 const VertexBuffer = require('../gl/vertex_buffer');
 
 import type StyleLayer from '../style/style_layer';
-import type {ViewType, StructArray, SerializedStructArray, SerializedStructArrayType} from '../util/struct_array';
+import type {ViewType, StructArray, SerializedStructArray, StructArrayTypeParameters} from '../util/struct_array';
 import type Program from '../render/program';
 
 type LayoutAttribute = {
@@ -191,7 +191,7 @@ class CompositeFunctionBinder implements Binder {
 
 export type SerializedProgramConfiguration = {
     array: SerializedStructArray,
-    type: SerializedStructArrayType,
+    type: StructArrayTypeParameters,
     statistics: PaintPropertyStatistics
 };
 
@@ -339,34 +339,43 @@ class ProgramConfiguration {
     static deserialize(programInterface: ProgramInterface, layer: StyleLayer, zoom: number, serialized: ?SerializedProgramConfiguration) {
         const self = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
         if (serialized) {
-            self.paintVertexBuffer = new VertexBuffer(serialized.array, serialized.type);
+            self.PaintVertexArray = createVertexArrayType(serialized.type.members);
+            self.paintVertexArray = new self.PaintVertexArray(serialized.array);
             self.paintPropertyStatistics = serialized.statistics;
         }
         return self;
+    }
+
+    upload(gl: WebGLRenderingContext) {
+        if (this.paintVertexArray) {
+            this.paintVertexBuffer = new VertexBuffer(gl, this.paintVertexArray);
+        }
+    }
+
+    destroy() {
+        if (this.paintVertexBuffer) {
+            this.paintVertexBuffer.destroy();
+        }
     }
 }
 
 class ProgramConfigurationSet {
     programConfigurations: {[string]: ProgramConfiguration};
 
-    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number) {
+    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays?: {+[string]: ?SerializedProgramConfiguration}) {
         this.programConfigurations = {};
-        for (const layer of layers) {
-            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-            programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
-            programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
-            this.programConfigurations[layer.id] = programConfiguration;
+        if (arrays) {
+            for (const layer of layers) {
+                this.programConfigurations[layer.id] = ProgramConfiguration.deserialize(programInterface, layer, zoom, arrays[layer.id]);
+            }
+        } else {
+            for (const layer of layers) {
+                const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+                programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
+                programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
+                this.programConfigurations[layer.id] = programConfiguration;
+            }
         }
-    }
-
-    static deserialize(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays: {+[string]: ?SerializedProgramConfiguration}) {
-        const self = Object.create(ProgramConfigurationSet.prototype);
-        self.programConfigurations = {};
-        for (const layer of layers) {
-            self.programConfigurations[layer.id] =
-                ProgramConfiguration.deserialize(programInterface, layer, zoom, arrays[layer.id]);
-        }
-        return self;
     }
 
     populatePaintArrays(length: number, featureProperties: Object) {
@@ -389,12 +398,15 @@ class ProgramConfigurationSet {
         return this.programConfigurations[layerId];
     }
 
+    upload(gl: WebGLRenderingContext) {
+        for (const layerId in this.programConfigurations) {
+            this.programConfigurations[layerId].upload(gl);
+        }
+    }
+
     destroy() {
         for (const layerId in this.programConfigurations) {
-            const paintVertexBuffer = this.programConfigurations[layerId].paintVertexBuffer;
-            if (paintVertexBuffer) {
-                paintVertexBuffer.destroy();
-            }
+            this.programConfigurations[layerId].destroy();
         }
     }
 }

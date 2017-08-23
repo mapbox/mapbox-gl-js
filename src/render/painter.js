@@ -148,7 +148,7 @@ class Painter {
         tileExtentArray.emplaceBack(EXTENT, 0);
         tileExtentArray.emplaceBack(0, EXTENT);
         tileExtentArray.emplaceBack(EXTENT, EXTENT);
-        this.tileExtentBuffer = VertexBuffer.fromStructArray(tileExtentArray);
+        this.tileExtentBuffer = new VertexBuffer(gl, tileExtentArray);
         this.tileExtentVAO = new VertexArrayObject();
         this.tileExtentPatternVAO = new VertexArrayObject();
 
@@ -158,7 +158,7 @@ class Painter {
         debugArray.emplaceBack(EXTENT, EXTENT);
         debugArray.emplaceBack(0, EXTENT);
         debugArray.emplaceBack(0, 0);
-        this.debugBuffer = VertexBuffer.fromStructArray(debugArray);
+        this.debugBuffer = new VertexBuffer(gl, debugArray);
         this.debugVAO = new VertexArrayObject();
 
         const rasterBoundsArray = new RasterBoundsArray();
@@ -166,7 +166,7 @@ class Painter {
         rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
         rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
         rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-        this.rasterBoundsBuffer = VertexBuffer.fromStructArray(rasterBoundsArray);
+        this.rasterBoundsBuffer = new VertexBuffer(gl, rasterBoundsArray);
         this.rasterBoundsVAO = new VertexArrayObject();
 
         this.extTextureFilterAnisotropic = (
@@ -244,9 +244,6 @@ class Painter {
         gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
     }
 
-    // Overridden by headless tests.
-    prepareBuffers() {}
-
     render(style: Style, options: PainterOptions) {
         this.style = style;
         this.options = options;
@@ -260,9 +257,15 @@ class Painter {
 
         this.frameHistory.record(Date.now(), this.transform.zoom, style.getTransition().duration);
 
-        this.prepareBuffers();
         this.clearColor();
         this.clearDepth();
+
+        for (const id in this.style.sourceCaches) {
+            const sourceCache = this.style.sourceCaches[id];
+            if (sourceCache.used) {
+                sourceCache.prepare(this.gl);
+            }
+        }
 
         this.showOverdrawInspector(options.showOverdrawInspector);
 
@@ -305,7 +308,6 @@ class Painter {
                 coords = [];
 
                 if (sourceCache) {
-                    if (sourceCache.prepare) sourceCache.prepare();
                     this.clearStencil();
                     coords = sourceCache.getVisibleCoordinates();
                     if (sourceCache.getSource().isTileClipped) {

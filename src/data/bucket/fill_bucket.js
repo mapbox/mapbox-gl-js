@@ -53,6 +53,7 @@ class FillBucket implements Bucket {
     programConfigurations: ProgramConfigurationSet;
     segments: SegmentVector;
     segments2: SegmentVector;
+    uploaded: boolean;
 
     constructor(options: any) {
         this.zoom = options.zoom;
@@ -60,21 +61,12 @@ class FillBucket implements Bucket {
         this.layers = options.layers;
         this.index = options.index;
 
-        if (options.layoutVertexArray) {
-            this.layoutVertexBuffer = new VertexBuffer(options.layoutVertexArray, LayoutVertexArrayType.serialize());
-            this.indexBuffer = new IndexBuffer(options.indexArray);
-            this.indexBuffer2 = new IndexBuffer(options.indexArray2);
-            this.programConfigurations = ProgramConfigurationSet.deserialize(fillInterface, options.layers, options.zoom, options.programConfigurations);
-            this.segments = new SegmentVector(options.segments);
-            this.segments2 = new SegmentVector(options.segments2);
-        } else {
-            this.layoutVertexArray = new LayoutVertexArrayType();
-            this.indexArray = new TriangleIndexArray();
-            this.indexArray2 = new LineIndexArray();
-            this.programConfigurations = new ProgramConfigurationSet(fillInterface, options.layers, options.zoom);
-            this.segments = new SegmentVector();
-            this.segments2 = new SegmentVector();
-        }
+        this.layoutVertexArray = new LayoutVertexArrayType(options.layoutVertexArray);
+        this.indexArray = new TriangleIndexArray(options.indexArray);
+        this.indexArray2 = new LineIndexArray(options.indexArray2);
+        this.programConfigurations = new ProgramConfigurationSet(fillInterface, options.layers, options.zoom, options.programConfigurations);
+        this.segments = new SegmentVector(options.segments);
+        this.segments2 = new SegmentVector(options.segments2);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -103,7 +95,15 @@ class FillBucket implements Bucket {
         };
     }
 
+    upload(gl: WebGLRenderingContext) {
+        this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
+        this.indexBuffer = new IndexBuffer(gl, this.indexArray);
+        this.indexBuffer2 = new IndexBuffer(gl, this.indexArray2);
+        this.programConfigurations.upload(gl);
+    }
+
     destroy() {
+        if (!this.layoutVertexBuffer) return;
         this.layoutVertexBuffer.destroy();
         this.indexBuffer.destroy();
         this.indexBuffer2.destroy();

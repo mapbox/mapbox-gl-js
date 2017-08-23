@@ -27,7 +27,6 @@ test('StructArray', (t) => {
                 type: 'Int16',
                 offset: 4
             }],
-            bytesPerElement: 8,
             alignment: 4
         });
 

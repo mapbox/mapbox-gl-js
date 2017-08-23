@@ -100,7 +100,7 @@ function renderTextureToMap(gl, painter, layer, texture) {
     array.emplaceBack(1, 0);
     array.emplaceBack(0, 1);
     array.emplaceBack(1, 1);
-    const buffer = VertexBuffer.fromStructArray(array);
+    const buffer = new VertexBuffer(gl, array);
 
     const vao = new VertexArrayObject();
     vao.bind(gl, program, buffer);
