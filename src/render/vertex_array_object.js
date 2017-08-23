@@ -61,12 +61,12 @@ class VertexArrayObject {
     }
 
     freshBind(gl: WebGLRenderingContext,
-              program: any,
-              layoutVertexBuffer: any,
-              elementBuffer: any,
-              vertexBuffer2: any,
-              vertexOffset: any,
-              dynamicVertexBuffer: any) {
+              program: Program,
+              layoutVertexBuffer: Buffer,
+              elementBuffer: ?Buffer,
+              vertexBuffer2: ?Buffer,
+              vertexOffset: ?number,
+              dynamicVertexBuffer: ?Buffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
