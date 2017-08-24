@@ -1,73 +1,33 @@
 {
   "positionedGlyphs": [
     {
-      "codePoint": 97,
+      "glyph": 97,
       "x": -32.5,
       "y": -17,
-      "glyph": {
-        "id": 97,
-        "width": 11,
-        "height": 15,
-        "left": 1,
-        "top": -12,
-        "advance": 13
-      },
       "vertical": false
     },
     {
-      "codePoint": 98,
+      "glyph": 98,
       "x": -19.5,
       "y": -17,
-      "glyph": {
-        "id": 98,
-        "width": 12,
-        "height": 20,
-        "left": 2,
-        "top": -7,
-        "advance": 14
-      },
       "vertical": false
     },
     {
-      "codePoint": 99,
+      "glyph": 99,
       "x": -5.5,
       "y": -17,
-      "glyph": {
-        "id": 99,
-        "width": 10,
-        "height": 15,
-        "left": 1,
-        "top": -12,
-        "advance": 11
-      },
       "vertical": false
     },
     {
-      "codePoint": 100,
+      "glyph": 100,
       "x": 5.5,
       "y": -17,
-      "glyph": {
-        "id": 100,
-        "width": 12,
-        "height": 20,
-        "left": 1,
-        "top": -7,
-        "advance": 14
-      },
       "vertical": false
     },
     {
-      "codePoint": 101,
+      "glyph": 101,
       "x": 19.5,
       "y": -17,
-      "glyph": {
-        "id": 101,
-        "width": 12,
-        "height": 15,
-        "left": 1,
-        "top": -12,
-        "advance": 13
-      },
       "vertical": false
     }
   ],

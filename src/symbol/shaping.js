@@ -4,8 +4,8 @@ const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 
-import type {SpriteAtlasElement} from './sprite_atlas';
-import type {SimpleGlyph} from './glyph_source';
+import type {StyleGlyph} from '../style/style_glyph';
+import type {ImagePosition} from '../render/image_atlas';
 
 const WritingMode = {
     horizontal: 1,
@@ -20,17 +20,15 @@ module.exports = {
 
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
-    codePoint: number,
+    glyph: number,
     x: number,
     y: number,
-    glyph: SimpleGlyph,
     vertical: boolean
 };
 
 // A collection of positioned glyphs and some metadata
 export type Shaping = {
     positionedGlyphs: Array<PositionedGlyph>,
-    text: string,
     top: number,
     bottom: number,
     left: number,
@@ -56,7 +54,7 @@ function breakLines(text: string, lineBreakPoints: Array<number>) {
 }
 
 function shapeText(text: string,
-                   glyphs: {[number]: SimpleGlyph},
+                   glyphs: {[number]: ?StyleGlyph},
                    maxWidth: number,
                    lineHeight: number,
                    textAnchor: SymbolAnchor,
@@ -130,14 +128,14 @@ const breakable: {[number]: boolean} = {
 function determineAverageLineWidth(logicalInput: string,
                                    spacing: number,
                                    maxWidth: number,
-                                   glyphs: {[number]: SimpleGlyph}) {
+                                   glyphs: {[number]: ?StyleGlyph}) {
     let totalWidth = 0;
 
     for (let index = 0; index < logicalInput.length; index++) {
         const glyph = glyphs[logicalInput.charCodeAt(index)];
         if (!glyph)
             continue;
-        totalWidth += glyph.advance + spacing;
+        totalWidth += glyph.metrics.advance + spacing;
     }
 
     const lineCount = Math.max(1, Math.ceil(totalWidth / maxWidth));
@@ -228,7 +226,7 @@ function leastBadBreaks(lastLineBreak: ?Break): Array<number> {
 function determineLineBreaks(logicalInput: string,
                              spacing: number,
                              maxWidth: number,
-                             glyphs: {[number]: SimpleGlyph}): Array<number> {
+                             glyphs: {[number]: ?StyleGlyph}): Array<number> {
     if (!maxWidth)
         return [];
 
@@ -245,7 +243,7 @@ function determineLineBreaks(logicalInput: string,
         const glyph = glyphs[codePoint];
 
         if (glyph && !whitespace[codePoint])
-            currentX += glyph.advance + spacing;
+            currentX += glyph.metrics.advance + spacing;
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
@@ -307,7 +305,7 @@ function getAnchorAlignment(anchor: SymbolAnchor) {
 }
 
 function shapeLines(shaping: Shaping,
-                    glyphs: {[number]: SimpleGlyph},
+                    glyphs: {[number]: ?StyleGlyph},
                     lines: Array<string>,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,
@@ -344,10 +342,10 @@ function shapeLines(shaping: Shaping,
             if (!glyph) continue;
 
             if (!scriptDetection.charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
-                positionedGlyphs.push({codePoint, x, y, glyph, vertical: false});
-                x += glyph.advance + spacing;
+                positionedGlyphs.push({glyph: codePoint, x, y, vertical: false});
+                x += glyph.metrics.advance + spacing;
             } else {
-                positionedGlyphs.push({codePoint, x, y: 0, glyph, vertical: true});
+                positionedGlyphs.push({glyph: codePoint, x, y: 0, vertical: true});
                 x += verticalHeight + spacing;
             }
         }
@@ -378,18 +376,21 @@ function shapeLines(shaping: Shaping,
 
 // justify right = 1, left = 0, center = 0.5
 function justifyLine(positionedGlyphs: Array<PositionedGlyph>,
-                     glyphs: {[number]: SimpleGlyph},
+                     glyphs: {[number]: ?StyleGlyph},
                      start: number,
                      end: number,
                      justify: 1 | 0 | 0.5) {
     if (!justify)
         return;
 
-    const lastAdvance = glyphs[positionedGlyphs[end].codePoint].advance;
-    const lineIndent = (positionedGlyphs[end].x + lastAdvance) * justify;
+    const glyph = glyphs[positionedGlyphs[end].glyph];
+    if (glyph) {
+        const lastAdvance = glyph.metrics.advance;
+        const lineIndent = (positionedGlyphs[end].x + lastAdvance) * justify;
 
-    for (let j = start; j <= end; j++) {
-        positionedGlyphs[j].x -= lineIndent;
+        for (let j = start; j <= end; j++) {
+            positionedGlyphs[j].x -= lineIndent;
+        }
     }
 }
 
@@ -410,14 +411,14 @@ function align(positionedGlyphs: Array<PositionedGlyph>,
 }
 
 export type PositionedIcon = {
-    image: any,
+    image: ImagePosition,
     top: number,
     bottom: number,
     left: number,
     right: number
 };
 
-function shapeIcon(image: SpriteAtlasElement, iconOffset: [number, number], iconAnchor: SymbolAnchor): PositionedIcon {
+function shapeIcon(image: ImagePosition, iconOffset: [number, number], iconAnchor: SymbolAnchor): PositionedIcon {
     const {horizontalAlign, verticalAlign} = getAnchorAlignment(iconAnchor);
     const dx = iconOffset[0];
     const dy = iconOffset[1];
