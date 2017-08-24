@@ -6,6 +6,7 @@ import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type StyleLayer from '../style/style_layer';
 import type {Feature} from '../style-spec/function';
+import type {GlyphPosition} from '../render/glyph_atlas';
 
 module.exports = {
     getIconQuads,
@@ -129,7 +130,8 @@ function getGlyphQuads(anchor: Anchor,
                        layer: StyleLayer,
                        alongLine: boolean,
                        globalProperties: Object,
-                       feature: Feature): Array<SymbolQuad> {
+                       feature: Feature,
+                       positions: {[number]: GlyphPosition}): Array<SymbolQuad> {
 
     const oneEm = 24;
     const textRotate = layer.getLayoutValue('text-rotate', globalProperties, feature) * Math.PI / 180;
@@ -141,13 +143,17 @@ function getGlyphQuads(anchor: Anchor,
 
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
-        const glyph = positionedGlyph.glyph;
+        const glyph = positions[positionedGlyph.glyph];
         if (!glyph) continue;
 
         const rect = glyph.rect;
         if (!rect) continue;
 
-        const halfAdvance = glyph.advance / 2;
+        // The rects have an addditional buffer that is not included in their size;
+        const glyphPadding = 1.0;
+        const rectBuffer = 3.0 + glyphPadding;
+
+        const halfAdvance = glyph.metrics.advance / 2;
 
         const glyphOffset = alongLine ?
             [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
@@ -158,8 +164,8 @@ function getGlyphQuads(anchor: Anchor,
             [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1]];
 
 
-        const x1 = glyph.left - halfAdvance + builtInOffset[0];
-        const y1 = -glyph.top + builtInOffset[1];
+        const x1 = glyph.metrics.left - rectBuffer - halfAdvance + builtInOffset[0];
+        const y1 = -glyph.metrics.top - rectBuffer + builtInOffset[1];
         const x2 = x1 + rect.w;
         const y2 = y1 + rect.h;
 

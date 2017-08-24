@@ -1,31 +1,15 @@
 {
   "positionedGlyphs": [
     {
-      "codePoint": 104,
+      "glyph": 104,
       "x": -10,
       "y": -17,
-      "glyph": {
-        "id": 104,
-        "width": 11,
-        "height": 19,
-        "left": 2,
-        "top": -7,
-        "advance": 14
-      },
       "vertical": false
     },
     {
-      "codePoint": 105,
+      "glyph": 105,
       "x": 4,
       "y": -17,
-      "glyph": {
-        "id": 105,
-        "width": 4,
-        "height": 18,
-        "left": 1,
-        "top": -8,
-        "advance": 6
-      },
       "vertical": false
     }
   ],

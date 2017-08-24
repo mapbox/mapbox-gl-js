@@ -6,6 +6,7 @@ const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const TileBounds = require('./tile_bounds');
 const ResourceType = require('../util/ajax').ResourceType;
+const browser = require('../util/browser');
 
 import type {Source} from './source';
 import type TileCoord from './tile_coord';
@@ -104,6 +105,7 @@ class VectorTileSource extends Evented implements Source {
             tileSize: this.tileSize * overscaling,
             type: this.type,
             source: this.id,
+            pixelRatio: browser.devicePixelRatio,
             overscaling: overscaling,
             angle: this.map.transform.angle,
             pitch: this.map.transform.pitch,

@@ -105,8 +105,8 @@ function preloadAssets(stylesheet, callback) {
             });
         }
 
-        function getIcons(params, callback) {
-            style.getIcons(0, params, (err, icons) => {
+        function getImages(params, callback) {
+            style.getImages(0, params, (err, icons) => {
                 assets.icons[JSON.stringify(params)] = icons;
                 callback(err, icons);
             });
@@ -119,7 +119,7 @@ function preloadAssets(stylesheet, callback) {
             });
         }
 
-        runSample(stylesheet, getGlyphs, getIcons, getTile, (err) => {
+        runSample(stylesheet, getGlyphs, getImages, getTile, (err) => {
             style._remove();
             callback(err, assets);
         });
@@ -131,7 +131,7 @@ function preloadAssets(stylesheet, callback) {
 
 }
 
-function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
+function runSample(stylesheet, getGlyphs, getImages, getTile, callback) {
     const layerIndex = new StyleLayerIndex(deref(stylesheet.layers));
 
     const timeStart = performance.now();
@@ -154,8 +154,8 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
         const actor = {
             send: function(action, params, sendCallback) {
                 setTimeout(() => {
-                    if (action === 'getIcons') {
-                        getIcons(params, sendCallback);
+                    if (action === 'getImages') {
+                        getImages(params, sendCallback);
                     } else if (action === 'getGlyphs') {
                         getGlyphs(params, sendCallback);
                     } else assert(false);
