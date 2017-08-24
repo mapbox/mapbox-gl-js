@@ -11,6 +11,7 @@ export type BucketParameters = {
     index: number,
     layers: Array<StyleLayer>,
     zoom: number,
+    pixelRatio: number,
     overscaling: number,
     collisionBoxArray: CollisionBoxArray
 }

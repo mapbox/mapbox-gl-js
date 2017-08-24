@@ -3,10 +3,10 @@
 const assert = require('assert');
 const Evented = require('../util/evented');
 const StyleLayer = require('./style_layer');
-const ImageSprite = require('./image_sprite');
+const loadSprite = require('./load_sprite');
+const ImageManager = require('../render/image_manager');
+const GlyphManager = require('../render/glyph_manager');
 const Light = require('./light');
-const GlyphSource = require('../symbol/glyph_source');
-const SpriteAtlas = require('../symbol/sprite_atlas');
 const LineAtlas = require('../render/line_atlas');
 const util = require('../util/util');
 const ajax = require('../util/ajax');
@@ -29,7 +29,8 @@ const rtlTextPlugin = require('../source/rtl_text_plugin');
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
 import type {Source} from '../source/source';
-import type {IconMap} from '../symbol/sprite_atlas';
+import type {StyleImage} from './style_image';
+import type {StyleGlyph} from './style_glyph';
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -72,10 +73,9 @@ class Style extends Evented {
     stylesheet: StyleSpecification;
     animationLoop: AnimationLoop;
     dispatcher: Dispatcher;
-    sprite: ImageSprite;
-    spriteAtlas: SpriteAtlas;
+    imageManager: ImageManager;
+    glyphManager: GlyphManager;
     lineAtlas: LineAtlas;
-    glyphSource: GlyphSource;
     light: Light;
 
     _layers: {[string]: StyleLayer};
@@ -95,11 +95,20 @@ class Style extends Evented {
 
     constructor(stylesheet: StyleSpecification, map: Map, options: StyleOptions) {
         super();
+
+        options = util.extend({
+            validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
+        }, options);
+
+        const transformRequest = (url, resourceType) => {
+            return this.map ? this.map._transformRequest(url, resourceType) : { url };
+        };
+
         this.map = map;
         this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
-        this.spriteAtlas = new SpriteAtlas(1024, 1024);
-        this.spriteAtlas.setEventedParent(this);
+        this.imageManager = new ImageManager();
+        this.glyphManager = new GlyphManager(transformRequest, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
 
         this._layers = {};
@@ -112,10 +121,6 @@ class Style extends Evented {
 
         this._resetUpdates();
 
-        options = util.extend({
-            validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
-        }, options);
-
         this.setEventedParent(map);
         this.fire('dataloading', {dataType: 'style'});
 
@@ -126,10 +131,6 @@ class Style extends Evented {
                 self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
             }
         });
-
-        const transformRequest = (url, resourceType) => {
-            return  this.map ? this.map._transformRequest(url, resourceType) : { url };
-        };
 
         const stylesheetLoaded = (err, stylesheet: ?StyleSpecification) => {
             if (err) {
@@ -146,11 +147,19 @@ class Style extends Evented {
                     this.addSource(id, stylesheet.sources[id], options);
                 }
 
-                if (stylesheet.sprite) {
-                    this.sprite = new ImageSprite(stylesheet.sprite, transformRequest, this);
-                }
+                loadSprite(stylesheet.sprite, transformRequest, (err, images) => {
+                    if (err) {
+                        this.fire('error', err);
+                    } else if (images) {
+                        for (const id in images) {
+                            this.imageManager.addImage(id, images[id]);
+                        }
+                    }
 
-                this.glyphSource = new GlyphSource(stylesheet.glyphs, options.localIdeographFontFamily, transformRequest, this);
+                    this.imageManager.setLoaded(true);
+                });
+
+                this.glyphManager.setURL(stylesheet.glyphs);
                 this._resolve();
                 this.fire('data', {dataType: 'style'});
                 this.fire('style.load');
@@ -221,7 +230,7 @@ class Style extends Evented {
             if (!this.sourceCaches[id].loaded())
                 return false;
 
-        if (this.sprite && !this.sprite.loaded())
+        if (!this.imageManager.isLoaded())
             return false;
 
         return true;
@@ -424,6 +433,22 @@ class Style extends Evented {
         this.stylesheet = nextState;
 
         return true;
+    }
+
+    addImage(id: string, image: StyleImage) {
+        if (this.imageManager.getImage(id)) {
+            return this.fire('error', {error: new Error('An image with this name already exists.')});
+        }
+        this.imageManager.addImage(id, image);
+        this.fire('data', {dataType: 'style'});
+    }
+
+    removeImage(id: string) {
+        if (!this.imageManager.getImage(id)) {
+            return this.fire('error', {error: new Error('No image with this name exists.')});
+        }
+        this.imageManager.removeImage(id);
+        this.fire('data', {dataType: 'style'});
     }
 
     addSource(id: string, source: SourceSpecification, options?: {validate?: boolean}) {
@@ -930,36 +955,12 @@ class Style extends Evented {
 
     // Callbacks from web workers
 
-    getIcons(mapId: string, params: {icons: any}, callback: Callback<IconMap>) {
-        const updateSpriteAtlas = () => {
-            this.spriteAtlas.setSprite(this.sprite);
-            this.spriteAtlas.addIcons(params.icons, callback);
-        };
-        if (!this.sprite || this.sprite.loaded()) {
-            updateSpriteAtlas();
-        } else {
-            this.sprite.on('data', updateSpriteAtlas);
-        }
+    getImages(mapId: string, params: {icons: Array<string>}, callback: Callback<{[string]: StyleImage}>) {
+        this.imageManager.getImages(params.icons, callback);
     }
 
-    getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}, uid: number}, callback: Callback<{}>) {
-        const stacks = params.stacks;
-        let remaining = Object.keys(stacks).length;
-        const allGlyphs = {};
-
-        for (const fontName in stacks) {
-            this.glyphSource.getSimpleGlyphs(fontName, stacks[fontName], params.uid, done);
-        }
-
-        function done(err, glyphs, fontName) {
-            if (err) console.error(err);
-
-            allGlyphs[fontName] = glyphs;
-            remaining--;
-
-            if (remaining === 0)
-                callback(null, allGlyphs);
-        }
+    getGlyphs(mapId: string, params: {stacks: {[string]: Array<number>}}, callback: Callback<{[string]: {[number]: ?StyleGlyph}}>) {
+        this.glyphManager.getGlyphs(params.stacks, callback);
     }
 }
 

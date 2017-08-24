@@ -22,16 +22,16 @@ type CrossFaded<T> = {
  */
 exports.isPatternMissing = function(image: CrossFaded<string>, painter: Painter): boolean {
     if (!image) return false;
-    const imagePosA = painter.spriteAtlas.getPattern(image.from);
-    const imagePosB = painter.spriteAtlas.getPattern(image.to);
+    const imagePosA = painter.imageManager.getPattern(image.from);
+    const imagePosB = painter.imageManager.getPattern(image.to);
     return !imagePosA || !imagePosB;
 };
 
 exports.prepare = function (image: CrossFaded<string>, painter: Painter, program: Program) {
     const gl = painter.gl;
 
-    const imagePosA = painter.spriteAtlas.getPattern(image.from);
-    const imagePosB = painter.spriteAtlas.getPattern(image.to);
+    const imagePosA = painter.imageManager.getPattern(image.from);
+    const imagePosB = painter.imageManager.getPattern(image.to);
     assert(imagePosA && imagePosB);
 
     gl.uniform1i(program.uniforms.u_image, 0);
@@ -39,7 +39,8 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     gl.uniform2fv(program.uniforms.u_pattern_br_a, (imagePosA: any).br);
     gl.uniform2fv(program.uniforms.u_pattern_tl_b, (imagePosB: any).tl);
     gl.uniform2fv(program.uniforms.u_pattern_br_b, (imagePosB: any).br);
-    gl.uniform2fv(program.uniforms.u_texsize, painter.spriteAtlas.getPixelSize());
+    const {width, height} = painter.imageManager.getPixelSize();
+    gl.uniform2fv(program.uniforms.u_texsize, [width, height]);
     gl.uniform1f(program.uniforms.u_mix, image.t);
     gl.uniform2fv(program.uniforms.u_pattern_size_a, (imagePosA: any).displaySize);
     gl.uniform2fv(program.uniforms.u_pattern_size_b, (imagePosB: any).displaySize);
@@ -47,7 +48,7 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     gl.uniform1f(program.uniforms.u_scale_b, image.toScale);
 
     gl.activeTexture(gl.TEXTURE0);
-    painter.spriteAtlas.bind(gl, true);
+    painter.imageManager.bind(gl);
 };
 
 exports.setTile = function (tile: {coord: TileCoord, tileSize: number}, painter: Painter, program: Program) {

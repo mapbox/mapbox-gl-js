@@ -31,6 +31,7 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {RequestParameters} from '../util/ajax';
 import type {StyleOptions} from '../style/style';
 import type {MapEvent, MapDataEvent} from './events';
+import type {RGBAImage} from '../util/image';
 
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -1149,7 +1150,7 @@ class Map extends Camera {
      * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
      * @param options.sdf Whether the image should be interpreted as an SDF image
      */
-    addImage(name: string, data: HTMLImageElement | {width: number, height: number, data: Uint8ClampedArray},
+    addImage(id: string, data: HTMLImageElement | {width: number, height: number, data: Uint8Array | Uint8ClampedArray},
              {pixelRatio = 1, sdf = false}: {pixelRatio?: number, sdf?: boolean} = {}) {
         if (data instanceof HTMLImageElement) {
             data = browser.getImageData(data);
@@ -1158,16 +1159,16 @@ class Map extends Camera {
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')});
         }
-        this.style.spriteAtlas.addImage(name, data, {pixelRatio, sdf});
+        this.style.addImage(id, { data: ((data: any): RGBAImage), pixelRatio, sdf });
     }
 
     /**
      * Remove an image from the style (such as one used by `icon-image` or `background-pattern`).
      *
-     * @param {string} name The name of the image.
+     * @param id The ID of the image.
      */
-    removeImage(name: string) {
-        this.style.spriteAtlas.removeImage(name);
+    removeImage(id: string) {
+        this.style.removeImage(id);
     }
 
     /**

@@ -89,8 +89,8 @@ exports.wrap = function (n: number, min: number, max: number): number {
  */
 exports.asyncAll = function<Item, Result> (
     array: Array<Item>,
-    fn: (item: Item, fnCallback: (error: Error | null, result: Result) => void) => void,
-    callback: (error: Error | null, results: Array<Result>) => void
+    fn: (item: Item, fnCallback: Callback<Result>) => void,
+    callback: Callback<Array<Result>>
 ) {
     if (!array.length) { return callback(null, []); }
     let remaining = array.length;
@@ -99,7 +99,7 @@ exports.asyncAll = function<Item, Result> (
     array.forEach((item, i) => {
         fn(item, (err, result) => {
             if (err) error = err;
-            results[i] = result;
+            results[i] = ((result: any): Result); // https://github.com/facebook/flow/issues/2123
             if (--remaining === 0) callback(error, results);
         });
     });

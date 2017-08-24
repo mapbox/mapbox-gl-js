@@ -39,6 +39,9 @@
     "no-useless-escape": "off",
     "indent": ["error", 4, {
       "flatTernaryExpressions": true,
+      "CallExpression": {
+        "arguments": "off"
+      },
       "FunctionDeclaration": {
         "parameters": "off"
       },

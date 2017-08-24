@@ -11,6 +11,7 @@ const featureFilter = require('../style-spec/feature_filter');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 const Throttler = require('../util/throttler');
+const Texture = require('../render/texture');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -19,6 +20,7 @@ import type StyleLayer from '../style/style_layer';
 import type TileCoord from './tile_coord';
 import type {WorkerTileResult} from './worker_source';
 import type Point from '@mapbox/point-geometry';
+import type {RGBAImage, AlphaImage} from '../util/image';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -42,6 +44,10 @@ class Tile {
     tileSize: number;
     sourceMaxZoom: number;
     buckets: {[string]: Bucket};
+    iconAtlasImage: ?RGBAImage;
+    iconAtlasTexture: Texture;
+    glyphAtlasImage: ?AlphaImage;
+    glyphAtlasTexture: Texture;
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
@@ -133,6 +139,13 @@ class Tile {
         this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
         this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = deserializeBucket(data.buckets, painter.style);
+
+        if (data.iconAtlasImage) {
+            this.iconAtlasImage = data.iconAtlasImage;
+        }
+        if (data.glyphAtlasImage) {
+            this.glyphAtlasImage = data.glyphAtlasImage;
+        }
     }
 
     /**
@@ -161,6 +174,13 @@ class Tile {
 
         // Add new symbol buckets
         util.extend(this.buckets, deserializeBucket(data.buckets, style));
+
+        if (data.iconAtlasImage) {
+            this.iconAtlasImage = data.iconAtlasImage;
+        }
+        if (data.glyphAtlasImage) {
+            this.glyphAtlasImage = data.glyphAtlasImage;
+        }
     }
 
     /**
@@ -173,6 +193,13 @@ class Tile {
             this.buckets[id].destroy();
         }
         this.buckets = {};
+
+        if (this.iconAtlasTexture) {
+            this.iconAtlasTexture.destroy();
+        }
+        if (this.glyphAtlasTexture) {
+            this.glyphAtlasTexture.destroy();
+        }
 
         this.collisionBoxArray = null;
         this.collisionTile = null;
@@ -259,6 +286,16 @@ class Tile {
                 bucket.upload(gl);
                 bucket.uploaded = true;
             }
+        }
+
+        if (this.iconAtlasImage) {
+            this.iconAtlasTexture = new Texture(gl, this.iconAtlasImage, gl.RGBA);
+            this.iconAtlasImage = null;
+        }
+
+        if (this.glyphAtlasImage) {
+            this.glyphAtlasTexture = new Texture(gl, this.glyphAtlasImage, gl.ALPHA);
+            this.glyphAtlasImage = null;
         }
     }
 

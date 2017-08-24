@@ -5,6 +5,7 @@ const util = require('../util/util');
 const window = require('../util/window');
 const EXTENT = require('../data/extent');
 const ResourceType = require('../util/ajax').ResourceType;
+const browser = require('../util/browser');
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -195,6 +196,7 @@ class GeoJSONSource extends Evented implements Source {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
+            pixelRatio: browser.devicePixelRatio,
             overscaling: tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1,
             angle: this.map.transform.angle,
             pitch: this.map.transform.pitch,
