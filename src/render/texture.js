@@ -38,6 +38,7 @@ class Texture {
 
         const {gl} = this;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
         if (this.format === gl.RGBA) {
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (true: any));

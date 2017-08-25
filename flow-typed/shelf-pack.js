@@ -15,6 +15,7 @@ declare module "@mapbox/shelf-pack" {
 
         pack(bins: Array<{w: number, h: number}>, options?: {inPlace: boolean}): Array<Bin>;
         packOne(w: number, h: number, id?: number|string): Bin;
+        shrink(): void;
 
         ref(bin: Bin): number;
         unref(bin: Bin): number;

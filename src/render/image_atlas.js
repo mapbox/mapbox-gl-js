@@ -86,11 +86,11 @@ function makeImageAtlas(images: {[string]: StyleImage}): ImageAtlas {
         positions[id] = imagePosition(bin, src);
     }
 
-    // pack.shrink();
-    // resizeImageData(image, {
-    //     width: pack.w,
-    //     height: pack.h
-    // });
+    pack.shrink();
+    RGBAImage.resize(image, {
+        width: pack.w,
+        height: pack.h
+    });
 
     return {image, positions};
 }
