@@ -61,11 +61,11 @@ function makeGlyphAtlas(stacks: {[string]: {[number]: ?StyleGlyph}}): GlyphAtlas
         }
     }
 
-    // pack.shrink();
-    // resizeAlphaImage(image, {
-    //     width: pack.w,
-    //     height: pack.h
-    // });
+    pack.shrink();
+    AlphaImage.resize(image, {
+        width: pack.w,
+        height: pack.h
+    });
 
     return {image, positions};
 }
