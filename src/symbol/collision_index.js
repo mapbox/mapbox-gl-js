@@ -14,7 +14,7 @@ import type Transform from '../geo/transform';
 import type TileCoord from '../source/tile_coord';
 
 /**
- * A collision tile used to prevent symbols from overlapping. It keep tracks of
+ * A collision index used to prevent symbols from overlapping. It keep tracks of
  * where previous symbols have been placed and is used to check if a new
  * symbol overlaps with any previously added symbols.
  *
@@ -40,7 +40,7 @@ class CollisionIndex {
 
 
     /**
-     * Find the scale at which the collisionFeature can be shown without
+     * Find whether the collisionFeature can be shown without
      * overlapping with other features.
      * @private
      */
@@ -164,6 +164,19 @@ class CollisionIndex {
         return collisionDetected ? [] : placedCollisionCircles;
     }
 
+    /**
+     * Because the geometries in the CollisionIndex are an approximation of the shape of
+     * symbols on the map, we use the CollisionIndex to look up the symbol part of
+     * `queryRenderedFeatures`. Non-symbol features are looked up tile-by-tile, and
+     * historically collisions were handled per-tile.
+     *
+     * For this reason, `queryRenderedSymbols` still takes tile coordinate inputs and
+     * converts them back to viewport coordinates. The change to a viewport coordinate
+     * CollisionIndex means it's now possible to re-design queryRenderedSymbols to
+     * run entirely in viewport coordinates, saving unnecessary conversions.
+     *
+     * @private
+     */
     queryRenderedSymbols(queryGeometry: any, scale: number, tileCoord: TileCoord, tileSourceMaxZoom: number, pixelsToTileUnits: number, collisionBoxArray: any) {
         const sourceLayerFeatures = {};
         const result = [];
@@ -182,9 +195,6 @@ class CollisionIndex {
         for (let i = 0; i < queryGeometry.length; i++) {
             const ring = queryGeometry[i];
             for (let k = 0; k < ring.length; k++) {
-                // It's a bit of a shame we have to go back and forth to tile coordinates since the original query was
-                // in screen coordinates, but this makes the query compatible with features which are still indexed in
-                // tile coordinates.
                 const p = this.projectPoint(ring[k]);
                 minX = Math.min(minX, p.x);
                 minY = Math.min(minY, p.y);
@@ -196,7 +206,7 @@ class CollisionIndex {
 
         const tileID = tileCoord.id;
 
-        const thisTileFeatures = []; // TODO: The current architecture duplicates lots of querying for boxes that cross multiple tiles
+        const thisTileFeatures = [];
         const features = this.grid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < features.length; i++) {
             if (features[i].tileID === tileID) {
@@ -223,8 +233,10 @@ class CollisionIndex {
 
 
             // Check if query intersects with the feature box
-            // TODO: This is still treating collision circles as boxes (which means we're slightly more likely
-            // to include them in our results). Also we're kind of needlessly reprojecting the box here
+            // "Collision Circles" for line labels are treated as boxes here
+            // Since there's no actual collision taking place, the circle vs. square
+            // distinction doesn't matter as much, and box geometry is easier
+            // to work with.
             const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPoint);
             const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
             const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
@@ -247,7 +259,7 @@ class CollisionIndex {
     }
 
     /**
-     * Remember this collisionFeature and what scale it was placed at to block
+     * Remember this collisionFeature to block
      * later features from overlapping with it.
      * @private
      */

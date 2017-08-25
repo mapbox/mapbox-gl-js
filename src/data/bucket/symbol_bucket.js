@@ -315,18 +315,20 @@ class SymbolBuffers {
  *    and icons needed (by this bucket and any others). When glyphs and icons
  *    have been received, the WorkerTile creates a CollisionIndex and invokes:
  *
- * 3. SymbolBucket#prepare(stacks, icons) to perform text shaping and layout,
- *    populating `this.symbolInstances` and `this.collisionBoxArray`.
+ * 3. PrepareSymbol#prepare(bucket, stacks, icons) perform texts shaping and
+ *    layout on a Symbol Bucket. This step populates:
+ *      `this.symbolInstances`: metadata on generated symbols
+ *      `this.collisionBoxArray`: collision data for use by foreground
+ *      `this.text`: SymbolBuffers for text symbols
+ *      `this.icons`: SymbolBuffers for icons
+ *      `this.collisionBox`: Debug SymbolBuffers for collision boxes
+ *      `this.collisionCircle`: Debug SymbolBuffers for collision circles
+ *    The results are sent to the foreground for rendering
  *
- * 4. SymbolBucket#place(collisionIndex): taking collisions into account, decide
- *    on which labels and icons to actually draw and at which scale, populating
- *    the vertex arrays (`this.arrays.glyph`, `this.arrays.icon`) and thus
- *    completing the parsing / buffer population process.
- *
- * The reason that `prepare` and `place` are separate methods is that
- * `prepare`, being independent of pitch and orientation, only needs to happen
- * at tile load time, whereas `place` must be invoked on already-loaded tiles
- * when the pitch/orientation are changed. (See `redoPlacement`.)
+ * 4. PlaceSymbols#place(bucket, collisionIndex): is run on the foreground,
+ *    and uses the CollisionIndex along with current camera settings to determine
+ *    which symbols can actually show on the map. Collided symbols are hidden
+ *    using a dynamic "OpacityVertexArray".
  *
  * @private
  */
