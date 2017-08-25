@@ -6,7 +6,7 @@ const path = require('path');
 const Protobuf = require('pbf');
 const VectorTile = require('@mapbox/vector-tile').VectorTile;
 const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
-const CollisionTile = require('../../../src/symbol/collision_tile');
+const CollisionIndex = require('../../../src/symbol/collision_index');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const GlyphAtlas = require('../../../src/symbol/glyph_atlas');
 const StyleLayer = require('../../../src/style/style_layer');
@@ -33,7 +33,7 @@ const labelPlaneMatrix = mat4.identity(new Float64Array(16));
 // This is a bogus projection matrix: all it does is make tile coordinates
 // project to somewhere within the viewport, assuming a tile extent of 8192.
 mat4.scale(labelPlaneMatrix, labelPlaneMatrix, [1 / 8192, 1 / 8192, 1]);
-const collision = new CollisionTile(transform);
+const collision = new CollisionIndex(transform);
 collision.setMatrix(labelPlaneMatrix);
 const showCollisionBoxes = false;
 const zoom = 0;

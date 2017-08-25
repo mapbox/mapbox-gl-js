@@ -6,7 +6,7 @@ import type Anchor from './anchor';
 
 /**
  * A CollisionFeature represents the area of the tile covered by a single label.
- * It is used with CollisionTile to check if the label overlaps with any
+ * It is used with CollisionIndex to check if the label overlaps with any
  * previous labels. A CollisionFeature is mostly just a set of CollisionBox
  * objects.
  *

@@ -20,7 +20,7 @@ import type TileCoord from '../source/tile_coord';
  *
  * @private
  */
-class CollisionTile {
+class CollisionIndex {
     grid: Grid;
     ignoredGrid: Grid;
     transform: Transform;
@@ -310,4 +310,4 @@ class CollisionTile {
 
 }
 
-module.exports = CollisionTile;
+module.exports = CollisionIndex;
