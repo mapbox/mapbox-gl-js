@@ -118,7 +118,7 @@ class CanvasSource extends ImageSource {
             const gl = this.context;
             const data = new Uint8Array(this.width * this.height * 4);
             gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
-            if (!this.secondaryContext) this.secondaryContext = document.createElement('canvas').getContext('2d');
+            if (!this.secondaryContext) this.secondaryContext = window.document.createElement('canvas').getContext('2d');
             const imageData = this.secondaryContext.createImageData(this.width, this.height);
             imageData.data.set(data);
             return imageData;
