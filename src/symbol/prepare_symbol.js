@@ -121,9 +121,8 @@ function prepare(bucket: SymbolBucket, stacks: any, icons: any, showCollisionBox
 /**
  * Given a feature and its shaped text and icon data, add a 'symbol
  * instance' for each _possible_ placement of the symbol feature.
- * (SymbolBucket#place() selects which of these instances to send to the
- * renderer based on collisions with symbols in other layers from the same
- * source.)
+ * (At render timePlaceSymbols#place() selects which of these instances to
+ * show or hide based on collisions with symbols in other layers.)
  * @private
  */
 function addFeature(bucket: SymbolBucket, feature: SymbolFeature, intermediateSymbols: any, shapedTextOrientations: any, shapedIcon: PositionedIcon | void) {
@@ -258,17 +257,6 @@ function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAl
 
 /**
  * Add a single label & icon placement.
- *
- * Note that in the case of `symbol-placement: line`, the symbol instance's
- * array of glyph 'quads' may include multiple copies of each glyph,
- * corresponding to the different orientations it might take at different
- * zoom levels as the text goes around bends in the line.
- *
- * As such, each glyph quad includes a minzoom and maxzoom at which it
- * should be rendered.  bucket zoom range is calculated based on the 'layout'
- * {text,icon} size -- i.e. text/icon-size at `z: tile.zoom + 1`. If the
- * size is zoom-dependent, then the zoom range is adjusted at render time
- * to account for the difference.
  *
  * @private
  */
