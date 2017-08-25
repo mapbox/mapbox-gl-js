@@ -111,9 +111,6 @@ class CollisionIndex {
                 (boxDistanceToAnchor - tileUnitRadius > firstAndLastGlyph.last.tileDistance)) {
                 // Don't need to use this circle because the label doesn't extend this far
                 collisionCircles[k + 4] = true;
-                placedCollisionCircles.push(0);
-                placedCollisionCircles.push(0);
-                placedCollisionCircles.push(0);
                 continue;
             }
 
@@ -124,27 +121,27 @@ class CollisionIndex {
             const tileToViewport = perspectiveRatio * pixelsToTileUnits * scale;
             const radius = tileUnitRadius / tileToViewport;
 
-            const dx = x - placedCollisionCircles[placedCollisionCircles.length - 3];
-            const dy = y - placedCollisionCircles[placedCollisionCircles.length - 2];
-            if (radius * radius * 2 > dx * dx + dy * dy) {
-                if ((k + 8) < collisionCircles.length) {
-                    const nextBoxDistanceToAnchor = collisionCircles[k + 8];
-                    if ((nextBoxDistanceToAnchor > -firstAndLastGlyph.first.tileDistance) &&
-                    (nextBoxDistanceToAnchor < firstAndLastGlyph.last.tileDistance)) {
-                        // Hide significantly overlapping circles, unless this is the last one we can
-                        // use, in which case we want to keep it in place even if it's tightly packed
-                        // with the one before it.
-                        collisionCircles[k + 4] = true;
-                        placedCollisionCircles.push(0);
-                        placedCollisionCircles.push(0);
-                        placedCollisionCircles.push(0);
-                        continue;
+            if (placedCollisionCircles.length) {
+                const dx = x - placedCollisionCircles[placedCollisionCircles.length - 4];
+                const dy = y - placedCollisionCircles[placedCollisionCircles.length - 3];
+                if (radius * radius * 2 > dx * dx + dy * dy) {
+                    if ((k + 8) < collisionCircles.length) {
+                        const nextBoxDistanceToAnchor = collisionCircles[k + 8];
+                        if ((nextBoxDistanceToAnchor > -firstAndLastGlyph.first.tileDistance) &&
+                        (nextBoxDistanceToAnchor < firstAndLastGlyph.last.tileDistance)) {
+                            // Hide significantly overlapping circles, unless this is the last one we can
+                            // use, in which case we want to keep it in place even if it's tightly packed
+                            // with the one before it.
+                            collisionCircles[k + 4] = true;
+                            continue;
+                        }
                     }
                 }
             }
             placedCollisionCircles.push(x);
             placedCollisionCircles.push(y);
             placedCollisionCircles.push(radius);
+            placedCollisionCircles.push(k / 5); // CollisionBoxArray index
             collisionCircles[k + 4] = false;
 
             if (!allowOverlap) {
@@ -277,13 +274,11 @@ class CollisionIndex {
     insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        for (let k = 0; k < collisionCircles.length; k += 3) {
-            if (collisionCircles[k]) {
-                const key = { tileID: tileID, boxIndex: boxStartIndex + (k / 3) };
-                grid.insertCircle(key, collisionCircles[k],
-                    collisionCircles[k + 1],
-                    collisionCircles[k + 2]);
-            }
+        for (let k = 0; k < collisionCircles.length; k += 4) {
+            const key = { tileID: tileID, boxIndex: boxStartIndex + collisionCircles[k + 3] };
+            grid.insertCircle(key, collisionCircles[k],
+                collisionCircles[k + 1],
+                collisionCircles[k + 2]);
         }
     }
 
