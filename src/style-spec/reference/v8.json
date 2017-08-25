@@ -1034,6 +1034,54 @@
         }
       }
     },
+    "icon-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": true,
+      "values": {
+        "center": {
+            "doc": "The center of the icon is placed closest to the anchor."
+        },
+        "left": {
+            "doc": "The left side of the icon is placed closest to the anchor."
+        },
+        "right": {
+            "doc": "The right side of the icon is placed closest to the anchor."
+        },
+        "top": {
+            "doc": "The top of the icon is placed closest to the anchor."
+        },
+        "bottom": {
+            "doc": "The bottom of the icon is placed closest to the anchor."
+        },
+        "top-left": {
+            "doc": "The top left corner of the icon is placed closest to the anchor."
+        },
+        "top-right": {
+            "doc": "The top right corner of the icon is placed closest to the anchor."
+        },
+        "bottom-left": {
+            "doc": "The bottom left corner of the icon is placed closest to the anchor."
+        },
+        "bottom-right": {
+            "doc": "The bottom right corner of the icon is placed closest to the anchor."
+        }
+      },
+      "default": "center",
+      "doc": "Part of the icon placed closest to the anchor.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.40.0"
+        },
+        "data-driven styling": {
+          "js": "0.40.0"
+        }
+      }
+    },
     "icon-pitch-alignment": {
       "type": "enum",
       "function": "piecewise-constant",

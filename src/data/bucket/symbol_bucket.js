@@ -541,7 +541,8 @@ class SymbolBucket implements Bucket {
                 const image = icons[feature.icon];
                 if (image) {
                     shapedIcon = shapeIcon(image,
-                        this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties));
+                        this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties),
+                        this.layers[0].getLayoutValue('icon-anchor', {zoom: this.zoom}, feature.properties));
                     if (this.sdfIcons === undefined) {
                         this.sdfIcons = image.sdf;
                     } else if (this.sdfIcons !== image.sdf) {
