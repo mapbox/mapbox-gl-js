@@ -4,6 +4,7 @@ const Point = require('@mapbox/point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
 const intersectionTests = require('../util/intersection_tests');
+const CollisionBoxArray = require('../symbol/collision_box');
 
 import type CollisionBoxArray, {CollisionBox} from './collision_box';
 
@@ -92,6 +93,10 @@ class CollisionTile {
         // boxes at render time.
         this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
 
+        if (!collisionBoxArray) {
+            // If collisionBoxArray was not initialize, create a new object
+            collisionBoxArray = new CollisionBoxArray();
+        }
         this.collisionBoxArray = collisionBoxArray;
         if (collisionBoxArray.length === 0) {
             // the first time collisionBoxArray is passed to a CollisionTile
