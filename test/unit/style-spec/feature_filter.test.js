@@ -3,6 +3,45 @@
 const test = require('mapbox-gl-js-test').test;
 const filter = require('../../../src/style-spec').featureFilter;
 
+test('expression, zoom', (t) => {
+    const f = filter(['>=', ['number', ['get', 'x']], ['zoom']]);
+    t.equal(f({zoom: 1}, {properties: {x: 0}}), false);
+    t.equal(f({zoom: 1}, {properties: {x: 1.5}}), true);
+    t.equal(f({zoom: 1}, {properties: {x: 2.5}}), true);
+    t.equal(f({zoom: 2}, {properties: {x: 0}}), false);
+    t.equal(f({zoom: 2}, {properties: {x: 1.5}}), false);
+    t.equal(f({zoom: 2}, {properties: {x: 2.5}}), true);
+    t.end();
+});
+
+test('expression, compare two properties', (t) => {
+    t.stub(console, 'warn');
+    const f = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']]]);
+    t.equal(f({zoom: 0}, {properties: {x: 1, y: 1}}), false);
+    t.equal(f({zoom: 0}, {properties: {x: '1', y: '1'}}), true);
+    t.equal(f({zoom: 0}, {properties: {x: 'same', y: 'same'}}), true);
+    t.equal(f({zoom: 0}, {properties: {x: null}}), false);
+    t.equal(f({zoom: 0}, {properties: {x: undefined}}), false);
+    t.end();
+});
+
+test('expression, type error', (t) => {
+    t.throws(() => {
+        filter(['==', ['number', ['get', 'x']], ['string', ['get', 'y']]]);
+    });
+
+    t.throws(() => {
+        filter(['number', ['get', 'x']]);
+    });
+
+    t.doesNotThrow(() => {
+        filter(['boolean', ['get', 'x']]);
+    });
+
+    t.end();
+});
+
+
 test('degenerate', (t) => {
     t.equal(filter()(), true);
     t.equal(filter(undefined)(), true);
