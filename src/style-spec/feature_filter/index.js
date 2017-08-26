@@ -1,3 +1,11 @@
+// @flow
+
+const {createExpression} = require('../expression');
+const {typeOf} = require('../expression/values');
+
+import type {GlobalProperties} from '../expression';
+export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
+
 module.exports = createFilter;
 module.exports.isExpressionFilter = isExpressionFilter;
 
@@ -37,7 +45,12 @@ function isExpressionFilter(filter) {
     }
 }
 
-const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
+const filterSpec = {
+    'type': 'boolean',
+    'default': false,
+    'function': true,
+    'property-function': true
+};
 
 /**
  * Given a filter expressed as nested arrays, return a new function
@@ -48,74 +61,147 @@ const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter) {
-    return new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`);
+function createFilter(filter: any): FeatureFilter {
+    if (!filter) {
+        return () => true;
+    }
+
+    const isExpression = isExpressionFilter(filter);
+    const expression = isExpression ? filter : convertFilter(filter);
+    const compiled = createExpression(expression, filterSpec, 'filter', {handleErrors: isExpression});
+
+    if (compiled.result === 'success') {
+        return compiled.evaluate;
+    } else {
+        throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+    }
 }
 
-function compile(filter) {
-    if (!filter) return 'true';
+function convertFilter(filter: ?Array<any>): mixed {
+    if (!filter) return true;
     const op = filter[0];
-    if (filter.length <= 1) return op === 'any' ? 'false' : 'true';
-    const str =
-        op === '==' ? compileComparisonOp(filter[1], filter[2], '===', false) :
-        op === '!=' ? compileComparisonOp(filter[1], filter[2], '!==', false) :
+    if (filter.length <= 1) return (op !== 'any');
+    const converted =
+        op === '==' ? compileComparisonOp(filter[1], filter[2], '==') :
+        op === '!=' ? compileComparisonOp(filter[1], filter[2], '!=') :
         op === '<' ||
         op === '>' ||
         op === '<=' ||
-        op === '>=' ? compileComparisonOp(filter[1], filter[2], op, true) :
-        op === 'any' ? compileLogicalOp(filter.slice(1), '||') :
-        op === 'all' ? compileLogicalOp(filter.slice(1), '&&') :
-        op === 'none' ? compileNegation(compileLogicalOp(filter.slice(1), '||')) :
+        op === '>=' ? compileComparisonOp(filter[1], filter[2], op) :
+        op === 'any' ? compileDisjunctionOp(filter.slice(1)) :
+        op === 'all' ? ['all'].concat(filter.slice(1).map(convertFilter)) :
+        op === 'none' ? ['all'].concat(filter.slice(1).map(convertFilter).map(compileNegation)) :
         op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
         op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
         op === 'has' ? compileHasOp(filter[1]) :
         op === '!has' ? compileNegation(compileHasOp(filter[1])) :
-        'true';
-    return `(${str})`;
+        true;
+    return converted;
 }
 
-function compilePropertyReference(property) {
-    const ref =
-        property === '$type' ? 'f.type' :
-        property === '$id' ? 'f.id' : `p[${JSON.stringify(property)}]`;
-    return ref;
+function compilePropertyReference(property: string, type?: ?string) {
+    if (property === '$type') return ['geometry-type'];
+    const ref = property === '$id' ? ['id'] : ['get', property];
+    return type ? [type, ref] : ref;
 }
 
-function compileComparisonOp(property, value, op, checkType) {
-    const left = compilePropertyReference(property);
-    const right = property === '$type' ? types.indexOf(value) : JSON.stringify(value);
-    return (checkType ? `typeof ${left}=== typeof ${right}&&` : '') + left + op + right;
+function compileComparisonOp(property: string, value: any, op: string) {
+    const untypedReference = compilePropertyReference(property);
+    const typedReference = compilePropertyReference(property, typeof value);
+
+    if (value === null) {
+        const expression = [
+            'all',
+            compileHasOp(property),
+            ['==', ['typeof', untypedReference], 'Null']
+        ];
+        return op === '!=' ? ['!', expression] : expression;
+    }
+
+    const type = typeOf(value).kind;
+    if (op === '!=') {
+        return [
+            'any',
+            ['!=', ['typeof', untypedReference], type],
+            ['!=', typedReference, value]
+        ];
+    }
+
+    return [
+        'all',
+        ['==', ['typeof', untypedReference], type],
+        [op, typedReference, value]
+    ];
 }
 
-function compileLogicalOp(expressions, op) {
-    return expressions.map(compile).join(op);
+function compileDisjunctionOp(filters: Array<Array<any>>) {
+    return ['any'].concat(filters.map(convertFilter));
 }
 
-function compileInOp(property, values) {
-    if (property === '$type') values = values.map((value) => {
-        return types.indexOf(value);
-    });
-    const left = JSON.stringify(values.sort(compare));
-    const right = compilePropertyReference(property);
+function compileInOp(property: string, values: Array<any>) {
+    if (values.length === 0) {
+        return false;
+    }
 
-    if (values.length <= 200) return `${left}.indexOf(${right}) !== -1`;
+    // split the input values into separate lists by type, so that
+    // we can first test the input's type and dispatch to a typed 'match'
+    // expression
+    const valuesByType = {};
+    for (const value of values) {
+        const type = typeOf(value).kind;
+        valuesByType[type] = valuesByType[type] || [];
+        valuesByType[type].push(value);
+    }
 
-    return `${'function(v, a, i, j) {' +
-        'while (i <= j) { var m = (i + j) >> 1;' +
-        '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
-        '}' +
-    'return false; }('}${right}, ${left},0,${values.length - 1})`;
+    const input = compilePropertyReference(property);
+    const expression = [
+        'let',
+        'input', input
+    ];
+
+    const match = ['match', ['typeof', ['var', 'input']]];
+    for (const type in valuesByType) {
+        match.push(type);
+        if (type === 'Null') {
+            match.push(true);
+        } else {
+            match.push([
+                'match',
+                ['var', 'input'],
+                valuesByType[type],
+                true,
+                false
+            ]);
+        }
+    }
+
+    if (match.length === 4) {
+        const type = match[2];
+        expression.push([
+            'all',
+            ['==', ['typeof', ['var', 'input']], type],
+            match[3]
+        ]);
+    } else {
+        expression.push(match);
+    }
+
+    return expression;
 }
 
-function compileHasOp(property) {
-    return property === '$id' ? '"id" in f' : `${JSON.stringify(property)} in p`;
+function compileHasOp(property: string) {
+    if (property === '$id') {
+        return ['!=', ['typeof', ['id']], 'Null'];
+    }
+
+    if (property === '$type') {
+        return true;
+    }
+
+    return ['has', property];
 }
 
-function compileNegation(expression) {
-    return `!(${expression})`;
+function compileNegation(filter: mixed) {
+    return ['!', filter];
 }
 
-// Comparison function to sort numbers and strings
-function compare(a, b) {
-    return a < b ? -1 : a > b ? 1 : 0;
-}
