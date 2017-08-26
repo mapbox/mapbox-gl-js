@@ -60,8 +60,7 @@ function rgba(ctx, [r, g, b, a]) {
 }
 
 function has(key, obj) {
-    const v = obj[key];
-    return typeof v !== 'undefined';
+    return key in obj;
 }
 
 function get(key, obj) {

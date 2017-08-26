@@ -1,3 +1,10 @@
+// @flow
+
+const {createExpression} = require('../expression');
+
+import type {GlobalProperties} from '../expression';
+export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
+
 module.exports = createFilter;
 module.exports.isExpressionFilter = isExpressionFilter;
 
@@ -39,6 +46,13 @@ function isExpressionFilter(filter) {
 
 const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
+const filterSpec = {
+    'type': 'boolean',
+    'default': false,
+    'function': true,
+    'property-function': true
+};
+
 /**
  * Given a filter expressed as nested arrays, return a new function
  * that evaluates whether a given feature (with a .properties or .tags property)
@@ -48,8 +62,21 @@ const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter) {
-    return new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`);
+function createFilter(filter: any): FeatureFilter {
+    if (!filter) {
+        return () => true;
+    }
+
+    if (!isExpressionFilter(filter)) {
+        return (new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`): any);
+    }
+
+    const compiled = createExpression(filter, filterSpec, 'filter');
+    if (compiled.result === 'success') {
+        return compiled.evaluate;
+    } else {
+        throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+    }
 }
 
 function compile(filter) {
