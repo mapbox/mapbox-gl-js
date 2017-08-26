@@ -222,6 +222,32 @@ exports.bindAll = function(fns: Array<string>, context: Object): void {
 };
 
 /**
+ * Throttle the given function to run at most every `time` milliseconds.
+ */
+exports.throttle = function(fn: () => void, time: number): () => number {
+    let pending = false;
+    let timerId = 0;
+
+    const later = () => {
+        timerId = 0;
+        if (pending) {
+            fn();
+            pending = false;
+        }
+    };
+
+    return () => {
+        if (timerId) {
+            pending = true;
+        } else {
+            fn();
+            timerId = setTimeout(later, time);
+        }
+        return timerId;
+    };
+};
+
+/**
  * Given a list of coordinates, get their center as a coordinate.
  *
  * @returns centerpoint
