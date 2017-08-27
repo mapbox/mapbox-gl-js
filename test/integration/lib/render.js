@@ -59,6 +59,8 @@ function compare(path1, path2, diffPath, callback) {
  * disabled tests will be run, but not fail the test run if the result does not match the expected
  * result. If the value begins with "skip", the test will not be run at all -- use this for tests
  * that would crash the test harness entirely if they were run.
+ * @param {Object<boolean>} [options.shuffle] - Boolean representing whether
+ * or not to shuffle the render tests sequence.
  * @param {Object<boolean>} [options.recycleMap] - Boolean representing whether
  * or not to recycle the Map object when running the tests.
  * @param {renderFn} render - a function that performs the rendering
@@ -134,6 +136,7 @@ exports.run = function (implementation, options, render) {
  * @param {number} options.width - render this wide
  * @param {number} options.height - render this high
  * @param {number} options.pixelRatio - render with this pixel ratio
+ * @param {boolean} options.shuffle - shuffle tests sequence
  * @param {boolean} options.recycleMap - trigger map object recycling
  * @param {renderCallback} callback - callback to call with the results of rendering
  */
