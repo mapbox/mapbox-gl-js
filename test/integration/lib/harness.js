@@ -214,7 +214,7 @@ module.exports = function (directory, implementation, options, run) {
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
         const failed = results.filter(r => /failed/.test(r.status));
-        const resultsShell = resultsTemplate({ failed })
+        const resultsShell = resultsTemplate({ failed, sequence })
             .split('<!-- results go here -->');
 
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');
