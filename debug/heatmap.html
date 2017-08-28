@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 14,
+    center: [-122.414, 37.78],
+    style: 'mapbox://styles/mapbox/dark-v9',
+    hash: false
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.GeolocateControl());
+
+map.on('load', function() {
+
+    map.addSource('heatmap', {
+        "type": "geojson",
+        "data": "./waste.json",
+        "cluster": true,
+        "clusterRadius": 5
+    });
+
+    map.addLayer({
+        "id": "heatmap",
+        "type": "heatmap",
+        "source": "heatmap",
+        "paint": {
+            "heatmap-radius": 40,
+            "heatmap-weight": {
+                type: 'identity',
+                property: 'point_count'
+            }
+        }
+    });
+});
+
+// map.on('click', function() {
+//     map.flyTo({
+//         center: [-77.46189535195191, 39.071252887412754],
+//         zoom: 20,
+//         speed: 0.3
+//     });
+// });
+
+</script>
+</body>
+</html>
