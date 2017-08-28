@@ -32,7 +32,7 @@
 <button id='toggle-sequence'>Toggle showing test sequence</button>
 <div id='test-sequence' style='display:none'>
     <strong style="color: black;">Test sequence:</strong>
-    <% for (const r of sequence) { %><%- r.params.group %>/<%- r.params.test %> <% } %>
+    <% for (const s of sequence) { %><%- s.params.group %>/<%- s.params.test %> <% } %>
 </div>
 <% } %>
 <button id='toggle-passed'>Toggle showing passed tests</button>
