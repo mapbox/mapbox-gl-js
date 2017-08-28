@@ -20,6 +20,7 @@ module.exports = function (directory, implementation, options, run) {
     fs.readdirSync(directory).forEach((group) => {
         if (
             group === 'index.html' ||
+            group === 'index-recycle-map.html' ||
             group === 'results.html.tmpl' ||
             group === 'result_item.html.tmpl' ||
             group[0] === '.'
@@ -216,7 +217,7 @@ module.exports = function (directory, implementation, options, run) {
         const resultsShell = resultsTemplate({ failed })
             .split('<!-- results go here -->');
 
-        const p = path.join(directory, 'index.html');
+        const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');
         const out = fs.createWriteStream(p);
 
         const q = queue(1);
