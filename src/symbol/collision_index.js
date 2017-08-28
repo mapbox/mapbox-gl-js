@@ -3,7 +3,7 @@
 const Point = require('@mapbox/point-geometry');
 const intersectionTests = require('../util/intersection_tests');
 
-const Grid = require('./grid_index_experimental');
+const Grid = require('./grid_index');
 const glmatrix = require('@mapbox/gl-matrix');
 
 const mat4 = glmatrix.mat4;
