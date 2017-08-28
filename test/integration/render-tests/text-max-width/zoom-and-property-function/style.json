@@ -6,7 +6,7 @@
       "width": 512
     }
   },
-  "center": [ 0, 0 ],
+  "center": [ 0, -15 ],
   "zoom": 1.5,
   "sources": {
     "point": {
@@ -22,7 +22,7 @@
             },
             "geometry": {
               "type": "Point",
-              "coordinates": [ -25, 0 ]
+              "coordinates": [ -25, -15 ]
             }
           },
           {
@@ -33,7 +33,7 @@
             },
             "geometry": {
               "type": "Point",
-              "coordinates": [ 25, 0 ]
+              "coordinates": [ 25, -15 ]
             }
           }  
         ]
