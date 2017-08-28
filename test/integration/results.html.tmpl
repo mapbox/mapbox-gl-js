@@ -1,5 +1,6 @@
 <style>
     body { font-family: Helvetica; }
+    div { color: black; }
     h2 { text-align: center; margin-bottom: 10px; padding: 2px 5px; font-weight: normal; }
     h2 a { color: white; text-decoration: none; }
     table td { vertical-align: top; }
@@ -27,14 +28,27 @@
 <% } else { %>
 <div><strong style="color: darkgreen;">All tests passed!</div>
 <% } %>
+<% if (sequence.length) { %>
+<button id='toggle-sequence'>Toggle showing test sequence</button>
+<div id='test-sequence' style='display:none'>
+    <strong style="color: black;">Test sequence:</strong>
+    <% for (const r of sequence) { %><%- r.params.group %>/<%- r.params.test %> <% } %>
+</div>
+<% } %>
 <button id='toggle-passed'>Toggle showing passed tests</button>
 <script>
-const btn = document.getElementById('toggle-passed')
-btn.addEventListener('click', function (e) {
+const passedButton = document.getElementById('toggle-passed');
+passedButton.addEventListener('click', function (e) {
   const passed = document.querySelectorAll('tr.passed');
   for (const row of passed) {
     row.classList.toggle('hide');
   }
+});
+
+const sequenceButton = document.getElementById('toggle-sequence');
+sequenceButton.addEventListener('click', function (e) {
+    const sequence = document.getElementById('test-sequence');
+    sequence.style.display = sequence.style.display == "none" ? "block" : "none";
 });
 </script>
 <table>
