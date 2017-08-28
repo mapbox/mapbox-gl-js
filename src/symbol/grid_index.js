@@ -148,16 +148,16 @@ class GridIndex {
         return hitTest ? result.length > 0 : result;
     }
 
-    query(x1: number, y1: number, x2: number, y2: number) {
-        return this._query(x1, y1, x2, y2, false);
+    query(x1: number, y1: number, x2: number, y2: number): Array<any> {
+        return (this._query(x1, y1, x2, y2, false): any);
     }
 
-    hitTest(x1: number, y1: number, x2: number, y2: number)  {
-        return this._query(x1, y1, x2, y2, true);
+    hitTest(x1: number, y1: number, x2: number, y2: number): boolean  {
+        return (this._query(x1, y1, x2, y2, true): any);
     }
 
-    hitTestCircle(x: number, y: number, radius: number) {
-        return this._queryCircle(x, y, radius, true);
+    hitTestCircle(x: number, y: number, radius: number): boolean {
+        return (this._queryCircle(x, y, radius, true): any);
     }
 
     _queryCell(x1: number, y1: number, x2: number, y2: number, cellIndex: number, result: any, queryArgs: any) {
