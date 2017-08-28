@@ -80,6 +80,7 @@
     "remark": "^6.0.1",
     "remark-html": "^5.0.1",
     "request": "^2.79.0",
+    "shuffle-array": "^1.0.1",
     "sinon": "^2.1.0",
     "st": "^1.2.0",
     "stylelint": "^7.10.1",

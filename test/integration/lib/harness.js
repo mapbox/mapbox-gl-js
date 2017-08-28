@@ -7,6 +7,7 @@ const path = require('path');
 const queue = require('d3-queue').queue;
 const colors = require('colors/safe');
 const template = require('lodash').template;
+const shuffle = require('shuffle-array');
 
 module.exports = function (directory, implementation, options, run) {
     const q = queue(1);
@@ -15,23 +16,7 @@ module.exports = function (directory, implementation, options, run) {
     const tests = options.tests || [];
     const ignores = options.ignores || {};
 
-    function shouldRunTest(group, test) {
-        if (tests.length === 0)
-            return true;
-
-        const id = `${group}/${test}`;
-
-        for (let i = 0; i < tests.length; i++) {
-            const k = id.indexOf(tests[i]);
-            if (k === 0 || id[k - 1] === '-' || id[k - 1] === '/')
-                return true;
-        }
-
-        return false;
-    }
-
-    q.defer(server.listen);
-
+    const available = [];
     fs.readdirSync(directory).forEach((group) => {
         if (
             group === 'index.html' ||
@@ -43,79 +28,128 @@ module.exports = function (directory, implementation, options, run) {
         }
 
         fs.readdirSync(path.join(directory, group)).forEach((test) => {
-            if (!shouldRunTest(group, test))
+            if (test[0] === '.')
                 return;
 
+            available.push({ group: group, test: test });
+        });
+    });
+
+    let sequence = [];
+
+    function shouldRunTest(group, test) {
+        try {
             if (!fs.lstatSync(path.join(directory, group, test)).isDirectory())
-                // Skip files in this folder.
-                return;
+                return false;
+            if (!fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
+                return false;
+        } catch (err) {
+            console.log(colors.blue(`* omitting ${group} ${test} due to missing style`));
+            return false;
+        }
 
-            try {
-                if (!fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
-                    return;
-            } catch (err) {
-                console.log(colors.blue(`* omitting ${group} ${test} due to missing style`));
-                return;
+        if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && group === 'debug') {
+            console.log(colors.gray(`* skipped ${group} ${test}`));
+            return false;
+        }
+
+        const id = `${path.basename(directory)}/${group}/${test}`;
+        const ignored = ignores[id];
+        if (/^skip/.test(ignored)) {
+            console.log(colors.gray(`* skipped ${group} ${test} (${ignored})`));
+            return false;
+        }
+
+        return true;
+    }
+
+    function addTestToSequence(group, test) {
+        const style = require(path.join(directory, group, test, 'style.json'));
+
+        server.localizeURLs(style);
+
+        const id = `${path.basename(directory)}/${group}/${test}`;
+        const ignored = ignores[id];
+
+        const params = Object.assign({
+            group,
+            test,
+            width: 512,
+            height: 512,
+            pixelRatio: 1,
+            recycleMap: options.recycleMap || false,
+            allowed: 0.00015
+        }, style.metadata && style.metadata.test, {ignored});
+
+        if ('diff' in params) {
+            if (typeof params.diff === 'number') {
+                params.allowed = params.diff;
+            } else if (implementation in params.diff) {
+                params.allowed = params.diff[implementation];
             }
+        }
 
-            if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && group === 'debug') {
-                console.log(colors.gray(`* skipped ${group} ${test}`));
-                return;
-            }
+        sequence.push({ style: style, params: params });
+    }
 
-            const id = `${path.basename(directory)}/${group}/${test}`;
-            const ignored = ignores[id];
-            if (/^skip/.test(ignored)) {
-                console.log(colors.gray(`* skipped ${group} ${test} (${ignored})`));
-                return;
-            }
-
-            const style = require(path.join(directory, group, test, 'style.json'));
-
-            server.localizeURLs(style);
-
-            const params = Object.assign({
-                group,
-                test,
-                width: 512,
-                height: 512,
-                pixelRatio: 1,
-                recycleMap: options.recycleMap || false,
-                allowed: 0.00015
-            }, style.metadata && style.metadata.test, {ignored});
-
-            if ('diff' in params) {
-                if (typeof params.diff === 'number') {
-                    params.allowed = params.diff;
-                } else if (implementation in params.diff) {
-                    params.allowed = params.diff[implementation];
-                }
-            }
-
-            q.defer((callback) => {
-                run(style, params, (err) => {
-                    if (err) return callback(err);
-
-                    if (params.ignored && !params.ok) {
-                        params.color = '#9E9E9E';
-                        params.status = 'ignored failed';
-                        console.log(colors.white(`* ignore ${params.group} ${params.test} (${params.ignored})`));
-                    } else if (params.ignored) {
-                        params.color = '#E8A408';
-                        params.status = 'ignored passed';
-                        console.log(colors.yellow(`* ignore ${params.group} ${params.test} (${params.ignored})`));
-                    } else if (!params.ok) {
-                        params.color = 'red';
-                        params.status = 'failed';
-                        console.log(colors.red(`* failed ${params.group} ${params.test}`));
-                    } else {
-                        params.color = 'green';
-                        params.status = 'passed';
-                        console.log(colors.green(`* passed ${params.group} ${params.test}`));
+    if (tests.length) {
+        tests.forEach((test) => {
+            available.forEach((availableTest) => {
+                if (`${availableTest.group}/${availableTest.test}`.indexOf(test) !== -1) {
+                    let unique = true;
+                    // Avoid duplicates in the test sequence.
+                    sequence.forEach((checkedTest) => {
+                        if (checkedTest.params.group === availableTest.group && checkedTest.params.test === availableTest.test) {
+                            unique = false;
+                            return;
+                        }
+                    });
+                    if (unique) {
+                        addTestToSequence(availableTest.group, availableTest.test);
                     }
+                }
+            });
+        });
+    } else {
+        // No specific test requested, run all available.
+        available.forEach((availableTest) => {
+            addTestToSequence(availableTest.group, availableTest.test);
+        });
+    }
 
-                    callback(null, params);
-                });
+    // Skip ignored and malformed tests.
+    sequence = sequence.filter((value) => { return shouldRunTest(value.params.group, value.params.test); });
+
+    if (options.shuffle) {
+        shuffle(sequence);
+    }
+
+    q.defer(server.listen);
+
+    sequence.forEach((test) => {
+        q.defer((callback) => {
+            run(test.style, test.params, (err) => {
+                if (err) return callback(err);
+
+                if (test.params.ignored && !test.params.ok) {
+                    test.params.color = '#9E9E9E';
+                    test.params.status = 'ignored failed';
+                    console.log(colors.white(`* ignore ${test.params.group} ${test.params.test} (${test.params.ignored})`));
+                } else if (test.params.ignored) {
+                    test.params.color = '#E8A408';
+                    test.params.status = 'ignored passed';
+                    console.log(colors.yellow(`* ignore ${test.params.group} ${test.params.test} (${test.params.ignored})`));
+                } else if (!test.params.ok) {
+                    test.params.color = 'red';
+                    test.params.status = 'failed';
+                    console.log(colors.red(`* failed ${test.params.group} ${test.params.test}`));
+                } else {
+                    test.params.color = 'green';
+                    test.params.status = 'passed';
+                    console.log(colors.green(`* passed ${test.params.group} ${test.params.test}`));
+                }
+
+                callback(null, test.params);
             });
         });
     });
