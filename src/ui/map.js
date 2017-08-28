@@ -517,7 +517,7 @@ class Map extends Camera {
      * as close as possible to the operation's request while still
      * remaining within the bounds.
      *
-     * @param {LngLatBoundsLike | null | undefined} lnglatbounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
+     * @param {LngLatBoundsLike | null | undefined} lnglatbounds The maximum bounds to set. If `null` or undefined` is provided, the function removes the map's maximum bounds.
      * @returns {Map} `this`
      */
     setMaxBounds(lnglatbounds: LngLatBoundsLike) {
@@ -1204,7 +1204,7 @@ class Map extends Camera {
      *
      * @param {string} layer The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
-     *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).  If null or  undefined is provided, the function removes any existing filter from the layer.
+     *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).  If null or undefined is provided, the function removes any existing filter from the layer.
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
