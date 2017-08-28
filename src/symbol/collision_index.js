@@ -13,6 +13,14 @@ const projection = require('../symbol/projection');
 import type Transform from '../geo/transform';
 import type TileCoord from '../source/tile_coord';
 
+// When a symbol crosses the edge that causes it to be included in
+// collision detection, it will cause changes in the symbols around
+// it. This constant specifies how many pixels to pad the edge of
+// the viewport for collision detection so that the bulk of the changes
+// occur offscreen. Making this constant greater increases label
+// stability, but it's expensive.
+const viewportPadding = 100;
+
 /**
  * A collision index used to prevent symbols from overlapping. It keep tracks of
  * where previous symbols have been placed and is used to check if a new
@@ -28,8 +36,8 @@ class CollisionIndex {
 
     constructor(
         transform: Transform,
-        grid: Grid = new Grid(transform.width, transform.height, 20),
-        ignoredGrid: Grid = new Grid(transform.width, transform.height, 20)
+        grid: Grid = new Grid(transform.width + 2 * viewportPadding, transform.height + 2 * viewportPadding, 20),
+        ignoredGrid: Grid = new Grid(transform.width + 2 * viewportPadding, transform.height + 2 * viewportPadding, 20)
     ) {
         this.transform = transform;
         this.matrix = mat4.identity(mat4.create());
@@ -297,8 +305,8 @@ class CollisionIndex {
         const p = [point.x, point.y, 0, 1];
         projection.xyTransformMat4(p, p, this.matrix);
         return new Point(
-            ((p[0] / p[3] + 1) / 2) * this.transform.width,
-            ((-p[1] / p[3] + 1) / 2) * this.transform.height
+            (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
+            (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
     }
 
@@ -306,8 +314,8 @@ class CollisionIndex {
         const p = [point.x, point.y, 0, 1];
         projection.xyTransformMat4(p, p, this.matrix);
         const a = new Point(
-            ((p[0] / p[3] + 1) / 2) * this.transform.width,
-            ((-p[1] / p[3] + 1) / 2) * this.transform.height
+            (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
+            (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
         return {
             point: a,
