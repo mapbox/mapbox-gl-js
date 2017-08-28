@@ -14,6 +14,14 @@ const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/circle.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/circle.vertex.glsl', 'utf8')
     },
+    heatmap: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/heatmap.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/heatmap.vertex.glsl', 'utf8')
+    },
+    heatmapTexture: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/heatmap_texture.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/heatmap_texture.vertex.glsl', 'utf8')
+    },
     collisionBox: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/collision_box.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/collision_box.vertex.glsl', 'utf8')
