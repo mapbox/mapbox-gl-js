@@ -526,7 +526,8 @@ class SourceCache extends Evented {
         tile.removed();
 
         if (tile.hasData()) {
-            const wrappedId = tile.coord.wrapped().id;
+            tile.coord = tile.coord.wrapped();
+            const wrappedId = tile.coord.id;
             this._cache.add((wrappedId: any), tile);
             this._setCacheInvalidationTimer(wrappedId, tile);
         } else {
