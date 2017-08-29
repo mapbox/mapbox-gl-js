@@ -1,38 +1,15 @@
 // @flow
 
-function circlesCollide(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const bothRadii = r1 + r2;
-    return (bothRadii * bothRadii) > (dx * dx + dy * dy);
-}
-
-function circleAndRectCollide(circleX: number, circleY: number, radius: number, x1: number, y1: number, x2: number, y2: number): boolean {
-    const halfRectWidth = (x2 - x1) / 2;
-    const distX = Math.abs(circleX - (x1 + halfRectWidth));
-    if (distX > (halfRectWidth + radius)) {
-        return false;
-    }
-
-    const halfRectHeight = (y2 - y1) / 2;
-    const distY = Math.abs(circleY - (y1 + halfRectHeight));
-    if (distY > (halfRectHeight + radius)) {
-        return false;
-    }
-
-    if (distX <= halfRectWidth || distY <= halfRectHeight) {
-        return true;
-    }
-
-    const dx = distX - halfRectWidth;
-    const dy = distY - halfRectHeight;
-    return (dx * dx + dy * dy <= (radius * radius));
-}
-
 /**
- * A collision index used to prevent symbols from overlapping. It keep tracks of
- * where previous symbols have been placed and is used to check if a new
- * symbol overlaps with any previously added symbols.
+ * GridIndex is a data structure for testing the intersection of
+ * circles and rectangles in a 2d plane.
+ * It is optimized for rapid insertion and querying.
+ * GridIndex splits the plane into a set of "cells" and keeps track
+ * of which geometries intersect with each cell. At query time,
+ * full geometry comparisons are only done for items that share
+ * at least one cell. As long as the geometries are relatively
+ * uniformly distributed across the plane, this greatly reduces
+ * the number of comparisons necessary.
  *
  * @private
  */
@@ -190,7 +167,7 @@ class GridIndex {
                 if (!seenUids.circle[circleUid]) {
                     seenUids.circle[circleUid] = true;
                     const offset = circleUid * 3;
-                    if (circleAndRectCollide(
+                    if (this._circleAndRectCollide(
                         circles[offset],
                         circles[offset + 1],
                         circles[offset + 2],
@@ -220,7 +197,7 @@ class GridIndex {
                 if (!seenUids.box[boxUid]) {
                     seenUids.box[boxUid] = true;
                     const offset = boxUid * 4;
-                    if (circleAndRectCollide(
+                    if (this._circleAndRectCollide(
                         circle.x,
                         circle.y,
                         circle.radius,
@@ -242,7 +219,7 @@ class GridIndex {
                 if (!seenUids.circle[circleUid]) {
                     seenUids.circle[circleUid] = true;
                     const offset = circleUid * 3;
-                    if (circlesCollide(
+                    if (this._circlesCollide(
                         circles[offset],
                         circles[offset + 1],
                         circles[offset + 2],
@@ -277,6 +254,35 @@ class GridIndex {
 
     _convertToYCellCoord(y: number) {
         return Math.max(0, Math.min(this.n - 1, Math.floor(y * this.yScale)));
+    }
+
+    _circlesCollide(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const bothRadii = r1 + r2;
+        return (bothRadii * bothRadii) > (dx * dx + dy * dy);
+    }
+
+    _circleAndRectCollide(circleX: number, circleY: number, radius: number, x1: number, y1: number, x2: number, y2: number): boolean {
+        const halfRectWidth = (x2 - x1) / 2;
+        const distX = Math.abs(circleX - (x1 + halfRectWidth));
+        if (distX > (halfRectWidth + radius)) {
+            return false;
+        }
+
+        const halfRectHeight = (y2 - y1) / 2;
+        const distY = Math.abs(circleY - (y1 + halfRectHeight));
+        if (distY > (halfRectHeight + radius)) {
+            return false;
+        }
+
+        if (distX <= halfRectWidth || distY <= halfRectHeight) {
+            return true;
+        }
+
+        const dx = distX - halfRectWidth;
+        const dy = distY - halfRectHeight;
+        return (dx * dx + dy * dy <= (radius * radius));
     }
 }
 
