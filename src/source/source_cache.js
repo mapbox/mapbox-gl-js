@@ -9,7 +9,6 @@ const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
-const updateTileMasks = require('../render/tile_mask').updateTileMasks;
 
 
 import type {Source} from './source';

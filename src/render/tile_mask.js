@@ -56,7 +56,7 @@ import type Tile from './../source/tile';
 // 2/1/3, since it is not a descendant of it.
 
 
-module.exports = function(renderableTiles: Array<Tile>) {
+module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContext) {
     const sortedRenderables = renderableTiles.sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
@@ -69,7 +69,7 @@ module.exports = function(renderableTiles: Array<Tile>) {
         // can never be children of the current wrap.
 
         computeTileMasks(tile.coord.wrapped(), tile.coord, childArray, new TileCoord(0, 0, 0, tile.coord.w + 1), mask);
-        tile.setMask(mask);
+        tile.setMask(mask, gl);
     }
 };
 

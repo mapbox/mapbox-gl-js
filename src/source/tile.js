@@ -15,7 +15,7 @@ const RasterBoundsArray = require('../data/raster_bounds_array');
 const TileCoord = require('./tile_coord');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
-const Buffer = require('../data/buffer');
+const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
 
@@ -72,12 +72,9 @@ class Tile {
     workerID: number;
     vtLayers: {[string]: VectorTileLayer};
     mask: Array<number>;
-
     aborted: ?boolean;
-    boundsBuffer: any;
-    boundsVAO: any;
-    maskedRasterBoundsBuffer: any;
-    maskedRasterBoundsVAO: any;
+    maskedBoundsBuffer: ?VertexBuffer;
+    maskedBoundsVAO: ?VertexArrayObject;
     request: any;
     texture: any;
     sourceCache: any;
@@ -366,33 +363,34 @@ class Tile {
         }
     }
 
-    setMask(mask: Array<number>) {
+    setMask(mask: Array<number>, gl: WebGLRenderingContext) {
 
         // don't redo buffer work if the mask is the same;
         if (util.deepEqual(this.mask, mask)) return;
+
+        this.mask = mask;
+        this.maskedBoundsBuffer = undefined;
+        this.maskedBoundsVAO = undefined;
+
         // We want to render the full tile, and keeping the segments/vertices/indices empty means
         // using the global shared buffers for covering the entire tile.
-        this.mask = mask;
-        this.maskedRasterBoundsBuffer = undefined;
-        this.maskedRasterBoundsVAO = undefined;
         if (util.deepEqual(mask, [0])) return;
-        const maskedBoundsArray = new RasterBoundsArray();
 
+        const maskedBoundsArray = new RasterBoundsArray();
         for (let i = 0; i < mask.length; i++) {
             const maskCoord = TileCoord.fromID(mask[i]);
             const vertexExtent = EXTENT >> maskCoord.z;
             const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
             const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);
 
-
             maskedBoundsArray.emplaceBack(tlVertex.x, tlVertex.y, tlVertex.x, tlVertex.y);
             maskedBoundsArray.emplaceBack(brVertex.x, tlVertex.y, brVertex.x, tlVertex.y);
             maskedBoundsArray.emplaceBack(tlVertex.x, brVertex.y, tlVertex.x, brVertex.y);
             maskedBoundsArray.emplaceBack(brVertex.x, brVertex.y, brVertex.x, brVertex.y);
         }
-        this.maskedRasterBoundsBuffer = Buffer.fromStructArray(maskedBoundsArray, Buffer.BufferType.VERTEX);
-        this.maskedRasterBoundsVAO = new VertexArrayObject();
 
+        this.maskedBoundsBuffer = new VertexBuffer(gl, maskedBoundsArray);
+        this.maskedBoundsVAO = new VertexArrayObject();
     }
 
     hasData() {

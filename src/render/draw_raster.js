@@ -77,6 +77,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLaye
             const vao = source.boundsVAO;
             vao.bind(gl, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+        } else if (tile.maskedBoundsBuffer && tile.maskedBoundsVAO) {
+            const buffer = tile.maskedBoundsBuffer;
+            const vao = tile.maskedBoundsVAO;
+            vao.bind(gl, program, buffer);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         } else {
             const buffer = painter.rasterBoundsBuffer;
             const vao = painter.rasterBoundsVAO;
@@ -85,19 +90,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLaye
         }
     }
 
-    // cross-fade parameters
-    gl.uniform2fv(program.u_tl_parent, parentTL || [0, 0]);
-    gl.uniform1f(program.u_scale_parent, parentScaleBy || 1);
-    gl.uniform1f(program.u_buffer_scale, 1);
-    gl.uniform1f(program.u_fade_t, fade.mix);
-    gl.uniform1f(program.u_opacity, fade.opacity * layer.paint['raster-opacity']);
-    gl.uniform1i(program.u_image0, 0);
-    gl.uniform1i(program.u_image1, 1);
-
-    const buffer = tile.maskedRasterBoundsBuffer || tile.boundsBuffer || painter.rasterBoundsBuffer;
-    const vao = tile.maskedRasterBoundsVAO || tile.boundsVAO || painter.rasterBoundsVAO;
-    vao.bind(gl, program, buffer);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    gl.depthFunc(gl.LEQUAL);
 }
 
 function spinWeights(angle) {

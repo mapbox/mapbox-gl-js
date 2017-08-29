@@ -14,8 +14,6 @@ const PosArray = require('../data/pos_array');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const shaders = require('../shaders');
 const Program = require('./program');
-const RenderTexture = require('./render_texture');
-const assert = require('assert');
 const updateTileMasks = require('./tile_mask');
 
 const draw = {
@@ -273,14 +271,13 @@ class Painter {
         }
 
         const layerIds = this.style._order;
-    
+
         const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc._source.type === 'raster'; });
-        const coords = sourceCache.getVisibleCoordinates();
         for (const key in rasterSources) {
             const sourceCache = rasterSources[key];
+            const coords = sourceCache.getVisibleCoordinates();
             const visibleTiles = coords.map((c)=>{ return sourceCache.getTile(c); });
-            updateTileMasks(visibleTiles);
-            
+            updateTileMasks(visibleTiles, this.gl);
         }
 
         // 3D pass
