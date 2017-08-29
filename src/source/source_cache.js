@@ -16,6 +16,7 @@ import type Style from '../style/style';
 import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
+import type CollisionIndex from '../symbol/collision_index';
 
 /**
  * `SourceCache` is responsible for
@@ -44,7 +45,7 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
-    _needsPlacement: boolean;
+    _needsFullPlacement: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string) => boolean;
@@ -126,8 +127,8 @@ class SourceCache extends Evented {
         this._paused = true;
     }
 
-    getNeedsPlacement() {
-        return this._needsPlacement;
+    getNeedsFullPlacement() {
+        return this._needsFullPlacement;
     }
 
     resume() {
@@ -228,7 +229,7 @@ class SourceCache extends Evented {
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
 
-        this._needsPlacement = true;
+        this._needsFullPlacement = true;
         tile.added();
     }
 
@@ -456,7 +457,7 @@ class SourceCache extends Evented {
 
         tile = this._cache.get((tileCoord.id: any));
         if (tile) {
-            this._needsPlacement = true;
+            this._needsFullPlacement = true;
             tile.added();
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
@@ -522,7 +523,7 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        this._needsPlacement = true;
+        this._needsFullPlacement = true;
         tile.removed();
 
         if (tile.hasData()) {
@@ -603,15 +604,23 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement(viewportCollisionIndex: any, showCollisionBoxes: boolean, layer: any, posMatrices: any, transform: any, collisionFadeTimes: any) {
-        this._needsPlacement = false;
+    placeLayer(collisionIndex: CollisionIndex, showCollisionBoxes: boolean, layer: any, posMatrices: any, transform: any, collisionFadeTimes: any) {
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
             if (!posMatrices[i]) {
                 posMatrices[i] = transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
             }
-            tile.redoPlacement(this._source, showCollisionBoxes, viewportCollisionIndex, layer, posMatrices[i], collisionFadeTimes);
+            tile.placeLayer(showCollisionBoxes, collisionIndex, layer, posMatrices[i], collisionFadeTimes);
+        }
+    }
+
+    commitPlacement(collisionIndex: CollisionIndex) {
+        this._needsFullPlacement = false;
+        const ids = this.getIds();
+        for (let i = 0; i < ids.length; i++) {
+            const tile = this.getTileByID(ids[i]);
+            tile.commitPlacement(collisionIndex);
         }
     }
 

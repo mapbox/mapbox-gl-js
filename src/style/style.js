@@ -95,7 +95,7 @@ class Style extends Evented {
     _currentPlacementIndex: number;
     _fullPlacementStart: number;
     _fullPlacementElapsed: number;
-    viewportCollisionIndex: CollisionIndex;
+    collisionIndex: CollisionIndex;
     z: number;
 
     constructor(stylesheet: StyleSpecification, map: Map, options: StyleOptions) {
@@ -925,9 +925,9 @@ class Style extends Evented {
         }
     }
 
-    getNeedsPlacement() {
+    getNeedsFullPlacement() {
         for (const id in this.sourceCaches) {
-            if (this.sourceCaches[id].getNeedsPlacement()) {
+            if (this.sourceCaches[id].getNeedsFullPlacement()) {
                 return true;
             }
         }
@@ -940,15 +940,17 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform: Transform, showCollisionBoxes: boolean, forceFullPlacement: boolean, collisionFadeTimes: any) {
-        // TODO: There are sure to be bugs depending on this boolean flag for when to do a full placement...
-        // Make style aware itself of when it needs to re-build?
-
+    _redoPlacement(transform: Transform, showCollisionBoxes: boolean, collisionFadeTimes: any) {
+        const forceFullPlacement = this.getNeedsFullPlacement();
         const posMatrices = {};
 
-        if (forceFullPlacement || typeof this._currentPlacementIndex === 'undefined' || this._currentPlacementIndex < 0) {
+        if (forceFullPlacement ||
+            typeof this._currentPlacementIndex === 'undefined' ||
+            this._currentPlacementIndex < 0) {
+            // Create a new CollisionIndex using the current transform state
+            // and start doing placement
             this._currentPlacementIndex = this._order.length - 1;
-            this.viewportCollisionIndex = new CollisionIndex(transform.clone());
+            this.collisionIndex = new CollisionIndex(transform.clone());
             this._fullPlacementStart = browser.now();
             this._fullPlacementElapsed = 0;
         }
@@ -958,6 +960,9 @@ class Style extends Evented {
 
         while (this._currentPlacementIndex >= 0) {
             if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
+                // We didn't finish placing all layers within 2ms,
+                // but we can keep rendering with a partial placement
+                // We'll resume here on the next frame
                 const elapsed = browser.now() - startPlacement;
                 this._fullPlacementElapsed += elapsed;
                 //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
@@ -973,8 +978,11 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionIndex, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
+                this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
             }
+        }
+        for (const id in this.sourceCaches) {
+            this.sourceCaches[id].commitPlacement(this.collisionIndex);
         }
         const elapsed = browser.now() - startPlacement;
         this._fullPlacementElapsed += elapsed;

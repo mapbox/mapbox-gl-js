@@ -127,19 +127,15 @@ class Tile {
             return;
         }
 
-        // If we are redoing placement for the same tile, we will not recieve
-        // a new "rawTileData" object. If we are loading a new tile, we will
-        // recieve a new "rawTileData" object.
         if (data.rawTileData) {
+            // Only vector tiles have rawTileData
             this.rawTileData = data.rawTileData;
         }
-
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData);
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
         this.crossTileSymbolIndex = painter.crossTileSymbolIndex;
-
     }
 
     /**
@@ -154,7 +150,6 @@ class Tile {
         this.buckets = {};
 
         this.collisionBoxArray = null;
-        this.collisionIndex = null;
         this.featureIndex = null;
         this.state = 'unloaded';
         this.crossTileSymbolIndex = null;
@@ -178,15 +173,7 @@ class Tile {
         }
     }
 
-    redoPlacement(source: any, showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
-        if (source.type !== 'vector' && source.type !== 'geojson') {
-            return;
-        }
-        if (this.state !== 'loaded') {
-            this.redoWhenDone = true;
-            return;
-        }
-
+    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
         const bucket = this.getBucket(layer);
 
         if (bucket && bucket instanceof SymbolBucket) {
@@ -198,19 +185,14 @@ class Tile {
             PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, this.collisionBoxArray);
             PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
         }
+    }
 
-        this.collisionIndex = collisionIndex;
-
+    commitPlacement(collisionIndex: CollisionIndex) {
+        // Don't update the collision index used for queryRenderedFeatures
+        // until all layers have been updated to the same state
         if (this.featureIndex) {
-            this.featureIndex.setCollisionIndex(this.collisionIndex);
+            this.featureIndex.setCollisionIndex(collisionIndex);
         }
-
-        // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
-        if (source.map) source.map.painter.tileExtentVAO.vao = null;
-
-        // TODO: This logic is really brittle with placement now happening one layer at a time
-        // This only works because we're flagging "forceFullPlacement" when tiles are added
-        this.state = 'loaded';
     }
 
     getBucket(layer: StyleLayer) {

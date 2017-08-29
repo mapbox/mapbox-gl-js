@@ -12,7 +12,6 @@ const CollisionIndex = require('../../../src/symbol/collision_index');
 const Transform = require('../../../src/geo/transform');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
-const Evented = require('../../../src/util/evented');
 
 test('querySourceFeatures', (t) => {
     const features = [{
@@ -171,26 +170,6 @@ test('Tile#redoPlacement', (t) => {
         t.ok(tile.redoWhenDone);
         t.end();
     });
-
-    // TODO: Need to figure out  appropriate handling of 'data' events for placement now that placement
-    // isn't actually generating new buffers
-
-    // test('reloaded tile fires a data event on completion', (t)=>{
-    //     const tile = new Tile(new TileCoord(1, 1, 1));
-    //     tile.loadVectorData(createVectorData(), createPainter());
-    //     t.stub(tile, 'reloadSymbolData').returns(null);
-    //     const source = util.extend(new Evented(), {
-    //         type: 'vector',
-    //         map: {
-    //             painter: { tileExtentVAO: {vao: 0}}
-    //         }
-    //     });
-    //
-    //     tile.redoPlacement(source, false, new CollisionIndex(new Transform()), {id: 'layer'});
-    //     source.on('data', ()=>{
-    //         if (tile.state === 'loaded') t.end();
-    //     });
-    // });
 
     t.end();
 });
