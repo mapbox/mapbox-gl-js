@@ -541,7 +541,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {?number} minZoom The minimum zoom level to set (0-20).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -572,7 +572,7 @@ class Map extends Camera {
      * If the map's current zoom level is higher than the new maximum,
      * the map will zoom to the new maximum.
      *
-     * @param {?number} maxZoom The maximum zoom level to set.
+     * @param {number | null | undefined} maxZoom The maximum zoom level to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
      * @returns {Map} `this`
      */
@@ -1203,8 +1203,8 @@ class Map extends Camera {
      * Sets the filter for the specified style layer.
      *
      * @param {string} layer The ID of the layer to which the filter will be applied.
-     * @param {Array} filter The filter, conforming to the Mapbox Style Specification's
-     *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
+     * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
+     *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
