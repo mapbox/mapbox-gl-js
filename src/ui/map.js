@@ -1557,13 +1557,12 @@ class Map extends Camera {
 
         let pendingCollisionDetection = false;
         let skippedPlacement = true;
-        const needsPlacement = this.style.getNeedsPlacement();
         if (this.style &&
-            (this._placementInProgress || needsPlacement || browser.now() > (this._lastPlacement + 100))) {
+            (this._placementInProgress || this.style.getNeedsFullPlacement() || browser.now() > (this._lastPlacement + 100))) {
             this._lastPlacement = browser.now();
             skippedPlacement = false;
             pendingCollisionDetection = this._placementInProgress =
-                this.style._redoPlacement(this.painter.transform, this.showCollisionBoxes, needsPlacement, this._collisionFadeTimes);
+                this.style._redoPlacement(this.painter.transform, this.showCollisionBoxes, this._collisionFadeTimes);
         }
 
         // Actually draw
