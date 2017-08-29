@@ -52,40 +52,24 @@ class CollisionIndex {
      * overlapping with other features.
      * @private
      */
-    placeCollisionBoxes(collisionBoxes: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): Array<number> {
-        const placedCollisionBoxes = [];
-        if (!collisionBoxes) {
-            return placedCollisionBoxes;
-        }
+    placeCollisionBox(collisionBox: Array<number>, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): Array<number> {
+        const projectedPoint = this.projectAndGetPerspectiveRatio(new Point(collisionBox[4], collisionBox[5]));
+        const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
+        const tlX = collisionBox[0] / tileToViewport + projectedPoint.point.x;
+        const tlY = collisionBox[1] / tileToViewport + projectedPoint.point.y;
+        const brX = collisionBox[2] / tileToViewport + projectedPoint.point.x;
+        const brY = collisionBox[3] / tileToViewport + projectedPoint.point.y;
 
-        for (let k = 0; k < collisionBoxes.length; k += 6) {
-            const projectedPoint = this.projectAndGetPerspectiveRatio(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
-            const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
-            const tlX = collisionBoxes[k] / tileToViewport + projectedPoint.point.x;
-            const tlY = collisionBoxes[k + 1] / tileToViewport + projectedPoint.point.y;
-            const brX = collisionBoxes[k + 2] / tileToViewport + projectedPoint.point.x;
-            const brY = collisionBoxes[k + 3] / tileToViewport + projectedPoint.point.y;
-
-            placedCollisionBoxes.push(tlX);
-            placedCollisionBoxes.push(tlY);
-            placedCollisionBoxes.push(brX);
-            placedCollisionBoxes.push(brY);
-
-            if (!allowOverlap) {
-                if (this.grid.hitTest(tlX, tlY, brX, brY)) {
-                    return [];
-                }
+        if (!allowOverlap) {
+            if (this.grid.hitTest(tlX, tlY, brX, brY)) {
+                return [];
             }
         }
-
-        return placedCollisionBoxes;
+        return [tlX, tlY, brX, brY];
     }
 
-    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean): Array<number> {
+    placeCollisionCircles(collisionCircles: Array<any>, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean): Array<number> {
         const placedCollisionCircles = [];
-        if (!collisionCircles) {
-            return placedCollisionCircles;
-        }
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         const perspectiveRatio = this.getPerspectiveRatio(tileUnitAnchorPoint);
@@ -268,19 +252,14 @@ class CollisionIndex {
      * later features from overlapping with it.
      * @private
      */
-    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
+    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        for (let k = 0; k < collisionBoxes.length; k += 4) {
-            const key = { tileID: tileID, boxIndex: boxStartIndex + (k / 4) };
-            grid.insert(key, collisionBoxes[k],
-                collisionBoxes[k + 1],
-                collisionBoxes[k + 2],
-                collisionBoxes[k + 3]);
-        }
+        const key = { tileID: tileID, boxIndex: boxStartIndex };
+        grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
-    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
+    insertCollisionCircles(collisionCircles: Array<any>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 4) {
