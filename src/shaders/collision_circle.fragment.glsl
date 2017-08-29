@@ -3,6 +3,7 @@ varying float v_placed;
 varying float v_notUsed;
 varying float v_radius;
 varying vec2 v_extrude;
+varying vec2 v_extrude_scale;
 
 void main() {
     float alpha = 0.5;
@@ -20,10 +21,13 @@ void main() {
         color *= .1;
     }
 
-    float extrude_length = length(v_extrude);
-    if ((extrude_length < v_radius) && (extrude_length + 20.0 > v_radius)) {
-        gl_FragColor = color;
-    } else {
-        gl_FragColor = 0.0 * color;
-    }
+    float extrude_scale_length = length(v_extrude_scale);
+    float extrude_length = length(v_extrude) * extrude_scale_length;
+    float stroke_width = 5.0;
+    float radius = v_radius * extrude_scale_length;
+
+    float distance_to_edge = abs(extrude_length - radius);
+    float opacity_t = smoothstep(-stroke_width, 0.0, -distance_to_edge);
+
+    gl_FragColor = opacity_t * color;
 }
