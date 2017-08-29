@@ -181,7 +181,7 @@ class ImageSource extends Evented implements Source {
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
-    _prepareImage(gl: WebGLRenderingContext, image: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement, resize?: boolean) {
+    _prepareImage(gl: WebGLRenderingContext, image: HTMLImageElement | HTMLVideoElement | ImageData, resize?: boolean) {
         if (!this.boundsBuffer) {
             this.boundsBuffer = new VertexBuffer(gl, this._boundsArray);
         }
@@ -201,7 +201,7 @@ class ImageSource extends Evented implements Source {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         } else if (resize) {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData || image instanceof window.HTMLCanvasElement) {
+        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData) {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }

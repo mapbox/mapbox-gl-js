@@ -22,7 +22,8 @@ import type Evented from '../util/evented';
  *        [-76.52, 39.18],
  *        [-76.52, 39.17],
  *        [-76.54, 39.17]
- *    ]
+ *    ],
+ *    contextType: '2d'
  * });
  *
  * // update
@@ -40,6 +41,8 @@ class CanvasSource extends ImageSource {
     options: CanvasSourceSpecification;
     animate: boolean;
     canvas: HTMLCanvasElement;
+    context: (CanvasRenderingContext2D | WebGLRenderingContext);
+    secondaryContext: ?CanvasRenderingContext2D;
     width: number;
     height: number;
     play: () => void;
@@ -53,6 +56,9 @@ class CanvasSource extends ImageSource {
 
     load() {
         this.canvas = this.canvas || window.document.getElementById(this.options.canvas);
+        const context = this.canvas.getContext(this.options.contextType);
+        if (!context) return this.fire('error', new Error('Canvas context not found.'));
+        this.context = context;
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         if (this._hasInvalidDimensions()) return this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
@@ -101,6 +107,24 @@ class CanvasSource extends ImageSource {
      */
     // setCoordinates inherited from ImageSource
 
+    readCanvas() {
+        // We *should* be able to use a pure HTMLCanvasElement in
+        // texImage2D/texSubImage2D (in ImageSource#_prepareImage), but for
+        // some reason this breaks the map on certain GPUs (see #4262).
+
+        if (this.context instanceof CanvasRenderingContext2D) {
+            return this.context.getImageData(0, 0, this.width, this.height);
+        } else if (this.context instanceof WebGLRenderingContext) {
+            const gl = this.context;
+            const data = new Uint8Array(this.width * this.height * 4);
+            gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+            if (!this.secondaryContext) this.secondaryContext = window.document.createElement('canvas').getContext('2d');
+            const imageData = this.secondaryContext.createImageData(this.width, this.height);
+            imageData.data.set(data);
+            return imageData;
+        }
+    }
+
     prepare() {
         let resize = false;
         if (this.canvas.width !== this.width) {
@@ -114,7 +138,12 @@ class CanvasSource extends ImageSource {
         if (this._hasInvalidDimensions()) return;
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
-        this._prepareImage(this.map.painter.gl, this.canvas, resize);
+        const canvasData = this.readCanvas();
+        if (!canvasData) {
+            this.fire('error', new Error('Could not read canvas data.'));
+            return;
+        }
+        this._prepareImage(this.map.painter.gl, canvasData, resize);
     }
 
     serialize(): Object {
