@@ -12,7 +12,6 @@
   "render-tests/geojson/inline-linestring-fill": "current behavior is arbitrary",
   "render-tests/line-dasharray/zoom-history": "needs investigation",
   "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
-  "render-tests/runtime-styling/image-add-alpha": "failing on Circle CI 2.0, needs investigation",
   "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/text-pitch-alignment/auto-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
