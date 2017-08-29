@@ -18,5 +18,15 @@
   "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
   "render-tests/text-pitch-alignment/auto-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
   "render-tests/text-pitch-alignment/map-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
-  "render-tests/text-pitch-scaling/line-half": "https://github.com/mapbox/mapbox-gl-js/issues/5118"
+  "render-tests/text-pitch-scaling/line-half": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
+  "render-tests/icon-translate-anchor/map": "WIP Ignore for PR #5150",
+  "render-tests/icon-translate-anchor/viewport": "WIP Ignore for PR #5150",
+  "render-tests/symbol-avoid-edges/default": "WIP Ignore for PR #5150",
+  "render-tests/symbol-avoid-edges/rotated": "WIP Ignore for PR #5150",
+  "render-tests/symbol-avoid-edges/rotated-false": "WIP Ignore for PR #5150",
+  "render-tests/symbol-avoid-edges/true": "WIP Ignore for PR #5150",
+  "render-tests/symbol-spacing/line-close": "WIP Ignore for PR #5150",
+  "render-tests/symbol-spacing/line-far": "WIP Ignore for PR #5150",
+  "render-tests/text-letter-spacing/zoom-and-property-function": "WIP Ignore for PR #5150",
+  "render-tests/text-tile-edge-clipping/default": "WIP Ignore for PR #5150"
 }
