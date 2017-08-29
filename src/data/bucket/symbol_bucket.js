@@ -693,39 +693,45 @@ class SymbolBucket implements Bucket {
 
     // These flat arrays are meant to be quicker to iterate over than the source
     // CollisionBoxArray
-    deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number) {
-        const boxes = [];
-        for (let k = startIndex; k < endIndex; k++) {
+    deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, iconStartIndex: number, iconEndIndex: number) {
+        const collisionArrays = {};
+        for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
-            if (box.radius !== 0) {
-                // This is actually an array of circles
-                return [];
+            if (box.radius === 0) {
+                collisionArrays.textBox = [];
+                collisionArrays.textBox.push(box.x1);
+                collisionArrays.textBox.push(box.y1);
+                collisionArrays.textBox.push(box.x2);
+                collisionArrays.textBox.push(box.y2);
+                collisionArrays.textBox.push(box.anchorPointX);
+                collisionArrays.textBox.push(box.anchorPointY);
+                break; // Only one box allowed per instance
+            } else {
+                if (!collisionArrays.textCircles) {
+                    collisionArrays.textCircles = [];
+                }
+                collisionArrays.textCircles.push(box.anchorPointX);
+                collisionArrays.textCircles.push(box.anchorPointY);
+                collisionArrays.textCircles.push(box.radius);
+                collisionArrays.textCircles.push(box.distanceToAnchor);
+                collisionArrays.textCircles.push(false); // Last position is used to mark if the circle is actually used at render time
             }
-            boxes.push(box.x1);
-            boxes.push(box.y1);
-            boxes.push(box.x2);
-            boxes.push(box.y2);
-            boxes.push(box.anchorPointX);
-            boxes.push(box.anchorPointY);
         }
-        return boxes;
-    }
-
-    deserializeCollisionCircles(collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number) {
-        const circles = [];
-        for (let k = startIndex; k < endIndex; k++) {
-            const circle: CollisionBox = (collisionBoxArray.get(k): any);
-            if (circle.radius === 0) {
-                // This is actually an array of boxes
-                return [];
+        for (let k = iconStartIndex; k < iconEndIndex; k++) {
+            // An icon can only have one box now, so this indexing is a bit vestigial...
+            const box: CollisionBox = (collisionBoxArray.get(k): any);
+            if (box.radius === 0) {
+                collisionArrays.iconBox = [];
+                collisionArrays.iconBox.push(box.x1);
+                collisionArrays.iconBox.push(box.y1);
+                collisionArrays.iconBox.push(box.x2);
+                collisionArrays.iconBox.push(box.y2);
+                collisionArrays.iconBox.push(box.anchorPointX);
+                collisionArrays.iconBox.push(box.anchorPointY);
+                break; // Only one box allowed per instance
             }
-            circles.push(circle.anchorPointX);
-            circles.push(circle.anchorPointY);
-            circles.push(circle.radius);
-            circles.push(circle.distanceToAnchor);
-            circles.push(false); // Last position is used to mark if the circle is actually used at render time
         }
-        return circles;
+        return collisionArrays;
     }
 }
 
