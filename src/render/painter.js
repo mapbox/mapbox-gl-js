@@ -287,7 +287,6 @@ class Painter {
         // than we do in the 2D pass (to preserve layer order).
         this.renderPass = '3d';
         {
-            const gl = this.gl;
             // We'll wait and only attach the depth renderbuffer if we think we're
             // rendering something.
             let first = true;
