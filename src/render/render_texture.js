@@ -39,13 +39,13 @@ class RenderTexture {
         this.vao = new VertexArrayObject();
     }
 
-    attachDepthRenderbuffer(depthRbo: WebGLRenderbuffer) {
+    bindWithDepth(depthRbo: WebGLRenderbuffer) {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRbo);
     }
 
-    detachDepthRenderbuffer() {
+    unbind() {
         const gl = this.gl;
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);

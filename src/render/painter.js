@@ -317,7 +317,7 @@ class Painter {
                 this._setup3DRenderbuffer();
 
                 const renderTarget = this.viewportFrames.pop() || new RenderTexture(this);
-                renderTarget.attachDepthRenderbuffer(this.depthRbo);
+                renderTarget.bindWithDepth(this.depthRbo);
 
                 if (first) {
                     this.clearDepth();
@@ -326,11 +326,9 @@ class Painter {
 
                 this.renderLayer(this, (sourceCache: any), layer, coords);
 
-                renderTarget.detachDepthRenderbuffer();
+                renderTarget.unbind();
                 this.prerenderedFrames[layer.id] = renderTarget;
             }
-
-            if (this.depthRboAttached) gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         }
 
         // Clear buffers in preparation for drawing to the main framebuffer
