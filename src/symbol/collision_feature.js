@@ -52,7 +52,7 @@ class CollisionFeature {
                 // set minimum box height to avoid very many small labels
                 height = Math.max(10 * boxScale, height);
 
-                this._addLineCollisionBoxes(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
+                this._addLineCollisionCircles(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
             }
 
         } else {
@@ -71,7 +71,7 @@ class CollisionFeature {
      * @param boxSize The size of the collision boxes that will be created.
      * @private
      */
-    _addLineCollisionBoxes(collisionBoxArray: CollisionBoxArray,
+    _addLineCollisionCircles(collisionBoxArray: CollisionBoxArray,
                            line: Array<Point>,
                            anchor: Anchor,
                            segment: number,

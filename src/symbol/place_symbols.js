@@ -74,16 +74,14 @@ function updateOpacities(bucket: any, collisionFadeTimes: any) {
 }
 
 
-function updateCollisionBoxes(collisionVertexArray: any, collisionBoxes: any, placed: boolean) {
+function updateCollisionBox(collisionVertexArray: any, collisionBox: any, placed: boolean) {
     if (!collisionVertexArray) {
         return;
     }
-    for (let k = 0; k < collisionBoxes.length; k += 6) {
-        collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-        collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-        collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-        collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
-    }
+    collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+    collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+    collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
+    collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
 }
 
 function updateCollisionCircles(collisionVertexArray: any, collisionCircles: any, placed: boolean) {
@@ -121,50 +119,44 @@ function place(bucket: any, collisionIndex: any, showCollisionBoxes: boolean, zo
 
         const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
         const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
-        if (!symbolInstance.textCollisionBoxes) {
-            symbolInstance.textCollisionBoxes = bucket.deserializeCollisionBoxes(collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex);
-        }
-        if (!symbolInstance.textCollisionCirlces) {
-            symbolInstance.textCollisionCircles = bucket.deserializeCollisionCircles(collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex);
-        }
-        if (!symbolInstance.iconCollisionBoxes) {
-            symbolInstance.iconCollisionBoxes = bucket.deserializeCollisionBoxes(collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
+        if (!symbolInstance.collisionArrays) {
+            symbolInstance.collisionArrays = bucket.deserializeCollisionBoxes(collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
         }
 
         const iconWithoutText = layout['text-optional'] || !hasText,
             textWithoutIcon = layout['icon-optional'] || !hasIcon;
 
-
-        // Calculate the scales at which the text and icon can be placed without collision.
-        let placedGlyphBoxes = [];
+        let placedGlyphBox = [];
+        let placedIconBox = [];
         let placedGlyphCircles = [];
-        if (hasText) {
-            placedGlyphBoxes = collisionIndex.placeCollisionBoxes(symbolInstance.textCollisionBoxes,
+        if (symbolInstance.collisionArrays.textBox) {
+            placedGlyphBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
                 layout['text-allow-overlap'], scale, pixelsToTileUnits);
-
-            if (symbolInstance.textCollisionCircles && symbolInstance.textCollisionCircles.length) {
-                const placedSymbol = bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]);
-                const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
-                placedGlyphCircles = collisionIndex.placeCollisionCircles(symbolInstance.textCollisionCircles,
-                    layout['text-allow-overlap'],
-                    scale,
-                    pixelsToTileUnits,
-                    symbolInstance.key,
-                    placedSymbol,
-                    bucket.lineVertexArray,
-                    bucket.glyphOffsetArray,
-                    fontSize,
-                    labelPlaneMatrix,
-                    showCollisionBoxes);
-            }
         }
 
-        const placedIconBoxes = hasIcon ?
-            collisionIndex.placeCollisionBoxes(symbolInstance.iconCollisionBoxes,
-                layout['icon-allow-overlap'], scale, pixelsToTileUnits) :
-            [];
-        let placeGlyph = placedGlyphBoxes.length > 0 || placedGlyphCircles.length > 0;
-        let placeIcon = placedIconBoxes.length > 0;
+        if (symbolInstance.collisionArrays.iconBox) {
+            placedIconBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
+                layout['icon-allow-overlap'], scale, pixelsToTileUnits);
+        }
+
+        if (symbolInstance.collisionArrays.textCircles) {
+            const placedSymbol = bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]);
+            const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
+            placedGlyphCircles = collisionIndex.placeCollisionCircles(symbolInstance.collisionArrays.textCircles,
+                layout['text-allow-overlap'],
+                scale,
+                pixelsToTileUnits,
+                symbolInstance.key,
+                placedSymbol,
+                bucket.lineVertexArray,
+                bucket.glyphOffsetArray,
+                fontSize,
+                labelPlaneMatrix,
+                showCollisionBoxes);
+        }
+
+        let placeGlyph = placedGlyphBox.length > 0 || placedGlyphCircles.length > 0;
+        let placeIcon = placedIconBox.length > 0;
 
         // Combine the scales for icons and text.
         if (!iconWithoutText && !textWithoutIcon) {
@@ -175,29 +167,25 @@ function place(bucket: any, collisionIndex: any, showCollisionBoxes: boolean, zo
             placeIcon = placeIcon && placeGlyph;
         }
 
+        symbolInstance.placedText = placeGlyph;
+        symbolInstance.placedIcon = placeIcon;
 
-        // Insert final placement into collision tree and add glyphs/icons to buffers
-        if (!hasText && !hasIcon) continue;
-
-        if (hasText) {
-            updateCollisionBoxes(collisionDebugBoxArray, symbolInstance.textCollisionBoxes, placeGlyph);
-            updateCollisionCircles(collisionDebugCircleArray, symbolInstance.textCollisionCircles, placeGlyph);
+        if (symbolInstance.collisionArrays.textBox) {
+            updateCollisionBox(collisionDebugBoxArray, symbolInstance.collisionArrays.textBox, placeGlyph);
             if (placeGlyph) {
-                symbolInstance.placedText = true;
-                collisionIndex.insertCollisionBoxes(placedGlyphBoxes, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
-                collisionIndex.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
-            } else {
-                symbolInstance.placedText = false;
+                collisionIndex.insertCollisionBox(placedGlyphBox, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
             }
         }
-
-        if (hasIcon) {
-            updateCollisionBoxes(collisionDebugBoxArray, symbolInstance.iconCollisionBoxes, placeIcon);
+        if (symbolInstance.collisionArrays.iconBox) {
+            updateCollisionBox(collisionDebugBoxArray, symbolInstance.collisionArrays.iconBox, placeIcon);
             if (placeIcon) {
-                symbolInstance.placedIcon = true;
-                collisionIndex.insertCollisionBoxes(placedIconBoxes, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
-            } else {
-                symbolInstance.placedIcon = false;
+                collisionIndex.insertCollisionBox(placedIconBox, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
+            }
+        }
+        if (symbolInstance.collisionArrays.textCircles) {
+            updateCollisionCircles(collisionDebugCircleArray, symbolInstance.collisionArrays.textCircles, placeGlyph);
+            if (placeGlyph) {
+                collisionIndex.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
             }
         }
 
