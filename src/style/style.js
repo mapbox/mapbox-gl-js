@@ -95,6 +95,7 @@ class Style extends Evented {
     _currentPlacementIndex: number;
     _fullPlacementStart: number;
     _fullPlacementElapsed: number;
+    _interruptions: number;
     collisionIndex: CollisionIndex;
     z: number;
 
@@ -953,32 +954,39 @@ class Style extends Evented {
             this.collisionIndex = new CollisionIndex(transform.clone());
             this._fullPlacementStart = browser.now();
             this._fullPlacementElapsed = 0;
+            this._interruptions = 0;
         }
 
         const startPlacement = browser.now();
-        //let placedLayers = 0;
+        let pausedPlacement = false;
+        const shouldPausePlacement = () => {
+            const elapsedTime = browser.now() - startPlacement;
+            return forceFullPlacement ? false : elapsedTime > 2;
+        };
 
         while (this._currentPlacementIndex >= 0) {
-            if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
+            if (pausedPlacement) {
                 // We didn't finish placing all layers within 2ms,
                 // but we can keep rendering with a partial placement
                 // We'll resume here on the next frame
                 const elapsed = browser.now() - startPlacement;
                 this._fullPlacementElapsed += elapsed;
-                //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+                this._interruptions++;
                 return true;
             }
 
-            const layerId = this._order[this._currentPlacementIndex--];
-            //placedLayers++;
+            const layerId = this._order[this._currentPlacementIndex];
             const layer = this._layers[layerId];
-            if (layer.type !== 'symbol') continue;
-
-            for (const id in this.sourceCaches) {
-                if (!posMatrices[id]) {
-                    posMatrices[id] = {};
+            if (layer.type === 'symbol') {
+                for (const id in this.sourceCaches) {
+                    if (!posMatrices[id]) {
+                        posMatrices[id] = {};
+                    }
+                    pausedPlacement = this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, posMatrices[id], collisionFadeTimes, shouldPausePlacement);
                 }
-                this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
+            }
+            if (!pausedPlacement) {
+                this._currentPlacementIndex--;
             }
         }
         for (const id in this.sourceCaches) {
@@ -986,8 +994,7 @@ class Style extends Evented {
         }
         const elapsed = browser.now() - startPlacement;
         this._fullPlacementElapsed += elapsed;
-        //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
-        //console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time`);
+        //console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time, with ${this._interruptions} interruptions.`);
         return false;
     }
 
