@@ -13,6 +13,7 @@ import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from 
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type {StructArray} from '../../util/struct_array';
+import type Point from '@mapbox/point-geometry';
 
 const circleInterface = {
     layoutAttributes: [
@@ -79,8 +80,9 @@ class CircleBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0].filter(feature)) {
-                this.addFeature(feature);
-                options.featureIndex.insert(feature, index, sourceLayerIndex, this.index);
+                const geometry = loadGeometry(feature);
+                this.addFeature(feature, geometry);
+                options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
         }
     }
@@ -114,8 +116,8 @@ class CircleBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: VectorTileFeature) {
-        for (const ring of loadGeometry(feature)) {
+    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
+        for (const ring of geometry) {
             for (const point of ring) {
                 const x = point.x;
                 const y = point.y;

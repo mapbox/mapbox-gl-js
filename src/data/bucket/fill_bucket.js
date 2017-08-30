@@ -16,6 +16,7 @@ import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from 
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type {StructArray} from '../../util/struct_array';
+import type Point from '@mapbox/point-geometry';
 
 const fillInterface = {
     layoutAttributes: [
@@ -72,8 +73,9 @@ class FillBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0].filter(feature)) {
-                this.addFeature(feature);
-                options.featureIndex.insert(feature, index, sourceLayerIndex, this.index);
+                const geometry = loadGeometry(feature);
+                this.addFeature(feature, geometry);
+                options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
         }
     }
@@ -112,8 +114,8 @@ class FillBucket implements Bucket {
         this.segments2.destroy();
     }
 
-    addFeature(feature: VectorTileFeature) {
-        for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {
+    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
+        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {
                 numVertices += ring.length;

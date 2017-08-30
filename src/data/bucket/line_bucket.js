@@ -130,8 +130,9 @@ class LineBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0].filter(feature)) {
-                this.addFeature(feature);
-                options.featureIndex.insert(feature, index, sourceLayerIndex, this.index);
+                const geometry = loadGeometry(feature);
+                this.addFeature(feature, geometry);
+                options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
         }
     }
@@ -165,14 +166,14 @@ class LineBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: VectorTileFeature) {
+    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
         const layout = this.layers[0].layout;
         const join = this.layers[0].getLayoutValue('line-join', {zoom: this.zoom}, feature.properties);
         const cap = layout['line-cap'];
         const miterLimit = layout['line-miter-limit'];
         const roundLimit = layout['line-round-limit'];
 
-        for (const line of loadGeometry(feature)) {
+        for (const line of geometry) {
             this.addLine(line, feature, join, cap, miterLimit, roundLimit);
         }
     }
