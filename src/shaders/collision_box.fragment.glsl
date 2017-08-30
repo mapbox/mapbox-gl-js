@@ -9,7 +9,7 @@ void main() {
     // Red = collision, hide label
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0) * alpha;
 
-    // Blue = collision, label is showing
+    // Blue = no collision, label is showing
     if (v_placed > 0.5) {
         gl_FragColor = vec4(0.0, 0.0, 1.0, 0.5) * alpha;
     }
