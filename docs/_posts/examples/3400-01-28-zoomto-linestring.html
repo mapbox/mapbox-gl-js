@@ -95,7 +95,7 @@ map.on('load', function() {
         // requires wrapping all the coordinates with the extend method.
         var bounds = coordinates.reduce(function(bounds, coord) {
             return bounds.extend(coord);
-        }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+        }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[1]));
 
         map.fitBounds(bounds, {
             padding: 20
