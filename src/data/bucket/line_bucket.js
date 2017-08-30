@@ -172,7 +172,7 @@ class LineBucket implements Bucket {
         const miterLimit = layout['line-miter-limit'];
         const roundLimit = layout['line-round-limit'];
 
-        for (const line of loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS)) {
+        for (const line of loadGeometry(feature)) {
             this.addLine(line, feature, join, cap, miterLimit, roundLimit);
         }
     }
