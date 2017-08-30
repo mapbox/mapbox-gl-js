@@ -14,14 +14,6 @@ const StyleLayer = require('../../../src/style/style_layer');
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 const feature = vt.layers.road.feature(0);
 
-function createFeature(points) {
-    return {
-        loadGeometry: function() {
-            return points;
-        }
-    };
-}
-
 function createLine(numPoints) {
     const points = [];
     for (let i = 0; i < numPoints; i++) {
@@ -100,7 +92,7 @@ test('LineBucket', (t) => {
         new Point(0, 0)
     ], polygon);
 
-    bucket.addFeature(feature);
+    bucket.addFeature(feature, feature.loadGeometry());
 
     t.end();
 });
@@ -115,10 +107,10 @@ test('LineBucket segmentation', (t) => {
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset
-    bucket.addFeature(createFeature([createLine(10)]));
+    bucket.addFeature({}, [createLine(10)]);
 
     // add a feature that will break across the group boundary
-    bucket.addFeature(createFeature([createLine(128)]));
+    bucket.addFeature({}, [createLine(128)]);
 
     // Each polygon must fit entirely within a segment, so we expect the
     // first segment to include the first feature and the first polygon

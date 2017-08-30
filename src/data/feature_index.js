@@ -93,10 +93,9 @@ class FeatureIndex {
         this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
     }
 
-    insert(feature: VectorTileFeature, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
+    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
-        const geometry = loadGeometry(feature);
 
         for (let r = 0; r < geometry.length; r++) {
             const ring = geometry[r];

@@ -14,21 +14,10 @@ const StyleLayer = require('../../../src/style/style_layer');
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 const feature = vt.layers.water.feature(0);
 
-function createFeature(points) {
-    return {
-        properties: {
-            'foo': 1
-        },
-        loadGeometry: function() {
-            return points;
-        }
-    };
-}
-
 function createPolygon(numPoints) {
     const points = [];
     for (let i = 0; i < numPoints; i++) {
-        points.push(new Point(i / numPoints, i / numPoints));
+        points.push(new Point(2048 + 256 * Math.cos(i / numPoints * 2 * Math.PI, 2048 + 256 * Math.sin(i / numPoints * 2 * Math.PI))));
     }
     return points;
 }
@@ -37,18 +26,18 @@ test('FillBucket', (t) => {
     const layer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
     const bucket = new FillBucket({ layers: [layer] });
 
-    bucket.addFeature(createFeature([[
+    bucket.addFeature({}, [[
         new Point(0, 0),
         new Point(10, 10)
-    ]]));
+    ]]);
 
-    bucket.addFeature(createFeature([[
+    bucket.addFeature({}, [[
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20)
-    ]]));
+    ]]);
 
-    bucket.addFeature(feature);
+    bucket.addFeature(feature, feature.loadGeometry());
 
     t.end();
 });
@@ -76,13 +65,13 @@ test('FillBucket segmentation', (t) => {
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset
-    bucket.addFeature(createFeature([createPolygon(10)]));
+    bucket.addFeature({}, [createPolygon(10)]);
 
     // add a feature that will break across the group boundary
-    bucket.addFeature(createFeature([
+    bucket.addFeature({}, [
         createPolygon(128),
         createPolygon(128)
-    ]));
+    ]);
 
     // Each polygon must fit entirely within a segment, so we expect the
     // first segment to include the first feature and the first polygon
