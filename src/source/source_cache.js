@@ -46,6 +46,8 @@ class SourceCache extends Evented {
     _paused: boolean;
     _shouldReloadOnResume: boolean;
     _needsFullPlacement: boolean;
+    _placementIDs: Array<number>;
+    _placementIndex: number;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string) => boolean;
@@ -88,6 +90,9 @@ class SourceCache extends Evented {
         this._maxTileCacheSize = null;
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
+
+        this._placementIndex = 0;
+        this._placementIDs = [];
     }
 
     onAdd(map: Map) {
@@ -231,7 +236,7 @@ class SourceCache extends Evented {
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
 
-        this._needsFullPlacement = true;
+        this._updatePlacement();
         tile.added();
     }
 
@@ -518,7 +523,7 @@ class SourceCache extends Evented {
 
         tile = this._cache.get((tileCoord.id: any));
         if (tile) {
-            this._needsFullPlacement = true;
+            this._updatePlacement();
             tile.added();
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
@@ -584,7 +589,7 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        this._needsFullPlacement = true;
+        this._updatePlacement();
         tile.removed();
 
         if (tile.hasData()) {
@@ -597,6 +602,12 @@ class SourceCache extends Evented {
             this._abortTile(tile);
             this._unloadTile(tile);
         }
+    }
+
+    _updatePlacement() {
+        this._needsFullPlacement = true;
+        this._placementIDs = this.getRenderableIds();
+        this._placementIndex = 0;
     }
 
     /**
@@ -665,15 +676,21 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    placeLayer(collisionIndex: CollisionIndex, showCollisionBoxes: boolean, layer: any, posMatrices: any, transform: any, collisionFadeTimes: any) {
-        const ids = this.getIds();
-        for (let i = 0; i < ids.length; i++) {
-            const tile = this.getTileByID(ids[i]);
-            if (!posMatrices[i]) {
-                posMatrices[i] = transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
+    placeLayer(collisionIndex: CollisionIndex, showCollisionBoxes: boolean, layer: any, posMatrices: any, collisionFadeTimes: any, shouldPausePlacement: any) {
+        while (this._placementIndex < this._placementIDs.length) {
+            const tile = this.getTileByID(this._placementIDs[this._placementIndex]);
+            if (!posMatrices[this._placementIndex]) {
+                posMatrices[this._placementIndex] = collisionIndex.transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
             }
-            tile.placeLayer(showCollisionBoxes, collisionIndex, layer, posMatrices[i], collisionFadeTimes);
+            tile.placeLayer(showCollisionBoxes, collisionIndex, layer, posMatrices[this._placementIndex], collisionFadeTimes);
+
+            this._placementIndex++;
+            if (shouldPausePlacement()) {
+                return true;
+            }
         }
+        this._placementIndex = 0; // Start over at the first tile
+        return false;
     }
 
     commitPlacement(collisionIndex: CollisionIndex) {
