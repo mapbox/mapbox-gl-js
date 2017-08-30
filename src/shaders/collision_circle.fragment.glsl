@@ -8,22 +8,22 @@ varying vec2 v_extrude_scale;
 void main() {
     float alpha = 0.5;
 
-    // Blue = collision, hide label
-    vec4 color = vec4(0.0, 0.0, 1.0, 1.0) * alpha;
+    // Red = collision, hide label
+    vec4 color = vec4(1.0, 0.0, 0.0, 1.0) * alpha;
 
-    // Black = no collision, label is showing
+    // Blue = no collision, label is showing
     if (v_placed > 0.5) {
-        color = vec4(0.0, 0.0, 0.0, 1.0) * alpha;
+        color = vec4(0.0, 0.0, 1.0, 0.5) * alpha;
     }
 
     if (v_notUsed > 0.5) {
         // This box not used, fade it out
-        color *= .1;
+        color *= .2;
     }
 
     float extrude_scale_length = length(v_extrude_scale);
     float extrude_length = length(v_extrude) * extrude_scale_length;
-    float stroke_width = 5.0;
+    float stroke_width = 3.0;
     float radius = v_radius * extrude_scale_length;
 
     float distance_to_edge = abs(extrude_length - radius);
