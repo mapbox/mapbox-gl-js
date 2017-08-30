@@ -26,6 +26,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         painter.setDepthSublayer(1);
+        painter.depthMask(painter.isOpaquePass);
         drawFillTiles(painter, sourceCache, layer, coords, drawFillTile);
     }
 
