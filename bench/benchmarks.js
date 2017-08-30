@@ -11,6 +11,7 @@ function registerBenchmark(name, benchmark) {
 registerBenchmark('map-load', require('./benchmarks/map_load'));
 registerBenchmark('style-load', require('./benchmarks/style_load'));
 registerBenchmark('buffer', require('./benchmarks/buffer'));
+registerBenchmark('tile_layout_dds', require('./benchmarks/tile_layout_dds'));
 registerBenchmark('fps', require('./benchmarks/fps'));
 registerBenchmark('frame-duration', require('./benchmarks/frame_duration'));
 registerBenchmark('query-point', require('./benchmarks/query_point'));
