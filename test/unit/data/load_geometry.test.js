@@ -21,7 +21,7 @@ test('loadGeometry', (t) => {
 
 test('loadGeometry extent error', (t) => {
     const feature = vt.layers.road.feature(0);
-    feature.extent = 2048;
+    feature.extent = 1024;
 
     let numWarnings = 0;
 
@@ -33,7 +33,7 @@ test('loadGeometry extent error', (t) => {
         }
     };
 
-    loadGeometry(feature, 15);
+    loadGeometry(feature);
 
     t.equal(numWarnings, 1);
 
