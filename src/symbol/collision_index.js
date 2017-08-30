@@ -68,8 +68,11 @@ class CollisionIndex {
         return [tlX, tlY, brX, brY];
     }
 
-    placeCollisionCircles(collisionCircles: Array<any>, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean): Array<number> {
+    placeCollisionCircles(collisionCircles?: Array<any>, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean): Array<number> {
         const placedCollisionCircles = [];
+        if (!collisionCircles) {
+            return placedCollisionCircles;
+        }
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         const perspectiveRatio = this.getPerspectiveRatio(tileUnitAnchorPoint);
