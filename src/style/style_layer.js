@@ -381,6 +381,10 @@ class StyleLayer extends Evented {
             style: {glyphs: true, sprite: true}
         }));
     }
+
+    has3DPass() {
+        return false;
+    }
 }
 
 module.exports = StyleLayer;
