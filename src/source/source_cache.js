@@ -93,6 +93,8 @@ class SourceCache extends Evented {
 
         this._placementIndex = 0;
         this._placementIDs = [];
+
+        this._coveredTiles = {};
     }
 
     onAdd(map: Map) {
