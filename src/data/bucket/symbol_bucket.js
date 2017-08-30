@@ -42,6 +42,12 @@ type SymbolBucketParameters = BucketParameters & {
     lineVertexArray: StructArray,
 }
 
+export type CollisionArrays = {
+    textBox?: Array<number>;
+    iconBox?: Array<number>;
+    textCircles?: Array<any>;
+};
+
 export type SymbolInstance = {
     key: string,
     textBoxStartIndex: number,
@@ -56,9 +62,18 @@ export type SymbolInstance = {
     feature: ExpressionFeature,
     textCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
+    placedTextSymbolIndices: Array<number>;
+    numGlyphVertices: number;
+    numVerticalGlyphVertices: number;
+    numIconVertices: number;
+    // Populated/modified on foreground during placement
     isDuplicate: boolean;
     textOpacityState: OpacityState;
     iconOpacityState: OpacityState;
+    collisionArrays?: CollisionArrays;
+    placedText?: boolean;
+    placedIcon?: boolean;
+    hidden?: boolean;
 };
 
 export type SymbolFeature = {|
@@ -693,7 +708,7 @@ class SymbolBucket implements Bucket {
 
     // These flat arrays are meant to be quicker to iterate over than the source
     // CollisionBoxArray
-    deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, iconStartIndex: number, iconEndIndex: number) {
+    deserializeCollisionBoxes(collisionBoxArray: CollisionBoxArray, textStartIndex: number, textEndIndex: number, iconStartIndex: number, iconEndIndex: number): CollisionArrays {
         const collisionArrays = {};
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);

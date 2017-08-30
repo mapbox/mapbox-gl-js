@@ -2,12 +2,18 @@
 
 const symbolSize = require('./symbol_size');
 
+import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
+import type OpacityState from './opacity_state';
+import type CollisionIndex from './collision_index';
+import type CollisionBoxArray from './collision_box';
+const mat4 = require('@mapbox/gl-matrix').mat4;
+
 module.exports = {
     updateOpacities: updateOpacities,
     place: place
 };
 
-function updateOpacity(symbolInstance, opacityState, targetOpacity, opacityUpdateTime, collisionFadeTimes) {
+function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any) {
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;
@@ -22,7 +28,7 @@ function updateOpacity(symbolInstance, opacityState, targetOpacity, opacityUpdat
     }
 }
 
-function updateOpacities(bucket: any, collisionFadeTimes: any) {
+function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
     const glyphOpacityArray = bucket.text && bucket.text.opacityVertexArray;
     const iconOpacityArray = bucket.icon && bucket.icon.opacityVertexArray;
     if (glyphOpacityArray) glyphOpacityArray.clear();
@@ -42,7 +48,7 @@ function updateOpacities(bucket: any, collisionFadeTimes: any) {
             const opacityState = symbolInstance.textOpacityState;
             updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
             for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                const placedSymbol = bucket.placedGlyphArray.get(placedTextSymbolIndex);
+                const placedSymbol = (bucket.placedGlyphArray.get(placedTextSymbolIndex): any);
                 // If this label is completely faded, mark it so that we don't have to calculate
                 // its position at render time
                 placedSymbol.hidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
@@ -74,7 +80,7 @@ function updateOpacities(bucket: any, collisionFadeTimes: any) {
 }
 
 
-function updateCollisionBox(collisionVertexArray: any, collisionBox: any, placed: boolean) {
+function updateCollisionBox(collisionVertexArray: any, placed: boolean) {
     if (!collisionVertexArray) {
         return;
     }
@@ -84,7 +90,7 @@ function updateCollisionBox(collisionVertexArray: any, collisionBox: any, placed
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
 }
 
-function updateCollisionCircles(collisionVertexArray: any, collisionCircles: any, placed: boolean) {
+function updateCollisionCircles(collisionVertexArray: any, collisionCircles: Array<any>, placed: boolean) {
     if (!collisionVertexArray) {
         return;
     }
@@ -98,7 +104,7 @@ function updateCollisionCircles(collisionVertexArray: any, collisionCircles: any
     }
 }
 
-function place(bucket: any, collisionIndex: any, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: any, tileID: number, collisionBoxArray: any) {
+function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
@@ -139,10 +145,11 @@ function place(bucket: any, collisionIndex: any, showCollisionBoxes: boolean, zo
                 layout['icon-allow-overlap'], scale, pixelsToTileUnits);
         }
 
-        if (symbolInstance.collisionArrays.textCircles) {
-            const placedSymbol = bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]);
+        const textCircles = symbolInstance.collisionArrays.textCircles;
+        if (textCircles) {
+            const placedSymbol = (bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]): any);
             const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
-            placedGlyphCircles = collisionIndex.placeCollisionCircles(symbolInstance.collisionArrays.textCircles,
+            placedGlyphCircles = collisionIndex.placeCollisionCircles(textCircles,
                 layout['text-allow-overlap'],
                 scale,
                 pixelsToTileUnits,
@@ -171,13 +178,13 @@ function place(bucket: any, collisionIndex: any, showCollisionBoxes: boolean, zo
         symbolInstance.placedIcon = placeIcon;
 
         if (symbolInstance.collisionArrays.textBox) {
-            updateCollisionBox(collisionDebugBoxArray, symbolInstance.collisionArrays.textBox, placeGlyph);
+            updateCollisionBox(collisionDebugBoxArray, placeGlyph);
             if (placeGlyph) {
                 collisionIndex.insertCollisionBox(placedGlyphBox, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
             }
         }
         if (symbolInstance.collisionArrays.iconBox) {
-            updateCollisionBox(collisionDebugBoxArray, symbolInstance.collisionArrays.iconBox, placeIcon);
+            updateCollisionBox(collisionDebugBoxArray, placeIcon);
             if (placeIcon) {
                 collisionIndex.insertCollisionBox(placedIconBox, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
             }

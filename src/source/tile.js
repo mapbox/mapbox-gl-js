@@ -175,14 +175,15 @@ class Tile {
 
     placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
         const bucket = this.getBucket(layer);
+        const collisionBoxArray = this.collisionBoxArray;
 
-        if (bucket && bucket instanceof SymbolBucket) {
+        if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
             collisionIndex.setMatrix(posMatrix);
 
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, this.collisionBoxArray);
+            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, collisionBoxArray);
             PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
         }
     }
