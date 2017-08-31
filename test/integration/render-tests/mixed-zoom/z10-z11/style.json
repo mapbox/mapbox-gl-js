@@ -10,7 +10,7 @@
               ["setStyle", "local://../../node_modules/mapbox-gl-styles/styles/basic-v9.json"],
               ["wait"],
               ["setZoom", 11.1],
-              ["sleep", 1000]
+              ["sleep", 3000]
             ]
         }
     },
