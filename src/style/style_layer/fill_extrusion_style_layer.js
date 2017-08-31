@@ -5,14 +5,15 @@ const FillExtrusionBucket = require('../../data/bucket/fill_extrusion_bucket');
 const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
 const {translateDistance, translate} = require('../query_utils');
 
-import type {GlobalProperties, FeatureProperties} from '../style_layer';
+import type {Feature} from '../../style-spec/function';
+import type {GlobalProperties} from '../style_layer';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 
 class FillExtrusionStyleLayer extends StyleLayer {
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
-        const value = super.getPaintValue(name, globalProperties, featureProperties);
+    getPaintValue(name: string, globalProperties?: GlobalProperties, feature?: Feature) {
+        const value = super.getPaintValue(name, globalProperties, feature);
         if (name === 'fill-extrusion-color' && value) {
             value[3] = 1;
         }
@@ -34,8 +35,8 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            bearing: number,
                            pixelsToTileUnits: number): boolean {
         const translatedPolygon = translate(queryGeometry,
-            this.getPaintValue('fill-extrusion-translate', {zoom}, feature.properties),
-            this.getPaintValue('fill-extrusion-translate-anchor', {zoom}, feature.properties),
+            this.getPaintValue('fill-extrusion-translate', {zoom}, feature),
+            this.getPaintValue('fill-extrusion-translate-anchor', {zoom}, feature),
             bearing, pixelsToTileUnits);
         return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }

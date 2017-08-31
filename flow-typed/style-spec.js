@@ -21,29 +21,35 @@ declare type TransitionSpecification = {
 // Note: doesn't capture interpolatable vs. non-interpolatable types.
 
 declare type CameraFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[number, T]> }
-    | { type: 'interval',    stops: Array<[number, T]> };
+    | {| type: 'exponential', stops: Array<[number, T]> |}
+    | {| type: 'interval',    stops: Array<[number, T]> |};
 
 declare type SourceFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[number, T]>, property: string, default?: T }
-    | { type: 'interval',    stops: Array<[number, T]>, property: string, default?: T }
-    | { type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T }
-    | { type: 'identity', property: string, default?: T };
+    | {| type: 'exponential', stops: Array<[number, T]>, property: string, default?: T |}
+    | {| type: 'interval',    stops: Array<[number, T]>, property: string, default?: T |}
+    | {| type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T |}
+    | {| type: 'identity', property: string, default?: T |};
 
 declare type CompositeFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
-    | { type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
-    | { type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T };
+    | {| type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T |}
+    | {| type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T |}
+    | {| type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T |};
+
+declare type ExpressionFunctionSpecification = {|
+    expression: mixed
+|}
 
 declare type PropertyValueSpecification<T> =
     | T
-    | CameraFunctionSpecification<T>;
+    | CameraFunctionSpecification<T>
+    | ExpressionFunctionSpecification;
 
 declare type DataDrivenPropertyValueSpecification<T> =
     | T
     | CameraFunctionSpecification<T>
     | SourceFunctionSpecification<T>
-    | CompositeFunctionSpecification<T>;
+    | CompositeFunctionSpecification<T>
+    | ExpressionFunctionSpecification;
 
 declare type StyleSpecification = {|
     "version": 8,

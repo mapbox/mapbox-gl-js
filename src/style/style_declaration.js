@@ -2,8 +2,9 @@
 
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
+const Curve = require('../style-spec/function/definitions/curve');
 
-type StyleFunction = (zoom?: number, featureProperties?: {}) => any;
+import type {StyleFunction, Feature} from '../style-spec/function';
 
 /**
  * A style property declaration
@@ -18,7 +19,7 @@ class StyleDeclaration {
     minimum: number;
     function: StyleFunction;
     stopZoomLevels: Array<number>;
-    _functionInterpolationT: StyleFunction;
+    _zoomCurve: ?Curve;
 
     constructor(reference: any, value: any) {
         this.value = util.clone(value);
@@ -32,36 +33,17 @@ class StyleDeclaration {
         this.isFeatureConstant = this.function.isFeatureConstant;
         this.isZoomConstant = this.function.isZoomConstant;
 
-        if (!this.isFeatureConstant && !this.isZoomConstant) {
+        if (!this.isZoomConstant) {
+            this._zoomCurve = this.function.zoomCurve;
             this.stopZoomLevels = [];
-            const interpolationAmountStops = [];
-            for (const stop of this.value.stops) {
-                const zoom = stop[0].zoom;
-                if (this.stopZoomLevels.indexOf(zoom) < 0) {
-                    this.stopZoomLevels.push(zoom);
-                    interpolationAmountStops.push([zoom, interpolationAmountStops.length]);
-                }
-            }
-
-            this._functionInterpolationT = createFunction({
-                type: 'exponential',
-                stops: interpolationAmountStops,
-                base: value.base
-            }, {
-                type: 'number'
-            });
-        } else if (!this.isZoomConstant) {
-            this.stopZoomLevels = [];
-            for (const stop of this.value.stops) {
-                if (this.stopZoomLevels.indexOf(stop[0]) < 0) {
-                    this.stopZoomLevels.push(stop[0]);
-                }
+            for (const stop of this.function.zoomCurve.stops) {
+                this.stopZoomLevels.push(stop[0]);
             }
         }
     }
 
-    calculate(globalProperties?: {zoom: number}, featureProperties?: {}) {
-        const value = this.function(globalProperties && globalProperties.zoom, featureProperties || {});
+    calculate(globalProperties: {+zoom?: number} = {}, feature?: Feature) {
+        const value = this.function(globalProperties, feature);
         if (this.minimum !== undefined && value < this.minimum) {
             return this.minimum;
         }
@@ -69,17 +51,20 @@ class StyleDeclaration {
     }
 
     /**
-     * Given a zoom level, calculate a possibly-fractional "index" into the
-     * composite function stops array, intended to be used for interpolating
-     * between paint values that have been evaluated at the surrounding stop
-     * values.
+     * Calculate the interpolation factor for the given zoom stops and current
+     * zoom level.
      *
      * Only valid for composite functions.
      * @private
      */
-    calculateInterpolationT(globalProperties: {zoom: number}) {
-        if (this.isFeatureConstant || this.isZoomConstant) return 0;
-        return this._functionInterpolationT(globalProperties && globalProperties.zoom, {});
+    interpolationFactor(zoom: number, lower: number, upper: number) {
+        if (!this._zoomCurve) return 0;
+        return Curve.interpolationFactor(
+            this._zoomCurve.interpolation,
+            zoom,
+            lower,
+            upper
+        );
     }
 }
 

@@ -1,7 +1,8 @@
+// @flow
 
 const parseColorString = require('csscolorparser').parseCSSColor;
 
-module.exports = function parseColor(input) {
+module.exports = function parseColor(input: string | [number, number, number, number]): ?[number, number, number, number] {
     if (typeof input === 'string') {
         const rgba = parseColorString(input);
         if (!rgba) { return undefined; }

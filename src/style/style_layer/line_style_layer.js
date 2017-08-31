@@ -30,13 +30,13 @@ class LineStyleLayer extends StyleLayer {
                            bearing: number,
                            pixelsToTileUnits: number): boolean {
         const translatedPolygon = translate(queryGeometry,
-            this.getPaintValue('line-translate', {zoom}, feature.properties),
-            this.getPaintValue('line-translate-anchor', {zoom}, feature.properties),
+            this.getPaintValue('line-translate', {zoom}, feature),
+            this.getPaintValue('line-translate-anchor', {zoom}, feature),
             bearing, pixelsToTileUnits);
         const halfWidth = pixelsToTileUnits / 2 * getLineWidth(
-            this.getPaintValue('line-width', {zoom}, feature.properties),
-            this.getPaintValue('line-gap-width', {zoom}, feature.properties));
-        const lineOffset = this.getPaintValue('line-offset', {zoom}, feature.properties);
+            this.getPaintValue('line-width', {zoom}, feature),
+            this.getPaintValue('line-gap-width', {zoom}, feature));
+        const lineOffset = this.getPaintValue('line-offset', {zoom}, feature);
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
         }

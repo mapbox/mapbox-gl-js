@@ -1755,6 +1755,10 @@
     "doc": "The geometry type for the filter to select."
   },
   "function": {
+    "expression": {
+      "type": "expression",
+      "doc": "An expression."
+    },
     "stops": {
       "type": "array",
       "doc": "An array of stops.",
@@ -1822,6 +1826,201 @@
     ],
     "length": 2,
     "doc": "Zoom level and value pair."
+  },
+  "expression": {
+    "type": "array",
+    "value": "*",
+    "minimum": 1,
+    "doc": "An expression defines a function that can be used for data-driven style properties or feature filters."
+  },
+  "expression_name": {
+    "doc": "",
+    "type": "enum",
+    "values": {
+      "let": {
+        "doc": "Binds expressions to named variables, which can then be referenced in the result expression using [\"var\", \"variable_name\"]."
+      },
+      "var": {
+        "doc": "References variable bound using \"let\"."
+      },
+      "literal": {
+        "doc": "Provides a literal array or object value."
+      },
+      "array": {
+        "doc": "Asserts that the input is an array (optinally with a specific item type and length)."
+      },
+      "at": {
+        "doc": "Retrieves an item from an array."
+      },
+      "contains": {
+        "doc": "Tests whether a value exists in an array."
+      },
+      "case": {
+        "doc": "Yields the value of the first output expression whose corresponding test evaluates to true."
+      },
+      "match": {
+        "doc": "Yields the output value whose label value matches the input, or the fallback value if no match is found."
+      },
+      "coalesce": {
+        "doc": "Evaluates each expression in turn until the first non-null, non-error value is obtained, and returns that value"
+      },
+      "curve": {
+        "doc": "Interpolates an output value from the given input/output pairs using the specified interpolation strategy.  The input levels must be numeric literals in strictly ascending order."
+      },
+      "ln2": {
+        "doc": "Returns mathematical constant ln(2)."
+      },
+      "pi": {
+        "doc": "Returns the mathematical constant pi."
+      },
+      "e": {
+        "doc": "Returns the mathematical constant e."
+      },
+      "typeof": {
+        "doc": "Returns a string describing the type of the given value."
+      },
+      "string": {
+        "doc": "Asserts that the input value is a String."
+      },
+      "number": {
+        "doc": "Asserts that the input value is a Number."
+      },
+      "boolean": {
+        "doc": "Asserts that the input value is a Boolean."
+      },
+      "object": {
+        "doc": "Asserts that the input value is an Objects."
+      },
+      "to-string": {
+        "doc": "Coerces the input value to a String."
+      },
+      "to-number": {
+        "doc": "Coerces the input value to a Number, if possible."
+      },
+      "to-boolean": {
+        "doc": "Coerces the input value to a Boolean."
+      },
+      "to-rgba": {
+        "doc": "Returns the an array of the given color's r, g, b, a components."
+      },
+      "to-color": {
+        "doc": "Coerces the input value to a Color."
+      },
+      "rgb": {
+        "doc": "Creates a color value from r, g, b components."
+      },
+      "rgba": {
+        "doc": "Creates a color value from r, g, b, a components."
+      },
+      "get": {
+        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
+      },
+      "has": {
+        "doc": "Tests for the presence of an object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
+      },
+      "length": {
+        "doc": "Gets the length of an array or string."
+      },
+      "properties": {
+        "doc": "Gets the feature properties object.  Note that in some cases, it may be more efficient to use [\"get\", \"property_name\"] directly."
+      },
+      "geometry-type": {
+        "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon."
+      },
+      "id": {
+        "doc": "Gets the feature's id, if it has one."
+      },
+      "zoom": {
+        "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level [\"curve\"] expression."
+      },
+      "+": {
+        "doc": ""
+      },
+      "*": {
+        "doc": ""
+      },
+      "-": {
+        "doc": ""
+      },
+      "/": {
+        "doc": ""
+      },
+      "%": {
+        "doc": ""
+      },
+      "^": {
+        "doc": ""
+      },
+      "log10": {
+        "doc": ""
+      },
+      "ln": {
+        "doc": ""
+      },
+      "log2": {
+        "doc": ""
+      },
+      "sin": {
+        "doc": ""
+      },
+      "cos": {
+        "doc": ""
+      },
+      "tan": {
+        "doc": ""
+      },
+      "asin": {
+        "doc": ""
+      },
+      "acos": {
+        "doc": ""
+      },
+      "atan": {
+        "doc": ""
+      },
+      "min": {
+        "doc": ""
+      },
+      "max": {
+        "doc": ""
+      },
+      "==": {
+        "doc": ""
+      },
+      "!=": {
+        "doc": ""
+      },
+      ">": {
+        "doc": ""
+      },
+      "<": {
+        "doc": ""
+      },
+      ">=": {
+        "doc": ""
+      },
+      "<=": {
+        "doc": ""
+      },
+      "&&": {
+        "doc": ""
+      },
+      "||": {
+        "doc": ""
+      },
+      "!": {
+        "doc": ""
+      },
+      "upcase": {
+        "doc": ""
+      },
+      "downcase": {
+        "doc": ""
+      },
+      "concat": {
+        "doc": "Concetenate the given strings."
+      }
+    }
   },
   "light": {
     "anchor": {

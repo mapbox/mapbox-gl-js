@@ -4,13 +4,14 @@ const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
 const assert = require('assert');
 
-import type {GlobalProperties, FeatureProperties} from '../style_layer';
+import type {Feature} from '../../style-spec/function';
+import type {GlobalProperties} from '../style_layer';
 import type {BucketParameters} from '../../data/bucket';
 
 class SymbolStyleLayer extends StyleLayer {
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties) {
-        const value = super.getLayoutValue(name, globalProperties, featureProperties);
+    getLayoutValue(name: string, globalProperties?: GlobalProperties, feature?: Feature) {
+        const value = super.getLayoutValue(name, globalProperties, feature);
         if (value !== 'auto') {
             return value;
         }
@@ -18,11 +19,11 @@ class SymbolStyleLayer extends StyleLayer {
         switch (name) {
         case 'text-rotation-alignment':
         case 'icon-rotation-alignment':
-            return this.getLayoutValue('symbol-placement', globalProperties, featureProperties) === 'line' ? 'map' : 'viewport';
+            return this.getLayoutValue('symbol-placement', globalProperties, feature) === 'line' ? 'map' : 'viewport';
         case 'text-pitch-alignment':
-            return this.getLayoutValue('text-rotation-alignment', globalProperties, featureProperties);
+            return this.getLayoutValue('text-rotation-alignment', globalProperties, feature);
         case 'icon-pitch-alignment':
-            return this.getLayoutValue('icon-rotation-alignment', globalProperties, featureProperties);
+            return this.getLayoutValue('icon-rotation-alignment', globalProperties, feature);
         default:
             return value;
         }

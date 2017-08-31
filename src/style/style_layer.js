@@ -10,6 +10,7 @@ const Evented = require('../util/evented');
 
 import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
+import type {Feature} from '../style-spec/function';
 
 export type GlobalProperties = {
     zoom: number
@@ -37,11 +38,11 @@ class StyleLayer extends Evented {
 
     _paintSpecifications: any;
     _layoutSpecifications: any;
-    _paintTransitions: any;
-    _paintTransitionOptions: any;
-    _paintDeclarations: any;
-    _layoutDeclarations: any;
-    _layoutFunctions: any;
+    _paintTransitions: {[string]: StyleTransition};
+    _paintTransitionOptions: {[string]: {[string]: TransitionSpecification}};
+    _paintDeclarations: {[string]: {[string]: StyleDeclaration}};
+    _layoutDeclarations: {[string]: StyleDeclaration};
+    _layoutFunctions: {[string]: boolean};
 
     +createBucket: (parameters: BucketParameters) => Bucket;
     +queryRadius: (bucket: Bucket) => number;
@@ -74,7 +75,7 @@ class StyleLayer extends Evented {
         this._layoutSpecifications = styleSpec[`layout_${this.type}`];
 
         this._paintTransitions = {}; // {[propertyName]: StyleTransition}
-        this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
+        this._paintTransitionOptions = {}; // 
         this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
         this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
         this._layoutFunctions = {}; // {[propertyName]: Boolean}
@@ -125,12 +126,12 @@ class StyleLayer extends Evented {
         );
     }
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties): any {
+    getLayoutValue(name: string, globalProperties?: GlobalProperties, feature?: Feature): any {
         const specification = this._layoutSpecifications[name];
         const declaration = this._layoutDeclarations[name];
 
         if (declaration) {
-            return declaration.calculate(globalProperties, featureProperties);
+            return declaration.calculate(globalProperties, feature);
         } else {
             return specification.default;
         }
@@ -178,12 +179,12 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, featureProperties?: FeatureProperties): any {
+    getPaintValue(name: string, globalProperties?: GlobalProperties, feature?: Feature): any {
         const specification = this._paintSpecifications[name];
         const transition = this._paintTransitions[name];
 
         if (transition) {
-            return transition.calculate(globalProperties, featureProperties);
+            return transition.calculate(globalProperties, feature);
         } else if (specification.type === 'color' && specification.default) {
             return parseColor(specification.default);
         } else {
@@ -210,14 +211,14 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintInterpolationT(name: string, globalProperties: any) {
+    getPaintInterpolationFactor(name: string, input: number, lower: number, upper: number) {
         const transition = this._paintTransitions[name];
-        return transition.declaration.calculateInterpolationT(globalProperties);
+        return transition.declaration.interpolationFactor(input, lower, upper);
     }
 
-    getLayoutInterpolationT(name: string, globalProperties: any) {
+    getLayoutInterpolationFactor(name: string, input: number, lower: number, upper: number) {
         const declaration = this._layoutDeclarations[name];
-        return declaration.calculateInterpolationT(globalProperties);
+        return declaration.interpolationFactor(input, lower, upper);
     }
 
     isPaintValueFeatureConstant(name: string) {

@@ -5,6 +5,7 @@ const Point = require('@mapbox/point-geometry');
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type StyleLayer from '../style/style_layer';
+import type {Feature} from '../style-spec/function';
 
 module.exports = {
     getIconQuads,
@@ -49,7 +50,7 @@ function getIconQuads(anchor: Anchor,
                       alongLine: boolean,
                       shapedText: Shaping,
                       globalProperties: Object,
-                      featureProperties: Object): Array<SymbolQuad> {
+                      feature: Feature): Array<SymbolQuad> {
     const image = shapedIcon.image;
     const layout = layer.layout;
 
@@ -95,7 +96,7 @@ function getIconQuads(anchor: Anchor,
         bl = new Point(left, bottom);
     }
 
-    const angle = layer.getLayoutValue('icon-rotate', globalProperties, featureProperties) * Math.PI / 180;
+    const angle = layer.getLayoutValue('icon-rotate', globalProperties, feature) * Math.PI / 180;
 
     if (angle) {
         const sin = Math.sin(angle),
@@ -128,11 +129,11 @@ function getGlyphQuads(anchor: Anchor,
                        layer: StyleLayer,
                        alongLine: boolean,
                        globalProperties: Object,
-                       featureProperties: Object): Array<SymbolQuad> {
+                       feature: Feature): Array<SymbolQuad> {
 
     const oneEm = 24;
-    const textRotate = layer.getLayoutValue('text-rotate', globalProperties, featureProperties) * Math.PI / 180;
-    const textOffset = layer.getLayoutValue('text-offset', globalProperties, featureProperties).map((t)=> t * oneEm);
+    const textRotate = layer.getLayoutValue('text-rotate', globalProperties, feature) * Math.PI / 180;
+    const textOffset = layer.getLayoutValue('text-offset', globalProperties, feature).map((t)=> t * oneEm);
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];

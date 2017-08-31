@@ -148,7 +148,7 @@ class CircleBucket implements Bucket {
             }
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature.properties);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
     }
 }
 

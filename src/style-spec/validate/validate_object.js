@@ -43,7 +43,7 @@ module.exports = function validateObject(options) {
             styleSpec: styleSpec,
             object: object,
             objectKey: objectKey
-        }));
+        }, object));
     }
 
     for (const elementSpecKey in elementSpecs) {
