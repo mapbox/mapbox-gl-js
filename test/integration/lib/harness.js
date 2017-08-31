@@ -7,7 +7,7 @@ const path = require('path');
 const queue = require('d3-queue').queue;
 const colors = require('colors/safe');
 const template = require('lodash').template;
-const shuffle = require('shuffle-array');
+const shuffler = require('shuffle-seed');
 
 module.exports = function (directory, implementation, options, run) {
     const q = queue(1);
@@ -122,7 +122,8 @@ module.exports = function (directory, implementation, options, run) {
     sequence = sequence.filter((value) => { return shouldRunTest(value.params.group, value.params.test); });
 
     if (options.shuffle) {
-        shuffle(sequence);
+        console.log(colors.white(`* shuffle seed: `) + colors.bold(`${options.seed}`));
+        sequence = shuffler.shuffle(sequence, options.seed);
     }
 
     q.defer(server.listen);
@@ -214,7 +215,8 @@ module.exports = function (directory, implementation, options, run) {
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
         const failed = results.filter(r => /failed/.test(r.status));
-        const resultsShell = resultsTemplate({ failed, sequence })
+
+        const resultsShell = resultsTemplate({ failed, sequence, shuffle: options.shuffle, seed: options.seed })
             .split('<!-- results go here -->');
 
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');

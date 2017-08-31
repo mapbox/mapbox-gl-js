@@ -61,6 +61,9 @@ function compare(path1, path2, diffPath, callback) {
  * that would crash the test harness entirely if they were run.
  * @param {Object<boolean>} [options.shuffle] - Boolean representing whether
  * or not to shuffle the render tests sequence.
+ * @param {Object<string>} [options.seed] - Seed for shuffling the render tests
+ * sequence.
+ * or not to shuffle the render tests sequence.
  * @param {Object<boolean>} [options.recycleMap] - Boolean representing whether
  * or not to recycle the Map object when running the tests.
  * @param {renderFn} render - a function that performs the rendering
@@ -137,6 +140,7 @@ exports.run = function (implementation, options, render) {
  * @param {number} options.height - render this high
  * @param {number} options.pixelRatio - render with this pixel ratio
  * @param {boolean} options.shuffle - shuffle tests sequence
+ * @param {String} options.seed - Shuffle seed
  * @param {boolean} options.recycleMap - trigger map object recycling
  * @param {renderCallback} callback - callback to call with the results of rendering
  */
