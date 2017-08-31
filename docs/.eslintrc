@@ -1,13 +1,5 @@
 {
-    "parser": "espree",
-    "parserOptions": {
-        "ecmaVersion": 5
-    },
-    "env": {
-        "es6": false,
-        "browser": true
-    },
-    "globals": {
-        "Uint8Array": true
+    "rules": {
+      "flowtype/require-valid-file-annotation": [0]
     }
 }
