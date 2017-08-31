@@ -20,6 +20,9 @@
     }
   }
 </script>
+<% if (shuffle) { %>
+<div>Shuffle seed: <%- seed %></div>
+<% } %>
 <% if (failed.length) { %>
 <div>
   <strong style="color: darkred;">Failed Tests:</strong>
