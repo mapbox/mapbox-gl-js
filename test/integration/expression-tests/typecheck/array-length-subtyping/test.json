@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": {"kind": "Array", "itemType": {"kind": "String"}},
+  "expression": ["array", "string", 2, ["get", "x"]],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Array<String, 2>"
+    },
+    "outputs": []
+  }
+}

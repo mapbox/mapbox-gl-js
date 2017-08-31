@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["let", "a", ["get", "x"], ["+", 1, ["number", ["var", "a"]]]],
+  "inputs": [[{}, {"properties": {"x": 5}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "outputs": [6]
+  }
+}

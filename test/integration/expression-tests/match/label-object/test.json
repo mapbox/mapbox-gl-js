@@ -1,0 +1,12 @@
+{
+  "expectExpressionType": null,
+  "expression": ["match", "x", {}, "thing one", "thing two"],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[2]", "error": "Branch labels must be numbers or strings."}
+      ]
+    }
+  }
+}

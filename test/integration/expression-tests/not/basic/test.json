@@ -1,0 +1,17 @@
+{
+  "expectExpressionType": null,
+  "expression": ["!", ["boolean", ["get", "x"]]],
+  "inputs": [
+    [{}, {"properties": {"x": true}}],
+    [{}, {"properties": {"x": false}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "outputs": [false, true]
+  }
+}

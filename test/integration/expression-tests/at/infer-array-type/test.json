@@ -1,0 +1,16 @@
+{
+  "expectExpressionType": {"kind": "String"},
+  "expression": ["at", 1, ["literal", [1, 2, 3]]],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "Expected Array<String> but found Array<Number, 3> instead."
+        }
+      ]
+    }
+  }
+}

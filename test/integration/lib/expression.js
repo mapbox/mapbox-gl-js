@@ -1,0 +1,139 @@
+'use strict';
+
+const assert = require('assert');
+const path = require('path');
+const harness = require('./harness');
+const diff = require('diff');
+const fs = require('fs');
+const stringify = require('json-stringify-pretty-compact');
+
+let linter;
+try {
+    const Linter = require('eslint').Linter;
+    linter = new Linter();
+} catch (_) {
+    // eslint-disable-line
+}
+
+const floatPrecision = 6; // in decimal sigfigs
+
+function deepEqual(a, b) {
+    if (typeof a !== typeof b)
+        return false;
+    if (typeof a === 'number') {
+        if (a === 0) { return b === 0; }
+        const digits = 1 + Math.floor(Math.log10(Math.abs(a)));
+        const multiplier = Math.pow(10, floatPrecision - digits);
+        return Math.floor(a * multiplier) === Math.floor(b * multiplier);
+    }
+    if (a === null || b === null || typeof a !== 'object')
+        return a === b;
+
+    const ka = Object.keys(a);
+    const kb = Object.keys(b);
+
+    if (ka.length !== kb.length)
+        return false;
+
+    ka.sort();
+    kb.sort();
+
+    for (let i = 0; i < ka.length; i++)
+        if (ka[i] !== kb[i] || !deepEqual(a[ka[i]], b[ka[i]]))
+            return false;
+
+    return true;
+}
+/**
+ * Run the expression suite.
+ *
+ * @param {string} implementation - identify the implementation under test; used to
+ * deal with implementation-specific test exclusions and fudge-factors
+ * @param {Object} options
+ * @param {Array<string>} [options.tests] - array of test names to run; tests not in the
+ * array will be skipped
+ * @param {} runExpressionTest - a function that runs a single expression test fixture
+ * @returns {undefined} terminates the process when testing is complete
+ */
+exports.run = function (implementation, options, runExpressionTest) {
+    const directory = path.join(__dirname, '../expression-tests');
+    options.fixtureFilename = 'test.json';
+    harness(directory, implementation, options, (fixture, params, done) => {
+        try {
+            const result = runExpressionTest(fixture, params);
+            const dir = path.join(directory, params.group, params.test);
+
+            if (process.env.UPDATE) {
+                delete result.compiled.functionSource;
+                fixture.expected = result;
+                fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
+                return;
+            }
+
+            const expected = fixture.expected;
+
+            if (result.compiled.functionSource) {
+                assert(linter);
+                params.compiledJs = result.compiled.functionSource;
+                delete result.compiled.functionSource;
+                let lint = linter.verify(params.compiledJs, {
+                    parserOptions: { ecmaVersion: 5 }
+                }, {filename: dir});
+                if (lint.filter(message => message.fatal).length > 0) {
+                    result.compiled.lintErrors = lint;
+                } else {
+                    const code = params.compiledJs.replace(/\{/g, '{\n');
+                    lint = linter.verifyAndFix(code, {
+                        parserOptions: { ecmaVersion: 5 },
+                        rules: {
+                            indent: ['error', 2]
+                        }
+                    }, {filename: dir});
+                    if (lint.fixed) {
+                        params.compiledJs = lint.output;
+                    }
+                }
+            }
+
+            const compileOk = deepEqual(result.compiled, expected.compiled);
+
+            const evalOk = compileOk && deepEqual(result.outputs, expected.outputs);
+            params.ok = compileOk && evalOk;
+
+            let msg = '';
+            if (!compileOk) {
+                msg += diff.diffJson(expected.compiled, result.compiled)
+                    .map((hunk) => {
+                        if (hunk.added) {
+                            return `+ ${hunk.value}`;
+                        } else if (hunk.removed) {
+                            return `- ${hunk.value}`;
+                        } else {
+                            return `  ${hunk.value}`;
+                        }
+                    })
+                    .join('');
+            }
+            if (compileOk && !evalOk) {
+                msg += expected.outputs
+                    .map((expectedOutput, i) => {
+                        if (!deepEqual(expectedOutput, result.outputs[i])) {
+                            return `f(${JSON.stringify(fixture.inputs[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(result.outputs[i])}`;
+                        }
+                        return false;
+                    })
+                    .filter(Boolean)
+                    .join('\n');
+            }
+
+            params.difference = msg;
+            if (msg) { console.log(msg); }
+
+            params.expression = JSON.stringify(fixture.expression, null, 2);
+
+            done();
+        } catch (e) {
+            done(e);
+        }
+    });
+};

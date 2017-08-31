@@ -1,0 +1,30 @@
+{
+  "expectExpressionType": null,
+  "expression": ["to-string", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}],
+    [{}, {"properties": {"x": [1, 2]}}],
+    [{}, {"properties": {"x": {"y": 1}}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "outputs": [
+      "1",
+      "false",
+      "null",
+      {
+        "error": "Expected a primitive value in [\"string\", ...], but found Array<Number, 2> instead."
+      },
+      {
+        "error": "Expected a primitive value in [\"string\", ...], but found Object instead."
+      }
+    ]
+  }
+}
