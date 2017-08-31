@@ -90,13 +90,13 @@ function updateCollisionBox(collisionVertexArray: any, placed: boolean) {
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
 }
 
-function updateCollisionCircles(collisionVertexArray: any, collisionCircles: Array<any>, placed: boolean) {
+function updateCollisionCircles(collisionVertexArray: any, collisionCircles: Array<any>, placed: boolean, isDuplicate: boolean) {
     if (!collisionVertexArray) {
         return;
     }
 
     for (let k = 0; k < collisionCircles.length; k += 5) {
-        const notUsed = collisionCircles[k + 4];
+        const notUsed = isDuplicate || collisionCircles[k + 4];
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
@@ -135,31 +135,41 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
         let placedGlyphBox = [];
         let placedIconBox = [];
         let placedGlyphCircles = [];
-        if (symbolInstance.collisionArrays.textBox) {
-            placedGlyphBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
-                layout['text-allow-overlap'], scale, pixelsToTileUnits);
-        }
+        if (!symbolInstance.isDuplicate) {
+            // isDuplicate -> Although we're rendering this tile, this symbol is also present in
+            // a child tile that will be rendered on top. Don't place this symbol, so that
+            // there's room in the CollisionIndex for the child symbol.
 
-        if (symbolInstance.collisionArrays.iconBox) {
-            placedIconBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
-                layout['icon-allow-overlap'], scale, pixelsToTileUnits);
-        }
+            // Symbols that are in the parent but not the child will keep getting rendered
+            // (and potentially colliding out child symbols) until the parent tile is removed.
+            // It might be better to filter out all the parent symbols so that the child tile
+            // starts rendering as close as possible to its final state?
+            if (symbolInstance.collisionArrays.textBox) {
+                placedGlyphBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
+                    layout['text-allow-overlap'], scale, pixelsToTileUnits);
+            }
 
-        const textCircles = symbolInstance.collisionArrays.textCircles;
-        if (textCircles) {
-            const placedSymbol = (bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]): any);
-            const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
-            placedGlyphCircles = collisionIndex.placeCollisionCircles(textCircles,
-                layout['text-allow-overlap'],
-                scale,
-                pixelsToTileUnits,
-                symbolInstance.key,
-                placedSymbol,
-                bucket.lineVertexArray,
-                bucket.glyphOffsetArray,
-                fontSize,
-                labelPlaneMatrix,
-                showCollisionBoxes);
+            if (symbolInstance.collisionArrays.iconBox) {
+                placedIconBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
+                    layout['icon-allow-overlap'], scale, pixelsToTileUnits);
+            }
+
+            const textCircles = symbolInstance.collisionArrays.textCircles;
+            if (textCircles) {
+                const placedSymbol = (bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]): any);
+                const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
+                placedGlyphCircles = collisionIndex.placeCollisionCircles(textCircles,
+                    layout['text-allow-overlap'],
+                    scale,
+                    pixelsToTileUnits,
+                    symbolInstance.key,
+                    placedSymbol,
+                    bucket.lineVertexArray,
+                    bucket.glyphOffsetArray,
+                    fontSize,
+                    labelPlaneMatrix,
+                    showCollisionBoxes);
+            }
         }
 
         let placeGlyph = placedGlyphBox.length > 0 || placedGlyphCircles.length > 0;
@@ -190,7 +200,7 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
             }
         }
         if (symbolInstance.collisionArrays.textCircles) {
-            updateCollisionCircles(collisionDebugCircleArray, symbolInstance.collisionArrays.textCircles, placeGlyph);
+            updateCollisionCircles(collisionDebugCircleArray, symbolInstance.collisionArrays.textCircles, placeGlyph, symbolInstance.isDuplicate);
             if (placeGlyph) {
                 collisionIndex.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
             }
