@@ -51,7 +51,11 @@ module.exports = function(style, options, _callback) {
     map.once('load', () => {
         if (options.collisionDebug) {
             map.showCollisionBoxes = true;
-            options.operations = [["wait"]];
+            if (options.operations) {
+                options.operations.push(["wait"]);
+            } else {
+                options.operations = [["wait"]];
+            }
         }
         applyOperations(map, options.operations, () => {
             const viewport = gl.getParameter(gl.VIEWPORT);
@@ -107,6 +111,12 @@ function applyOperations(map, operations, callback) {
         };
         wait();
 
+    } else if (operation[0] === 'sleep') {
+        // Prefer "wait", which renders until the map is loaded
+        // Use "sleep" when you need to test something that sidesteps the "loaded" logic
+        setTimeout(() => {
+            applyOperations(map, operations.slice(1), callback);
+        }, operation[1]);
     } else if (operation[0] === 'addImage') {
         const img = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
         const options = util.extend({}, {height: img.height, width: img.width, pixelRatio: 1}, operation.length > 3 ? operation[3] : {});
