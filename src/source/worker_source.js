@@ -5,6 +5,12 @@ import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type {Transferable} from '../types/transferable';
 
+export type RawImageData = {
+    data: Uint8ClampedArray,
+    width: number,
+    height: number
+};
+
 export type TileParameters = {
     source: string,
     uid: string,
@@ -19,6 +25,16 @@ export type WorkerTileParameters = TileParameters & {
     pixelRatio: number,
     overscaling: number,
     showCollisionBoxes: boolean
+};
+
+export type WorkerRasterTileParameters = TileParameters & {
+    coord: TileCoord,
+    request: RequestParameters,
+    zoom: number,
+    maxZoom: number,
+    tileSize: number,
+    overscaling: number,
+    rawImageData: RawImageData
 };
 
 export type WorkerTileResult = {

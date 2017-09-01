@@ -25,6 +25,7 @@ const draw = {
     line: require('./draw_line'),
     fill: require('./draw_fill'),
     'fill-extrusion': require('./draw_fill_extrusion'),
+    hillshade: require('./draw_hillshade'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
     debug: require('./draw_debug')

@@ -4,6 +4,7 @@ const Actor = require('../util/actor');
 const StyleLayerIndex = require('../style/style_layer_index');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
+const RasterDEMTileWorkerSource = require('./raster_dem_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
 const assert = require('assert');
 
@@ -37,6 +38,7 @@ class Worker {
 
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
+            'raster-dem': RasterDEMTileWorkerSource,
             geojson: GeoJSONWorkerSource
         };
 
