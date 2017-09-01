@@ -105,9 +105,6 @@ function updateCollisionCircles(collisionVertexArray: any, collisionCircles: Arr
 }
 
 function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
-    // Calculate which labels can be shown and when they can be shown and
-    // create the bufers used for rendering.
-
     const layer = bucket.layers[0];
     const layout = layer.layout;
 
