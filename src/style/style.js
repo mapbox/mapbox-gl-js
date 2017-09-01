@@ -990,7 +990,7 @@ class Style extends Evented {
                     if (!posMatrices[id]) {
                         posMatrices[id] = {};
                     }
-                    pausedPlacement = this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, posMatrices[id], collisionFadeTimes, shouldPausePlacement);
+                    pausedPlacement = this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, posMatrices[id], shouldPausePlacement);
                 }
             }
             if (!pausedPlacement) {
@@ -998,7 +998,7 @@ class Style extends Evented {
             }
         }
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].commitPlacement(this.collisionIndex);
+            this.sourceCaches[id].commitPlacement(this.collisionIndex, collisionFadeTimes);
         }
         const elapsed = browser.now() - startPlacement;
         this._fullPlacementElapsed += elapsed;

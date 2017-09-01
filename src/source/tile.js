@@ -173,7 +173,7 @@ class Tile {
         }
     }
 
-    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
+    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array) {
         const bucket = this.getBucket(layer);
         const collisionBoxArray = this.collisionBoxArray;
 
@@ -184,11 +184,18 @@ class Tile {
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
             PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, collisionBoxArray);
-            PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
         }
     }
 
-    commitPlacement(collisionIndex: CollisionIndex) {
+    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any) {
+        // Start all collision animations at the same time
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
+            }
+        }
+
         // Don't update the collision index used for queryRenderedFeatures
         // until all layers have been updated to the same state
         if (this.featureIndex) {
