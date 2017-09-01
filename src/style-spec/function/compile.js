@@ -72,10 +72,12 @@ var $props = $feature && $feature.properties || {};
 return $this.unwrap(${compiled})
 `): any);
 
+        const ctx = evaluationContext();
+
         return {
             result: 'success',
             function: (globalProperties, feature) =>
-                fn(evaluationContext(), globalProperties, feature),
+                fn(ctx, globalProperties, feature),
             functionSource: compiled,
             isFeatureConstant: isFeatureConstant(parsed),
             isZoomConstant: isZoomConstant(parsed),
