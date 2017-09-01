@@ -179,24 +179,24 @@ module.exports = () => ({
     },
 
     _unitBezierCache: ({}: {[string]: UnitBezier}),
-    evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<Function>, interpolation: InterpolationType, resultType: string) {
+    evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<any>, interpolation: InterpolationType, resultType: string) {
         const stopCount = stopInputs.length;
-        if (stopInputs.length === 1) return stopOutputs[0]();
-        if (input <= stopInputs[0]) return stopOutputs[0]();
-        if (input >= stopInputs[stopCount - 1]) return stopOutputs[stopCount - 1]();
+        if (stopInputs.length === 1) return stopOutputs[0];
+        if (input <= stopInputs[0]) return stopOutputs[0];
+        if (input >= stopInputs[stopCount - 1]) return stopOutputs[stopCount - 1];
 
         const index = findStopLessThanOrEqualTo(stopInputs, input);
 
         if (interpolation.name === 'step') {
-            return stopOutputs[index]();
+            return stopOutputs[index];
         }
 
         const lower = stopInputs[index];
         const upper = stopInputs[index + 1];
         const t = Curve.interpolationFactor(interpolation, input, lower, upper, this._unitBezierCache);
 
-        const outputLower = stopOutputs[index]();
-        const outputUpper = stopOutputs[index + 1]();
+        const outputLower = stopOutputs[index];
+        const outputUpper = stopOutputs[index + 1];
 
         if (resultType === 'color') {
             return new Color(...interpolate.color(outputLower.value, outputUpper.value, t));

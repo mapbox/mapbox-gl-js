@@ -154,7 +154,7 @@ class Curve implements Expression {
         const outputs = [];
         for (const [label, expression] of this.stops) {
             labels.push(label);
-            outputs.push(`function () { return ${expression.compile()}; }`);
+            outputs.push(`${expression.compile()}`);
         }
 
         const interpolationType = this.type.kind.toLowerCase();
