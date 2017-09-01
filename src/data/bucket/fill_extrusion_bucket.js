@@ -129,43 +129,7 @@ class FillExtrusionBucket implements Bucket {
                 numVertices += ring.length;
             }
 
-            let segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
-
-            const flattened = [];
-            const holeIndices = [];
-            const indices = [];
-
-            for (const ring of polygon) {
-                if (ring.length === 0) {
-                    continue;
-                }
-
-                if (ring !== polygon[0]) {
-                    holeIndices.push(flattened.length / 2);
-                }
-
-                for (let i = 0; i < ring.length; i++) {
-                    const p = ring[i];
-
-                    addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
-                    indices.push(segment.vertexLength++);
-
-                    flattened.push(p.x);
-                    flattened.push(p.y);
-                }
-            }
-
-            const triangleIndices = earcut(flattened, holeIndices);
-            assert(triangleIndices.length % 3 === 0);
-
-            for (let j = 0; j < triangleIndices.length; j += 3) {
-                this.indexArray.emplaceBack(
-                    indices[triangleIndices[j]],
-                    indices[triangleIndices[j + 1]],
-                    indices[triangleIndices[j + 2]]);
-            }
-
-            segment.primitiveLength += triangleIndices.length / 3;
+            let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
             for (const ring of polygon) {
                 if (ring.length === 0) {
@@ -206,6 +170,46 @@ class FillExtrusionBucket implements Bucket {
                     }
                 }
             }
+
+            if (segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
+                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+            }
+
+            const flattened = [];
+            const holeIndices = [];
+            const indices = [];
+
+            for (const ring of polygon) {
+                if (ring.length === 0) {
+                    continue;
+                }
+
+                if (ring !== polygon[0]) {
+                    holeIndices.push(flattened.length / 2);
+                }
+
+                for (let i = 0; i < ring.length; i++) {
+                    const p = ring[i];
+
+                    addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
+                    indices.push(segment.vertexLength++);
+
+                    flattened.push(p.x);
+                    flattened.push(p.y);
+                }
+            }
+
+            const triangleIndices = earcut(flattened, holeIndices);
+            assert(triangleIndices.length % 3 === 0);
+
+            for (let j = 0; j < triangleIndices.length; j += 3) {
+                this.indexArray.emplaceBack(
+                    indices[triangleIndices[j]],
+                    indices[triangleIndices[j + 1]],
+                    indices[triangleIndices[j + 2]]);
+            }
+
+            segment.primitiveLength += triangleIndices.length / 3;
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
