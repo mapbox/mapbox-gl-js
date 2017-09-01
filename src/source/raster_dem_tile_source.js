@@ -24,7 +24,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
     serialize() {
         return {
-            type: 'raster-terrain',
+            type: 'raster-dem',
             url: this.url,
             tileSize: this.tileSize,
             tiles: this.tiles,
@@ -32,14 +32,13 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         };
     }
 
-    loadTile(tile: Tile, callback: Callback<TileJSON>) {
+    loadTile(tile: Tile, callback: Callback<void>) {
         const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
         tile.request = ajax.getImage(this.map._transformRequest(url, ajax.ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.coord.id);
         function imageLoaded(err, img) {
             delete tile.request;
-
             if (tile.aborted) {
                 this.state = 'unloaded';
                 return callback(null);
@@ -53,7 +52,11 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
 
             if (img) {
-                tile.rawImageData = {data: browser.getImageData(img), width: img.width, height: img.height};
+                if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
+                delete (img: any).cacheControl;
+                delete (img: any).expires;
+
+                const rawImageData = browser.getImageData(img);
 
                 const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
 
@@ -65,20 +68,12 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     type: this.type,
                     source: this.id,
                     overscaling: overscaling,
-                    rawImageData: tile.rawImageData
+                    rawImageData: rawImageData
                 };
 
-                if (!tile.workerID || tile.state === 'expired') {
+                if (!tile.workerID || tile.state === 'expired' || tile.state === 'unloaded') {
                     tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
-                } else if (tile.state === 'loading') {
-                    // schedule tile reloading after it has been loaded
-                    tile.reloadCallback = callback;
-                } else {
-                    this.dispatcher.send('reloadTile', params, done.bind(this), tile.workerID);
                 }
-
-                delete img.cacheControl;
-                delete img.expires;
             }
         }
 
@@ -96,7 +91,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         }
     }
 
-    _getNeighboringTiles(tileId) {
+    _getNeighboringTiles(tileId: number) {
         const {z, x, y, w} = TileCoord.fromID(tileId);
         const dim = Math.pow(2, z);
 
@@ -128,6 +123,12 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             const tilecoord = new TileCoord(coord.z, coord.x, coord.y, coord.w);
             return tilecoord.id;
         }
+    }
+
+
+    unloadTile(tile: Tile) {
+        tile.unloadDEMData();
+        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, undefined, tile.workerID);
     }
 
 }
