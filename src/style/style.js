@@ -93,9 +93,14 @@ class Style extends Evented {
     _updatedAllPaintProps: boolean;
     _updatedSymbolOrder: boolean;
     _currentPlacementIndex: number;
+
+    // For debug timing logs:
     _fullPlacementStart: number;
     _fullPlacementElapsed: number;
+    _totalPlacementTime: number;
+    _placements: number;
     _interruptions: number;
+
     collisionIndex: CollisionIndex;
     z: number;
 
@@ -122,6 +127,9 @@ class Style extends Evented {
         this.sourceCaches = {};
         this.zoomHistory = {};
         this._loaded = false;
+
+        this._placements = 0;
+        this._totalPlacementTime = 0;
 
         this._resetUpdates();
 
@@ -1019,7 +1027,10 @@ class Style extends Evented {
         }
         const elapsed = browser.now() - startPlacement;
         this._fullPlacementElapsed += elapsed;
+        this._totalPlacementTime += this._fullPlacementElapsed;
+        this._placements++;
         //console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time, with ${this._interruptions} interruptions.`);
+        //console.log(`Average placement time so far: ${this._totalPlacementTime / this._placements}ms`);
         return false;
     }
 
