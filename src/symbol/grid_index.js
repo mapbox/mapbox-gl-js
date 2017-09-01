@@ -20,7 +20,8 @@ class GridIndex {
     circleCells: Array<Array<number>>;
     bboxes: Array<number>;
     circles: Array<number>;
-    n: number;
+    xCellCount: number;
+    yCellCount: number;
     width: number;
     height: number;
     xScale: number;
@@ -28,11 +29,17 @@ class GridIndex {
     boxUid: number;
     circleUid: number;
 
-    constructor (width: number, height: number, n: number) {
+    constructor (width: number, height: number, cellSize: number) {
         const boxCells = this.boxCells = [];
         const circleCells = this.circleCells = [];
 
-        for (let i = 0; i < n * n; i++) {
+        // More cells -> fewer geometries to check per cell, but items tend
+        // to be split across more cells.
+        // Sweet spot allows most small items to fit in one cell
+        this.xCellCount = Math.ceil(width / cellSize);
+        this.yCellCount = Math.ceil(height / cellSize);
+
+        for (let i = 0; i < this.xCellCount * this.yCellCount; i++) {
             boxCells.push([]);
             circleCells.push([]);
         }
@@ -41,11 +48,10 @@ class GridIndex {
         this.bboxes = [];
         this.circles = [];
 
-        this.n = n;
         this.width = width;
         this.height = height;
-        this.xScale = n / width;
-        this.yScale = n / height;
+        this.xScale = this.xCellCount / width;
+        this.yScale = this.yCellCount / height;
         this.boxUid = 0;
         this.circleUid = 0;
     }
@@ -242,18 +248,18 @@ class GridIndex {
 
         for (let x = cx1; x <= cx2; x++) {
             for (let y = cy1; y <= cy2; y++) {
-                const cellIndex = this.n * y + x;
+                const cellIndex = this.xCellCount * y + x;
                 if (fn.call(this, x1, y1, x2, y2, cellIndex, arg1, arg2)) return;
             }
         }
     }
 
     _convertToXCellCoord(x: number) {
-        return Math.max(0, Math.min(this.n - 1, Math.floor(x * this.xScale)));
+        return Math.max(0, Math.min(this.xCellCount - 1, Math.floor(x * this.xScale)));
     }
 
     _convertToYCellCoord(y: number) {
-        return Math.max(0, Math.min(this.n - 1, Math.floor(y * this.yScale)));
+        return Math.max(0, Math.min(this.yCellCount - 1, Math.floor(y * this.yScale)));
     }
 
     _circlesCollide(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean {
