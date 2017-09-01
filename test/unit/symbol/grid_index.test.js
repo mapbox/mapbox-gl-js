@@ -7,7 +7,7 @@ const GridIndex = require('../../../src/symbol/grid_index');
 test('GridIndex', (t) => {
 
     t.test('indexes features', (t) => {
-        const grid = new GridIndex(100, 100, 4);
+        const grid = new GridIndex(100, 100, 10);
         grid.insert(0, 4, 10, 6, 30);
         grid.insert(1, 4, 10, 30, 12);
         grid.insert(2, -10, 30, 5, 35);
@@ -21,7 +21,7 @@ test('GridIndex', (t) => {
     });
 
     t.test('returns multiple copies of a key if multiple boxes were inserted with the same key', (t) => {
-        const grid = new GridIndex(100, 100, 4);
+        const grid = new GridIndex(100, 100, 10);
         const key = 123;
         grid.insert(key, 3, 3, 4, 4);
         grid.insert(key, 13, 13, 14, 14);
@@ -31,7 +31,7 @@ test('GridIndex', (t) => {
     });
 
     t.test('circle-circle intersection', (t) => {
-        const grid = new GridIndex(100, 100, 4);
+        const grid = new GridIndex(100, 100, 10);
         grid.insertCircle(0, 50, 50, 10);
         grid.insertCircle(1, 60, 60, 15);
         grid.insertCircle(2, -10, 110, 20);
@@ -45,7 +45,7 @@ test('GridIndex', (t) => {
     });
 
     t.test('circle-rectangle intersection', (t) => {
-        const grid = new GridIndex(100, 100, 4);
+        const grid = new GridIndex(100, 100, 10);
         grid.insertCircle(0, 50, 50, 10);
         grid.insertCircle(1, 60, 60, 15);
         grid.insertCircle(2, -10, 110, 20);
