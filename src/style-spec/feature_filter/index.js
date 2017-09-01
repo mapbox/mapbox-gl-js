@@ -1,4 +1,3 @@
-
 module.exports = createFilter;
 
 const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
