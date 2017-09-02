@@ -248,7 +248,7 @@ class SourceCache extends Evented {
         tile.timeAdded = browser.now();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        if (this._source.type === 'raster-dem') this._backfillDEM(tile);
+        if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -264,23 +264,23 @@ class SourceCache extends Evented {
     * @private
     */
     _backfillDEM(tile: Tile) {
-        for (const key in this._tiles) {
-            if (this._tiles[key].state === "loaded" && tile.neighboringTiles[key]) {
-                const borderTile = this._tiles[key];
+        const renderables = this.getRenderableIds();
+        for (let i = 0; i < renderables.length; i++) {
+            const borderId = renderables[i];
+            if (tile.neighboringTiles && tile.neighboringTiles[borderId]) {
+                const borderTile = this.getTileByID(borderId);
                 fillBorder(tile, borderTile);
                 fillBorder(borderTile, tile);
             }
         }
 
         function fillBorder(tile, borderTile) {
-            tile.hillshadeTexture = undefined;
+            tile.texture = undefined;
             let dx = borderTile.coord.x - tile.coord.x;
             const dy = borderTile.coord.y - tile.coord.y;
             const dim = Math.pow(2, tile.coord.z);
-            if (dx === 0 && dy === 0) {
-                tile.neighboringTiles[borderTile.coord.id].backfilled = true;
-                return;
-            }
+            const borderId = borderTile.coord.id;
+            if (dx === 0 && dy === 0) return;
 
             if (Math.abs(dy) > 1) {
                 return;
@@ -295,7 +295,8 @@ class SourceCache extends Evented {
             }
             if (!borderTile.dem || !tile.dem) return;
             tile.dem.backfillBorders(borderTile.dem, dx, dy);
-            tile.neighboringTiles[borderTile.coord.id].backfilled = true;
+            if (tile.neighboringTiles && tile.neighboringTiles[borderId])
+                tile.neighboringTiles[borderId].backfilled = true;
         }
     }
     /**

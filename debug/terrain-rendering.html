@@ -29,7 +29,8 @@ var raster =   {
         },
         "rasterTerrain": {
             "type": "raster-dem",
-            "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
+            "url": "mapbox://mapbox.terrain-rgb"
+            // "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
         }
     },
     "layers": [
@@ -70,7 +71,14 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12,
     center: [-112.9487, 36.2628],
     style: raster, //'mapbox://styles/mollymerp/cj3e8wxmj00042so5xtkxx66y',
-    hash: true
+    hash: true,
+    transformRequest: (url, resourceType) =>{
+        if (resourceType === 'Tile' && url.search('terrain')) {
+            return {
+                url: url.replace('@2x.webp', '.pngraw')
+            };
+        }
+    }
 });
 map.on('load', ()=> {
     map.setLight({position: [1.15, 225, 30]});

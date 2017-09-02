@@ -2,6 +2,12 @@
 
 const assert = require('assert');
 
+export type SerializedDEMData = {
+    uid: string,
+    scale: number,
+    levels: Array<ArrayBuffer>
+};
+
 class Level {
     width: number;
     height: number;
@@ -42,11 +48,11 @@ class DEMData {
     data: Array<Level>;
     loaded: boolean;
 
-    static deserialize(buffer: Array<ArrayBuffer>) {
-        // TODO dont hardcode tilesize
+    static deserialize(serializedData: SerializedDEMData) {
+        // dont hardcode tilesize
         const tileSize = 256;
-        const data = [new Level(tileSize, tileSize, tileSize / 2, new Int32Array(buffer[0]))];
-        return new DEMData(data.uid, data.scale, data);
+        const data = [new Level(tileSize, tileSize, tileSize / 2, new Int32Array(serializedData.levels[0]))];
+        return new DEMData(serializedData.uid, serializedData.scale, data);
     }
 
     constructor(uid: string, scale: ?number, data: ?Array<Level>) {
@@ -75,15 +81,16 @@ class DEMData {
         this.loaded = true;
     }
 
-    serialize(transferables: Array<any>) {
+    serialize(transferables?: Array<Transferable>) {
         const references = {
             uid: this.uid,
             scale: this.scale,
+            levels: []
         };
 
 
         if (transferables) transferables.push(this.data[0].data.buffer);
-        references[0] = this.data[0].data.buffer;
+        references.levels.push(this.data[0].data.buffer);
         return references;
     }
 

@@ -27,7 +27,7 @@ class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
     layerIndexes: { [string]: StyleLayerIndex };
-    workerSourceTypes: { [string]: Class<WorkerSource> };
+    workerSourceTypes: { [string]: Class<any> };
     workerSources: { [string]: { [string]: WorkerSource } };
 
     constructor(self: WorkerGlobalScopeInterface) {

@@ -31,7 +31,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        if (!tile.texture) prepareHillshade(painter, tile, layer);
+        if (!tile.texture) prepareHillshade(painter, tile);
 
         let bordersLoaded = true;
         if (painter.transform.tileZoom < maxzoom) {
@@ -48,8 +48,6 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 
 }
 
-// TODO create OffscreenTexture class for extrusions + terrain
-// preprocessing ?
 class HillshadeTexture {
 
     gl: WebGLRenderingContext;
@@ -81,7 +79,7 @@ class HillshadeTexture {
         tile.texture.width = this.width;
         tile.texture.height = this.height;
 
-        // TODO: can we reuse fbos?
+        // reuse fbos?
         this.fbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         gl.viewport(0, 0, this.width, this.height);
@@ -132,7 +130,7 @@ function renderHillshade(painter, tile, layer, bordersLoaded) {
 }
 
 
-function prepareHillshade(painter, tile, layer) {
+function prepareHillshade(painter, tile) {
     const gl = painter.gl;
     // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
     // ex.
