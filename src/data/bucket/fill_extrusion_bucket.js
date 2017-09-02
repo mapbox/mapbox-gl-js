@@ -139,16 +139,16 @@ class FillExtrusionBucket implements Bucket {
                 let edgeDistance = 0;
 
                 for (let p = 0; p < ring.length; p++) {
-                    if (segment.vertexLength + 4 > MAX_VERTEX_ARRAY_LENGTH) {
-                        segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                    }
-
                     const p1 = ring[p];
 
                     if (p >= 1) {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
+                            if (segment.vertexLength + 4 > MAX_VERTEX_ARRAY_LENGTH) {
+                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                            }
+
                             const perp = p1.sub(p2)._perp()._unit();
 
                             addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
@@ -172,12 +172,12 @@ class FillExtrusionBucket implements Bucket {
             }
 
             if (segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
-                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 
             const flattened = [];
             const holeIndices = [];
-            const indices = [];
+            const triangleIndex = segment.vertexLength;
 
             for (const ring of polygon) {
                 if (ring.length === 0) {
@@ -192,24 +192,23 @@ class FillExtrusionBucket implements Bucket {
                     const p = ring[i];
 
                     addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
-                    indices.push(segment.vertexLength++);
 
                     flattened.push(p.x);
                     flattened.push(p.y);
                 }
             }
 
-            const triangleIndices = earcut(flattened, holeIndices);
-            assert(triangleIndices.length % 3 === 0);
+            const indices = earcut(flattened, holeIndices);
+            assert(indices.length % 3 === 0);
 
-            for (let j = 0; j < triangleIndices.length; j += 3) {
+            for (let j = 0; j < indices.length; j += 3) {
                 this.indexArray.emplaceBack(
-                    indices[triangleIndices[j]],
-                    indices[triangleIndices[j + 1]],
-                    indices[triangleIndices[j + 2]]);
+                    triangleIndex + indices[j],
+                    triangleIndex + indices[j + 1],
+                    triangleIndex + indices[j + 2]);
             }
 
-            segment.primitiveLength += triangleIndices.length / 3;
+            segment.primitiveLength += indices.length / 3;
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
