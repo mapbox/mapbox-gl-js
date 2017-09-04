@@ -11,7 +11,7 @@ import type Map from '../map';
  * @implements {IControl}
  * @param {Object} [options]
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
- * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'` or `'metric'`).
+ * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
  * map.addControl(new mapboxgl.ScaleControl({
  *     maxWidth: 80,
@@ -78,6 +78,9 @@ function updateScale(map, container, options) {
         } else {
             setScale(container, maxWidth, maxFeet, 'ft');
         }
+    } else if (options && options.unit === 'nautical') {
+        const maxNauticals = maxMeters / 1852;
+        setScale(container, maxWidth, maxNauticals, 'nm');
     } else {
         setScale(container, maxWidth, maxMeters, 'm');
     }
