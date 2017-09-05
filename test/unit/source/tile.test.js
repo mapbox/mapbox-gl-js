@@ -9,6 +9,7 @@ const path = require('path');
 const vtpbf = require('vt-pbf');
 const FeatureIndex = require('../../../src/data/feature_index');
 const CollisionTile = require('../../../src/symbol/collision_tile');
+const Transform = require('../../../src/geo/transform');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
 const Evented = require('../../../src/util/evented');
@@ -138,14 +139,14 @@ test('Tile#redoPlacement', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(null, createPainter());
 
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
+        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionTile(new Transform()), {id: 'layer'}));
         t.notOk(tile.redoWhenDone);
         t.end();
     });
 
     test('redoPlacement on a loading tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
+        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionTile(new Transform()), {id: 'layer'}));
         t.ok(tile.redoWhenDone);
         t.end();
     });
@@ -160,39 +161,36 @@ test('Tile#redoPlacement', (t) => {
                 send: () => {}
             },
             map: {
-                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } }
+                painter: { tileExtentVAO: {vao: 0}}
             }
         };
 
-        tile.redoPlacement(options);
-        tile.redoPlacement(options);
+        tile.state = 'reloading';
+        tile.redoPlacement(options, false, new CollisionTile(new Transform()), {id: 'layer'});
 
         t.ok(tile.redoWhenDone);
         t.end();
     });
 
-    test('reloaded tile fires a data event on completion', (t)=>{
-        const tile = new Tile(new TileCoord(1, 1, 1));
-        tile.loadVectorData(createVectorData(), createPainter());
-        t.stub(tile, 'reloadSymbolData').returns(null);
-        const source = util.extend(new Evented(), {
-            type: 'vector',
-            dispatcher: {
-                send: (name, data, cb) => {
-                    if (name === 'redoPlacement') setTimeout(cb, 300);
-                }
-            },
-            map: {
-                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } },
-                painter: { tileExtentVAO: {vao: 0}}
-            }
-        });
+    // TODO: Need to figure out  appropriate handling of 'data' events for placement now that placement
+    // isn't actually generating new buffers
 
-        tile.redoPlacement(source);
-        tile.placementSource.on('data', ()=>{
-            if (tile.state === 'loaded') t.end();
-        });
-    });
+    // test('reloaded tile fires a data event on completion', (t)=>{
+    //     const tile = new Tile(new TileCoord(1, 1, 1));
+    //     tile.loadVectorData(createVectorData(), createPainter());
+    //     t.stub(tile, 'reloadSymbolData').returns(null);
+    //     const source = util.extend(new Evented(), {
+    //         type: 'vector',
+    //         map: {
+    //             painter: { tileExtentVAO: {vao: 0}}
+    //         }
+    //     });
+    //
+    //     tile.redoPlacement(source, false, new CollisionTile(new Transform()), {id: 'layer'});
+    //     source.on('data', ()=>{
+    //         if (tile.state === 'loaded') t.end();
+    //     });
+    // });
 
     t.end();
 });
@@ -290,7 +288,6 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: collisionBoxArray.serialize(),
-        collisionTile: (new CollisionTile(0, 0, 1, 1, collisionBoxArray)).serialize(),
         featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
         buckets: []
     }, options);

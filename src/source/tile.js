@@ -187,11 +187,11 @@ class Tile {
             return;
         }
 
-        collisionTile.setMatrix(posMatrix);
-
         const bucket = this.getBucket(layer);
 
         if (bucket && bucket instanceof SymbolBucket) {
+            collisionTile.setMatrix(posMatrix);
+
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
             const pixelRatio = pixelsToTileUnits(this, 1, collisionTile.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionTile.transform, pixelRatio);
@@ -204,14 +204,13 @@ class Tile {
         if (this.featureIndex) {
             this.featureIndex.setCollisionTile(this.collisionTile);
         }
-        //if (this.placementSource.map.showCollisionBoxes) this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
-        // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
+
+        // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (source.map) source.map.painter.tileExtentVAO.vao = null;
 
+        // TODO: This logic is really brittle with placement now happening one layer at a time
+        // This only works because we're flagging "forceFullPlacement" when tiles are added
         this.state = 'loaded';
-
-
-        //}, this.workerID);
     }
 
     getBucket(layer: StyleLayer) {
