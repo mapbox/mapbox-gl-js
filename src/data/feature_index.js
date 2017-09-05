@@ -13,7 +13,7 @@ const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;
 const TileCoord = require('../source/tile_coord');
 
-import type CollisionTile from '../symbol/collision_tile';
+import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
 import type {SerializedStructArray} from '../util/struct_array';
 
@@ -65,7 +65,7 @@ class FeatureIndex {
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
-    collisionTile: CollisionTile;
+    collisionIndex: CollisionIndex;
 
     static deserialize(serialized: SerializedFeatureIndex,
                        rawTileData: ArrayBuffer) {
@@ -116,8 +116,8 @@ class FeatureIndex {
         }
     }
 
-    setCollisionTile(collisionTile: CollisionTile) {
-        this.collisionTile = collisionTile;
+    setCollisionIndex(collisionIndex: CollisionIndex) {
+        this.collisionIndex = collisionIndex;
     }
 
     serialize(transferables?: Array<Transferable>): SerializedFeatureIndex {
@@ -169,8 +169,8 @@ class FeatureIndex {
         matching.sort(topDownFeatureComparator);
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
-        const matchingSymbols = this.collisionTile ?
-            this.collisionTile.queryRenderedSymbols(queryGeometry, args.scale, this.coord, args.tileSourceMaxZoom, pixelsToTileUnits, args.collisionBoxArray) :
+        const matchingSymbols = this.collisionIndex ?
+            this.collisionIndex.queryRenderedSymbols(queryGeometry, args.scale, this.coord, args.tileSourceMaxZoom, pixelsToTileUnits, args.collisionBoxArray) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);

@@ -25,7 +25,7 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
-const CollisionTile = require('../symbol/collision_tile');
+const CollisionIndex = require('../symbol/collision_index');
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
@@ -95,7 +95,7 @@ class Style extends Evented {
     _currentPlacementIndex: number;
     _fullPlacementStart: number;
     _fullPlacementElapsed: number;
-    viewportCollisionTile: CollisionTile;
+    viewportCollisionIndex: CollisionIndex;
     z: number;
 
     constructor(stylesheet: StyleSpecification, map: Map, options: StyleOptions) {
@@ -948,7 +948,7 @@ class Style extends Evented {
 
         if (forceFullPlacement || typeof this._currentPlacementIndex === 'undefined' || this._currentPlacementIndex < 0) {
             this._currentPlacementIndex = this._order.length - 1;
-            this.viewportCollisionTile = new CollisionTile(transform.clone());
+            this.viewportCollisionIndex = new CollisionIndex(transform.clone());
             this._fullPlacementStart = browser.now();
             this._fullPlacementElapsed = 0;
         }
@@ -973,7 +973,7 @@ class Style extends Evented {
                 if (!posMatrices[id]) {
                     posMatrices[id] = {};
                 }
-                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionIndex, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
             }
         }
         const elapsed = browser.now() - startPlacement;
