@@ -15,7 +15,6 @@ import type Anchor from './anchor';
 class CollisionFeature {
     boxStartIndex: number;
     boxEndIndex: number;
-    collisionCircles: Array<number>;
 
     /**
      * Create a CollisionFeature, adding its collision box data to the given collisionBoxArray in the process.
@@ -36,16 +35,13 @@ class CollisionFeature {
                 shaped: Object,
                 boxScale: number,
                 padding: number,
-                alignLine: boolean,
-                straight: boolean) {
+                alignLine: boolean) {
         const y1 = shaped.top * boxScale - padding;
         const y2 = shaped.bottom * boxScale + padding;
         const x1 = shaped.left * boxScale - padding;
         const x2 = shaped.right * boxScale + padding;
 
         this.boxStartIndex = collisionBoxArray.length;
-
-        this.collisionCircles = [];
 
         if (alignLine) {
 
@@ -56,15 +52,7 @@ class CollisionFeature {
                 // set minimum box height to avoid very many small labels
                 height = Math.max(10 * boxScale, height);
 
-                if (straight) {
-                    // used for icon labels that are aligned with the line, but don't curve along it
-                    const vector = line[anchor.segment + 1].sub(line[(anchor.segment: any)])._unit()._mult(length);
-                    const straightLine = [anchor.sub(vector), anchor.add(vector)];
-                    this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
-                } else {
-                    // used for text labels that curve along a line
-                    this._addLineCollisionBoxes(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
-                }
+                this._addLineCollisionBoxes(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
             }
 
         } else {
