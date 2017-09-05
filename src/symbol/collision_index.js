@@ -12,6 +12,7 @@ const projection = require('../symbol/projection');
 
 import type Transform from '../geo/transform';
 import type TileCoord from '../source/tile_coord';
+import type {SingleCollisionBox} from '../data/bucket/symbol_bucket';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -52,13 +53,13 @@ class CollisionIndex {
      * overlapping with other features.
      * @private
      */
-    placeCollisionBox(collisionBox: Array<number>, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): Array<number> {
-        const projectedPoint = this.projectAndGetPerspectiveRatio(new Point(collisionBox[4], collisionBox[5]));
+    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): Array<number> {
+        const projectedPoint = this.projectAndGetPerspectiveRatio(collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
-        const tlX = collisionBox[0] / tileToViewport + projectedPoint.point.x;
-        const tlY = collisionBox[1] / tileToViewport + projectedPoint.point.y;
-        const brX = collisionBox[2] / tileToViewport + projectedPoint.point.x;
-        const brY = collisionBox[3] / tileToViewport + projectedPoint.point.y;
+        const tlX = collisionBox.x1 / tileToViewport + projectedPoint.point.x;
+        const tlY = collisionBox.y1 / tileToViewport + projectedPoint.point.y;
+        const brX = collisionBox.x2 / tileToViewport + projectedPoint.point.x;
+        const brY = collisionBox.y2 / tileToViewport + projectedPoint.point.y;
 
         if (!allowOverlap) {
             if (this.grid.hitTest(tlX, tlY, brX, brY)) {
@@ -74,15 +75,14 @@ class CollisionIndex {
             return placedCollisionCircles;
         }
 
-        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
-        const perspectiveRatio = this.getPerspectiveRatio(tileUnitAnchorPoint);
+        const perspectiveRatio = this.getPerspectiveRatio(symbol.anchorX, symbol.anchorY);
 
         const projectionCache = {};
         const fontScale = fontSize / 24;
         const lineOffsetX = symbol.lineOffsetX * fontSize;
         const lineOffsetY = symbol.lineOffsetY * fontSize;
 
-        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
+        const labelPlaneAnchorPoint = projection.project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix).point;
         const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
             fontScale,
             glyphOffsetArray,
@@ -110,7 +110,7 @@ class CollisionIndex {
                 continue;
             }
 
-            const projectedPoint = this.projectPoint(new Point(collisionCircles[k], collisionCircles[k + 1]));
+            const projectedPoint = this.projectPoint(collisionCircles[k], collisionCircles[k + 1]);
             const x = projectedPoint.x;
             const y = projectedPoint.y;
 
@@ -187,7 +187,7 @@ class CollisionIndex {
         for (let i = 0; i < queryGeometry.length; i++) {
             const ring = queryGeometry[i];
             for (let k = 0; k < ring.length; k++) {
-                const p = this.projectPoint(ring[k]);
+                const p = this.projectPoint(ring[k].x, ring[k].y);
                 minX = Math.min(minX, p.x);
                 minY = Math.min(minY, p.y);
                 maxX = Math.max(maxX, p.x);
@@ -229,7 +229,7 @@ class CollisionIndex {
             // Since there's no actual collision taking place, the circle vs. square
             // distinction doesn't matter as much, and box geometry is easier
             // to work with.
-            const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPoint);
+            const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPointX, blocking.anchorPointY);
             const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
             const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
             const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
@@ -278,14 +278,14 @@ class CollisionIndex {
         this.matrix = matrix;
     }
 
-    getPerspectiveRatio(anchor) {
-        const p = [anchor.x, anchor.y, 0, 1];
+    getPerspectiveRatio(x: number, y: number) {
+        const p = [x, y, 0, 1];
         projection.xyTransformMat4(p, p, this.matrix);
         return 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance);
     }
 
-    projectPoint(point) {
-        const p = [point.x, point.y, 0, 1];
+    projectPoint(x: number, y: number) {
+        const p = [x, y, 0, 1];
         projection.xyTransformMat4(p, p, this.matrix);
         return new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
@@ -293,8 +293,8 @@ class CollisionIndex {
         );
     }
 
-    projectAndGetPerspectiveRatio(point) {
-        const p = [point.x, point.y, 0, 1];
+    projectAndGetPerspectiveRatio(x: number, y: number) {
+        const p = [x, y, 0, 1];
         projection.xyTransformMat4(p, p, this.matrix);
         const a = new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
