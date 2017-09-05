@@ -95,6 +95,16 @@ class TileCoord {
         ];
     }
 
+    isChildOf(coord: TileCoord, sourceMaxZoom: number) {
+        const parentZ = Math.min(sourceMaxZoom, coord.z);
+        const childZ = Math.min(sourceMaxZoom, this.z);
+        const scale = Math.pow(2, parentZ - childZ);
+        const x = this.x * scale;
+        const y = this.y * scale;
+        return (coord.x <= x && x < coord.x + 1 &&
+                coord.y <= y && y < coord.y + 1);
+    }
+
     static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
                  actualZ: number, renderWorldCopies: boolean | void) {
         if (renderWorldCopies === undefined) {

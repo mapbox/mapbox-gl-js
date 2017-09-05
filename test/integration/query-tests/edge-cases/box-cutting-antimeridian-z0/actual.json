@@ -1,0 +1,54 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        90,
+        0
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "id": "B"
+    }
+  },
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        270,
+        0
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "id": "C"
+    }
+  },
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -270,
+        0
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "id": "B"
+    }
+  },
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -90,
+        0
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "id": "C"
+    }
+  }
+]

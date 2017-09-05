@@ -25,6 +25,7 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
+const CollisionTile = require('../symbol/collision_tile');
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
@@ -91,6 +92,10 @@ class Style extends Evented {
     _updatedPaintProps: {[layer: string]: {[class: string]: true}};
     _updatedAllPaintProps: boolean;
     _updatedSymbolOrder: boolean;
+    _currentPlacementIndex: number;
+    _fullPlacementStart: number;
+    _fullPlacementElapsed: number;
+    viewportCollisionTile: CollisionTile;
     z: number;
 
     constructor(stylesheet: StyleSpecification, map: Map, options: StyleOptions) {
@@ -107,8 +112,6 @@ class Style extends Evented {
         this.sourceCaches = {};
         this.zoomHistory = {};
         this._loaded = false;
-
-        util.bindAll(['_redoPlacement'], this);
 
         this._resetUpdates();
 
@@ -185,6 +188,8 @@ class Style extends Evented {
                 }
             }
         });
+
+        this._currentPlacementIndex = 0;
     }
 
     _validateLayer(layer: StyleLayer) {
@@ -922,10 +927,61 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement() {
+    getNeedsPlacement() {
         for (const id in this.sourceCaches) {
-            this.sourceCaches[id].redoPlacement();
+            if (this.sourceCaches[id].getNeedsPlacement()) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    _generateCollisionBoxes() {
+        for (const id in this.sourceCaches) {
+            this._reloadSource(id);
+        }
+    }
+
+    _redoPlacement(transform: Transform, showCollisionBoxes: boolean, forceFullPlacement: boolean, collisionFadeTimes: any) {
+        // TODO: There are sure to be bugs depending on this boolean flag for when to do a full placement...
+        // Make style aware itself of when it needs to re-build?
+
+        const posMatrices = {};
+
+        if (forceFullPlacement || !this._currentPlacementIndex || this._currentPlacementIndex < 0) {
+            this._currentPlacementIndex = this._order.length - 1;
+            this.viewportCollisionTile = new CollisionTile(transform.clone());
+            this._fullPlacementStart = browser.now();
+            this._fullPlacementElapsed = 0;
+        }
+
+        const startPlacement = browser.now();
+        //let placedLayers = 0;
+
+        while (this._currentPlacementIndex >= 0) {
+            const layerId = this._order[this._currentPlacementIndex--];
+            //placedLayers++;
+            const layer = this._layers[layerId];
+            if (layer.type !== 'symbol') continue;
+
+            for (const id in this.sourceCaches) {
+                if (!posMatrices[id]) {
+                    posMatrices[id] = {};
+                }
+                this.sourceCaches[id].redoPlacement(this.viewportCollisionTile, showCollisionBoxes, layer, posMatrices[id], transform, collisionFadeTimes);
+            }
+            if (!forceFullPlacement && (browser.now() - startPlacement > 2)) {
+                const elapsed = browser.now() - startPlacement;
+                this._fullPlacementElapsed += elapsed;
+                //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+                return true;
+            }
+        }
+        const elapsed = browser.now() - startPlacement;
+        this._fullPlacementElapsed += elapsed;
+        //console.log(`Placed ${placedLayers} layers in ${elapsed}ms`);
+        //console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time`);
+        return false;
     }
 
     // Callbacks from web workers

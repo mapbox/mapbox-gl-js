@@ -15,6 +15,7 @@ import type Anchor from './anchor';
 class CollisionFeature {
     boxStartIndex: number;
     boxEndIndex: number;
+    collisionCircles: Array<number>;
 
     /**
      * Create a CollisionFeature, adding its collision box data to the given collisionBoxArray in the process.
@@ -44,6 +45,8 @@ class CollisionFeature {
 
         this.boxStartIndex = collisionBoxArray.length;
 
+        this.collisionCircles = [];
+
         if (alignLine) {
 
             let height = y2 - y1;
@@ -65,8 +68,8 @@ class CollisionFeature {
             }
 
         } else {
-            collisionBoxArray.emplaceBack(anchor.x, anchor.y, 0, 0, x1, y1, x2, y2, Infinity, Infinity, featureIndex, sourceLayerIndex, bucketIndex,
-                0, 0, 0, 0, 0);
+            collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex,
+                0, 0);
         }
 
         this.boxEndIndex = collisionBoxArray.length;
@@ -104,8 +107,7 @@ class CollisionFeature {
         let index = segment + 1;
         let anchorDistance = firstBoxOffset;
         const labelStartDistance = -labelLength / 2;
-        const paddingStartDistance = labelStartDistance - labelLength / 8;
-
+        const paddingStartDistance = labelStartDistance - labelLength / 4;
         // move backwards along the line to the first segment the label appears on
         do {
             index--;
@@ -151,7 +153,9 @@ class CollisionFeature {
                 index++;
 
                 // There isn't enough room before the end of the line.
-                if (index + 1 >= line.length) return;
+                if (index + 1 >= line.length) {
+                    return;
+                }
 
                 segmentLength = line[index].dist(line[index + 1]);
             }
@@ -188,10 +192,9 @@ class CollisionFeature {
             }
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
-                boxAnchorPoint.x - anchor.x, boxAnchorPoint.y - anchor.y,
-                -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, maxScale,
+                -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2,
                 featureIndex, sourceLayerIndex, bucketIndex,
-                0, 0, 0, 0, 0);
+                boxSize / 2, (boxDistanceToAnchor - firstBoxOffset) * 0.8);
         }
     }
 }

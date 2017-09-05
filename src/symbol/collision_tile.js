@@ -1,20 +1,17 @@
 // @flow
 
 const Point = require('@mapbox/point-geometry');
-const EXTENT = require('../data/extent');
-const Grid = require('grid-index');
 const intersectionTests = require('../util/intersection_tests');
 
-import type CollisionBoxArray, {CollisionBox} from './collision_box';
+const Grid = require('./grid_index_experimental');
+const glmatrix = require('@mapbox/gl-matrix');
 
-export type SerializedCollisionTile = {|
-    angle: number,
-    pitch: number,
-    cameraToCenterDistance: number,
-    cameraToTileDistance: number,
-    grid: ArrayBuffer,
-    ignoredGrid: ArrayBuffer
-|};
+const mat4 = glmatrix.mat4;
+
+const projection = require('../symbol/projection');
+
+import type Transform from '../geo/transform';
+import type TileCoord from '../source/tile_coord';
 
 /**
  * A collision tile used to prevent symbols from overlapping. It keep tracks of
@@ -26,234 +23,151 @@ export type SerializedCollisionTile = {|
 class CollisionTile {
     grid: Grid;
     ignoredGrid: Grid;
-    perspectiveRatio: number;
-    minScale: number;
-    maxScale: number;
-    angle: number;
-    pitch: number;
-    cameraToCenterDistance: number;
-    cameraToTileDistance: number;
-    rotationMatrix: [number, number, number, number];
-    reverseRotationMatrix: [number, number, number, number];
-    yStretch: number;
-    collisionBoxArray: CollisionBoxArray;
-    tempCollisionBox: CollisionBox;
-    edges: Array<CollisionBox>;
-
-    static deserialize(serialized: SerializedCollisionTile, collisionBoxArray: any) {
-        return new CollisionTile(
-            serialized.angle,
-            serialized.pitch,
-            serialized.cameraToCenterDistance,
-            serialized.cameraToTileDistance,
-            collisionBoxArray,
-            new Grid(serialized.grid),
-            new Grid(serialized.ignoredGrid)
-        );
-    }
+    transform: Transform;
+    matrix: mat4;
 
     constructor(
-        angle: number,
-        pitch: number,
-        cameraToCenterDistance: number,
-        cameraToTileDistance: number,
-        collisionBoxArray: any,
-        grid: Grid = new Grid(EXTENT, 12, 6),
-        ignoredGrid: Grid = new Grid(EXTENT, 12, 0)
+        transform: Transform,
+        grid: Grid = new Grid(transform.width, transform.height, 20),
+        ignoredGrid: Grid = new Grid(transform.width, transform.height, 20)
     ) {
-        this.angle = angle;
-        this.pitch = pitch;
-        this.cameraToCenterDistance = cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
+        this.transform = transform;
+        this.matrix = mat4.identity(mat4.create());
 
         this.grid = grid;
         this.ignoredGrid = ignoredGrid;
-
-        this.perspectiveRatio = 1 + 0.5 * ((cameraToTileDistance / cameraToCenterDistance) - 1);
-
-        // High perspective ratio means we're effectively "underzooming"
-        // the tile. Adjust the minScale and maxScale range accordingly
-        // to constrain the number of collision calculations
-        this.minScale = .5 / this.perspectiveRatio;
-        this.maxScale = 2 / this.perspectiveRatio;
-
-        const sin = Math.sin(this.angle),
-            cos = Math.cos(this.angle);
-        this.rotationMatrix = [cos, -sin, sin, cos];
-        this.reverseRotationMatrix = [cos, sin, -sin, cos];
-
-        // Stretch boxes in y direction to account for the map tilt.
-        // The amount the map is squished depends on the y position.
-        // We can only approximate here based on the y position of the tile
-        // The shaders calculate a more accurate "incidence_stretch"
-        // at render time to calculate an effective scale for collision
-        // purposes, but we still want to use the yStretch approximation
-        // here because we can't adjust the aspect ratio of the collision
-        // boxes at render time.
-        this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
-
-        this.collisionBoxArray = collisionBoxArray;
-        if (collisionBoxArray.length === 0) {
-            // the first time collisionBoxArray is passed to a CollisionTile
-
-            // tempCollisionBox
-            collisionBoxArray.emplaceBack();
-
-            //left
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, 0, -EXTENT, 0, EXTENT, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // right
-            collisionBoxArray.emplaceBack(EXTENT, 0, 0, 0, 0, -EXTENT, 0, EXTENT, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // top
-            collisionBoxArray.emplaceBack(0, 0, 0, 0, -EXTENT, 0, EXTENT, 0, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-            // bottom
-            collisionBoxArray.emplaceBack(0, EXTENT, 0, 0, -EXTENT, 0, EXTENT, 0, Infinity, Infinity,
-                0, 0, 0, 0, 0, 0, 0, 0, 0);
-        }
-
-        this.tempCollisionBox = collisionBoxArray.get(0);
-        this.edges = [
-            collisionBoxArray.get(1),
-            collisionBoxArray.get(2),
-            collisionBoxArray.get(3),
-            collisionBoxArray.get(4)
-        ];
     }
 
-    serialize(transferables: ?Array<Transferable>): SerializedCollisionTile {
-        const grid = this.grid.toArrayBuffer();
-        const ignoredGrid = this.ignoredGrid.toArrayBuffer();
-        if (transferables) {
-            transferables.push(grid);
-            transferables.push(ignoredGrid);
-        }
-        return {
-            angle: this.angle,
-            pitch: this.pitch,
-            cameraToCenterDistance: this.cameraToCenterDistance,
-            cameraToTileDistance: this.cameraToTileDistance,
-            grid: grid,
-            ignoredGrid: ignoredGrid
-        };
-    }
 
     /**
      * Find the scale at which the collisionFeature can be shown without
      * overlapping with other features.
      * @private
      */
-    placeCollisionFeature(collisionFeature: {boxStartIndex: number, boxEndIndex: number},
-                          allowOverlap: boolean,
-                          avoidEdges: boolean): number {
+    placeCollisionBoxes(collisionBoxes: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): Array<number> {
+        const placedCollisionBoxes = [];
+        if (!collisionBoxes) {
+            return placedCollisionBoxes;
+        }
 
-        const collisionBoxArray = this.collisionBoxArray;
-        let minPlacementScale = this.minScale;
-        const rotationMatrix = this.rotationMatrix;
-        const yStretch = this.yStretch;
+        for (let k = 0; k < collisionBoxes.length; k += 6) {
+            const projectedPoint = this.projectAndGetPerspectiveRatio(new Point(collisionBoxes[k + 4], collisionBoxes[k + 5]));
+            const tileToViewport = pixelsToTileUnits * scale / projectedPoint.perspectiveRatio;
+            const tlX = collisionBoxes[k] / tileToViewport + projectedPoint.point.x;
+            const tlY = collisionBoxes[k + 1] / tileToViewport + projectedPoint.point.y;
+            const brX = collisionBoxes[k + 2] / tileToViewport + projectedPoint.point.x;
+            const brY = collisionBoxes[k + 3] / tileToViewport + projectedPoint.point.y;
 
-        for (let b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
-
-            const box: CollisionBox = (collisionBoxArray.get(b): any);
-
-            const anchorPoint = box.anchorPoint._matMult(rotationMatrix);
-            const x = anchorPoint.x;
-            const y = anchorPoint.y;
-
-            // When the 'perspectiveRatio' is high, we're effectively underzooming
-            // the tile because it's in the distance.
-            // In order to detect collisions that only happen while underzoomed,
-            // we have to query a larger portion of the grid.
-            // This extra work is offset by having a lower 'maxScale' bound
-            // Note that this adjustment ONLY affects the bounding boxes
-            // in the grid. It doesn't affect the boxes used for the
-            // minPlacementScale calculations.
-            const x1 = x + box.x1 * this.perspectiveRatio;
-            const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
-            const x2 = x + box.x2 * this.perspectiveRatio;
-            const y2 = y + box.y2 * yStretch * this.perspectiveRatio;
-
-            box.bbox0 = x1;
-            box.bbox1 = y1;
-            box.bbox2 = x2;
-            box.bbox3 = y2;
-
-            // When the map is pitched the distance covered by a line changes.
-            // Adjust the max scale by (approximatePitchedLength / approximateRegularLength)
-            // to compensate for this.
-
-            const offset = new Point(box.offsetX, box.offsetY)._matMult(rotationMatrix);
-            const xSqr = offset.x * offset.x;
-            const ySqr = offset.y * offset.y;
-            const yStretchSqr = ySqr * yStretch * yStretch;
-            const adjustmentFactor = Math.sqrt((xSqr + yStretchSqr) / (xSqr + ySqr)) || 1;
-            box.maxScale = box.unadjustedMaxScale * adjustmentFactor;
+            placedCollisionBoxes.push(tlX);
+            placedCollisionBoxes.push(tlY);
+            placedCollisionBoxes.push(brX);
+            placedCollisionBoxes.push(brY);
 
             if (!allowOverlap) {
-                const blockingBoxes = this.grid.query(x1, y1, x2, y2);
+                if (this.grid.hitTest(tlX, tlY, brX, brY)) {
+                    return [];
+                }
+            }
+        }
 
-                for (let i = 0; i < blockingBoxes.length; i++) {
-                    const blocking: CollisionBox = (collisionBoxArray.get(blockingBoxes[i]): any);
-                    const blockingAnchorPoint = blocking.anchorPoint._matMult(rotationMatrix);
+        return placedCollisionBoxes;
+    }
 
-                    minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
-                    if (minPlacementScale >= this.maxScale) {
-                        return minPlacementScale;
+    placeCollisionCircles(collisionCircles: any, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean): Array<number> {
+        const placedCollisionCircles = [];
+        if (!collisionCircles) {
+            return placedCollisionCircles;
+        }
+
+        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const perspectiveRatio = this.getPerspectiveRatio(tileUnitAnchorPoint);
+
+        const projectionCache = {};
+        const fontScale = fontSize / 24;
+        const lineOffsetX = symbol.lineOffsetX * fontSize;
+        const lineOffsetY = symbol.lineOffsetY * fontSize;
+
+        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
+        const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
+            fontScale,
+            glyphOffsetArray,
+            lineOffsetX,
+            lineOffsetY,
+            /*flip*/ false,
+            labelPlaneAnchorPoint,
+            tileUnitAnchorPoint,
+            symbol,
+            lineVertexArray,
+            labelPlaneMatrix,
+            projectionCache,
+            /*return tile distance*/ true);
+
+        let collisionDetected = false;
+
+        for (let k = 0; k < collisionCircles.length; k += 5) {
+            const boxDistanceToAnchor = collisionCircles[k + 3];
+            if (!firstAndLastGlyph ||
+                (boxDistanceToAnchor < -firstAndLastGlyph.first.tileDistance) ||
+                (boxDistanceToAnchor > firstAndLastGlyph.last.tileDistance)) {
+                // Don't need to use this circle because the label doesn't extend this far
+                collisionCircles[k + 4] = true;
+                continue;
+            }
+
+            const projectedPoint = this.projectPoint(new Point(collisionCircles[k], collisionCircles[k + 1]));
+            const x = projectedPoint.x;
+            const y = projectedPoint.y;
+
+            const tileToViewport = perspectiveRatio * pixelsToTileUnits * scale;
+            const radius = collisionCircles[k + 2] / tileToViewport;
+
+            const dx = x - placedCollisionCircles[placedCollisionCircles.length - 3];
+            const dy = y - placedCollisionCircles[placedCollisionCircles.length - 2];
+            if (radius * radius * 2 > dx * dx + dy * dy) {
+                if ((k + 8) < collisionCircles.length) {
+                    const nextBoxDistanceToAnchor = collisionCircles[k + 8];
+                    if ((nextBoxDistanceToAnchor > -firstAndLastGlyph.first.tileDistance) &&
+                    (nextBoxDistanceToAnchor < firstAndLastGlyph.last.tileDistance)) {
+                        // Hide significantly overlapping circles, unless this is the last one we can
+                        // use, in which case we want to keep it in place even if it's tightly packed
+                        // with the one before it.
+                        collisionCircles[k + 4] = true;
+                        continue;
                     }
                 }
             }
+            placedCollisionCircles.push(x);
+            placedCollisionCircles.push(y);
+            placedCollisionCircles.push(radius);
+            collisionCircles[k + 4] = false;
 
-            if (avoidEdges) {
-                let rotatedCollisionBox;
-
-                if (this.angle) {
-                    const reverseRotationMatrix = this.reverseRotationMatrix;
-                    const tl = new Point(box.x1, box.y1).matMult(reverseRotationMatrix);
-                    const tr = new Point(box.x2, box.y1).matMult(reverseRotationMatrix);
-                    const bl = new Point(box.x1, box.y2).matMult(reverseRotationMatrix);
-                    const br = new Point(box.x2, box.y2).matMult(reverseRotationMatrix);
-
-                    rotatedCollisionBox = this.tempCollisionBox;
-                    rotatedCollisionBox.anchorPointX = box.anchorPoint.x;
-                    rotatedCollisionBox.anchorPointY = box.anchorPoint.y;
-                    rotatedCollisionBox.x1 = Math.min(tl.x, tr.x, bl.x, br.x);
-                    rotatedCollisionBox.y1 = Math.min(tl.y, tr.x, bl.x, br.x);
-                    rotatedCollisionBox.x2 = Math.max(tl.x, tr.x, bl.x, br.x);
-                    rotatedCollisionBox.y2 = Math.max(tl.y, tr.x, bl.x, br.x);
-                    rotatedCollisionBox.maxScale = box.maxScale;
-                } else {
-                    rotatedCollisionBox = box;
-                }
-
-                for (let k = 0; k < this.edges.length; k++) {
-                    const edgeBox = this.edges[k];
-                    minPlacementScale = this.getPlacementScale(minPlacementScale, box.anchorPoint, rotatedCollisionBox, edgeBox.anchorPoint, edgeBox);
-                    if (minPlacementScale >= this.maxScale) {
-                        return minPlacementScale;
+            if (!allowOverlap) {
+                if (this.grid.hitTestCircle(x, y, radius)) {
+                    if (!showCollisionCircles) {
+                        return [];
+                    } else {
+                        // Don't early exit if we're showing the debug circles because we still want to calculate
+                        // which circles are in use
+                        collisionDetected = true;
                     }
                 }
             }
         }
 
-        return minPlacementScale;
+        return collisionDetected ? [] : placedCollisionCircles;
     }
 
-    queryRenderedSymbols(queryGeometry: Array<Array<Point>>, scale: number): Array<*> {
+    queryRenderedSymbols(queryGeometry: any, scale: number, tileCoord: TileCoord, tileSourceMaxZoom: number, pixelsToTileUnits: number, collisionBoxArray: any) {
         const sourceLayerFeatures = {};
         const result = [];
 
-        if (queryGeometry.length === 0 || (this.grid.keys.length === 0 && this.ignoredGrid.keys.length === 0)) {
+        if (queryGeometry.length === 0 || (this.grid.keysLength() === 0 && this.ignoredGrid.keysLength() === 0)) {
             return result;
         }
 
-        const collisionBoxArray = this.collisionBoxArray;
-        const rotationMatrix = this.rotationMatrix;
-        const yStretch = this.yStretch;
+        this.setMatrix(this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom));
 
-        // Generate a rotated geometry out of the original query geometry.
-        // Scale has already been handled by the prior conversions.
-        const rotatedQuery = [];
+        const query = [];
         let minX = Infinity;
         let minY = Infinity;
         let maxX = -Infinity;
@@ -261,32 +175,36 @@ class CollisionTile {
         for (let i = 0; i < queryGeometry.length; i++) {
             const ring = queryGeometry[i];
             for (let k = 0; k < ring.length; k++) {
-                const p = ring[k].matMult(rotationMatrix);
+                // It's a bit of a shame we have to go back and forth to tile coordinates since the original query was
+                // in screen coordinates, but this makes the query compatible with features which are still indexed in
+                // tile coordinates.
+                const p = this.projectPoint(ring[k]);
                 minX = Math.min(minX, p.x);
                 minY = Math.min(minY, p.y);
                 maxX = Math.max(maxX, p.x);
                 maxY = Math.max(maxY, p.y);
-                rotatedQuery.push(p);
+                query.push(p);
             }
         }
 
+        const tileID = tileCoord.id;
+
+        const thisTileFeatures = []; // TODO: The current architecture duplicates lots of querying for boxes that cross multiple tiles
         const features = this.grid.query(minX, minY, maxX, maxY);
+        for (let i = 0; i < features.length; i++) {
+            if (features[i].tileID === tileID) {
+                thisTileFeatures.push(features[i].boxIndex);
+            }
+        }
         const ignoredFeatures = this.ignoredGrid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < ignoredFeatures.length; i++) {
-            features.push(ignoredFeatures[i]);
+            if (ignoredFeatures[i].tileID === tileID) {
+                thisTileFeatures.push(ignoredFeatures[i].boxIndex);
+            }
         }
 
-        // "perspectiveRatio" is a tile-based approximation of how much larger symbols will
-        // be in the distance. It won't line up exactly with the actually rendered symbols
-        // Being exact would require running the collision detection logic in symbol_sdf.vertex
-        // in the CPU
-        const perspectiveScale = scale / this.perspectiveRatio;
-
-        // Account for the rounding done when updating symbol shader variables.
-        const roundedScale = Math.pow(2, Math.ceil(Math.log(perspectiveScale) / Math.LN2 * 10) / 10);
-
         for (let i = 0; i < features.length; i++) {
-            const blocking: CollisionBox = (collisionBoxArray.get(features[i]): any);
+            const blocking = collisionBoxArray.get(features[i]);
             const sourceLayer = blocking.sourceLayerIndex;
             const featureIndex = blocking.featureIndex;
 
@@ -296,22 +214,23 @@ class CollisionTile {
             }
             if (sourceLayerFeatures[sourceLayer][featureIndex]) continue;
 
-            // Check if feature is rendered (collision free) at current scale.
-            if (roundedScale < blocking.placementScale || roundedScale > blocking.maxScale) continue;
 
-            // Check if query intersects with the feature box at current scale.
-            const anchor = blocking.anchorPoint.matMult(rotationMatrix);
-            const x1 = anchor.x + blocking.x1 / perspectiveScale;
-            const y1 = anchor.y + blocking.y1 / perspectiveScale * yStretch;
-            const x2 = anchor.x + blocking.x2 / perspectiveScale;
-            const y2 = anchor.y + blocking.y2 / perspectiveScale * yStretch;
+            // Check if query intersects with the feature box
+            // TODO: This is still treating collision circles as boxes (which means we're slightly more likely
+            // to include them in our results). Also we're kind of needlessly reprojecting the box here
+            const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPoint);
+            const tileToViewport = pixelsToTileUnits * scale / projectedPoint.perspectiveRatio;
+            const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
+            const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
+            const x2 = blocking.x2 / tileToViewport + projectedPoint.point.x;
+            const y2 = blocking.y2 / tileToViewport + projectedPoint.point.y;
             const bbox = [
                 new Point(x1, y1),
                 new Point(x2, y1),
                 new Point(x2, y2),
                 new Point(x1, y2)
             ];
-            if (!intersectionTests.polygonIntersectsPolygon(rotatedQuery, bbox)) continue;
+            if (!intersectionTests.polygonIntersectsPolygon(query, bbox)) continue;
 
             sourceLayerFeatures[sourceLayer][featureIndex] = true;
             result.push(features[i]);
@@ -320,75 +239,67 @@ class CollisionTile {
         return result;
     }
 
-    getPlacementScale(minPlacementScale: number,
-                      anchorPoint: Point,
-                      box: CollisionBox,
-                      blockingAnchorPoint: Point,
-                      blocking: CollisionBox): number {
-
-        // Find the lowest scale at which the two boxes can fit side by side without overlapping.
-        // Original algorithm:
-        const anchorDiffX = anchorPoint.x - blockingAnchorPoint.x;
-        const anchorDiffY = anchorPoint.y - blockingAnchorPoint.y;
-        let s1 = (blocking.x1 - box.x2) / anchorDiffX; // scale at which new box is to the left of old box
-        let s2 = (blocking.x2 - box.x1) / anchorDiffX; // scale at which new box is to the right of old box
-        let s3 = (blocking.y1 - box.y2) * this.yStretch / anchorDiffY; // scale at which new box is to the top of old box
-        let s4 = (blocking.y2 - box.y1) * this.yStretch / anchorDiffY; // scale at which new box is to the bottom of old box
-
-        if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
-        if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
-
-        let collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
-        const blockingMaxScale = blocking.maxScale;
-        const boxMaxScale = box.maxScale;
-
-        if (collisionFreeScale > blockingMaxScale) {
-            // After a box's maxScale the label has shrunk enough that the box is no longer needed to cover it,
-            // so unblock the new box at the scale that the old box disappears.
-            collisionFreeScale = blockingMaxScale;
-        }
-
-        if (collisionFreeScale > boxMaxScale) {
-            // If the box can only be shown after it is visible, then the box can never be shown.
-            // But the label can be shown after this box is not visible.
-            collisionFreeScale = boxMaxScale;
-        }
-
-        if (collisionFreeScale > minPlacementScale &&
-                collisionFreeScale >= blocking.placementScale) {
-            // If this collision occurs at a lower scale than previously found collisions
-            // and the collision occurs while the other label is visible
-
-            // this this is the lowest scale at which the label won't collide with anything
-            minPlacementScale = collisionFreeScale;
-        }
-
-        return minPlacementScale;
-    }
-
-
     /**
      * Remember this collisionFeature and what scale it was placed at to block
      * later features from overlapping with it.
      * @private
      */
-    insertCollisionFeature(collisionFeature: {boxStartIndex: number, boxEndIndex: number},
-                           minPlacementScale: number,
-                           ignorePlacement: boolean) {
+    insertCollisionBoxes(collisionBoxes: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
-        const collisionBoxArray = this.collisionBoxArray;
 
-        for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
-            const box: CollisionBox = (collisionBoxArray.get(k): any);
-            box.placementScale = minPlacementScale;
-            if (minPlacementScale < this.maxScale &&
-                (this.perspectiveRatio === 1 || box.maxScale >= 1)) {
-                // Boxes with maxScale < 1 are only relevant in pitched maps,
-                // so filter them out in unpitched maps to keep the grid sparse
-                grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);
-            }
+        for (let k = 0; k < collisionBoxes.length; k += 4) {
+            const key = { tileID: tileID, boxIndex: boxStartIndex + k / 4 };
+            grid.insert(key, collisionBoxes[k],
+                collisionBoxes[k + 1],
+                collisionBoxes[k + 2],
+                collisionBoxes[k + 3]);
         }
     }
+
+    insertCollisionCircles(collisionCircles: any, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
+        const grid = ignorePlacement ? this.ignoredGrid : this.grid;
+
+        for (let k = 0; k < collisionCircles.length; k += 3) {
+            const key = { tileID: tileID, boxIndex: boxStartIndex + k / 4 };
+            grid.insertCircle(key, collisionCircles[k],
+                collisionCircles[k + 1],
+                collisionCircles[k + 2]);
+        }
+    }
+
+
+    setMatrix(matrix: mat4) {
+        this.matrix = matrix;
+    }
+
+    getPerspectiveRatio(anchor) {
+        const p = [anchor.x, anchor.y, 0, 1];
+        projection.xyTransformMat4(p, p, this.matrix);
+        return 1 + 0.5 * ((p[3] / this.transform.cameraToCenterDistance) - 1);
+    }
+
+    projectPoint(point) {
+        const p = [point.x, point.y, 0, 1];
+        projection.xyTransformMat4(p, p, this.matrix);
+        return new Point(
+            ((p[0] / p[3] + 1) / 2) * this.transform.width,
+            ((-p[1] / p[3] + 1) / 2) * this.transform.height
+        );
+    }
+
+    projectAndGetPerspectiveRatio(point) {
+        const p = [point.x, point.y, 0, 1];
+        projection.xyTransformMat4(p, p, this.matrix);
+        const a = new Point(
+            ((p[0] / p[3] + 1) / 2) * this.transform.width,
+            ((-p[1] / p[3] + 1) / 2) * this.transform.height
+        );
+        return {
+            point: a,
+            perspectiveRatio: 0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3])
+        };
+    }
+
 }
 
 module.exports = CollisionTile;
