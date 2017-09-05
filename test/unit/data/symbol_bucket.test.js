@@ -12,7 +12,7 @@ const GlyphAtlas = require('../../../src/symbol/glyph_atlas');
 const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
 const featureFilter = require('../../../src/style-spec/feature_filter');
-const PrepareSymbol = require('../../../src/symbol/prepare_symbol');
+const PrepareSymbols = require('../../../src/symbol/prepare_symbols');
 const PlaceSymbol = require('../../../src/symbol/place_symbols');
 const Transform = require('../../../src/geo/transform');
 
@@ -72,7 +72,7 @@ test('SymbolBucket', (t) => {
     // add feature from bucket A
     const a = collision.grid.keysLength();
     bucketA.populate([{feature}], options);
-    PrepareSymbol.prepare(bucketA, stacks, {});
+    PrepareSymbols.prepare(bucketA, stacks, {});
     PlaceSymbol.place(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
 
     const b = collision.grid.keysLength();
@@ -81,8 +81,8 @@ test('SymbolBucket', (t) => {
     // add same feature from bucket B
     const a2 = collision.grid.keysLength();
     bucketB.populate([{feature}], options);
-    PrepareSymbol.prepare(bucketB, stacks, {});
-    PlaceSymbol.place(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PrepareSymbols.prepare(bucketB, stacks, {});
+    PlaceSymbols.place(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
     const b2 = collision.grid.keysLength();
     t.equal(b2, a2, 'detects collision and does not place feature');
     t.end();
@@ -97,7 +97,7 @@ test('SymbolBucket integer overflow', (t) => {
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    PrepareSymbol.prepare(bucket, stacks, {});
+    PrepareSymbols.prepare(bucket, stacks, {});
     PlaceSymbol.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
 
     t.ok(util.warnOnce.calledOnce);
@@ -110,7 +110,7 @@ test('SymbolBucket redo placement', (t) => {
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    PrepareSymbol.prepare(bucket, stacks, {});
+    PrepareSymbols.prepare(bucket, stacks, {});
     PlaceSymbol.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
     PlaceSymbol.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
 
