@@ -107,6 +107,10 @@ class Marker {
         return this;
     }
 
+    /**
+     * Returns the `Marker`'s HTML element.
+     * @returns {HTMLElement} element
+     */
     getElement() {
         return this._element;
     }
