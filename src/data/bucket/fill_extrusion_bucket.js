@@ -1,6 +1,6 @@
 // @flow
 
-const {SegmentVector} = require('../segment');
+const {SegmentVector, MAX_VERTEX_ARRAY_LENGTH} = require('../segment');
 const VertexBuffer = require('../../gl/vertex_buffer');
 const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
@@ -129,19 +129,11 @@ class FillExtrusionBucket implements Bucket {
                 numVertices += ring.length;
             }
 
-            const segment = this.segments.prepareSegment(numVertices * 5, this.layoutVertexArray, this.indexArray);
-
-            const flattened = [];
-            const holeIndices = [];
-            const indices = [];
+            let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
             for (const ring of polygon) {
                 if (ring.length === 0) {
                     continue;
-                }
-
-                if (ring !== polygon[0]) {
-                    holeIndices.push(flattened.length / 2);
                 }
 
                 let edgeDistance = 0;
@@ -149,13 +141,14 @@ class FillExtrusionBucket implements Bucket {
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
 
-                    addVertex(this.layoutVertexArray, p1.x, p1.y, 0, 0, 1, 1, 0);
-                    indices.push(segment.vertexLength++);
-
                     if (p >= 1) {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
+                            if (segment.vertexLength + 4 > MAX_VERTEX_ARRAY_LENGTH) {
+                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
+                            }
+
                             const perp = p1.sub(p2)._perp()._unit();
 
                             addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
@@ -175,24 +168,48 @@ class FillExtrusionBucket implements Bucket {
                             segment.primitiveLength += 2;
                         }
                     }
-
-                    // convert to format used by earcut
-                    flattened.push(p1.x);
-                    flattened.push(p1.y);
                 }
             }
 
-            const triangleIndices = earcut(flattened, holeIndices);
-            assert(triangleIndices.length % 3 === 0);
-
-            for (let j = 0; j < triangleIndices.length; j += 3) {
-                this.indexArray.emplaceBack(
-                    indices[triangleIndices[j]],
-                    indices[triangleIndices[j + 1]],
-                    indices[triangleIndices[j + 2]]);
+            if (segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
+                segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 
-            segment.primitiveLength += triangleIndices.length / 3;
+            const flattened = [];
+            const holeIndices = [];
+            const triangleIndex = segment.vertexLength;
+
+            for (const ring of polygon) {
+                if (ring.length === 0) {
+                    continue;
+                }
+
+                if (ring !== polygon[0]) {
+                    holeIndices.push(flattened.length / 2);
+                }
+
+                for (let i = 0; i < ring.length; i++) {
+                    const p = ring[i];
+
+                    addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
+
+                    flattened.push(p.x);
+                    flattened.push(p.y);
+                }
+            }
+
+            const indices = earcut(flattened, holeIndices);
+            assert(indices.length % 3 === 0);
+
+            for (let j = 0; j < indices.length; j += 3) {
+                this.indexArray.emplaceBack(
+                    triangleIndex + indices[j],
+                    triangleIndex + indices[j + 1],
+                    triangleIndex + indices[j + 2]);
+            }
+
+            segment.primitiveLength += indices.length / 3;
+            segment.vertexLength += numVertices;
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature.properties);
