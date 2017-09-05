@@ -125,6 +125,11 @@ exports.getImage = function(requestParameters: RequestParameters, callback: Call
                 callback(null, img);
                 URL.revokeObjectURL(img.src);
             };
+            img.onerror = function(domErr) {
+                const err = new Error('failed to load image. make sure the image is a png');
+                (err: any).domErr = domErr;
+                callback(err);
+            };
             const blob: Blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
             (img: any).cacheControl = imgData.cacheControl;
             (img: any).expires = imgData.expires;

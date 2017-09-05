@@ -72,5 +72,40 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
+    t.test('getImage, 404', (t) => {
+        window.server.respondWith(request => {
+            request.respond(404);
+        });
+        ajax.getImage({ url:'' }, (error) => {
+            t.equal(error.status, 404);
+            t.end();
+        });
+        window.server.respond();
+    });
+
+    t.test('getImage, no content error', (t) => {
+        window.server.respondWith(request => {
+            request.respond(200, {'Content-Type': 'image/png'}, '');
+        });
+        ajax.getImage({ url:'' }, (error) => {
+            t.pass('called getImage');
+            t.ok(error, 'should error when the status is 200 without content.');
+            t.end();
+        });
+        window.server.respond();
+    });
+
+    t.test('getImage, invalid image', (t) => {
+        window.server.respondWith(request => {
+            request.respond(200, {'Content-Type': 'image/svg'}, '<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>');
+        });
+        ajax.getImage({ url:'' }, (error) => {
+            t.pass('called getImage');
+            t.ok(error, 'should error when the image is not a png.');
+            t.end();
+        });
+        window.server.respond();
+    });
+
     t.end();
 });
