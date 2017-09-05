@@ -42,10 +42,19 @@ type SymbolBucketParameters = BucketParameters & {
     lineVertexArray: StructArray,
 }
 
+export type SingleCollisionBox = {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    anchorPointX: number;
+    anchorPointY: number;
+};
+
 export type CollisionArrays = {
-    textBox?: Array<number>;
-    iconBox?: Array<number>;
-    textCircles?: Array<any>;
+    textBox?: SingleCollisionBox;
+    iconBox?: SingleCollisionBox;
+    textCircles?: Array<number | boolean>;
 };
 
 export type SymbolInstance = {
@@ -713,13 +722,8 @@ class SymbolBucket implements Bucket {
         for (let k = textStartIndex; k < textEndIndex; k++) {
             const box: CollisionBox = (collisionBoxArray.get(k): any);
             if (box.radius === 0) {
-                collisionArrays.textBox = [];
-                collisionArrays.textBox.push(box.x1);
-                collisionArrays.textBox.push(box.y1);
-                collisionArrays.textBox.push(box.x2);
-                collisionArrays.textBox.push(box.y2);
-                collisionArrays.textBox.push(box.anchorPointX);
-                collisionArrays.textBox.push(box.anchorPointY);
+                collisionArrays.textBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
+
                 break; // Only one box allowed per instance
             } else {
                 if (!collisionArrays.textCircles) {
@@ -736,13 +740,7 @@ class SymbolBucket implements Bucket {
             // An icon can only have one box now, so this indexing is a bit vestigial...
             const box: CollisionBox = (collisionBoxArray.get(k): any);
             if (box.radius === 0) {
-                collisionArrays.iconBox = [];
-                collisionArrays.iconBox.push(box.x1);
-                collisionArrays.iconBox.push(box.y1);
-                collisionArrays.iconBox.push(box.x2);
-                collisionArrays.iconBox.push(box.y2);
-                collisionArrays.iconBox.push(box.anchorPointX);
-                collisionArrays.iconBox.push(box.anchorPointY);
+                collisionArrays.iconBox = { x1: box.x1, y1: box.y1, x2: box.x2, y2: box.y2, anchorPointX: box.anchorPointX, anchorPointY: box.anchorPointY };
                 break; // Only one box allowed per instance
             }
         }
