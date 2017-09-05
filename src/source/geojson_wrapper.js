@@ -19,24 +19,18 @@ type Feature = {
 }
 
 class FeatureWrapper implements VectorTileFeature {
+    _feature: Feature;
+
     extent: number;
     type: 1 | 2 | 3;
     id: number;
     properties: {[string]: string | number | boolean};
 
-    geometry: Array<Array<Point>>;
-    rawGeometry: Array<Array<[number, number]>>;
-
     constructor(feature: Feature) {
+        this._feature = feature;
+
+        this.extent = EXTENT;
         this.type = feature.type;
-        if (feature.type === 1) {
-            this.rawGeometry = [];
-            for (let i = 0; i < feature.geometry.length; i++) {
-                this.rawGeometry.push([feature.geometry[i]]);
-            }
-        } else {
-            this.rawGeometry = feature.geometry;
-        }
         this.properties = feature.tags;
 
         // If the feature has a top-level `id` property, copy it over, but only
@@ -48,28 +42,30 @@ class FeatureWrapper implements VectorTileFeature {
         if ('id' in feature && !isNaN(feature.id)) {
             this.id = parseInt(feature.id, 10);
         }
-        this.extent = EXTENT;
     }
 
     loadGeometry() {
-        const rings = this.rawGeometry;
-        this.geometry = [];
-
-        for (let i = 0; i < rings.length; i++) {
-            const ring = rings[i],
-                newRing = [];
-            for (let j = 0; j < ring.length; j++) {
-                newRing.push(new Point(ring[j][0], ring[j][1]));
+        if (this._feature.type === 1) {
+            const geometry = [];
+            for (const point of this._feature.geometry) {
+                geometry.push([new Point(point[0], point[1])]);
             }
-            this.geometry.push(newRing);
+            return geometry;
+        } else {
+            const geometry = [];
+            for (const ring of this._feature.geometry) {
+                const newRing = [];
+                for (const point of ring) {
+                    newRing.push(new Point(point[0], point[1]));
+                }
+                geometry.push(newRing);
+            }
+            return geometry;
         }
-        return this.geometry;
     }
 
     bbox() {
-        if (!this.geometry) this.loadGeometry();
-
-        const rings = this.geometry;
+        const rings = this.loadGeometry();
         let x1 = Infinity,
             x2 = -Infinity,
             y1 = Infinity,
