@@ -102,7 +102,7 @@ class Tile {
         animationLoop.set(this.fadeEndTime - Date.now());
     }
 
-    isLoaded() {
+    wasRequested() {
         return this.state === 'errored' || this.state === 'loaded' || this.state === 'reloading';
     }
 

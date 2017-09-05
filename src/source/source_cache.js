@@ -379,13 +379,17 @@ class SourceCache extends Evented {
         for (i = 0; i < idealTileCoords.length; i++) {
             coord = idealTileCoords[i];
             tile = this._addTile(coord);
-            let parentIsLoaded = false;
+            let parentWasRequested = false;
             if (tile.hasData()) {
                 retain[coord.id] = true;
             } else {
                 // The tile we require is not yet loaded or does not exist.
                 // We are now attempting to load child and parent tiles.
-                parentIsLoaded = tile.isLoaded();
+
+                // As we descend up and down the tile pyramid of the ideal tile, we check whether the parent
+                // tile has been previously requested (and errored in this case due to the previous conditional)
+                // in order to determine if we need to request its parent.
+                parentWasRequested = tile.wasRequested();
 
                 // The tile isn't loaded yet, but retain it anyway because it's an ideal tile.
                 retain[coord.id] = true;
@@ -429,7 +433,7 @@ class SourceCache extends Evented {
 
                         tile = this.getTile(parentId);
 
-                        if (!tile && parentIsLoaded) {
+                        if (!tile && parentWasRequested) {
                             tile = this._addTile(parentId);
                         }
 
@@ -437,7 +441,7 @@ class SourceCache extends Evented {
                             retain[parentId.id] = true;
                             // Save the current values, since they're the parent of the next iteration
                             // of the parent tile ascent loop.
-                            parentIsLoaded = tile.isLoaded();
+                            parentWasRequested = tile.wasRequested();
                             if (tile.hasData()) {
                                 break;
                             }
