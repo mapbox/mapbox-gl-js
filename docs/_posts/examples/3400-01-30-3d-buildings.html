@@ -14,11 +14,17 @@ var map = new mapboxgl.Map({
     zoom: 15,
     pitch: 45,
     bearing: -17.6,
+    hash: true,
     container: 'map'
 });
 
-// the 'building' layer in the mapbox-streets vector source contains building-height
-// data from OpenStreetMap.
+// The 'building' layer in the mapbox-streets vector source contains building-height
+// data from OpenStreetMap. Insert the layer beneath any symbol layer.
+var layers = map.getStyle().layers.reverse();
+var labelLayerIdx = layers.findIndex(function (layer) {
+    return layer.type !== 'symbol';
+});
+var labelLayerId = labelLayerIdx !== -1 ? layers[labelLayerIdx].id : undefined;
 map.on('load', function() {
     map.addLayer({
         'id': '3d-buildings',
@@ -39,6 +45,6 @@ map.on('load', function() {
             },
             'fill-extrusion-opacity': .6
         }
-    });
+    }, labelLayerId);
 });
 </script>
