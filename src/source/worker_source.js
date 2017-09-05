@@ -63,7 +63,7 @@ export interface WorkerSource {
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
      * back to the main thread for rendering.  Should call the callback with:
-     * `{ buckets, featureIndex, collisionTile, rawTileData}`.
+     * `{ buckets, featureIndex, collisionIndex, rawTileData}`.
      */
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
 

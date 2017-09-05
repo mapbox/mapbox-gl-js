@@ -663,7 +663,7 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement(viewportCollisionTile: any, showCollisionBoxes: boolean, layer: any, posMatrices: any, transform: any, collisionFadeTimes: any) {
+    redoPlacement(viewportCollisionIndex: any, showCollisionBoxes: boolean, layer: any, posMatrices: any, transform: any, collisionFadeTimes: any) {
         this._needsPlacement = false;
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
@@ -671,7 +671,7 @@ class SourceCache extends Evented {
             if (!posMatrices[i]) {
                 posMatrices[i] = transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
             }
-            tile.redoPlacement(this._source, showCollisionBoxes, viewportCollisionTile, layer, posMatrices[i], collisionFadeTimes);
+            tile.redoPlacement(this._source, showCollisionBoxes, viewportCollisionIndex, layer, posMatrices[i], collisionFadeTimes);
         }
     }
 

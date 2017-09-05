@@ -8,7 +8,7 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
-const CollisionTile = require('../symbol/collision_tile');
+const CollisionIndex = require('../symbol/collision_index');
 const CollisionBoxArray = require('../symbol/collision_box');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const TileCoord = require('./tile_coord');
@@ -63,7 +63,7 @@ class Tile {
     fadeEndTime: any;
     rawTileData: ArrayBuffer;
     collisionBoxArray: ?CollisionBoxArray;
-    collisionTile: ?CollisionTile;
+    collisionIndex: ?CollisionIndex;
     featureIndex: ?FeatureIndex;
     redoWhenDone: boolean;
     angle: number;
@@ -191,7 +191,7 @@ class Tile {
         }
 
         this.collisionBoxArray = null;
-        this.collisionTile = null;
+        this.collisionIndex = null;
         this.featureIndex = null;
         this.state = 'unloaded';
         this.crossTileSymbolIndex = null;
@@ -215,7 +215,7 @@ class Tile {
         }
     }
 
-    redoPlacement(source: any, showCollisionBoxes: boolean, collisionTile: CollisionTile, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
+    redoPlacement(source: any, showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array, collisionFadeTimes: any) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -227,19 +227,19 @@ class Tile {
         const bucket = this.getBucket(layer);
 
         if (bucket && bucket instanceof SymbolBucket) {
-            collisionTile.setMatrix(posMatrix);
+            collisionIndex.setMatrix(posMatrix);
 
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
-            const pixelRatio = pixelsToTileUnits(this, 1, collisionTile.transform.zoom);
-            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionTile.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionTile, showCollisionBoxes, collisionTile.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, this.collisionBoxArray);
+            const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
+            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
+            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, this.collisionBoxArray);
             PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
         }
 
-        this.collisionTile = collisionTile;
+        this.collisionIndex = collisionIndex;
 
         if (this.featureIndex) {
-            this.featureIndex.setCollisionTile(this.collisionTile);
+            this.featureIndex.setCollisionIndex(this.collisionIndex);
         }
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986

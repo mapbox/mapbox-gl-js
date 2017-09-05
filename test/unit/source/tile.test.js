@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const vtpbf = require('vt-pbf');
 const FeatureIndex = require('../../../src/data/feature_index');
-const CollisionTile = require('../../../src/symbol/collision_tile');
+const CollisionIndex = require('../../../src/symbol/collision_index');
 const Transform = require('../../../src/geo/transform');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
@@ -209,14 +209,14 @@ test('Tile#redoPlacement', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(null, createPainter());
 
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionTile(new Transform()), {id: 'layer'}));
+        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.notOk(tile.redoWhenDone);
         t.end();
     });
 
     test('redoPlacement on a loading tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionTile(new Transform()), {id: 'layer'}));
+        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.ok(tile.redoWhenDone);
         t.end();
     });
@@ -236,7 +236,7 @@ test('Tile#redoPlacement', (t) => {
         };
 
         tile.state = 'reloading';
-        tile.redoPlacement(options, false, new CollisionTile(new Transform()), {id: 'layer'});
+        tile.redoPlacement(options, false, new CollisionIndex(new Transform()), {id: 'layer'});
 
         t.ok(tile.redoWhenDone);
         t.end();
@@ -256,7 +256,7 @@ test('Tile#redoPlacement', (t) => {
     //         }
     //     });
     //
-    //     tile.redoPlacement(source, false, new CollisionTile(new Transform()), {id: 'layer'});
+    //     tile.redoPlacement(source, false, new CollisionIndex(new Transform()), {id: 'layer'});
     //     source.on('data', ()=>{
     //         if (tile.state === 'loaded') t.end();
     //     });

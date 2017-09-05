@@ -313,12 +313,12 @@ class SymbolBuffers {
  *
  * 2. WorkerTile asynchronously requests from the main thread all of the glyphs
  *    and icons needed (by this bucket and any others). When glyphs and icons
- *    have been received, the WorkerTile creates a CollisionTile and invokes:
+ *    have been received, the WorkerTile creates a CollisionIndex and invokes:
  *
  * 3. SymbolBucket#prepare(stacks, icons) to perform text shaping and layout,
  *    populating `this.symbolInstances` and `this.collisionBoxArray`.
  *
- * 4. SymbolBucket#place(collisionTile): taking collisions into account, decide
+ * 4. SymbolBucket#place(collisionIndex): taking collisions into account, decide
  *    on which labels and icons to actually draw and at which scale, populating
  *    the vertex arrays (`this.arrays.glyph`, `this.arrays.icon`) and thus
  *    completing the parsing / buffer population process.
