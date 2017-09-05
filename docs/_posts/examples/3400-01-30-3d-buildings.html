@@ -24,6 +24,7 @@ var layers = map.getStyle().layers.reverse();
 var labelLayerIdx = layers.findIndex(function (layer) {
     return layer.type !== 'symbol';
 });
+var labelLayerId = labelLayerIdx !== -1 ? layers[labelLayerIdx].id : undefined;
 map.on('load', function() {
     map.addLayer({
         'id': '3d-buildings',
