@@ -13,7 +13,7 @@ const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
 const featureFilter = require('../../../src/style-spec/feature_filter');
 const PrepareSymbols = require('../../../src/symbol/prepare_symbols');
-const PlaceSymbol = require('../../../src/symbol/place_symbols');
+const PlaceSymbols = require('../../../src/symbol/place_symbols');
 const Transform = require('../../../src/geo/transform');
 
 const mat4 = require('@mapbox/gl-matrix').mat4;
@@ -73,7 +73,7 @@ test('SymbolBucket', (t) => {
     const a = collision.grid.keysLength();
     bucketA.populate([{feature}], options);
     PrepareSymbols.prepare(bucketA, stacks, {});
-    PlaceSymbol.place(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
 
     const b = collision.grid.keysLength();
     t.notEqual(a, b, 'places feature');
@@ -98,7 +98,7 @@ test('SymbolBucket integer overflow', (t) => {
 
     bucket.populate([{feature}], options);
     PrepareSymbols.prepare(bucket, stacks, {});
-    PlaceSymbol.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
 
     t.ok(util.warnOnce.calledOnce);
     t.ok(util.warnOnce.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
@@ -111,8 +111,8 @@ test('SymbolBucket redo placement', (t) => {
 
     bucket.populate([{feature}], options);
     PrepareSymbols.prepare(bucket, stacks, {});
-    PlaceSymbol.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
-    PlaceSymbol.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
 
     t.end();
 });

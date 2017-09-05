@@ -254,17 +254,6 @@ class Painter {
         gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
     }
 
-    // TODO: Haven't looked into how this should really work, just getting an initial rebased version of the branch running...
-    // We need to do this so the opacity buffers are created before placement happens
-    prepare(style: Style) {
-        for (const id in style.sourceCaches) {
-            const sourceCache = style.sourceCaches[id];
-            if (sourceCache.used) {
-                sourceCache.prepare(this.gl);
-            }
-        }
-    }
-
     render(style: Style, options: PainterOptions) {
         this.style = style;
         this.options = options;
@@ -275,6 +264,13 @@ class Painter {
         this.spriteAtlas.setSprite(style.sprite);
 
         this.glyphSource = style.glyphSource;
+
+        for (const id in style.sourceCaches) {
+            const sourceCache = this.style.sourceCaches[id];
+            if (sourceCache.used) {
+                sourceCache.prepare(this.gl);
+            }
+        }
 
         const layerIds = this.style._order;
 

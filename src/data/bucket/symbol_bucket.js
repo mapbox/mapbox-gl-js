@@ -6,7 +6,6 @@ const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray, LineIndexArray} = require('../index_array_type');
-const packUint8ToFloat = require('../../shaders/encode_attribute').packUint8ToFloat;
 const resolveTokens = require('../../util/token');
 const transformText = require('../../symbol/transform_text');
 const mergeLines = require('../../symbol/mergelines');
