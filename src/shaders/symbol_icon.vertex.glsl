@@ -38,8 +38,7 @@ void main() {
     vec2 a_tex = a_data.xy;
     vec2 a_size = a_data.zw;
 
-    highp vec2 angle_labelminzoom = unpack_float(a_projected_pos[2]);
-    highp float segment_angle = -angle_labelminzoom[0] / 255.0 * 2.0 * PI;
+    highp float segment_angle = -a_projected_pos[2] / 255.0 * 2.0 * PI;
 
     float size;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
