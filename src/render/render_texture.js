@@ -12,6 +12,7 @@ class RenderTexture {
     fbo: WebGLFramebuffer;
     buffer: VertexBuffer;
     vao: VertexArrayObject;
+    attachedRbo: ?WebGLRenderbuffer;
 
     constructor(painter: Painter) {
         const gl = this.gl = painter.gl;
@@ -42,12 +43,14 @@ class RenderTexture {
     bindWithDepth(depthRbo: WebGLRenderbuffer) {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRbo);
+        if (this.attachedRbo !== depthRbo) {
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRbo);
+            this.attachedRbo = depthRbo;
+        }
     }
 
     unbind() {
         const gl = this.gl;
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 }
