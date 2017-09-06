@@ -20,6 +20,7 @@
     mapbox-gl-styles "2.0.2"
     pixelmatch "^4.0.2"
     pngjs "^3.0.0"
+    shuffle-seed "^1.1.6"
     st "^1.1.0"
 
 "@mapbox/point-geometry@0.1.0", "@mapbox/point-geometry@^0.1.0", "@mapbox/point-geometry@~0.1.0":
@@ -6838,9 +6839,9 @@ vm-browserify@~0.0.1:
   dependencies:
     indexof "0.0.1"
 
-vt-pbf@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/vt-pbf/-/vt-pbf-3.0.0.tgz#2e12b2ac447d52190e895d325ec39b293cc3a93b"
+vt-pbf@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/vt-pbf/-/vt-pbf-3.0.1.tgz#ff7ef598464da443a03dece7b6bca12998a64338"
   dependencies:
     "@mapbox/point-geometry" "0.1.0"
     "@mapbox/vector-tile" "^1.3.0"
