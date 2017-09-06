@@ -64,29 +64,6 @@ class FeatureWrapper implements VectorTileFeature {
         }
     }
 
-    bbox() {
-        const rings = this.loadGeometry();
-        let x1 = Infinity,
-            x2 = -Infinity,
-            y1 = Infinity,
-            y2 = -Infinity;
-
-        for (let i = 0; i < rings.length; i++) {
-            const ring = rings[i];
-
-            for (let j = 0; j < ring.length; j++) {
-                const coord = ring[j];
-
-                x1 = Math.min(x1, coord.x);
-                x2 = Math.max(x2, coord.x);
-                y1 = Math.min(y1, coord.y);
-                y2 = Math.max(y2, coord.y);
-            }
-        }
-
-        return [x1, y1, x2, y2];
-    }
-
     toGeoJSON(x: number, y: number, z: number) {
         return toGeoJSON.call(this, x, y, z);
     }
