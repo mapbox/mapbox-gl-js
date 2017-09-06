@@ -582,6 +582,7 @@ test('SourceCache#update', (t) => {
         transform.resize(511, 511);
         transform.zoom = 1;
 
+
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
                 tile.timeAdded = Date.now();
@@ -683,6 +684,107 @@ test('SourceCache#update', (t) => {
         });
         sourceCache.onAdd();
     });
+
+    t.end();
+});
+
+test('SourceCache#_updateRetainedTiles', (t)=>{
+
+    t.test('loads ideal tiles if they exist', (t)=>{
+        const stateCache = {};
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = stateCache[tile.coord.id] || 'errored';
+                callback();
+            }
+        });
+
+        const getTileSpy = t.spy(sourceCache, 'getTile');
+        const idealTile = new TileCoord(1, 1, 1);
+        stateCache[idealTile.id] = 'loaded';
+        sourceCache._updateRetainedTiles([idealTile], 1, 0);
+        t.ok(getTileSpy.notCalled);
+        t.deepEqual(sourceCache.getIds(), [idealTile.id]);
+        t.end();
+    });
+
+    t.test('adds parent tile if ideal tile errors and no child tiles are loaded', (t)=>{
+        const stateCache = {};
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = stateCache[tile.coord.id] || 'errored';
+                callback();
+            }
+        });
+
+        const addTileSpy = t.spy(sourceCache, '_addTile');
+        const getTileSpy = t.spy(sourceCache, 'getTile');
+
+        const idealTiles = [new TileCoord(1, 1, 1), new TileCoord(1, 0, 1)];
+        stateCache[idealTiles[0].id] = 'loaded';
+        sourceCache._updateRetainedTiles(idealTiles, 1, 0);
+
+        // checks all child tiles to see if they're loaded before loading parent
+        t.deepEqual(getTileSpy.getCall(0).args[0], new TileCoord(2, 0, 2));
+        t.deepEqual(getTileSpy.getCall(1).args[0], new TileCoord(2, 1, 2));
+        t.deepEqual(getTileSpy.getCall(2).args[0], new TileCoord(2, 0, 3));
+        t.deepEqual(getTileSpy.getCall(3).args[0], new TileCoord(2, 1, 3));
+
+        // when child tiles aren't found, check and request parent tile
+        t.deepEqual(getTileSpy.getCall(4).args[0], new TileCoord(0, 0, 0));
+        t.deepEqual(addTileSpy.getCall(2).args[0], new TileCoord(0, 0, 0));
+        // retained tiles include all ideal tiles and any parents that were loaded to cover
+        // non-existant tiles
+        t.deepEqual(sourceCache.getIds(), [0, idealTiles[1].id, idealTiles[0].id]);
+
+
+        addTileSpy.restore();
+        getTileSpy.restore();
+        t.end();
+    });
+
+    t.test('don\'t use wrong parent tile', (t)=> {
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'errored';
+                callback();
+            }
+        });
+
+        const idealTiles = [new TileCoord(2, 0, 0)];
+        sourceCache._tiles[idealTiles[0].id] = new Tile(idealTiles[0]);
+        sourceCache._tiles[idealTiles[0].id].state = 'errored';
+
+        sourceCache._tiles[new TileCoord(1, 1, 0).id] = new Tile(new TileCoord(1, 1, 0));
+        sourceCache._tiles[new TileCoord(1, 1, 0).id].state = 'loaded';
+
+
+        const addTileSpy = t.spy(sourceCache, '_addTile');
+        const getTileSpy = t.spy(sourceCache, 'getTile');
+
+        const retained = sourceCache._updateRetainedTiles(idealTiles, 2, 0);
+
+        const expectedCalls = [
+            // all children
+            new TileCoord(3, 0, 0), // not found
+            new TileCoord(3, 1, 0), // not found
+            new TileCoord(3, 0, 1), // not found
+            new TileCoord(3, 1, 1), // not found
+            // parents
+            new TileCoord(1, 0, 0), // not found
+            new TileCoord(0, 0, 0)  // not found
+        ];
+
+        getTileSpy.getCalls().forEach((call, i) => {
+            t.deepEqual(call.args[0], expectedCalls[i]);
+        });
+
+        addTileSpy.restore();
+        getTileSpy.restore();
+        t.end();
+    });
+
+
 
     t.end();
 });
