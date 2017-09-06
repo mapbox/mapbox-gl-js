@@ -762,8 +762,6 @@ test('SourceCache#_updateRetainedTiles', (t)=>{
         const addTileSpy = t.spy(sourceCache, '_addTile');
         const getTileSpy = t.spy(sourceCache, 'getTile');
 
-        const retained = sourceCache._updateRetainedTiles(idealTiles, 2, 0);
-
         const expectedCalls = [
             // all children
             new TileCoord(3, 0, 0), // not found
