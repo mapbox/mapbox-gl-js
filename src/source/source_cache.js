@@ -368,7 +368,7 @@ class SourceCache extends Evented {
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
-        const retain = this._updateRetainedTiles(idealTileCoords, zoom, minCoveringZoom);
+        const retain = this._updateRetainedTiles(idealTileCoords, zoom);
 
         const parentsForFading = {};
 
@@ -413,11 +413,14 @@ class SourceCache extends Evented {
         }
     }
 
-    _updateRetainedTiles(idealTileCoords: Array<TileCoord>, zoom: number, minCoveringZoom: number) {
+    _updateRetainedTiles(idealTileCoords: Array<TileCoord>, zoom: number) {
         let i, coord, tile, covered;
 
         const retain = {};
         const checked = {};
+        const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
+
+
         for (i = 0; i < idealTileCoords.length; i++) {
             coord = idealTileCoords[i];
             tile = this._addTile(coord);
@@ -452,7 +455,6 @@ class SourceCache extends Evented {
                     for (let j = 0; j < children.length; j++) {
                         const childCoord = children[j];
                         const childTile = childCoord ? this.getTile(childCoord) : null;
-
                         if (!!childTile && childTile.hasData()) {
                             retain[childCoord.id] = true;
                         } else {
@@ -462,8 +464,10 @@ class SourceCache extends Evented {
                 }
 
                 if (!covered) {
+
                     // We couldn't find child tiles that entirely cover the ideal tile.
                     for (let overscaledZ = zoom - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
+
                         const parentId = coord.scaledTo(overscaledZ);
                         if (checked[parentId.id]) {
                             // Break parent tile ascent, this route has been previously checked by another child.
