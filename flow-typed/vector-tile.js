@@ -16,7 +16,6 @@ declare interface VectorTileFeature {
     properties: {[string]: string | number | boolean};
 
     loadGeometry(): Array<Array<Point>>;
-    bbox(): [number, number, number, number];
     toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
 }
 
