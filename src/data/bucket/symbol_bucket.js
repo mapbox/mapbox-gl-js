@@ -146,7 +146,7 @@ const placementOpacityAttributes = [
     { name: 'a_fade_opacity', components: 1, type: 'Uint32' }
 ];
 const shaderOpacityAttributes = [
-    { name: 'a_fade_opacity', components: 1, type: 'Uint8' }
+    { name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0 }
 ];
 
 const collisionAttributes = [
