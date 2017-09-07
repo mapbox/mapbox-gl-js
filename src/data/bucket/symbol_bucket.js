@@ -139,8 +139,14 @@ const dynamicLayoutAttributes = [
     { name: 'a_projected_pos', components: 3, type: 'Float32' }
 ];
 
-const opacityAttributes = [
-    { name: 'a_fade_opacity', components: 2, type: 'Uint16' }
+// Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
+// tight. Each Uint32 is actually four duplicate Uint8s for the four corners of a glyph
+// 7 bits are for the current opacity, and the lowest bit is the target opacity
+const placementOpacityAttributes = [
+    { name: 'a_fade_opacity', components: 1, type: 'Uint32' }
+];
+const shaderOpacityAttributes = [
+    { name: 'a_fade_opacity', components: 1, type: 'Uint8' }
 ];
 
 const collisionAttributes = [
@@ -152,7 +158,7 @@ const symbolInterfaces = {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         indexArrayType: TriangleIndexArray,
-        opacityAttributes: opacityAttributes,
+        opacityAttributes: placementOpacityAttributes,
         paintAttributes: [
             {property: 'text-color', name: 'fill_color'},
             {property: 'text-halo-color', name: 'halo_color'},
@@ -165,7 +171,7 @@ const symbolInterfaces = {
         layoutAttributes: layoutAttributes,
         dynamicLayoutAttributes: dynamicLayoutAttributes,
         indexArrayType: TriangleIndexArray,
-        opacityAttributes: opacityAttributes,
+        opacityAttributes: placementOpacityAttributes,
         paintAttributes: [
             {property: 'icon-color', name: 'fill_color'},
             {property: 'icon-halo-color', name: 'halo_color'},
@@ -299,6 +305,10 @@ class SymbolBuffers {
         }
         if (this.programInterface.opacityAttributes) {
             this.opacityVertexBuffer = new VertexBuffer(gl, this.opacityVertexArray, true);
+            // This is a performance hack so that we can write to opacityVertexArray with uint32s
+            // even though the shaders read uint8s
+            this.opacityVertexBuffer.itemSize = 1;
+            this.opacityVertexBuffer.attributes = shaderOpacityAttributes;
         }
         if (this.programInterface.collisionAttributes) {
             this.collisionVertexBuffer = new VertexBuffer(gl, this.collisionVertexArray, true);
@@ -625,9 +635,6 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
 
             addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0);
-            arrays.opacityVertexArray.emplaceBack(0);
-            arrays.opacityVertexArray.emplaceBack(0);
-            arrays.opacityVertexArray.emplaceBack(0);
             arrays.opacityVertexArray.emplaceBack(0);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
