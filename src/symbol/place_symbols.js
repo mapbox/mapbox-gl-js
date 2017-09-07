@@ -13,7 +13,9 @@ module.exports = {
     place: place
 };
 
-function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any) {
+function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any): boolean {
+    const initialVisible = opacityState.opacity !== 0;
+    const initialTargetVisible = opacityState.targetOpacity !== 0;
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;
@@ -26,6 +28,8 @@ function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityStat
         opacityState.targetOpacity = targetOpacity;
         opacityState.time = opacityUpdateTime;
     }
+    return (!initialVisible && !initialTargetVisible && opacityState.targetOpacity !== 0) ||
+           ((initialVisible || initialTargetVisible) && (opacityState.opacity === 0 && opacityState.targetOpacity === 0));
 }
 
 function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
@@ -46,12 +50,14 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
         if (hasText) {
             const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
             const opacityState = symbolInstance.textOpacityState;
-            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
-            for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                const placedSymbol = (bucket.placedGlyphArray.get(placedTextSymbolIndex): any);
-                // If this label is completely faded, mark it so that we don't have to calculate
-                // its position at render time
-                placedSymbol.hidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
+            const visibilityChanged = updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
+            if (visibilityChanged) {
+                for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
+                    const placedSymbol = (bucket.placedGlyphArray.get(placedTextSymbolIndex): any);
+                    // If this label is completely faded, mark it so that we don't have to calculate
+                    // its position at render time
+                    placedSymbol.hidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
+                }
             }
 
             for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
