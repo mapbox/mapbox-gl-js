@@ -3,7 +3,7 @@
 const Let = require('./let');
 
 import type { Type } from '../types';
-import type { Expression, ParsingContext }  from '../expression';
+import type { Expression, ParsingContext, CompilationContext }  from '../expression';
 
 class Var implements Expression {
     key: string;
@@ -28,7 +28,10 @@ class Var implements Expression {
         return new Var(context.key, name, context.scope.get(name).type);
     }
 
-    compile() { return Let.escape(this.name); }
+    compile(ctx: CompilationContext) {
+        const expr = ctx.scope.get(this.name);
+        return ctx.compile(expr);
+    }
 
     serialize() {
         return [this.name];

@@ -1,5 +1,7 @@
 // @flow
 
+const assert = require('assert');
+
 import type {
     Type,
 } from './types';
@@ -10,7 +12,7 @@ export interface Expression {
 
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression; // eslint-disable-line no-use-before-define
 
-    compile(): string;
+    compile(CompilationContext): string; // eslint-disable-line no-use-before-define
 
     serialize(): any;
     accept(Visitor<Expression>): void;
@@ -123,8 +125,76 @@ class ParsingContext {
     }
 }
 
+class CompilationContext {
+    _id: number;
+    _cache: {[string]: string};
+    _prelude: string;
+    scope: Scope;
+
+    constructor() {
+        this._cache = {};
+        this._id = 0;
+        this._prelude = '';
+        this.scope = new Scope();
+    }
+
+    compile(e: Expression, final: boolean = false): string {
+        const id = this.addExpression(e.compile(this));
+        if (!final) {
+            return `${id}()`;
+        }
+
+        return `
+$globalProperties = $globalProperties || {};
+var $props = $feature && $feature.properties || {};
+${this._prelude}
+return $this.unwrap(${id}());
+        `;
+    }
+
+    addExpression(body: string): string {
+        let id = this._cache[body];
+        if (!id) {
+            id = `e${this._id++}`;
+            this._cache[body] = id;
+
+            // convenience: allow simple expressions to omit 'return ' in
+            // compiled string
+            if (!/return/.test(body)) {
+                body = `return ${body}`;
+            }
+
+            this._prelude += `\nfunction ${id}() { ${body} }`;
+        }
+
+        return id;
+    }
+
+    // Add a variable declaration to the prelude, and return its name.
+    addVariable(body: string): string {
+        let id = this._cache[body];
+        if (!id) {
+            id = `v${this._id++}`;
+            this._cache[body] = id;
+            this._prelude += `\nvar ${id} = ${body};`;
+        }
+
+        return id;
+    }
+
+    pushScope(bindings: Array<[string, Expression]>) {
+        this.scope = this.scope.concat(bindings);
+    }
+
+    popScope() {
+        assert(this.scope.parent);
+        this.scope = (this.scope.parent: any);
+    }
+}
+
 module.exports = {
     Scope,
     ParsingContext,
-    ParsingError
+    ParsingError,
+    CompilationContext
 };

@@ -4,7 +4,7 @@ const assert = require('assert');
 const parseExpression = require('../parse_expression');
 const { BooleanType } = require('../types');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type } from '../types';
 
 type Branches = Array<[Expression, Expression]>;
@@ -54,12 +54,12 @@ class Case implements Expression {
         return new Case(context.key, (outputType: any), branches, otherwise);
     }
 
-    compile() {
+    compile(ctx: CompilationContext) {
         const result = [];
         for (const [test, expression] of this.branches) {
-            result.push(`(${test.compile()}) ? (${expression.compile()})`);
+            result.push(`(${ctx.compile(test)}) ? (${ctx.compile(expression)})`);
         }
-        result.push(`(${this.otherwise.compile()})`);
+        result.push(`(${ctx.compile(this.otherwise)})`);
         return result.join(' : ');
     }
 

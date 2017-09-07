@@ -10,7 +10,7 @@ const {
     BooleanType
 } = require('../types');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { ArrayType } from '../types';
 
 const types = {
@@ -64,8 +64,8 @@ class ArrayAssertion implements Expression {
         return new ArrayAssertion(context.key, type, input);
     }
 
-    compile() {
-        return `$this.as(${this.input.compile()}, ${JSON.stringify(this.type)})`;
+    compile(ctx: CompilationContext) {
+        return `$this.as(${ctx.compile(this.input)}, ${JSON.stringify(this.type)})`;
     }
 
     serialize() {

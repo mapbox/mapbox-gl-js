@@ -65,7 +65,11 @@ CompoundExpression.register(expressions, {
     'get': {
         type: ValueType,
         overloads: [
-            [[StringType], ([k]) => `$this.get($props, ${k}, 'feature.properties')`],
+            [[StringType], ([k]) => `
+                var k = ${k};
+                var v = $props[k];
+                return typeof v !== 'undefined' ? v : $this.error("Property '" + k + "' not found in feature.properties");
+            `],
             [[StringType, ObjectType], ([k, obj]) =>
                 `$this.get(${obj}, ${k})`
             ]

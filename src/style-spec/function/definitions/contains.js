@@ -7,7 +7,7 @@ const {
     ValueType
 } = require('../types');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type, ArrayType } from '../types';
 
 class Contains implements Expression {
@@ -42,8 +42,8 @@ class Contains implements Expression {
         return new Contains(context.key, value, arrayExpr);
     }
 
-    compile() {
-        return `$this.contains(${this.value.compile()}, ${this.array.compile()})`;
+    compile(ctx: CompilationContext) {
+        return `$this.contains(${ctx.compile(this.value)}, ${ctx.compile(this.array)})`;
     }
 
     serialize() {

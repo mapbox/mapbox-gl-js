@@ -8,7 +8,7 @@ const {
 } = require('../types');
 const parseExpression = require('../parse_expression');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type } from '../types';
 
 export type InterpolationType =
@@ -147,24 +147,23 @@ class Curve implements Expression {
         return new Curve(context.key, outputType, interpolation, input, stops);
     }
 
-    compile() {
-        const input = this.input.compile();
+    compile(ctx: CompilationContext) {
+        const input = ctx.compile(this.input);
 
         const labels = [];
         const outputs = [];
         for (const [label, expression] of this.stops) {
             labels.push(label);
-            outputs.push(`${expression.compile()}`);
+            outputs.push(ctx.addExpression(expression.compile(ctx)));
         }
 
         const interpolationType = this.type.kind.toLowerCase();
 
-        return `$this.evaluateCurve(
-            ${input},
-            [${labels.join(',')}],
-            [${outputs.join(',')}],
-            ${JSON.stringify(this.interpolation)},
-            ${JSON.stringify(interpolationType)})`;
+        const labelVariable = ctx.addVariable(`[${labels.join(',')}]`);
+        const outputsVariable = ctx.addVariable(`[${outputs.join(',')}]`);
+        const interpolation = ctx.addVariable(JSON.stringify(this.interpolation));
+
+        return `$this.evaluateCurve(${input}, ${labelVariable}, ${outputsVariable}, ${interpolation}, ${JSON.stringify(interpolationType)})`;
     }
 
     serialize() {
