@@ -138,18 +138,29 @@ class CompilationContext {
         this.scope = new Scope();
     }
 
-    compile(e: Expression, final: boolean = false): string {
+    compile(e: Expression): string {
         const id = this.addExpression(e.compile(this));
-        if (!final) {
-            return `${id}()`;
-        }
+        return `${id}()`;
+    }
 
-        return `
-$globalProperties = $globalProperties || {};
-var $props = $feature && $feature.properties || {};
+    compileToFunction(e: Expression, evaluationContext: Object): Function {
+        const finalId = this.addExpression(e.compile(this));
+        const src = `
+var $globalProperties;
+var $feature;
+var $props;
 ${this._prelude}
-return $this.unwrap(${id}());
-        `;
+return function (globalProperties, feature) {
+    $globalProperties = globalProperties;
+    $feature = feature;
+    $props = feature && $feature.properties || {};
+    return $this.unwrap(${finalId}())
+};`;
+        return (new Function('$this', src): any)(evaluationContext);
+    }
+
+    getPrelude() {
+        return this._prelude;
     }
 
     addExpression(body: string): string {

@@ -66,16 +66,12 @@ function compileExpression(
     }
 
     const compilationContext = new CompilationContext();
-    const source = compilationContext.compile(parsed, true);
-    const fn = (new Function('$this', '$globalProperties', '$feature', source): any);
-
-    const ctx = evaluationContext();
+    const compiled = compilationContext.compileToFunction(parsed, evaluationContext());
 
     return {
         result: 'success',
-        function: (globalProperties, feature) =>
-            fn(ctx, globalProperties, feature),
-        functionSource: `function compiled($this, $globalProperties, $feature) {\n${source}\n}`,
+        function: compiled,
+        functionSource: compilationContext.getPrelude(),
         isFeatureConstant: isFeatureConstant(parsed),
         isZoomConstant: isZoomConstant(parsed),
         expression: parsed
