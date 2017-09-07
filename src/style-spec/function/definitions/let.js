@@ -69,11 +69,6 @@ class Let implements Expression {
 
         return new Let(context.key, bindings, result);
     }
-
-    // escape variable names to avoid conflict with reserved words / globals
-    static escape(name: string): string {
-        return `_${name}`;
-    }
 }
 
 module.exports = Let;

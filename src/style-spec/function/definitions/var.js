@@ -1,7 +1,5 @@
 // @flow
 
-const Let = require('./let');
-
 import type { Type } from '../types';
 import type { Expression, ParsingContext, CompilationContext }  from '../expression';
 
