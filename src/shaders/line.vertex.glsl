@@ -12,7 +12,7 @@
 // #define scale 63.0
 #define scale 0.015873016
 
-attribute vec3 a_pos_normal;
+attribute vec4 a_pos_normal;
 attribute vec4 a_data;
 
 uniform mat4 u_matrix;
@@ -43,12 +43,9 @@ void main() {
 
     vec2 pos = a_pos_normal.xy;
 
-    // transform y normal so that 0 => -1 and 1 => 1
-    // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
+    // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
-    mediump vec2 normal = unpack_float(a_pos_normal.z);
-    normal.y = sign(normal.y - 0.5);
-
+    mediump vec2 normal = a_pos_normal.zw;
     v_normal = normal;
 
     // these transformations used to be applied in the JS and native code bases.

@@ -9,7 +9,6 @@ const {TriangleIndexArray} = require('../index_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
-const {packUint8ToFloat} = require('../../shaders/encode_attribute');
 
 import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
@@ -53,7 +52,7 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DIST
 
 const lineInterface = {
     layoutAttributes: [
-        {name: 'a_pos_normal', components: 3, type: 'Int16'},
+        {name: 'a_pos_normal', components: 4, type: 'Int16'},
         {name: 'a_data', components: 4, type: 'Uint8'}
     ],
     paintAttributes: [
@@ -73,7 +72,8 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
         // a_pos_normal
         point.x,
         point.y,
-        packUint8ToFloat(round ? 1 : 0, up ? 1 : 0),
+        round ? 1 : 0,
+        up ? 1 : -1,
         // a_data
         // add 128 to store a byte in an unsigned byte
         Math.round(EXTRUDE_SCALE * extrude.x) + 128,
