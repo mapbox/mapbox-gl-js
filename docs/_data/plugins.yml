@@ -4,7 +4,7 @@ User Interface Plugins:
     description: enables users to show/hide disputed borders
   mapbox-gl-compare:
     website: https://github.com/mapbox/mapbox-gl-compare
-    description: enables users to compare two maps by swpiping left and right
+    description: enables users to compare two maps by swiping left and right
     example: mapbox-gl-compare
   mapbox-gl-draw:
     website: https://github.com/mapbox/mapbox-gl-draw
