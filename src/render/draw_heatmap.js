@@ -64,6 +64,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('heatmap', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
+        gl.uniform1f(program.uniforms.u_radius, layer.paint['heatmap-radius']);
 
         const scale = painter.transform.zoomScale(tile.coord.z - painter.transform.zoom);
         gl.uniform1f(program.uniforms.u_extrude_scale, EXTENT / tile.tileSize * scale);
