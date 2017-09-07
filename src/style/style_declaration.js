@@ -63,7 +63,8 @@ class StyleDeclaration {
             this._zoomCurve.interpolation,
             zoom,
             lower,
-            upper
+            upper,
+            this._zoomCurve.interpolationCache
         );
     }
 }
