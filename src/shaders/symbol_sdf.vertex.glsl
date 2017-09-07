@@ -3,7 +3,7 @@ const float PI = 3.141592653589793;
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 attribute vec3 a_projected_pos;
-attribute vec2 a_fade_opacity;
+attribute float a_fade_opacity;
 
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
@@ -105,9 +105,10 @@ void main() {
     float gamma_scale = gl_Position.w;
 
     vec2 tex = a_tex / u_texsize;
-    float fade_change = a_fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    float fade_opacity = max(0.0, min(1.0, a_fade_opacity[0] * 0.0001 + fade_change));
+    vec2 fade_opacity = unpack_opacity(a_fade_opacity);
+    float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
+    float interpolated_fade_opacity = max(0.0, min(1.0, fade_opacity[0] + fade_change));
 
     v_data0 = vec2(tex.x, tex.y);
-    v_data1 = vec3(gamma_scale, size, fade_opacity);
+    v_data1 = vec3(gamma_scale, size, interpolated_fade_opacity);
 }

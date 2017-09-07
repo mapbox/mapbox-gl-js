@@ -32,6 +32,28 @@ function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityStat
            ((initialVisible || initialTargetVisible) && (opacityState.opacity === 0 && opacityState.targetOpacity === 0));
 }
 
+const shift25 = Math.pow(2, 25);
+const shift24 = Math.pow(2, 24);
+const shift17 = Math.pow(2, 17);
+const shift16 = Math.pow(2, 16);
+const shift9 = Math.pow(2, 9);
+const shift8 = Math.pow(2, 8);
+const shift1 = Math.pow(2, 1);
+
+function packOpacity(opacityState: OpacityState): number {
+    if (opacityState.opacity === 0 && opacityState.targetOpacity === 0) {
+        return 0;
+    } else if (opacityState.opacity === 1 && opacityState.targetOpacity === 1) {
+        return 4294967295;
+    }
+    const targetBit = opacityState.targetOpacity === 1 ? 1 : 0;
+    const opacityBits = Math.floor(opacityState.opacity * 127);
+    return opacityBits * shift25 + targetBit * shift24 +
+        opacityBits * shift17 + targetBit * shift16 +
+        opacityBits * shift9 + targetBit * shift8 +
+        opacityBits * shift1 + targetBit;
+}
+
 function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
     const glyphOpacityArray = bucket.text && bucket.text.opacityVertexArray;
     const iconOpacityArray = bucket.icon && bucket.icon.opacityVertexArray;
@@ -60,13 +82,12 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
                 }
             }
 
-            for (let i = 0; i < symbolInstance.numGlyphVertices; i++) {
-                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, opacityState.targetOpacity);
-            }
             // Vertical text fades in/out on collision the same way as corresponding
             // horizontal text. Switch between vertical/horizontal should be instantaneous
-            for (let i = 0; i < symbolInstance.numVerticalGlyphVertices; i++) {
-                glyphOpacityArray.emplaceBack(opacityState.opacity * 10000, opacityState.targetOpacity);
+            const opacityEntryCount = (symbolInstance.numGlyphVertices + symbolInstance.numVerticalGlyphVertices) / 4;
+            const packedOpacity = packOpacity(opacityState);
+            for (let i = 0; i < opacityEntryCount; i++) {
+                glyphOpacityArray.emplaceBack(packedOpacity);
             }
         }
 
@@ -74,8 +95,10 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
             const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
             const opacityState = symbolInstance.iconOpacityState;
             updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
-            for (let i = 0; i < symbolInstance.numIconVertices; i++) {
-                iconOpacityArray.emplaceBack(opacityState.opacity * 10000, opacityState.targetOpacity);
+            const opacityEntryCount = symbolInstance.numIconVertices / 4;
+            const packedOpacity = packOpacity(opacityState);
+            for (let i = 0; i < opacityEntryCount; i++) {
+                iconOpacityArray.emplaceBack(packedOpacity);
             }
         }
 
