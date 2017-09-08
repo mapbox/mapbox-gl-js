@@ -75,7 +75,10 @@ module.exports = () => ({
     },
 
     get: function (obj: {[string]: Value}, key: string, name?: string) {
-        ensure(this.has(obj, key, name), `Property '${key}' not found in ${name || `object`}`);
+        const v = obj[key];
+        if (typeof v === 'undefined') {
+            throw new RuntimeError(`Property '${key}' not found in ${name || `object`}`);
+        }
         return obj[key];
     },
 

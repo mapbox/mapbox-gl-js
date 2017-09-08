@@ -146,16 +146,16 @@ class CompilationContext {
     compileToFunction(e: Expression, evaluationContext: Object): Function {
         const finalId = this.addExpression(e.compile(this));
         const src = `
-var $globalProperties;
-var $feature;
-var $props;
-${this._prelude}
-return function (globalProperties, feature) {
-    $globalProperties = globalProperties;
-    $feature = feature;
-    $props = feature && $feature.properties || {};
-    return $this.unwrap(${finalId}())
-};`;
+            var $globalProperties;
+            var $feature;
+            var $props;
+            ${this._prelude}
+            return function (globalProperties, feature) {
+                $globalProperties = globalProperties;
+                $feature = feature;
+                $props = feature && $feature.properties || {};
+                return $this.unwrap(${finalId}())
+            };`;
         return (new Function('$this', src): any)(evaluationContext);
     }
 
@@ -163,15 +163,22 @@ return function (globalProperties, feature) {
         return this._prelude;
     }
 
-    addExpression(body: string): string {
+    // if isCompleteFunctionBody === false (the default), then `body` is
+    // treated as a pure JS expression, i.e. one that can be placed after a
+    // `return` statement;  otherwise, it is treated as the entire contents of
+    // a function, and should include its own return statement.
+    //
+    // ^ The need for the latter, and thus the isCompleteFunctionBody
+    // parameter, will be eliminated when we address
+    // https://github.com/mapbox/mapbox-gl-js/issues/5234
+    addExpression(body: string, isCompleteFunctionBody: boolean = false): string {
         let id = this._cache[body];
         if (!id) {
             id = `e${this._id++}`;
             this._cache[body] = id;
 
-            // convenience: allow simple expressions to omit 'return ' in
-            // compiled string
-            if (!/return/.test(body)) {
+            if (!isCompleteFunctionBody) {
+                assert(!/return/.test(body));
                 body = `return ${body}`;
             }
 

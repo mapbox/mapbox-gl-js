@@ -46,7 +46,8 @@ class Coalesce implements Expression {
             } catch (e) {}`);
         }
         compiledArgs.push(`return ${ctx.compile(this.args[this.args.length - 1])};`);
-        return compiledArgs.join('\n');
+        const wrapped = ctx.addExpression(compiledArgs.join('\n'), true);
+        return `${wrapped}()`;
     }
 
     serialize() {

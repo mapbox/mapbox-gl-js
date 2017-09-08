@@ -116,9 +116,7 @@ class Match implements Expression {
         const inputType = this.inputType.kind !== 'Array' ?
             `$this.types.${this.inputType.kind}` : JSON.stringify(this.inputType);
 
-        return `
-var i = $this.as(${input}, ${inputType});
-return (${lookupObject}[i] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
+        return `(${lookupObject}[$this.as(${input}, ${inputType})] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
     }
 
     serialize() {
