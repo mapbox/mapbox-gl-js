@@ -5,7 +5,7 @@ const parseExpression = require('../parse_expression');
 const checkSubtype = require('../check_subtype');
 const { typeOf } = require('../values');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type } from '../types';
 
 // Map input label values to output expression index
@@ -95,26 +95,28 @@ class Match implements Expression {
         return new Match(context.key, (inputType: any), (outputType: any), input, cases, outputs, otherwise);
     }
 
-    compile() {
-        const input = this.input.compile();
-        const outputs = [`function () { return ${this.otherwise.compile()} }`];
-        const lookup = {};
+    compile(ctx: CompilationContext) {
+        const input = ctx.compileAndCache(this.input);
 
-        for (const label in this.cases) {
-            // shift the index stored in this.cases by one, as we're using
-            // outputs[0] for the 'otherwise' case.
-            lookup[`${String(label)}`] = this.cases[label] + 1;
-        }
+        const outputs = [];
         for (const output of this.outputs) {
-            outputs.push(`function () { return ${output.compile()} }`);
+            outputs.push(ctx.addExpression(output.compile(ctx)));
         }
 
-        return `(function () {
-            var o = [${outputs.join(', ')}];
-            var l = ${JSON.stringify(lookup)};
-            var i = ${input};
-            return o[l[$this.as(i, ${JSON.stringify(this.inputType)})] || 0]();
-        })()`;
+        let lookup = '';
+        const labels = Object.keys(this.cases);
+        for (let i = 0; i < labels.length; i++) {
+            if (i > 0) lookup += ', ';
+            const label = labels[i];
+            lookup += `${String(label)}: ${outputs[this.cases[label]]}`;
+        }
+
+        const lookupObject = ctx.addVariable(`{${lookup}}`);
+
+        const inputType = this.inputType.kind !== 'Array' ?
+            `$this.types.${this.inputType.kind}` : JSON.stringify(this.inputType);
+
+        return `(${lookupObject}[$this.as(${input}, ${inputType})] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
     }
 
     serialize() {

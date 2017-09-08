@@ -7,7 +7,7 @@ const {
     NumberType
 } = require('../types');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type, ArrayType } from '../types';
 
 class At implements Expression {
@@ -36,8 +36,8 @@ class At implements Expression {
         return new At(context.key, t.itemType, index, input);
     }
 
-    compile() {
-        return `$this.at(${this.index.compile()}, ${this.input.compile()})`;
+    compile(ctx: CompilationContext) {
+        return `$this.at(${ctx.compileAndCache(this.index)}, ${ctx.compileAndCache(this.input)})`;
     }
 
     serialize() {

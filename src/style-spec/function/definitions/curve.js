@@ -1,14 +1,13 @@
 // @flow
 
 const UnitBezier = require('@mapbox/unitbezier');
-const interpolationFactor = require('../interpolation_factor');
 const {
     toString,
     NumberType
 } = require('../types');
 const parseExpression = require('../parse_expression');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type } from '../types';
 
 export type InterpolationType =
@@ -35,22 +34,16 @@ class Curve implements Expression {
         this.stops = stops;
     }
 
-    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number, unitBezierCache?: {[string]: UnitBezier}) {
+    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number) {
         let t = 0;
         if (interpolation.name === 'exponential') {
-            t = interpolationFactor(input, interpolation.base, lower, upper);
+            t = exponentialInterpolation(input, interpolation.base, lower, upper);
         } else if (interpolation.name === 'linear') {
-            t = interpolationFactor(input, 1, lower, upper);
+            t = exponentialInterpolation(input, 1, lower, upper);
         } else if (interpolation.name === 'cubic-bezier') {
-            const key = interpolation.controlPoints.join(',');
-            let ub = unitBezierCache ? unitBezierCache[key] : null;
-            if (!ub) {
-                ub = new UnitBezier(...interpolation.controlPoints);
-                if (unitBezierCache) {
-                    unitBezierCache[key] = ub;
-                }
-            }
-            t = ub.solve(interpolationFactor(input, 1, lower, upper));
+            const c = interpolation.controlPoints;
+            const ub = new UnitBezier(c[0], c[1], c[2], c[3]);
+            t = ub.solve(exponentialInterpolation(input, 1, lower, upper));
         }
         return t;
     }
@@ -147,24 +140,23 @@ class Curve implements Expression {
         return new Curve(context.key, outputType, interpolation, input, stops);
     }
 
-    compile() {
-        const input = this.input.compile();
+    compile(ctx: CompilationContext) {
+        const input = ctx.compileAndCache(this.input);
 
         const labels = [];
         const outputs = [];
         for (const [label, expression] of this.stops) {
             labels.push(label);
-            outputs.push(`${expression.compile()}`);
+            outputs.push(ctx.addExpression(expression.compile(ctx)));
         }
 
         const interpolationType = this.type.kind.toLowerCase();
 
-        return `$this.evaluateCurve(
-            ${input},
-            [${labels.join(',')}],
-            [${outputs.join(',')}],
-            ${JSON.stringify(this.interpolation)},
-            ${JSON.stringify(interpolationType)})`;
+        const labelVariable = ctx.addVariable(`[${labels.join(',')}]`);
+        const outputsVariable = ctx.addVariable(`[${outputs.join(',')}]`);
+        const interpolation = ctx.addVariable(JSON.stringify(this.interpolation));
+
+        return `$this.evaluateCurve(${input}, ${labelVariable}, ${outputsVariable}, ${interpolation}, ${JSON.stringify(interpolationType)})`;
     }
 
     serialize() {
@@ -190,6 +182,54 @@ class Curve implements Expression {
         for (const [ , expression] of this.stops) {
             expression.accept(visitor);
         }
+    }
+}
+
+/**
+ * Returns a ratio that can be used to interpolate between exponential function
+ * stops.
+ * How it works: Two consecutive stop values define a (scaled and shifted) exponential function `f(x) = a * base^x + b`, where `base` is the user-specified base,
+ * and `a` and `b` are constants affording sufficient degrees of freedom to fit
+ * the function to the given stops.
+ *
+ * Here's a bit of algebra that lets us compute `f(x)` directly from the stop
+ * values without explicitly solving for `a` and `b`:
+ *
+ * First stop value: `f(x0) = y0 = a * base^x0 + b`
+ * Second stop value: `f(x1) = y1 = a * base^x1 + b`
+ * => `y1 - y0 = a(base^x1 - base^x0)`
+ * => `a = (y1 - y0)/(base^x1 - base^x0)`
+ *
+ * Desired value: `f(x) = y = a * base^x + b`
+ * => `f(x) = y0 + a * (base^x - base^x0)`
+ *
+ * From the above, we can replace the `a` in `a * (base^x - base^x0)` and do a
+ * little algebra:
+ * ```
+ * a * (base^x - base^x0) = (y1 - y0)/(base^x1 - base^x0) * (base^x - base^x0)
+ *                     = (y1 - y0) * (base^x - base^x0) / (base^x1 - base^x0)
+ * ```
+ *
+ * If we let `(base^x - base^x0) / (base^x1 base^x0)`, then we have
+ * `f(x) = y0 + (y1 - y0) * ratio`.  In other words, `ratio` may be treated as
+ * an interpolation factor between the two stops' output values.
+ *
+ * (Note: a slightly different form for `ratio`,
+ * `(base^(x-x0) - 1) / (base^(x1-x0) - 1) `, is equivalent, but requires fewer
+ * expensive `Math.pow()` operations.)
+ *
+ * @private
+*/
+function exponentialInterpolation(input, base, lowerValue, upperValue) {
+    const difference = upperValue - lowerValue;
+    const progress = input - lowerValue;
+
+    if (difference === 0) {
+        return 0;
+    } else if (base === 1) {
+        return progress / difference;
+    } else {
+        return (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
     }
 }
 

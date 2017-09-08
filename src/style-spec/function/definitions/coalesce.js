@@ -3,7 +3,7 @@
 const assert = require('assert');
 const parseExpression = require('../parse_expression');
 
-import type { Expression, ParsingContext } from '../expression';
+import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type } from '../types';
 
 class Coalesce implements Expression {
@@ -37,16 +37,17 @@ class Coalesce implements Expression {
         return new Coalesce(context.key, (outputType: any), parsedArgs);
     }
 
-    compile() {
+    compile(ctx: CompilationContext) {
         const compiledArgs = [];
         for (let i = 0; i < this.args.length - 1; i++) {
             compiledArgs.push(`try {
-                var result = ${this.args[i].compile()};
+                var result = ${ctx.compileAndCache(this.args[i])};
                 if (result !== null) return result;
             } catch (e) {}`);
         }
-        compiledArgs.push(`return ${this.args[this.args.length - 1].compile()};`);
-        return `(function coalesce() {\n${compiledArgs.join('\n')}\n})()`;
+        compiledArgs.push(`return ${ctx.compileAndCache(this.args[this.args.length - 1])};`);
+        const wrapped = ctx.addExpression(compiledArgs.join('\n'), true);
+        return `${wrapped}()`;
     }
 
     serialize() {

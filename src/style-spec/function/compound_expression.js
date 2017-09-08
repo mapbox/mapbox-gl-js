@@ -6,7 +6,7 @@ const parseExpression = require('./parse_expression');
 const checkSubtype = require('./check_subtype');
 const assert = require('assert');
 
-import type { Expression }  from './expression';
+import type { Expression, CompilationContext }  from './expression';
 import type { Type } from './types';
 
 type Varargs = {| type: Type |};
@@ -32,13 +32,13 @@ class CompoundExpression implements Expression {
         this.args = args;
     }
 
-    compile(): string {
+    compile(ctx: CompilationContext) {
         const compiledArgs: Array<string> = [];
 
         const args = this.args;
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
-            const compiledArg = arg.compile();
+            const compiledArg = ctx.compileAndCache(arg);
             compiledArgs.push(`(${compiledArg})`);
         }
 

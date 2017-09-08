@@ -2,7 +2,7 @@
 
 const parseExpression = require('../parse_expression');
 import type { Type } from '../types';
-import type { Expression, ParsingContext }  from '../expression';
+import type { Expression, ParsingContext, CompilationContext }  from '../expression';
 
 class Let implements Expression {
     key: string;
@@ -17,25 +17,11 @@ class Let implements Expression {
         this.result = result;
     }
 
-    compile() {
-        const names = [];
-        const values = [];
-        const errors = [];
-        for (const [name, expression] of this.bindings) {
-            names.push(name);
-            const value = expression.compile();
-            if (Array.isArray(value)) {
-                errors.push.apply(errors, value);
-            } else {
-                values.push(value);
-            }
-        }
-
-        const result = this.result.compile();
-
-        return `(function (${names.map(Let.escape).join(', ')}) {
-            return ${result};
-        })(${values.join(', ')})`;
+    compile(ctx: CompilationContext) {
+        ctx.pushScope(this.bindings);
+        const result = this.result.compile(ctx);
+        ctx.popScope();
+        return result;
     }
 
     serialize() {
@@ -82,11 +68,6 @@ class Let implements Expression {
         if (!result) return null;
 
         return new Let(context.key, bindings, result);
-    }
-
-    // escape variable names to avoid conflict with reserved words / globals
-    static escape(name: string): string {
-        return `_${name}`;
     }
 }
 

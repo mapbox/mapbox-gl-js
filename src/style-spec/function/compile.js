@@ -4,7 +4,8 @@ const assert = require('assert');
 module.exports = compileExpression;
 
 const {
-    ParsingContext
+    ParsingContext,
+    CompilationContext
 } = require('./expression');
 const parseExpression = require('./parse_expression');
 const { CompoundExpression } = require('./compound_expression');
@@ -64,30 +65,16 @@ function compileExpression(
         };
     }
 
-    const compiled = parsed.compile();
-    if (typeof compiled === 'string') {
-        const fn = (new Function('$this', '$globalProperties', '$feature', `
-$globalProperties = $globalProperties || {};
-var $props = $feature && $feature.properties || {};
-return $this.unwrap(${compiled})
-`): any);
-
-        const ctx = evaluationContext();
-
-        return {
-            result: 'success',
-            function: (globalProperties, feature) =>
-                fn(ctx, globalProperties, feature),
-            functionSource: compiled,
-            isFeatureConstant: isFeatureConstant(parsed),
-            isZoomConstant: isZoomConstant(parsed),
-            expression: parsed
-        };
-    }
+    const compilationContext = new CompilationContext();
+    const compiled = compilationContext.compileToFunction(parsed, evaluationContext());
 
     return {
-        result: 'error',
-        errors: compiled
+        result: 'success',
+        function: compiled,
+        functionSource: compilationContext.getPrelude(),
+        isFeatureConstant: isFeatureConstant(parsed),
+        isZoomConstant: isZoomConstant(parsed),
+        expression: parsed
     };
 }
 

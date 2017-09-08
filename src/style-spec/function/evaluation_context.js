@@ -16,7 +16,6 @@ const {Color, typeOf, isValue} = require('./values');
 const checkSubtype = require('./check_subtype');
 const Curve = require('./definitions/curve');
 
-import type UnitBezier from '@mapbox/unitbezier';
 import type { Type } from './types';
 import type { Value } from './values';
 import type { InterpolationType } from './definitions/curve';
@@ -76,7 +75,10 @@ module.exports = () => ({
     },
 
     get: function (obj: {[string]: Value}, key: string, name?: string) {
-        ensure(this.has(obj, key, name), `Property '${key}' not found in ${name || `object`}`);
+        const v = obj[key];
+        if (typeof v === 'undefined') {
+            throw new RuntimeError(`Property '${key}' not found in ${name || `object`}`);
+        }
         return obj[key];
     },
 
@@ -178,25 +180,24 @@ module.exports = () => ({
         return maybeWrapped;
     },
 
-    _unitBezierCache: ({}: {[string]: UnitBezier}),
     evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<any>, interpolation: InterpolationType, resultType: string) {
         const stopCount = stopInputs.length;
-        if (stopInputs.length === 1) return stopOutputs[0];
-        if (input <= stopInputs[0]) return stopOutputs[0];
-        if (input >= stopInputs[stopCount - 1]) return stopOutputs[stopCount - 1];
+        if (stopInputs.length === 1) return stopOutputs[0]();
+        if (input <= stopInputs[0]) return stopOutputs[0]();
+        if (input >= stopInputs[stopCount - 1]) return stopOutputs[stopCount - 1]();
 
         const index = findStopLessThanOrEqualTo(stopInputs, input);
 
         if (interpolation.name === 'step') {
-            return stopOutputs[index];
+            return stopOutputs[index]();
         }
 
         const lower = stopInputs[index];
         const upper = stopInputs[index + 1];
-        const t = Curve.interpolationFactor(interpolation, input, lower, upper, this._unitBezierCache);
+        const t = Curve.interpolationFactor(interpolation, input, lower, upper);
 
-        const outputLower = stopOutputs[index];
-        const outputUpper = stopOutputs[index + 1];
+        const outputLower = stopOutputs[index]();
+        const outputUpper = stopOutputs[index + 1]();
 
         if (resultType === 'color') {
             return new Color(...interpolate.color(outputLower.value, outputUpper.value, t));
