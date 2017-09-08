@@ -1,6 +1,7 @@
 // @flow
 
 const Point = require('@mapbox/point-geometry');
+const {GLYPH_PBF_BORDER} = require('../style/parse_glyph_pbf');
 
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
@@ -149,9 +150,9 @@ function getGlyphQuads(anchor: Anchor,
         const rect = glyph.rect;
         if (!rect) continue;
 
-        // The rects have an addditional buffer that is not included in their size;
+        // The rects have an addditional buffer that is not included in their size.
         const glyphPadding = 1.0;
-        const rectBuffer = 3.0 + glyphPadding;
+        const rectBuffer = GLYPH_PBF_BORDER + glyphPadding;
 
         const halfAdvance = glyph.metrics.advance / 2;
 
