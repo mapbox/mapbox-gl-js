@@ -1,0 +1,24 @@
+{
+  "expectExpressionType": null,
+  "expression": ["match", ["string", ["get", "x"]], ["0-1", "a.b", "{}"], "match", "otherwise"],
+  "inputs": [
+    [{}, {"properties": {"x": "0-1"}}],
+    [{}, {"properties": {"x": "a.b"}}],
+    [{}, {"properties": {"x": "{}"}}],
+    [{}, {"properties": {"x": "1"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "outputs": [
+      "match",
+      "match",
+      "match",
+      "otherwise"
+    ]
+  }
+}

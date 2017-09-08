@@ -107,7 +107,7 @@ class Match implements Expression {
         for (let i = 0; i < labels.length; i++) {
             if (i > 0) lookup += ', ';
             const label = labels[i];
-            lookup += `${String(label)}: ${outputs[this.cases[label]]}`;
+            lookup += `${JSON.stringify(label)}: ${outputs[this.cases[label]]}`;
         }
 
         const lookupObject = ctx.addVariable(`{${lookup}}`);
