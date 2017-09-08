@@ -112,10 +112,7 @@ class Match implements Expression {
 
         const lookupObject = ctx.addVariable(`{${lookup}}`);
 
-        const inputType = this.inputType.kind !== 'Array' ?
-            `$this.types.${this.inputType.kind}` : JSON.stringify(this.inputType);
-
-        return `(${lookupObject}[$this.as(${input}, ${inputType})] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
+        return `(${lookupObject}[${input}] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
     }
 
     serialize() {

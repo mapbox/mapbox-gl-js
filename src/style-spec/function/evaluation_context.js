@@ -1,6 +1,5 @@
 // @flow
 
-const assert = require('assert');
 const parseColor = require('../util/parse_color');
 const interpolate = require('../util/interpolate');
 const {
@@ -13,10 +12,10 @@ const {
     ValueType,
     toString,
     checkSubtype} = require('./types');
-const {Color, typeOf, isValue} = require('./values');
+const {Color, typeOf} = require('./values');
 const Curve = require('./definitions/curve');
 
-import type { Type } from './types';
+import type { ArrayType } from './types';
 import type { Value } from './values';
 import type { InterpolationType } from './definitions/curve';
 import type { Feature } from './index';
@@ -33,10 +32,10 @@ const types = {
 };
 
 const jsTypes = {
-    Number: 'number',
-    String: 'string',
-    Boolean: 'boolean',
-    Object: 'object'
+    number: NumberType,
+    string: StringType,
+    boolean: BooleanType,
+    object: ObjectType
 };
 
 class RuntimeError {
@@ -96,26 +95,24 @@ module.exports = () => ({
         return toString(typeOf(x));
     },
 
-    as: function (value: Value, expectedType: Type, name?: string) {
-        assert(isValue(value), `Invalid value ${JSON.stringify(value)}`);
-        assert(expectedType.kind, `Invalid type ${JSON.stringify(expectedType)}`);
-
-        let type;
-        let typeError = false;
-        if (expectedType.kind === 'Null') {
-            typeError = value === null;
-        } else if (expectedType.kind === 'Value') {
-            typeError = false;
-        } else if (expectedType.kind !== 'Array' && expectedType.kind !== 'Color' && expectedType.kind !== 'Error') {
-            typeError = typeof value !== jsTypes[expectedType.kind];
-        } else {
-            type = typeOf(value);
-            typeError = checkSubtype(expectedType, type);
+    asJSType: function (expectedType: string, values: Array<Function>) {
+        let value;
+        for (let i = 0; i < values.length; i++) {
+            value = values[i]();
+            if (typeof value === expectedType && value !== null) {
+                return value;
+            }
         }
+        const expected = jsTypes[expectedType].kind;
+        throw new RuntimeError(`Expected value to be of type ${expected}, but found ${this.typeOf(value)} instead.`);
+    },
+
+    asArray: function (value: Value, expectedType: ArrayType) {
+        const type = typeOf(value);
+        const typeError = checkSubtype(expectedType, type);
 
         if (typeError) {
-            if (!type) type = typeOf(value);
-            throw new RuntimeError(`Expected ${name || 'value'} to be of type ${toString(expectedType)}, but found ${toString(type)} instead.`);
+            throw new RuntimeError(`Expected value to be of type ${toString(expectedType)}, but found ${toString(type)} instead.`);
         }
 
         return value;

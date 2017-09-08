@@ -1869,7 +1869,7 @@
         "doc": "Yields the output value whose label value matches the input, or the fallback value if no match is found."
       },
       "coalesce": {
-        "doc": "Evaluates each expression in turn until the first non-null, non-error value is obtained, and returns that value"
+        "doc": "Evaluates each expression in turn until the first non-null value is obtained, and returns that value."
       },
       "curve": {
         "doc": "Interpolates an output value from the given input/output pairs using the specified interpolation strategy.  The input levels must be numeric literals in strictly ascending order."
@@ -1887,13 +1887,13 @@
         "doc": "Returns a string describing the type of the given value."
       },
       "string": {
-        "doc": "Asserts that the input value is a String."
+        "doc": "Asserts that the input value is a String. If multiple values are provided, each one is evaluated in order until a String value is obtained."
       },
       "number": {
-        "doc": "Asserts that the input value is a Number."
+        "doc": "Asserts that the input value is a Number. If multiple values are provided, each one is evaluated in order until a Number value is obtained."
       },
       "boolean": {
-        "doc": "Asserts that the input value is a Boolean."
+        "doc": "Asserts that the input value is a Boolean. If multiple values are provided, each one is evaluated in order until a Boolean value is obtained."
       },
       "object": {
         "doc": "Asserts that the input value is an Objects."

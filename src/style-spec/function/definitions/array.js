@@ -65,7 +65,7 @@ class ArrayAssertion implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        return `$this.as(${ctx.compileAndCache(this.input)}, ${JSON.stringify(this.type)})`;
+        return `$this.asArray(${ctx.compileAndCache(this.input)}, ${JSON.stringify(this.type)})`;
     }
 
     serialize() {

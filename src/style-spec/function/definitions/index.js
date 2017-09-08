@@ -18,6 +18,7 @@ const { CompoundExpression, varargs } = require('../compound_expression');
 const Let = require('./let');
 const Var = require('./var');
 const Literal = require('./literal');
+const Assertion = require('./assertion');
 const ArrayAssertion = require('./array');
 const At = require('./at');
 const Contains = require('./contains');
@@ -27,13 +28,16 @@ const Curve = require('./curve');
 const Coalesce = require('./coalesce');
 
 import type { Expression } from '../expression';
-import type { Type } from '../types';
 
 const expressions: { [string]: Class<Expression> } = {
     // special forms
     'let': Let,
     'var': Var,
     'literal': Literal,
+    'string': Assertion,
+    'number': Assertion,
+    'boolean': Assertion,
+    'object': Assertion,
     'array': ArrayAssertion,
     'at': At,
     'contains': Contains,
@@ -49,10 +53,6 @@ CompoundExpression.register(expressions, {
     'pi': [ NumberType, [], () => 'Math.PI'],
     'e': [ NumberType, [], () => 'Math.E'],
     'typeof': [ StringType, [ValueType], fromContext('typeOf') ],
-    'string': defineAssertion(StringType),
-    'number': defineAssertion(NumberType),
-    'boolean': defineAssertion(BooleanType),
-    'object': defineAssertion(ObjectType),
     'to-string': [ StringType, [ValueType], fromContext('toString') ],
     'to-number': [ NumberType, [ValueType], fromContext('toNumber') ],
     'to-boolean': [ BooleanType, [ValueType], ([v]) => `Boolean(${v})` ],
@@ -87,8 +87,7 @@ CompoundExpression.register(expressions, {
             [[array(ValueType)], ([arr]) => `${arr}.length`]
         ]
     },
-    'properties': [ObjectType, [], () =>
-        '$this.as($props, $this.types.Object, "feature.properties")'
+    'properties': [ObjectType, [], () => '$props'
     ],
     'geometry-type': [ StringType, [], () =>
         '$this.geometryType($feature)'
@@ -146,14 +145,6 @@ CompoundExpression.register(expressions, {
         `[${args.join(', ')}].join('')`
     ],
 });
-
-function defineAssertion(type: Type) {
-    const typeParameter = type.kind === 'Array' ? JSON.stringify(type) :
-        `$this.types.${type.kind}`;
-    return [ type, [ValueType],  (args) =>
-        `$this.as(${args[0]}, ${typeParameter})`
-    ];
-}
 
 function defineMathFunction(name: string, arity: number) {
     assert(typeof Math[name] === 'function');

@@ -8,6 +8,27 @@ const CompoundExpression = require('../../../src/style-spec/function/compound_ex
 require('../../../src/style-spec/function/definitions');
 
 const results = {
+    string: [{
+        type: 'String',
+        parameters: ['Value']
+    }, {
+        type: 'String',
+        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+    }],
+    number: [{
+        type: 'Number',
+        parameters: ['Value']
+    }, {
+        type: 'Number',
+        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+    }],
+    boolean: [{
+        type: 'Boolean',
+        parameters: ['Value']
+    }, {
+        type: 'Boolean',
+        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+    }],
     array: [{
         type: 'Array',
         parameters: ['Value'],
@@ -98,6 +119,8 @@ for (const name in CompoundExpression.definitions) {
         });
     }
 }
+
+delete results['error'];
 
 function processParameters(params) {
     if (Array.isArray(params)) {

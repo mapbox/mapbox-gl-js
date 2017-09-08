@@ -6,6 +6,7 @@ const {checkSubtype} = require('./types');
 import type {Type} from './types';
 import type {ParsingContext, Expression} from './expression';
 import type {CompoundExpression} from './compound_expression';
+import type Assertion from './definitions/assertion';
 
 /**
  * Parse the given JSON expression.
@@ -65,33 +66,32 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
     }
 }
 
-const typeWrappers: {[string]: string} = {
-    'Number': 'number',
-    'String': 'string',
-    'Boolean': 'boolean',
-    'Color': 'to-color'
-};
-
 function wrapForType(expected: Type, expression: Expression, context: ParsingContext) {
-    const wrapper = typeWrappers[expected.kind];
-    if (!wrapper) {
+    if (expected.kind === 'Color') {
+        // workaround for circular dependency
+        const CompoundExpr: Class<CompoundExpression> = (context.definitions['to-color']: any);
+
+        const definition = CompoundExpr.definitions['to-color'];
+
+        assert(
+            Array.isArray(definition) && // the wrapper expression has no overloads
+            Array.isArray(definition[1]) && // its inputs isn't Varargs
+            definition[1].length === 1 && // it takes one parameter
+            !checkSubtype(definition[1][0], expression.type) // matching the expression we're trying to wrap
+        );
+
+        return new CompoundExpr(expression.key, 'to-color', expected, definition[2], [expression]);
+    } else if (
+        expected.kind === 'Number' ||
+        expected.kind === 'String' ||
+        expected.kind === 'Boolean'
+    ) {
+        // workaround for circular dependency
+        const AssertionExpr: Class<Assertion> = (context.definitions['number']: any);
+        return new AssertionExpr(expression.key, expected, [expression]);
+    } else {
         return expression;
     }
-
-    // weird workaround for circular dependency between CompoundExpression and
-    // parseExpression
-    const CompoundExpr: Class<CompoundExpression> = (context.definitions[wrapper]: any);
-
-    const definition = CompoundExpr.definitions[wrapper];
-
-    assert(
-        Array.isArray(definition) && // the wrapper expression has no overloads
-        Array.isArray(definition[1]) && // its inputs isn't Varargs
-        definition[1].length === 1 && // it takes one parameter
-        !checkSubtype(definition[1][0], expression.type) // matching the expression we're trying to wrap
-    );
-
-    return new CompoundExpr(expression.key, wrapper, expected, definition[2], [expression]);
 }
 
 module.exports = parseExpression;
