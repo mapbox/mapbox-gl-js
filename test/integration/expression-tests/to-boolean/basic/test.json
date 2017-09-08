@@ -18,15 +18,6 @@
       "isZoomConstant": true,
       "type": "Boolean"
     },
-    "outputs": [
-      {"error": "Property 'x' not found in feature.properties"},
-      true,
-      false,
-      false,
-      true,
-      false,
-      true,
-      false
-    ]
+    "outputs": [false, true, false, false, true, false, true, false]
   }
 }

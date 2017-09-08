@@ -65,7 +65,7 @@ CompoundExpression.register(expressions, {
     'get': {
         type: ValueType,
         overloads: [
-            [[StringType], ([k]) => `$this.get($props, ${k}, 'feature.properties')`],
+            [[StringType], ([k]) => `$this.get($props, ${k})`],
             [[StringType, ObjectType], ([k, obj]) =>
                 `$this.get(${obj}, ${k})`
             ]

@@ -28,7 +28,7 @@
         "error": "Expected value to be of type Number, but found Boolean instead."
       },
       {"error": "Expected value to be of type Number, but found Null instead."},
-      {"error": "Property 'x' not found in feature.properties"}
+      {"error": "Expected value to be of type Number, but found Null instead."}
     ]
   }
 }

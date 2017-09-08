@@ -74,12 +74,9 @@ module.exports = () => ({
         return array[index];
     },
 
-    get: function (obj: {[string]: Value}, key: string, name?: string) {
+    get: function (obj: {[string]: Value}, key: string) {
         const v = obj[key];
-        if (typeof v === 'undefined') {
-            throw new RuntimeError(`Property '${key}' not found in ${name || `object`}`);
-        }
-        return obj[key];
+        return typeof v === 'undefined' ? null : v;
     },
 
     has: function (obj: {[string]: Value}, key: string, name?: string) {
@@ -208,6 +205,15 @@ module.exports = () => ({
         }
 
         return interpolate[resultType](outputLower, outputUpper, t);
+    },
+
+    coalesce(args: Array<Function>) {
+        for (let i = 0; i < args.length - 1; i++) {
+            const result = args[i]();
+            if (result !== null) return result;
+        }
+
+        return args[args.length - 1]();
     }
 });
 

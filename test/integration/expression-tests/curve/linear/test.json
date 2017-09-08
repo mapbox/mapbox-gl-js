@@ -16,6 +16,15 @@
       "isZoomConstant": true,
       "type": "Number"
     },
-    "outputs": [100, 150, 200, 100, 200, {"error": "Expected value to be of type Number, but found String instead."}]
+    "outputs": [
+      100,
+      150,
+      200,
+      100,
+      200,
+      {
+        "error": "Expected value to be of type Number, but found String instead."
+      }
+    ]
   }
 }

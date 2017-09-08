@@ -39,15 +39,11 @@ class Coalesce implements Expression {
 
     compile(ctx: CompilationContext) {
         const compiledArgs = [];
-        for (let i = 0; i < this.args.length - 1; i++) {
-            compiledArgs.push(`try {
-                var result = ${ctx.compileAndCache(this.args[i])};
-                if (result !== null) return result;
-            } catch (e) {}`);
+        for (let i = 0; i < this.args.length; i++) {
+            compiledArgs.push(ctx.addExpression(this.args[i].compile(ctx)));
         }
-        compiledArgs.push(`return ${ctx.compileAndCache(this.args[this.args.length - 1])};`);
-        const wrapped = ctx.addExpression(compiledArgs.join('\n'), true);
-        return `${wrapped}()`;
+        const args = ctx.addVariable(`[${compiledArgs.join(',')}]`);
+        return `$this.coalesce(${args})`;
     }
 
     serialize() {
