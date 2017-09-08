@@ -38,7 +38,7 @@ class CompoundExpression implements Expression {
         const args = this.args;
         for (let i = 0; i < args.length; i++) {
             const arg = args[i];
-            const compiledArg = ctx.compile(arg);
+            const compiledArg = ctx.compileAndCache(arg);
             compiledArgs.push(`(${compiledArg})`);
         }
 

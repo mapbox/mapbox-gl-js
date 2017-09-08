@@ -138,7 +138,7 @@ class CompilationContext {
         this.scope = new Scope();
     }
 
-    compile(e: Expression): string {
+    compileAndCache(e: Expression): string {
         const id = this.addExpression(e.compile(this));
         return `${id}()`;
     }

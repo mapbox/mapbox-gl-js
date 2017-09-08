@@ -37,7 +37,7 @@ class At implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        return `$this.at(${ctx.compile(this.index)}, ${ctx.compile(this.input)})`;
+        return `$this.at(${ctx.compileAndCache(this.index)}, ${ctx.compileAndCache(this.input)})`;
     }
 
     serialize() {

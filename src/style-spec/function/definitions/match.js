@@ -96,7 +96,7 @@ class Match implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        const input = ctx.compile(this.input);
+        const input = ctx.compileAndCache(this.input);
 
         const outputs = [];
         for (const output of this.outputs) {

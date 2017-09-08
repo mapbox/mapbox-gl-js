@@ -28,7 +28,7 @@ class Var implements Expression {
 
     compile(ctx: CompilationContext) {
         const expr = ctx.scope.get(this.name);
-        return ctx.compile(expr);
+        return expr.compile(ctx);
     }
 
     serialize() {

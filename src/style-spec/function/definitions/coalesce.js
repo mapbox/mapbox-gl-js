@@ -41,11 +41,11 @@ class Coalesce implements Expression {
         const compiledArgs = [];
         for (let i = 0; i < this.args.length - 1; i++) {
             compiledArgs.push(`try {
-                var result = ${ctx.compile(this.args[i])};
+                var result = ${ctx.compileAndCache(this.args[i])};
                 if (result !== null) return result;
             } catch (e) {}`);
         }
-        compiledArgs.push(`return ${ctx.compile(this.args[this.args.length - 1])};`);
+        compiledArgs.push(`return ${ctx.compileAndCache(this.args[this.args.length - 1])};`);
         const wrapped = ctx.addExpression(compiledArgs.join('\n'), true);
         return `${wrapped}()`;
     }

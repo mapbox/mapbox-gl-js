@@ -57,9 +57,9 @@ class Case implements Expression {
     compile(ctx: CompilationContext) {
         const result = [];
         for (const [test, expression] of this.branches) {
-            result.push(`(${ctx.compile(test)}) ? (${ctx.compile(expression)})`);
+            result.push(`(${ctx.compileAndCache(test)}) ? (${ctx.compileAndCache(expression)})`);
         }
-        result.push(`(${ctx.compile(this.otherwise)})`);
+        result.push(`(${ctx.compileAndCache(this.otherwise)})`);
         return result.join(' : ');
     }
 

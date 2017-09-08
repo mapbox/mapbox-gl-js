@@ -43,7 +43,7 @@ class Contains implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        return `$this.contains(${ctx.compile(this.value)}, ${ctx.compile(this.array)})`;
+        return `$this.contains(${ctx.compileAndCache(this.value)}, ${ctx.compileAndCache(this.array)})`;
     }
 
     serialize() {
