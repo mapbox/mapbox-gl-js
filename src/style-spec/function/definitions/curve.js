@@ -16,11 +16,6 @@ export type InterpolationType =
     { name: 'exponential', base: number } |
     { name: 'cubic-bezier', controlPoints: [number, number, number, number] };
 
-export type InterpolationCache = {
-    pow: {[number]: {[number]: number}},
-    unitBezier: {[string]: UnitBezier}
-}
-
 type Stops = Array<[number, Expression]>;
 
 class Curve implements Expression {
@@ -31,34 +26,23 @@ class Curve implements Expression {
     input: Expression;
     stops: Stops;
 
-    interpolationCache: InterpolationCache;
-
     constructor(key: string, type: Type, interpolation: InterpolationType, input: Expression, stops: Stops) {
         this.key = key;
         this.type = type;
         this.interpolation = interpolation;
         this.input = input;
         this.stops = stops;
-
-        this.interpolationCache = {pow: {}, unitBezier: {}};
     }
 
-    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number, cache: InterpolationCache) {
+    static interpolationFactor(interpolation: InterpolationType, input: number, lower: number, upper: number) {
         let t = 0;
         if (interpolation.name === 'exponential') {
-            t = exponentialInterpolation(input, interpolation.base, lower, upper, cache.pow);
+            t = exponentialInterpolation(input, interpolation.base, lower, upper);
         } else if (interpolation.name === 'linear') {
-            t = exponentialInterpolation(input, 1, lower, upper, cache.pow);
+            t = exponentialInterpolation(input, 1, lower, upper);
         } else if (interpolation.name === 'cubic-bezier') {
-            const key = interpolation.controlPoints.join(',');
-            let ub = cache.unitBezier[key];
-            if (!ub) {
-                ub = new UnitBezier(...interpolation.controlPoints);
-                if (cache.unitBezier) {
-                    cache.unitBezier[key] = ub;
-                }
-            }
-            t = ub.solve(exponentialInterpolation(input, 1, lower, upper, cache.pow));
+            const ub = new UnitBezier(...interpolation.controlPoints);
+            t = ub.solve(exponentialInterpolation(input, 1, lower, upper));
         }
         return t;
     }
@@ -170,9 +154,8 @@ class Curve implements Expression {
         const labelVariable = ctx.addVariable(`[${labels.join(',')}]`);
         const outputsVariable = ctx.addVariable(`[${outputs.join(',')}]`);
         const interpolation = ctx.addVariable(JSON.stringify(this.interpolation));
-        const interpolationCache = ctx.addVariable(`{pow: {}, unitBezier: {}}`);
 
-        return `$this.evaluateCurve(${input}, ${labelVariable}, ${outputsVariable}, ${interpolation}, ${JSON.stringify(interpolationType)}, ${interpolationCache})`;
+        return `$this.evaluateCurve(${input}, ${labelVariable}, ${outputsVariable}, ${interpolation}, ${JSON.stringify(interpolationType)})`;
     }
 
     serialize() {
@@ -236,7 +219,7 @@ class Curve implements Expression {
  *
  * @private
 */
-function exponentialInterpolation(input, base, lowerValue, upperValue, cache: {[number]: {[number]: number}}) {
+function exponentialInterpolation(input, base, lowerValue, upperValue) {
     const difference = upperValue - lowerValue;
     const progress = input - lowerValue;
 
@@ -245,23 +228,8 @@ function exponentialInterpolation(input, base, lowerValue, upperValue, cache: {[
     } else if (base === 1) {
         return progress / difference;
     } else {
-        // only use memoized pow() for base^difference, because the cache is
-        // naive and never evicts entries.  (base^progress would produce an
-        // unbounded number of entries)
-        return (Math.pow(base, progress) - 1) / (pow(base, difference, cache) - 1);
+        return (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
     }
-}
-
-// memoized Math.pow
-function pow(base, exp, cache: {[number]: {[number]: number}}) {
-    if (!cache.hasOwnProperty(base)) {
-        cache[base] = {};
-    }
-    const c = cache[base];
-    if (!c.hasOwnProperty(exp)) {
-        c[exp] = Math.pow(base, exp);
-    }
-    return c[exp];
 }
 
 module.exports = Curve;

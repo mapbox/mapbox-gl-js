@@ -18,7 +18,7 @@ const Curve = require('./definitions/curve');
 
 import type { Type } from './types';
 import type { Value } from './values';
-import type { InterpolationType, InterpolationCache } from './definitions/curve';
+import type { InterpolationType } from './definitions/curve';
 import type { Feature } from './index';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
@@ -177,7 +177,7 @@ module.exports = () => ({
         return maybeWrapped;
     },
 
-    evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<any>, interpolation: InterpolationType, resultType: string, interpolationCache: InterpolationCache) {
+    evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<any>, interpolation: InterpolationType, resultType: string) {
         const stopCount = stopInputs.length;
         if (stopInputs.length === 1) return stopOutputs[0]();
         if (input <= stopInputs[0]) return stopOutputs[0]();
@@ -191,7 +191,7 @@ module.exports = () => ({
 
         const lower = stopInputs[index];
         const upper = stopInputs[index + 1];
-        const t = Curve.interpolationFactor(interpolation, input, lower, upper, interpolationCache);
+        const t = Curve.interpolationFactor(interpolation, input, lower, upper);
 
         const outputLower = stopOutputs[index]();
         const outputUpper = stopOutputs[index + 1]();
