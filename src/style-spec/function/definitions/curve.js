@@ -41,7 +41,8 @@ class Curve implements Expression {
         } else if (interpolation.name === 'linear') {
             t = exponentialInterpolation(input, 1, lower, upper);
         } else if (interpolation.name === 'cubic-bezier') {
-            const ub = new UnitBezier(...interpolation.controlPoints);
+            const c = interpolation.controlPoints;
+            const ub = new UnitBezier(c[0], c[1], c[2], c[3]);
             t = ub.solve(exponentialInterpolation(input, 1, lower, upper));
         }
         return t;
