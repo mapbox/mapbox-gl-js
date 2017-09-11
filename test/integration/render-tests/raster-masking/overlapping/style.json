@@ -31,7 +31,10 @@
     {
       "id": "raster",
       "type": "raster",
-      "source": "contour"
+      "source": "contour",
+      "paint": {
+        "raster-fade-duration": 0
+      }
     }
   ]
 }

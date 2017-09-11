@@ -166,7 +166,7 @@ ajax.getImage = function({ url }, callback) {
                 callback(null, png);
             });
         } else {
-            callback(error || new Error(response.statusCode));
+            callback(error || {status: response.statusCode});
         }
     });
 };
