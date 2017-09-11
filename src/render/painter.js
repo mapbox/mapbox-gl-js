@@ -14,6 +14,7 @@ const PosArray = require('../data/pos_array');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const shaders = require('../shaders');
 const Program = require('./program');
+const RenderTexture = require('./render_texture');
 const updateTileMasks = require('./tile_mask');
 
 const draw = {

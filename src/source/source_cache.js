@@ -10,7 +10,6 @@ const util = require('../util/util');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
 
-
 import type {Source} from './source';
 import type Map from '../ui/map';
 import type Style from '../style/style';
