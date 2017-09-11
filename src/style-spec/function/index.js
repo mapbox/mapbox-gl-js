@@ -90,12 +90,11 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
                 throw new Error(f.zoomCurve ? f.zoomCurve.error : 'Invalid zoom expression');
             }
         }
+
+        // useful for debugging, especially for converted stop functions
+        f.rawExpression = expr;
         return f;
     } else {
-        console.log(JSON.stringify(expr, null, 2));
-        for (const err of compiled.errors) {
-            console.log(`${err.key}: ${err.message}`);
-        }
         throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
     }
 }

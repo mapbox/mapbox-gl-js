@@ -1,4 +1,9 @@
 {
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
   "rules": {
     "flowtype/require-valid-file-annotation": [0],
     "prefer-arrow-callback": "off",
@@ -12,6 +17,8 @@
     "browser": true
   },
   "globals": {
-    "mapboxgl": false
+    "mapboxgl": false,
+    "React": false,
+    "ReactDOM": false
   }
 }

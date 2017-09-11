@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS Expressions</title>
+
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+    <link rel='stylesheet' href='/dist/mapbox-gl.css'/>
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #main {
+            width: 50%;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            overflow: scroll;
+        }
+        #map {
+            width: 50%;
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main"></div>
+    <div id="map"></div>
+    <script src='/dist/mapbox-gl-dev.js'></script>
+    <script src='/debug/access_token_generated.js'></script>
+
+    <script src="https://npmcdn.com/react@15.3.0/dist/react.js"></script>
+    <script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.js"></script>
+    <script src="style_property_editor_generated.js"></script>
+
+    <script>
+        /* global StylePropertyEditor */
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            zoom: 12.5,
+            center: [-77.01866, 38.888],
+            style: 'mapbox://styles/mapbox/streets-v10',
+            hash: true
+        });
+
+        map.on('load', function () {
+            ReactDOM.render(
+                React.createElement(StylePropertyEditor, {map}, null),
+                document.getElementById('main'));
+        });
+    </script>
+</body>
+
+</html>
