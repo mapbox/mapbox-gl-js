@@ -413,11 +413,11 @@ class SourceCache extends Evented {
         }
     }
 
-    _updateRetainedTiles(idealTileCoords: Array<TileCoord>, zoom: number) {
+    _updateRetainedTiles(idealTileCoords: Array<TileCoord>, zoom: number): { [string]: boolean} {
         let i, coord, tile, covered;
 
         const retain = {};
-        const checked = {};
+        const checked: {[number]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
 
 
