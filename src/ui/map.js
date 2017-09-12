@@ -244,6 +244,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _isUserDoubleClick: boolean;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
