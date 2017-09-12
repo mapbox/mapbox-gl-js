@@ -1026,6 +1026,7 @@
     "icon-offset": {
       "type": "array",
       "value": "number",
+      "units": "pixels",
       "length": 2,
       "default": [
         0,
