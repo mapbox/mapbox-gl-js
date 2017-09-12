@@ -1,233 +1,405 @@
 'use strict';
-/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
-const Clipboard = require('clipboard');
+/* global d3 */
 
-// Benchmark results seem to be more consistent with a warmup and cooldown
-// period. These values are measured in milliseconds.
-const benchmarkCooldownTime = 250;
-const benchmarkWarmupTime  = 250;
+const versionColor = d3.scaleOrdinal(d3.schemeCategory10);
+versionColor(0); // Skip blue -- too similar to link color.
 
-const BenchmarksView = React.createClass({
+const formatSample = d3.format(".3r");
+const Axis = require('./lib/axis');
 
-    render: function() {
-        return <div style={{width: 960, paddingBottom: window.innerHeight, margin: '0 auto'}}>
-            <h1 className="space-bottom">
-                Benchmarks
-                <a
-                    className={[
-                        'fr',
-                        'icon',
-                        'clipboard',
-                        'button',
-                        (this.getStatus() === 'ended' ? '' : 'disabled')
-                    ].join(' ')}
-                    data-clipboard-text={this.renderTextBenchmarks()}>
-                    Copy Results
-                </a>
-            </h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Benchmark</th>
-                        {this.versions().map((v) => <th key={v}>{v}</th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    {Object.keys(this.state.results).map(this.renderBenchmark)}
-                </tbody>
-            </table>
-        </div>;
-    },
+class StatisticsPlot extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {width: 100};
+    }
 
-    renderBenchmark: function(name) {
-        return <tr key={name}>
-            <th><a href={`#${name}`} onClick={this.reload}>{name}</a></th>
-            {Object.keys(this.state.results[name]).map(this.renderBenchmarkVersion.bind(this, name))}
-        </tr>;
-    },
+    render() {
+        function kernelDensityEstimator(kernel, ticks) {
+            return function(samples) {
+                if (samples.length === 0) {
+                    return [];
+                }
+                // https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator
+                const bandwidth = 1.06 * d3.deviation(samples) * Math.pow(samples.length, -0.2);
+                return ticks.map((x) => {
+                    return [x, d3.mean(samples, (v) => kernel((x - v) / bandwidth)) / bandwidth];
+                });
+            };
+        }
 
-    renderBenchmarkVersion: function(name, version) {
-        const results = this.state.results[name][version];
-        const sampleData = results.samples ? results.samples.map(row => row.join(',')).join('\n') : null;
+        function kernelEpanechnikov(v) {
+            return Math.abs(v) <= 1 ? 0.75 * (1 - v * v) : 0;
+        }
+
+        const margin = {top: 0, right: 20, bottom: 20, left: 0};
+        const width = this.state.width - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+        const kdeWidth = 100;
+
+        const t = d3.scaleLinear()
+            .domain([
+                d3.min(this.props.versions.map(v => d3.min(v.samples))),
+                d3.max(this.props.versions.map(v => d3.max(v.samples)))
+            ])
+            .range([height, 0])
+            .nice();
+
+        const b = d3.scaleBand()
+            .domain(this.props.versions.map(v => v.name))
+            .range([kdeWidth + 20, width])
+            .paddingOuter(0.15)
+            .paddingInner(0.3);
+
+        const kde = kernelDensityEstimator(kernelEpanechnikov, t.ticks(50));
+        const versions = this.props.versions.map(v => ({
+            name: v.name,
+            samples: v.samples,
+            density: kde(v.samples)
+        }));
+
+        const p = d3.scaleLinear()
+            .domain([0, d3.max(versions.map(v => d3.max(v.density, d => d[1])))])
+            .range([0, kdeWidth]);
+
+        const line = d3.line()
+            .curve(d3.curveBasis)
+            .y(d => t(d[0]))
+            .x(d => p(d[1]));
+
         return (
-            <td id={name + version}
-                key={version}
-                className={results.status === 'waiting' ? 'quiet' : ''}>
-                {results.logs.map((log, index) => {
-                    return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
-                })}
-                {sampleData ? (
-                    <details>
-                        <summary className='pad1 dark fill-green'>
-                            Sample Data
-                            <a className='icon clipboard'
-                                data-clipboard-text={sampleData}>Copy</a>
-                        </summary>
-                        <pre>{sampleData}</pre>
-                    </details>
-                ) : ''}
-            </td>
+            <svg
+                width="100%"
+                height={height + margin.top + margin.bottom}
+                style={{overflow: 'visible'}}
+                ref={(ref) => { this.ref = ref; }}>
+                <g transform={`translate(${margin.left},${margin.top})`}>
+                    <Axis orientation="bottom" scale={p} ticks={[2, "%"]} transform={`translate(0,${height})`}>
+                    </Axis>
+                    <Axis orientation="left" scale={t} tickFormat={formatSample}>
+                        <text fill='#000' textAnchor="end"  y={6} transform="rotate(-90)" dy=".71em">Time (ms)</text>
+                    </Axis>
+                    {versions.map((v, i) => {
+                        if (v.samples.length === 0)
+                            return null;
+
+                        const bandwidth = b.bandwidth();
+                        const color = versionColor(v.name);
+                        const scale = d3.scaleLinear()
+                            .domain([0, v.samples.length])
+                            .range([0, bandwidth]);
+
+                        const sorted = v.samples.slice().sort(d3.ascending);
+                        const [q1, q2, q3] = [.25, .5, .75].map((d) => d3.quantile(sorted, d));
+                        const mean = d3.mean(sorted);
+
+                        let min = [NaN, Infinity];
+                        let max = [NaN, -Infinity];
+                        for (let i = 0; i < v.samples.length; i++) {
+                            const s = v.samples[i];
+                            if (s < min[1]) min = [i, s];
+                            if (s > max[1]) max = [i, s];
+                        }
+
+                        return <g key={i}>
+                            <path
+                                fill="none"
+                                stroke={color}
+                                strokeWidth={2}
+                                strokeOpacity={0.7}
+                                d={line(v.density)} />
+                            <g transform={`translate(${b(v.name)},0)`}>
+                                {v.samples.map((d, i) =>
+                                    <circle
+                                        key={i}
+                                        fill={color}
+                                        cx={scale(i)}
+                                        cy={t(d)}
+                                        r={i === min[0] || i === max[0] ? 2 : 1} />
+                                )}
+                                <line // quartiles
+                                    x1={bandwidth / 2}
+                                    x2={bandwidth / 2}
+                                    y1={t(q1)}
+                                    y2={t(q3)}
+                                    stroke={color}
+                                    strokeWidth={bandwidth}
+                                    strokeOpacity={0.5} />
+                                <line // median
+                                    x1={bandwidth / 2}
+                                    x2={bandwidth / 2}
+                                    y1={t(q2) - 0.5}
+                                    y2={t(q2) + 0.5}
+                                    stroke={color}
+                                    strokeWidth={bandwidth}
+                                    strokeOpacity={1} />
+                                <line // mean
+                                    x1={bandwidth / 2}
+                                    x2={bandwidth / 2}
+                                    y1={t(mean) - 0.5}
+                                    y2={t(mean) + 0.5}
+                                    stroke='white'
+                                    strokeWidth={bandwidth}
+                                    strokeOpacity={1} />
+                                {[mean].map((d, i) =>
+                                    <text // left
+                                        key={i}
+                                        dx={-6}
+                                        dy='.3em'
+                                        x={0}
+                                        y={t(d)}
+                                        textAnchor='end'
+                                        fontSize={10}
+                                        fontFamily='sans-serif'>{formatSample(d)}</text>
+                                )}
+                                {[min, max].map((d, i) =>
+                                    <text // extent
+                                        key={i}
+                                        dx={0}
+                                        dy={i === 0 ? '1.3em' : '-0.7em'}
+                                        x={scale(d[0])}
+                                        y={t(d[1])}
+                                        textAnchor='middle'
+                                        fontSize={10}
+                                        fontFamily='sans-serif'>{formatSample(d[1])}</text>
+                                )}
+                                {[q1, q2, q3].map((d, i) =>
+                                    <text // right
+                                        key={i}
+                                        dx={6}
+                                        dy='.3em'
+                                        x={bandwidth}
+                                        y={t(d)}
+                                        textAnchor='start'
+                                        fontSize={10}
+                                        fontFamily='sans-serif'>{formatSample(d)}</text>
+                                )}
+                            </g>
+                        </g>;
+                    })}
+                </g>
+            </svg>
         );
-    },
+    }
 
-    versions: function() {
-        const versions = [];
-        for (const name in this.state.results) {
-            for (const version in this.state.results[name]) {
-                if (versions.indexOf(version) < 0) {
-                    versions.push(version);
-                }
-            }
+    componentDidMount() {
+        this.setState({ width: this.ref.clientWidth });
+    }
+}
+
+function regression(samples) {
+    const result = [];
+    for (let i = 0, n = 1; i + n < samples.length; i += n, n++) {
+        result.push([n, samples.slice(i, i + n).reduce(((sum, sample) => sum + sample), 0)]);
+    }
+    return result;
+}
+
+class RegressionPlot extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {width: 100};
+    }
+
+    render() {
+        const margin = {top: 10, right: 20, bottom: 30, left: 0};
+        const width = this.state.width - margin.left - margin.right;
+        const height = 200 - margin.top - margin.bottom;
+        const versions = this.props.versions.filter(version => version.regression);
+
+        const x = d3.scaleLinear()
+            .domain([0, d3.max(versions.map(version => d3.max(version.regression.data, d => d[0])))])
+            .range([0, width])
+            .nice();
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(versions.map(version => d3.max(version.regression.data, d => d[1])))])
+            .range([height, 0])
+            .nice();
+
+        const line = d3.line()
+            .x(d => x(d[0]))
+            .y(d => y(d[1]));
+
+        return (
+            <svg
+                width="100%"
+                height={height + margin.top + margin.bottom}
+                style={{overflow: 'visible'}}
+                ref={(ref) => { this.ref = ref; }}>
+                <g transform={`translate(${margin.left},${margin.top})`}>
+                    <Axis orientation="bottom" scale={x} transform={`translate(0,${height})`}>
+                        <text fill='#000' textAnchor="end" y={-6} x={width}>Iterations</text>
+                    </Axis>
+                    <Axis orientation="left" scale={y} ticks={4} tickFormat={formatSample}>
+                        <text fill='#000' textAnchor="end"  y={6} transform="rotate(-90)" dy=".71em">Time (ms)</text>
+                    </Axis>
+                    {versions.map((v, i) =>
+                        <g
+                            key={i}
+                            fill={versionColor(v.name)}
+                            fill-opacity="0.7">
+                            {v.regression.data.map(([a, b], i) =>
+                                <circle key={i} r="2" cx={x(a)} cy={y(b)}/>
+                            )}
+                            <path
+                                stroke={versionColor(v.name)}
+                                strokeWidth={1}
+                                strokeOpacity={0.5}
+                                d={line(v.regression.data.map(d => [
+                                    d[0],
+                                    d[0] * v.regression.slope + v.regression.intercept
+                                ]))} />
+                        </g>
+                    )}
+                </g>
+            </svg>
+        );
+    }
+
+    componentDidMount() {
+        this.setState({ width: this.ref.clientWidth });
+    }
+}
+
+class BenchmarkStatistic extends React.Component {
+    render() {
+        switch (this.props.status) {
+        case 'waiting':
+            return <p className="quiet"></p>;
+        case 'running':
+            return <p>Running...</p>;
+        case 'error':
+            return <p>{this.props.error.message}</p>;
+        default:
+            return <p>{this.props.statistic(this.props)}</p>;
         }
-        return versions;
-    },
+    }
+}
 
-    renderTextBenchmarks: function() {
-        const versions = this.versions();
-        let output = `benchmark | ${versions.join(' | ')}\n---`;
-        for (let i = 0; i < versions.length; i++) {
-            output += ' | ---';
-        }
-        output += '\n';
+class BenchmarkRow extends React.Component {
+    render() {
+        const ended = this.props.versions.find(version => version.status === 'ended');
+        return (
+            <div className="col12 clearfix space-bottom">
+                <h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2>
+                <div className="col8">
+                    <table className="fixed space-bottom">
+                        <tr><th></th>{this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
+                        {this.renderStatistic('R² Slope / Correlation',
+                            (version) => `${formatSample(version.regression.slope)} ms / ${version.regression.correlation.toFixed(3)} ${
+                                version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
+                                version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}`)}
+                        {this.renderStatistic('Mean',
+                            (version) => `${formatSample(d3.mean(version.samples))} ms`)}
+                        {this.renderStatistic('Minimum',
+                            (version) => `${formatSample(d3.min(version.samples))} ms`)}
+                        {this.renderStatistic('Deviation',
+                            (version) => `${formatSample(d3.deviation(version.samples))} ms`)}
+                    </table>
+                    {ended && <StatisticsPlot versions={this.props.versions}/>}
+                    {ended && <RegressionPlot versions={this.props.versions}/>}
+                </div>
+            </div>
+        );
+    }
 
-        for (const name in this.state.results) {
-            output += `**${name}**`;
-            for (const version of versions) {
-                const result = this.state.results[name][version];
-                output += ` | ${result && result.message || 'n\/a'} `;
-            }
-            output += '\n';
-        }
-        return output;
-    },
-
-    getInitialState: function() {
-        const results = {};
-
-        for (const name in this.props.benchmarks) {
-            for (const version in this.props.benchmarks[name]) {
-                if (!this.props.benchmarkFilter || this.props.benchmarkFilter(name, version)) {
-                    results[name] = results[name] || {};
-                    results[name][version] = {
-                        status: 'waiting',
-                        logs: []
-                    };
-                }
-            }
-        }
-
-        return { results: results };
-    },
-
-    componentDidMount: function() {
-        const that = this;
-
-        asyncSeries(Object.keys(that.state.results), (name, callback) => {
-            asyncSeries(Object.keys(that.state.results[name]), (version, callback) => {
-                that.runBenchmark(name, version, callback);
-            }, callback);
-        }, (err) => {
-            if (err) throw err;
-        });
-    },
-
-    runBenchmark: function(name, version, outerCallback) {
-        const that = this;
-        const results = this.state.results[name][version];
-
-        function log(color, message) {
-            results.logs.push({
-                color: color || 'blue',
-                message: message
-            });
-            that.forceUpdate();
-        }
-
-        function callback() {
-            setTimeout(outerCallback, benchmarkCooldownTime);
-        }
-
-        results.status = 'running';
-        log('dark', 'starting');
-
-        setTimeout(() => {
-            const emitter = that.props.benchmarks[name][version]();
-
-            emitter.on('log', (event) => {
-                log(event.color, event.message);
-
-            });
-
-            emitter.on('end', (event) => {
-                results.message = event.message;
-                results.status = 'ended';
-                results.samples = event.samples;
-                log('green', event.message);
-                callback();
-
-            });
-
-            emitter.on('error', (event) => {
-                results.status = 'errored';
-                log('red', event.error);
-                callback();
-            });
-
-        }, benchmarkWarmupTime);
-    },
-
-    getBenchmarkVersionStatus: function(name, version) {
-        return this.state.results[name][version].status;
-    },
-
-    getBenchmarkStatus: function(name) {
-        return reduceStatuses(Object.keys(this.state.results[name]).map(function(version) {
-            return this.getBenchmarkVersionStatus(name, version);
-        }, this));
-    },
-
-    getStatus() {
-        return reduceStatuses(Object.keys(this.state.results).map(function(name) {
-            return this.getBenchmarkStatus(name);
-        }, this));
-    },
+    renderStatistic(title, statistic) {
+        return (
+            <tr>
+                <th>{title}</th>
+                {this.props.versions.map(version =>
+                    <td key={version.name}><BenchmarkStatistic statistic={statistic} {...version}/></td>
+                )}
+            </tr>
+        );
+    }
 
     reload() {
         location.reload();
     }
-});
+}
 
-function reduceStatuses(statuses) {
-    if (statuses.indexOf('running') !== -1) {
-        return 'running';
-    } else if (statuses.indexOf('waiting') !== -1) {
-        return 'waiting';
-    } else {
-        return 'ended';
+class BenchmarksTable extends React.Component {
+    render() {
+        return (
+            <div style={{width: 960, margin: '2em auto'}}>
+                <h1 className="space-bottom1">Mapbox GL JS Benchmarks – {this.props.finished ? 'Finished' : 'Running'}</h1>
+                {this.props.benchmarks.map(benchmark => <BenchmarkRow key={benchmark.name} {...benchmark}/>)}
+            </div>
+        );
     }
 }
 
-const clipboard = new Clipboard('.clipboard');
+const versions = window.mapboxglVersions;
+const benchmarks = [];
+const filter = window.location.hash.substr(1);
 
-ReactDOM.render(
-    <BenchmarksView
-        benchmarks={window.mapboxglBenchmarks}
-        benchmarkFilter={function(name) {
-            const nameFilter = window.location.hash.substr(1);
-            return !nameFilter || name === nameFilter;
-        }}
-    />,
-    document.getElementById('benchmarks')
-);
+let finished = false;
+let promise = Promise.resolve();
 
-function asyncSeries(array, iterator, callback) {
-    if (array.length) {
-        iterator(array[0], (err) => {
-            if (err) callback(err);
-            else asyncSeries(array.slice(1), iterator, callback);
+for (const name in window.mapboxglBenchmarks) {
+    if (filter && name !== filter)
+        continue;
+
+    const benchmark = { name, versions: [] };
+    benchmarks.push(benchmark);
+
+    for (const ver in window.mapboxglBenchmarks[name]) {
+        const version = {
+            name: ver,
+            status: 'waiting',
+            logs: [],
+            samples: []
+        };
+
+        benchmark.versions.push(version);
+
+        promise = promise.then(() => {
+            version.status = 'running';
+            update();
+
+            return window.mapboxglBenchmarks[name][ver].run()
+                .then(samples => {
+                    version.status = 'ended';
+                    version.samples = samples;
+                    version.regression = leastSquaresRegression(regression(samples));
+                    update();
+                })
+                .catch(error => {
+                    version.status = 'errored';
+                    version.error = error;
+                    update();
+                });
         });
-    } else {
-        callback();
     }
+}
+
+promise = promise.then(() => {
+    finished = true;
+    update();
+});
+
+function update() {
+    ReactDOM.render(
+        <BenchmarksTable versions={versions} benchmarks={benchmarks} finished={finished}/>,
+        document.getElementById('benchmarks')
+    );
+}
+
+function leastSquaresRegression(data) {
+    const meanX = d3.sum(data, d => d[0]) / data.length;
+    const meanY = d3.sum(data, d => d[1]) / data.length;
+    const varianceX = d3.variance(data, d => d[0]);
+    const sdX = Math.sqrt(varianceX);
+    const sdY = d3.deviation(data, d => d[1]);
+    const covariance = d3.sum(data, ([x, y]) =>
+        (x - meanX) * (y - meanY)
+    ) / (data.length - 1);
+
+    const correlation = covariance / sdX / sdY;
+    const slope = covariance / varianceX;
+    const intercept = meanY - slope * meanX;
+
+    return { correlation, slope, intercept, data };
 }

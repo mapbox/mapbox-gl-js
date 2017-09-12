@@ -1,5 +1,6 @@
 {
   "rules": {
-    "flowtype/require-valid-file-annotation": [0]
+    "flowtype/require-valid-file-annotation": [0],
+    "no-restricted-properties": "off"
   }
 }

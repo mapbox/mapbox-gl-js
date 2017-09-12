@@ -39,7 +39,7 @@ class Evented {
      *   extended with `target` and `type` properties.
      * @returns {Object} `this`
      */
-    on(type: *, listener: Listener) {
+    on(type: *, listener: Listener): this {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
