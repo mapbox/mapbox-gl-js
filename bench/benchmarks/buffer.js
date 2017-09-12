@@ -1,189 +1,122 @@
+// @flow
+
 'use strict';
 
 const VT = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const assert = require('assert');
+const promisify = require('pify');
 
+const Benchmark = require('../benchmark');
 const WorkerTile = require('../../src/source/worker_tile');
-const ajax = require('../../src/util/ajax');
 const Style = require('../../src/style/style');
 const StyleLayerIndex = require('../../src/style/style_layer_index');
-const util = require('../../src/util/util');
 const Evented = require('../../src/util/evented');
 const config = require('../../src/util/config');
 const coordinates = require('../lib/coordinates');
-const formatNumber = require('../lib/format_number');
 const accessToken = require('../lib/access_token');
 const deref = require('../../src/style-spec/deref');
 
 const SAMPLE_COUNT = 10;
+config.ACCESS_TOKEN = accessToken;
 
-module.exports = function run() {
-    config.ACCESS_TOKEN = accessToken;
+/**
+ * Individual files may export a single class deriving from `Benchmark`, or a "benchmark suite" consisting
+ * of an array of such classes.
+ */
+module.exports = coordinates.map((coordinate) => {
+    return class BufferBenchmark extends Benchmark {
+        glyphs: Object;
+        icons: Object;
+        workerTile: WorkerTile;
+        layerIndex: StyleLayerIndex;
+        tileBuffer: ArrayBuffer;
 
-    const evented = new Evented();
+        get name() { return `Tile Parsing ${coordinate.zoom}/${coordinate.row}/${coordinate.column}`; }
 
-    const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
-    ajax.getJSON({ url: stylesheetURL }, (err, stylesheet) => {
-        if (err) return evented.fire('error', {error: err});
+        setup() {
+            this.glyphs = {};
+            this.icons = {};
 
-        evented.fire('log', {
-            message: 'preloading assets',
-            color: 'dark'
-        });
-
-        preloadAssets(stylesheet, (err, assets) => {
-            if (err) return evented.fire('error', {error: err});
-
-            evented.fire('log', {
-                message: 'starting first test',
-                color: 'dark'
+            this.workerTile = new WorkerTile({
+                coord: coordinate,
+                zoom: coordinate.zoom,
+                tileSize: 512,
+                overscaling: 1,
+                showCollisionBoxes: false,
+                source: 'composite',
+                uid: '0',
+                maxZoom: 22,
+                pixelRatio: 1,
+                request: {
+                    url: ''
+                },
+                angle: 0,
+                pitch: 0,
+                cameraToCenterDistance: 0,
+                cameraToTileDistance: 0
             });
 
-            function getGlyphs(params, callback) {
-                callback(null, assets.glyphs[JSON.stringify(params)]);
-            }
+            const styleURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
+            const tileURL = `https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/${coordinate.zoom}/${coordinate.row}/${coordinate.column}.vector.pbf?access_token=${accessToken}`;
 
-            function getIcons(params, callback) {
-                callback(null, assets.icons[JSON.stringify(params)]);
-            }
+            return Promise.all([
+                fetch(styleURL).then(response => response.json()),
+                fetch(tileURL).then(response => response.arrayBuffer())
+            ]).then(([styleJSON, tileBuffer]) => {
+                return new Promise((resolve, reject) => {
+                    this.layerIndex = new StyleLayerIndex(deref(styleJSON.layers));
+                    this.tileBuffer = tileBuffer;
 
-            function getTile(url, callback) {
-                callback(null, assets.tiles[url]);
-            }
+                    const style = new Style(styleJSON, (new StubMap(): any), {})
+                        .on('error', reject)
+                        .on('data', () => {
+                            const preloadGlyphs = (params, callback) => {
+                                style.getGlyphs(0, params, (err, glyphs) => {
+                                    this.glyphs[JSON.stringify(params)] = glyphs;
+                                    callback(err, glyphs);
+                                });
+                            };
 
-            let timeSum = 0;
-            let timeCount = 0;
+                            const preloadImages = (params, callback) => {
+                                style.getImages(0, params, (err, icons) => {
+                                    this.icons[JSON.stringify(params)] = icons;
+                                    callback(err, icons);
+                                });
+                            };
 
-            asyncTimesSeries(SAMPLE_COUNT, (callback) => {
-                runSample(stylesheet, getGlyphs, getIcons, getTile, (err, time) => {
-                    if (err) return evented.fire('error', { error: err });
-                    timeSum += time;
-                    timeCount++;
-                    evented.fire('log', { message: `${formatNumber(time)} ms` });
-                    callback();
+                            this.bench(preloadGlyphs, preloadImages)
+                                .then(resolve, reject);
+                        });
                 });
-            }, (err) => {
-                if (err) {
-                    evented.fire('error', { error: err });
-
-                } else {
-                    const timeAverage = timeSum / timeCount;
-                    evented.fire('end', {
-                        message: `${formatNumber(timeAverage)} ms`,
-                        score: timeAverage
-                    });
-                }
             });
-        });
+        }
 
-    });
+        bench(getGlyphs = (params, callback) => callback(null, this.glyphs[JSON.stringify(params)]),
+              getImages = (params, callback) => callback(null, this.icons[JSON.stringify(params)])) {
 
-    return evented;
-};
+            const actor = {
+                send(action, params, callback) {
+                    setTimeout(() => {
+                        if (action === 'getImages') {
+                            getImages(params, callback);
+                        } else if (action === 'getGlyphs') {
+                            getGlyphs(params, callback);
+                        } else assert(false);
+                    }, 0);
+                }
+            };
+
+            const tile = new VT.VectorTile(new Protobuf(this.tileBuffer));
+            const parse = promisify(this.workerTile.parse.bind(this.workerTile));
+
+            return parse(tile, this.layerIndex, actor);
+        }
+    }
+});
 
 class StubMap extends Evented {
     _transformRequest(url) {
         return { url };
-    }
-}
-
-function preloadAssets(stylesheet, callback) {
-    const assets = {
-        glyphs: {},
-        icons: {},
-        tiles: {}
-    };
-
-    const style = new Style(stylesheet, new StubMap());
-
-    style.on('style.load', () => {
-        function getGlyphs(params, callback) {
-            style.getGlyphs(0, params, (err, glyphs) => {
-                assets.glyphs[JSON.stringify(params)] = glyphs;
-                callback(err, glyphs);
-            });
-        }
-
-        function getImages(params, callback) {
-            style.getImages(0, params, (err, icons) => {
-                assets.icons[JSON.stringify(params)] = icons;
-                callback(err, icons);
-            });
-        }
-
-        function getTile(url, callback) {
-            ajax.getArrayBuffer({ url }, (err, response) => {
-                assets.tiles[url] = response.data;
-                callback(err, response.data);
-            });
-        }
-
-        runSample(stylesheet, getGlyphs, getImages, getTile, (err) => {
-            style._remove();
-            callback(err, assets);
-        });
-    });
-
-    style.on('error', (event) => {
-        callback(event.error);
-    });
-
-}
-
-function runSample(stylesheet, getGlyphs, getImages, getTile, callback) {
-    const layerIndex = new StyleLayerIndex(deref(stylesheet.layers));
-
-    const timeStart = performance.now();
-
-    util.asyncAll(coordinates, (coordinate, eachCallback) => {
-        const url = `https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/${coordinate.zoom}/${coordinate.row}/${coordinate.column}.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
-
-        const workerTile = new WorkerTile({
-            coord: coordinate,
-            zoom: coordinate.zoom,
-            tileSize: 512,
-            overscaling: 1,
-            angle: 0,
-            pitch: 0,
-            showCollisionBoxes: false,
-            source: 'composite',
-            uid: url
-        });
-
-        const actor = {
-            send: function(action, params, sendCallback) {
-                setTimeout(() => {
-                    if (action === 'getImages') {
-                        getImages(params, sendCallback);
-                    } else if (action === 'getGlyphs') {
-                        getGlyphs(params, sendCallback);
-                    } else assert(false);
-                }, 0);
-            }
-        };
-
-        getTile(url, (err, response) => {
-            if (err) throw err;
-            const data = new VT.VectorTile(new Protobuf(response));
-            workerTile.parse(data, layerIndex, actor, (err) => {
-                if (err) return callback(err);
-                eachCallback();
-            });
-        });
-    }, (err) => {
-        const timeEnd = performance.now();
-        callback(err, timeEnd - timeStart);
-    });
-}
-
-function asyncTimesSeries(times, work, callback) {
-    if (times > 0) {
-        work((err) => {
-            if (err) callback(err);
-            else asyncTimesSeries(times - 1, work, callback);
-        });
-    } else {
-        callback();
     }
 }
