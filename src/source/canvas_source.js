@@ -66,14 +66,14 @@ class CanvasSource extends ImageSource {
         let loopID;
 
         this.play = function() {
-            if (!loopID) {
+            if (loopID === undefined) {
                 loopID = this.map.style.animationLoop.set(Infinity);
                 this.map._rerender();
             }
         };
 
         this.pause = function() {
-            if (loopID) {
+            if (loopID !== undefined) {
                 loopID = this.map.style.animationLoop.cancel(loopID);
             }
         };
@@ -91,7 +91,6 @@ class CanvasSource extends ImageSource {
     }
 
     onAdd(map: Map) {
-        if (this.map) return;
         this.map = map;
         this.load();
         if (this.canvas) {
