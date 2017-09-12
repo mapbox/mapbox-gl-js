@@ -44,27 +44,48 @@ map.on('load', function() {
             "circle-radius": {
                 "expression": [
                     "curve",
-                    ["linear"],
+                    ["exponential", 2.0],
                     ["zoom"],
-                    0,
-                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, 2, 10, 10],
-                    6,
-                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, 20, 10, 100]
+                    0, 5,
+                    5, ['*', ["get", "scalerank"], 20],
                 ]
             },
             "circle-color": {
                 "expression": [
-                    "curve",
-                    ["linear"],
-                    ["zoom"],
-                    0,
-                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, ["to-color", "red"], 6, ["to-color", "green"]],
-                    6,
-                    ["curve", ["linear"], ["number", ["get", "scalerank"]], 0, ["to-color", "green"], 6, ["to-color", "blue"]],
+                    "match",
+                    ["get", "featureclass"],
+                    "cape", "orange",
+                    "island", "#0088ff",
+                    "plain", "yellow",
+                    "pole", "white",
+                    "waterfall", "blue",
+                    "red"
                 ]
             },
             "circle-pitch-scale": "map",
             "circle-pitch-alignment": "map"
+        }
+    });
+
+    map.addLayer({
+        "id": "labels",
+        "type": "symbol",
+        "source": "circles",
+        "minzoom": 1,
+        "layout": {
+            "text-field": {
+                "expression": [
+                    "concat",
+                    ["get", "name"],
+                    " (",
+                    [
+                        "coalesce",
+                        ["get", "subregion"],
+                        ["get", "region"]
+                    ],
+                    ")"
+                ]
+            }
         }
     });
 });
