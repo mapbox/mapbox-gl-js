@@ -118,47 +118,80 @@ module.exports = () => ({
         return value;
     },
 
-    toColor: function (input: Value) {
-        if (typeof input === 'string') {
-            return this.parseColor(input);
-        } else if (Array.isArray(input) && (input.length === 3 || input.length === 4)) {
-            return this.rgba(...input);
-        } else {
-            throw new RuntimeError(`Could not parse color from value '${JSON.stringify(input)}'`);
+    toColor: function (args: Array<()=>any>) {
+        let input;
+        let error;
+        for (let i = 0; i < args.length; i++) {
+            input = args[i]();
+            error = null;
+            if (typeof input === 'string') {
+                const c = this._parseColor(input);
+                if (c) return c;
+            } else if (Array.isArray(input)) {
+                error = this._validateRGBA(input[0], input[1], input[2], input[3]);
+                if (!error) return new Color(input[0] / 255, input[1] / 255, input[2] / 255, input[3]);
+            }
         }
+        throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
     },
 
-    _parseColorCache: ({}: {[string]: Color}),
-    parseColor: function (input: string) {
+    _parseColorCache: ({}: {[string]: ?Color}),
+    _parseColor: function (input: string): ?Color {
         let cached = this._parseColorCache[input];
         if (!cached) {
             const c = parseColor(input);
-            if (!c)
-                throw new RuntimeError(`Could not parse color from value '${input}'`);
-            cached = this._parseColorCache[input] = new Color(...c);
+            cached = this._parseColorCache[input] = c ? new Color(c[0], c[1], c[2], c[3]) : null;
         }
         return cached;
     },
 
     rgba: function (r: number, g: number, b: number, a?: number) {
-        ensure(r >= 0 && r <= 255 &&
-            g >= 0 && g <= 255 &&
-            b >= 0 && b <= 255, `Invalid rgba value [${[r, g, b, a || 1].join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`);
-        ensure(typeof a === 'undefined' ||
-            (a >= 0 && a <= 1), `Invalid rgba value [${[r, g, b, a || 1].join(', ')}]: 'a' must be between 0 and 1.`);
+        const error = this._validateRGBA(r, g, b, a);
+        if (error) throw new RuntimeError(error);
         return new Color(r / 255, g / 255, b / 255, a);
     },
 
-    toString: function(value: Value) {
-        const type = this.typeOf(value);
-        ensure(value === null || /^(String|Number|Boolean)$/.test(type), `Expected a primitive value in ["string", ...], but found ${type} instead.`);
-        return String(value);
+    _validateRGBA(r: number, g: number, b: number, a?: number): ?string {
+        if (!(
+            typeof r === 'number' && r >= 0 && r <= 255 &&
+            typeof g === 'number' && g >= 0 && g <= 255 &&
+            typeof b === 'number' && b >= 0 && b <= 255
+        )) {
+            const value = typeof a === 'number' ? [r, g, b, a] : [r, g, b];
+            return `Invalid rgba value [${value.join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`;
+        }
+
+        if (!(
+            typeof a === 'undefined' || (a >= 0 && a <= 1)
+        )) {
+            return `Invalid rgba value [${[r, g, b, a].join(', ')}]: 'a' must be between 0 and 1.`;
+        }
+
+        return null;
     },
 
-    toNumber: function(value: Value) {
-        const num = Number(value);
-        ensure(value !== null && !isNaN(num), `Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
-        return num;
+    toString: function(value: Value) {
+        const type = typeof value;
+        if (value === null || type === 'string' || type === 'number' || type === 'boolean') {
+            return String(value);
+        } else if (value instanceof Color) {
+            const [r, g, b, a] = value.value;
+            return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+        } else {
+            return JSON.stringify(value);
+        }
+    },
+
+    toNumber: function(args: Array<()=>Value>) {
+        let value;
+        for (let i = 0; i < args.length; i++) {
+            value = args[i]();
+            if (value === null) continue;
+            const num = Number(value);
+            if (isNaN(num)) continue;
+            return num;
+        }
+        throw new RuntimeError(`Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
     },
 
     geometryType: function(feature: Feature) {

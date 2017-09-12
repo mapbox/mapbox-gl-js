@@ -22,7 +22,9 @@
       [0, 1, 0, 1],
       [0, 1, 0, 1],
       [0, 1, 0, 1],
-      {"error": "Could not parse color from value '[0,255]'"}
+      {
+        "error": "Invalid rgba value [0, 255, ]: 'r', 'g', and 'b' must be between 0 and 255."
+      }
     ]
   }
 }

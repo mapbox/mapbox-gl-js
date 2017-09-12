@@ -54,10 +54,16 @@ CompoundExpression.register(expressions, {
     'e': [ NumberType, [], () => 'Math.E'],
     'typeof': [ StringType, [ValueType], fromContext('typeOf') ],
     'to-string': [ StringType, [ValueType], fromContext('toString') ],
-    'to-number': [ NumberType, [ValueType], fromContext('toNumber') ],
+    'to-number': [ NumberType, varargs(ValueType), (args, argIds, ctx) => {
+        const argsArr = ctx.addVariable(`[${argIds.join(',')}]`);
+        return `$this.toNumber(${argsArr})`;
+    } ],
     'to-boolean': [ BooleanType, [ValueType], ([v]) => `Boolean(${v})` ],
+    'to-color': [ ColorType, varargs(ValueType), (args, argIds, ctx) => {
+        const argsArr = ctx.addVariable(`[${argIds.join(',')}]`);
+        return `$this.toColor(${argsArr})`;
+    } ],
     'to-rgba': [ array(NumberType, 4), [ColorType], ([v]) => `${v}.value` ],
-    'to-color': [ ColorType, [ValueType], fromContext('toColor') ],
     'rgb': [ ColorType, [NumberType, NumberType, NumberType],
         fromContext('rgba') ],
     'rgba': [ ColorType, [NumberType, NumberType, NumberType, NumberType],

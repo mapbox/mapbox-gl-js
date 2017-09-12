@@ -1,7 +1,5 @@
 // @flow
 
-const assert = require('assert');
-const {checkSubtype} = require('./types');
 
 import type {Type} from './types';
 import type {ParsingContext, Expression} from './expression';
@@ -70,16 +68,7 @@ function wrapForType(expected: Type, expression: Expression, context: ParsingCon
     if (expected.kind === 'Color') {
         // workaround for circular dependency
         const CompoundExpr: Class<CompoundExpression> = (context.definitions['to-color']: any);
-
         const definition = CompoundExpr.definitions['to-color'];
-
-        assert(
-            Array.isArray(definition) && // the wrapper expression has no overloads
-            Array.isArray(definition[1]) && // its inputs isn't Varargs
-            definition[1].length === 1 && // it takes one parameter
-            !checkSubtype(definition[1][0], expression.type) // matching the expression we're trying to wrap
-        );
-
         return new CompoundExpr(expression.key, 'to-color', expected, definition[2], [expression]);
     } else if (
         expected.kind === 'Number' ||
