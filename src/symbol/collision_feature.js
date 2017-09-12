@@ -35,7 +35,8 @@ class CollisionFeature {
                 shaped: Object,
                 boxScale: number,
                 padding: number,
-                alignLine: boolean) {
+                alignLine: boolean,
+                overscaling: number) {
         const y1 = shaped.top * boxScale - padding;
         const y2 = shaped.bottom * boxScale + padding;
         const x1 = shaped.left * boxScale - padding;
@@ -52,7 +53,7 @@ class CollisionFeature {
                 // set minimum box height to avoid very many small labels
                 height = Math.max(10 * boxScale, height);
 
-                this._addLineCollisionCircles(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex);
+                this._addLineCollisionCircles(collisionBoxArray, line, anchor, (anchor.segment: any), length, height, featureIndex, sourceLayerIndex, bucketIndex, overscaling);
             }
 
         } else {
@@ -79,13 +80,20 @@ class CollisionFeature {
                            boxSize: number,
                            featureIndex: number,
                            sourceLayerIndex: number,
-                           bucketIndex: number) {
+                           bucketIndex: number,
+                           overscaling: number) {
         const step = boxSize / 2;
         const nBoxes = Math.floor(labelLength / step);
-        // We calculate line collision boxes out to 300% of what would normally be our
+        // We calculate line collision circles out to 300% of what would normally be our
         // max size, to allow collision detection to work on labels that expand as
         // they move into the distance
-        const nPitchPaddingBoxes = Math.floor(nBoxes / 2);
+        // Vertically oriented labels in the distant field can extend past this padding
+        // This is a noticeable problem in overscaled tiles where the pitch 0-based
+        // symbol spacing will put labels very close together in a pitched map.
+        // To reduce the cost of adding extra collision circles, we slowly increase
+        // them for overscaled tiles.
+        const overscalingPaddingFactor = 1 + .4 * Math.log(overscaling) / Math.LN2;
+        const nPitchPaddingBoxes = Math.floor(nBoxes * overscalingPaddingFactor / 2);
 
         // offset the center of the first box by half a box so that the edge of the
         // box is at the edge of the label.
@@ -154,30 +162,6 @@ class CollisionFeature {
             const p0 = line[index];
             const p1 = line[index + 1];
             const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
-
-            // Distance from label anchor point to inner (towards center) edge of this box
-            // The tricky thing here is that box positioning doesn't change with scale,
-            // but box size does change with scale.
-            // Technically, distanceToInnerEdge should be:
-            // Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - (step / scale), 0);
-            // But using that formula would make solving for maxScale more difficult, so we
-            // approximate with scale=2.
-            // This makes our calculation spot-on at scale=2, and on the conservative side for
-            // lower scales
-            const distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
-            let maxScale = labelLength / 2 / distanceToInnerEdge;
-
-            // The box maxScale calculations are designed to be conservative on collisions in the scale range
-            // [1,2]. At scale=1, each box has 50% overlap, and at scale=2, the boxes are lined up edge
-            // to edge (beyond scale 2, gaps start to appear, which could potentially allow missed collisions).
-            // We add "pitch padding" boxes to the left and right to handle effective underzooming
-            // (scale < 1) when labels are in the distance. The overlap approximation could cause us to use
-            // these boxes when the scale is greater than 1, but we prevent that because we know
-            // they're only necessary for scales less than one.
-            // This preserves the pre-pitch-padding behavior for unpitched maps.
-            if (i < 0 || i >= nBoxes) {
-                maxScale = Math.min(maxScale, 0.99);
-            }
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2,

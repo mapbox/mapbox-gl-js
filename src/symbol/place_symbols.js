@@ -157,6 +157,7 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
     }
 
     const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, collisionIndex.transform, layer, true);
+    const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
 
     for (const symbolInstance of bucket.symbolInstances) {
 
@@ -205,7 +206,8 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
                     bucket.glyphOffsetArray,
                     fontSize,
                     labelPlaneMatrix,
-                    showCollisionBoxes);
+                    showCollisionBoxes,
+                    pitchWithMap);
             }
         }
 

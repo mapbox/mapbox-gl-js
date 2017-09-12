@@ -293,7 +293,7 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedTextOrientations.horizontal) {
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature
         // We're counting on the two versions having similar dimensions
-        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine);
+        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, bucket.overscaling);
         numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, deferredSymbolCreation);
 
         if (shapedTextOrientations.vertical) {
@@ -310,7 +310,7 @@ function addSymbol(bucket: SymbolBucket,
                 iconAlongLine, shapedTextOrientations.horizontal,
                 globalProperties, feature) :
             [];
-        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false);
+        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false, bucket.overscaling);
 
         numIconVertices = iconQuads.length * 4;
 
