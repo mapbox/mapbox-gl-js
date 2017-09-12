@@ -64,7 +64,7 @@ class FullscreenControl {
     _checkFullscreenSupport() {
         return !!(
             window.document.fullscreenEnabled ||
-            (window.document: any).mozFullscreenEnabled ||
+            (window.document: any).mozFullScreenEnabled ||
             (window.document: any).msFullscreenEnabled ||
             (window.document: any).webkitFullscreenEnabled
         );
