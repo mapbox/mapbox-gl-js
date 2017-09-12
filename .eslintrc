@@ -26,6 +26,10 @@
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
+    "no-restricted-properties": [2, {
+        "object": "Object",
+        "property": "assign"
+    }],
     "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-var": "error",
     "no-warning-comments": "error",

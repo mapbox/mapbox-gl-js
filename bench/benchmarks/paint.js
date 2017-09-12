@@ -7,18 +7,7 @@ const width = 1024;
 const height = 768;
 const zooms = [4, 8, 11, 13, 15, 17];
 
-const points = [];
-const d = 4;
-for (let x = 0; x < d; x++) {
-    for (let y = 0; y < d; y++) {
-        points.push([
-            (x / d) * width,
-            (y / d) * height
-        ]);
-    }
-}
-
-module.exports = class QueryPoint extends Benchmark {
+module.exports = class Paint extends Benchmark {
     setup() {
         return Promise.all(zooms.map(zoom => {
             return createMap({
@@ -33,9 +22,9 @@ module.exports = class QueryPoint extends Benchmark {
 
     bench() {
         for (const map of this.maps) {
-            for (const point of points) {
-                map.queryRenderedFeatures(point, {});
-            }
+            map._styleDirty = true;
+            map._sourcesDirty = true;
+            map._render();
         }
     }
 
