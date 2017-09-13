@@ -226,17 +226,18 @@ class Tile {
         const cameraToTileDistance = source.map.transform.cameraToTileDistance(this);
         if (this.angle === source.map.transform.angle &&
             this.pitch === source.map.transform.pitch &&
-            this.cameraToCenterDistance === source.map.transform.cameraToCenterDistance &&
             this.showCollisionBoxes === source.map.showCollisionBoxes) {
-            if (this.cameraToTileDistance === cameraToTileDistance) {
+            if (this.cameraToTileDistance === cameraToTileDistance &&
+                this.cameraToCenterDistance === source.map.transform.cameraToCenterDistance) {
                 return;
             } else if (this.pitch < 25) {
                 // At low pitch tile distance doesn't affect placement very
                 // much, so we skip the cost of redoPlacement
                 // However, we might as well store the latest value of
-                // cameraToTileDistance in case a redoPlacement request
+                // cameraToTileDistance and cameraToCenterDistance in case a redoPlacement request
                 // is already queued.
                 this.cameraToTileDistance = cameraToTileDistance;
+                this.cameraToCenterDistance = source.map.transform.cameraToCenterDistance;
                 return;
             }
         }
