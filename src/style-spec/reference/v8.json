@@ -1902,7 +1902,7 @@
         "doc": "Coerces the input value to a String."
       },
       "to-number": {
-        "doc": "Coerces the input value to a Number, if possible."
+        "doc": "Coerces the input value to a Number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained."
       },
       "to-boolean": {
         "doc": "Coerces the input value to a Boolean."
@@ -1911,7 +1911,7 @@
         "doc": "Returns the an array of the given color's r, g, b, a components."
       },
       "to-color": {
-        "doc": "Coerces the input value to a Color."
+        "doc": "Coerces the input value to a Color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained."
       },
       "rgb": {
         "doc": "Creates a color value from r, g, b components."
@@ -1920,7 +1920,7 @@
         "doc": "Creates a color value from r, g, b, a components."
       },
       "get": {
-        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
+        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object."
       },
       "has": {
         "doc": "Tests for the presence of an object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
