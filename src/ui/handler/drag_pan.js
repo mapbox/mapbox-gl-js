@@ -132,7 +132,7 @@ class DragPanHandler {
         e.preventDefault();
     }
 
-    _onUp(e: MouseEvent | TouchEvent) {
+    _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
         if (!this.isActive()) return;
 
         this._active = false;
@@ -179,12 +179,12 @@ class DragPanHandler {
         }, { originalEvent: e });
     }
 
-    _onMouseUp(e: MouseEvent) {
+    _onMouseUp(e: MouseEvent | FocusEvent) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onMouseUp);
-        window.removeEventListener('blur', (this._onMouseUp: any));
+        window.removeEventListener('blur', this._onMouseUp);
     }
 
     _onTouchEnd(e: TouchEvent) {

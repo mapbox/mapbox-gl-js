@@ -62,7 +62,7 @@
     "eslint-plugin-flowtype": "^2.34.0",
     "eslint-plugin-html": "^3.0.0",
     "eslint-plugin-node": "^5.1.1",
-    "flow-bin": "^0.52.0",
+    "flow-bin": "^0.54.1",
     "flow-coverage-report": "^0.3.0",
     "flow-remove-types": "^1.0.4",
     "github-slugger": "^1.1.1",
