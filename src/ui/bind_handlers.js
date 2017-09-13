@@ -46,7 +46,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseDown(e: MouseEvent) {
-        if (!map._isUserDoubleClick) {
+        if (!map.doubleClickZoom.isActive()) {
             map.stop();
         }
 

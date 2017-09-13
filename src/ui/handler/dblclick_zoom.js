@@ -13,6 +13,7 @@ import type Map from '../map';
 class DoubleClickZoomHandler {
     _map: Map;
     _enabled: boolean;
+    _active: boolean;
 
     constructor(map: Map) {
         this._map = map;
@@ -30,6 +31,15 @@ class DoubleClickZoomHandler {
      */
     isEnabled() {
         return !!this._enabled;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the "double click to zoom" interaction is active, i.e. currently being used.
+     *
+     * @returns {boolean} `true` if the "double click to zoom" interaction is active.
+     */
+    isActive() {
+        return !!this._active;
     }
 
     /**
@@ -57,7 +67,7 @@ class DoubleClickZoomHandler {
     }
 
     _onDblClick(e: any) {
-        this._map._isUserDoubleClick = true;
+        this._active = true;
         this._map.on('zoomend', this._onZoomEnd);
         this._map.zoomTo(
             this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1),
@@ -67,7 +77,7 @@ class DoubleClickZoomHandler {
     }
 
     _onZoomEnd() {
-        this._map._isUserDoubleClick = false;
+        this._active = false;
         this._map.off('zoomend', this._onZoomEnd);
     }
 }
