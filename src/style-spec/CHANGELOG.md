@@ -1,3 +1,7 @@
+## 9.0.1
+
+* Remove `fast-stable-stringify` dependency (#5152)
+
 ## 9.0.0
 
 * Fix validation error on categorical zoom-and-property functions (#4220)

@@ -80,7 +80,8 @@ declare type TileSourceSpecification = {
     "tiles"?: Array<string>,
     "minzoom"?: number,
     "maxzoom"?: number,
-    "tileSize"?: number
+    "tileSize"?: number,
+    "bounds"?: [number, number, number, number]
 }
 
 declare type GeojsonSourceSpecification = {|
