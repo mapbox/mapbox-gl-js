@@ -169,10 +169,10 @@ class DragRotateHandler {
         this._pos = p2;
     }
 
-    _onUp(e: MouseEvent) {
+    _onUp(e: MouseEvent | FocusEvent) {
         window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
-        window.removeEventListener('blur', (this._onUp: any));
+        window.removeEventListener('blur', this._onUp);
 
         DOM.enableDrag();
 

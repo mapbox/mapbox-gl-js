@@ -1,5 +1,3 @@
-declare type PointLike = Point | [number, number];
-
 declare module "@mapbox/point-geometry" {
     declare class Point {
         x: number;

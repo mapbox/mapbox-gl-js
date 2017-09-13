@@ -85,8 +85,9 @@ class ScrollZoomHandler {
         if (e.type === 'wheel') {
             value = e.deltaY;
             // Firefox doubles the values on retina screens...
-            if (firefox && e.deltaMode === window.WheelEvent.DOM_DELTA_PIXEL) value /= browser.devicePixelRatio;
-            if (e.deltaMode === window.WheelEvent.DOM_DELTA_LINE) value *= 40;
+            // Remove `any` casts when https://github.com/facebook/flow/issues/4879 is fixed.
+            if (firefox && e.deltaMode === (window.WheelEvent: any).DOM_DELTA_PIXEL) value /= browser.devicePixelRatio;
+            if (e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE) value *= 40;
 
         } else if (e.type === 'mousewheel') {
             value = -e.wheelDeltaY;

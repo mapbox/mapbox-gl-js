@@ -1,3 +1,5 @@
+import type Pbf from 'pbf';
+
 declare interface VectorTile {
     layers: {[string]: VectorTileLayer};
 }
