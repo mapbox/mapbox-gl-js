@@ -1150,7 +1150,7 @@ class Map extends Camera {
      * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
      * @param options.sdf Whether the image should be interpreted as an SDF image
      */
-    addImage(id: string, data: HTMLImageElement | {width: number, height: number, data: Uint8Array | Uint8ClampedArray},
+    addImage(id: string, data: HTMLImageElement | ImageData | {width: number, height: number, data: Uint8Array | Uint8ClampedArray},
              {pixelRatio = 1, sdf = false}: {pixelRatio?: number, sdf?: boolean} = {}) {
         if (data instanceof HTMLImageElement) {
             data = browser.getImageData(data);
