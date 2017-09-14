@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const parseExpression = require('../parse_expression');
-const checkSubtype = require('../check_subtype');
 const { typeOf } = require('../values');
 
 import type { Expression, ParsingContext, CompilationContext } from '../expression';
@@ -68,7 +67,7 @@ class Match implements Expression {
 
                 } else if (!inputType) {
                     inputType = typeOf(label);
-                } else if (checkSubtype(inputType, typeOf(label), labelContext)) {
+                } else if (labelContext.checkSubtype(inputType, typeOf(label))) {
                     return null;
                 }
 
