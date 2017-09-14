@@ -221,8 +221,8 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: any, lineOf
     const lineStartIndex = symbol.lineStartIndex;
     const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
 
-    const firstGlyphOffset = glyphOffsetArray.get(symbol.glyphStartIndex).offsetX;
-    const lastGlyphOffset = glyphOffsetArray.get(glyphEndIndex - 1).offsetX;
+    const firstGlyphOffset = glyphOffsetArray.getoffsetX(symbol.glyphStartIndex);
+    const lastGlyphOffset = glyphOffsetArray.getoffsetX(glyphEndIndex - 1);
 
     const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
         lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, returnTileDistance);
@@ -277,10 +277,9 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
 
         placedGlyphs = [firstAndLastGlyph.first];
         for (let glyphIndex = symbol.glyphStartIndex + 1; glyphIndex < glyphEndIndex - 1; glyphIndex++) {
-            const glyph: any = glyphOffsetArray.get(glyphIndex);
-
             // Since first and last glyph fit on the line, we're sure that the rest of the glyphs can be placed
-            placedGlyphs.push(placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
+            // $FlowFixMe
+            placedGlyphs.push(placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
                 lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, false));
         }
         placedGlyphs.push(firstAndLastGlyph.last);
@@ -289,8 +288,9 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         // So, determine whether to flip based on projected angle of the line segment it's on
         if (keepUpright && !flip) {
             const a = project(tileAnchorPoint, posMatrix).point;
-            const tileVertex = (lineVertexArray.get(symbol.lineStartIndex + symbol.segment + 1): any);
-            const tileSegmentEnd = new Point(tileVertex.x, tileVertex.y);
+            const tileVertexIndex = (symbol.lineStartIndex + symbol.segment + 1);
+            // $FlowFixMe
+            const tileSegmentEnd = new Point(lineVertexArray.getx(tileVertexIndex), lineVertexArray.gety(tileVertexIndex));
             const projectedVertex = project(tileSegmentEnd, posMatrix);
             // We know the anchor will be in the viewport, but the end of the line segment may be
             // behind the plane of the camera, in which case we can use a point at any arbitrary (closer)
@@ -303,8 +303,8 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 return { needsFlipping: true };
             }
         }
-        const glyph: any = glyphOffsetArray.get(symbol.glyphStartIndex);
-        const singleGlyph = placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
+        // $FlowFixMe
+        const singleGlyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(symbol.glyphStartIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
             symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache, false);
         if (!singleGlyph)
             return { notEnoughRoom: true };
@@ -381,18 +381,19 @@ function placeGlyphAlongLine(offsetX: number,
 
         current = projectionCache[currentIndex];
         if (current === undefined) {
-            const projection = project(lineVertexArray.get(currentIndex), labelPlaneMatrix);
+            const currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
+            const projection = project(currentVertex, labelPlaneMatrix);
             if (projection.signedDistanceFromCamera > 0) {
                 current = projectionCache[currentIndex] = projection.point;
             } else {
                 // The vertex is behind the plane of the camera, so we can't project it
                 // Instead, we'll create a vertex along the line that's far enough to include the glyph
+                const previousLineVertexIndex = currentIndex - dir;
                 const previousTilePoint = distanceToPrev === 0 ?
                     tileAnchorPoint :
-                    new Point(lineVertexArray.get(currentIndex - dir).x, lineVertexArray.get(currentIndex - dir).y);
-                const currentTilePoint = new Point(lineVertexArray.get(currentIndex).x, lineVertexArray.get(currentIndex).y);
+                    new Point(lineVertexArray.getx(previousLineVertexIndex), lineVertexArray.gety(previousLineVertexIndex));
                 // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
-                current = projectTruncatedLineSegment(previousTilePoint, currentTilePoint, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix);
+                current = projectTruncatedLineSegment(previousTilePoint, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix);
             }
         }
 
@@ -415,7 +416,7 @@ function placeGlyphAlongLine(offsetX: number,
         angle: segmentAngle,
         tileDistance: returnTileDistance ?
             {
-                prevTileDistance: (currentIndex - dir) === initialIndex ? 0 : lineVertexArray.get(currentIndex -= dir).tileUnitDistanceFromAnchor,
+                prevTileDistance: (currentIndex - dir) === initialIndex ? 0 : lineVertexArray.gettileUnitDistanceFromAnchor(currentIndex - dir),
                 lastSegmentViewportDistance: absOffsetX - distanceToPrev
             } : null
     };
