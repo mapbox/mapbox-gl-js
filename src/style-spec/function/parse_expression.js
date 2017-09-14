@@ -48,7 +48,7 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
                     parsed = wrapForType(expected, parsed, context);
                 }
 
-                if (checkSubtype(expected, parsed.type, context)) {
+                if (context.checkSubtype(expected, parsed.type)) {
                     return null;
                 }
             }

@@ -1,6 +1,7 @@
 // @flow
 
 const assert = require('assert');
+const checkSubtype = require('./check_subtype');
 
 import type {
     Type,
@@ -121,7 +122,16 @@ class ParsingContext {
     error(error: string, ...keys: Array<number>) {
         const key = `${this.key}${keys.map(k => `[${k}]`).join('')}`;
         this.errors.push(new ParsingError(key, error));
-        return null;
+    }
+
+    /**
+     * Returns null if `t` is a subtype of `expected`; otherwise returns an
+     * error message and also pushes it to `this.errors`.
+     */
+    checkSubtype(expected: Type, t: Type): ?string {
+        const error = checkSubtype(expected, t);
+        if (error) this.error(error);
+        return error;
     }
 }
 

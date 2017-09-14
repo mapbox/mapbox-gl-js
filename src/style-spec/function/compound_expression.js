@@ -3,7 +3,6 @@
 const { toString } = require('./types');
 const { ParsingContext } = require('./expression');
 const parseExpression = require('./parse_expression');
-const checkSubtype = require('./check_subtype');
 const assert = require('assert');
 
 import type { Expression, CompilationContext }  from './expression';
@@ -107,7 +106,7 @@ class CompoundExpression implements Expression {
             for (let i = 0; i < parsedArgs.length; i++) {
                 const expected = Array.isArray(params) ? params[i] : params.type;
                 const arg = parsedArgs[i];
-                checkSubtype(expected, arg.type, signatureContext.concat(i + 1));
+                signatureContext.concat(i + 1).checkSubtype(expected, arg.type);
             }
 
             if (signatureContext.errors.length === 0) {
