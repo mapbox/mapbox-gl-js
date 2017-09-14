@@ -39,8 +39,8 @@ class Coalesce implements Expression {
 
     compile(ctx: CompilationContext) {
         const compiledArgs = [];
-        for (let i = 0; i < this.args.length; i++) {
-            compiledArgs.push(ctx.addExpression(this.args[i].compile(ctx)));
+        for (const arg of this.args) {
+            compiledArgs.push(ctx.addExpression(arg.compile(ctx)));
         }
         const args = ctx.addVariable(`[${compiledArgs.join(',')}]`);
         return `$this.coalesce(${args})`;

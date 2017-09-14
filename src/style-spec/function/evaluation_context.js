@@ -237,13 +237,13 @@ module.exports = () => ({
         return interpolate[resultType](outputLower, outputUpper, t);
     },
 
-    coalesce(args: Array<Function>) {
-        for (let i = 0; i < args.length - 1; i++) {
-            const result = args[i]();
-            if (result !== null) return result;
+    coalesce(args: Array<() => Value>) {
+        let result = null;
+        for (const arg of args) {
+            result = arg();
+            if (result !== null) break;
         }
-
-        return args[args.length - 1]();
+        return result;
     }
 });
 
