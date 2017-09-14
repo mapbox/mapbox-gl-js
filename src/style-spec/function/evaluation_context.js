@@ -11,9 +11,9 @@ const {
     ColorType,
     ObjectType,
     ValueType,
-    toString} = require('./types');
+    toString,
+    checkSubtype} = require('./types');
 const {Color, typeOf, isValue} = require('./values');
-const checkSubtype = require('./check_subtype');
 const Curve = require('./definitions/curve');
 
 import type { Type } from './types';
