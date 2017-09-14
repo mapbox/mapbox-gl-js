@@ -1,4 +1,5 @@
 // @flow
+const assert = require('assert');
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
 import type {SerializedStructArray} from '../util/struct_array';
@@ -37,6 +38,7 @@ class IndexBuffer {
     }
 
     updateData(array: SerializedStructArray) {
+        assert(this.dynamicDraw);
         this.bind();
         this.gl.bufferSubData(this.gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
     }

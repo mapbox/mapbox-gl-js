@@ -101,8 +101,7 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Int16', name: 'anchorY' },
         { type: 'Uint16', name: 'glyphStartIndex' },
         { type: 'Uint16', name: 'numGlyphs' },
-        { type: 'Uint16', name: 'segmentIndex' },
-        { type: 'Uint16', name: 'vertexStartIndex' },
+        { type: 'Uint32', name: 'vertexStartIndex' },
         { type: 'Uint32', name: 'lineStartIndex' },
         { type: 'Uint32', name: 'lineLength' },
         { type: 'Uint16', name: 'segment' },
@@ -653,8 +652,7 @@ class SymbolBucket implements Bucket {
         }
 
         placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
-            glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
-            arrays.segments.get().length - 1, vertexStartIndex,
+            glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
             lineStartIndex, lineLength, labelAnchor.segment,
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
@@ -770,6 +768,10 @@ class SymbolBucket implements Bucket {
         if (this.sortedAngle === angle) return;
         this.sortedAngle = angle;
 
+        // The current approach to sorting doesn't sort across segments so don't try.
+        // Sorting within segments separately seemed not to be worth the complexity.
+        if (this.text.segments.get().length > 1 || this.icon.segments.get().length > 1) return;
+
         // If the symbols are allowed to overlap sort them by their vertical screen position.
         // The index array buffer is rewritten to reference the (unchanged) vertices in the
         // sorted order.
@@ -794,41 +796,24 @@ class SymbolBucket implements Bucket {
         this.text.indexArray.clear();
         this.icon.indexArray.clear();
 
-        // In most cases this outer loop over the segments doesn't do anything.
-        // Usually there is just one segment. But sometimes vertices spill over into
-        // additional segments. In this case we need to make sure that vertices
-        // are referenced from their matching index array segment. This is done by
-        // adding all the indexes from the first segment, then the second, etc.
-        const numTextSegments = this.text.segments.get().length;
-        for (let segmentIndex = 0; segmentIndex < numTextSegments; segmentIndex++) {
-            for (const i of symbolInstanceIndexes) {
-                const symbolInstance = this.symbolInstances[i];
+        for (const i of symbolInstanceIndexes) {
+            const symbolInstance = this.symbolInstances[i];
 
-                for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                    const placedSymbol = (this.placedGlyphArray.get(placedTextSymbolIndex): any);
+            for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
+                const placedSymbol = (this.placedGlyphArray.get(placedTextSymbolIndex): any);
 
-                    if (placedSymbol.segmentIndex !== segmentIndex) continue;
-
-                    const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
-                    for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
-                        this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-                        this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
-                    }
+                const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
+                for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
+                    this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+                    this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
                 }
             }
-        }
 
-        const numIconSegments = this.icon.segments.get().length;
-        for (let segmentIndex = 0; segmentIndex < numIconSegments; segmentIndex++) {
-            for (const i of symbolInstanceIndexes) {
-                const placedIcon = (this.placedIconArray.get(i): any);
-                if (placedIcon.segmentIndex !== segmentIndex) continue;
-
-                if (placedIcon.numGlyphs) {
-                    const vertexIndex = placedIcon.vertexStartIndex;
-                    this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-                    this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
-                }
+            const placedIcon = (this.placedIconArray.get(i): any);
+            if (placedIcon.numGlyphs) {
+                const vertexIndex = placedIcon.vertexStartIndex;
+                this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+                this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
             }
         }
 
