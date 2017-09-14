@@ -822,9 +822,9 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         ]);
 
         t.deepEqual(retained, {
-            // parent of ideal tile
+            // parent of ideal tile 0/0/0
             '0' : true,
-            // ideal tile id
+            // ideal tile id 1/0/1
             '65' : true
         }, 'retain ideal and parent tile when ideal tiles aren\'t loaded');
 
@@ -929,7 +929,7 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         ], 'doesn\'t request parent tiles bc they are lower than minzoom');
 
         t.deepEqual(retained, {
-            // ideal tile id (1, 0, 0)
+            // ideal tile id (2, 0, 0)
             '2' : true
         }, 'doesn\'t retain parent tiles below minzoom');
 
@@ -959,7 +959,7 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         ], 'doesn\'t request childtiles above maxzoom');
 
         t.deepEqual(retained, {
-            // ideal tile id (1, 0, 0)
+            // ideal tile id (2, 0, 0)
             '2' : true
         }, 'doesn\'t retain child tiles above maxzoom');
 
@@ -1031,6 +1031,34 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         getTileSpy.restore();
         t.end();
     });
+
+    t.test('adds correct leaded parent tiles for overzoomed tiles', (t)=>{
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'loading';
+                callback();
+            },
+            maxzoom: 7
+        });
+        const loadedTiles = [new TileCoord(7, 0, 0), new TileCoord(7, 1, 0)];
+        loadedTiles.forEach((t)=>{
+            sourceCache._tiles[t.id] = new Tile(t);
+            sourceCache._tiles[t.id].state = 'loaded';
+        });
+
+        const idealTiles = [new TileCoord(8, 0, 0), new TileCoord(8, 1, 0)];
+        const retained = sourceCache._updateRetainedTiles(idealTiles, 8);
+
+        t.deepEqual(Object.keys(retained).map((k)=>{ return TileCoord.fromID(k); }), [
+            new TileCoord(7, 0, 0),
+            new TileCoord(8, 0, 0),
+            new TileCoord(7, 1, 0),
+            new TileCoord(8, 1, 0)
+        ]);
+
+        t.end();
+    });
+
     t.end();
 });
 
