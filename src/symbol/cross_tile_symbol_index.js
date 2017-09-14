@@ -39,11 +39,8 @@ import type {SymbolInstance} from '../data/bucket/symbol_bucket';
     label will show.
 */
 
-// Round anchor positions to roughly 8 pixel grid
-// Whatever rounding factor we choose, it will be possible
-// to miss duplicate symbols right at the edge of grid lines.
-// Ideally we should look up surrounding grid positions
-const roundingFactor = 512 / EXTENT / 8;
+// Round anchor positions to roughly 4 pixel grid
+const roundingFactor = 512 / EXTENT / 2;
 
 class TileLayerIndex {
     coord: TileCoord;
@@ -56,8 +53,16 @@ class TileLayerIndex {
         this.symbolInstances = {};
 
         for (const symbolInstance of symbolInstances) {
-            const key = this.getKey(symbolInstance, coord, coord.z);
-            this.symbolInstances[key] = symbolInstance;
+            const key = symbolInstance.key;
+            if (!this.symbolInstances[key]) {
+                this.symbolInstances[key] = [];
+            }
+            // This tile may have multiple symbol instances with the same key
+            // Store each one along with its coordinates
+            this.symbolInstances[key].push({
+                instance: symbolInstance,
+                coordinates: this.getScaledCoordinates(symbolInstance, coord, coord.z)
+            });
             symbolInstance.isDuplicate = false;
             // If we don't pick up an opacity from our parent or child tiles
             // Reset so that symbols in cached tiles fade in the same
@@ -67,20 +72,41 @@ class TileLayerIndex {
         }
     }
 
-    getKey(symbolInstance: SymbolInstance, coord: TileCoord, z: number): string {
+    getScaledCoordinates(symbolInstance: SymbolInstance, coord: TileCoord, z: number): any {
         const scale = Math.pow(2, Math.min(this.sourceMaxZoom, z) - Math.min(this.sourceMaxZoom, coord.z)) * roundingFactor;
         const anchor = symbolInstance.anchor;
-        const x = Math.floor((coord.x * EXTENT + anchor.x) * scale);
-        const y = Math.floor((coord.y * EXTENT + anchor.y) * scale);
-        const key = `${x}/${y}/${symbolInstance.key}`;
-        return key;
+        return {
+            x: Math.floor((coord.x * EXTENT + anchor.x) * scale),
+            y: Math.floor((coord.y * EXTENT + anchor.y) * scale)
+        };
     }
 
-    get(symbolInstance: SymbolInstance, coord: TileCoord) {
-        const key = this.getKey(symbolInstance, coord, this.coord.z);
-        return this.symbolInstances[key];
+    get(otherTileSymbol: SymbolInstance, coord: TileCoord) {
+        if (!this.symbolInstances[otherTileSymbol.key]) {
+            return;
+        }
+
+        const otherTileSymbolCoordinates =
+            this.getScaledCoordinates(otherTileSymbol, coord, this.coord.z);
+
+        for (const thisTileSymbol of this.symbolInstances[otherTileSymbol.key]) {
+            // Return any symbol with the same keys whose coordinates are within 1
+            // grid unit. (with a 4px grid, this covers a 12px by 12px area)
+            if (Math.abs(thisTileSymbol.coordinates.x - otherTileSymbolCoordinates.x) <= 1 &&
+                Math.abs(thisTileSymbol.coordinates.y - otherTileSymbolCoordinates.y) <= 1) {
+                return thisTileSymbol.instance;
+            }
+        }
     }
 
+    forEachSymbolInstance(fn: any) {
+        for (const key in this.symbolInstances) {
+            const keyedSymbolInstances = this.symbolInstances[key];
+            for (const symbolInstance of keyedSymbolInstances) {
+                fn(symbolInstance.instance);
+            }
+        }
+    }
 }
 
 class CrossTileSymbolLayerIndex {
@@ -152,9 +178,7 @@ class CrossTileSymbolLayerIndex {
     }
 
     blockLabels(childIndex, parentIndex, copyParentOpacity) {
-        for (const key in childIndex.symbolInstances) {
-            const symbolInstance = childIndex.symbolInstances[key];
-
+        childIndex.forEachSymbolInstance((symbolInstance) => {
             // only non-duplicate labels can block other labels
             if (!symbolInstance.isDuplicate) {
 
@@ -173,14 +197,12 @@ class CrossTileSymbolLayerIndex {
                     }
                 }
             }
-        }
+        });
     }
 
     unblockLabels(childIndex, parentIndex) {
         assert(childIndex.coord.z > parentIndex.coord.z);
-        for (const key in childIndex.symbolInstances) {
-            const symbolInstance = childIndex.symbolInstances[key];
-
+        childIndex.forEachSymbolInstance((symbolInstance) => {
             // only non-duplicate labels were blocking other labels
             if (!symbolInstance.isDuplicate) {
 
@@ -196,7 +218,7 @@ class CrossTileSymbolLayerIndex {
                     symbolInstance.isDuplicate = true;
                 }
             }
-        }
+        });
     }
 }
 
