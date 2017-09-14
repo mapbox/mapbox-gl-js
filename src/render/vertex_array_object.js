@@ -65,6 +65,10 @@ class VertexArrayObject {
                 dynamicVertexBuffer.bind();
             }
 
+            if (indexBuffer && indexBuffer.dynamicDraw) {
+                indexBuffer.bind();
+            }
+
             if (opacityVertexBuffer) {
                 opacityVertexBuffer.bind();
             }

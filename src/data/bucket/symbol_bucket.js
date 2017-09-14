@@ -101,6 +101,8 @@ const PlacedSymbolArray = createStructArrayType({
         { type: 'Int16', name: 'anchorY' },
         { type: 'Uint16', name: 'glyphStartIndex' },
         { type: 'Uint16', name: 'numGlyphs' },
+        { type: 'Uint16', name: 'segmentIndex' },
+        { type: 'Uint16', name: 'vertexStartIndex' },
         { type: 'Uint32', name: 'lineStartIndex' },
         { type: 'Uint32', name: 'lineLength' },
         { type: 'Uint16', name: 'segment' },
@@ -291,9 +293,9 @@ class SymbolBuffers {
         };
     }
 
-    upload(gl: WebGLRenderingContext) {
+    upload(gl: WebGLRenderingContext, dynamicIndexBuffer) {
         this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
-        this.indexBuffer = new IndexBuffer(gl, this.indexArray);
+        this.indexBuffer = new IndexBuffer(gl, this.indexArray, dynamicIndexBuffer);
         this.programConfigurations.upload(gl);
 
         if (this.programInterface.dynamicLayoutAttributes) {
@@ -391,6 +393,8 @@ class SymbolBucket implements Bucket {
     tilePixelRatio: number;
     compareText: {[string]: Array<Point>};
     fadeStartTime: number;
+    sortFeaturesByY: boolean;
+    sortedAngle: number;
 
     text: SymbolBuffers;
     icon: SymbolBuffers;
@@ -423,6 +427,11 @@ class SymbolBucket implements Bucket {
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
 
             this.symbolInstances = options.symbolInstances;
+
+            const layout = options.layers[0].layout;
+            this.sortFeaturesByY = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
+                layout['text-ignore-placement'] || layout['icon-ignore-placement'];
+
         } else {
             const layer = this.layers[0];
             this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
@@ -554,8 +563,8 @@ class SymbolBucket implements Bucket {
     }
 
     upload(gl: WebGLRenderingContext) {
-        this.text.upload(gl);
-        this.icon.upload(gl);
+        this.text.upload(gl, this.sortFeaturesByY);
+        this.icon.upload(gl, this.sortFeaturesByY);
         this.collisionBox.upload(gl);
         this.collisionCircle.upload(gl);
     }
@@ -611,7 +620,9 @@ class SymbolBucket implements Bucket {
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
 
+        const segment = arrays.segments.prepareSegment(4 * quads.length, arrays.layoutVertexArray, arrays.indexArray);
         const glyphOffsetArrayStart = this.glyphOffsetArray.length;
+        const vertexStartIndex = segment.vertexLength;
 
         for (const symbol of quads) {
 
@@ -621,7 +632,6 @@ class SymbolBucket implements Bucket {
                 br = symbol.br,
                 tex = symbol.tex;
 
-            const segment = arrays.segments.prepareSegment(4, arrays.layoutVertexArray, arrays.indexArray);
             const index = segment.vertexLength;
 
             const y = symbol.glyphOffset[1];
@@ -644,6 +654,7 @@ class SymbolBucket implements Bucket {
 
         placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart,
+            arrays.segments.get().length - 1, vertexStartIndex,
             lineStartIndex, lineLength, labelAnchor.segment,
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
             lineOffset[0], lineOffset[1],
@@ -751,6 +762,78 @@ class SymbolBucket implements Bucket {
             }
         }
         return collisionArrays;
+    }
+
+    sortFeatures(angle: number) {
+        if (!this.sortFeaturesByY) return;
+
+        if (this.sortedAngle === angle) return;
+        this.sortedAngle = angle;
+
+        // If the symbols are allowed to overlap sort them by their vertical screen position.
+        // The index array buffer is rewritten to reference the (unchanged) vertices in the
+        // sorted order.
+
+        // To avoid sorting the actual symbolInstance array we sort an array of indexes.
+        const symbolInstanceIndexes = [];
+        for (let i = 0; i < this.symbolInstances.length; i++) {
+            symbolInstanceIndexes.push(i);
+        }
+
+        const sin = Math.sin(angle),
+            cos = Math.cos(angle);
+
+        symbolInstanceIndexes.sort((aIndex, bIndex) => {
+            const a = this.symbolInstances[aIndex];
+            const b = this.symbolInstances[bIndex];
+            const aRotated = (sin * a.anchor.x + cos * a.anchor.y) | 0;
+            const bRotated = (sin * b.anchor.x + cos * b.anchor.y) | 0;
+            return (aRotated - bRotated) || (b.featureIndex - a.featureIndex);
+        });
+
+        this.text.indexArray.clear();
+        this.icon.indexArray.clear();
+
+        // In most cases this outer loop over the segments doesn't do anything.
+        // Usually there is just one segment. But sometimes vertices spill over into
+        // additional segments. In this case we need to make sure that vertices
+        // are referenced from their matching index array segment. This is done by
+        // adding all the indexes from the first segment, then the second, etc.
+        const numTextSegments = this.text.segments.get().length;
+        for (let segmentIndex = 0; segmentIndex < numTextSegments; segmentIndex++) {
+            for (const i of symbolInstanceIndexes) {
+                const symbolInstance = this.symbolInstances[i];
+
+                for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
+                    const placedSymbol = (this.placedGlyphArray.get(placedTextSymbolIndex): any);
+
+                    if (placedSymbol.segmentIndex !== segmentIndex) continue;
+
+                    const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
+                    for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
+                        this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+                        this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+                    }
+                }
+            }
+        }
+
+        const numIconSegments = this.icon.segments.get().length;
+        for (let segmentIndex = 0; segmentIndex < numIconSegments; segmentIndex++) {
+            for (const i of symbolInstanceIndexes) {
+                const placedIcon = (this.placedIconArray.get(i): any);
+                if (placedIcon.segmentIndex !== segmentIndex) continue;
+
+                if (placedIcon.numGlyphs) {
+                    const vertexIndex = placedIcon.vertexStartIndex;
+                    this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+                    this.icon.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+                }
+            }
+        }
+
+        if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray.serialize());
+        if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray.serialize());
     }
 }
 

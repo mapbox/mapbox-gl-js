@@ -1,14 +1,18 @@
 // @flow
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
+import type {SerializedStructArray} from '../util/struct_array';
+
 
 class IndexBuffer {
     gl: WebGLRenderingContext;
     buffer: WebGLBuffer;
+    dynamicDraw: boolean;
 
-    constructor(gl: WebGLRenderingContext, array: TriangleIndexArray | LineIndexArray) {
+    constructor(gl: WebGLRenderingContext, array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
         this.gl = gl;
         this.buffer = gl.createBuffer();
+        this.dynamicDraw = Boolean(dynamicDraw);
 
         // The bound index buffer is part of vertex array object state. We don't want to
         // modify whatever VAO happens to be currently bound, so make sure the default
@@ -21,12 +25,20 @@ class IndexBuffer {
         }
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, gl.STATIC_DRAW);
-        delete array.arrayBuffer;
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+
+        if (!this.dynamicDraw) {
+            delete array.arrayBuffer;
+        }
     }
 
     bind() {
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffer);
+    }
+
+    updateData(array: SerializedStructArray) {
+        this.bind();
+        this.gl.bufferSubData(this.gl.ELEMENT_ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
     destroy() {
