@@ -415,7 +415,6 @@ class SourceCache extends Evented {
 
     _updateRetainedTiles(idealTileCoords: Array<TileCoord>, zoom: number): { [string]: boolean} {
         let i, coord, tile, covered;
-
         const retain = {};
         const checked: {[number]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
@@ -468,14 +467,13 @@ class SourceCache extends Evented {
                     // We couldn't find child tiles that entirely cover the ideal tile.
                     for (let overscaledZ = zoom - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
 
-                        const parentId = coord.scaledTo(overscaledZ);
+                        const parentId = coord.scaledTo(overscaledZ, this._source.maxzoom);
                         if (checked[parentId.id]) {
                             // Break parent tile ascent, this route has been previously checked by another child.
                             break;
                         } else {
                             checked[parentId.id] = true;
                         }
-
 
                         tile = this.getTile(parentId);
                         if (!tile && parentWasRequested) {

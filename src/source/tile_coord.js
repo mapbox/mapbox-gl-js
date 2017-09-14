@@ -95,7 +95,12 @@ class TileCoord {
         ];
     }
 
-    scaledTo(targetZ: number) {
+    scaledTo(targetZ: number, sourceMaxZoom: number) {
+        // the id represents an overscaled tile, return the same coordinates with a lower z
+        if (this.z > sourceMaxZoom) {
+            return new TileCoord(targetZ, this.x, this.y, this.w);
+        }
+
         if (targetZ <= this.z) {
             return new TileCoord(targetZ, this.x >> (this.z - targetZ), this.y >> (this.z - targetZ), this.w); // parent or same
         } else {
