@@ -700,7 +700,7 @@ class SourceCache extends Evented {
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.commitPlacement(collisionIndex, collisionFadeTimes);
+            tile.commitPlacement(collisionIndex, collisionFadeTimes, this.transform.angle);
         }
     }
 

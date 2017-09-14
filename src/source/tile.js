@@ -224,12 +224,13 @@ class Tile {
         }
     }
 
-    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any) {
+    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any, angle: number) {
         // Start all collision animations at the same time
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
                 PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
+                bucket.sortFeatures(angle);
             }
         }
 
