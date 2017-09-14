@@ -127,7 +127,11 @@ class CanvasSource extends ImageSource {
             gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
             if (!this.secondaryContext) this.secondaryContext = window.document.createElement('canvas').getContext('2d');
             const imageData = this.secondaryContext.createImageData(this.width, this.height);
-            imageData.data.set(data);
+            const flipped = new Uint8Array(this.width * this.height * 4);
+            for (let i = this.height - 1, j = 0; i >= 0; i--, j++) {
+                flipped.set(data.slice(i * this.width * 4, (i + 1) * this.width * 4), j * this.width * 4);
+            }
+            imageData.data.set(flipped);
             return imageData;
         }
     }
