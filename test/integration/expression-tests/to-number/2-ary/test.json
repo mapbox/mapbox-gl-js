@@ -28,7 +28,7 @@
       -1,
       -1,
       -1,
-      {"error":"Could not convert \"bad fallback\" to number."}
+      {"error": "Could not convert \"bad fallback\" to number."}
     ]
   }
 }
