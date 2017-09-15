@@ -20,6 +20,7 @@ const Var = require('./var');
 const Literal = require('./literal');
 const Assertion = require('./assertion');
 const ArrayAssertion = require('./array');
+const Coercion = require('./coercion');
 const At = require('./at');
 const Contains = require('./contains');
 const Match = require('./match');
@@ -39,6 +40,8 @@ const expressions: { [string]: Class<Expression> } = {
     'boolean': Assertion,
     'object': Assertion,
     'array': ArrayAssertion,
+    'to-number': Coercion,
+    'to-color': Coercion,
     'at': At,
     'contains': Contains,
     'case': Case,
@@ -54,24 +57,8 @@ CompoundExpression.register(expressions, {
     'e': [ NumberType, [], () => 'Math.E'],
     'typeof': [ StringType, [ValueType], fromContext('typeOf') ],
     'to-string': [ StringType, [ValueType], fromContext('toString') ],
-    'to-number': [ NumberType, varargs(ValueType), (ctx, args) => {
-        const argIds = [];
-        for (const arg of args) {
-            argIds.push(ctx.addExpression(arg.compile(ctx)));
-        }
-        const argsArr = ctx.addVariable(`[${argIds.join(',')}]`);
-        return `$this.toNumber(${argsArr})`;
-    } ],
     'to-boolean': [ BooleanType, [ValueType], (ctx, [v]) =>
         `Boolean(${cache(ctx, v)})` ],
-    'to-color': [ ColorType, varargs(ValueType), (ctx, args) => {
-        const argIds = [];
-        for (const arg of args) {
-            argIds.push(ctx.addExpression(arg.compile(ctx)));
-        }
-        const argsArr = ctx.addVariable(`[${argIds.join(',')}]`);
-        return `$this.toColor(${argsArr})`;
-    } ],
     'to-rgba': [ array(NumberType, 4), [ColorType], (ctx, [v]) =>
         `${cache(ctx, v)}.value` ],
     'rgb': [ ColorType, [NumberType, NumberType, NumberType],

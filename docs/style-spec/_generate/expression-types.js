@@ -46,6 +46,14 @@ const results = {
             'Value'
         ]
     }],
+    'to-number': [{
+        type: 'Number',
+        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+    }],
+    'to-color': [{
+        type: 'Color',
+        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+    }],
     at: [{
         type: 'T',
         parameters: ['Number', 'Array']
