@@ -42,7 +42,8 @@ const supportedDiffOperations = util.pick(diff.operations, [
     'removeSource',
     'setLayerZoomRange',
     'setLight',
-    'setTransition'
+    'setTransition',
+    'setData'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -497,6 +498,26 @@ class Style extends Evented {
         sourceCache.clearTiles();
 
         if (sourceCache.onRemove) sourceCache.onRemove(this.map);
+        this._changed = true;
+    }
+
+    /**
+    * Set the data of a source, given its id. Only available for GeoJSON sources.
+    * @param {string} id id of the source
+    * @param {GeoJSON|string} data GeoJSON source
+    * @throws {Error} if no source is found with the given ID
+    */
+
+    setData(id: string, data: GeoJSON | string) {
+        this._checkLoaded();
+
+        if (this.sourceCaches[id] === undefined) {
+            throw new Error('There no source with this ID');
+        }
+
+        const sourceCache = this.sourceCaches[id];
+
+        sourceCache.setData(data);
         this._changed = true;
     }
 

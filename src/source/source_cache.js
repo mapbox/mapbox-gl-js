@@ -102,6 +102,12 @@ class SourceCache extends Evented {
         }
     }
 
+    setData(data: GeoJSON | string) {
+        if (this._source && this._source.setData) {
+            this._source.setData(data);
+        }
+    }
+
     /**
      * Return true if no tile data is pending, tiles will not change unless
      * an additional API call is received.
