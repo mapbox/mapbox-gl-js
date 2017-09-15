@@ -6,6 +6,9 @@ import type { Type } from '../types';
 import type { Value }  from '../values';
 import type { Expression, ParsingContext }  from '../expression';
 
+const u2028 = /\u2028/g;
+const u2029 = /\u2029/g;
+
 class Literal implements Expression {
     key: string;
     type: Type;
@@ -43,8 +46,20 @@ class Literal implements Expression {
     }
 
     compile() {
-        const value = JSON.stringify(this.value);
+        const value = Literal.compile(this.value);
         return typeof this.value === 'object' ?  `(${value})` : value;
+    }
+
+    static compile(value: Value) {
+        let literal = JSON.stringify(value);
+        // http://timelessrepo.com/json-isnt-a-javascript-subset
+        if (literal.indexOf('\u2028') >= 0) {
+            literal = literal.replace(u2028, '\\u2028');
+        }
+        if (literal.indexOf('\u2029') >= 0) {
+            literal = literal.replace(u2029, '\\u2029');
+        }
+        return literal;
     }
 
     serialize() {

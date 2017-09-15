@@ -3,7 +3,7 @@
   "expression": [
     "match",
     ["string", ["get", "x"]],
-    ["0-1", "a.b", "{}"],
+    ["0-1", "a.b", "{}", "weird\u2028json\u2029issue"],
     "match",
     "otherwise"
   ],
@@ -11,6 +11,7 @@
     [{}, {"properties": {"x": "0-1"}}],
     [{}, {"properties": {"x": "a.b"}}],
     [{}, {"properties": {"x": "{}"}}],
+    [{}, {"properties": {"x": "weird\u2028json\u2029issue"}}],
     [{}, {"properties": {"x": "1"}}]
   ],
   "expected": {
@@ -20,6 +21,6 @@
       "isZoomConstant": true,
       "type": "String"
     },
-    "outputs": ["match", "match", "match", "otherwise"]
+    "outputs": ["match", "match", "match", "match", "otherwise"]
   }
 }
