@@ -110,21 +110,6 @@ function prepare(bucket: SymbolBucket,
         }
     }
 
-    const mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-        layout['text-ignore-placement'] || layout['icon-ignore-placement'];
-
-    // Sort symbols by their y position on the canvas so that the lower symbols
-    // are drawn on top of higher symbols.
-    // Don't sort symbols that won't overlap because it isn't necessary
-    if (mayOverlap) {
-        intermediateSymbols.sort((a, b) => {
-            return (a.anchor.y - b.anchor.y) || (b.featureIndex - a.featureIndex);
-        });
-    }
-    for (const intermediateSymbol of intermediateSymbols) {
-        generateSymbolInstance(bucket, intermediateSymbol);
-    }
-
     if (showCollisionBoxes) {
         bucket.generateCollisionDebugBuffers();
     }
@@ -190,7 +175,7 @@ function addFeature(bucket: SymbolBucket,
         // be drawn across tile boundaries. Instead they need to be included in
         // the buffers for both tiles and clipped to tile boundaries at draw time.
         const addToBuffers = inside || mayOverlap;
-        intermediateSymbols.push(addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, bucket.layers[0],
+        bucket.symbolInstances.push(addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, bucket.layers[0],
             addToBuffers, bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
             textBoxScale, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
@@ -237,8 +222,7 @@ function addFeature(bucket: SymbolBucket,
     }
 }
 
-
-function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, writingMode, glyphPositionMap) {
+function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, writingMode, placedTextSymbolIndices, glyphPositionMap) {
     const glyphQuads = addToBuffers ?
         getGlyphQuads(anchor, shapedText,
             layer, textAlongLine, globalProperties, feature, glyphPositionMap) :
@@ -250,24 +234,22 @@ function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAl
         'text-size',
         feature);
 
-    deferredSymbolCreation.push((placedTextSymbolIndices) => {
-        bucket.addSymbols(
-            bucket.text,
-            glyphQuads,
-            textSizeData,
-            textOffset,
-            textAlongLine,
-            feature,
-            writingMode,
-            anchor,
-            lineArray.lineStartIndex,
-            lineArray.lineLength,
-            bucket.placedGlyphArray);
+    bucket.addSymbols(
+        bucket.text,
+        glyphQuads,
+        textSizeData,
+        textOffset,
+        textAlongLine,
+        feature,
+        writingMode,
+        anchor,
+        lineArray.lineStartIndex,
+        lineArray.lineLength,
+        bucket.placedGlyphArray);
 
-        // The placedGlyphArray is used at render time in drawTileSymbols
-        // These indices allow access to the array at collision detection time
-        placedTextSymbolIndices.push(bucket.placedGlyphArray.length - 1);
-    });
+    // The placedGlyphArray is used at render time in drawTileSymbols
+    // These indices allow access to the array at collision detection time
+    placedTextSymbolIndices.push(bucket.placedGlyphArray.length - 1);
 
     return glyphQuads.length * 4;
 }
@@ -308,15 +290,15 @@ function addSymbol(bucket: SymbolBucket,
     let numGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
     const key = shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '';
-    const deferredSymbolCreation = [];
+    const placedTextSymbolIndices = [];
     if (shapedTextOrientations.horizontal) {
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature
         // We're counting on the two versions having similar dimensions
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, bucket.overscaling);
-        numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, glyphPositionMap);
+        numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, placedTextSymbolIndices, glyphPositionMap);
 
         if (shapedTextOrientations.vertical) {
-            numVerticalGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, WritingMode.vertical, deferredSymbolCreation);
+            numVerticalGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, WritingMode.vertical, placedTextSymbolIndices, glyphPositionMap);
         }
     }
 
@@ -339,24 +321,27 @@ function addSymbol(bucket: SymbolBucket,
             'icon-size',
             feature);
 
-        deferredSymbolCreation.push(() => {
-            bucket.addSymbols(
-                bucket.icon,
-                iconQuads,
-                iconSizeData,
-                iconOffset,
-                iconAlongLine,
-                feature,
-                false,
-                anchor,
-                lineArray.lineStartIndex,
-                lineArray.lineLength,
-                bucket.placedIconArray);
-        });
+        bucket.addSymbols(
+            bucket.icon,
+            iconQuads,
+            iconSizeData,
+            iconOffset,
+            iconAlongLine,
+            feature,
+            false,
+            anchor,
+            lineArray.lineStartIndex,
+            lineArray.lineLength,
+            bucket.placedIconArray);
     }
 
     const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
     const iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
+
+    if (bucket.glyphOffsetArray.length >= SymbolBucket.MAX_GLYPHS) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
+
+    const textOpacityState = new OpacityState();
+    const iconOpacityState = new OpacityState();
 
     return {
         key,
@@ -373,29 +358,11 @@ function addSymbol(bucket: SymbolBucket,
         numGlyphVertices,
         numVerticalGlyphVertices,
         numIconVertices,
-        deferredSymbolCreation
-    };
-}
-
-function generateSymbolInstance(bucket: SymbolBucket, intermediateSymbol: any) {
-    const placedTextSymbolIndices = [];
-    for (const deferred of intermediateSymbol.deferredSymbolCreation) {
-        deferred(placedTextSymbolIndices);
-    }
-
-    if (bucket.glyphOffsetArray.length >= SymbolBucket.MAX_GLYPHS) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
-
-    const textOpacityState = new OpacityState();
-    const iconOpacityState = new OpacityState();
-
-    delete intermediateSymbol.deferredSymbolCreation;
-
-    bucket.symbolInstances.push(util.extend(intermediateSymbol, {
-        placedTextSymbolIndices,
         textOpacityState,
         iconOpacityState,
-        isDuplicate: false
-    }));
+        isDuplicate: false,
+        placedTextSymbolIndices
+    };
 }
 
 function anchorIsTooClose(bucket: any, text: any, repeatDistance: any, anchor: any) {
