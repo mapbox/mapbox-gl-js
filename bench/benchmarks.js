@@ -1,8 +1,11 @@
 'use strict';
 
+window.mapboxglVersions = window.mapboxglVersions || [];
 window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};
 
 const version = process.env.BENCHMARK_VERSION;
+window.mapboxglVersions.push(version);
+
 function register(benchmarks) {
     for (const Benchmark of [].concat(benchmarks)) {
         const benchmark = new Benchmark();
