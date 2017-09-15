@@ -329,16 +329,6 @@ function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint:
     return previousProjectedPoint.add(projectedUnitSegment._mult(minimumLength / projectedUnitSegment.mag()));
 }
 
-function calculateTileDistance(lineVertexArray, currentIndex, dir, initialIndex, segmentInterpolationT) {
-    const currentVertex = lineVertexArray.get(currentIndex);
-    let prevTileDistance = 0;
-    if (currentIndex - dir !== initialIndex) {
-        prevTileDistance = lineVertexArray.get(currentIndex -= dir).tileUnitDistanceFromAnchor;
-    }
-
-    return prevTileDistance + (currentVertex.tileUnitDistanceFromAnchor - prevTileDistance) * segmentInterpolationT;
-}
-
 function placeGlyphAlongLine(offsetX: number,
                              lineOffsetX: number,
                              lineOffsetY: number,
@@ -424,8 +414,10 @@ function placeGlyphAlongLine(offsetX: number,
         point: p,
         angle: segmentAngle,
         tileDistance: returnTileDistance ?
-            calculateTileDistance(lineVertexArray, currentIndex, dir, initialIndex, segmentInterpolationT) :
-            0
+            {
+                prevTileDistance: (currentIndex - dir) === initialIndex ? 0 : lineVertexArray.get(currentIndex -= dir).tileUnitDistanceFromAnchor,
+                lastSegmentViewportDistance: absOffsetX - distanceToPrev
+            } : null
     };
 }
 
