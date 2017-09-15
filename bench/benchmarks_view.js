@@ -43,7 +43,7 @@ class DensityPlot extends Plot {
             .nice();
 
         const y = d3.scaleLinear()
-            .domain([0, 1])
+            .domain([0, 0.2])
             .range([height, 0]);
 
         const svg = d3.select(this.node)
@@ -70,7 +70,7 @@ class DensityPlot extends Plot {
             .append("g")
             .call(d3.axisLeft(y).ticks(4, "%"));
 
-        const density = kernelDensityEstimator(kernelEpanechnikov(0.2), x.ticks(40));
+        const density = kernelDensityEstimator(kernelEpanechnikov(0.2), x.ticks(50));
 
         const version = svg.selectAll(".density")
             .data(this.props.versions);
@@ -83,11 +83,11 @@ class DensityPlot extends Plot {
             .attr("stroke-width", 2)
             .attr("stroke-linejoin", "round")
             .merge(version)
-            .attr("d", version => d3.line()
+            .attr("d", version => version.samples.length ? d3.line()
                 .curve(d3.curveBasis)
                 .x(d => x(d[0]))
                 .y(d => y(d[1]))
-                (density(version.samples)));
+                (density(version.samples)) : "");
     }
 }
 
@@ -243,7 +243,7 @@ for (const name in window.mapboxglBenchmarks) {
             return window.mapboxglBenchmarks[name][ver].run()
                 .then(result => {
                     version.status = 'ended';
-                    version.message = result.elapsed;
+                    version.message = `${d3.mean(result.samples).toFixed(0)}ms`;
                     version.samples = result.samples;
                     version.regression = result.regression;
                     update();
