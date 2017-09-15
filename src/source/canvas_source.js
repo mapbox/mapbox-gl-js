@@ -45,6 +45,7 @@ class CanvasSource extends ImageSource {
     secondaryContext: ?CanvasRenderingContext2D;
     width: number;
     height: number;
+    canvasData: ?ImageData;
     play: () => void;
     pause: () => void;
 
@@ -114,25 +115,29 @@ class CanvasSource extends ImageSource {
      */
     // setCoordinates inherited from ImageSource
 
-    readCanvas() {
+    readCanvas(resize: boolean) {
         // We *should* be able to use a pure HTMLCanvasElement in
         // texImage2D/texSubImage2D (in ImageSource#_prepareImage), but for
         // some reason this breaks the map on certain GPUs (see #4262).
 
         if (this.context instanceof CanvasRenderingContext2D) {
-            return this.context.getImageData(0, 0, this.width, this.height);
+            this.canvasData = this.context.getImageData(0, 0, this.width, this.height);
         } else if (this.context instanceof WebGLRenderingContext) {
             const gl = this.context;
             const data = new Uint8Array(this.width * this.height * 4);
             gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
             if (!this.secondaryContext) this.secondaryContext = window.document.createElement('canvas').getContext('2d');
-            const imageData = this.secondaryContext.createImageData(this.width, this.height);
+            if (!this.canvasData || resize) {
+                this.canvasData = this.secondaryContext.createImageData(this.width, this.height);
+            }
+
+            // WebGL reads pixels bottom to top, but for our ImageData object we need top to bottom: flip here
             const flipped = new Uint8Array(this.width * this.height * 4);
             for (let i = this.height - 1, j = 0; i >= 0; i--, j++) {
                 flipped.set(data.subarray(i * this.width * 4, (i + 1) * this.width * 4), j * this.width * 4);
             }
-            imageData.data.set(flipped);
-            return imageData;
+            this.canvasData.data.set(flipped);
         }
     }
 
@@ -149,12 +154,17 @@ class CanvasSource extends ImageSource {
         if (this._hasInvalidDimensions()) return;
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
-        const canvasData = this.readCanvas();
-        if (!canvasData) {
+
+        const reread = this.animate || !this.canvasData || resize;
+        if (reread) {
+            this.readCanvas(resize);
+        }
+
+        if (!this.canvasData) {
             this.fire('error', new Error('Could not read canvas data.'));
             return;
         }
-        this._prepareImage(this.map.painter.gl, canvasData, resize);
+        this._prepareImage(this.map.painter.gl, this.canvasData, resize);
     }
 
     serialize(): Object {
