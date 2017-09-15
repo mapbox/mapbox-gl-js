@@ -34,15 +34,17 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
             painter.transform.pixelsToGLUnits[0] / (pixelRatio * scale),
             painter.transform.pixelsToGLUnits[1] / (pixelRatio * scale));
 
-        const symbolBuffers = drawCircles ? bucket.collisionCircle : bucket.collisionBox;
-
         program.draw(
             gl,
-            gl.LINES,
+            drawCircles ? gl.TRIANGLES : gl.LINES,
             layer.id,
-            symbolBuffers.layoutVertexBuffer,
-            symbolBuffers.indexBuffer,
-            symbolBuffers.segments);
+            buffers.layoutVertexBuffer,
+            buffers.indexBuffer,
+            buffers.segments,
+            null,
+            null,
+            null,
+            buffers.collisionVertexBuffer);
     }
 }
 

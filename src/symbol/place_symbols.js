@@ -75,8 +75,12 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
 
     }
 
-    if (glyphOpacityArray) bucket.text.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
-    if (iconOpacityArray) bucket.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
+    if (glyphOpacityArray && bucket.text.opacityVertexBuffer) {
+        bucket.text.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
+    }
+    if (iconOpacityArray && bucket.icon.opacityVertexBuffer) {
+        bucket.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
+    }
 }
 
 
@@ -110,11 +114,18 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
 
     const scale = Math.pow(2, zoom - bucket.zoom);
 
-    const collisionDebugBoxArray = showCollisionBoxes && bucket.collisionBox && bucket.collisionBox.collisionVertexArray;
-    if (collisionDebugBoxArray) collisionDebugBoxArray.clear();
+    let collisionDebugBoxArray, collisionDebugCircleArray;
+    if (showCollisionBoxes) {
+        if (bucket.collisionBox && bucket.collisionBox.collisionVertexArray && bucket.collisionBox.collisionVertexArray.length) {
+            collisionDebugBoxArray = bucket.collisionBox.collisionVertexArray;
+            collisionDebugBoxArray.clear();
+        }
 
-    const collisionDebugCircleArray = showCollisionBoxes && bucket.collisionCircle && bucket.collisionCircle.collisionVertexArray;
-    if (collisionDebugCircleArray) collisionDebugCircleArray.clear();
+        if (bucket.collisionCircle && bucket.collisionCircle.collisionVertexArray && bucket.collisionCircle.collisionVertexArray.length) {
+            collisionDebugCircleArray = bucket.collisionCircle.collisionVertexArray;
+            collisionDebugCircleArray.clear();
+        }
+    }
 
     const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, collisionIndex.transform, layer, true);
 
@@ -205,6 +216,9 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
 
     }
 
-    if (collisionDebugBoxArray) bucket.collisionBox.collisionVertexBuffer.updateData(collisionDebugBoxArray.serialize());
-    if (collisionDebugCircleArray) bucket.collisionCircle.collisionVertexBuffer.updateData(collisionDebugCircleArray.serialize());
+    // If the buffer hasn't been uplaoded for the first time yet, we don't need to call updateData since it will happen at upload time
+    if (collisionDebugBoxArray && bucket.collisionBox.collisionVertexBuffer)
+        bucket.collisionBox.collisionVertexBuffer.updateData(collisionDebugBoxArray.serialize());
+    if (collisionDebugCircleArray && bucket.collisionCircle.collisionVertexBuffer)
+        bucket.collisionCircle.collisionVertexBuffer.updateData(collisionDebugCircleArray.serialize());
 }

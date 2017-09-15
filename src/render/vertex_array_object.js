@@ -66,11 +66,11 @@ class VertexArrayObject {
             }
 
             if (opacityVertexBuffer) {
-                opacityVertexBuffer.bind(gl);
+                opacityVertexBuffer.bind();
             }
 
             if (collisionVertexBuffer) {
-                collisionVertexBuffer.bind(gl);
+                collisionVertexBuffer.bind();
             }
         }
     }
@@ -82,8 +82,8 @@ class VertexArrayObject {
               vertexBuffer2: ?VertexBuffer,
               vertexOffset: ?number,
               dynamicVertexBuffer: ?VertexBuffer,
-			  opacityVertexBuffer: ?VertexBuffer,
-			  collisionVertexBuffer: ?VertexBuffer) {
+              opacityVertexBuffer: ?VertexBuffer,
+              collisionVertexBuffer: ?VertexBuffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -142,13 +142,13 @@ class VertexArrayObject {
         }
         if (indexBuffer) {
             indexBuffer.bind();
-		}
+        }
         if (opacityVertexBuffer) {
-            opacityVertexBuffer.bind(gl);
+            opacityVertexBuffer.bind();
             opacityVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (collisionVertexBuffer) {
-            collisionVertexBuffer.bind(gl);
+            collisionVertexBuffer.bind();
             collisionVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
 

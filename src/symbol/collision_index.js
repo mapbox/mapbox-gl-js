@@ -82,7 +82,8 @@ class CollisionIndex {
         const lineOffsetX = symbol.lineOffsetX * fontSize;
         const lineOffsetY = symbol.lineOffsetY * fontSize;
 
-        const labelPlaneAnchorPoint = projection.project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix).point;
+        const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const labelPlaneAnchorPoint = projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
         const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
             fontScale,
             glyphOffsetArray,

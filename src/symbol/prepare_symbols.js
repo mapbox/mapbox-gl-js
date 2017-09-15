@@ -26,13 +26,23 @@ import type StyleLayer from '../style/style_layer';
 import type CollisionBoxArray from '../symbol/collision_box';
 const SymbolBucket = require('../data/bucket/symbol_bucket');
 
+import type {StyleImage} from '../style/style_image';
+import type {StyleGlyph} from '../style/style_glyph';
+import type {ImagePosition} from '../render/image_atlas';
+import type {GlyphPosition} from '../render/glyph_atlas';
+
 const Point = require('@mapbox/point-geometry');
 
 module.exports = {
     prepare
 };
 
-function prepare(bucket: SymbolBucket, stacks: any, icons: any, showCollisionBoxes: boolean) {
+function prepare(bucket: SymbolBucket,
+                 glyphMap: {[string]: {[number]: ?StyleGlyph}},
+                 glyphPositions: {[string]: {[number]: GlyphPosition}},
+                 imageMap: {[string]: StyleImage},
+                 imagePositions: {[string]: ImagePosition},
+                 showCollisionBoxes: boolean) {
     bucket.createArrays();
     bucket.symbolInstances = [];
 
@@ -45,11 +55,13 @@ function prepare(bucket: SymbolBucket, stacks: any, icons: any, showCollisionBox
 
     const oneEm = 24;
     const lineHeight = layout['text-line-height'] * oneEm;
-    const fontstack = bucket.fontstack = layout['text-font'].join(',');
+    const fontstack = layout['text-font'].join(',');
     const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     const keepUpright = layout['text-keep-upright'];
 
-    const intermediateSymbols = [];
+    const glyphs = glyphMap[fontstack] || {};
+    const glyphPositionMap = glyphPositions[fontstack] || {};
+
     for (const feature of bucket.features) {
 
         const shapedTextOrientations = {};
@@ -66,25 +78,26 @@ function prepare(bucket: SymbolBucket, stacks: any, icons: any, showCollisionBox
                 0;
 
 
-            shapedTextOrientations.horizontal = shapeText(text, stacks[fontstack], maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
+            shapedTextOrientations.horizontal = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
             if (allowsVerticalWritingMode && textAlongLine && keepUpright) {
-                shapedTextOrientations.vertical = shapeText(text, stacks[fontstack], maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical);
+                shapedTextOrientations.vertical = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical);
             }
         }
 
         let shapedIcon;
         if (feature.icon) {
-            const image = icons[feature.icon];
+            const image = imageMap[feature.icon];
             if (image) {
-                shapedIcon = shapeIcon(image,
+                shapedIcon = shapeIcon(
+                    imagePositions[feature.icon],
                     bucket.layers[0].getLayoutValue('icon-offset', {zoom: bucket.zoom}, feature),
                     bucket.layers[0].getLayoutValue('icon-anchor', {zoom: bucket.zoom}, feature));
                 if (bucket.sdfIcons === undefined) {
                     bucket.sdfIcons = image.sdf;
-                } else if (bucket.sdfIcons !== image.sdf) {
+                } else if (this.sdfIcons !== image.sdf) {
                     util.warnOnce('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                 }
-                if (!image.isNativePixelRatio) {
+                if (image.pixelRatio !== bucket.pixelRatio) {
                     bucket.iconsNeedLinear = true;
                 } else if (layout['icon-rotate'] !== 0 || !bucket.layers[0].isLayoutValueFeatureConstant('icon-rotate')) {
                     bucket.iconsNeedLinear = true;
@@ -93,7 +106,7 @@ function prepare(bucket: SymbolBucket, stacks: any, icons: any, showCollisionBox
         }
 
         if (shapedTextOrientations.horizontal || shapedIcon) {
-            addFeature(bucket, feature, intermediateSymbols, shapedTextOrientations, shapedIcon);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, glyphPositionMap);
         }
     }
 
@@ -125,7 +138,11 @@ function prepare(bucket: SymbolBucket, stacks: any, icons: any, showCollisionBox
  * show or hide based on collisions with symbols in other layers.)
  * @private
  */
-function addFeature(bucket: SymbolBucket, feature: SymbolFeature, intermediateSymbols: any, shapedTextOrientations: any, shapedIcon: PositionedIcon | void) {
+function addFeature(bucket: SymbolBucket,
+                    feature: SymbolFeature,
+                    shapedTextOrientations: any,
+                    shapedIcon: PositionedIcon | void,
+                    glyphPositionMap: {[number]: GlyphPosition}) {
     const layoutTextSize = bucket.layers[0].getLayoutValue('text-size', {zoom: bucket.zoom + 1}, feature.properties);
     const layoutIconSize = bucket.layers[0].getLayoutValue('icon-size', {zoom: bucket.zoom + 1}, feature.properties);
 
@@ -177,7 +194,7 @@ function addFeature(bucket: SymbolBucket, feature: SymbolFeature, intermediateSy
             addToBuffers, bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
             textBoxScale, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            {zoom: bucket.zoom}, feature));
+            {zoom: bucket.zoom}, feature, glyphPositionMap);
     };
 
     if (symbolPlacement === 'line') {
@@ -220,10 +237,11 @@ function addFeature(bucket: SymbolBucket, feature: SymbolFeature, intermediateSy
     }
 }
 
-function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, writingMode, deferredSymbolCreation) {
+
+function addTextVertices(bucket, addToBuffers, anchor, shapedText, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, writingMode, glyphPositionMap) {
     const glyphQuads = addToBuffers ?
         getGlyphQuads(anchor, shapedText,
-            layer, textAlongLine, globalProperties, feature) :
+            layer, textAlongLine, globalProperties, feature, glyphPositionMap) :
         [];
 
     const textSizeData = getSizeVertexData(layer,
@@ -280,7 +298,8 @@ function addSymbol(bucket: SymbolBucket,
                            iconAlongLine: boolean,
                            iconOffset: [number, number],
                            globalProperties: Object,
-                           feature: SymbolFeature) {
+                           feature: SymbolFeature,
+                           glyphPositionMap: {[number]: GlyphPosition}) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
 
     let textCollisionFeature, iconCollisionFeature;
@@ -294,7 +313,7 @@ function addSymbol(bucket: SymbolBucket,
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature
         // We're counting on the two versions having similar dimensions
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine);
-        numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, deferredSymbolCreation);
+        numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, glyphPositionMap);
 
         if (shapedTextOrientations.vertical) {
             numVerticalGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, WritingMode.vertical, deferredSymbolCreation);

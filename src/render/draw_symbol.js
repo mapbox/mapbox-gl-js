@@ -203,5 +203,6 @@ function drawSymbolElements(buffers, layer, gl, program) {
         buffers.indexBuffer,
         buffers.segments,
         buffers.programConfigurations.get(layer.id),
-        buffers.dynamicLayoutVertexBuffer);
+        buffers.dynamicLayoutVertexBuffer,
+        buffers.opacityVertexBuffer);
 }
