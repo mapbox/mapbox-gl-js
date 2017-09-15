@@ -95,10 +95,10 @@ module.exports = () => ({
         return toString(typeOf(x));
     },
 
-    asJSType: function (expectedType: string, values: Array<Function>) {
+    asJSType: function (expectedType: string, args: Array<()=>Value>) {
         let value;
-        for (let i = 0; i < values.length; i++) {
-            value = values[i]();
+        for (const arg of args) {
+            value = arg();
             if (typeof value === expectedType && value !== null) {
                 return value;
             }
@@ -121,14 +121,19 @@ module.exports = () => ({
     toColor: function (args: Array<()=>any>) {
         let input;
         let error;
-        for (let i = 0; i < args.length; i++) {
-            input = args[i]();
+        for (const arg of args) {
+            input = arg();
             error = null;
             if (typeof input === 'string') {
                 const c = this._parseColor(input);
                 if (c) return c;
             } else if (Array.isArray(input)) {
-                error = this._validateRGBA(input[0], input[1], input[2], input[3]);
+                if (input.length < 3 || input.length > 4) {
+                    error = `Invalid rbga value ${JSON.stringify(input)}: expected an array containing either three or four numeric values.`;
+                } else {
+                    error = this._validateRGBA(input[0], input[1], input[2], input[3]);
+                }
+
                 if (!error) return new Color(input[0] / 255, input[1] / 255, input[2] / 255, input[3]);
             }
         }
@@ -184,8 +189,8 @@ module.exports = () => ({
 
     toNumber: function(args: Array<()=>Value>) {
         let value;
-        for (let i = 0; i < args.length; i++) {
-            value = args[i]();
+        for (const arg of args) {
+            value = arg();
             if (value === null) continue;
             const num = Number(value);
             if (isNaN(num)) continue;

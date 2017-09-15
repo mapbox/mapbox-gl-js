@@ -23,7 +23,7 @@
       [0, 1, 0, 1],
       [0, 1, 0, 1],
       {
-        "error": "Invalid rgba value [0, 255, ]: 'r', 'g', and 'b' must be between 0 and 255."
+        "error": "Invalid rbga value [0,255]: expected an array containing either three or four numeric values."
       }
     ]
   }
