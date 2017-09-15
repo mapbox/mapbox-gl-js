@@ -50,10 +50,9 @@ class Contains implements Expression {
         return [ 'contains', this.value.serialize(), this.array.serialize() ];
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.array.accept(visitor);
-        this.value.accept(visitor);
+    eachChild(fn: (Expression) => void) {
+        fn(this.array);
+        fn(this.value);
     }
 }
 

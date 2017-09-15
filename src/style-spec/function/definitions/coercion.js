@@ -26,12 +26,12 @@ const types = {
 class Coercion implements Expression {
     key: string;
     type: Type;
-    inputs: Array<Expression>;
+    args: Array<Expression>;
 
-    constructor(key: string, type: Type, inputs: Array<Expression>) {
+    constructor(key: string, type: Type, args: Array<Expression>) {
         this.key = key;
         this.type = type;
-        this.inputs = inputs;
+        this.args = args;
     }
 
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
@@ -43,32 +43,31 @@ class Coercion implements Expression {
 
         const type = types[name];
 
-        const inputs = [];
+        const parsed = [];
         for (let i = 1; i < args.length; i++) {
             const input = parseExpression(args[i], context.concat(i, ValueType));
             if (!input) return null;
-            inputs.push(input);
+            parsed.push(input);
         }
 
-        return new Coercion(context.key, type, inputs);
+        return new Coercion(context.key, type, parsed);
     }
 
     compile(ctx: CompilationContext) {
-        const inputs = [];
-        for (const input of this.inputs) {
-            inputs.push(ctx.addExpression(input.compile(ctx)));
+        const args = [];
+        for (const input of this.args) {
+            args.push(ctx.addExpression(input.compile(ctx)));
         }
-        const inputsVar = ctx.addVariable(`[${inputs.join(',')}]`);
+        const inputsVar = ctx.addVariable(`[${args.join(',')}]`);
         return `$this.to${this.type.kind}(${inputsVar})`;
     }
 
     serialize() {
-        return [ `to-${this.type.kind.toLowerCase()}` ].concat(this.inputs.map(i => i.serialize()));
+        return [ `to-${this.type.kind.toLowerCase()}` ].concat(this.args.map(i => i.serialize()));
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.inputs.forEach(input => input.accept(visitor));
+    eachChild(fn: (Expression) => void) {
+        this.args.forEach(fn);
     }
 }
 

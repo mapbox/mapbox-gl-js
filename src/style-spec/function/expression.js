@@ -14,7 +14,7 @@ export interface Expression {
     compile(CompilationContext): string; // eslint-disable-line no-use-before-define
 
     serialize(): any;
-    accept(Visitor<Expression>): void;
+    eachChild(fn: Expression => void): void;
 }
 
 class ParsingError extends Error {

@@ -72,7 +72,7 @@ class Literal implements Expression {
         }
     }
 
-    accept(visitor: Visitor<Expression>) { visitor.visit(this); }
+    eachChild() {}
 }
 
 module.exports = Literal;

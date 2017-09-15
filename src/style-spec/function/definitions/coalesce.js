@@ -50,11 +50,8 @@ class Coalesce implements Expression {
         return ['coalesce'].concat(this.args.map(a => a.serialize()));
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        for (const arg of this.args) {
-            arg.accept(visitor);
-        }
+    eachChild(fn: (Expression) => void) {
+        this.args.forEach(fn);
     }
 }
 

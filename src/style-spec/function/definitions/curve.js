@@ -176,11 +176,10 @@ class Curve implements Expression {
         return result;
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.input.accept(visitor);
+    eachChild(fn: (Expression) => void) {
+        fn(this.input);
         for (const [ , expression] of this.stops) {
-            expression.accept(visitor);
+            fn(expression);
         }
     }
 }

@@ -79,33 +79,32 @@ function compileExpression(
 }
 
 function isFeatureConstant(e: Expression) {
-    let result = true;
-    e.accept({
-        visit: (expression) => {
-            if (expression instanceof CompoundExpression) {
-                if (expression.name === 'get') {
-                    result = result && (expression.args.length > 1);
-                } else if (expression.name === 'has') {
-                    result = result && (expression.args.length > 1);
-                } else {
-                    result = result && !(
-                        expression.name === 'properties' ||
-                        expression.name === 'geometry-type' ||
-                        expression.name === 'id'
-                    );
-                }
-            }
+    if (e instanceof CompoundExpression) {
+        if (e.name === 'get' && e.args.length === 1) {
+            return false;
+        } else if (e.name === 'has' && e.args.length === 1) {
+            return false;
+        } else if (
+            e.name === 'properties' ||
+            e.name === 'geometry-type' ||
+            e.name === 'id'
+        ) {
+            return false;
         }
+    }
+
+    let result = true;
+    e.eachChild(arg => {
+        if (result && !isFeatureConstant(arg)) { result = false; }
     });
     return result;
 }
 
 function isZoomConstant(e: Expression) {
+    if (e instanceof CompoundExpression && e.name === 'zoom') { return false; }
     let result = true;
-    e.accept({
-        visit: (expression) => {
-            if (expression.name === 'zoom') result = false;
-        }
+    e.eachChild((arg) => {
+        if (result && !isZoomConstant(arg)) { result = false; }
     });
     return result;
 }

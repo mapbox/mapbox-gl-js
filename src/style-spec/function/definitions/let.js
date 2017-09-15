@@ -33,12 +33,11 @@ class Let implements Expression {
         return serialized;
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
+    eachChild(fn: (Expression) => void) {
         for (const binding of this.bindings) {
-            binding[1].accept(visitor);
+            fn(binding[1]);
         }
-        this.result.accept(visitor);
+        fn(this.result);
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
