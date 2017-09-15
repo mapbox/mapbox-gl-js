@@ -7,13 +7,10 @@ const version = process.env.BENCHMARK_VERSION;
 window.mapboxglVersions.push('master');
 window.mapboxglVersions.push(version);
 
-function register(benchmarks) {
-    for (const Benchmark of [].concat(benchmarks)) {
-        const benchmark = new Benchmark();
-        window.mapboxglBenchmarks[benchmark.name] = window.mapboxglBenchmarks[benchmark.name] || {};
-        window.mapboxglBenchmarks[benchmark.name].master = benchmark;
-        window.mapboxglBenchmarks[benchmark.name][version] = benchmark;
-    }
+function register(Benchmark) {
+    window.mapboxglBenchmarks[Benchmark.name] = window.mapboxglBenchmarks[Benchmark.name] || {};
+    window.mapboxglBenchmarks[Benchmark.name].master = new Benchmark();
+    window.mapboxglBenchmarks[Benchmark.name][version] = new Benchmark();
 }
 
 register(require('./benchmarks/buffer'));
