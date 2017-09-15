@@ -107,26 +107,6 @@ function place(bucket: any, collisionTile: any, showCollisionBoxes: boolean, zoo
     const layer = bucket.layers[0];
     const layout = layer.layout;
 
-    const mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-        layout['text-ignore-placement'] || layout['icon-ignore-placement'];
-
-    // Sort symbols by their y position on the canvas so that the lower symbols
-    // are drawn on top of higher symbols.
-    // Don't sort symbols that won't overlap because it isn't necessary and
-    // because it causes more labels to pop in and out when rotating.
-    if (mayOverlap) {
-        const angle = collisionTile.transform.angle;
-
-        const sin = Math.sin(angle),
-            cos = Math.cos(angle);
-
-        bucket.symbolInstances.sort((a, b) => {
-            const aRotated = (sin * a.anchor.x + cos * a.anchor.y) | 0;
-            const bRotated = (sin * b.anchor.x + cos * b.anchor.y) | 0;
-            return (aRotated - bRotated) || (b.featureIndex - a.featureIndex);
-        });
-    }
-
     const scale = Math.pow(2, zoom - bucket.zoom);
 
     const collisionDebugBoxArray = showCollisionBoxes && bucket.collisionBox && bucket.collisionBox.collisionVertexArray;
