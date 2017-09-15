@@ -512,8 +512,9 @@ class Style extends Evented {
         this._checkLoaded();
 
         if (this.sourceCaches[id] === undefined) {
-            throw new Error('There no source with this ID');
+            throw new Error('There is no source with this ID');
         }
+
 
         const sourceCache = this.sourceCaches[id];
 

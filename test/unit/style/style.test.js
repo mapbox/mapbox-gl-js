@@ -644,6 +644,64 @@ test('Style#removeSource', (t) => {
     t.end();
 });
 
+test('Style#setData', (t) => {
+    t.test('throw before loaded', (t) => {
+        const style = new Style(createStyleJSON({
+            "sources": { "source-id": createGeoJSONSource() }
+        }), new StubMap());
+        const geoJSONSourceData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": { "type": "Point", "coordinates": [125.6, 10.1] }
+                }
+            ]
+        };
+        t.throws(() => {
+            style.setData('source-id', geoJSONSourceData);
+        }, Error, /load/i);
+        style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('throws on non-existence', (t) => {
+        const style = new Style(createStyleJSON(), new StubMap()),
+            geoJSONSourceData = { type: "FeatureCollection", "features": [] };
+        style.on('style.load', () => {
+            t.throws(() => {
+                style.setData('source-id', geoJSONSourceData);
+            }, /There is no source with this ID/);
+            t.end();
+        });
+    });
+
+    t.test('sets data of source', (t) => {
+        const style = new Style(createStyleJSON({
+            sources: {'source-id': createGeoJSONSource()}
+        }), new StubMap());
+        const geoJSONSourceData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": { "type": "Point", "coordinates": [125.6, 10.1] }
+                }
+            ]
+        };
+        style.on('style.load', () => {
+            const sourceCache = style.sourceCaches['source-id'];
+            t.spy(sourceCache, 'setData');
+            style.setData('source-id', geoJSONSourceData);
+            t.ok(sourceCache.setData.calledWith(geoJSONSourceData));
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
 test('Style#addLayer', (t) => {
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON(), new StubMap()),

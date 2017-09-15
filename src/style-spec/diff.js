@@ -44,7 +44,7 @@ const operations = {
     removeSource: 'removeSource',
 
     /*
-     * { command: 'setData', args: ['sourceId'. data] }
+     * { command: 'setData', args: ['sourceId', data] }
      */
     setData: 'setData',
 

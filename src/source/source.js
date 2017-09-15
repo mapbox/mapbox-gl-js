@@ -57,6 +57,7 @@ export interface Source {
 
     +onAdd?: (map: Map) => void;
     +onRemove?: (map: Map) => void;
+    +setData?: (data: GeoJSON | string) => Source;
 
     loadTile(tile: Tile, callback: Callback<void>): void;
     +hasTile?: (coord: TileCoord) => boolean;
