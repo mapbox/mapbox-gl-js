@@ -99,7 +99,8 @@
           "bubleError": true,
           "transforms": {
             "dangerousForOf": true
-          }
+          },
+          "objectAssign": "Object.assign"
         }
       ],
       "package-json-versionify",
