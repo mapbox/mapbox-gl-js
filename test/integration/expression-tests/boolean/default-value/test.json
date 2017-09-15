@@ -1,6 +1,6 @@
 {
   "expectExpressionType": null,
-  "expression": ["to-boolean", ["get", "x"]],
+  "expression": ["boolean", ["get", "x"], false],
   "inputs": [
     [{}, {}],
     [{}, {"properties": {"x": true}}],
@@ -18,6 +18,6 @@
       "isZoomConstant": true,
       "type": "Boolean"
     },
-    "outputs": [false, true, false, false, true, false, true, false]
+    "outputs": [false, true, false, false, false, false, false, false]
   }
 }

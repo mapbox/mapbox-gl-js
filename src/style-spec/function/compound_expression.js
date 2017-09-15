@@ -10,7 +10,7 @@ import type { Type } from './types';
 
 type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;
-type Compile = (args: Array<string>) => string;
+type Compile = (ctx: CompilationContext, args: Array<Expression>) => string;
 type Definition = [Type, Signature, Compile] |
     {|type: Type, overloads: Array<[Signature, Compile]>|};
 
@@ -32,16 +32,7 @@ class CompoundExpression implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        const compiledArgs: Array<string> = [];
-
-        const args = this.args;
-        for (let i = 0; i < args.length; i++) {
-            const arg = args[i];
-            const compiledArg = ctx.compileAndCache(arg);
-            compiledArgs.push(`(${compiledArg})`);
-        }
-
-        return this.compileFromArgs(compiledArgs);
+        return this.compileFromArgs(ctx, this.args);
     }
 
     serialize() {

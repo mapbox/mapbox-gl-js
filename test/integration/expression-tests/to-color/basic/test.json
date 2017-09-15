@@ -22,7 +22,9 @@
       [0, 1, 0, 1],
       [0, 1, 0, 1],
       [0, 1, 0, 1],
-      {"error": "Could not parse color from value '[0,255]'"}
+      {
+        "error": "Invalid rbga value [0,255]: expected an array containing either three or four numeric values."
+      }
     ]
   }
 }

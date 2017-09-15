@@ -1,20 +1,19 @@
 {
   "expectExpressionType": null,
-  "expression": ["to-string", ["get", "x"]],
+  "expression": ["number", ["get", "x"], -1],
   "inputs": [
     [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": "1"}}],
     [{}, {"properties": {"x": false}}],
-    [{}, {"properties": {"x": null}}],
-    [{}, {"properties": {"x": [1, 2]}}],
-    [{}, {"properties": {"x": {"y": 1}}}]
+    [{}, {"properties": {"x": null}}]
   ],
   "expected": {
     "compiled": {
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "String"
+      "type": "Number"
     },
-    "outputs": ["1", "false", "null", "[1,2]", "{\"y\":1}"]
+    "outputs": [1, -1, -1, -1]
   }
 }

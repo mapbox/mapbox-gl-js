@@ -1,14 +1,14 @@
 {
   "expectExpressionType": null,
-  "expression": ["asin", 0.5],
+  "expression": "ah\u2028\u2029oy!",
   "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Number"
+      "type": "String"
     },
-    "outputs": [0.5235987755982989]
+    "outputs": ["ah\u2028\u2029oy!"]
   }
 }

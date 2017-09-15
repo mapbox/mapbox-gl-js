@@ -1,6 +1,5 @@
 // @flow
 
-const assert = require('assert');
 const parseColor = require('../util/parse_color');
 const interpolate = require('../util/interpolate');
 const {
@@ -13,10 +12,10 @@ const {
     ValueType,
     toString,
     checkSubtype} = require('./types');
-const {Color, typeOf, isValue} = require('./values');
+const {Color, typeOf} = require('./values');
 const Curve = require('./definitions/curve');
 
-import type { Type } from './types';
+import type { ArrayType } from './types';
 import type { Value } from './values';
 import type { InterpolationType } from './definitions/curve';
 import type { Feature } from './index';
@@ -33,10 +32,10 @@ const types = {
 };
 
 const jsTypes = {
-    Number: 'number',
-    String: 'string',
-    Boolean: 'boolean',
-    Object: 'object'
+    number: NumberType,
+    string: StringType,
+    boolean: BooleanType,
+    object: ObjectType
 };
 
 class RuntimeError {
@@ -74,12 +73,9 @@ module.exports = () => ({
         return array[index];
     },
 
-    get: function (obj: {[string]: Value}, key: string, name?: string) {
+    get: function (obj: {[string]: Value}, key: string) {
         const v = obj[key];
-        if (typeof v === 'undefined') {
-            throw new RuntimeError(`Property '${key}' not found in ${name || `object`}`);
-        }
-        return obj[key];
+        return typeof v === 'undefined' ? null : v;
     },
 
     has: function (obj: {[string]: Value}, key: string, name?: string) {
@@ -99,72 +95,108 @@ module.exports = () => ({
         return toString(typeOf(x));
     },
 
-    as: function (value: Value, expectedType: Type, name?: string) {
-        assert(isValue(value), `Invalid value ${JSON.stringify(value)}`);
-        assert(expectedType.kind, `Invalid type ${JSON.stringify(expectedType)}`);
-
-        let type;
-        let typeError = false;
-        if (expectedType.kind === 'Null') {
-            typeError = value === null;
-        } else if (expectedType.kind === 'Value') {
-            typeError = false;
-        } else if (expectedType.kind !== 'Array' && expectedType.kind !== 'Color' && expectedType.kind !== 'Error') {
-            typeError = typeof value !== jsTypes[expectedType.kind];
-        } else {
-            type = typeOf(value);
-            typeError = checkSubtype(expectedType, type);
+    asJSType: function (expectedType: string, args: Array<()=>Value>) {
+        let value;
+        for (const arg of args) {
+            value = arg();
+            if (typeof value === expectedType && value !== null) {
+                return value;
+            }
         }
+        const expected = jsTypes[expectedType].kind;
+        throw new RuntimeError(`Expected value to be of type ${expected}, but found ${this.typeOf(value)} instead.`);
+    },
+
+    asArray: function (value: Value, expectedType: ArrayType) {
+        const type = typeOf(value);
+        const typeError = checkSubtype(expectedType, type);
 
         if (typeError) {
-            if (!type) type = typeOf(value);
-            throw new RuntimeError(`Expected ${name || 'value'} to be of type ${toString(expectedType)}, but found ${toString(type)} instead.`);
+            throw new RuntimeError(`Expected value to be of type ${toString(expectedType)}, but found ${toString(type)} instead.`);
         }
 
         return value;
     },
 
-    toColor: function (input: Value) {
-        if (typeof input === 'string') {
-            return this.parseColor(input);
-        } else if (Array.isArray(input) && (input.length === 3 || input.length === 4)) {
-            return this.rgba(...input);
-        } else {
-            throw new RuntimeError(`Could not parse color from value '${JSON.stringify(input)}'`);
+    toColor: function (args: Array<()=>any>) {
+        let input;
+        let error;
+        for (const arg of args) {
+            input = arg();
+            error = null;
+            if (typeof input === 'string') {
+                const c = this._parseColor(input);
+                if (c) return c;
+            } else if (Array.isArray(input)) {
+                if (input.length < 3 || input.length > 4) {
+                    error = `Invalid rbga value ${JSON.stringify(input)}: expected an array containing either three or four numeric values.`;
+                } else {
+                    error = this._validateRGBA(input[0], input[1], input[2], input[3]);
+                }
+
+                if (!error) return new Color(input[0] / 255, input[1] / 255, input[2] / 255, input[3]);
+            }
         }
+        throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
     },
 
-    _parseColorCache: ({}: {[string]: Color}),
-    parseColor: function (input: string) {
+    _parseColorCache: ({}: {[string]: ?Color}),
+    _parseColor: function (input: string): ?Color {
         let cached = this._parseColorCache[input];
         if (!cached) {
             const c = parseColor(input);
-            if (!c)
-                throw new RuntimeError(`Could not parse color from value '${input}'`);
-            cached = this._parseColorCache[input] = new Color(...c);
+            cached = this._parseColorCache[input] = c ? new Color(c[0], c[1], c[2], c[3]) : null;
         }
         return cached;
     },
 
     rgba: function (r: number, g: number, b: number, a?: number) {
-        ensure(r >= 0 && r <= 255 &&
-            g >= 0 && g <= 255 &&
-            b >= 0 && b <= 255, `Invalid rgba value [${[r, g, b, a || 1].join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`);
-        ensure(typeof a === 'undefined' ||
-            (a >= 0 && a <= 1), `Invalid rgba value [${[r, g, b, a || 1].join(', ')}]: 'a' must be between 0 and 1.`);
+        const error = this._validateRGBA(r, g, b, a);
+        if (error) throw new RuntimeError(error);
         return new Color(r / 255, g / 255, b / 255, a);
     },
 
-    toString: function(value: Value) {
-        const type = this.typeOf(value);
-        ensure(value === null || /^(String|Number|Boolean)$/.test(type), `Expected a primitive value in ["string", ...], but found ${type} instead.`);
-        return String(value);
+    _validateRGBA(r: number, g: number, b: number, a?: number): ?string {
+        if (!(
+            typeof r === 'number' && r >= 0 && r <= 255 &&
+            typeof g === 'number' && g >= 0 && g <= 255 &&
+            typeof b === 'number' && b >= 0 && b <= 255
+        )) {
+            const value = typeof a === 'number' ? [r, g, b, a] : [r, g, b];
+            return `Invalid rgba value [${value.join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`;
+        }
+
+        if (!(
+            typeof a === 'undefined' || (a >= 0 && a <= 1)
+        )) {
+            return `Invalid rgba value [${[r, g, b, a].join(', ')}]: 'a' must be between 0 and 1.`;
+        }
+
+        return null;
     },
 
-    toNumber: function(value: Value) {
-        const num = Number(value);
-        ensure(value !== null && !isNaN(num), `Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
-        return num;
+    toString: function(value: Value) {
+        const type = typeof value;
+        if (value === null || type === 'string' || type === 'number' || type === 'boolean') {
+            return String(value);
+        } else if (value instanceof Color) {
+            const [r, g, b, a] = value.value;
+            return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+        } else {
+            return JSON.stringify(value);
+        }
+    },
+
+    toNumber: function(args: Array<()=>Value>) {
+        let value;
+        for (const arg of args) {
+            value = arg();
+            if (value === null) continue;
+            const num = Number(value);
+            if (isNaN(num)) continue;
+            return num;
+        }
+        throw new RuntimeError(`Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
     },
 
     geometryType: function(feature: Feature) {
@@ -208,6 +240,15 @@ module.exports = () => ({
         }
 
         return interpolate[resultType](outputLower, outputUpper, t);
+    },
+
+    coalesce(args: Array<() => Value>) {
+        let result = null;
+        for (const arg of args) {
+            result = arg();
+            if (result !== null) break;
+        }
+        return result;
     }
 });
 

@@ -19,7 +19,9 @@
       "type": "Boolean"
     },
     "outputs": [
-      {"error": "Property 'x' not found in feature.properties"},
+      {
+        "error": "Expected value to be of type Boolean, but found Null instead."
+      },
       true,
       false,
       {

@@ -1,12 +1,11 @@
 {
   "expectExpressionType": null,
-  "expression": ["to-string", ["get", "x"]],
+  "expression": ["string", ["get", "x"], "default"],
   "inputs": [
+    [{}, {"properties": {"x": "1"}}],
     [{}, {"properties": {"x": 1}}],
     [{}, {"properties": {"x": false}}],
-    [{}, {"properties": {"x": null}}],
-    [{}, {"properties": {"x": [1, 2]}}],
-    [{}, {"properties": {"x": {"y": 1}}}]
+    [{}, {"properties": {"x": null}}]
   ],
   "expected": {
     "compiled": {
@@ -15,6 +14,6 @@
       "isZoomConstant": true,
       "type": "String"
     },
-    "outputs": ["1", "false", "null", "[1,2]", "{\"y\":1}"]
+    "outputs": ["1", "default", "default", "default"]
   }
 }

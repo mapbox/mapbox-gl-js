@@ -3,6 +3,7 @@
 const assert = require('assert');
 const parseExpression = require('../parse_expression');
 const { typeOf } = require('../values');
+const Literal = require('./literal');
 
 import type { Expression, ParsingContext, CompilationContext } from '../expression';
 import type { Type } from '../types';
@@ -107,15 +108,12 @@ class Match implements Expression {
         for (let i = 0; i < labels.length; i++) {
             if (i > 0) lookup += ', ';
             const label = labels[i];
-            lookup += `${String(label)}: ${outputs[this.cases[label]]}`;
+            lookup += `${Literal.compile(label)}: ${outputs[this.cases[label]]}`;
         }
 
         const lookupObject = ctx.addVariable(`{${lookup}}`);
 
-        const inputType = this.inputType.kind !== 'Array' ?
-            `$this.types.${this.inputType.kind}` : JSON.stringify(this.inputType);
-
-        return `(${lookupObject}[$this.as(${input}, ${inputType})] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
+        return `(${lookupObject}[${input}] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
     }
 
     serialize() {

@@ -23,9 +23,9 @@
     "outputs": [
       1,
       1,
-      2,
-      3,
-      {"error": "Property 'z' not found in feature.properties"}
+      {"error": "Expected value to be of type Number, but found Null instead."},
+      {"error": "Expected value to be of type Number, but found Null instead."},
+      {"error": "Expected value to be of type Number, but found Null instead."}
     ]
   }
 }

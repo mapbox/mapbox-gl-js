@@ -1,12 +1,6 @@
 {
   "expectExpressionType": null,
-  "expression": [
-    "coalesce",
-    ["number", ["get", "x"]],
-    ["number", ["get", "y"]],
-    ["number", ["get", "z"]],
-    0
-  ],
+  "expression": ["coalesce", ["get", "x"], ["get", "y"], ["get", "z"], 0],
   "inputs": [
     [{}, {"properties": {"x": 1}}],
     [{}, {"properties": {"x": 1, "y": 2, "z": 3}}],
@@ -19,7 +13,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Number"
+      "type": "Value"
     },
     "outputs": [1, 1, 2, 3, 0]
   }

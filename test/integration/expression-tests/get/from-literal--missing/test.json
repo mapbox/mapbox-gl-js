@@ -9,6 +9,8 @@
       "isZoomConstant": true,
       "type": "Number"
     },
-    "outputs": [{"error": "Property 'x' not found in object"}]
+    "outputs": [
+      {"error": "Expected value to be of type Number, but found Null instead."}
+    ]
   }
 }

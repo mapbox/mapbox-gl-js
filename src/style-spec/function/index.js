@@ -1,5 +1,6 @@
 // @flow
 
+const parseColor = require('../util/parse_color');
 const compileExpression = require('./compile');
 const convert = require('./convert');
 const {
@@ -51,52 +52,76 @@ type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValu
 function createFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): StyleFunction {
     let expr;
 
+    let defaultValue = propertySpec.default;
     if (!isFunctionDefinition(parameters)) {
         expr = convert.value(parameters, propertySpec);
         if (expr === null) {
             expr = getDefaultValue(propertySpec);
         }
     } else if (typeof parameters === 'object' && parameters !== null && typeof parameters.expression !== 'undefined') {
-        expr = ['coalesce', parameters.expression, getDefaultValue(propertySpec)];
+        expr = parameters.expression;
     } else {
         expr = convert.function(parameters, propertySpec);
-    }
-
-    const expectedType = getExpectedType(propertySpec);
-    const compiled = compileExpression(expr, expectedType);
-    if (compiled.result === 'success') {
-        const warningHistory: {[key: string]: boolean} = {};
-        const f = function (globalProperties: {+zoom?: number}, feature?: Feature) {
-            try {
-                const val = compiled.function(globalProperties, feature);
-                return val === null ? undefined : val;
-            } catch (e) {
-                if (!warningHistory[e.message]) {
-                    warningHistory[e.message] = true;
-                    if (typeof console !== 'undefined') console.warn(e.message);
-                }
-                return undefined;
-            }
-        };
-        f.isFeatureConstant = compiled.isFeatureConstant;
-        f.isZoomConstant = compiled.isZoomConstant;
-        if (!f.isZoomConstant) {
-            // capture metadata from the curve definition that's needed for
-            // our prepopulate-and-interpolate approach to paint properties
-            // that are zoom-and-property dependent.
-            f.zoomCurve = findZoomCurve(compiled.expression);
-            if (!(f.zoomCurve instanceof Curve)) {
-                // should be prevented by validation.
-                throw new Error(f.zoomCurve ? f.zoomCurve.error : 'Invalid zoom expression');
-            }
+        if (parameters && typeof parameters.default !== 'undefined') {
+            defaultValue = parameters.default;
         }
-
-        // useful for debugging, especially for converted stop functions
-        f.rawExpression = expr;
-        return f;
-    } else {
-        throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
     }
+
+    if (propertySpec.type === 'color') {
+        defaultValue = parseColor((defaultValue: any));
+    }
+
+    let evaluate: StyleFunction;
+
+    if (expr === null) {
+        evaluate = function () { return defaultValue; };
+        evaluate.isFeatureConstant = true;
+        evaluate.isZoomConstant = true;
+    } else {
+        const expectedType = getExpectedType(propertySpec);
+        const compiled = compileExpression(expr, expectedType);
+        if (compiled.result === 'success') {
+            const warningHistory: {[key: string]: boolean} = {};
+            evaluate = function (globalProperties: {+zoom?: number}, feature?: Feature) {
+                try {
+                    const val = compiled.function(globalProperties, feature);
+                    if (val === null || val === undefined) {
+                        return defaultValue;
+                    }
+                    return val;
+                } catch (e) {
+                    if (!warningHistory[e.message]) {
+                        warningHistory[e.message] = true;
+                        if (typeof console !== 'undefined') {
+                            console.warn(e.message);
+                        }
+                    }
+                    return defaultValue;
+                }
+            };
+            evaluate.isFeatureConstant = compiled.isFeatureConstant;
+            evaluate.isZoomConstant = compiled.isZoomConstant;
+            if (!evaluate.isZoomConstant) {
+                // capture metadata from the curve definition that's needed for
+                // our prepopulate-and-interpolate approach to paint properties
+                // that are zoom-and-property dependent.
+                evaluate.zoomCurve = findZoomCurve(compiled.expression);
+                if (!(evaluate.zoomCurve instanceof Curve)) {
+                    // should be prevented by validation.
+                    throw new Error(evaluate.zoomCurve ? evaluate.zoomCurve.error : 'Invalid zoom expression');
+                }
+            }
+
+        } else {
+            // this should have been caught in validation
+            throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+        }
+    }
+
+    // useful for debugging, especially for converted stop functions
+    evaluate.rawExpression = expr;
+
+    return evaluate;
 }
 
 module.exports = createFunction;

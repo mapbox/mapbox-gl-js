@@ -1869,7 +1869,7 @@
         "doc": "Yields the output value whose label value matches the input, or the fallback value if no match is found."
       },
       "coalesce": {
-        "doc": "Evaluates each expression in turn until the first non-null, non-error value is obtained, and returns that value"
+        "doc": "Evaluates each expression in turn until the first non-null value is obtained, and returns that value."
       },
       "curve": {
         "doc": "Interpolates an output value from the given input/output pairs using the specified interpolation strategy.  The input levels must be numeric literals in strictly ascending order."
@@ -1887,13 +1887,13 @@
         "doc": "Returns a string describing the type of the given value."
       },
       "string": {
-        "doc": "Asserts that the input value is a String."
+        "doc": "Asserts that the input value is a String. If multiple values are provided, each one is evaluated in order until a String value is obtained."
       },
       "number": {
-        "doc": "Asserts that the input value is a Number."
+        "doc": "Asserts that the input value is a Number. If multiple values are provided, each one is evaluated in order until a Number value is obtained."
       },
       "boolean": {
-        "doc": "Asserts that the input value is a Boolean."
+        "doc": "Asserts that the input value is a Boolean. If multiple values are provided, each one is evaluated in order until a Boolean value is obtained."
       },
       "object": {
         "doc": "Asserts that the input value is an Objects."
@@ -1902,7 +1902,7 @@
         "doc": "Coerces the input value to a String."
       },
       "to-number": {
-        "doc": "Coerces the input value to a Number, if possible."
+        "doc": "Coerces the input value to a Number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained."
       },
       "to-boolean": {
         "doc": "Coerces the input value to a Boolean."
@@ -1911,7 +1911,7 @@
         "doc": "Returns the an array of the given color's r, g, b, a components."
       },
       "to-color": {
-        "doc": "Coerces the input value to a Color."
+        "doc": "Coerces the input value to a Color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained."
       },
       "rgb": {
         "doc": "Creates a color value from r, g, b components."
@@ -1920,7 +1920,7 @@
         "doc": "Creates a color value from r, g, b, a components."
       },
       "get": {
-        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
+        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object."
       },
       "has": {
         "doc": "Tests for the presence of an object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
