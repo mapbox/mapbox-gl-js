@@ -1,7 +1,7 @@
 // @flow
 
 const FeatureIndex = require('../data/feature_index');
-const PrepareSymbol = require('../symbol/prepare_symbol');
+const PrepareSymbols = require('../symbol/prepare_symbols');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
 const SymbolBucket = require('../data/bucket/symbol_bucket');
@@ -174,7 +174,7 @@ class WorkerTile {
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
 
-                    PrepareSymbol.prepare(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
+                    PrepareSymbols.prepare(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
                 }
 
                 this.status = 'done';

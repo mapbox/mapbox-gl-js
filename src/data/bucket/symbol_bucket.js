@@ -330,7 +330,7 @@ class SymbolBuffers {
  *    and icons needed (by this bucket and any others). When glyphs and icons
  *    have been received, the WorkerTile creates a CollisionIndex and invokes:
  *
- * 3. PrepareSymbol#prepare(bucket, stacks, icons) perform texts shaping and
+ * 3. PrepareSymbols#prepare(bucket, stacks, icons) perform texts shaping and
  *    layout on a Symbol Bucket. This step populates:
  *      `this.symbolInstances`: metadata on generated symbols
  *      `this.collisionBoxArray`: collision data for use by foreground
