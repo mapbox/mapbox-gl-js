@@ -20,8 +20,5 @@
   "render-tests/symbol-avoid-edges/default": "WIP Ignore for PR #5150 (avoid-edges)",
   "render-tests/symbol-avoid-edges/rotated": "WIP Ignore for PR #5150 (avoid-edges)",
   "render-tests/symbol-avoid-edges/rotated-false": "WIP Ignore for PR #5150 (avoid-edges)",
-  "render-tests/symbol-avoid-edges/true": "WIP Ignore for PR #5150 (avoid-edges)",
-  "render-tests/symbol-spacing/line-close": "WIP Ignore for PR #5150 (no more tile clipping artifacts)",
-  "render-tests/symbol-spacing/line-far": "WIP Ignore for PR #5150 (no more tile clipping artifacts)",
-  "render-tests/text-tile-edge-clipping/default": "WIP Ignore for PR #5150 (no more tile clipping artifacts)"
+  "render-tests/symbol-avoid-edges/true": "WIP Ignore for PR #5150 (avoid-edges)"
 }
