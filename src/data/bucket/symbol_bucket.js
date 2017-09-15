@@ -28,10 +28,6 @@ import type {
 import type StyleLayer from '../../style/style_layer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
-import type {StyleImage} from '../../style/style_image';
-import type {StyleGlyph} from '../../style/style_glyph';
-import type {ImagePosition} from '../../render/image_atlas';
-import type {GlyphPosition} from '../../render/glyph_atlas';
 
 type SymbolBucketParameters = BucketParameters & {
     sdfIcons: boolean,

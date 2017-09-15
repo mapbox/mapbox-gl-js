@@ -81,7 +81,6 @@ test('SymbolBucket', (t) => {
     t.end();
 });
 
-
 test('SymbolBucket integer overflow', (t) => {
     t.stub(util, 'warnOnce');
     t.stub(SymbolBucket, 'MAX_GLYPHS').value(5);
@@ -90,8 +89,8 @@ test('SymbolBucket integer overflow', (t) => {
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    PrepareSymbols.prepare(bucket, stacks, {});
-    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    const fakeGlyph = { rect: { w: 10, h: 10 }, metrics: { left: 10, top: 10, advance: 10 } };
+    PrepareSymbols.prepare(bucket, stacks, { 'Test': {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph} });
 
     t.ok(util.warnOnce.calledOnce);
     t.ok(util.warnOnce.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
