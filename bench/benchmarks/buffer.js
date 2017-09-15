@@ -24,7 +24,7 @@ config.ACCESS_TOKEN = accessToken;
  * Individual files may export a single class deriving from `Benchmark`, or a "benchmark suite" consisting
  * of an array of such classes.
  */
-module.exports = coordinates.map((coordinate) => {
+module.exports = [coordinates[0]].map((coordinate) => {
     return class BufferBenchmark extends Benchmark {
         glyphs: Object;
         icons: Object;
