@@ -68,15 +68,14 @@ function prepare(bucket: SymbolBucket,
         const text = feature.text;
         if (text) {
             const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
-            const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom}, feature.properties).map((t)=> t * oneEm);
-            const spacing = bucket.layers[0].getLayoutValue('text-letter-spacing', {zoom: bucket.zoom}, feature.properties) * oneEm;
+            const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom}, feature).map((t)=> t * oneEm);
+            const spacing = bucket.layers[0].getLayoutValue('text-letter-spacing', {zoom: bucket.zoom}, feature) * oneEm;
             const spacingIfAllowed = scriptDetection.allowsLetterSpacing(text) ? spacing : 0;
-            const textAnchor = bucket.layers[0].getLayoutValue('text-anchor', {zoom: bucket.zoom}, feature.properties);
-            const textJustify = bucket.layers[0].getLayoutValue('text-justify', {zoom: bucket.zoom}, feature.properties);
+            const textAnchor = bucket.layers[0].getLayoutValue('text-anchor', {zoom: bucket.zoom}, feature);
+            const textJustify = bucket.layers[0].getLayoutValue('text-justify', {zoom: bucket.zoom}, feature);
             const maxWidth = layout['symbol-placement'] !== 'line' ?
-                bucket.layers[0].getLayoutValue('text-max-width', {zoom: bucket.zoom}, feature.properties) * oneEm :
+                bucket.layers[0].getLayoutValue('text-max-width', {zoom: bucket.zoom}, feature) * oneEm :
                 0;
-
 
             shapedTextOrientations.horizontal = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
             if (allowsVerticalWritingMode && textAlongLine && keepUpright) {
@@ -128,17 +127,17 @@ function addFeature(bucket: SymbolBucket,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | void,
                     glyphPositionMap: {[number]: GlyphPosition}) {
-    const layoutTextSize = bucket.layers[0].getLayoutValue('text-size', {zoom: bucket.zoom + 1}, feature.properties);
-    const layoutIconSize = bucket.layers[0].getLayoutValue('icon-size', {zoom: bucket.zoom + 1}, feature.properties);
+    const layoutTextSize = bucket.layers[0].getLayoutValue('text-size', {zoom: bucket.zoom + 1}, feature);
+    const layoutIconSize = bucket.layers[0].getLayoutValue('icon-size', {zoom: bucket.zoom + 1}, feature);
 
-    const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom }, feature.properties);
-    const iconOffset = bucket.layers[0].getLayoutValue('icon-offset', {zoom: bucket.zoom }, feature.properties);
+    const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom }, feature);
+    const iconOffset = bucket.layers[0].getLayoutValue('icon-offset', {zoom: bucket.zoom }, feature);
 
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
     // use the same value when calculating anchor positions.
-    let textMaxSize = bucket.layers[0].getLayoutValue('text-size', {zoom: 18}, feature.properties);
+    let textMaxSize = bucket.layers[0].getLayoutValue('text-size', {zoom: 18}, feature);
     if (textMaxSize === undefined) {
         textMaxSize = layoutTextSize;
     }
@@ -179,7 +178,7 @@ function addFeature(bucket: SymbolBucket,
             addToBuffers, bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
             textBoxScale, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            {zoom: bucket.zoom}, feature, glyphPositionMap);
+            {zoom: bucket.zoom}, feature, glyphPositionMap));
     };
 
     if (symbolPlacement === 'line') {
