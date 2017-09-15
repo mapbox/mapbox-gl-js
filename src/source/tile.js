@@ -375,6 +375,9 @@ class Tile {
         // using the global shared buffers for covering the entire tile.
         if (util.deepEqual(mask, [0])) return;
 
+        // mask is empty because all four children are loaded
+        if (mask.length === 0) return;
+
         const maskedBoundsArray = new RasterBoundsArray();
         for (let i = 0; i < mask.length; i++) {
             const maskCoord = TileCoord.fromID(mask[i]);

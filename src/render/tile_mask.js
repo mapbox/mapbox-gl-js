@@ -77,6 +77,8 @@ function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array
     // If the reference or any of its children is found in the list, we need to recurse.
     for (let i = 0; i < childArray.length; i++) {
         const childTile = childArray[i];
+        // childTile is from a larger wrap than the rootTile so it cannot be a child tile
+        if (lowerBound.isLessThan(childTile.coord)) break;
         // The current tile is masked out, so we don't need to add them to the mask set.
         if (ref.id === childTile.coord.id) {
             return;

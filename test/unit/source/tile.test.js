@@ -156,6 +156,52 @@ test('Tile#setMask', (t) => {
 
 });
 
+test('Tile#isLessThan', (t)=>{
+    t.test('correctly sorts tiles', (t)=>{
+        const tiles = [
+            new TileCoord(9, 146, 195, 0),
+            new TileCoord(9, 147, 195, 0),
+            new TileCoord(9, 148, 195, 0),
+            new TileCoord(9, 149, 195, 0),
+            new TileCoord(9, 144, 196, 1),
+            new TileCoord(9, 145, 196, 0),
+            new TileCoord(9, 146, 196, 0),
+            new TileCoord(9, 147, 196, 1),
+            new TileCoord(9, 145, 194, 0),
+            new TileCoord(9, 149, 196, 0),
+            new TileCoord(10, 293, 391, 0),
+            new TileCoord(10, 291, 390, 0),
+            new TileCoord(10, 293, 390, 1),
+            new TileCoord(10, 294, 390, 0),
+            new TileCoord(10, 295, 390, 0),
+            new TileCoord(10, 291, 391, 0),
+        ];
+
+        const sortedTiles = tiles.sort((a, b) => { return a.isLessThan(b) ? -1 : b.isLessThan(a) ? 1 : 0; });
+
+        t.deepEqual(sortedTiles, [
+            new TileCoord(9, 145, 194, 0),
+            new TileCoord(9, 145, 196, 0),
+            new TileCoord(9, 146, 195, 0),
+            new TileCoord(9, 146, 196, 0),
+            new TileCoord(9, 147, 195, 0),
+            new TileCoord(9, 148, 195, 0),
+            new TileCoord(9, 149, 195, 0),
+            new TileCoord(9, 149, 196, 0),
+            new TileCoord(10, 291, 390, 0),
+            new TileCoord(10, 291, 391, 0),
+            new TileCoord(10, 293, 391, 0),
+            new TileCoord(10, 294, 390, 0),
+            new TileCoord(10, 295, 390, 0),
+            new TileCoord(9, 144, 196, 1),
+            new TileCoord(9, 147, 196, 1),
+            new TileCoord(10, 293, 390, 1)
+        ]);
+        t.end();
+    });
+    t.end();
+});
+
 test('Tile#redoPlacement', (t) => {
 
     test('redoPlacement on an empty tile', (t) => {

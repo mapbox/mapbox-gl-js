@@ -78,8 +78,14 @@ class TileCoord {
 
     isLessThan(rhs: TileCoord) {
         if (this.w < rhs.w) return true;
+        if (this.w > rhs.w) return false;
+
         if (this.z < rhs.z) return true;
+        if (this.z > rhs.z) return false;
+
         if (this.x < rhs.x) return true;
+        if (this.x > rhs.x) return false;
+
         if (this.y < rhs.y) return true;
         return false;
     }
