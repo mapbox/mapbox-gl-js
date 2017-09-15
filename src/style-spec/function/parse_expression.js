@@ -1,5 +1,7 @@
 // @flow
 
+const Literal = require('./definitions/literal');
+const {CompilationContext} = require('./expression');
 import type {ParsingContext, Expression} from './expression';
 
 /**
@@ -55,6 +57,22 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
                 }
             }
 
+            // If an expression's arguments are all literals, we can evaluate
+            // it immediately and replace it with a literal value in the
+            // parsed/compiled result.
+            if (isConstant(parsed)) {
+                const cc = new CompilationContext();
+                const ec = require('./evaluation_context')();
+                const compiled = cc.compileToFunction(parsed, ec);
+                try {
+                    const value = compiled({}, {});
+                    parsed = new Literal(parsed.key, parsed.type, value);
+                } catch (e) {
+                    context.error(e.message);
+                    return null;
+                }
+            }
+
             return parsed;
         }
 
@@ -66,6 +84,23 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
     } else {
         return context.error(`Expected an array, but found ${typeof expr} instead.`);
     }
+}
+
+const nonConstantExpressions = [ 'error', 'get', 'has', 'properties', 'id', 'geometry-type', 'zoom' ];
+function isConstant(expression: Expression) {
+    const {CompoundExpression} = require('./compound_expression');
+    const Var = require('./definitions/var');
+    if (expression instanceof CompoundExpression && nonConstantExpressions.indexOf(expression.name) >= 0) {
+        return false;
+    } else if (expression instanceof Var) {
+        return false;
+    }
+
+    let constant = true;
+    expression.eachChild(arg => {
+        constant = constant && (arg instanceof Literal);
+    });
+    return constant;
 }
 
 module.exports = parseExpression;

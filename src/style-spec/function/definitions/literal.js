@@ -4,7 +4,7 @@ const { Color, isValue, typeOf } = require('../values');
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
-import type { Expression, ParsingContext }  from '../expression';
+import type { Expression, ParsingContext, CompilationContext }  from '../expression';
 
 const u2028 = /\u2028/g;
 const u2029 = /\u2029/g;
@@ -45,9 +45,19 @@ class Literal implements Expression {
         return new Literal(context.key, type, value);
     }
 
-    compile() {
-        const value = Literal.compile(this.value);
-        return typeof this.value === 'object' ?  `(${value})` : value;
+    compile(ctx: CompilationContext) {
+        let value;
+        if (this.type.kind === 'Color') {
+            value = `(new $this.Color(${(this.value: any).join(', ')}))`;
+        } else {
+            value = Literal.compile(this.value);
+        }
+
+        if (typeof this.value === 'object' && this.value !== null) {
+            return ctx.addVariable(value);
+        } else {
+            return value;
+        }
     }
 
     static compile(value: Value) {
