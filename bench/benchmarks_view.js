@@ -37,7 +37,7 @@ class DensityPlot extends Plot {
             width = this.node.clientWidth - margin.left - margin.right,
             height = 200 - margin.top - margin.bottom;
 
-        const x = d3.scaleLinear()
+        const x = d3.scaleTime()
             .domain(d3.extent(Array.prototype.concat.apply([], this.props.versions.map(version => version.samples))))
             .range([0, width])
             .nice();
@@ -64,7 +64,7 @@ class DensityPlot extends Plot {
             .attr("x", width)
             .attr("y", -6)
             .style("text-anchor", "end")
-            .text("Time (ms)");
+            .text("Time");
 
         enter
             .append("g")
@@ -102,7 +102,7 @@ class RegressionPlot extends Plot {
             .range([0, width])
             .nice();
 
-        const y = d3.scaleLinear()
+        const y = d3.scaleTime()
             .domain([0, d3.max(this.props.versions.map(version => d3.max(version.regression || [], d => d[1])))])
             .range([height, 0])
             .nice();
@@ -138,7 +138,7 @@ class RegressionPlot extends Plot {
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .text("Time (ms)")
+            .text("Time")
 
         const version = svg.selectAll(".version")
             .data(this.props.versions);
