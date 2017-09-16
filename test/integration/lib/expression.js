@@ -5,7 +5,21 @@ const path = require('path');
 const harness = require('./harness');
 const diff = require('diff');
 const fs = require('fs');
-const stringify = require('json-stringify-pretty-compact');
+const compactStringify = require('json-stringify-pretty-compact');
+
+// we have to handle this edge case here because we have test fixtures for this
+// edge case, and we don't want UPDATE=1 to mess with them
+function stringify(v) {
+    let s = compactStringify(v);
+    // http://timelessrepo.com/json-isnt-a-javascript-subset
+    if (s.indexOf('\u2028') >= 0) {
+        s = s.replace(/\u2028/g, '\\u2028');
+    }
+    if (s.indexOf('\u2029') >= 0) {
+        s = s.replace(/\u2029/g, '\\u2029');
+    }
+    return s;
+}
 
 let linter;
 try {
