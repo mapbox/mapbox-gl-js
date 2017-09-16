@@ -405,6 +405,7 @@ test('Style#setState', (t) => {
             'setFilter',
             'addSource',
             'removeSource',
+            'setData',
             'setLayerZoomRange',
             'setLight'
         ].forEach((method) => t.stub(style, method).callsFake(() => t.fail(`${method} called`)));
