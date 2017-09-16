@@ -9,8 +9,6 @@
       "isZoomConstant": true,
       "type": "Color"
     },
-    "outputs": [
-      [1, 0, 0, 1]
-    ]
+    "outputs": [[1, 0, 0, 1]]
   }
 }

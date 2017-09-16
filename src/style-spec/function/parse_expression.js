@@ -60,7 +60,7 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
             // If an expression's arguments are all literals, we can evaluate
             // it immediately and replace it with a literal value in the
             // parsed/compiled result.
-            if (isConstant(parsed)) {
+            if (!(parsed instanceof Literal) && isConstant(parsed)) {
                 const cc = new CompilationContext();
                 const ec = require('./evaluation_context')();
                 const compiled = cc.compileToFunction(parsed, ec);
@@ -86,21 +86,27 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
     }
 }
 
-const nonConstantExpressions = [ 'error', 'get', 'has', 'properties', 'id', 'geometry-type', 'zoom' ];
 function isConstant(expression: Expression) {
+    // requires within function body to workaround circular dependency
     const {CompoundExpression} = require('./compound_expression');
+    const {isZoomConstant, isFeatureConstant} = require('./is_constant');
     const Var = require('./definitions/var');
-    if (expression instanceof CompoundExpression && nonConstantExpressions.indexOf(expression.name) >= 0) {
+
+    if (expression instanceof Var) {
         return false;
-    } else if (expression instanceof Var) {
+    } else if (expression instanceof CompoundExpression && expression.name === 'error') {
         return false;
     }
 
-    let constant = true;
+    let literalArgs = true;
     expression.eachChild(arg => {
-        constant = constant && (arg instanceof Literal);
+        if (!(arg instanceof Literal)) { literalArgs = false; }
     });
-    return constant;
+    if (!literalArgs) {
+        return false;
+    }
+
+    return isZoomConstant(expression) && isFeatureConstant(expression);
 }
 
 module.exports = parseExpression;
