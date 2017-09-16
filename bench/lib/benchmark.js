@@ -25,6 +25,13 @@ class Benchmark {
     bench(): Promise<void> | void {}
 
     /**
+     * The `teardown` method is intended to be overridden by subclasses. It will be called once, after
+     * running all benchmark iterations, and may perform any necessary cleanup. If cleaning up involves
+     * an asynchronous step, `teardown` may return a promise.
+     */
+    teardown(): Promise<void> | void {}
+
+    /**
      * Run the benchmark by executing `setup` once and then sampling the execution time of `bench` some
      * number of times, while collecting performance statistics.
      */
@@ -48,7 +55,7 @@ class Benchmark {
                 n += 1;
                 return this.runIterations(n).then(next);
             } else {
-                return result;
+                return Promise.resolve(this.teardown()).then(() => result);
             }
         }
 

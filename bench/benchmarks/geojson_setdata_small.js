@@ -1,43 +1,70 @@
 'use strict';
 
-const Evented = require('../../src/util/evented');
-const formatNumber = require('../lib/format_number');
-const setDataPerf = require('../lib/set_data_perf');
-const setupGeoJSONMap = require('../lib/setup_geojson_map');
+const Benchmark = require('../lib/benchmark');
 const createMap = require('../lib/create_map');
 
-const featureCollection = {
-    'type': 'FeatureCollection',
-    'features': [{
-        'type': 'Feature',
-        'properties': {},
-        'geometry': {
-            'type': 'Point',
-            'coordinates': [ -77.032194, 38.912753 ]
-        }
-    }]
-};
+module.exports = class GeoJSONSetDataSmall extends Benchmark {
+    setup() {
+        return new Promise((resolve, reject) => {
+            this.data = {
+                'type': 'FeatureCollection',
+                'features': [{
+                    'type': 'Feature',
+                    'properties': {},
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [ -77.032194, 38.912753 ]
+                    }
+                }]
+            };
 
-module.exports = function() {
-    const evented = new Evented();
+            this.map = createMap({
+                width: 1024,
+                height: 768,
+                zoom: 5,
+                center: [-77.032194, 38.912753],
+                style: 'mapbox://styles/mapbox/light-v9'
+            });
 
-    let map = createMap({
-        width: 1024,
-        height: 768,
-        zoom: 5,
-        center: [-77.032194, 38.912753],
-        style: 'mapbox://styles/mapbox/bright-v9'
-    });
+            this.map
+                .on('error', reject)
+                .on('load', () => {
+                    this.map.addSource('geojson', {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'FeatureCollection',
+                            'features': []
+                        }
+                    });
 
-    map.on('load', () => {
-        map = setupGeoJSONMap(map);
+                    this.map.addLayer({
+                        'id': 'geojson-point',
+                        'source': 'geojson',
+                        'type': 'circle',
+                        'filter': ['==', '$type', 'Point']
+                    });
 
-        setDataPerf(map.style.sourceCaches.geojson, featureCollection, (err, ms) => {
-            map.remove();
-            if (err) return evented.fire('error', {error: err});
-            evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});
+                    resolve();
+                });
         });
-    });
+    }
 
-    return evented;
+    bench() {
+        return new Promise((resolve, reject) => {
+            const sourceCache = this.map.style.sourceCaches.geojson;
+
+            sourceCache.on('data', function onData() {
+                if (sourceCache.loaded()) {
+                    sourceCache.off('data', onData);
+                    resolve();
+                }
+            });
+
+            sourceCache.getSource().setData(this.data);
+        });
+    }
+
+    teardown() {
+        this.map.remove();
+    }
 };
