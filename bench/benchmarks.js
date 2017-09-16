@@ -13,17 +13,17 @@ function register(Benchmark) {
     window.mapboxglBenchmarks[Benchmark.name][version] = new Benchmark();
 }
 
-register(require('./benchmarks/buffer'));
-// registerBenchmarks('map-load', require('./benchmarks/map_load'));
-// registerBenchmarks('style-load', require('./benchmarks/style_load'));
-// registerBenchmarks('tile_layout_dds', require('./benchmarks/tile_layout_dds'));
-// registerBenchmarks('fps', require('./benchmarks/fps'));
-// registerBenchmarks('frame-duration', require('./benchmarks/frame_duration'));
-// registerBenchmarks('query-point', require('./benchmarks/query_point'));
-// registerBenchmarks('query-box', require('./benchmarks/query_box'));
-// registerBenchmarks('geojson-setdata-small', require('./benchmarks/geojson_setdata_small'));
-// registerBenchmarks('geojson-setdata-large', require('./benchmarks/geojson_setdata_large'));
-// registerBenchmarks('filter', require('./benchmarks/filter'));
+register(require('./benchmarks/tile_parse'));
+register(require('./benchmarks/render'));
+register(require('./benchmarks/map_load'));
+register(require('./benchmarks/style_load'));
+register(require('./benchmarks/geojson_setdata_large'));
+register(require('./benchmarks/geojson_setdata_small'));
+
+// register(require('./benchmarks/tile_layout_dds'));
+// register(require('./benchmarks/query_point'));
+// register(require('./benchmarks/query_box'));
+// register(require('./benchmarks/filter'));
 
 // Ensure the global worker pool is never drained. Browsers have resource limits
 // on the max number of workers that can be created per page.

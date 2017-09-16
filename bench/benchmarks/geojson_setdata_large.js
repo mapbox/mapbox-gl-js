@@ -1,42 +1,63 @@
 'use strict';
 
-const Evented = require('../../src/util/evented');
-const formatNumber = require('../lib/format_number');
-const setDataPerf = require('../lib/set_data_perf');
-const setupGeoJSONMap = require('../lib/setup_geojson_map');
+const Benchmark = require('../lib/benchmark');
 const createMap = require('../lib/create_map');
-const ajax = require('../../src/util/ajax');
 
-module.exports = function() {
-    const evented = new Evented();
+module.exports = class GeoJSONSetDataLarge extends Benchmark {
+    setup() {
+        return fetch('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson')
+            .then(response => response.json())
+            .then(json => {
+                return new Promise((resolve, reject) => {
+                    this.data = json;
+                    this.map = createMap({
+                        width: 1024,
+                        height: 768,
+                        zoom: 5,
+                        center: [-77.032194, 38.912753],
+                        style: 'mapbox://styles/mapbox/light-v9'
+                    });
 
-    setTimeout(() => {
-        evented.fire('log', {message: 'downloading large geojson'});
-    }, 0);
+                    this.map
+                        .on('error', reject)
+                        .on('load', () => {
+                            this.map.addSource('geojson', {
+                                'type': 'geojson',
+                                'data': {
+                                    'type': 'FeatureCollection',
+                                    'features': []
+                                }
+                            });
 
-    ajax.getJSON({ url: 'http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson' }, (err, data) => {
-        evented.fire('log', {message: 'starting test'});
+                            this.map.addLayer({
+                                'id': 'geojson-polygon',
+                                'source': 'geojson',
+                                'type': 'fill',
+                                'filter': ['==', '$type', 'Polygon']
+                            });
 
-        if (err) return evented.fire('error', {error: err});
-
-        let map = createMap({
-            width: 1024,
-            height: 768,
-            zoom: 5,
-            center: [-77.032194, 38.912753],
-            style: 'mapbox://styles/mapbox/bright-v9'
-        });
-
-        map.on('load', () => {
-            map = setupGeoJSONMap(map);
-
-            setDataPerf(map.style.sourceCaches.geojson, data, (err, ms) => {
-                if (err) return evented.fire('error', {error: err});
-                map.remove();
-                evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});
+                            resolve();
+                        });
+                });
             });
-        });
-    });
+    }
 
-    return evented;
+    bench() {
+        return new Promise((resolve, reject) => {
+            const sourceCache = this.map.style.sourceCaches.geojson;
+
+            sourceCache.on('data', function onData() {
+                if (sourceCache.loaded()) {
+                    sourceCache.off('data', onData);
+                    resolve();
+                }
+            });
+
+            sourceCache.getSource().setData(this.data);
+        });
+    }
+
+    teardown() {
+        this.map.remove();
+    }
 };
