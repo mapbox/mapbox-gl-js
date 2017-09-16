@@ -111,7 +111,7 @@ class BoxZoomHandler {
             minY = Math.min(p0.y, p1.y),
             maxY = Math.max(p0.y, p1.y);
 
-        DOM.setTransform(this._box, `translate(${minX}px,${minY}px)`);
+        DOM.setTransform(this._box, `translate3d(${minX}px,${minY}px,0px)`);
 
         this._box.style.width = `${maxX - minX}px`;
         this._box.style.height = `${maxY - minY}px`;
