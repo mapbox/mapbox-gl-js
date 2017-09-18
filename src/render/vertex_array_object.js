@@ -13,8 +13,7 @@ class VertexArrayObject {
     boundIndexBuffer: ?IndexBuffer;
     boundVertexOffset: ?number;
     boundDynamicVertexBuffer: ?VertexBuffer;
-    boundOpacityVertexBuffer: ?VertexBuffer;
-    boundCollisionVertexBuffer: ?VertexBuffer;
+    boundDynamicVertexBuffer2: ?VertexBuffer;
     vao: any;
     gl: WebGLRenderingContext;
 
@@ -35,8 +34,7 @@ class VertexArrayObject {
          vertexBuffer2: ?VertexBuffer,
          vertexOffset: ?number,
          dynamicVertexBuffer: ?VertexBuffer,
-         opacityVertexBuffer: ?VertexBuffer,
-         collisionVertexBuffer: ?VertexBuffer) {
+         dynamicVertexBuffer2: ?VertexBuffer) {
 
         if (gl.extVertexArrayObject === undefined) {
             (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -50,12 +48,11 @@ class VertexArrayObject {
             this.boundIndexBuffer !== indexBuffer ||
             this.boundVertexOffset !== vertexOffset ||
             this.boundDynamicVertexBuffer !== dynamicVertexBuffer ||
-            this.boundOpacityVertexBuffer !== opacityVertexBuffer ||
-            this.boundCollisionVertexBuffer !== collisionVertexBuffer
+            this.boundDynamicVertexBuffer2 !== dynamicVertexBuffer2
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, opacityVertexBuffer, collisionVertexBuffer);
+            this.freshBind(gl, program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2);
             this.gl = gl;
         } else {
             (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
@@ -69,12 +66,8 @@ class VertexArrayObject {
                 indexBuffer.bind();
             }
 
-            if (opacityVertexBuffer) {
-                opacityVertexBuffer.bind();
-            }
-
-            if (collisionVertexBuffer) {
-                collisionVertexBuffer.bind();
+            if (dynamicVertexBuffer2) {
+                dynamicVertexBuffer2.bind();
             }
         }
     }
@@ -86,8 +79,7 @@ class VertexArrayObject {
               vertexBuffer2: ?VertexBuffer,
               vertexOffset: ?number,
               dynamicVertexBuffer: ?VertexBuffer,
-              opacityVertexBuffer: ?VertexBuffer,
-              collisionVertexBuffer: ?VertexBuffer) {
+              dynamicVertexBuffer2: ?VertexBuffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -104,8 +96,7 @@ class VertexArrayObject {
             this.boundIndexBuffer = indexBuffer;
             this.boundVertexOffset = vertexOffset;
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
-            this.boundOpacityVertexBuffer = opacityVertexBuffer;
-            this.boundCollisionVertexBuffer = collisionVertexBuffer;
+            this.boundDynamicVertexBuffer2 = dynamicVertexBuffer2;
 
         } else {
             numPrevAttributes = (gl: any).currentNumAttributes || 0;
@@ -127,11 +118,8 @@ class VertexArrayObject {
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.enableAttributes(gl, program);
         }
-        if (opacityVertexBuffer) {
-            opacityVertexBuffer.enableAttributes(gl, program);
-        }
-        if (collisionVertexBuffer) {
-            collisionVertexBuffer.enableAttributes(gl, program);
+        if (dynamicVertexBuffer2) {
+            dynamicVertexBuffer2.enableAttributes(gl, program);
         }
 
         layoutVertexBuffer.bind();
@@ -147,13 +135,9 @@ class VertexArrayObject {
         if (indexBuffer) {
             indexBuffer.bind();
         }
-        if (opacityVertexBuffer) {
-            opacityVertexBuffer.bind();
-            opacityVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
-        }
-        if (collisionVertexBuffer) {
-            collisionVertexBuffer.bind();
-            collisionVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+        if (dynamicVertexBuffer2) {
+            dynamicVertexBuffer2.bind();
+            dynamicVertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
         }
 
         (gl: any).currentNumAttributes = numNextAttributes;

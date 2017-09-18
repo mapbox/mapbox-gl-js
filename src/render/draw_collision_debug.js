@@ -42,9 +42,8 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
             buffers.indexBuffer,
             buffers.segments,
             null,
-            null,
-            null,
-            buffers.collisionVertexBuffer);
+            buffers.collisionVertexBuffer,
+            null);
     }
 }
 
