@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["to-string", ["rgba", 85, 255, 0, 0.5]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "outputs": ["rgba(85, 255, 0, 0.5)"]
+  }
+}

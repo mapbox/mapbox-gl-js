@@ -42,25 +42,50 @@ map.on('load', function() {
         "source": "circles",
         "paint": {
             "circle-radius": {
-                property: "mapbox",
-                stops: [
-                    [{ zoom: 0, value: 0 }, 2],
-                    [{ zoom: 0, value: 100 }, 10],
-                    [{ zoom: 6, value: 0 }, 20],
-                    [{ zoom: 6, value: 100 }, 100]
+                "expression": [
+                    "curve",
+                    ["exponential", 2.0],
+                    ["zoom"],
+                    0, 5,
+                    5, ['*', ["get", "scalerank"], 20],
                 ]
             },
             "circle-color": {
-                property: "mapbox",
-                stops: [
-                    [{ zoom: 0, value: 0 }, 'red'],
-                    [{ zoom: 0, value: 100 }, 'violet'],
-                    [{ zoom: 6, value: 0 }, 'blue'],
-                    [{ zoom: 6, value: 100 }, 'green']
+                "expression": [
+                    "match",
+                    ["get", "featureclass"],
+                    "cape", "orange",
+                    "island", "#0088ff",
+                    "plain", "yellow",
+                    "pole", "white",
+                    "waterfall", "blue",
+                    "red"
                 ]
             },
             "circle-pitch-scale": "map",
             "circle-pitch-alignment": "map"
+        }
+    });
+
+    map.addLayer({
+        "id": "labels",
+        "type": "symbol",
+        "source": "circles",
+        "minzoom": 1,
+        "layout": {
+            "text-field": {
+                "expression": [
+                    "concat",
+                    ["get", "name"],
+                    " (",
+                    [
+                        "coalesce",
+                        ["get", "subregion"],
+                        ["get", "region"]
+                    ],
+                    ")"
+                ]
+            }
         }
     });
 });

@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["atan", 1],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "outputs": [0.7853981633974483]
+  }
+}

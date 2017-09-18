@@ -1,0 +1,26 @@
+{
+  "expectExpressionType": null,
+  "expression": ["array", "number", 2, ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": [1, 0]}}],
+    [{}, {"properties": {"x": [0]}}],
+    [{}, {"properties": {"x": [1, 2, 3]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Array<Number, 2>"
+    },
+    "outputs": [
+      [1, 0],
+      {
+        "error": "Expected value to be of type Array<Number, 2>, but found Array<Number, 1> instead."
+      },
+      {
+        "error": "Expected value to be of type Array<Number, 2>, but found Array<Number, 3> instead."
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["length", ["string", ["get", "x"]]],
+  "inputs": [[{}, {"properties": {"x": "a string"}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "outputs": [8]
+  }
+}

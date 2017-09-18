@@ -1,0 +1,21 @@
+{
+  "expectExpressionType": {"kind": "Array", "itemType": {"kind": "String"}},
+  "expression": [
+    "coalesce",
+    ["literal", ["one"]],
+    ["literal", ["one", "two"]],
+    null
+  ],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[3]",
+          "error": "Expected Array<String> but found Null instead."
+        }
+      ]
+    }
+  }
+}

@@ -1,11 +1,16 @@
 {
+  "parser": "espree",
+  "parserOptions": {
+      "ecmaVersion": 5
+  },
   "plugins": ["html"],
   "globals": {
     "mapboxgl": true,
     "MapboxGeocoder": true,
     "MapboxDirections": true,
     "turf": true,
-    "d3": true
+    "d3": true,
+    "Uint8Array": true
   },
   "rules": {
     "flowtype/require-valid-file-annotation": [0],
@@ -17,6 +22,7 @@
     "prefer-template": "off"
   },
   "env": {
+    "es6": false,
     "browser": true
   }
 }

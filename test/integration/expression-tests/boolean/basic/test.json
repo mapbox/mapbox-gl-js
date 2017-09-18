@@ -1,0 +1,42 @@
+{
+  "expectExpressionType": null,
+  "expression": ["boolean", ["get", "x"]],
+  "inputs": [
+    [{}, {}],
+    [{}, {"properties": {"x": true}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": ""}}],
+    [{}, {"properties": {"x": "false"}}],
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "outputs": [
+      {
+        "error": "Expected value to be of type Boolean, but found Null instead."
+      },
+      true,
+      false,
+      {
+        "error": "Expected value to be of type Boolean, but found String instead."
+      },
+      {
+        "error": "Expected value to be of type Boolean, but found String instead."
+      },
+      {
+        "error": "Expected value to be of type Boolean, but found Number instead."
+      },
+      {
+        "error": "Expected value to be of type Boolean, but found Number instead."
+      },
+      {"error": "Expected value to be of type Boolean, but found Null instead."}
+    ]
+  }
+}

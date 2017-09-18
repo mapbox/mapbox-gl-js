@@ -26,10 +26,10 @@ class CircleStyleLayer extends StyleLayer {
                            bearing: number,
                            pixelsToTileUnits: number): boolean {
         const translatedPolygon = translate(queryGeometry,
-            this.getPaintValue('circle-translate', {zoom}, feature.properties),
-            this.getPaintValue('circle-translate-anchor', {zoom}, feature.properties),
+            this.getPaintValue('circle-translate', {zoom}, feature),
+            this.getPaintValue('circle-translate-anchor', {zoom}, feature),
             bearing, pixelsToTileUnits);
-        const circleRadius = this.getPaintValue('circle-radius', {zoom}, feature.properties) * pixelsToTileUnits;
+        const circleRadius = this.getPaintValue('circle-radius', {zoom}, feature) * pixelsToTileUnits;
         return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius);
     }
 }

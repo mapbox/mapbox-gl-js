@@ -168,7 +168,7 @@ class LineBucket implements Bucket {
 
     addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
         const layout = this.layers[0].layout;
-        const join = this.layers[0].getLayoutValue('line-join', {zoom: this.zoom}, feature.properties);
+        const join = this.layers[0].getLayoutValue('line-join', {zoom: this.zoom}, feature);
         const cap = layout['line-cap'];
         const miterLimit = layout['line-miter-limit'];
         const roundLimit = layout['line-round-limit'];
@@ -179,7 +179,6 @@ class LineBucket implements Bucket {
     }
 
     addLine(vertices: Array<Point>, feature: VectorTileFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
-        const featureProperties = feature.properties;
         const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
 
         // If the line has duplicate vertices at the ends, adjust start/length to remove them.
@@ -442,7 +441,7 @@ class LineBucket implements Bucket {
             startOfLine = false;
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, featureProperties);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
     }
 
     /**

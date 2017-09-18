@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["boolean", ["&&", false, ["case", true, true, true]]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Boolean"
+    },
+    "outputs": [false]
+  }
+}

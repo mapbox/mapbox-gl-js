@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["curve", ["linear"], ["zoom"], 0, 0, 30, 30],
+  "inputs": [[{"zoom": 5}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": false,
+      "type": "Number"
+    },
+    "outputs": [5]
+  }
+}

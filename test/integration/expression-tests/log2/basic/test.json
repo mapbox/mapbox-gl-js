@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["log2", 1024],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "outputs": [10]
+  }
+}

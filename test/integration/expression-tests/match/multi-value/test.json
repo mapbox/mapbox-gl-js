@@ -1,0 +1,31 @@
+{
+  "expectExpressionType": null,
+  "expression": [
+    "string",
+    [
+      "match",
+      ["string", ["get", "x"]],
+      ["a", "A"],
+      "Apple",
+      ["b", "B"],
+      "Banana",
+      "Kumquat"
+    ]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": "a"}}],
+    [{}, {"properties": {"x": "A"}}],
+    [{}, {"properties": {"x": "b"}}],
+    [{}, {"properties": {"x": "B"}}],
+    [{}, {"properties": {"x": "c"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "outputs": ["Apple", "Apple", "Banana", "Banana", "Kumquat"]
+  }
+}

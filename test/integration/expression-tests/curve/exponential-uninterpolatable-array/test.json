@@ -1,0 +1,24 @@
+{
+  "expectExpressionType": null,
+  "expression": [
+    "curve",
+    ["exponential", 2],
+    ["number", ["get", "x"]],
+    1,
+    ["literal", ["a"]],
+    3,
+    ["literal", ["b"]]
+  ],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Type Array<String, 1> is not interpolatable, and thus cannot be used as a exponential curve's output type."
+        }
+      ]
+    }
+  }
+}

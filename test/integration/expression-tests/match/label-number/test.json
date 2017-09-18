@@ -1,0 +1,34 @@
+{
+  "expectExpressionType": null,
+  "expression": ["match", ["get", "x"], 0, "match", "otherwise"],
+  "inputs": [
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 0.5}}],
+    [{}, {"properties": {"x": "0"}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}],
+    [{}, {"properties": {}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "String"
+    },
+    "outputs": [
+      "match",
+      "otherwise",
+      "otherwise",
+      {
+        "error": "Expected value to be of type Number, but found String instead."
+      },
+      {
+        "error": "Expected value to be of type Number, but found Boolean instead."
+      },
+      {"error": "Expected value to be of type Number, but found Null instead."},
+      {"error": "Expected value to be of type Number, but found Null instead."}
+    ]
+  }
+}

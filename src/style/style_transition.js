@@ -1,9 +1,11 @@
 // @flow
 
+const assert = require('assert');
 const util = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
 
 import type StyleDeclaration from './style_declaration';
+import type {Feature} from '../style-spec/function';
 
 const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 0 };
 
@@ -56,8 +58,8 @@ class StyleTransition {
     /*
      * Return the value of the transitioning property.
      */
-    calculate(globalProperties: {zoom: number}, featureProperties?: {}, time?: number) {
-        const value = this._calculateTargetValue(globalProperties, featureProperties);
+    calculate(globalProperties?: {zoom: number}, feature?: Feature, time?: number) {
+        const value = this._calculateTargetValue(globalProperties, feature);
 
         if (this.instant())
             return value;
@@ -67,22 +69,23 @@ class StyleTransition {
         if (time >= this.endTime)
             return value;
 
-        const oldValue = (this.oldTransition: any).calculate(globalProperties, featureProperties, this.startTime);
+        const oldValue = (this.oldTransition: any).calculate(globalProperties, feature, this.startTime);
         const t = util.easeCubicInOut((time - this.startTime - this.delay) / this.duration);
         return this.interp(oldValue, value, t);
     }
 
-    _calculateTargetValue(globalProperties: {zoom: number}, featureProperties?: {}) {
+    _calculateTargetValue(globalProperties?: {zoom: number}, feature?: Feature) {
         if (!this.zoomTransitioned)
-            return this.declaration.calculate(globalProperties, featureProperties);
+            return this.declaration.calculate(globalProperties, feature);
 
         // calculate zoom transition between discrete values, such as images and dasharrays.
-        const z = globalProperties.zoom;
+        assert(globalProperties && typeof globalProperties.zoom === 'number');
+        const z: number = (globalProperties: any).zoom;
         const lastIntegerZoom = this.zoomHistory.lastIntegerZoom;
 
         const fromScale = z > lastIntegerZoom ? 2 : 0.5;
-        const from = this.declaration.calculate({zoom: z > lastIntegerZoom ? z - 1 : z + 1}, featureProperties);
-        const to = this.declaration.calculate({zoom: z}, featureProperties);
+        const from = this.declaration.calculate({zoom: z > lastIntegerZoom ? z - 1 : z + 1}, feature);
+        const to = this.declaration.calculate({zoom: z}, feature);
 
         const timeFraction = Math.min((Date.now() - this.zoomHistory.lastIntegerZoomTime) / this.duration, 1);
         const zoomFraction = Math.abs(z - lastIntegerZoom);

@@ -17,6 +17,8 @@ module.exports = function (directory, implementation, options, run) {
     const ignores = options.ignores || {};
 
     const available = [];
+    const fixtureFilename = options.fixtureFilename || 'style.json';
+
     fs.readdirSync(directory).forEach((group) => {
         if (
             group === 'index.html' ||
@@ -42,10 +44,10 @@ module.exports = function (directory, implementation, options, run) {
         try {
             if (!fs.lstatSync(path.join(directory, group, test)).isDirectory())
                 return false;
-            if (!fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
+            if (!fs.lstatSync(path.join(directory, group, test, fixtureFilename)).isFile())
                 return false;
         } catch (err) {
-            console.log(colors.blue(`* omitting ${group} ${test} due to missing style`));
+            console.log(colors.blue(`* omitting ${group} ${test} due to missing ${fixtureFilename}`));
             return false;
         }
 
@@ -65,7 +67,10 @@ module.exports = function (directory, implementation, options, run) {
     }
 
     function addTestToSequence(group, test) {
-        const style = require(path.join(directory, group, test, 'style.json'));
+        // Skip ignored and malformed tests.
+        if (!shouldRunTest(group, test)) return;
+
+        const style = require(path.join(directory, group, test, fixtureFilename));
 
         server.localizeURLs(style);
 
@@ -118,8 +123,6 @@ module.exports = function (directory, implementation, options, run) {
         });
     }
 
-    // Skip ignored and malformed tests.
-    sequence = sequence.filter((value) => { return shouldRunTest(value.params.group, value.params.test); });
 
     if (options.shuffle) {
         console.log(colors.white(`* shuffle seed: `) + colors.bold(`${options.seed}`));

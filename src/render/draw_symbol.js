@@ -161,8 +161,10 @@ function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pit
 
     gl.uniform1f(program.uniforms.u_pitch, tr.pitch / 360 * 2 * Math.PI);
 
-    gl.uniform1i(program.uniforms.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
-    gl.uniform1i(program.uniforms.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
+    const isZoomConstant = sizeData.functionType === 'constant' || sizeData.functionType === 'source';
+    const isFeatureConstant = sizeData.functionType === 'constant' || sizeData.functionType === 'camera';
+    gl.uniform1i(program.uniforms.u_is_size_zoom_constant, isZoomConstant ? 1 : 0);
+    gl.uniform1i(program.uniforms.u_is_size_feature_constant, isFeatureConstant ? 1 : 0);
 
     gl.uniform1f(program.uniforms.u_camera_to_center_distance, tr.cameraToCenterDistance);
 

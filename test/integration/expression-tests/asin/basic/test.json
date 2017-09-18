@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["asin", 0.5],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "outputs": [0.5235987755982989]
+  }
+}

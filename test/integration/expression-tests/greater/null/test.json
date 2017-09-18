@@ -1,0 +1,15 @@
+{
+  "expectExpressionType": null,
+  "expression": [">", null, null],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected arguments of type (Number, Number) | (String, String), but found (Null, Null) instead."
+        }
+      ]
+    }
+  }
+}

@@ -212,7 +212,7 @@ class FillExtrusionBucket implements Bucket {
             segment.vertexLength += numVertices;
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature.properties);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
     }
 }
 

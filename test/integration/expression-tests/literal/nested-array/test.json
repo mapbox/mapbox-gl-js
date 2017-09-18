@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["literal", [1, [3, 4]]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Array<Value, 2>"
+    },
+    "outputs": [[1, [3, 4]]]
+  }
+}

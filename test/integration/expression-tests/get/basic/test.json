@@ -1,0 +1,17 @@
+{
+  "expectExpressionType": null,
+  "expression": ["number", ["get", "x"]],
+  "inputs": [[{}, {}], [{}, {"properties": {"x": 1}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Number"
+    },
+    "outputs": [
+      {"error": "Expected value to be of type Number, but found Null instead."},
+      1
+    ]
+  }
+}

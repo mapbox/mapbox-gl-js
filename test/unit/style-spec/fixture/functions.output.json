@@ -84,9 +84,6 @@
     "line": 401
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
-  },
-  {
     "message": "layers[23].paint.fill-color.stops: identity function may not have a \"stops\" property",
     "line": 415
   },
@@ -117,6 +114,10 @@
   {
     "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
     "line": 564
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
+    "line": 581
   },
   {
     "message": "layers[33].paint.fill-antialias: exponential functions not supported",
@@ -161,5 +162,17 @@
   {
     "message": "layers[44].paint.fill-opacity.stops[1][0]: stop domain values must appear in ascending order",
     "line": 857
+  },
+  {
+    "message": "layers[47].paint.fill-color.expression: Expected Color but found Number instead.",
+    "line": 900
+  },
+  {
+    "message": "layers[48].paint.fill-color.expression[2]: Expected Number but found String instead.",
+    "line": 911
+  },
+  {
+    "message": "layers[49].paint.fill-opacity.expression: \"zoom\" expression may only be used as input to a top-level \"curve\" expression.",
+    "line": 922
   }
 ]

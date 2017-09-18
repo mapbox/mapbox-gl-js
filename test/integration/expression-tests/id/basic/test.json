@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["id"],
+  "inputs": [[{}, {}], [{}, {"id": 1}], [{}, {"id": "one"}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "Value"
+    },
+    "outputs": [null, 1, "one"]
+  }
+}

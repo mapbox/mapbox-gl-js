@@ -58,6 +58,7 @@ navigation:
     - title: Number
     - title: Array
     - title: Function
+    - title: Expression
     - title: Filter
 ---
 <link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'>
@@ -828,68 +829,19 @@ navigation:
 
           <div class='col12 pad1x'>
             <div class="col12 clearfix pad0y pad2x space-bottom2">
-              <div><span class='code'><a id="function-stops" href="#function-stops">stops</a></span></div>
-              <div><em class='quiet'>Required (except for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
-              <div>Functions are defined in terms of input and output values. A set of one input value and one output value is known as a "stop."</div>
-            </div>
-            <div class="col12 clearfix pad0y pad2x space-bottom2">
-              <div><span class='code'><a id="function-property" href="#function-property">property</a></span></div>
-              <div><em class='quiet'>Optional <a href='#types-string'>string</a>.</em></div>
-              <div>If specified, the function will take the specified feature property as an input. See <a href="#types-function-zoom-property">Zoom Functions and Property Functions</a> for more information.</div>
-            </div>
-            <div class="col12 clearfix pad0y pad2x space-bottom2">
-              <div><span class='code'><a id="function-base" href="#function-base">base</a></span></div>
-              <div><em class='quiet'>Optional <a href='#types-number'>number</a>. Default is <%= ref.function.base.default %>.</em></div>
-              <div>The exponential base of the interpolation curve. It controls the rate at which the function output increases. Higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.</div>
-            </div>
-            <div class="col12 clearfix pad0y pad2x space-bottom2">
-              <div><span class='code'><a id="function-type" href="#function-type">type</a></span></div>
-              <div><em class='quiet'>Optional <a href='#types-string'>enum</a>. One of <var>identity</var>, <var>exponential</var>, <var>interval</var>, <var>categorical</var>.</em></div>
-              <dl>
-                <dt><var>identity</var></dt>
-                <dd>functions return their input as their output.</dd>
-                <dt><var>exponential</var></dt>
-                <dd>functions generate an output by interpolating between stops just less than and just greater than the
-                  function input. (For input values that lie below the first stop, the function outputs the value of the first stop.)
-                  The domain (input value) must be numeric, and the style property must support
-                    interpolation. Style properties that support interpolation are marked marked with <span
-                        class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span>, the
-                    "exponential" symbol, and <var>exponential</var> is the default function type for these properties.</dd>
-                <dt><var>interval</var></dt>
-                <dd>functions return the output value of the stop just less than the function input.
-                    (For input values that lie below the first stop, the function outputs the value of the first stop.) The domain (input
-                    value) must be numeric. Any style property may use interval functions. For properties marked with
-                    <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span>, the "interval"
-                    symbol, this is the default function type.</dd>
-                <dt><var>categorical</var></dt>
-                <dd>functions return the output value of the stop equal to the function input.</dd>
-              </dl>
-            </div>
-            <div class="col12 clearfix pad0y pad2x space-bottom2">
-              <div><span class='code'><a id="function-default" href="#function-default">default</a></span></div>
-              <div>A value to serve as a fallback function result when a value isn't otherwise available. It is used in the following circumstances:</div>
-              <ul>
-                <li>In categorical functions, when the feature value does not match any of the stop domain values.</li>
-                <li>In property and zoom-and-property functions, when a feature does not contain a value for the specified property.</li>
-                <li>In identity functions, when the feature value is not valid for the style property (for example, if the function is being used for a <var>circle-color</var> property but the feature property value is not a string or not a valid color).</li>
-                <li>In interval or exponential property and zoom-and-property functions, when the feature value is not numeric.</li>
-              </ul>
-              <div>If no default is provided, the style property's default is used in these circumstances.</div>
-            </div>
-            <div class="col12 clearfix pad0y pad2x space-bottom2">
-              <div><span class='code'><a id="function-colorSpace" href="#function-colorSpace">colorSpace</a></span></div>
-              <div><em class='quiet'>Optional <a href='#types-string'>enum</a>. One of <var>rgb</var>, <var>lab</var>, <var>hcl</var>.</em></div>
-              <div class=' space-bottom1'>The color space in which colors interpolated. Interpolating colors in perceptual color spaces like LAB and HCL tend to produce color ramps that look more consistent and produce colors that can be differentiated more easily than those interpolated in RGB space.</div>
-              <dl class="space-bottom">
-                <dt><var>rgb</var></dt>
-                <dd>Use the RGB color space to interpolate color values</dd>
-                <dt><var>lab</var></dt>
-                <dd>Use the LAB color space to interpolate color values.</dd>
-                <dt><var>hcl</var></dt>
-                <dd>Use the HCL color space to interpolate color values, interpolating the Hue, Chroma, and Luminance channels individually.</dd>
-              </dl>
+              <div><span class='code'><a id="function-expression" href="#function-expression">expression</a></span></div>
+              <div><em class='quiet'>Required <a href='#types-expression'>expression</a>.</em></div>
+              <div>
+              An expression defines how one or more feature property values
+              and/or the current zoom level are combined using logical,
+              mathematical, string, or color operations to produce the
+              appropriate style value.  See
+              <a href="#types-expression">expressions</a> for syntax details.
+              </div>
             </div>
           </div>
+
+          <p>In prior versions of the style specification, functions were defined using <code>stops</code>, <code>property</code>, <code>default</code> values.</p>
 
           <table class="micro space-bottom">
             <thead>
@@ -908,6 +860,13 @@ navigation:
               <td class='center'>&gt;= 2.0.1</td>
               <td class='center'>&gt;= 2.0.0</td>
               <td class='center'>&gt;= 0.1.0</td>
+            </tr>
+            <tr>
+              <td><code>expressions</code></td>
+              <td class='center'>&gt;= 0.40.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
             </tr>
             <tr>
               <td><code>property</code></td>
@@ -960,7 +919,7 @@ navigation:
             </tr>
             <tr>
               <td><code>colorSpace</code></td>
-              <td class='center'>&gt;= 0.26.0</td>
+              <td class='center'>0.26.0 - 0.39.1</td>
               <td class='center'>Not yet supported</td>
               <td class='center'>Not yet supported</td>
               <td class='center'>Not yet supported</td>
@@ -968,78 +927,102 @@ navigation:
             </tbody>
           </table>
 
-          <p><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements: the first is a zoom level and the second is a function output value.</p>
+          <p>A <a id="property-function" class="anchor"></a><strong>property function</strong> is any function defined using an expression that includes a reference to <code>["properties"]</code>. Property functions allow the appearance of a map feature to change with its properties. They can be used to visually differentate types of features within the same layer or create data visualizations. Note that support for property functions is not available across all properties and platforms at this time.</p>
 
-          <div class='col12 space-bottom'>
-              {% highlight js %}
+<div class='col12 space-bottom'>
+    {% highlight js %}
 {
-  "circle-radius": {
-    "stops": [
-
-      // zoom is 5 -> circle radius will be 1px
-      [5, 1],
-
-      // zoom is 10 -> circle radius will be 2px
-      [10, 2]
-
+  "circle-color": {
+    "expression": [
+      'rgb',
+      // red is higher when feature.properties.temperature is higher
+      ["get", "temperature"],
+      0,
+      // blue is higher when feature.properties.temperature is lower
+      ["-", 100, ["get", "temperature"]]
     ]
   }
 }
-              {% endhighlight %}
-          </div>
+{% endhighlight %}
+</div>
 
-          <p>The rendered values of <a href='#types-color'>color</a>, <a href='#types-number'>number</a>, and <a href='#types-array'>array</a> properties are intepolated between stops. <a href='#types-enum'>Enum</a>, <a href='#types-boolean'>boolean</a>, and <a href='#types-string'>string</a> property values cannot be intepolated, so their rendered values only change at the specified stops.</p>
+A <a id="zoom-function" class="anchor"></a><strong>zoom function</strong> is any function defined using an expression that includes a reference to <code>["zoom"]</code>.  Such functions allow the appearance of a map feature change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density.  
+
+          A zoom function must be of the following form (see <a href="#types-expression-curve">curves</a> for more details):
+
+<div class='col12 space-bottom'>
+{% highlight js %}
+{
+  "expression": [ "curve", interpolation, ["zoom"], ... ]
+}
+{% endhighlight %}
+</div>
+
+          Or:
+
+<div class='col12 space-bottom'>
+{% highlight js %}
+{
+  "expression": [ "coalesce", [ "curve", interpolation, ["zoom"], ... ], ... ]
+}
+{% endhighlight %}
+</div>
+
+    <p>(<code>["zoom"]</code> may not appear anywhere else in the expression.)</p>
+
+
+    <h4>Example: a zoom-only function</h4>
+
+<div class='col12 space-bottom'>
+{% highlight js %}
+{
+  "circle-radius": {
+    "expression": [
+      "curve", "linear", ["zoom"],
+      // zoom is 5 (or less) -> circle radius will be 1px
+      // zoom is 10 (or greater) -> circle radius will be 2px
+      5, 1, 10, 2
+    ]
+  }
+}
+{% endhighlight %}
+</div>
+
+<h4>Example: a zoom-and-property function</h4>
+
+<p>Using property functions as the output value for one or more zoom stops
+  allows the appearance of a map feature to change with both the zoom level
+  <em>and</em> the feature's properties.</p>
+
+<div class='col12 space-bottom'>
+{% highlight js %}
+{
+  "circle-radius": {
+    "expression": [
+      "curve", "linear", ["zoom"],
+
+      // zoom is 0 and "rating" is 0 -> circle radius will be 0px
+      // zoom is 0 and "rating" is 5 -> circle radius will be 5px
+      0, ["number", [ "get", "rating" ],
+      // zoom is 20 and "rating" is 0 -> circle radius will be 4 * 0 = 0px
+      // zoom is 20 and "rating" is 5 -> circle radius will be 4 * 5 = 20px
+      10, [ "*", 4, [ "number", [ "get", ["properties"] ] ] ]
+    ]
+  }
+}
+{% endhighlight %}
+</div>
 
           <p>There is an important difference between the way that zoom functions render for <em>layout</em> and <em>paint</em> properties. Paint properties are continuously re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the function will be re-evaluated according to the function, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom function, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
 
-          <p><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Each stop is an array with two elements, the first is a property input value and the second is a function output value. Note that support for property functions is not available across all properties and platforms at this time.</p>
+        </div>
 
-          <div class='col12 space-bottom'>
-              {% highlight js %}
-{
-  "circle-color": {
-    "property": "temperature",
-    "stops": [
-
-      // "temperature" is 0   -> circle color will be blue
-      [0, 'blue'],
-
-      // "temperature" is 100 -> circle color will be red
-      [100, 'red']
-
-    ]
-  }
-}
-              {% endhighlight %}
-          </div>
-
-          <p><a id='types-function-zoom-property' class='anchor'></a><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
-
-          <div class='col12 space-bottom'>
-              {% highlight js %}
-{
-  "circle-radius": {
-    "property": "rating",
-    "stops": [
-
-      // zoom is 0 and "rating" is 0 -> circle radius will be 0px
-      [{zoom: 0, value: 0}, 0],
-
-      // zoom is 0 and "rating" is 5 -> circle radius will be 5px
-      [{zoom: 0, value: 5}, 5],
-
-      // zoom is 20 and "rating" is 0 -> circle radius will be 0px
-      [{zoom: 20, value: 0}, 0],
-
-      // zoom is 20 and "rating" is 5 -> circle radius will be 20px
-      [{zoom: 20, value: 5}, 20]
-
-    ]
-  }
-}
-              {% endhighlight %}
-          </div>
-
+        <div class='pad2 keyline-bottom'>
+          <a id='types-expression' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-expression' title='link to expression'>Expression</a></h3>
+          <% for (var name of expressions) { %>
+            <%= renderExpression({name: name}) %>
+          <% } %>
         </div>
 
         <div class='pad2'>
