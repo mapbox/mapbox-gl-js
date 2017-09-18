@@ -422,13 +422,17 @@ function placeGlyphAlongLine(offsetX: number,
     };
 }
 
-const offscreenPoint = new Point(-Infinity, -Infinity);
+const hiddenGlyphAttributes = new Float32Array([-Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0]);
 
 // Hide them by moving them offscreen. We still need to add them to the buffer
 // because the dynamic buffer is paired with a static buffer that doesn't get updated.
 function hideGlyphs(num: number, dynamicLayoutVertexArray: any) {
     for (let i = 0; i < num; i++) {
-        addDynamicAttributes(dynamicLayoutVertexArray, offscreenPoint, 0);
+        const offset = dynamicLayoutVertexArray.length;
+        dynamicLayoutVertexArray.resize(offset + 4);
+        // Since all hidden glyphs have the same attributes, we can build up the array faster with a single call to Float32Array.set
+        // for each set of four vertices, instead of calling addDynamicAttributes for each vertex.
+        dynamicLayoutVertexArray.float32.set(hiddenGlyphAttributes, offset * 3);
     }
 }
 
