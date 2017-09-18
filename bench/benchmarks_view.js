@@ -1,5 +1,7 @@
 'use strict';
 
+/* global d3 */
+
 const versionColor = d3.scaleOrdinal(d3.schemeCategory10);
 versionColor(0); // Skip blue -- too similar to link color.
 
@@ -21,16 +23,16 @@ class DensityPlot extends Plot {
     plot() {
         function kernelDensityEstimator(kernel, X) {
             return function(V) {
+                // https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator
+                const bandwidth = 1.06 * d3.deviation(V) * Math.pow(V.length, -0.2);
                 return X.map(function(x) {
-                    return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+                    return [x, d3.mean(V, function(v) { return kernel((x - v) / bandwidth); }) / bandwidth];
                 });
             };
         }
 
-        function kernelEpanechnikov(k) {
-            return function(v) {
-                return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-            };
+        function kernelEpanechnikov(v) {
+            return Math.abs(v) <= 1 ? 0.75 * (1 - v * v) : 0;
         }
 
         const margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -42,8 +44,16 @@ class DensityPlot extends Plot {
             .range([0, width])
             .nice();
 
+        const density = kernelDensityEstimator(kernelEpanechnikov, x.ticks(50));
+        const versions = this.props.versions.map(version => ({
+            name: version.name,
+            density: version.samples.length ? density(version.samples) : undefined
+        }));
+        const yMax = d3.max(versions, version =>
+            d3.max(version.density || [], d => d[1]));
+
         const y = d3.scaleLinear()
-            .domain([0, 0.2])
+            .domain([0, yMax])
             .range([height, 0]);
 
         const svg = d3.select(this.node)
@@ -70,10 +80,8 @@ class DensityPlot extends Plot {
             .append("g")
             .call(d3.axisLeft(y).ticks(4, "%"));
 
-        const density = kernelDensityEstimator(kernelEpanechnikov(0.2), x.ticks(50));
-
         const version = svg.selectAll(".density")
-            .data(this.props.versions);
+            .data(versions);
 
         version.enter().append("path")
             .attr("class", "density")
@@ -83,11 +91,10 @@ class DensityPlot extends Plot {
             .attr("stroke-width", 2)
             .attr("stroke-linejoin", "round")
             .merge(version)
-            .attr("d", version => version.samples.length ? d3.line()
+            .attr("d", version => version.density ? d3.line()
                 .curve(d3.curveBasis)
                 .x(d => x(d[0]))
-                .y(d => y(d[1]))
-                (density(version.samples)) : "");
+                .y(d => y(d[1]))(version.density) : "");
     }
 }
 
