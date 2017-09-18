@@ -1,4 +1,11 @@
-## master
+## 0.40.1 (September 18, 2017)
+
+### :bug: Bug fixes
+- Fix bug causing flicker when zooming in on overzoomed tiles [#5295](https://github.com/mapbox/mapbox-gl-js/pull/5295)
+- Remove erroneous call to Tile#redoPlacement for zoom-only or low pitch camera changes [#5284](https://github.com/mapbox/mapbox-gl-js/pull/5284)
+- Fix bug where `CanvasSource` coordinates were flipped and improve performance for non-animated `CanvasSource`s [#5303](https://github.com/mapbox/mapbox-gl-js/pull/5303)
+- Fix bug causing map not to render on some cases on Internet Explorer 11 [#5321](https://github.com/mapbox/mapbox-gl-js/pull/5321)
+- Remove upper limit on `fill-extrusion-height` property [#5320](https://github.com/mapbox/mapbox-gl-js/pull/5320)
 
 ## 0.40.0 (September 13, 2017)
 
