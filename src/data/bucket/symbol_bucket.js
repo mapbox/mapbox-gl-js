@@ -214,12 +214,10 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
 }
 
 function addDynamicAttributes(dynamicLayoutVertexArray, p, angle) {
-    const twoPi = Math.PI * 2;
-    const encodedAngle = ((angle + twoPi) % twoPi) / twoPi * 255;
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
-    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, encodedAngle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
+    dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
 }
 
 type SerializedSymbolBuffer = {
