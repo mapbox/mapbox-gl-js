@@ -1564,7 +1564,7 @@ class Map extends Camera {
         let pendingCollisionDetection = false;
         let skippedPlacement = true;
         if (this.style &&
-            (this._placementInProgress || this.style.getNeedsFullPlacement() || browser.now() > (this._lastPlacement + 100))) {
+            (this._placementInProgress || this.style.getNeedsFullPlacement() || browser.now() > (this._lastPlacement + 300))) {
             this._lastPlacement = browser.now();
             skippedPlacement = false;
             pendingCollisionDetection = this._placementInProgress =
