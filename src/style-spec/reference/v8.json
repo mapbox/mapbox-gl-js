@@ -2211,7 +2211,6 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
-      "maximum": 65535,
       "units": "meters",
       "doc": "The height with which to extrude this layer.",
       "transition": true,
