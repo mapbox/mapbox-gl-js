@@ -112,13 +112,15 @@ class RegressionPlot extends Plot {
             width = this.node.clientWidth - margin.left - margin.right,
             height = 200 - margin.top - margin.bottom;
 
+        const versions = this.props.versions.filter(version => version.regression);
+
         const x = d3.scaleLinear()
-            .domain([0, d3.max(this.props.versions.map(version => d3.max(regression(version.samples) || [], d => d[0])))])
+            .domain([0, d3.max(versions.map(version => d3.max(version.regression.data, d => d[0])))])
             .range([0, width])
             .nice();
 
         const y = d3.scaleTime()
-            .domain([0, d3.max(this.props.versions.map(version => d3.max(regression(version.samples) || [], d => d[1])))])
+            .domain([0, d3.max(versions.map(version => d3.max(version.regression.data, d => d[1])))])
             .range([height, 0])
             .nice();
 
@@ -156,7 +158,7 @@ class RegressionPlot extends Plot {
             .text("Time")
 
         const version = svg.selectAll(".version")
-            .data(this.props.versions);
+            .data(versions);
 
         version.enter().append("g")
             .attr("class", "version")
@@ -164,7 +166,7 @@ class RegressionPlot extends Plot {
             .style("fill-opacity", 0.7)
             .merge(version)
             .selectAll("circle")
-            .data(version => regression(version.samples))
+            .data(version => version.regression.data)
             .enter().append("circle")
             .attr("r", 3.5)
             .attr("cx", d => x(d[0]))
@@ -180,7 +182,7 @@ class BenchmarkRow extends React.Component {
             <tr key={this.props.name}>
                 <th rowspan={ended ? 3 : 1}><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></th>
                 {this.props.versions.map(version => (
-                    <td key={version.name} className={version.status === 'waiting' ? 'quiet' : ''}>{version.message}</td>
+                    <td key={version.name} className={version.status === 'waiting' ? 'quiet' : ''}>{version.status === 'running' ? 'Running...' : version.message}</td>
                 ))}
             </tr>
         ];
@@ -259,6 +261,8 @@ for (const name in window.mapboxglBenchmarks) {
                     version.status = 'ended';
                     version.message = `${d3.mean(samples).toFixed(0)}ms`;
                     version.samples = samples;
+                    version.regression = leastSquaresRegression(regression(samples));
+                    version.message = `${version.regression.slope.toFixed(0)}ms`;
                     update();
                 })
                 .catch(error => {
@@ -280,4 +284,21 @@ function update() {
         <BenchmarksTable versions={versions} benchmarks={benchmarks} finished={finished}/>,
         document.getElementById('benchmarks')
     );
+}
+
+function leastSquaresRegression(data) {
+    const meanX = d3.sum(data, d => d[0]) / data.length;
+    const meanY = d3.sum(data, d => d[1]) / data.length;
+    const varianceX = d3.variance(data, d => d[0]);
+    const sdX = Math.sqrt(varianceX);
+    const sdY = d3.deviation(data, d => d[1]);
+    const covariance = d3.sum(data, ([x, y]) =>
+        (x - meanX) * (y - meanY)
+    ) / (data.length - 1);
+
+    const correlation = covariance / sdX / sdY;
+    const slope = covariance / varianceX;
+    const intercept = meanY - slope * meanX;
+
+    return { correlation, slope, intercept, data };
 }
