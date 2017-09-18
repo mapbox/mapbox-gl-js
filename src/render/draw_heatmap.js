@@ -89,28 +89,28 @@ function renderToTexture(gl, painter) {
     const ext = gl.getExtension('OES_texture_half_float');
     gl.getExtension('OES_texture_half_float_linear');
 
-    let texture = painter.viewportTexture;
+    gl.viewport(0, 0, painter.width / 4, painter.height / 4);
+
+    let texture = painter.heatmapTexture;
+    let fbo = painter.heatmapFbo;
+
     if (!texture) {
-        texture = gl.createTexture();
+        texture = painter.heatmapTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA, ext.HALF_FLOAT_OES, null);
-        painter.viewportTexture = texture;
+
+        fbo = painter.heatmapFbo = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
     } else {
         gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     }
-
-    gl.viewport(0, 0, painter.width / 4, painter.height / 4);
-
-    let fbo = painter.viewportFbo;
-    if (!fbo) {
-        fbo = painter.viewportFbo = gl.createFramebuffer();
-    }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 }
 
 function renderTextureToMap(gl, painter, layer) {
@@ -119,7 +119,7 @@ function renderTextureToMap(gl, painter, layer) {
     gl.viewport(0, 0, painter.width, painter.height);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, painter.viewportTexture);
+    gl.bindTexture(gl.TEXTURE_2D, painter.heatmapTexture);
 
     gl.uniform1f(program.uniforms.u_opacity, layer.paint['heatmap-opacity']);
     gl.uniform1i(program.uniforms.u_image, 1);
