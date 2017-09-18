@@ -78,9 +78,8 @@ class ArrayAssertion implements Expression {
         }
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.input.accept(visitor);
+    eachChild(fn: (Expression) => void) {
+        fn(this.input);
     }
 }
 

@@ -113,8 +113,8 @@ class Curve implements Expression {
             const label = rest[i];
             const value = rest[i + 1];
 
-            const labelKey = isStep ? i + 4 : i + 3;
-            const valueKey = isStep ? i + 5 : i + 4;
+            const labelKey = isStep ? i + 2 : i + 3;
+            const valueKey = isStep ? i + 3 : i + 4;
 
             if (typeof label !== 'number') {
                 return context.error('Input/output pairs for "curve" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
@@ -176,11 +176,10 @@ class Curve implements Expression {
         return result;
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.input.accept(visitor);
+    eachChild(fn: (Expression) => void) {
+        fn(this.input);
         for (const [ , expression] of this.stops) {
-            expression.accept(visitor);
+            fn(expression);
         }
     }
 }

@@ -1,5 +1,7 @@
 // @flow
 
+const Literal = require('./definitions/literal');
+const {CompilationContext} = require('./expression');
 import type {ParsingContext, Expression} from './expression';
 
 /**
@@ -55,6 +57,22 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
                 }
             }
 
+            // If an expression's arguments are all literals, we can evaluate
+            // it immediately and replace it with a literal value in the
+            // parsed/compiled result.
+            if (!(parsed instanceof Literal) && isConstant(parsed)) {
+                const cc = new CompilationContext();
+                const ec = require('./evaluation_context')();
+                const compiled = cc.compileToFunction(parsed, ec);
+                try {
+                    const value = compiled({}, {});
+                    parsed = new Literal(parsed.key, parsed.type, value);
+                } catch (e) {
+                    context.error(e.message);
+                    return null;
+                }
+            }
+
             return parsed;
         }
 
@@ -66,6 +84,29 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
     } else {
         return context.error(`Expected an array, but found ${typeof expr} instead.`);
     }
+}
+
+function isConstant(expression: Expression) {
+    // requires within function body to workaround circular dependency
+    const {CompoundExpression} = require('./compound_expression');
+    const {isZoomConstant, isFeatureConstant} = require('./is_constant');
+    const Var = require('./definitions/var');
+
+    if (expression instanceof Var) {
+        return false;
+    } else if (expression instanceof CompoundExpression && expression.name === 'error') {
+        return false;
+    }
+
+    let literalArgs = true;
+    expression.eachChild(arg => {
+        if (!(arg instanceof Literal)) { literalArgs = false; }
+    });
+    if (!literalArgs) {
+        return false;
+    }
+
+    return isZoomConstant(expression) && isFeatureConstant(expression);
 }
 
 module.exports = parseExpression;

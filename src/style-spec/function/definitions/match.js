@@ -135,13 +135,10 @@ class Match implements Expression {
         return result;
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.input.accept(visitor);
-        for (const output of this.outputs) {
-            output.accept(visitor);
-        }
-        this.otherwise.accept(visitor);
+    eachChild(fn: (Expression) => void) {
+        fn(this.input);
+        this.outputs.forEach(fn);
+        fn(this.otherwise);
     }
 }
 

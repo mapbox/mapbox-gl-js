@@ -8,9 +8,12 @@ const {
     CompilationContext
 } = require('./expression');
 const parseExpression = require('./parse_expression');
-const { CompoundExpression } = require('./compound_expression');
 const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
+const {
+    isFeatureConstant,
+    isZoomConstant
+} = require('./is_constant');
 
 import type { Type } from './types.js';
 import type { Expression, ParsingError } from './expression.js';
@@ -78,34 +81,3 @@ function compileExpression(
     };
 }
 
-function isFeatureConstant(e: Expression) {
-    let result = true;
-    e.accept({
-        visit: (expression) => {
-            if (expression instanceof CompoundExpression) {
-                if (expression.name === 'get') {
-                    result = result && (expression.args.length > 1);
-                } else if (expression.name === 'has') {
-                    result = result && (expression.args.length > 1);
-                } else {
-                    result = result && !(
-                        expression.name === 'properties' ||
-                        expression.name === 'geometry-type' ||
-                        expression.name === 'id'
-                    );
-                }
-            }
-        }
-    });
-    return result;
-}
-
-function isZoomConstant(e: Expression) {
-    let result = true;
-    e.accept({
-        visit: (expression) => {
-            if (expression.name === 'zoom') result = false;
-        }
-    });
-    return result;
-}

@@ -41,9 +41,8 @@ class CompoundExpression implements Expression {
         return [ name ].concat(args);
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.args.forEach(a => a.accept(visitor));
+    eachChild(fn: (Expression) => void) {
+        this.args.forEach(fn);
     }
 
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression {

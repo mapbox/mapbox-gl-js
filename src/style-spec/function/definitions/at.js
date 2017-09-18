@@ -44,10 +44,9 @@ class At implements Expression {
         return [ 'at', this.index.serialize(), this.input.serialize() ];
     }
 
-    accept(visitor: Visitor<Expression>) {
-        visitor.visit(this);
-        this.index.accept(visitor);
-        this.input.accept(visitor);
+    eachChild(fn: (Expression) => void) {
+        fn(this.index);
+        fn(this.input);
     }
 }
 

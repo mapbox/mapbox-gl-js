@@ -35,7 +35,7 @@ class Var implements Expression {
         return [this.name];
     }
 
-    accept(visitor: Visitor<Expression>) { visitor.visit(this); }
+    eachChild() {}
 }
 
 

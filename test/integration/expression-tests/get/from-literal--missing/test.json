@@ -4,13 +4,13 @@
   "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
-      "result": "success",
-      "isFeatureConstant": true,
-      "isZoomConstant": true,
-      "type": "Number"
-    },
-    "outputs": [
-      {"error": "Expected value to be of type Number, but found Null instead."}
-    ]
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected value to be of type Number, but found Null instead."
+        }
+      ]
+    }
   }
 }
