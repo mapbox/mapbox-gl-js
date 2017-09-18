@@ -133,11 +133,9 @@ class CanvasSource extends ImageSource {
             }
 
             // WebGL reads pixels bottom to top, but for our ImageData object we need top to bottom: flip here
-            const flipped = new Uint8Array(this.width * this.height * 4);
             for (let i = this.height - 1, j = 0; i >= 0; i--, j++) {
-                flipped.set(data.subarray(i * this.width * 4, (i + 1) * this.width * 4), j * this.width * 4);
+                this.canvasData.data.set(data.subarray(i * this.width * 4, (i + 1) * this.width * 4), j * this.width * 4);
             }
-            this.canvasData.data.set(flipped);
         }
     }
 
