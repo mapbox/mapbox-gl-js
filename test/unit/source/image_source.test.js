@@ -88,7 +88,7 @@ test('ImageSource', (t) => {
 
         const serialized = source.serialize();
         t.equal(serialized.type, 'image');
-        t.equal(serialized.urls, '/image.png');
+        t.equal(serialized.url, '/image.png');
         t.deepEqual(serialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
 
         t.end();
