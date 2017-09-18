@@ -20,8 +20,8 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 14,
-    center: [-122.414, 37.78],
+    zoom: 2,
+    center: [0, 0],
     style: 'mapbox://styles/mapbox/dark-v9',
     hash: false
 });
@@ -33,9 +33,7 @@ map.on('load', function() {
 
     map.addSource('heatmap', {
         "type": "geojson",
-        "data": "./waste.json",
-        "cluster": true,
-        "clusterRadius": 5
+        "data": "../test/integration/data/places.geojson"
     });
 
     map.addLayer({
@@ -43,22 +41,13 @@ map.on('load', function() {
         "type": "heatmap",
         "source": "heatmap",
         "paint": {
-            "heatmap-radius": 40,
+            "heatmap-radius": 50,
             "heatmap-weight": {
-                type: 'identity',
-                property: 'point_count'
+                "stops": [[0, 0.2], [4, 1]]
             }
         }
     });
 });
-
-// map.on('click', function() {
-//     map.flyTo({
-//         center: [-77.46189535195191, 39.071252887412754],
-//         zoom: 20,
-//         speed: 0.3
-//     });
-// });
 
 </script>
 </body>
