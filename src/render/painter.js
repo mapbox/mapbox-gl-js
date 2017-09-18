@@ -128,6 +128,11 @@ class Painter {
             }
         }
 
+        if (this.heatmapTexture) {
+            this.gl.deleteTexture(this.heatmapTexture);
+            this.gl.deleteFramebuffer(this.heatmapFbo);
+        }
+
         if (this.depthRbo) {
             this.gl.deleteRenderbuffer(this.depthRbo);
             this.depthRbo = null;
