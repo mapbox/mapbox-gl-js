@@ -78,9 +78,10 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer.colorRamp);
 
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
     renderTextureToMap(gl, painter, layer);
 
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 }
 
 function renderToTexture(gl, painter) {
