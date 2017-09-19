@@ -206,11 +206,12 @@ class Tile {
         }
     }
 
-    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, posMatrix: Float32Array) {
+    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any) {
         const bucket = this.getBucket(layer);
         const collisionBoxArray = this.collisionBoxArray;
 
         if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
+            const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
             collisionIndex.setMatrix(posMatrix);
 
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';

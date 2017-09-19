@@ -43,6 +43,8 @@ class Transform {
     _maxZoom: number;
     _center: LngLat;
     _constraining: boolean;
+    _posMatrixCache: {[string]: Float32Array};
+
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
 
@@ -60,6 +62,7 @@ class Transform {
         this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
+        this._posMatrixCache = {};
     }
 
     clone(): Transform {
@@ -395,7 +398,14 @@ class Transform {
      * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number) {
+    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number): Float32Array {
+        let posMatrixKey = tileCoord.id.toString();
+        if (maxZoom) {
+            posMatrixKey += maxZoom.toString();
+        }
+        if (this._posMatrixCache[posMatrixKey]) {
+            return this._posMatrixCache[posMatrixKey];
+        }
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         const coord = tileCoord.toCoordinate(maxZoom);
@@ -406,7 +416,8 @@ class Transform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 
-        return new Float32Array(posMatrix);
+        this._posMatrixCache[posMatrixKey] = new Float32Array(posMatrix);
+        return this._posMatrixCache[posMatrixKey];
     }
 
     _constrain() {
@@ -522,6 +533,7 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
+        this._posMatrixCache = {};
     }
 }
 

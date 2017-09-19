@@ -976,7 +976,6 @@ class Style extends Evented {
 
     _redoPlacement(transform: Transform, showCollisionBoxes: boolean, collisionFadeTimes: any) {
         const forceFullPlacement = this.getNeedsFullPlacement();
-        const posMatrices = {};
 
         if (forceFullPlacement ||
             typeof this._currentPlacementIndex === 'undefined' ||
@@ -1012,10 +1011,7 @@ class Style extends Evented {
             const layer = this._layers[layerId];
             if (layer.type === 'symbol') {
                 for (const id in this.sourceCaches) {
-                    if (!posMatrices[id]) {
-                        posMatrices[id] = {};
-                    }
-                    pausedPlacement = this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, posMatrices[id], shouldPausePlacement);
+                    pausedPlacement = this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, shouldPausePlacement);
                 }
             }
             if (!pausedPlacement) {

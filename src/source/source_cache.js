@@ -678,13 +678,10 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    placeLayer(collisionIndex: CollisionIndex, showCollisionBoxes: boolean, layer: any, posMatrices: any, shouldPausePlacement: any) {
+    placeLayer(collisionIndex: CollisionIndex, showCollisionBoxes: boolean, layer: any, shouldPausePlacement: any) {
         while (this._placementIndex < this._placementIDs.length) {
             const tile = this.getTileByID(this._placementIDs[this._placementIndex]);
-            if (!posMatrices[this._placementIndex]) {
-                posMatrices[this._placementIndex] = collisionIndex.transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
-            }
-            tile.placeLayer(showCollisionBoxes, collisionIndex, layer, posMatrices[this._placementIndex]);
+            tile.placeLayer(showCollisionBoxes, collisionIndex, layer);
 
             this._placementIndex++;
             if (shouldPausePlacement()) {
