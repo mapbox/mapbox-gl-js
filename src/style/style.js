@@ -94,13 +94,6 @@ class Style extends Evented {
     _updatedSymbolOrder: boolean;
     _currentPlacementIndex: number;
 
-    // For debug timing logs:
-    _fullPlacementStart: number;
-    _fullPlacementElapsed: number;
-    _totalPlacementTime: number;
-    _placements: number;
-    _interruptions: number;
-
     collisionIndex: CollisionIndex;
     z: number;
 
@@ -127,9 +120,6 @@ class Style extends Evented {
         this.sourceCaches = {};
         this.zoomHistory = {};
         this._loaded = false;
-
-        this._placements = 0;
-        this._totalPlacementTime = 0;
 
         this._resetUpdates();
 
@@ -984,9 +974,6 @@ class Style extends Evented {
             // and start doing placement
             this._currentPlacementIndex = this._order.length - 1;
             this.collisionIndex = new CollisionIndex(transform.clone());
-            this._fullPlacementStart = browser.now();
-            this._fullPlacementElapsed = 0;
-            this._interruptions = 0;
         }
 
         const startPlacement = browser.now();
@@ -1001,9 +988,6 @@ class Style extends Evented {
                 // We didn't finish placing all layers within 2ms,
                 // but we can keep rendering with a partial placement
                 // We'll resume here on the next frame
-                const elapsed = browser.now() - startPlacement;
-                this._fullPlacementElapsed += elapsed;
-                this._interruptions++;
                 return true;
             }
 
@@ -1021,12 +1005,6 @@ class Style extends Evented {
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].commitPlacement(this.collisionIndex, collisionFadeTimes);
         }
-        const elapsed = browser.now() - startPlacement;
-        this._fullPlacementElapsed += elapsed;
-        this._totalPlacementTime += this._fullPlacementElapsed;
-        this._placements++;
-        //console.log(`${browser.now() - this._fullPlacementStart}ms clock time to place all ${this._order.length} layers, ${this._fullPlacementElapsed}ms placement time, with ${this._interruptions} interruptions.`);
-        //console.log(`Average placement time so far: ${this._totalPlacementTime / this._placements}ms`);
         return false;
     }
 
