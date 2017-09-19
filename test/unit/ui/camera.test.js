@@ -788,7 +788,14 @@ test('camera', (t) => {
             const camera = createCamera({zoom: 22, center:[0, 0]});
             t.doesNotThrow(()=>camera.flyTo({zoom:10, center:[0, 0]}));
             t.end();
+        });
 
+        t.test('does not throw when cameras current zoom is above maxzoom and an offset creates infinite zoom out factor', (t)=>{
+            const transform = new Transform(0, 20.9999, true);
+            transform.resize(512, 512);
+            const camera = new Camera(transform, {}).jumpTo({zoom: 21, center:[0, 0]});
+            t.doesNotThrow(()=>camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]}));
+            t.end();
         });
 
         t.test('zooms to specified level', (t) => {
