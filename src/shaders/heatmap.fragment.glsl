@@ -1,6 +1,6 @@
 #pragma mapbox: define highp float weight
 
-uniform float u_weight_scale;
+uniform float u_intensity;
 varying vec2 v_extrude;
 
 // Gaussian kernel coefficient: 1 / sqrt(2 * PI)
@@ -11,7 +11,7 @@ void main() {
 
     // Kernel density estimation with a Gaussian kernel of size 5x5
     float d = -0.5 * 5.0 * 5.0 * dot(v_extrude, v_extrude);
-    float val = weight * u_weight_scale * GAUSS_COEF * exp(d);
+    float val = weight * u_intensity * GAUSS_COEF * exp(d);
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, val);
 

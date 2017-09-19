@@ -51,8 +51,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         gl.uniform1f(program.uniforms.u_extrude_scale, EXTENT / tile.tileSize * scale);
         gl.uniform1f(program.uniforms.u_devicepixelratio, browser.devicePixelRatio);
 
-        // const weightScale = painter.transform.zoomScale(painter.transform.zoom - painter.transform.maxZoom);
-        gl.uniform1f(program.uniforms.u_weight_scale, 1);
+        gl.uniform1f(program.uniforms.u_intensity, layer.paint['heatmap-intensity']);
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         program.draw(

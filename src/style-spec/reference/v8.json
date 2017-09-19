@@ -3051,8 +3051,24 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "transition": true,
+      "transition": false,
       "doc": "Heatmap weight.",
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      }
+    },
+    "heatmap-intensity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "doc": "Heatmap intensity.",
       "sdk-support": {
         "basic functionality": {
         },
