@@ -210,12 +210,11 @@ class Tile {
 
         if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
             const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
-            collisionIndex.setMatrix(posMatrix);
 
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, labelPlaneMatrix, this.coord.id, collisionBoxArray);
+            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, collisionBoxArray);
         }
     }
 

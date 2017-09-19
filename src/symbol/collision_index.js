@@ -33,7 +33,6 @@ class CollisionIndex {
     grid: Grid;
     ignoredGrid: Grid;
     transform: Transform;
-    matrix: mat4;
     pitchfactor: number;
 
     constructor(
@@ -42,7 +41,6 @@ class CollisionIndex {
         ignoredGrid: Grid = new Grid(transform.width + 2 * viewportPadding, transform.height + 2 * viewportPadding, 25)
     ) {
         this.transform = transform;
-        this.matrix = mat4.identity(mat4.create());
 
         this.grid = grid;
         this.ignoredGrid = ignoredGrid;
@@ -55,8 +53,8 @@ class CollisionIndex {
      * overlapping with other features.
      * @private
      */
-    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, scale: number, pixelsToTileUnits: number): Array<number> {
-        const projectedPoint = this.projectAndGetPerspectiveRatio(collisionBox.anchorPointX, collisionBox.anchorPointY);
+    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, posMatrix: mat4): Array<number> {
+        const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
         const tlX = collisionBox.x1 / tileToViewport + projectedPoint.point.x;
         const tlY = collisionBox.y1 / tileToViewport + projectedPoint.point.y;
@@ -91,13 +89,25 @@ class CollisionIndex {
             (incidenceStretch - 1) * lastSegmentTile * Math.abs(Math.sin(lastSegmentAngle));
     }
 
-    placeCollisionCircles(collisionCircles?: Array<any>, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, key: string, symbol: any, lineVertexArray: any, glyphOffsetArray: any, fontSize: number, labelPlaneMatrix: any, showCollisionCircles: boolean, pitchWithMap: boolean): Array<number> {
+    placeCollisionCircles(collisionCircles?: Array<any>,
+                          allowOverlap: boolean,
+                          scale: number,
+                          pixelsToTileUnits: number,
+                          key: string,
+                          symbol: any,
+                          lineVertexArray: any,
+                          glyphOffsetArray: any,
+                          fontSize: number,
+                          posMatrix: mat4,
+                          labelPlaneMatrix: mat4,
+                          showCollisionCircles: boolean,
+                          pitchWithMap: boolean): Array<number> {
         const placedCollisionCircles = [];
         if (!collisionCircles) {
             return placedCollisionCircles;
         }
 
-        const projectedAnchor = this.projectAnchor(symbol.anchorX, symbol.anchorY);
+        const projectedAnchor = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY);
 
         const projectionCache = {};
         const fontScale = fontSize / 24;
@@ -149,7 +159,7 @@ class CollisionIndex {
                 continue;
             }
 
-            const projectedPoint = this.projectPoint(collisionCircles[k], collisionCircles[k + 1]);
+            const projectedPoint = this.projectPoint(posMatrix, collisionCircles[k], collisionCircles[k + 1]);
             const x = projectedPoint.x;
             const y = projectedPoint.y;
 
@@ -215,7 +225,7 @@ class CollisionIndex {
             return result;
         }
 
-        this.setMatrix(this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom));
+        const posMatrix = this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom);
 
         const query = [];
         let minX = Infinity;
@@ -225,7 +235,7 @@ class CollisionIndex {
         for (let i = 0; i < queryGeometry.length; i++) {
             const ring = queryGeometry[i];
             for (let k = 0; k < ring.length; k++) {
-                const p = this.projectPoint(ring[k].x, ring[k].y);
+                const p = this.projectPoint(posMatrix, ring[k].x, ring[k].y);
                 minX = Math.min(minX, p.x);
                 minY = Math.min(minY, p.y);
                 maxX = Math.max(maxX, p.x);
@@ -267,7 +277,7 @@ class CollisionIndex {
             // Since there's no actual collision taking place, the circle vs. square
             // distinction doesn't matter as much, and box geometry is easier
             // to work with.
-            const projectedPoint = this.projectAndGetPerspectiveRatio(blocking.anchorPointX, blocking.anchorPointY);
+            const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, blocking.anchorPointX, blocking.anchorPointY);
             const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
             const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
             const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
@@ -311,32 +321,27 @@ class CollisionIndex {
         }
     }
 
-
-    setMatrix(matrix: mat4) {
-        this.matrix = matrix;
-    }
-
-    projectAnchor(x: number, y: number) {
+    projectAnchor(posMatrix: mat4, x: number, y: number) {
         const p = [x, y, 0, 1];
-        projection.xyTransformMat4(p, p, this.matrix);
+        projection.xyTransformMat4(p, p, posMatrix);
         return {
             perspectiveRatio: 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance),
             cameraDistance: p[3]
         };
     }
 
-    projectPoint(x: number, y: number) {
+    projectPoint(posMatrix: mat4, x: number, y: number) {
         const p = [x, y, 0, 1];
-        projection.xyTransformMat4(p, p, this.matrix);
+        projection.xyTransformMat4(p, p, posMatrix);
         return new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding
         );
     }
 
-    projectAndGetPerspectiveRatio(x: number, y: number) {
+    projectAndGetPerspectiveRatio(posMatrix: mat4, x: number, y: number) {
         const p = [x, y, 0, 1];
-        projection.xyTransformMat4(p, p, this.matrix);
+        projection.xyTransformMat4(p, p, posMatrix);
         const a = new Point(
             (((p[0] / p[3] + 1) / 2) * this.transform.width) + viewportPadding,
             (((-p[1] / p[3] + 1) / 2) * this.transform.height) + viewportPadding

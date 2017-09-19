@@ -137,7 +137,7 @@ function updateCollisionCircles(collisionVertexArray: any, collisionCircles: Arr
     }
 }
 
-function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
+function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
     const layer = bucket.layers[0];
     const layout = layer.layout;
 
@@ -184,12 +184,12 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
             // starts rendering as close as possible to its final state?
             if (symbolInstance.collisionArrays.textBox) {
                 placedGlyphBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
-                    layout['text-allow-overlap'], scale, pixelsToTileUnits);
+                    layout['text-allow-overlap'], scale, pixelsToTileUnits, posMatrix);
             }
 
             if (symbolInstance.collisionArrays.iconBox) {
                 placedIconBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
-                    layout['icon-allow-overlap'], scale, pixelsToTileUnits);
+                    layout['icon-allow-overlap'], scale, pixelsToTileUnits, posMatrix);
             }
 
             const textCircles = symbolInstance.collisionArrays.textCircles;
@@ -205,6 +205,7 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
                     bucket.lineVertexArray,
                     bucket.glyphOffsetArray,
                     fontSize,
+                    posMatrix,
                     labelPlaneMatrix,
                     showCollisionBoxes,
                     pitchWithMap);

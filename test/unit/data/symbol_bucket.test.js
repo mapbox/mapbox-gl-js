@@ -33,7 +33,6 @@ const labelPlaneMatrix = mat4.identity(new Float64Array(16));
 // project to somewhere within the viewport, assuming a tile extent of 8192.
 mat4.scale(labelPlaneMatrix, labelPlaneMatrix, [1 / 8192, 1 / 8192, 1]);
 const collision = new CollisionIndex(transform);
-collision.setMatrix(labelPlaneMatrix);
 const showCollisionBoxes = false;
 const zoom = 0;
 const pixelRatio = 1;
@@ -66,7 +65,7 @@ test('SymbolBucket', (t) => {
     const a = collision.grid.keysLength();
     bucketA.populate([{feature}], options);
     PrepareSymbols.prepare(bucketA, stacks, {});
-    PlaceSymbols.place(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
 
     const b = collision.grid.keysLength();
     t.notEqual(a, b, 'places feature');
@@ -75,7 +74,7 @@ test('SymbolBucket', (t) => {
     const a2 = collision.grid.keysLength();
     bucketB.populate([{feature}], options);
     PrepareSymbols.prepare(bucketB, stacks, {});
-    PlaceSymbols.place(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
     const b2 = collision.grid.keysLength();
     t.equal(b2, a2, 'detects collision and does not place feature');
     t.end();
@@ -103,8 +102,8 @@ test('SymbolBucket redo placement', (t) => {
 
     bucket.populate([{feature}], options);
     PrepareSymbols.prepare(bucket, stacks, {});
-    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
-    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
 
     t.end();
 });
