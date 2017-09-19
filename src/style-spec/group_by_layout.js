@@ -3,7 +3,7 @@ const refProperties = require('./util/ref_properties');
 
 function stringify(obj) {
     const type = typeof obj;
-    if (type === 'number' || type === 'string' || obj === undefined || obj === null)
+    if (type === 'number' || type === 'boolean' || type === 'string' || obj === undefined || obj === null)
         return JSON.stringify(obj);
 
     if (Array.isArray(obj)) {

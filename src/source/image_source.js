@@ -236,7 +236,7 @@ class ImageSource extends Evented implements Source {
     serialize(): Object {
         return {
             type: 'image',
-            urls: this.options.url,
+            url: this.options.url,
             coordinates: this.coordinates
         };
     }

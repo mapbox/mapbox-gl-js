@@ -94,7 +94,7 @@ class GeoJSONSource extends Evented implements Source {
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
 
-        this._data = options.data;
+        this._data = (options.data: any);
         this._options = util.extend({}, options);
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;

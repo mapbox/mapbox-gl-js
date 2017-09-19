@@ -7,5 +7,5 @@ const workerURL = window.URL.createObjectURL(new WebWorkify(require('../../sourc
 import type {WorkerInterface} from '../web_worker';
 
 module.exports = function (): WorkerInterface {
-    return new window.Worker(workerURL);
+    return (new window.Worker(workerURL): any);
 };
