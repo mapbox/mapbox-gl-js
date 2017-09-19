@@ -100,8 +100,8 @@ class DensityPlot extends Plot {
 
 function regression(samples) {
     const result = [];
-    for (let i = 0, n = 1; i + n < samples.length; i += n, n++) {
-        result.push([n, samples.slice(i, i + n).reduce(((sum, sample) => sum + sample), 0)]);
+    for (let i = 0; i < samples.length; i++) {
+        result.push([i, samples.slice(0, i).reduce(((sum, sample) => sum + sample), 0)]);
     }
     return result;
 }
@@ -123,6 +123,10 @@ class RegressionPlot extends Plot {
             .domain([0, d3.max(versions.map(version => d3.max(version.regression.data, d => d[1])))])
             .range([height, 0])
             .nice();
+
+        const line = d3.line()
+            .x(d => x(d[0]))
+            .y(d => y(d[1]));
 
         const svg = d3.select(this.node)
             .attr("height", height + margin.top + margin.bottom)
@@ -155,22 +159,34 @@ class RegressionPlot extends Plot {
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .text("Time")
+            .text("Time");
 
         const version = svg.selectAll(".version")
             .data(versions);
 
-        version.enter().append("g")
+        // scatter plot
+        const versionEnter = version.enter().append("g")
             .attr("class", "version")
             .style("fill", version => versionColor(version.name))
-            .style("fill-opacity", 0.7)
-            .merge(version)
-            .selectAll("circle")
+            .style("fill-opacity", 0.7);
+
+        versionEnter.merge(version).selectAll("circle")
             .data(version => version.regression.data)
             .enter().append("circle")
-            .attr("r", 3.5)
+            .attr("r", 1)
             .attr("cx", d => x(d[0]))
             .attr("cy", d => y(d[1]));
+
+        // regression line
+        versionEnter.append('path')
+            .attr('stroke', version => versionColor(version.name))
+            .attr('stroke-width', 2)
+            .attr('class', 'regression-line');
+        versionEnter.merge(version).selectAll('.regression-line')
+            .attr('d', version => line(version.regression.data.map(d => [
+                d[0],
+                d[0] * version.regression.slope + version.regression.intercept
+            ])));
     }
 }
 
