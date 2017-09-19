@@ -2,12 +2,6 @@
 
 'use strict';
 
-export type BenchmarkResult = {
-    elapsed: number,
-    samples: Array<number>,
-    regression: Array<[number, number]>
-};
-
 class Benchmark {
     /**
      * The `setup` method is intended to be overridden by subclasses. It will be called once, prior to
@@ -33,52 +27,27 @@ class Benchmark {
 
     /**
      * Run the benchmark by executing `setup` once and then sampling the execution time of `bench` some
-     * number of times, while collecting performance statistics.
+     * number of times.
      */
-    run(): Promise<BenchmarkResult> {
-        let n = 1;
-
-        const result = {
-            elapsed: 0,
-            samples: [],
-            regression: []
-        };
-
-        const next = (samples: Array<number>) => {
-            const sum = samples.reduce((sum, sample) => sum + sample, 0);
-
-            result.elapsed += sum;
-            result.samples = result.samples.concat(samples);
-            result.regression.push([n, sum]);
-
-            if (result.elapsed < 5000) {
-                n += 1;
-                return this.runIterations(n).then(next);
-            } else {
-                return Promise.resolve(this.teardown()).then(() => result);
-            }
-        }
-
-        return Promise.resolve(this.setup())
-            .then(() => this.runIterations(n))
-            .then(next);
-    }
-
-    runIterations(n: number): Promise<Array<number>> {
-        const result = [];
+    run(): Promise<Array<number>> {
+        let elapsed = 0;
+        const samples = [];
 
         const next = () => {
-            result.push(performance.now() - start);
-            if (--n > 0) {
-                start = performance.now();
-                return Promise.resolve(this.bench()).then(next);
-            } else {
-                return result;
+            if (elapsed >= 5000) {
+                return Promise.resolve(this.teardown()).then(() => samples);
             }
+
+            const start = performance.now();
+            return Promise.resolve(this.bench()).then(() => {
+                const sample = performance.now() - start;
+                elapsed += sample;
+                samples.push(sample);
+                return next();
+            });
         }
 
-        let start = performance.now();
-        return Promise.resolve(this.bench()).then(next);
+        return Promise.resolve(this.setup()).then(next);
     }
 }
 
