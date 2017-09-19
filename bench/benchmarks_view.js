@@ -40,7 +40,7 @@ class DensityPlot extends Plot {
             height = 200 - margin.top - margin.bottom;
 
         const x = d3.scaleTime()
-            .domain(d3.extent(Array.prototype.concat.apply([], this.props.versions.map(version => version.samples))))
+            .domain([0, d3.max(Array.prototype.concat.apply([], this.props.versions.map(version => version.samples)))])
             .range([0, width])
             .nice();
 
