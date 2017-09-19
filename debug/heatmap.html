@@ -43,7 +43,18 @@ map.on('load', function() {
         "paint": {
             "heatmap-radius": 50,
             "heatmap-weight": {
-                "stops": [[0, 0.2], [4, 1]]
+                "stops": [[0, 0.5], [4, 2]]
+            },
+            "heatmap-color": {
+                "stops": [
+                    [0, "rgba(0, 0, 255, 0)"],
+                    [0.1, "royalblue"],
+                    [0.3, "cyan"],
+                    [0.5, "lime"],
+                    [0.7, "yellow"],
+                    [1, "red"]
+                ],
+                "default": "rgba(0, 0, 0, 0)"
             }
         }
     });
