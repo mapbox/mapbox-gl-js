@@ -91,6 +91,14 @@ class DensityPlot extends Plot {
     }
 }
 
+function regression(samples) {
+    const result = [];
+    for (let i = 0, n = 1; i + n < samples.length; i += n, n++) {
+        result.push([n, samples.slice(i, i + n).reduce(((sum, sample) => sum + sample), 0)]);
+    }
+    return result;
+}
+
 class RegressionPlot extends Plot {
     plot() {
         const margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -98,12 +106,12 @@ class RegressionPlot extends Plot {
             height = 200 - margin.top - margin.bottom;
 
         const x = d3.scaleLinear()
-            .domain([0, d3.max(this.props.versions.map(version => d3.max(version.regression || [], d => d[0])))])
+            .domain([0, d3.max(this.props.versions.map(version => d3.max(regression(version.samples) || [], d => d[0])))])
             .range([0, width])
             .nice();
 
         const y = d3.scaleTime()
-            .domain([0, d3.max(this.props.versions.map(version => d3.max(version.regression || [], d => d[1])))])
+            .domain([0, d3.max(this.props.versions.map(version => d3.max(regression(version.samples) || [], d => d[1])))])
             .range([height, 0])
             .nice();
 
@@ -149,7 +157,7 @@ class RegressionPlot extends Plot {
             .style("fill-opacity", 0.7)
             .merge(version)
             .selectAll("circle")
-            .data(version => version.regression)
+            .data(version => regression(version.samples))
             .enter().append("circle")
             .attr("r", 3.5)
             .attr("cx", d => x(d[0]))
@@ -230,8 +238,7 @@ for (const name in window.mapboxglBenchmarks) {
             name: ver,
             status: 'waiting',
             logs: [],
-            samples: [],
-            regression: []
+            samples: []
         };
 
         benchmark.versions.push(version);
@@ -241,11 +248,10 @@ for (const name in window.mapboxglBenchmarks) {
             update();
 
             return window.mapboxglBenchmarks[name][ver].run()
-                .then(result => {
+                .then(samples => {
                     version.status = 'ended';
-                    version.message = `${d3.mean(result.samples).toFixed(0)}ms`;
-                    version.samples = result.samples;
-                    version.regression = result.regression;
+                    version.message = `${d3.mean(samples).toFixed(0)}ms`;
+                    version.samples = samples;
                     update();
                 })
                 .catch(error => {
