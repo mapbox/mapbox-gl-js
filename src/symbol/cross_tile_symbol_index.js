@@ -157,7 +157,7 @@ class CrossTileSymbolLayerIndex {
         this.indexes[coord.z][coord.id] = tileIndex;
     }
 
-    removeTile(coord, sourceMaxZoom) {
+    removeTile(coord: TileCoord, sourceMaxZoom: number) {
         const removedIndex = this.indexes[coord.z][coord.id];
 
         delete this.indexes[coord.z][coord.id];
@@ -172,12 +172,13 @@ class CrossTileSymbolLayerIndex {
         let parentCoord = coord;
         for (let z = coord.z - 1; z >= minZoom; z--) {
             parentCoord = parentCoord.parent(sourceMaxZoom);
+            if (!parentCoord) break; // Flow doesn't know that z >= minZoom would prevent this
             const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
             if (parentIndex) this.unblockLabels(removedIndex, parentIndex);
         }
     }
 
-    blockLabels(childIndex, parentIndex, copyParentOpacity) {
+    blockLabels(childIndex: TileLayerIndex, parentIndex: TileLayerIndex, copyParentOpacity: boolean) {
         childIndex.forEachSymbolInstance((symbolInstance) => {
             // only non-duplicate labels can block other labels
             if (!symbolInstance.isDuplicate) {
@@ -200,7 +201,7 @@ class CrossTileSymbolLayerIndex {
         });
     }
 
-    unblockLabels(childIndex, parentIndex) {
+    unblockLabels(childIndex: TileLayerIndex, parentIndex: TileLayerIndex) {
         assert(childIndex.coord.z > parentIndex.coord.z);
         childIndex.forEachSymbolInstance((symbolInstance) => {
             // only non-duplicate labels were blocking other labels

@@ -6,6 +6,7 @@ import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
 import type OpacityState from './opacity_state';
 import type CollisionIndex from './collision_index';
 import type CollisionBoxArray from './collision_box';
+import type {StructArray} from '../util/struct_array';
 const mat4 = require('@mapbox/gl-matrix').mat4;
 
 module.exports = {
@@ -40,6 +41,10 @@ const shift9 = Math.pow(2, 9);
 const shift8 = Math.pow(2, 8);
 const shift1 = Math.pow(2, 1);
 
+// All four vertices for a glyph will have the same opacity state
+// So we pack the opacity into a uint8, and then repeat it four times
+// to make a single uint32 that we can upload for each glyph in the
+// label.
 function packOpacity(opacityState: OpacityState): number {
     if (opacityState.opacity === 0 && opacityState.targetOpacity === 0) {
         return 0;
@@ -113,21 +118,14 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
 }
 
 
-function updateCollisionBox(collisionVertexArray: any, placed: boolean) {
-    if (!collisionVertexArray) {
-        return;
-    }
+function updateCollisionBox(collisionVertexArray: StructArray, placed: boolean) {
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
 }
 
-function updateCollisionCircles(collisionVertexArray: any, collisionCircles: Array<any>, placed: boolean, isDuplicate: boolean) {
-    if (!collisionVertexArray) {
-        return;
-    }
-
+function updateCollisionCircles(collisionVertexArray: StructArray, collisionCircles: Array<any>, placed: boolean, isDuplicate: boolean) {
     for (let k = 0; k < collisionCircles.length; k += 5) {
         const notUsed = isDuplicate || collisionCircles[k + 4];
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
@@ -228,19 +226,25 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
         symbolInstance.placedIcon = placeIcon;
 
         if (symbolInstance.collisionArrays.textBox) {
-            updateCollisionBox(collisionDebugBoxArray, placeGlyph);
+            if (collisionDebugBoxArray) {
+                updateCollisionBox(collisionDebugBoxArray, placeGlyph);
+            }
             if (placeGlyph) {
                 collisionIndex.insertCollisionBox(placedGlyphBox, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
             }
         }
         if (symbolInstance.collisionArrays.iconBox) {
-            updateCollisionBox(collisionDebugBoxArray, placeIcon);
+            if (collisionDebugBoxArray) {
+                updateCollisionBox(collisionDebugBoxArray, placeIcon);
+            }
             if (placeIcon) {
                 collisionIndex.insertCollisionBox(placedIconBox, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
             }
         }
         if (symbolInstance.collisionArrays.textCircles) {
-            updateCollisionCircles(collisionDebugCircleArray, symbolInstance.collisionArrays.textCircles, placeGlyph, symbolInstance.isDuplicate);
+            if (collisionDebugCircleArray) {
+                updateCollisionCircles(collisionDebugCircleArray, symbolInstance.collisionArrays.textCircles, placeGlyph, symbolInstance.isDuplicate);
+            }
             if (placeGlyph) {
                 collisionIndex.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
             }

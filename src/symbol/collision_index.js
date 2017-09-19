@@ -27,6 +27,11 @@ const viewportPadding = 100;
  * where previous symbols have been placed and is used to check if a new
  * symbol overlaps with any previously added symbols.
  *
+ * There are two steps to insertion: first placeCollisionBox/Circles checks if
+ * there's room for a symbol, then insertCollisionBox/Circles actually puts the
+ * symbol in the index. The two step process allows paired symbols to be inserted
+ * together even if they overlap.
+ *
  * @private
  */
 class CollisionIndex {
@@ -47,12 +52,6 @@ class CollisionIndex {
         this.pitchfactor = Math.cos(transform._pitch) * transform.cameraToCenterDistance;
     }
 
-
-    /**
-     * Find whether the collisionFeature can be shown without
-     * overlapping with other features.
-     * @private
-     */
     placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, posMatrix: mat4): Array<number> {
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
@@ -89,7 +88,7 @@ class CollisionIndex {
             (incidenceStretch - 1) * lastSegmentTile * Math.abs(Math.sin(lastSegmentAngle));
     }
 
-    placeCollisionCircles(collisionCircles?: Array<any>,
+    placeCollisionCircles(collisionCircles: Array<any>,
                           allowOverlap: boolean,
                           scale: number,
                           pixelsToTileUnits: number,
@@ -103,9 +102,6 @@ class CollisionIndex {
                           showCollisionCircles: boolean,
                           pitchWithMap: boolean): Array<number> {
         const placedCollisionCircles = [];
-        if (!collisionCircles) {
-            return placedCollisionCircles;
-        }
 
         const projectedAnchor = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY);
 
@@ -298,11 +294,6 @@ class CollisionIndex {
         return result;
     }
 
-    /**
-     * Remember this collisionFeature to block
-     * later features from overlapping with it.
-     * @private
-     */
     insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
@@ -310,14 +301,12 @@ class CollisionIndex {
         grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
-    insertCollisionCircles(collisionCircles: Array<any>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
+    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 4) {
             const key = { tileID: tileID, boxIndex: boxStartIndex + collisionCircles[k + 3] };
-            grid.insertCircle(key, collisionCircles[k],
-                collisionCircles[k + 1],
-                collisionCircles[k + 2]);
+            grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }
     }
 
