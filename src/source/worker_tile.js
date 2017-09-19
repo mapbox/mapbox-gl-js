@@ -29,10 +29,6 @@ class WorkerTile {
     tileSize: number;
     source: string;
     overscaling: number;
-    angle: number;
-    pitch: number;
-    cameraToCenterDistance: number;
-    cameraToTileDistance: number;
     showCollisionBoxes: boolean;
 
     status: 'parsing' | 'done';
@@ -52,10 +48,6 @@ class WorkerTile {
         this.tileSize = params.tileSize;
         this.source = params.source;
         this.overscaling = params.overscaling;
-        this.angle = params.angle;
-        this.pitch = params.pitch;
-        this.cameraToCenterDistance = params.cameraToCenterDistance;
-        this.cameraToTileDistance = params.cameraToTileDistance;
         this.showCollisionBoxes = params.showCollisionBoxes;
     }
 

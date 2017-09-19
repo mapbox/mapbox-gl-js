@@ -66,10 +66,6 @@ class Tile {
     collisionIndex: ?CollisionIndex;
     featureIndex: ?FeatureIndex;
     redoWhenDone: boolean;
-    angle: number;
-    pitch: number;
-    cameraToCenterDistance: number;
-    cameraToTileDistance: number;
     showCollisionBoxes: boolean;
     placementSource: any;
     workerID: number;

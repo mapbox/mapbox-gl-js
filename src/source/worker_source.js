@@ -14,14 +14,6 @@ export type TileParameters = {
     uid: string,
 };
 
-export type PlacementConfig = {
-    angle: number,
-    pitch: number,
-    cameraToCenterDistance: number,
-    cameraToTileDistance: number,
-    showCollisionBoxes: boolean,
-};
-
 export type WorkerTileParameters = TileParameters & {
     coord: TileCoord,
     request: RequestParameters,
@@ -30,7 +22,8 @@ export type WorkerTileParameters = TileParameters & {
     tileSize: number,
     pixelRatio: number,
     overscaling: number,
-} & PlacementConfig;
+    showCollisionBoxes: boolean
+};
 
 export type WorkerTileResult = {
     buckets: Array<SerializedBucket>,
