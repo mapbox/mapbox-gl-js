@@ -6,6 +6,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const PosArray = require('../data/pos_array');
+const Texture = require('./texture');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -33,7 +34,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.blendFunc(gl.ONE, gl.ONE);
-    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
@@ -64,23 +64,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             programConfiguration);
     }
 
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    const colorRampTexture = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, colorRampTexture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, layer.colorRamp);
-
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
     renderTextureToMap(gl, painter, layer);
-
 }
 
 function renderToTexture(gl, painter) {
@@ -114,6 +98,14 @@ function renderToTexture(gl, painter) {
 }
 
 function renderTextureToMap(gl, painter, layer) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    gl.activeTexture(gl.TEXTURE2);
+    const colorRampTexture = new Texture(gl, layer.colorRamp, gl.RGBA);
+    colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
     const program = painter.useProgram('heatmapTexture');
 
     gl.viewport(0, 0, painter.width, painter.height);
