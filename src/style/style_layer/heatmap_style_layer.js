@@ -20,7 +20,7 @@ class HeatmapStyleLayer extends StyleLayer {
         super._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory);
         if (name === 'heatmap-color') {
             const len = this.colorRamp.length;
-            for (let i = 0; i < len; i += 4) {
+            for (let i = 4; i < len; i += 4) {
                 const pxColor = this.getPaintValue('heatmap-color', {zoom: i / len});
                 this.colorRamp[i + 0] = Math.floor(pxColor[0] * 255);
                 this.colorRamp[i + 1] = Math.floor(pxColor[1] * 255);
