@@ -11,6 +11,7 @@ const Evented = require('../util/evented');
 import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {Feature} from '../style-spec/function';
+import type RenderTexture from '../render/render_texture';
 
 export type GlobalProperties = {
     zoom: number
@@ -35,6 +36,8 @@ class StyleLayer extends Evented {
     filter: any;
     paint: { [string]: any };
     layout: { [string]: any };
+
+    viewportFrame: ?RenderTexture;
 
     _paintSpecifications: any;
     _layoutSpecifications: any;
@@ -75,7 +78,7 @@ class StyleLayer extends Evented {
         this._layoutSpecifications = styleSpec[`layout_${this.type}`];
 
         this._paintTransitions = {}; // {[propertyName]: StyleTransition}
-        this._paintTransitionOptions = {}; // 
+        this._paintTransitionOptions = {}; //
         this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
         this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
         this._layoutFunctions = {}; // {[propertyName]: Boolean}
@@ -385,6 +388,10 @@ class StyleLayer extends Evented {
 
     has3DPass() {
         return false;
+    }
+
+    resize(gl: WebGLRenderingContext) { // eslint-disable-line
+        // noop
     }
 }
 

@@ -64,8 +64,6 @@ class Painter {
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
-    viewportFrames: Array<RenderTexture>;
-    prerenderedFrames: { [string]: ?RenderTexture };
     depthRbo: WebGLRenderbuffer;
     depthRboAttached: boolean;
     _depthMask: boolean;
@@ -96,8 +94,6 @@ class Painter {
         this.gl = gl;
         this.transform = transform;
         this._tileTextures = {};
-        this.prerenderedFrames = {};
-        this.viewportFrames = [];
 
         this.frameHistory = new FrameHistory();
 
@@ -125,11 +121,11 @@ class Painter {
         this.height = height * browser.devicePixelRatio;
         gl.viewport(0, 0, this.width, this.height);
 
-        for (const frame of this.viewportFrames) {
-            this.gl.deleteTexture(frame.texture);
-            this.gl.deleteFramebuffer(frame.fbo);
+        if (this.style) {
+            for (const layerId of this.style._order) {
+                this.style._layers[layerId].resize(gl);
+            }
         }
-        this.viewportFrames = [];
 
         if (this.depthRbo) {
             this.gl.deleteRenderbuffer(this.depthRbo);
@@ -321,7 +317,8 @@ class Painter {
 
                 this._setup3DRenderbuffer();
 
-                const renderTarget = this.viewportFrames.pop() || new RenderTexture(this);
+                const renderTarget = layer.viewportFrame || new RenderTexture(this);
+                layer.viewportFrame = renderTarget;
                 renderTarget.bindWithDepth(this.depthRbo);
 
                 if (first) {
@@ -332,7 +329,6 @@ class Painter {
                 this.renderLayer(this, (sourceCache: any), layer, coords);
 
                 renderTarget.unbind();
-                this.prerenderedFrames[layer.id] = renderTarget;
             }
         }
 
