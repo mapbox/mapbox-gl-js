@@ -4,6 +4,9 @@ const TileCoord = require('../source/tile_coord');
 
 import type Tile from './../source/tile';
 
+export type Mask = {
+    [number]: boolean
+};
 
 // Updates the TileMasks for all renderable tiles. A TileMask describes all regions
 // within that tile that are *not* covered by other renderable tiles.
@@ -51,7 +54,7 @@ import type Tile from './../source/tile';
 //    │                 │                 │
 //    └─────────────────┴─────────────────┘
 //
-// Only other renterable tiles that are *children* of the tile we are generating the mask for will
+// Only other renderable tiles that are *children* of the tile we are generating the mask for will
 // be considered. For example, adding TileID 4/8/13 to renderableTiles won't affect the TileMask for
 // 2/1/3, since it is not a descendant of it.
 
@@ -60,7 +63,7 @@ module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContex
     const sortedRenderables = renderableTiles.sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
-        const mask = [];
+        const mask = {};
         const tile =  sortedRenderables[i];
         const childArray = sortedRenderables.slice(i + 1);
         // Try to add all remaining ids as children. We sorted the tile list
@@ -73,7 +76,7 @@ module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContex
     }
 };
 
-function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array<Tile>, lowerBound: TileCoord, mask: Array<number>) {
+function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array<Tile>, lowerBound: TileCoord, mask: Mask) {
     // If the reference or any of its children is found in the list, we need to recurse.
     for (let i = 0; i < childArray.length; i++) {
         const childTile = childArray[i];
@@ -97,6 +100,6 @@ function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array
     // elements are always relative (see below for explanation).
     const diffZ = ref.z - rootTile.z;
     const maskTileId = new TileCoord(diffZ, ref.x - (rootTile.x << diffZ), ref.y - (rootTile.y << diffZ)).id;
-    if (mask.indexOf(maskTileId) < 0) mask.push(maskTileId);
+    mask[maskTileId] = mask[maskTileId] || true;
 }
 

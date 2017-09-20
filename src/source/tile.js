@@ -25,7 +25,7 @@ import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
 import type {RGBAImage, AlphaImage} from '../util/image';
-
+import type Mask from '../render/tile_mask';
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
     | 'loaded'    // Tile data has been loaded. Tile can be rendered.
@@ -71,7 +71,7 @@ class Tile {
     placementSource: any;
     workerID: number;
     vtLayers: {[string]: VectorTileLayer};
-    mask: Array<number>;
+    mask: Mask;
     aborted: ?boolean;
     maskedBoundsBuffer: ?VertexBuffer;
     maskedBoundsVAO: ?VertexArrayObject;
@@ -362,7 +362,7 @@ class Tile {
         }
     }
 
-    setMask(mask: Array<number>, gl: WebGLRenderingContext) {
+    setMask(mask: Mask, gl: WebGLRenderingContext) {
 
         // don't redo buffer work if the mask is the same;
         if (util.deepEqual(this.mask, mask)) return;
@@ -373,14 +373,16 @@ class Tile {
 
         // We want to render the full tile, and keeping the segments/vertices/indices empty means
         // using the global shared buffers for covering the entire tile.
-        if (util.deepEqual(mask, [0])) return;
-
+        if (util.deepEqual(mask, {'0': true})) return;
+        const maskArray = Object.keys(mask);
         // mask is empty because all four children are loaded
-        if (mask.length === 0) return;
+        if (maskArray.length === 0) return;
+
 
         const maskedBoundsArray = new RasterBoundsArray();
-        for (let i = 0; i < mask.length; i++) {
-            const maskCoord = TileCoord.fromID(mask[i]);
+
+        for (let i = 0; i < maskArray.length; i++) {
+            const maskCoord = TileCoord.fromID(+maskArray[i]);
             const vertexExtent = EXTENT >> maskCoord.z;
             const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
             const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);
