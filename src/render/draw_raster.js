@@ -17,11 +17,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLaye
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    gl.enable(gl.DEPTH_TEST);
-    painter.depthMask(true);
+    gl.disable(gl.DEPTH_TEST);
+    painter.depthMask(false);
 
-    // Change depth function to prevent double drawing in areas where tiles overlap.
-    gl.depthFunc(gl.LESS);
     gl.disable(gl.STENCIL_TEST);
 
     // Constant parameters.
@@ -75,6 +73,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLaye
         if (source instanceof ImageSource) {
             const buffer = source.boundsBuffer;
             const vao = source.boundsVAO;
+            vao.bind(gl, program, buffer);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+        } else if (tile.maskedBoundsBuffer && tile.maskedBoundsVAO) {
+            const buffer = tile.maskedBoundsBuffer;
+            const vao = tile.maskedBoundsVAO;
             vao.bind(gl, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         } else {

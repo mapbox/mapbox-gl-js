@@ -15,6 +15,7 @@ const {ProgramConfiguration} = require('../data/program_configuration');
 const shaders = require('../shaders');
 const Program = require('./program');
 const RenderTexture = require('./render_texture');
+const updateTileMasks = require('./tile_mask');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -271,6 +272,14 @@ class Painter {
         }
 
         const layerIds = this.style._order;
+
+        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc._source.type === 'raster'; });
+        for (const key in rasterSources) {
+            const sourceCache = rasterSources[key];
+            const coords = sourceCache.getVisibleCoordinates();
+            const visibleTiles = coords.map((c)=>{ return sourceCache.getTile(c); });
+            updateTileMasks(visibleTiles, this.gl);
+        }
 
         // 3D pass
         // We first create a renderbuffer that we'll use to preserve depth

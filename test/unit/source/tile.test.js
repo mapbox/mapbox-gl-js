@@ -132,6 +132,76 @@ test('querySourceFeatures', (t) => {
     t.end();
 });
 
+test('Tile#setMask', (t) => {
+
+    t.test('simple mask', (t)=>{
+        const tile = new Tile(0, 0, 0);
+        const gl = require('gl')(10, 10);
+        tile.setMask([new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id], gl);
+        t.deepEqual(tile.mask, [new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id]);
+        t.end();
+    });
+
+    t.test('complex mask', (t) => {
+        const tile = new Tile(0, 0, 0);
+        const gl = require('gl')(10, 10);
+        tile.setMask([new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
+            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id], gl);
+        t.deepEqual(tile.mask, [new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
+            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id]);
+        t.end();
+
+    });
+    t.end();
+
+});
+
+test('Tile#isLessThan', (t)=>{
+    t.test('correctly sorts tiles', (t)=>{
+        const tiles = [
+            new TileCoord(9, 146, 195, 0),
+            new TileCoord(9, 147, 195, 0),
+            new TileCoord(9, 148, 195, 0),
+            new TileCoord(9, 149, 195, 0),
+            new TileCoord(9, 144, 196, 1),
+            new TileCoord(9, 145, 196, 0),
+            new TileCoord(9, 146, 196, 0),
+            new TileCoord(9, 147, 196, 1),
+            new TileCoord(9, 145, 194, 0),
+            new TileCoord(9, 149, 196, 0),
+            new TileCoord(10, 293, 391, 0),
+            new TileCoord(10, 291, 390, 0),
+            new TileCoord(10, 293, 390, 1),
+            new TileCoord(10, 294, 390, 0),
+            new TileCoord(10, 295, 390, 0),
+            new TileCoord(10, 291, 391, 0),
+        ];
+
+        const sortedTiles = tiles.sort((a, b) => { return a.isLessThan(b) ? -1 : b.isLessThan(a) ? 1 : 0; });
+
+        t.deepEqual(sortedTiles, [
+            new TileCoord(9, 145, 194, 0),
+            new TileCoord(9, 145, 196, 0),
+            new TileCoord(9, 146, 195, 0),
+            new TileCoord(9, 146, 196, 0),
+            new TileCoord(9, 147, 195, 0),
+            new TileCoord(9, 148, 195, 0),
+            new TileCoord(9, 149, 195, 0),
+            new TileCoord(9, 149, 196, 0),
+            new TileCoord(10, 291, 390, 0),
+            new TileCoord(10, 291, 391, 0),
+            new TileCoord(10, 293, 391, 0),
+            new TileCoord(10, 294, 390, 0),
+            new TileCoord(10, 295, 390, 0),
+            new TileCoord(9, 144, 196, 1),
+            new TileCoord(9, 147, 196, 1),
+            new TileCoord(10, 293, 390, 1)
+        ]);
+        t.end();
+    });
+    t.end();
+});
+
 test('Tile#redoPlacement', (t) => {
 
     test('redoPlacement on an empty tile', (t) => {

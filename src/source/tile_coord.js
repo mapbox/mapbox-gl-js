@@ -76,6 +76,20 @@ class TileCoord {
         return new TileCoord(this.z, this.x, this.y, 0);
     }
 
+    isLessThan(rhs: TileCoord) {
+        if (this.w < rhs.w) return true;
+        if (this.w > rhs.w) return false;
+
+        if (this.z < rhs.z) return true;
+        if (this.z > rhs.z) return false;
+
+        if (this.x < rhs.x) return true;
+        if (this.x > rhs.x) return false;
+
+        if (this.y < rhs.y) return true;
+        return false;
+    }
+
     // Return the coordinates of the tile's children
     children(sourceMaxZoom: number) {
 
@@ -106,6 +120,18 @@ class TileCoord {
         } else {
             return new TileCoord(targetZ, this.x << (targetZ - this.z), this.y << (targetZ - this.z), this.w); // child
         }
+    }
+
+    /**
+     *
+     * @memberof Map
+     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
+     * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
+     * @private
+     */
+    isChildOf(parent: any) {
+        // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
+        return parent.z === 0 || (parent.z < this.z && parent.x === (this.x >> (this.z - parent.z)) && parent.y === (this.y >> (this.z - parent.z)));
     }
 
     static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
