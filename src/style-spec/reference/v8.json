@@ -2435,7 +2435,6 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
-      "maximum": 65535,
       "units": "meters",
       "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `fill-extrusion-height`.",
       "transition": true,
