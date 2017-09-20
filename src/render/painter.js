@@ -303,7 +303,7 @@ class Painter {
 
         const layerIds = this.style._order;
 
-        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc._source.type === 'raster'; });
+        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc.getSource().type === 'raster' || sc.getSource().type === 'raster-dem'; });
         for (const key in rasterSources) {
             const sourceCache = rasterSources[key];
             const coords = sourceCache.getVisibleCoordinates();

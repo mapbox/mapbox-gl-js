@@ -123,10 +123,22 @@ function renderHillshade(painter, tile, layer, bordersLoaded) {
 
     // this is to prevent purple/yellow seams from flashing when the dem tiles haven't been totally
     // backfilled from their neighboring tiles.
-    const buffer = bordersLoaded ? painter.rasterBoundsBuffer : painter.incompleteHillshadeBoundsBuffer;
-    const vao = bordersLoaded ? painter.rasterBoundsVAO : painter.incompleteHillshadeBoundsVAO;
-    vao.bind(gl, program, buffer);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    if (tile.maskedBoundsBuffer && tile.maskedBoundsVAO) {
+        const buffer = tile.maskedBoundsBuffer;
+        const vao = tile.maskedBoundsVAO;
+        vao.bind(gl, program, buffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    } else if (!bordersLoaded) {
+        const buffer = painter.incompleteHillshadeBoundsBuffer;
+        const vao = painter.incompleteHillshadeBoundsVAO;
+        vao.bind(gl, program, buffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    } else {
+        const buffer = painter.rasterBoundsBuffer;
+        const vao = painter.incompleteHillshadeBoundsVAO;
+        vao.bind(gl, program, buffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    }
 }
 
 
