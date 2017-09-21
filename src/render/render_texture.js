@@ -1,8 +1,7 @@
 // @flow
 
-const VertexBuffer = require('../gl/vertex_buffer');
-const VertexArrayObject = require('./vertex_array_object');
-const PosArray = require('../data/pos_array');
+import type VertexBuffer from '../gl/vertex_buffer';
+import type VertexArrayObject from './vertex_array_object';
 
 import type Painter from './painter';
 
