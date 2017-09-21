@@ -2,44 +2,62 @@
 
 // GL style reference generator
 
-var fs = require('fs');
-var path = require('path');
-var ref = require('../../../src/style-spec/reference/latest');
-var _ = require('lodash');
-var remark = require('remark');
-var html = require('remark-html');
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+const ref = require('../../../src/style-spec/reference/latest');
+const _ = require('lodash');
+const remark = require('remark');
+const html = require('remark-html');
 
-var expressionTypes = require('./expression-types');
+const {expressions, expressionGroups} = require('./expression-metadata');
 
+const groupedExpressions = [
+    'Types',
+    'Feature data',
+    'Lookup',
+    'Decision',
+    'Ramps, scales, curves',
+    'Variable binding',
+    'String',
+    'Color',
+    'Math',
+    'Zoom'
+].map(group => ({
+    name: group,
+    expressions: expressionGroups[group]
+        .sort((a, b) => a.localeCompare(b))
+        .map(name => expressions[name])
+}));
+
+assert(groupedExpressions.length === Object.keys(expressionGroups).length, 'All expression groups accounted for in generated docs');
 
 function tmpl(x, options) {
     return _.template(fs.readFileSync(path.join(__dirname, x), 'utf-8'), options);
 }
 
-var index = tmpl('index.html', {
-  imports: {
-    _: _,
-    item: tmpl('item.html', {
-      imports: {
+const index = tmpl('index.html', {
+    imports: {
         _: _,
-        md: function(markdown) {
-          return remark().use(html).process(markdown);
-        }
-      }
-    }),
-    expressions: Object.keys(expressionTypes).sort((a, b) => a.localeCompare(b)),
-    renderExpression: tmpl('expression.html', {
-      imports: {
-        _: _,
-        expressionDocs: ref['expression_name'].values,
-        expressionTypes: expressionTypes,
-        renderSignature: renderSignature,
-        md: function(markdown) {
-          return remark().use(html).process(markdown)
-        }
-      }
-    })
-  }
+        item: tmpl('item.html', {
+            imports: {
+                _: _,
+                md: function(markdown) {
+                    return remark().use(html).process(markdown);
+                }
+            }
+        }),
+        groupedExpressions: groupedExpressions,
+        renderExpression: tmpl('expression.html', {
+            imports: {
+                _: _,
+                renderSignature: renderSignature,
+                md: function(markdown) {
+                    return remark().use(html).process(markdown);
+                }
+            }
+        })
+    }
 });
 
 function renderSignature (name, overload) {

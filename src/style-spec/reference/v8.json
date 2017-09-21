@@ -1845,187 +1845,248 @@
     "type": "enum",
     "values": {
       "let": {
-        "doc": "Binds expressions to named variables, which can then be referenced in the result expression using [\"var\", \"variable_name\"]."
+        "doc": "Binds expressions to named variables, which can then be referenced in the result expression using [\"var\", \"variable_name\"].",
+        "group": "Variable binding"
       },
       "var": {
-        "doc": "References variable bound using \"let\"."
+        "doc": "References variable bound using \"let\".",
+        "group": "Variable binding"
       },
       "literal": {
-        "doc": "Provides a literal array or object value."
+        "doc": "Provides a literal array or object value.",
+        "group": "Types"
       },
       "array": {
-        "doc": "Asserts that the input is an array (optinally with a specific item type and length)."
+        "doc": "Asserts that the input is an array (optinally with a specific item type and length).",
+        "group": "Types"
       },
       "at": {
-        "doc": "Retrieves an item from an array."
+        "doc": "Retrieves an item from an array.",
+        "group": "Lookup"
       },
       "contains": {
-        "doc": "Tests whether a value exists in an array."
+        "doc": "Tests whether a value exists in an array.",
+        "group": "Lookup"
       },
       "case": {
-        "doc": "Yields the value of the first output expression whose corresponding test evaluates to true."
+        "doc": "Yields the value of the first output expression whose corresponding test evaluates to true.",
+        "group": "Decision"
       },
       "match": {
-        "doc": "Yields the output value whose label value matches the input, or the fallback value if no match is found."
+        "doc": "Yields the output value whose label value matches the input, or the fallback value if no match is found.",
+        "group": "Decision"
       },
       "coalesce": {
-        "doc": "Evaluates each expression in turn until the first non-null value is obtained, and returns that value."
+        "doc": "Evaluates each expression in turn until the first non-null value is obtained, and returns that value.",
+        "group": "Decision"
       },
       "curve": {
-        "doc": "Interpolates an output value from the given input/output pairs using the specified interpolation strategy.  The input levels must be numeric literals in strictly ascending order."
+        "doc": "Interpolates an output value from the given input/output pairs using the specified interpolation strategy.  The input levels must be numeric literals in strictly ascending order.",
+        "group": "Ramps, scales, curves"
       },
       "ln2": {
-        "doc": "Returns mathematical constant ln(2)."
+        "doc": "Returns mathematical constant ln(2).",
+        "group": "Math"
       },
       "pi": {
-        "doc": "Returns the mathematical constant pi."
+        "doc": "Returns the mathematical constant pi.",
+        "group": "Math"
       },
       "e": {
-        "doc": "Returns the mathematical constant e."
+        "doc": "Returns the mathematical constant e.",
+        "group": "Math"
       },
       "typeof": {
-        "doc": "Returns a string describing the type of the given value."
+        "doc": "Returns a string describing the type of the given value.",
+        "group": "Types"
       },
       "string": {
-        "doc": "Asserts that the input value is a String. If multiple values are provided, each one is evaluated in order until a String value is obtained."
+        "doc": "Asserts that the input value is a String. If multiple values are provided, each one is evaluated in order until a String value is obtained.",
+        "group": "Types"
       },
       "number": {
-        "doc": "Asserts that the input value is a Number. If multiple values are provided, each one is evaluated in order until a Number value is obtained."
+        "doc": "Asserts that the input value is a Number. If multiple values are provided, each one is evaluated in order until a Number value is obtained.",
+        "group": "Types"
       },
       "boolean": {
-        "doc": "Asserts that the input value is a Boolean. If multiple values are provided, each one is evaluated in order until a Boolean value is obtained."
+        "doc": "Asserts that the input value is a Boolean. If multiple values are provided, each one is evaluated in order until a Boolean value is obtained.",
+        "group": "Types"
       },
       "object": {
-        "doc": "Asserts that the input value is an Objects."
+        "doc": "Asserts that the input value is an Objects.",
+        "group": "Types"
       },
       "to-string": {
-        "doc": "Coerces the input value to a String."
+        "doc": "Coerces the input value to a String.",
+        "group": "Types"
       },
       "to-number": {
-        "doc": "Coerces the input value to a Number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained."
+        "doc": "Coerces the input value to a Number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
+        "group": "Types"
       },
       "to-boolean": {
-        "doc": "Coerces the input value to a Boolean."
+        "doc": "Coerces the input value to a Boolean.",
+        "group": "Types"
       },
       "to-rgba": {
-        "doc": "Returns the an array of the given color's r, g, b, a components."
+        "doc": "Returns the an array of the given color's r, g, b, a components.",
+        "group": "Color"
       },
       "to-color": {
-        "doc": "Coerces the input value to a Color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained."
+        "doc": "Coerces the input value to a Color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
+        "group": "Types"
       },
       "rgb": {
-        "doc": "Creates a color value from r, g, b components."
+        "doc": "Creates a color value from r, g, b components.",
+        "group": "Color"
       },
       "rgba": {
-        "doc": "Creates a color value from r, g, b, a components."
+        "doc": "Creates a color value from r, g, b, a components.",
+        "group": "Color"
       },
       "get": {
-        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object."
+        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object.",
+        "group": "Lookup"
       },
       "has": {
-        "doc": "Tests for the presence of an object property value.  If it's not provided, the object argument defaults to [\"properties\"]."
+        "doc": "Tests for the presence of an object property value.  If it's not provided, the object argument defaults to [\"properties\"].",
+        "group": "Lookup"
       },
       "length": {
-        "doc": "Gets the length of an array or string."
+        "doc": "Gets the length of an array or string.",
+        "group": "Lookup"
       },
       "properties": {
-        "doc": "Gets the feature properties object.  Note that in some cases, it may be more efficient to use [\"get\", \"property_name\"] directly."
+        "doc": "Gets the feature properties object.  Note that in some cases, it may be more efficient to use [\"get\", \"property_name\"] directly.",
+        "group": "Feature data"
       },
       "geometry-type": {
-        "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon."
+        "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon.",
+        "group": "Feature data"
       },
       "id": {
-        "doc": "Gets the feature's id, if it has one."
+        "doc": "Gets the feature's id, if it has one.",
+        "group": "Feature data"
       },
       "zoom": {
-        "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level [\"curve\"] expression."
+        "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level [\"curve\"] expression.",
+        "group": "Zoom"
       },
       "+": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "*": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "-": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "/": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "%": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "^": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "log10": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "ln": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "log2": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "sin": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "cos": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "tan": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "asin": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "acos": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "atan": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "min": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "max": {
-        "doc": ""
+        "doc": "",
+        "group": "Math"
       },
       "==": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "!=": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       ">": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "<": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       ">=": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "<=": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "&&": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "||": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "!": {
-        "doc": ""
+        "doc": "",
+        "group": "Decision"
       },
       "upcase": {
-        "doc": ""
+        "doc": "",
+        "group": "String"
       },
       "downcase": {
-        "doc": ""
+        "doc": "",
+        "group": "String"
       },
       "concat": {
-        "doc": "Concetenate the given strings."
+        "doc": "Concetenate the given strings.",
+        "group": "String"
       }
     }
   },

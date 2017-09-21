@@ -1020,8 +1020,11 @@ A <a id="zoom-function" class="anchor"></a><strong>zoom function</strong> is any
         <div class='pad2 keyline-bottom'>
           <a id='types-expression' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-expression' title='link to expression'>Expression</a></h3>
-          <% for (var name of expressions) { %>
-            <%= renderExpression({name: name}) %>
+          <% for (var group of groupedExpressions) { %>
+            <h4 style='font-size: 100%'><a id='types-expression-group-<%= group.name %>' href='#types-expression-group-<%= group.name %>'><%= group.name %></a></h4>
+            <% for (var expression of group.expressions) { %>
+              <%= renderExpression(expression) %>
+            <% } %>
           <% } %>
         </div>
 
