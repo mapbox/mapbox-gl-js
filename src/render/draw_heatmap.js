@@ -38,6 +38,13 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
 
+        // skip tiles that have uncovered parents to avoid flickering
+        const parentTile = sourceCache.findLoadedParent(coord, 0, {});
+        if (parentTile) {
+            const parentId = parentTile.coord.id;
+            if (sourceCache._tiles[parentId] && !sourceCache._coveredTiles[parentId]) continue;
+        }
+
         const tile = sourceCache.getTile(coord);
         const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
