@@ -4,17 +4,25 @@ const StyleLayer = require('../style_layer');
 const HeatmapBucket = require('../../data/bucket/heatmap_bucket');
 const RGBAImage = require('../../util/image').RGBAImage;
 
+import type Texture from '../../render/texture';
+
 class HeatmapStyleLayer extends StyleLayer {
 
-    createBucket(options) {
+    heatmapTexture: ?WebGLTexture;
+    heatmapFbo: ?WebGLFramebuffer;
+    colorRampData: Uint8Array;
+    colorRamp: RGBAImage;
+    colorRampTexture: ?Texture;
+
+    createBucket(options: any) {
         return new HeatmapBucket(options);
     }
 
-    constructor(layer) {
+    constructor(layer: LayerSpecification) {
         super(layer);
         this.colorRampData = new Uint8Array(256 * 4);
         if (!this.getPaintProperty('heatmap-color')) {
-            this.setPaintProperty('heatmap-color', this._paintSpecifications['heatmap-color'].default);
+            this.setPaintProperty('heatmap-color', this._paintSpecifications['heatmap-color'].default, '');
         }
     }
 

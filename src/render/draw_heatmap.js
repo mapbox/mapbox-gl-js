@@ -3,9 +3,6 @@
 const browser = require('../util/browser');
 const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
-const VertexBuffer = require('../gl/vertex_buffer');
-const VertexArrayObject = require('./vertex_array_object');
-const PosArray = require('../data/pos_array');
 const Texture = require('./texture');
 
 import type Painter from './painter';
@@ -119,7 +116,7 @@ function renderTextureToMap(gl, painter, layer) {
     gl.viewport(0, 0, painter.width, painter.height);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, painter.heatmapTexture);
+    gl.bindTexture(gl.TEXTURE_2D, layer.heatmapTexture);
 
     gl.uniform1f(program.uniforms.u_opacity, layer.paint['heatmap-opacity']);
     gl.uniform1i(program.uniforms.u_image, 1);

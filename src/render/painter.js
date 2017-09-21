@@ -75,8 +75,11 @@ class Painter {
     debugVAO: VertexArrayObject;
     rasterBoundsBuffer: VertexBuffer;
     rasterBoundsVAO: VertexArrayObject;
+    viewportBuffer: VertexBuffer;
+    viewportVAO: VertexArrayObject;
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
+    extTextureHalfFloat: any;
     _tileClippingMaskIDs: { [number]: number };
     style: Style;
     options: PainterOptions;
@@ -126,11 +129,6 @@ class Painter {
             for (const layerId of this.style._order) {
                 this.style._layers[layerId].resize(gl);
             }
-        }
-
-        if (this.heatmapTexture) {
-            this.gl.deleteTexture(this.heatmapTexture);
-            this.gl.deleteFramebuffer(this.heatmapFbo);
         }
 
         if (this.depthRbo) {
