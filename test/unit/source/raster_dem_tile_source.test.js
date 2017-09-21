@@ -84,8 +84,7 @@ test('RasterTileSource', (t) => {
             minzoom: 0,
             maxzoom: 22,
             attribution: "Mapbox",
-            tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [-47, -7, -45, -5]
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
         }));
         const source = createSource({ url: "/source.json" });
         source.on('data', (e) => {

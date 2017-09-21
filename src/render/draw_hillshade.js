@@ -135,8 +135,8 @@ function prepareHillshade(painter, tile) {
         gl.activeTexture(gl.TEXTURE0);
         const hillshadeTexture = new RenderTexture(painter, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
-
         gl.viewport(0, 0, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
+
         tile.texture = hillshadeTexture.texture;
 
         const matrix = mat4.create();

@@ -1,4 +1,5 @@
 // @flow
+import type {RGBAImage} from '../util/image';
 
 export type SerializedDEMData = {
     uid: string,
@@ -56,7 +57,7 @@ class DEMData {
         this.loaded = !!data;
     }
 
-    loadFromImage(data: {width: number, height: number, data: Uint8ClampedArray}) {
+    loadFromImage(data: RGBAImage) {
         // Build level 0
         this.data = [new Level(data.width, data.height, data.width / 2)];
         const level = this.data[0];
