@@ -14,7 +14,7 @@ class RenderTexture {
     vao: VertexArrayObject;
     attachedRbo: ?WebGLRenderbuffer;
 
-    constructor(painter: Painter) {
+    constructor(painter: Painter, height: ?number, width: ?number) {
         const context = this.context = painter.context;
         const gl = context.gl;
 

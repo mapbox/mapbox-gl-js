@@ -1,5 +1,8 @@
 // @flow
 const TileCoord = require('../source/tile_coord');
+const Texture = require('./texture');
+const RenderTexture = require('./render_texture');
+const {RGBAImage} = require('../util/image');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -46,51 +49,6 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
         renderHillshade(painter, tile, layer, bordersLoaded);
     }
 
-}
-
-class HillshadeTexture {
-
-    gl: WebGLRenderingContext;
-    fbo: WebGLFramebuffer;
-    height: number;
-    width: number;
-    painter: Painter;
-
-    constructor (gl: WebGLRenderingContext, painter: Painter, tile) {
-        this.gl = gl;
-        this.width = TERRAIN_TILE_WIDTH;
-        this.height = TERRAIN_TILE_HEIGHT;
-        this.painter = painter;
-
-        gl.activeTexture(gl.TEXTURE0);
-        tile.texture = gl.createTexture();
-
-        // this is needed because SpriteAtlas sets this value to true, which causes the 0 alpha values that we pass to
-        // the terrain_prepare shaders to 0 out all values and render the texture blank.
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
-
-        gl.bindTexture(gl.TEXTURE_2D, tile.texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        tile.texture.width = this.width;
-        tile.texture.height = this.height;
-
-        // reuse fbos?
-        this.fbo = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.viewport(0, 0, this.width, this.height);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tile.texture, 0);
-    }
-
-    unbindFramebuffer() {
-        const gl = this.gl;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, this.painter.width, this.painter.height);
-    }
 }
 
 function setLight(program, painter) {
@@ -165,24 +123,19 @@ function prepareHillshade(painter, tile) {
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
     if (tile.dem && tile.dem.data) {
         const pixelData = tile.dem.data.map((l)=> {
-            return {width: l.width + 2 * l.border, height: l.height + 2 * l.border, data: new Uint8Array(l.data.buffer)};
+            return RGBAImage.create({width: l.width + 2 * l.border, height: l.height + 2 * l.border}, new Uint8Array(l.data.buffer));
         });
 
-        const dem = gl.createTexture();
-
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, dem);
+        const dem = new Texture(gl, pixelData[0], gl.RGBA, false);
+        dem.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.activeTexture(gl.TEXTURE0);
+        const hillshadeTexture = new RenderTexture(painter, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
 
-        for (let i = 0; i < pixelData.length; i++) {
-            gl.texImage2D(gl.TEXTURE_2D, i, gl.RGBA, pixelData[i].width, pixelData[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixelData[i].data);
-        }
-
-        const hillshadeTexture = new HillshadeTexture(gl, painter, tile);
+        gl.viewport(0, 0, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
+        tile.texture = hillshadeTexture.texture;
 
         const matrix = mat4.create();
         // Flip rendering at y axis.
@@ -202,6 +155,8 @@ function prepareHillshade(painter, tile) {
         vao.bind(gl, program, buffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
-        hillshadeTexture.unbindFramebuffer();
+        hillshadeTexture.unbind();
+        gl.viewport(0, 0, painter.width, painter.height);
+
     }
 }
