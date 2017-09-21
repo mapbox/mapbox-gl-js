@@ -82,8 +82,7 @@ function renderHillshade(painter, tile, layer, bordersLoaded) {
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
-    gl.uniform1i(program.uniforms.u_mode, 7);
-    gl.uniform1f(program.uniforms.u_mipmap, 0);
+    gl.uniform1i(program.uniforms.u_mode, 1);
     gl.uniform4fv(program.uniforms.u_shadow, layer.paint["hillshade-shadow-color"]);
     gl.uniform4fv(program.uniforms.u_highlight, layer.paint["hillshade-highlight-color"]);
     gl.uniform4fv(program.uniforms.u_accent, layer.paint["hillshade-accent-color"]);
