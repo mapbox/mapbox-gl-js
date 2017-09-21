@@ -1,13 +1,14 @@
 'use strict';
 require('flow-remove-types/register');
 
+const ref = require('../../../src/style-spec/reference/latest');
 const toString = require('../../../src/style-spec/function/types').toString;
 const CompoundExpression = require('../../../src/style-spec/function/compound_expression').CompoundExpression;
 
 // registers compound expressions
 require('../../../src/style-spec/function/definitions');
 
-const results = {
+const types = {
     string: [{
         type: 'String',
         parameters: ['Value']
@@ -114,12 +115,12 @@ const results = {
 for (const name in CompoundExpression.definitions) {
     const definition = CompoundExpression.definitions[name];
     if (Array.isArray(definition)) {
-        results[name] = [{
+        types[name] = [{
             type: toString(definition[0]),
             parameters: processParameters(definition[1])
         }];
     } else {
-        results[name] = definition.overloads.map((o) => {
+        types[name] = definition.overloads.map((o) => {
             return {
                 type: toString(definition.type),
                 parameters: processParameters(o[0])
@@ -128,7 +129,21 @@ for (const name in CompoundExpression.definitions) {
     }
 }
 
-delete results['error'];
+delete types['error'];
+
+const expressions = {};
+const expressionGroups = {};
+for (const name in types) {
+    const spec = ref['expression_name'].values[name];
+    expressionGroups[spec.group] = expressionGroups[spec.group] || [];
+    expressionGroups[spec.group].push(name);
+
+    expressions[name] = {
+        name: name,
+        doc: spec.doc,
+        type: types[name]
+    };
+}
 
 function processParameters(params) {
     if (Array.isArray(params)) {
@@ -138,4 +153,4 @@ function processParameters(params) {
     }
 }
 
-module.exports = results;
+module.exports = {expressions, expressionGroups};
