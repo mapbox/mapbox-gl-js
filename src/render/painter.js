@@ -182,6 +182,14 @@ class Painter {
         this.rasterBoundsBuffer = new VertexBuffer(gl, rasterBoundsArray);
         this.rasterBoundsVAO = new VertexArrayObject();
 
+        const viewportArray = new PosArray();
+        viewportArray.emplaceBack(0, 0);
+        viewportArray.emplaceBack(1, 0);
+        viewportArray.emplaceBack(0, 1);
+        viewportArray.emplaceBack(1, 1);
+        this.viewportBuffer = new VertexBuffer(gl, viewportArray);
+        this.viewportVAO = new VertexArrayObject();
+
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
             gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||

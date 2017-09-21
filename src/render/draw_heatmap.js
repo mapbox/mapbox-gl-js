@@ -135,14 +135,7 @@ function renderTextureToMap(gl, painter, layer) {
 
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    const array = new PosArray();
-    array.emplaceBack(0, 0);
-    array.emplaceBack(1, 0);
-    array.emplaceBack(0, 1);
-    array.emplaceBack(1, 1);
-    const buffer = new VertexBuffer(gl, array);
-    const vao = new VertexArrayObject();
-    vao.bind(gl, program, buffer);
+    painter.viewportVAO.bind(gl, program, painter.viewportBuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.DEPTH_TEST);
