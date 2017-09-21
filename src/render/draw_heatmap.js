@@ -28,7 +28,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     // large circles are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
 
-    renderToTexture(gl, painter);
+    renderToTexture(gl, painter, layer);
 
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -67,7 +67,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     renderTextureToMap(gl, painter, layer);
 }
 
-function renderToTexture(gl, painter) {
+function renderToTexture(gl, painter, layer) {
     gl.activeTexture(gl.TEXTURE1);
 
     const ext = gl.getExtension('OES_texture_half_float');
@@ -75,11 +75,11 @@ function renderToTexture(gl, painter) {
 
     gl.viewport(0, 0, painter.width / 4, painter.height / 4);
 
-    let texture = painter.heatmapTexture;
-    let fbo = painter.heatmapFbo;
+    let texture = layer.heatmapTexture;
+    let fbo = layer.heatmapFbo;
 
     if (!texture) {
-        texture = painter.heatmapTexture = gl.createTexture();
+        texture = layer.heatmapTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -87,7 +87,7 @@ function renderToTexture(gl, painter) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA, ext.HALF_FLOAT_OES, null);
 
-        fbo = painter.heatmapFbo = gl.createFramebuffer();
+        fbo = layer.heatmapFbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 

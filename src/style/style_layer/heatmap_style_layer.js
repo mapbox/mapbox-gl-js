@@ -5,6 +5,7 @@ const HeatmapBucket = require('../../data/bucket/heatmap_bucket');
 const RGBAImage = require('../../util/image').RGBAImage;
 
 class HeatmapStyleLayer extends StyleLayer {
+
     createBucket(options) {
         return new HeatmapBucket(options);
     }
@@ -30,6 +31,17 @@ class HeatmapStyleLayer extends StyleLayer {
                 this.colorRampData[i + 3] = Math.floor(alpha * 255);
             }
             this.colorRamp = RGBAImage.create({width: 256, height: 1}, this.colorRampData);
+        }
+    }
+
+    resize(gl: WebGLRenderingContext) {
+        if (this.heatmapTexture) {
+            gl.deleteTexture(this.heatmapTexture);
+            this.heatmapTexture = null;
+        }
+        if (this.heatmapFbo) {
+            gl.deleteFramebuffer(this.heatmapFbo);
+            this.heatmapFbo = null;
         }
     }
 }
