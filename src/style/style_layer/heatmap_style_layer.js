@@ -31,6 +31,7 @@ class HeatmapStyleLayer extends StyleLayer {
                 this.colorRampData[i + 3] = Math.floor(alpha * 255);
             }
             this.colorRamp = RGBAImage.create({width: 256, height: 1}, this.colorRampData);
+            this.colorRampTexture = null;
         }
     }
 
