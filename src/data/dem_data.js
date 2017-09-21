@@ -1,7 +1,5 @@
 // @flow
 
-const assert = require('assert');
-
 export type SerializedDEMData = {
     uid: string,
     scale: number,
@@ -16,8 +14,7 @@ class Level {
     data: Int32Array;
 
     constructor(width: number, height: number, border: number, data: ?Int32Array) {
-        assert(width > 0);
-        assert(height > 0);
+        if (height <= 0 || width <= 0) throw new RangeError('Level must have positive height and width');
         this.width = width;
         this.height = height;
         this.border = border;
@@ -34,10 +31,7 @@ class Level {
     }
 
     idx(x: number, y: number) {
-        assert(x >= -this.border);
-        assert(x < this.width + this.border);
-        assert(y >= -this.border);
-        assert(y < this.height + this.border);
+        if (x < -this.border || x >= this.width + this.border ||  y < -this.border || y >= this.height + this.border) throw new RangeError('out of range source coordinates for DEM data');
         return (y + this.border) * this.stride + (x + this.border);
     }
 }
@@ -59,7 +53,7 @@ class DEMData {
         this.uid = uid;
         this.scale = scale || 1;
         this.data = data ? data : [];
-        this.loaded = false;
+        this.loaded = !!data;
     }
 
     loadFromImage(data: {width: number, height: number, data: Uint8ClampedArray}) {
