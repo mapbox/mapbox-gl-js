@@ -77,9 +77,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 function renderToTexture(gl, painter, layer) {
     gl.activeTexture(gl.TEXTURE1);
 
-    const ext = gl.getExtension('OES_texture_half_float');
-    gl.getExtension('OES_texture_half_float_linear');
-
     gl.viewport(0, 0, painter.width / 4, painter.height / 4);
 
     let texture = layer.heatmapTexture;
@@ -92,7 +89,8 @@ function renderToTexture(gl, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA, ext.HALF_FLOAT_OES, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, painter.width / 4, painter.height / 4, 0, gl.RGB,
+            painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
 
         fbo = layer.heatmapFbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
