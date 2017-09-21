@@ -101,7 +101,10 @@ function renderTextureToMap(gl, painter, layer) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     gl.activeTexture(gl.TEXTURE2);
-    const colorRampTexture = new Texture(gl, layer.colorRamp, gl.RGBA);
+    let colorRampTexture = layer.colorRampTexture;
+    if (!colorRampTexture) {
+        colorRampTexture = layer.colorRampTexture = new Texture(gl, layer.colorRamp, gl.RGBA);
+    }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
