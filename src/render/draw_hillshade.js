@@ -1,8 +1,8 @@
 // @flow
+const TileCoord = require('../source/tile_coord');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type TileCoord from '../source/tile_coord';
 import type StyleLayer from '../style/style_layer';
 
 
@@ -105,15 +105,24 @@ function setLight(program, painter) {
     gl.uniform1f(program.uniforms.u_lightintensity, light.calculated.intensity);
 }
 
+function getTileLatRange(painter, coord) {
+    const coordinate0 = coord.toCoordinate();
+    const coordinate1 = new TileCoord(coord.z, coord.x, coord.y + 1, coord.w).toCoordinate();
+    return [painter.transform.coordinateLocation(coordinate0).lat, painter.transform.coordinateLocation(coordinate1).lat];
+}
+
 function renderHillshade(painter, tile, layer, bordersLoaded) {
     const gl = painter.gl;
     const program = painter.useProgram('hillshade');
     const posMatrix = painter.transform.calculatePosMatrix(tile.coord);
     setLight(program, painter);
+    // for scaling the magnitude of a points slope by its latitude
+    const latRange = getTileLatRange(painter, tile.coord);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tile.texture);
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
+    gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
     gl.uniform1i(program.uniforms.u_mode, 7);
     gl.uniform1f(program.uniforms.u_mipmap, 0);
@@ -183,7 +192,6 @@ function prepareHillshade(painter, tile) {
         const program = painter.useProgram('hillshadePrepare');
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
-
         gl.uniform1f(program.uniforms.u_zoom, tile.coord.z);
         gl.uniform2fv(program.uniforms.u_dimension, [512, 512]);
         gl.uniform1i(program.uniforms.u_image, 1);
