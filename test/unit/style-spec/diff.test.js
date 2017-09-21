@@ -132,7 +132,7 @@ t('diff', (t) => {
             }
         }
     }), [
-        { command: 'setData', args: ['foo', {
+        { command: 'setGeoJSONSourceData', args: ['foo', {
             type: 'FeatureCollection',
             features: [{
                 type: 'Feature',

@@ -44,9 +44,9 @@ const operations = {
     removeSource: 'removeSource',
 
     /*
-     * { command: 'setData', args: ['sourceId', data] }
+     * { command: 'setGeoJSONSourceData', args: ['sourceId', data] }
      */
-    setData: 'setData',
+    setGeoJSONSourceData: 'setGeoJSONSourceData',
 
     /*
      * { command: 'setLayerZoomRange', args: ['layerId', 0, 22] }
@@ -123,8 +123,8 @@ function diffSources(before, after, commands, sourcesRemoved) {
             commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
         } else if (!isEqual(before[sourceId], after[sourceId])) {
             if (before[sourceId].type === 'geojson' && after[sourceId].type === 'geojson') {
-                // geojson sources use setData command to update
-                commands.push({ command: operations.setData, args: [sourceId, after[sourceId].data] });
+                // geojson sources use setGeoJSONSourceData command to update
+                commands.push({ command: operations.setGeoJSONSourceData, args: [sourceId, after[sourceId].data] });
             } else {
                 // no update command, must remove then add
                 commands.push({ command: operations.removeSource, args: [sourceId] });

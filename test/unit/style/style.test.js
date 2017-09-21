@@ -457,6 +457,49 @@ test('Style#setState', (t) => {
         });
     });
 
+    t.test('sets GeoJSON source data if different', (t) => {
+        const initialState = createStyleJSON({
+            "sources": { "source-id": createGeoJSONSource() }
+        });
+
+        const geoJSONSourceData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [125.6, 10.1]
+                    }
+                }
+            ]
+        };
+
+        const nextState = createStyleJSON({
+            "sources": {
+                "source-id": {
+                    "type": "geojson",
+                    "data": geoJSONSourceData
+                }
+            }
+        });
+
+        const style = new Style(initialState);
+
+        style.on('style.load', () => {
+            const geoJSONSource = style.sourceCaches['source-id'].getSource();
+            t.spy(style, 'setGeoJSONSourceData');
+            t.spy(geoJSONSource, 'setData');
+            const didChange = style.setState(nextState);
+
+            t.ok(style.setGeoJSONSourceData.calledWith('source-id', geoJSONSourceData));
+            t.ok(geoJSONSource.setData.calledWith(geoJSONSourceData));
+            t.ok(didChange);
+            t.same(style.stylesheet, nextState);
+            t.end();
+        });
+    });
+
     t.end();
 });
 
@@ -646,7 +689,7 @@ test('Style#removeSource', (t) => {
 });
 
 test('Style#setData', (t) => {
-    t.test('throw before loaded', (t) => {
+    t.test('throws before loaded', (t) => {
         const style = new Style(createStyleJSON({
             "sources": { "source-id": createGeoJSONSource() }
         }), new StubMap());
@@ -660,7 +703,7 @@ test('Style#setData', (t) => {
             ]
         };
         t.throws(() => {
-            style.setData('source-id', geoJSONSourceData);
+            style.setGeoJSONSourceData('source-id', geoJSONSourceData);
         }, Error, /load/i);
         style.on('style.load', () => {
             t.end();
@@ -672,30 +715,8 @@ test('Style#setData', (t) => {
             geoJSONSourceData = { type: "FeatureCollection", "features": [] };
         style.on('style.load', () => {
             t.throws(() => {
-                style.setData('source-id', geoJSONSourceData);
-            }, /There is no source with this ID/);
-            t.end();
-        });
-    });
-
-    t.test('sets data of source', (t) => {
-        const style = new Style(createStyleJSON({
-            sources: {'source-id': createGeoJSONSource()}
-        }), new StubMap());
-        const geoJSONSourceData = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": { "type": "Point", "coordinates": [125.6, 10.1] }
-                }
-            ]
-        };
-        style.on('style.load', () => {
-            const sourceCache = style.sourceCaches['source-id'];
-            t.spy(sourceCache, 'setData');
-            style.setData('source-id', geoJSONSourceData);
-            t.ok(sourceCache.setData.calledWith(geoJSONSourceData));
+                style.setGeoJSONSourceData('source-id', geoJSONSourceData);
+            }, Error, /There is no source with this ID/);
             t.end();
         });
     });

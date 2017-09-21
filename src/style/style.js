@@ -43,7 +43,7 @@ const supportedDiffOperations = util.pick(diff.operations, [
     'setLayerZoomRange',
     'setLight',
     'setTransition',
-    'setData'
+    'setGeoJSONSourceData'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -502,24 +502,20 @@ class Style extends Evented {
     }
 
     /**
-    * Set the data of a source, given its id. Only available for GeoJSON sources.
+    * Set the data of a GeoJSON source, given its id.
     * @param {string} id id of the source
     * @param {GeoJSON|string} data GeoJSON source
-    * @throws {Error} if no source is found with the given ID
     */
-
-    setData(id: string, data: GeoJSON | string) {
+    setGeoJSONSourceData(id: string, data: GeoJSON | string) {
         this._checkLoaded();
 
-        if (this.sourceCaches[id] === undefined) {
-            throw new Error('There is no source with this ID');
+        assert(this.sourceCaches[id] !== undefined, 'There is no source with this ID');
+        const source = this.sourceCaches[id].getSource();
+
+        if (source.setData) {
+            source.setData(data);
+            this._changed = true;
         }
-
-
-        const sourceCache = this.sourceCaches[id];
-
-        sourceCache.setData(data);
-        this._changed = true;
     }
 
     /**
