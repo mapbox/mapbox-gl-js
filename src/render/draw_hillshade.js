@@ -23,10 +23,9 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 
     if (painter.renderPass === 'opaque' || painter.renderPass === '3d') return;
 
-    painter.setDepthSublayer(0);
     const gl = painter.gl;
-    gl.enable(gl.DEPTH_TEST);
-    painter.depthMask(false);
+
+    painter.setDepthSublayer(0);
     gl.disable(gl.STENCIL_TEST);
 
 
@@ -34,19 +33,23 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        if (!tile.texture) prepareHillshade(painter, tile);
-
-        let bordersLoaded = true;
-        if (painter.transform.tileZoom < maxzoom) {
-            for (const key in tile.neighboringTiles) {
-                if (!tile.neighboringTiles[key].backfilled && sourceCache._tiles[key]) {
-                    bordersLoaded = false;
-                    break;
+        if (!tile.texture && painter.renderPass === 'hillshadeprepare') {
+            prepareHillshade(painter, tile);
+            continue;
+        }
+        if (painter.renderPass === 'translucent') {
+            let bordersLoaded = true;
+            if (painter.transform.tileZoom < maxzoom) {
+                for (const key in tile.neighboringTiles) {
+                    if (!tile.neighboringTiles[key].backfilled && sourceCache._tiles[key]) {
+                        bordersLoaded = false;
+                        break;
+                    }
                 }
             }
-        }
 
-        renderHillshade(painter, tile, layer, bordersLoaded);
+            renderHillshade(painter, tile, layer, bordersLoaded);
+        }
     }
 
 }

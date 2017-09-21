@@ -42,7 +42,7 @@ import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
 
-export type RenderPass = '3d' | 'opaque' | 'translucent';
+export type RenderPass = '3d' | 'hillshadeprepare' | 'opaque' | 'translucent';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -365,6 +365,36 @@ class Painter {
                 renderTarget.unbind();
             }
         }
+
+
+
+        this.renderPass = 'hillshadeprepare';
+
+        {
+            let sourceCache;
+            let coords = [];
+
+            for (let i = 0; i < layerIds.length; i++) {
+                const layer = this.style._layers[layerIds[i]];
+
+                if (layer.type !== 'hillshade' || layer.isHidden(this.transform.zoom)) continue;
+
+                if (layer.source !== (sourceCache && sourceCache.id)) {
+                    sourceCache = this.style.sourceCaches[layer.source];
+                    coords = [];
+
+                    if (sourceCache) {
+                        this.clearStencil();
+                        coords = sourceCache.getVisibleCoordinates();
+                    }
+
+                    coords.reverse();
+                }
+
+                this.renderLayer(this, (sourceCache: any), layer, coords);
+            }
+        }
+
 
         // Clear buffers in preparation for drawing to the main framebuffer
         context.clear({ color: Color.transparent, depth: 1 });
