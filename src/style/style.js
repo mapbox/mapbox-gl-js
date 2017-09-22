@@ -19,6 +19,7 @@ const getSourceType = require('../source/source').getType;
 const setSourceType = require('../source/source').setType;
 const QueryFeatures = require('../source/query_features');
 const SourceCache = require('../source/source_cache');
+const GeoJSONSource = require('../source/geojson_source');
 const styleSpec = require('../style-spec/reference/latest');
 const MapboxGLFunction = require('../style-spec/function');
 const getWorkerPool = require('../util/global_worker_pool');
@@ -510,12 +511,11 @@ class Style extends Evented {
         this._checkLoaded();
 
         assert(this.sourceCaches[id] !== undefined, 'There is no source with this ID');
-        const source = this.sourceCaches[id].getSource();
+        const geojsonSource: GeoJSONSource = (this.sourceCaches[id].getSource(): any);
+        assert(geojsonSource.type === 'geojson');
 
-        if (source.setData) {
-            source.setData(data);
-            this._changed = true;
-        }
+        geojsonSource.setData(data);
+        this._changed = true;
     }
 
     /**
