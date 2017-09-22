@@ -85,7 +85,7 @@ function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array
         // The current tile is masked out, so we don't need to add them to the mask set.
         if (ref.id === childTile.coord.id) {
             return;
-        } else if (childTile.coord.isChildOf(ref)) {
+        } else if (childTile.coord.isChildOf(ref, childTile.sourceMaxZoom)) {
             // There's at least one child tile that is masked out, so recursively descend
             const children = ref.children(Infinity);
             for (let j = 0; j < children.length; j++) {
@@ -102,4 +102,3 @@ function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array
     const maskTileId = new TileCoord(diffZ, ref.x - (rootTile.x << diffZ), ref.y - (rootTile.y << diffZ)).id;
     mask[maskTileId] = mask[maskTileId] || true;
 }
-

@@ -202,7 +202,7 @@ test('Tile#isLessThan', (t)=>{
     t.end();
 });
 
-
+test('Tile#placeLayer', (t) => {
     test('placeLayer on an empty tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(null, createPainter());
