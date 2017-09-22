@@ -60,13 +60,12 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                 const params = {
                     uid: tile.uid,
                     coord: tile.coord,
-                    type: this.type,
                     source: this.id,
                     rawImageData: rawImageData
                 };
 
                 if (!tile.workerID || tile.state === 'expired' || tile.state === 'unloaded') {
-                    tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
+                    tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
                 }
             }
         }
@@ -122,7 +121,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadDEMData();
-        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, undefined, tile.workerID);
+        this.dispatcher.send('removeDEMTile', { uid: tile.uid, source: this.id }, undefined, tile.workerID);
     }
 
 }

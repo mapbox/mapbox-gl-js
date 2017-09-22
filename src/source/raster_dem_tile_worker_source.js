@@ -1,11 +1,12 @@
 // @flow
 
 const {DEMData} = require('../data/dem_data');
-import type {SerializedDEMData} from '../data/dem_data';
 import type Actor from '../util/actor';
-import type {TileParameters} from './worker_source';
-import type {RGBAImage} from '../util/image';
-import type TileCoord from './tile_coord';
+import type {
+    WorkerDEMTileParameters,
+    WorkerDEMTileCallback,
+    TileParameters
+} from './worker_source';
 
 
 class RasterDEMTileWorkerSource {
@@ -13,18 +14,13 @@ class RasterDEMTileWorkerSource {
     loading: {[string]: {[string]: DEMData}};
     loaded: {[string]: {[string]: DEMData}};
 
-    constructor(actor: Actor) {
-        this.actor = actor;
+    constructor() {
         this.loading = {};
         this.loaded = {};
     }
 
 
-    loadTile(params: TileParameters & {
-                rawImageData: RGBAImage,
-                coord: TileCoord,
-                type: string
-            }, callback: (err: ?Error, result: ?SerializedDEMData, transferrables: ?Array<Transferable>) => void) {
+    loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const source = params.source,
             uid = params.uid;
 
