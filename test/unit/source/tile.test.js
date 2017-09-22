@@ -202,42 +202,26 @@ test('Tile#isLessThan', (t)=>{
     t.end();
 });
 
-test('Tile#redoPlacement', (t) => {
 
-    test('redoPlacement on an empty tile', (t) => {
+    test('placeLayer on an empty tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(null, createPainter());
 
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionIndex(new Transform()), {id: 'layer'}));
-        t.notOk(tile.redoWhenDone);
+        t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.end();
     });
 
-    test('redoPlacement on a loading tile', (t) => {
+    test('placeLayer on a loading tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}, false, new CollisionIndex(new Transform()), {id: 'layer'}));
-        t.ok(tile.redoWhenDone);
+        t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.end();
     });
 
-    test('redoPlacement on a reloading tile', (t) => {
+    test('placeLayer on a reloading tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(createVectorData(), createPainter());
 
-        const options = {
-            type: 'vector',
-            dispatcher: {
-                send: () => {}
-            },
-            map: {
-                painter: { tileExtentVAO: {vao: 0}}
-            }
-        };
-
-        tile.state = 'reloading';
-        tile.redoPlacement(options, false, new CollisionIndex(new Transform()), {id: 'layer'});
-
-        t.ok(tile.redoWhenDone);
+        tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'});
         t.end();
     });
 
