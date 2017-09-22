@@ -239,7 +239,8 @@ class SourceCache extends Evented {
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
 
         this._updatePlacement();
-        tile.added();
+        if (this.map)
+            tile.added(this.map.painter.crossTileSymbolIndex);
     }
 
     /**
@@ -526,7 +527,8 @@ class SourceCache extends Evented {
         tile = this._cache.get((tileCoord.id: any));
         if (tile) {
             this._updatePlacement();
-            tile.added();
+            if (this.map)
+                tile.added(this.map.painter.crossTileSymbolIndex);
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 delete this._cacheTimers[tileCoord.id];
@@ -592,7 +594,8 @@ class SourceCache extends Evented {
             return;
 
         this._updatePlacement();
-        tile.removed();
+        if (this.map)
+            tile.removed(this.map.painter.crossTileSymbolIndex);
 
         if (tile.hasData()) {
             tile.coord = tile.coord.wrapped();

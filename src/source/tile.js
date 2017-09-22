@@ -29,6 +29,8 @@ import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
+import type CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
+
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
     | 'loaded'    // Tile data has been loaded. Tile can be rendered.
@@ -78,7 +80,6 @@ class Tile {
     texture: any;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
-    crossTileSymbolIndex: any;
 
     /**
      * @param {TileCoord} coord
@@ -154,8 +155,6 @@ class Tile {
             this.glyphAtlasImage = data.glyphAtlasImage;
         }
 
-        this.crossTileSymbolIndex = painter.crossTileSymbolIndex;
-
         if (data.iconAtlasImage) {
             this.iconAtlasImage = data.iconAtlasImage;
         }
@@ -185,23 +184,22 @@ class Tile {
         this.collisionBoxArray = null;
         this.featureIndex = null;
         this.state = 'unloaded';
-        this.crossTileSymbolIndex = null;
     }
 
-    added() {
+    added(crossTileSymbolIndex: CrossTileSymbolIndex) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
-                this.crossTileSymbolIndex.addTileLayer(id, this.coord, this.sourceMaxZoom, bucket.symbolInstances);
+                crossTileSymbolIndex.addTileLayer(id, this.coord, this.sourceMaxZoom, bucket.symbolInstances);
             }
         }
     }
 
-    removed() {
+    removed(crossTileSymbolIndex: CrossTileSymbolIndex) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
-                this.crossTileSymbolIndex.removeTileLayer(id, this.coord, this.sourceMaxZoom);
+                crossTileSymbolIndex.removeTileLayer(id, this.coord, this.sourceMaxZoom);
             }
         }
     }
