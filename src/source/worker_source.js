@@ -5,7 +5,6 @@ import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {SerializedBucket} from '../data/bucket';
 import type {SerializedFeatureIndex} from '../data/feature_index';
-import type {SerializedCollisionTile} from '../symbol/collision_tile';
 import type {SerializedStructArray} from '../util/struct_array';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
@@ -38,21 +37,11 @@ export type WorkerTileResult = {
     iconAtlasImage: RGBAImage,
     glyphAtlasImage: AlphaImage,
     featureIndex: SerializedFeatureIndex,
-    collisionTile: SerializedCollisionTile,
     collisionBoxArray: SerializedStructArray,
     rawTileData?: ArrayBuffer,
 };
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
-
-export type RedoPlacementParameters = TileParameters & PlacementConfig;
-
-export type RedoPlacementResult = {
-    buckets: Array<SerializedBucket>,
-    collisionTile: SerializedCollisionTile
-};
-
-export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult, transferables: ?Array<Transferable>) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -94,6 +83,5 @@ export interface WorkerSource {
      */
     removeTile(params: TileParameters): void;
 
-    redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback): void;
     removeSource?: (params: {source: string}) => void;
 }

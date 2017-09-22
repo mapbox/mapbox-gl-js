@@ -13,6 +13,8 @@ class VertexArrayObject {
     boundIndexBuffer: ?IndexBuffer;
     boundVertexOffset: ?number;
     boundDynamicVertexBuffer: ?VertexBuffer;
+    boundOpacityVertexBuffer: ?VertexBuffer;
+    boundCollisionVertexBuffer: ?VertexBuffer;
     vao: any;
     gl: WebGLRenderingContext;
 
@@ -32,7 +34,9 @@ class VertexArrayObject {
          indexBuffer: ?IndexBuffer,
          vertexBuffer2: ?VertexBuffer,
          vertexOffset: ?number,
-         dynamicVertexBuffer: ?VertexBuffer) {
+         dynamicVertexBuffer: ?VertexBuffer,
+         opacityVertexBuffer: ?VertexBuffer,
+         collisionVertexBuffer: ?VertexBuffer) {
 
         if (gl.extVertexArrayObject === undefined) {
             (gl: any).extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -45,11 +49,13 @@ class VertexArrayObject {
             this.boundVertexBuffer2 !== vertexBuffer2 ||
             this.boundIndexBuffer !== indexBuffer ||
             this.boundVertexOffset !== vertexOffset ||
-            this.boundDynamicVertexBuffer !== dynamicVertexBuffer
+            this.boundDynamicVertexBuffer !== dynamicVertexBuffer ||
+            this.boundOpacityVertexBuffer !== opacityVertexBuffer ||
+            this.boundCollisionVertexBuffer !== collisionVertexBuffer
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer);
+            this.freshBind(gl, program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, opacityVertexBuffer, collisionVertexBuffer);
             this.gl = gl;
         } else {
             (gl: any).extVertexArrayObject.bindVertexArrayOES(this.vao);
@@ -57,6 +63,14 @@ class VertexArrayObject {
             if (dynamicVertexBuffer) {
                 // The buffer may have been updated. Rebind to upload data.
                 dynamicVertexBuffer.bind();
+            }
+
+            if (opacityVertexBuffer) {
+                opacityVertexBuffer.bind(gl);
+            }
+
+            if (collisionVertexBuffer) {
+                collisionVertexBuffer.bind(gl);
             }
         }
     }
@@ -67,7 +81,9 @@ class VertexArrayObject {
               indexBuffer: ?IndexBuffer,
               vertexBuffer2: ?VertexBuffer,
               vertexOffset: ?number,
-              dynamicVertexBuffer: ?VertexBuffer) {
+              dynamicVertexBuffer: ?VertexBuffer,
+			  opacityVertexBuffer: ?VertexBuffer,
+			  collisionVertexBuffer: ?VertexBuffer) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -84,6 +100,8 @@ class VertexArrayObject {
             this.boundIndexBuffer = indexBuffer;
             this.boundVertexOffset = vertexOffset;
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
+            this.boundOpacityVertexBuffer = opacityVertexBuffer;
+            this.boundCollisionVertexBuffer = collisionVertexBuffer;
 
         } else {
             numPrevAttributes = (gl: any).currentNumAttributes || 0;
@@ -105,6 +123,12 @@ class VertexArrayObject {
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.enableAttributes(gl, program);
         }
+        if (opacityVertexBuffer) {
+            opacityVertexBuffer.enableAttributes(gl, program);
+        }
+        if (collisionVertexBuffer) {
+            collisionVertexBuffer.enableAttributes(gl, program);
+        }
 
         layoutVertexBuffer.bind();
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
@@ -118,6 +142,14 @@ class VertexArrayObject {
         }
         if (indexBuffer) {
             indexBuffer.bind();
+		}
+        if (opacityVertexBuffer) {
+            opacityVertexBuffer.bind(gl);
+            opacityVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (collisionVertexBuffer) {
+            collisionVertexBuffer.bind(gl);
+            collisionVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
 
         (gl: any).currentNumAttributes = numNextAttributes;

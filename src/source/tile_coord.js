@@ -120,6 +120,16 @@ class TileCoord {
         } else {
             return new TileCoord(targetZ, this.x << (targetZ - this.z), this.y << (targetZ - this.z), this.w); // child
         }
+	}
+
+    isChildOf(coord: TileCoord, sourceMaxZoom: number) {
+        const parentZ = Math.min(sourceMaxZoom, coord.z);
+        const childZ = Math.min(sourceMaxZoom, this.z);
+        const scale = Math.pow(2, parentZ - childZ);
+        const x = this.x * scale;
+        const y = this.y * scale;
+        return (coord.x <= x && x < coord.x + 1 &&
+                coord.y <= y && y < coord.y + 1);
     }
 
     /**

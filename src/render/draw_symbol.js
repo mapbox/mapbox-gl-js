@@ -138,7 +138,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.uniforms.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.uniforms.u_collision_y_stretch, (tile.collisionTile: any).yStretch);
+        gl.uniform1f(program.uniforms.u_fade_change, painter.options.collisionFadeDuration ? ((Date.now() - bucket.fadeStartTime) / painter.options.collisionFadeDuration) : 1);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }
@@ -154,10 +154,6 @@ function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pit
     gl.uniform1i(program.uniforms.u_pitch_with_map, pitchWithMap ? 1 : 0);
 
     gl.uniform1f(program.uniforms.u_is_text, isText ? 1 : 0);
-
-    gl.activeTexture(gl.TEXTURE1);
-    painter.frameHistory.bind(gl);
-    gl.uniform1i(program.uniforms.u_fadetexture, 1);
 
     gl.uniform1f(program.uniforms.u_pitch, tr.pitch / 360 * 2 * Math.PI);
 

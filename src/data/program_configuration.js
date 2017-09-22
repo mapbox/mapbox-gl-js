@@ -29,6 +29,8 @@ export type ProgramInterface = {
     layoutAttributes: Array<LayoutAttribute>,
     indexArrayType: Class<StructArray>,
     dynamicLayoutAttributes?: Array<LayoutAttribute>,
+    opacityAttributes?: Array<LayoutAttribute>,
+    collisionAttributes?: Array<LayoutAttribute>,
     paintAttributes?: Array<PaintAttribute>,
     indexArrayType2?: Class<StructArray>
 }

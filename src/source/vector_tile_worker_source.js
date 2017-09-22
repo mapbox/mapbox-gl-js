@@ -10,9 +10,7 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters,
-    RedoPlacementParameters,
-    RedoPlacementCallback,
+    TileParameters
 } from '../source/worker_source';
 
 import type Actor from '../util/actor';
@@ -134,6 +132,7 @@ class VectorTileWorkerSource implements WorkerSource {
             vtSource = this;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
+            workerTile.showCollisionBoxes = params.showCollisionBoxes;
 
             if (workerTile.status === 'parsing') {
                 workerTile.reloadCallback = callback;
@@ -182,24 +181,6 @@ class VectorTileWorkerSource implements WorkerSource {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
-        }
-    }
-
-    redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback) {
-        const loaded = this.loaded[params.source],
-            loading = this.loading[params.source],
-            uid = params.uid;
-
-        if (loaded && loaded[uid]) {
-            const workerTile = loaded[uid];
-            const result = workerTile.redoPlacement(params.angle, params.pitch, params.cameraToCenterDistance, params.cameraToTileDistance, params.showCollisionBoxes);
-
-            if (result.result) {
-                callback(null, result.result, result.transferables);
-            }
-
-        } else if (loading && loading[uid]) {
-            loading[uid].angle = params.angle;
         }
     }
 }

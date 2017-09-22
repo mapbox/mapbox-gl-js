@@ -11,9 +11,9 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;
+const TileCoord = require('../source/tile_coord');
 
 import type CollisionTile from '../symbol/collision_tile';
-import type TileCoord from '../source/tile_coord';
 import type StyleLayer from '../style/style_layer';
 import type {SerializedStructArray} from '../util/struct_array';
 
@@ -37,7 +37,9 @@ type QueryParameters = {
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
-    }
+    },
+    tileSourceMaxZoom: number,
+    collisionBoxArray: any
 }
 
 export type SerializedFeatureIndex = {
@@ -60,22 +62,22 @@ class FeatureIndex {
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
 
-    collisionTile: CollisionTile;
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
 
+    collisionTile: CollisionTile;
+
     static deserialize(serialized: SerializedFeatureIndex,
-                       rawTileData: ArrayBuffer,
-                       collisionTile: CollisionTile) {
+                       rawTileData: ArrayBuffer) {
+        const coord = serialized.coord;
         const self = new FeatureIndex(
-            serialized.coord,
+            new TileCoord(coord.z, coord.x, coord.y, coord.w),
             serialized.overscaling,
             new Grid(serialized.grid),
             new FeatureIndexArray(serialized.featureIndexArray));
 
         self.rawTileData = rawTileData;
         self.bucketLayerIDs = serialized.bucketLayerIDs;
-        self.setCollisionTile(collisionTile);
 
         return self;
     }
@@ -166,9 +168,9 @@ class FeatureIndex {
         matching.sort(topDownFeatureComparator);
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
-        const matchingSymbols = this.collisionTile.queryRenderedSymbols(queryGeometry, args.scale);
+        const matchingSymbols = this.collisionTile.queryRenderedSymbols(queryGeometry, args.scale, this.coord, args.tileSourceMaxZoom, pixelsToTileUnits, args.collisionBoxArray);
         matchingSymbols.sort();
-        this.filterMatching(result, matchingSymbols, this.collisionTile.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
+        this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         return result;
     }

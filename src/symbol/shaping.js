@@ -9,7 +9,8 @@ import type {ImagePosition} from '../render/image_atlas';
 
 const WritingMode = {
     horizontal: 1,
-    vertical: 2
+    vertical: 2,
+    horizontalOnly: 3
 };
 
 module.exports = {

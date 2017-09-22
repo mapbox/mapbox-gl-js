@@ -44,6 +44,7 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
+    _needsPlacement: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string) => boolean;
@@ -123,6 +124,10 @@ class SourceCache extends Evented {
 
     pause() {
         this._paused = true;
+    }
+
+    getNeedsPlacement() {
+        return this._needsPlacement;
     }
 
     resume() {
@@ -224,6 +229,9 @@ class SourceCache extends Evented {
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
+
+        this._needsPlacement = true;
+        tile.added();
     }
 
     /**
@@ -506,9 +514,11 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
+
         tile = this._cache.get((tileCoord.id: any));
         if (tile) {
-            tile.redoPlacement(this._source);
+            this._needsPlacement = true;
+            tile.added();
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 delete this._cacheTimers[tileCoord.id];
@@ -573,7 +583,8 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        tile.stopPlacementThrottler();
+        this._needsPlacement = true;
+        tile.removed();
 
         if (tile.hasData()) {
             const wrappedId = tile.coord.wrapped().id;
@@ -652,11 +663,15 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement() {
+    redoPlacement(viewportCollisionTile: any, showCollisionBoxes: boolean, layer: any, posMatrices: any, transform: any, collisionFadeTimes: any) {
+        this._needsPlacement = false;
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this._source);
+            if (!posMatrices[i]) {
+                posMatrices[i] = transform.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
+            }
+            tile.redoPlacement(this._source, showCollisionBoxes, viewportCollisionTile, layer, posMatrices[i], collisionFadeTimes);
         }
     }
 
