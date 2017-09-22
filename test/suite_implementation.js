@@ -35,7 +35,9 @@ module.exports = function(style, options, _callback) {
         classes: options.classes,
         interactive: false,
         attributionControl: false,
-        preserveDrawingBuffer: true
+        preserveDrawingBuffer: true,
+        axonometric: options.axonometric || false,
+        skew: options.skew || [0, 0]
     });
 
     // Configure the map to never stop the render loop
