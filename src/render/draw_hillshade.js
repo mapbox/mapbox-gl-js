@@ -104,7 +104,7 @@ function renderHillshade(painter, tile, layer, bordersLoaded) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
     } else {
         const buffer = painter.rasterBoundsBuffer;
-        const vao = painter.incompleteHillshadeBoundsVAO;
+        const vao = painter.rasterBoundsVAO;
         vao.bind(gl, program, buffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
     }
