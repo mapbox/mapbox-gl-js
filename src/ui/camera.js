@@ -803,6 +803,10 @@ class Camera extends Evented {
             options.duration = 1000 * S / V;
         }
 
+        if (options.maxDuration) {
+            options.duration = Math.min(options.duration, options.maxDuration);
+        }
+
         this.zooming = true;
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
