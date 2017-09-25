@@ -22,7 +22,7 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 2,
     center: [0, 0],
-    style: 'mapbox://styles/mapbox/dark-v9',
+    style: 'mapbox://styles/mapbox/satellite-streets-v10',
     hash: false
 });
 
@@ -59,7 +59,7 @@ map.on('load', function() {
                 "default": "rgba(0, 0, 0, 0)"
             }
         }
-    });
+    }, 'waterway-label');
 });
 
 </script>
