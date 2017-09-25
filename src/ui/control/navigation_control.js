@@ -7,7 +7,8 @@ const DragRotateHandler = require('../handler/drag_rotate');
 import type Map from '../map';
 
 const defaultOptions = {
-    showCompass: true
+    showCompass: true,
+    showZoom: true
 };
 
 /**
@@ -39,9 +40,10 @@ class NavigationControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
         this._container.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom In', () => this._map.zoomIn());
-        this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom Out', () => this._map.zoomOut());
-
+        if (this.options.showZoom) {
+            this._zoomInButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-in', 'Zoom In', () => this._map.zoomIn());
+            this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom Out', () => this._map.zoomOut());
+        }
         if (this.options.showCompass) {
             this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset North', () => this._map.resetNorth());
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
