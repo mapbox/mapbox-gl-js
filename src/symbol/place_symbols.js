@@ -15,8 +15,6 @@ module.exports = {
 };
 
 function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any): boolean {
-    const initialVisible = opacityState.opacity !== 0;
-    const initialTargetVisible = opacityState.targetOpacity !== 0;
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;
@@ -29,8 +27,6 @@ function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityStat
         opacityState.targetOpacity = targetOpacity;
         opacityState.time = opacityUpdateTime;
     }
-    return (!initialVisible && !initialTargetVisible && opacityState.targetOpacity !== 0) ||
-           ((initialVisible || initialTargetVisible) && (opacityState.opacity === 0 && opacityState.targetOpacity === 0));
 }
 
 const shift25 = Math.pow(2, 25);
@@ -77,13 +73,15 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
         if (hasText) {
             const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
             const opacityState = symbolInstance.textOpacityState;
-            const visibilityChanged = updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
-            if (visibilityChanged) {
+            const initialHidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
+            const nowHidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
+            if (initialHidden !== nowHidden) {
                 for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
                     const placedSymbol = (bucket.placedGlyphArray.get(placedTextSymbolIndex): any);
                     // If this label is completely faded, mark it so that we don't have to calculate
                     // its position at render time
-                    placedSymbol.hidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
+                    placedSymbol.hidden = nowHidden;
                 }
             }
 
