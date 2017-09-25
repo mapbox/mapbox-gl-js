@@ -14,7 +14,7 @@ module.exports = {
     place: place
 };
 
-function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any): boolean {
+function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any) {
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;

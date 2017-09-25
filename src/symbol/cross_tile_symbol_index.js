@@ -94,7 +94,7 @@ class TileLayerIndex {
         }
 
         const childTileSymbolCoordinates =
-            this.getScaledCoordinates(childTileSymbol, childTileCoord, this.coord.z);
+            this.getScaledCoordinates(childTileSymbol, childTileCoord);
 
         for (const thisTileSymbol of this.symbolInstances[childTileSymbol.key]) {
             // Return any symbol with the same keys whose coordinates are within 1
