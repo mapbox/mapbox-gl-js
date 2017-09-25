@@ -21,6 +21,8 @@ class HeatmapStyleLayer extends StyleLayer {
     constructor(layer: LayerSpecification) {
         super(layer);
         this.colorRampData = new Uint8Array(256 * 4);
+
+        // make sure color ramp texture is generated for default heatmap color too
         if (!this.getPaintProperty('heatmap-color')) {
             this.setPaintProperty('heatmap-color', this._paintSpecifications['heatmap-color'].default, '');
         }
@@ -33,6 +35,8 @@ class HeatmapStyleLayer extends StyleLayer {
             for (let i = 4; i < len; i += 4) {
                 const pxColor = this.getPaintValue('heatmap-color', {zoom: i / len});
                 const alpha = pxColor[3];
+                // the colors are being unpremultiplied because getPaintValue returns
+                // premultiplied values, and the Texture class expects unpremultiplied ones
                 this.colorRampData[i + 0] = Math.floor(pxColor[0] * 255 / alpha);
                 this.colorRampData[i + 1] = Math.floor(pxColor[1] * 255 / alpha);
                 this.colorRampData[i + 2] = Math.floor(pxColor[2] * 255 / alpha);
