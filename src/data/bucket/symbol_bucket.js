@@ -53,7 +53,7 @@ export type SingleCollisionBox = {
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
     iconBox?: SingleCollisionBox;
-    textCircles?: Array<number | boolean>;
+    textCircles?: Array<number>;
 };
 
 export type SymbolInstance = {
@@ -742,11 +742,8 @@ class SymbolBucket implements Bucket {
                 if (!collisionArrays.textCircles) {
                     collisionArrays.textCircles = [];
                 }
-                collisionArrays.textCircles.push(box.anchorPointX);
-                collisionArrays.textCircles.push(box.anchorPointY);
-                collisionArrays.textCircles.push(box.radius);
-                collisionArrays.textCircles.push(box.distanceToAnchor);
-                collisionArrays.textCircles.push(false); // Last position is used to mark if the circle is actually used at render time
+                const used = 1; // May be updated at collision detection time
+                collisionArrays.textCircles.push(box.anchorPointX, box.anchorPointY, box.radius, box.distanceToAnchor, used);
             }
         }
         for (let k = iconStartIndex; k < iconEndIndex; k++) {

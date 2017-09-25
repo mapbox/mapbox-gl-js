@@ -125,7 +125,7 @@ function updateCollisionBox(collisionVertexArray: StructArray, placed: boolean) 
 
 function updateCollisionCircles(collisionVertexArray: StructArray, collisionCircles: Array<any>, placed: boolean, isDuplicate: boolean) {
     for (let k = 0; k < collisionCircles.length; k += 5) {
-        const notUsed = isDuplicate || collisionCircles[k + 4];
+        const notUsed = isDuplicate || (collisionCircles[k + 4] === 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);

@@ -88,7 +88,7 @@ class CollisionIndex {
             (incidenceStretch - 1) * lastSegmentTile * Math.abs(Math.sin(lastSegmentAngle));
     }
 
-    placeCollisionCircles(collisionCircles: Array<any>,
+    placeCollisionCircles(collisionCircles: Array<number>,
                           allowOverlap: boolean,
                           scale: number,
                           pixelsToTileUnits: number,
@@ -146,41 +146,45 @@ class CollisionIndex {
                 // The label either doesn't fit on its line or we
                 // don't need to use this circle because the label
                 // doesn't extend this far. Either way, mark the circle unused.
-                collisionCircles[k + 4] = true;
+                markCollisionCircleUsed(collisionCircles, k, false);
                 continue;
             }
 
             const projectedPoint = this.projectPoint(posMatrix, collisionCircles[k], collisionCircles[k + 1]);
-            const x = projectedPoint.x;
-            const y = projectedPoint.y;
-
             const radius = tileUnitRadius / tileToViewportScaled;
 
-            if (placedCollisionCircles.length) {
-                const dx = x - placedCollisionCircles[placedCollisionCircles.length - 4];
-                const dy = y - placedCollisionCircles[placedCollisionCircles.length - 3];
-                if (radius * radius * 2 > dx * dx + dy * dy) {
-                    if ((k + 8) < collisionCircles.length) {
+            const atLeastOneCirclePlaced = placedCollisionCircles.length > 0;
+            if (atLeastOneCirclePlaced) {
+                const dx = projectedPoint.x - placedCollisionCircles[placedCollisionCircles.length - 4];
+                const dy = projectedPoint.y - placedCollisionCircles[placedCollisionCircles.length - 3];
+                // The circle edges touch when the distance between their centers is 2x the radius
+                // When the distance is 1x the radius, they're doubled up, and we could remove
+                // every other circle while keeping them all in touch.
+                // We actually start removing circles when the distance is √2x the radius:
+                //  thinning the number of circles as much as possible is a major performance win,
+                //  and the small gaps introduced don't make a very noticeable difference.
+                const placedTooDensely = radius * radius * 2 > dx * dx + dy * dy;
+                if (placedTooDensely) {
+                    const atLeastOneMoreCircle = (k + 8) < collisionCircles.length;
+                    if (atLeastOneMoreCircle) {
                         const nextBoxDistanceToAnchor = collisionCircles[k + 8];
                         if ((nextBoxDistanceToAnchor > -firstTileDistance) &&
                         (nextBoxDistanceToAnchor < lastTileDistance)) {
                             // Hide significantly overlapping circles, unless this is the last one we can
                             // use, in which case we want to keep it in place even if it's tightly packed
                             // with the one before it.
-                            collisionCircles[k + 4] = true;
+                            markCollisionCircleUsed(collisionCircles, k, false);
                             continue;
                         }
                     }
                 }
             }
-            placedCollisionCircles.push(x);
-            placedCollisionCircles.push(y);
-            placedCollisionCircles.push(radius);
-            placedCollisionCircles.push(k / 5); // CollisionBoxArray index
-            collisionCircles[k + 4] = false;
+            const collisionBoxArrayIndex = k / 5;
+            placedCollisionCircles.push(projectedPoint.x, projectedPoint.y, radius, collisionBoxArrayIndex);
+            markCollisionCircleUsed(collisionCircles, k, true);
 
             if (!allowOverlap) {
-                if (this.grid.hitTestCircle(x, y, radius)) {
+                if (this.grid.hitTestCircle(projectedPoint.x, projectedPoint.y, radius)) {
                     if (!showCollisionCircles) {
                         return [];
                     } else {
@@ -336,6 +340,10 @@ class CollisionIndex {
         };
     }
 
+}
+
+function markCollisionCircleUsed(collisionCircles: Array<number>, index: number, used: boolean) {
+    collisionCircles[index + 4] = used ? 1 : 0;
 }
 
 module.exports = CollisionIndex;
