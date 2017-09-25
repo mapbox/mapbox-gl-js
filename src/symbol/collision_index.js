@@ -126,14 +126,6 @@ class CollisionIndex {
             projectionCache,
             /*return tile distance*/ true);
 
-        if (projectedAnchor.perspectiveRatio < .2 || !firstAndLastGlyph) {
-            // This label either doesn't fit on its line or is way off screen: mark it unused.
-            for (let k = 0; k < collisionCircles.length; k += 5) {
-                collisionCircles[k + 4] = true;
-            }
-            return [];
-        }
-
         let collisionDetected = false;
 
         const tileToViewport = projectedAnchor.perspectiveRatio * pixelsToTileUnits;
@@ -148,9 +140,12 @@ class CollisionIndex {
         for (let k = 0; k < collisionCircles.length; k += 5) {
             const boxDistanceToAnchor = collisionCircles[k + 3];
             const tileUnitRadius = collisionCircles[k + 2];
-            if ((boxDistanceToAnchor < -firstTileDistance) ||
+            if (!firstAndLastGlyph ||
+                (boxDistanceToAnchor < -firstTileDistance) ||
                 (boxDistanceToAnchor - tileUnitRadius > lastTileDistance)) {
-                // Don't need to use this circle because the label doesn't extend this far
+                // The label either doesn't fit on its line or we
+                // don't need to use this circle because the label
+                // doesn't extend this far. Either way, mark the circle unused.
                 collisionCircles[k + 4] = true;
                 continue;
             }
