@@ -84,17 +84,28 @@ function renderToTexture(gl, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, painter.width / 4, painter.height / 4, 0, gl.RGB,
-            painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
-
         fbo = layer.heatmapFbo = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+        bindTextureFramebuffer(gl, painter, texture, fbo);
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    }
+}
+
+function bindTextureFramebuffer(gl, painter, texture, fbo) {
+    // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, painter.width / 4, painter.height / 4, 0, gl.RGB,
+        painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+    // If using half-float texture as a render target is not supported, fall back to a low precision texture
+    if (painter.extTextureHalfFloat && gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+        painter.extTextureHalfFloat = null;
+        bindTextureFramebuffer(gl, painter, texture, fbo);
     }
 }
 
