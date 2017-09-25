@@ -6,6 +6,7 @@ const interpolate = require('../style-spec/util/interpolate');
 
 import type StyleDeclaration from './style_declaration';
 import type {Feature} from '../style-spec/function';
+import type {GlobalProperties} from '../style/style_layer';
 
 const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 0 };
 
@@ -58,7 +59,7 @@ class StyleTransition {
     /*
      * Return the value of the transitioning property.
      */
-    calculate(globalProperties?: {zoom: number}, feature?: Feature, time?: number) {
+    calculate(globalProperties?: GlobalProperties, feature?: Feature, time?: number) {
         const value = this._calculateTargetValue(globalProperties, feature);
 
         if (this.instant())
@@ -74,7 +75,7 @@ class StyleTransition {
         return this.interp(oldValue, value, t);
     }
 
-    _calculateTargetValue(globalProperties?: {zoom: number}, feature?: Feature) {
+    _calculateTargetValue(globalProperties?: GlobalProperties, feature?: Feature) {
         if (!this.zoomTransitioned)
             return this.declaration.calculate(globalProperties, feature);
 

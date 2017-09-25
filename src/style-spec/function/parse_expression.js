@@ -89,7 +89,7 @@ function parseExpression(expr: mixed, context: ParsingContext): ?Expression {
 function isConstant(expression: Expression) {
     // requires within function body to workaround circular dependency
     const {CompoundExpression} = require('./compound_expression');
-    const {isZoomConstant, isFeatureConstant} = require('./is_constant');
+    const {isGlobalPropertyConstant, isFeatureConstant} = require('./is_constant');
     const Var = require('./definitions/var');
 
     if (expression instanceof Var) {
@@ -106,7 +106,8 @@ function isConstant(expression: Expression) {
         return false;
     }
 
-    return isZoomConstant(expression) && isFeatureConstant(expression);
+    return isFeatureConstant(expression) &&
+        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density']);
 }
 
 module.exports = parseExpression;

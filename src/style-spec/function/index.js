@@ -49,7 +49,7 @@ type StylePropertySpecification = {
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
-function createFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): StyleFunction {
+function createFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification, name: string): StyleFunction {
     let expr;
 
     let defaultValue = propertySpec.default;
@@ -61,7 +61,7 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
     } else if (typeof parameters === 'object' && parameters !== null && typeof parameters.expression !== 'undefined') {
         expr = parameters.expression;
     } else {
-        expr = convert.function(parameters, propertySpec);
+        expr = convert.function(parameters, propertySpec, name);
         if (parameters && typeof parameters.default !== 'undefined') {
             defaultValue = parameters.default;
         }

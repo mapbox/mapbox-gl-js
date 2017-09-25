@@ -14,7 +14,8 @@ import type {Feature} from '../style-spec/function';
 import type RenderTexture from '../render/render_texture';
 
 export type GlobalProperties = {
-    zoom: number
+    zoom?: number,
+    heatmapDensity?: number
 };
 
 export type FeatureProperties = {
@@ -117,7 +118,7 @@ class StyleLayer extends Evented {
         } else {
             const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateStyle.layoutProperty, key, name, value, options)) return;
-            this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
+            this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value, name);
         }
         this._updateLayoutValue(name);
     }
@@ -161,7 +162,7 @@ class StyleLayer extends Evented {
                 delete this._paintDeclarations[klass || ''][name];
             } else {
                 if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
-                this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
+                this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value, name);
             }
         }
     }
@@ -338,7 +339,7 @@ class StyleLayer extends Evented {
         const spec = this._paintSpecifications[name];
 
         if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default);
+            declaration = new StyleDeclaration(spec, spec.default, name);
         }
 
         if (oldTransition && oldTransition.declaration.json === declaration.json) return;

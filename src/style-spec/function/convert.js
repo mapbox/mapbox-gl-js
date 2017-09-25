@@ -4,7 +4,7 @@ const extend = require('../util/extend');
 module.exports.function = convertFunction;
 module.exports.value = convertValue;
 
-function convertFunction(parameters, propertySpec) {
+function convertFunction(parameters, propertySpec, name) {
     let expression;
 
     parameters = extend({}, parameters);
@@ -31,7 +31,10 @@ function convertFunction(parameters, propertySpec) {
             throw new Error('Unimplemented');
         }
 
-        if (zoomAndFeatureDependent) {
+        if (name === 'heatmap-color') {
+            assert(zoomDependent);
+            expression = convertZoomFunction(parameters, propertySpec, stops, ['heatmap-density']);
+        } else if (zoomAndFeatureDependent) {
             expression = convertZoomAndPropertyFunction(parameters, propertySpec, stops, defaultExpression);
         } else if (zoomDependent) {
             expression = convertZoomFunction(parameters, propertySpec, stops);
@@ -178,16 +181,16 @@ function convertPropertyFunction(parameters, propertySpec, stops, defaultExpress
     return expression;
 }
 
-function convertZoomFunction(parameters, propertySpec, stops) {
+function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) {
     const type = getFunctionType(parameters, propertySpec);
     let expression;
     let isStep = false;
     if (type === 'interval') {
-        expression = ['curve', ['step'], ['zoom']];
+        expression = ['curve', ['step'], input];
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['curve', ['exponential', base], ['zoom']];
+        expression = ['curve', ['exponential', base], input];
     } else {
         throw new Error(`Unknown zoom function type "${type}"`);
     }

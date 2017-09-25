@@ -102,7 +102,8 @@ CompoundExpression.register(expressions, {
     'id': [ ValueType, [], () =>
         `('id' in $feature) ? $feature.id : null`
     ],
-    'zoom': [ NumberType, [], () => '$globalProperties.zoom' ],
+    'zoom': [ NumberType, [], () => '$globalProperties.zoom || 0' ],
+    'heatmap-density': [ NumberType, [], () => '$globalProperties.heatmapDensity || 0' ],
     '+': defineBinaryMathOp('+', true),
     '*': defineBinaryMathOp('*', true),
     '-': {

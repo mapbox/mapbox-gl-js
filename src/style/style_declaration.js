@@ -21,7 +21,7 @@ class StyleDeclaration {
     stopZoomLevels: Array<number>;
     _zoomCurve: ?Curve;
 
-    constructor(reference: any, value: any) {
+    constructor(reference: any, value: any, name: string) {
         this.value = util.clone(value);
         this.isFunction = createFunction.isFunctionDefinition(value);
 
@@ -29,7 +29,7 @@ class StyleDeclaration {
         this.json = JSON.stringify(this.value);
 
         this.minimum = reference.minimum;
-        this.function = createFunction(this.value, reference);
+        this.function = createFunction(this.value, reference, name);
         this.isFeatureConstant = this.function.isFeatureConstant;
         this.isZoomConstant = this.function.isZoomConstant;
 

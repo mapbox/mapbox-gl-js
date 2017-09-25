@@ -12,7 +12,7 @@ const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
 const {
     isFeatureConstant,
-    isZoomConstant
+    isGlobalPropertyConstant
 } = require('./is_constant');
 
 import type { Type } from './types.js';
@@ -76,7 +76,7 @@ function compileExpression(
         function: compiled,
         functionSource: compilationContext.getPrelude(),
         isFeatureConstant: isFeatureConstant(parsed),
-        isZoomConstant: isZoomConstant(parsed),
+        isZoomConstant: isGlobalPropertyConstant(parsed, ['zoom']),
         expression: parsed
     };
 }
