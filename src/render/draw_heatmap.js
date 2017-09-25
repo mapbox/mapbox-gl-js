@@ -46,12 +46,13 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('heatmap', programConfiguration);
-        programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
-        gl.uniform1f(program.uniforms.u_radius, layer.getPaintValue('heatmap-radius'));
+        const {zoom} = painter.transform;
+        programConfiguration.setUniforms(gl, program, layer, {zoom});
+        gl.uniform1f(program.uniforms.u_radius, layer.getPaintValue('heatmap-radius', {zoom}));
 
-        gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, painter.transform.zoom));
+        gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));
 
-        gl.uniform1f(program.uniforms.u_intensity, layer.getPaintValue('heatmap-intensity'));
+        gl.uniform1f(program.uniforms.u_intensity, layer.getPaintValue('heatmap-intensity', {zoom}));
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         program.draw(
@@ -128,7 +129,8 @@ function renderTextureToMap(gl, painter, layer) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, layer.heatmapTexture);
 
-    gl.uniform1f(program.uniforms.u_opacity, layer.getPaintValue('heatmap-opacity'));
+    const opacity = layer.getPaintValue('heatmap-opacity', {zoom: painter.transform.zoom});
+    gl.uniform1f(program.uniforms.u_opacity, opacity);
     gl.uniform1i(program.uniforms.u_image, 1);
     gl.uniform1i(program.uniforms.u_color_ramp, 2);
 
