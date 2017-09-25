@@ -61,7 +61,7 @@ class TileLayerIndex {
             // Store each one along with its coordinates
             this.symbolInstances[key].push({
                 instance: symbolInstance,
-                coordinates: this.getScaledCoordinates(symbolInstance, coord, coord.z)
+                coordinates: this.getScaledCoordinates(symbolInstance, coord)
             });
             symbolInstance.isDuplicate = false;
             // If we don't pick up an opacity from our parent or child tiles
@@ -72,28 +72,35 @@ class TileLayerIndex {
         }
     }
 
-    getScaledCoordinates(symbolInstance: SymbolInstance, coord: TileCoord, z: number): any {
-        const scale = Math.pow(2, Math.min(this.sourceMaxZoom, z) - Math.min(this.sourceMaxZoom, coord.z)) * roundingFactor;
+    // Converts the coordinates of the input symbol instance into coordinates that be can compared
+    // against other symbols in this index. Coordinates are:
+    // (1) world-based (so after conversion the source tile is irrelevant)
+    // (2) converted to the z-scale of this TileLayerIndex
+    // (3) down-sampled by "roundingFactor" from tile coordinate precision in order to be
+    //     more tolerant of small differences between tiles.
+    getScaledCoordinates(symbolInstance: SymbolInstance, childTileCoord: TileCoord): any {
+        const zDifference = Math.min(this.sourceMaxZoom, childTileCoord.z) - Math.min(this.sourceMaxZoom, this.coord.z);
+        const scale = roundingFactor / (1 << zDifference);
         const anchor = symbolInstance.anchor;
         return {
-            x: Math.floor((coord.x * EXTENT + anchor.x) * scale),
-            y: Math.floor((coord.y * EXTENT + anchor.y) * scale)
+            x: Math.floor((childTileCoord.x * EXTENT + anchor.x) * scale),
+            y: Math.floor((childTileCoord.y * EXTENT + anchor.y) * scale)
         };
     }
 
-    get(otherTileSymbol: SymbolInstance, coord: TileCoord) {
-        if (!this.symbolInstances[otherTileSymbol.key]) {
+    getMatchingSymbol(childTileSymbol: SymbolInstance, childTileCoord: TileCoord) {
+        if (!this.symbolInstances[childTileSymbol.key]) {
             return;
         }
 
-        const otherTileSymbolCoordinates =
-            this.getScaledCoordinates(otherTileSymbol, coord, this.coord.z);
+        const childTileSymbolCoordinates =
+            this.getScaledCoordinates(childTileSymbol, childTileCoord, this.coord.z);
 
-        for (const thisTileSymbol of this.symbolInstances[otherTileSymbol.key]) {
+        for (const thisTileSymbol of this.symbolInstances[childTileSymbol.key]) {
             // Return any symbol with the same keys whose coordinates are within 1
             // grid unit. (with a 4px grid, this covers a 12px by 12px area)
-            if (Math.abs(thisTileSymbol.coordinates.x - otherTileSymbolCoordinates.x) <= 1 &&
-                Math.abs(thisTileSymbol.coordinates.y - otherTileSymbolCoordinates.y) <= 1) {
+            if (Math.abs(thisTileSymbol.coordinates.x - childTileSymbolCoordinates.x) <= 1 &&
+                Math.abs(thisTileSymbol.coordinates.y - childTileSymbolCoordinates.y) <= 1) {
                 return thisTileSymbol.instance;
             }
         }
@@ -183,7 +190,7 @@ class CrossTileSymbolLayerIndex {
             // only non-duplicate labels can block other labels
             if (!symbolInstance.isDuplicate) {
 
-                const parentSymbolInstance = parentIndex.get(symbolInstance, childIndex.coord);
+                const parentSymbolInstance = parentIndex.getMatchingSymbol(symbolInstance, childIndex.coord);
                 if (parentSymbolInstance !== undefined) {
                     // if the parent label was previously non-duplicate, make it duplicate because it's now blocked
                     if (!parentSymbolInstance.isDuplicate) {
@@ -207,7 +214,7 @@ class CrossTileSymbolLayerIndex {
             // only non-duplicate labels were blocking other labels
             if (!symbolInstance.isDuplicate) {
 
-                const parentSymbolInstance = parentIndex.get(symbolInstance, childIndex.coord);
+                const parentSymbolInstance = parentIndex.getMatchingSymbol(symbolInstance, childIndex.coord);
                 if (parentSymbolInstance !== undefined) {
                     // this label is now unblocked, copy its opacity state
                     parentSymbolInstance.isDuplicate = false;
