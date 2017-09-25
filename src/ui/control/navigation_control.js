@@ -15,6 +15,9 @@ const defaultOptions = {
  * A `NavigationControl` control contains zoom buttons and a compass.
  *
  * @implements {IControl}
+ * @param {Object} [options]
+ * @param {Object} [options.showCompass=true] If `false` will omit the compass button from the Navigation Control. The default is `true` to show a compass button.
+ * @param {Object} [options.showZoom=true] If `false` will omit the zoom-in/out buttons from the Navigation Control. The default is `true` to show zoom buttons.
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
