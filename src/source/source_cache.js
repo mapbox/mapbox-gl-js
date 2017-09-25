@@ -46,7 +46,7 @@ class SourceCache extends Evented {
     _shouldReloadOnResume: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
-    _isIdRenderable: (id: string) => boolean;
+    _isIdRenderable: (id: number) => boolean;
     used: boolean;
 
     static maxUnderzooming: number;
@@ -173,8 +173,16 @@ class SourceCache extends Evented {
         return this.getIds().filter(this._isIdRenderable);
     }
 
-    _isIdRenderable(id: string) {
-        return this._tiles[id].hasData() && !this._coveredTiles[id];
+    hasRenderableParent(coord: TileCoord) {
+        const parentTile = this.findLoadedParent(coord, 0, {});
+        if (parentTile) {
+            return this._isIdRenderable(parentTile.coord.id);
+        }
+        return false;
+    }
+
+    _isIdRenderable(id: number) {
+        return this._tiles[id] && this._tiles[id].hasData() && !this._coveredTiles[id];
     }
 
     reload() {
