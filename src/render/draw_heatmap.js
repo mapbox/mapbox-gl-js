@@ -21,8 +21,8 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    // Allow circles to be drawn across boundaries, so that
-    // large circles are not clipped to tiles
+    // Allow kernels to be drawn across boundaries, so that
+    // large kernels are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
 
     renderToTexture(gl, painter, layer);
@@ -30,12 +30,15 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
     gl.blendFunc(gl.ONE, gl.ONE);
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
 
-        // skip tiles that have uncovered parents to avoid flickering
+        // Skip tiles that have uncovered parents to avoid flickering; we don't need
+        // to use complex tile masking here because the change between zoom levels is subtle,
+        // so it's fine to simply render the parent until all its 4 children are loaded
         const parentTile = sourceCache.findLoadedParent(coord, 0, {});
         if (parentTile) {
             const parentId = parentTile.coord.id;
@@ -74,6 +77,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 function renderToTexture(gl, painter, layer) {
     gl.activeTexture(gl.TEXTURE1);
 
+    // Use a 4x downscaled screen texture for better performance
     gl.viewport(0, 0, painter.width / 4, painter.height / 4);
 
     let texture = layer.heatmapTexture;
@@ -86,6 +90,8 @@ function renderToTexture(gl, painter, layer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, painter.width / 4, painter.height / 4, 0, gl.RGB,
             painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
 
