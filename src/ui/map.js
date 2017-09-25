@@ -969,7 +969,7 @@ class Map extends Camera {
      * state and perform only the changes necessary to make the map style match
      * the desired state.
      *
-     * @param {Object|string} style A JSON object conforming to the schema described in the
+     * @param style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @param {Object} [options]
      * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
@@ -980,10 +980,9 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style: any, options?: {diff?: boolean} & StyleOptions) {
-        const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style &&
-            !(style instanceof Style) && typeof style !== 'string';
-        if (shouldTryDiff) {
+    setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
+        const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style;
+        if (shouldTryDiff && style && typeof style === 'object') {
             try {
                 if (this.style.setState(style)) {
                     this._update(true);
@@ -1005,8 +1004,6 @@ class Map extends Camera {
         if (!style) {
             this.style = (null: any);
             return this;
-        } else if (style instanceof Style) {
-            this.style = style;
         } else {
             this.style = new Style(style, this, options || {});
         }
