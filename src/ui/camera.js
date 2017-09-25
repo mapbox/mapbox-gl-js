@@ -804,8 +804,8 @@ class Camera extends Evented {
             options.duration = 1000 * S / V;
         }
 
-        if (options.maxDuration) {
-            options.duration = Math.min(options.duration, options.maxDuration);
+        if (options.maxDuration && options.duration > options.maxDuration) {
+            options.duration = 0;
         }
 
         this.zooming = true;
