@@ -10,9 +10,11 @@ attribute vec2 a_pos;
 
 varying vec2 v_extrude;
 
-// Effective "0" in the kernel density texture: 1 / 255 / 2 (because
-// the values in the texture are used as index into a 255-color ramp)
-#define ZERO 0.001960784
+// Effective "0" in the kernel density texture to adjust the kernel size to;
+// this empirically chosen number minimizes artifacts on overlapping kernels
+// for typical heatmap cases (assuming clustered source)
+const highp float ZERO = 1.0 / 255.0 / 16.0;
+
 // Gaussian kernel coefficient: 1 / sqrt(2 * PI)
 #define GAUSS_COEF 0.3989422804014327
 

@@ -33,7 +33,8 @@ map.on('load', function() {
 
     map.addSource('heatmap', {
         "type": "geojson",
-        "data": "../test/integration/data/places.geojson"
+        "data": "../test/integration/data/places.geojson",
+        "maxzoom": 23
     });
 
     map.addLayer({
