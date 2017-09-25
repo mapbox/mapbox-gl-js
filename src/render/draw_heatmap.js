@@ -1,9 +1,8 @@
 // @flow
 
-const browser = require('../util/browser');
-const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const Texture = require('./texture');
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -39,11 +38,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         // Skip tiles that have uncovered parents to avoid flickering; we don't need
         // to use complex tile masking here because the change between zoom levels is subtle,
         // so it's fine to simply render the parent until all its 4 children are loaded
-        const parentTile = sourceCache.findLoadedParent(coord, 0, {});
-        if (parentTile) {
-            const parentId = parentTile.coord.id;
-            if (sourceCache._tiles[parentId] && !sourceCache._coveredTiles[parentId]) continue;
-        }
+        if (sourceCache.hasRenderableParent(coord)) continue;
 
         const tile = sourceCache.getTile(coord);
         const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
@@ -52,13 +47,11 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('heatmap', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
-        gl.uniform1f(program.uniforms.u_radius, layer.paint['heatmap-radius']);
+        gl.uniform1f(program.uniforms.u_radius, layer.getPaintValue('heatmap-radius'));
 
-        const scale = painter.transform.zoomScale(tile.coord.z - painter.transform.zoom);
-        gl.uniform1f(program.uniforms.u_extrude_scale, EXTENT / tile.tileSize * scale);
-        gl.uniform1f(program.uniforms.u_devicepixelratio, browser.devicePixelRatio);
+        gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
-        gl.uniform1f(program.uniforms.u_intensity, layer.paint['heatmap-intensity']);
+        gl.uniform1f(program.uniforms.u_intensity, layer.getPaintValue('heatmap-intensity'));
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         program.draw(
@@ -124,7 +117,7 @@ function renderTextureToMap(gl, painter, layer) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, layer.heatmapTexture);
 
-    gl.uniform1f(program.uniforms.u_opacity, layer.paint['heatmap-opacity']);
+    gl.uniform1f(program.uniforms.u_opacity, layer.getPaintValue('heatmap-opacity'));
     gl.uniform1i(program.uniforms.u_image, 1);
     gl.uniform1i(program.uniforms.u_color_ramp, 2);
 
