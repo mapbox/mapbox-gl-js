@@ -96,17 +96,54 @@ test('RasterTileSource', (t) => {
                     setExpiryData: function() {}
                 };
                 source.loadTile(tile, () => {});
-                t.deepEqual(tile.neighboringTiles, { '131210': { backfilled: false },
-                    '131242': { backfilled: false },
-                    '131274': { backfilled: false },
-                    '163978': { backfilled: false },
-                    '164042': { backfilled: false },
-                    '196746': { backfilled: false },
-                    '196778': { backfilled: false },
-                    '196810': { backfilled: false } });
+
+                t.deepEqual(Object.keys(tile.neighboringTiles), [
+                    new TileCoord(10, 4, 4).id,
+                    new TileCoord(10, 5, 4).id,
+                    new TileCoord(10, 6, 4).id,
+                    new TileCoord(10, 4, 5).id,
+                    new TileCoord(10, 6, 5).id,
+                    new TileCoord(10, 4, 6).id,
+                    new TileCoord(10, 5, 6).id,
+                    new TileCoord(10, 6, 6).id
+                ]);
 
                 t.end();
 
+            }
+        });
+        window.server.respond();
+    });
+
+    t.test('populates neighboringTiles with wrapped tiles', (t) => {
+        window.server.respondWith('/source.json', JSON.stringify({
+            minzoom: 0,
+            maxzoom: 22,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        }));
+        const source = createSource({ url: "/source.json" });
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const tile = {
+                    coord: new TileCoord(5, 31, 5, 0),
+                    state: 'loading',
+                    loadVectorData: function () {},
+                    setExpiryData: function() {}
+                };
+                source.loadTile(tile, () => {});
+
+                t.deepEqual(Object.keys(tile.neighboringTiles), [
+                    new TileCoord(5, 30, 4, 0).id,
+                    new TileCoord(5, 31, 4, 0).id,
+                    new TileCoord(5, 30, 5, 0).id,
+                    new TileCoord(5, 30, 6, 0).id,
+                    new TileCoord(5, 31, 6, 0).id,
+                    new TileCoord(5, 0,  4, 1).id,
+                    new TileCoord(5, 0,  5, 1).id,
+                    new TileCoord(5, 0,  6, 1).id
+                ]);
+                t.end();
             }
         });
         window.server.respond();
