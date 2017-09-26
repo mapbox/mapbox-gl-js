@@ -117,7 +117,7 @@ test('Map', (t) => {
     });
 
     t.test('emits load event after a style is set', (t) => {
-        const map = createMap();
+        const map = new Map({ container: window.document.createElement('div') });
 
         map.on('load', fail);
 
@@ -133,13 +133,12 @@ test('Map', (t) => {
 
     t.test('#setStyle', (t) => {
         t.test('returns self', (t) => {
-            const map = createMap(),
-                style = {
-                    version: 8,
-                    sources: {},
-                    layers: []
-                };
-            t.equal(map.setStyle(style), map);
+            const map = new Map({ container: window.document.createElement('div') });
+            t.equal(map.setStyle({
+                version: 8,
+                sources: {},
+                layers: []
+            }), map);
             t.end();
         });
 
@@ -205,14 +204,14 @@ test('Map', (t) => {
         t.test('can be called more than once', (t) => {
             const map = createMap();
 
-            map.setStyle({version: 8, sources: {}, layers: []});
-            map.setStyle({version: 8, sources: {}, layers: []});
+            map.setStyle({version: 8, sources: {}, layers: []}, {diff: false});
+            map.setStyle({version: 8, sources: {}, layers: []}, {diff: false});
 
             t.end();
         });
 
         t.test('style transform overrides unmodified map transform', (t) => {
-            const map = createMap();
+            const map = new Map({container: window.document.createElement('div')});
             map.transform.lngRange = [-120, 140];
             map.transform.latRange = [-60, 80];
             map.transform.resize(600, 400);
@@ -229,7 +228,7 @@ test('Map', (t) => {
         });
 
         t.test('style transform does not override map transform modified via options', (t) => {
-            const map = createMap({zoom: 10, center: [-77.0186, 38.8888]});
+            const map = new Map({container: window.document.createElement('div'), zoom: 10, center: [-77.0186, 38.8888]});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
             map.on('style.load', () => {
@@ -242,7 +241,7 @@ test('Map', (t) => {
         });
 
         t.test('style transform does not override map transform modified via setters', (t) => {
-            const map = createMap();
+            const map = new Map({container: window.document.createElement('div')});
             t.ok(map.transform.unmodified);
             map.setZoom(10);
             map.setCenter([-77.0186, 38.8888]);
@@ -397,6 +396,7 @@ test('Map', (t) => {
             t.stub(map.style, 'setState').callsFake(() => {
                 throw new Error('Dummy error');
             });
+            t.stub(console, 'warn');
 
             const previousStyle = map.style;
             map.setStyle(style);
@@ -782,39 +782,6 @@ test('Map', (t) => {
         map.removeControl(control);
     });
 
-    t.test('#addClass', (t) => {
-        const map = createMap();
-        map.addClass('night');
-        t.ok(map.hasClass('night'));
-        t.end();
-    });
-
-    t.test('#removeClass', (t) => {
-        const map = createMap();
-        map.addClass('night');
-        map.removeClass('night');
-        t.ok(!map.hasClass('night'));
-        t.end();
-    });
-
-    t.test('#setClasses', (t) => {
-        const map = createMap();
-        map.addClass('night');
-        map.setClasses([]);
-        t.ok(!map.hasClass('night'));
-
-        map.setClasses(['night']);
-        t.ok(map.hasClass('night'));
-        t.end();
-    });
-
-    t.test('#getClasses', (t) => {
-        const map = createMap();
-        map.addClass('night');
-        t.deepEqual(map.getClasses(), ['night']);
-        t.end();
-    });
-
     t.test('#project', (t) => {
         const map = createMap();
         t.deepEqual(map.project([0, 0]), { x: 100, y: 100 });
@@ -984,7 +951,7 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.style.on('error', ({ error }) => {
+                map.on('error', ({ error }) => {
                     t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
@@ -1190,7 +1157,7 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.style.on('error', ({ error }) => {
+                map.on('error', ({ error }) => {
                     t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
@@ -1203,35 +1170,23 @@ test('Map', (t) => {
 
     t.test('error event', (t) => {
         t.test('logs errors to console when it has NO listeners', (t) => {
-            const map = createMap({ style: { version: 8, sources: {}, layers: [] } });
-
-            t.spy(map, 'fire');
-            t.stub(console, 'error').callsFake((error) => {
-                if (error.message === 'version: expected one of [8], 7 found') {
-                    t.notOk(map.fire.calledWith('error'));
-                    console.error.restore();
-                    map.fire.restore();
-                    t.end();
-                } else {
-                    console.log(error);
-                }
-            });
-
-            map.setStyle({ version: 7, sources: {}, layers: [] });
+            const map = createMap();
+            const stub = t.stub(console, 'error');
+            const error = new Error('test');
+            map.fire('error', {error});
+            t.ok(stub.calledOnce);
+            t.equal(stub.getCall(0).args[0], error);
+            t.end();
         });
 
         t.test('calls listeners', (t) => {
-            const map = createMap({ style: { version: 8, sources: {}, layers: [] } });
-
-            t.spy(console, 'error');
+            const map = createMap();
+            const error = new Error('test');
             map.on('error', (event) => {
-                t.equal(event.error.message, 'version: expected one of [8], 7 found');
-                t.notOk(console.error.calledWith('version: expected one of [8], 7 found'));
-                console.error.restore();
+                t.equal(event.error, error);
                 t.end();
             });
-
-            map.setStyle({ version: 7, sources: {}, layers: [] });
+            map.fire('error', {error});
         });
 
         t.end();
@@ -1311,6 +1266,47 @@ test('Map', (t) => {
         });
 
         map.zoomTo(5, { duration: 0 });
+    });
+
+    t.end();
+});
+
+test('Map deprecated methods', (t) => {
+    t.test('#addClass', (t) => {
+        t.stub(console, 'warn');
+        const map = createMap();
+        map.addClass('night');
+        t.ok(map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#removeClass', (t) => {
+        t.stub(console, 'warn');
+        const map = createMap();
+        map.addClass('night');
+        map.removeClass('night');
+        t.ok(!map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#setClasses', (t) => {
+        t.stub(console, 'warn');
+        const map = createMap();
+        map.addClass('night');
+        map.setClasses([]);
+        t.ok(!map.hasClass('night'));
+
+        map.setClasses(['night']);
+        t.ok(map.hasClass('night'));
+        t.end();
+    });
+
+    t.test('#getClasses', (t) => {
+        t.stub(console, 'warn');
+        const map = createMap();
+        map.addClass('night');
+        t.deepEqual(map.getClasses(), ['night']);
+        t.end();
     });
 
     t.end();
