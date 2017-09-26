@@ -19,6 +19,7 @@ const getSourceType = require('../source/source').getType;
 const setSourceType = require('../source/source').setType;
 const QueryFeatures = require('../source/query_features');
 const SourceCache = require('../source/source_cache');
+const GeoJSONSource = require('../source/geojson_source');
 const styleSpec = require('../style-spec/reference/latest');
 const MapboxGLFunction = require('../style-spec/function');
 const getWorkerPool = require('../util/global_worker_pool');
@@ -42,7 +43,8 @@ const supportedDiffOperations = util.pick(diff.operations, [
     'removeSource',
     'setLayerZoomRange',
     'setLight',
-    'setTransition'
+    'setTransition',
+    'setGeoJSONSourceData'
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -500,6 +502,22 @@ class Style extends Evented {
         sourceCache.clearTiles();
 
         if (sourceCache.onRemove) sourceCache.onRemove(this.map);
+        this._changed = true;
+    }
+
+    /**
+    * Set the data of a GeoJSON source, given its id.
+    * @param {string} id id of the source
+    * @param {GeoJSON|string} data GeoJSON source
+    */
+    setGeoJSONSourceData(id: string, data: GeoJSON | string) {
+        this._checkLoaded();
+
+        assert(this.sourceCaches[id] !== undefined, 'There is no source with this ID');
+        const geojsonSource: GeoJSONSource = (this.sourceCaches[id].getSource(): any);
+        assert(geojsonSource.type === 'geojson');
+
+        geojsonSource.setData(data);
         this._changed = true;
     }
 

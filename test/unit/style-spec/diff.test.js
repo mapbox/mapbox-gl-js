@@ -111,6 +111,36 @@ t('diff', (t) => {
         { command: 'addSource', args: ['foo', 1] }
     ], 'add a source');
 
+    t.deepEqual(diffStyles({
+        sources: {
+            foo: {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            }
+        }
+    }, {
+        sources: {
+            foo: {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [10, 20] }
+                    }]
+                }
+            }
+        }
+    }), [
+        { command: 'setGeoJSONSourceData', args: ['foo', {
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [10, 20] }
+            }]
+        }]}
+    ], 'update a geojson source');
+
     t.deepEqual(diffStyles({}, {
         metadata: { 'mapbox:author': 'nobody' }
     }), [], 'ignore style metadata');
