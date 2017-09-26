@@ -171,6 +171,40 @@ test('DEMData#backfillBorders', (t) => {
         t.end();
     });
 
+    t.test('DEMData#serialize', (t)=>{
+        const imageData0 = createMockImage(4, 4);
+        const dem0 = new DEMData(0);
+
+        dem0.loadFromImage(imageData0);
+
+        const serialized = dem0.serialize();
+        t.deepEqual(serialized, {
+            uid: 0,
+            scale: 1,
+            levels: [new ArrayBuffer()]
+        }, 'serializes DEM');
+
+
+        const transferrables = [];
+        dem0.serialize(transferrables);
+        t.deepEqual(new Uint32Array(transferrables[0]), dem0.data[0].data, 'populates transferrables with correct data');
+
+        t.end();
+    });
+
+    t.test('DEMData#deserialize', (t)=>{
+        const imageData0 = createMockImage(4, 4);
+        const dem0 = new DEMData(0);
+
+        dem0.loadFromImage(imageData0);
+        const serialized = dem0.serialize();
+
+        const deserialized = DEMData.deserialize(serialized);
+        t.deepEqual(deserialized, dem0, 'deserializes serialized DEMData instance');
+
+        t.end();
+    });
+
 
     t.end();
 });

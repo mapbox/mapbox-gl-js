@@ -44,9 +44,9 @@ class DEMData {
     loaded: boolean;
 
     static deserialize(serializedData: SerializedDEMData) {
-        // dont hardcode tilesize
-        const tileSize = 256;
-        const data = [new Level(tileSize, tileSize, tileSize / 2, new Int32Array(serializedData.levels[0]))];
+        const structdata = new Int32Array(serializedData.levels[0]);
+        const stride = Math.sqrt(structdata.length);
+        const data = [new Level(stride / 2, stride / 2, stride / 4, structdata)];
         return new DEMData(serializedData.uid, serializedData.scale, data);
     }
 
