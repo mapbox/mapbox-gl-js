@@ -666,6 +666,7 @@ class Camera extends Evented {
      * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
      * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
+     *     If duration exceeds maximum duration, it resets to 0.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
