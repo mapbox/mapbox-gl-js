@@ -387,12 +387,8 @@ test('Style#_resolve', (t) => {
 test('Style#setState', (t) => {
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON());
-        t.throws(() => {
-            style.setState(style.serialize());
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        t.throws(() => style.setState(createStyleJSON()), /load/i);
+        t.end();
     });
 
     t.test('do nothing if there are no changes', (t) => {
@@ -505,14 +501,9 @@ test('Style#setState', (t) => {
 
 test('Style#addSource', (t) => {
     t.test('throw before loaded', (t) => {
-        const style = new Style(createStyleJSON(), new StubMap()),
-            source = createSource();
-        t.throws(() => {
-            style.addSource('source-id', source);
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        const style = new Style(createStyleJSON());
+        t.throws(() => style.addSource('source-id', createSource()), /load/i);
+        t.end();
     });
 
     t.test('throw if missing source type', (t) => {
@@ -522,9 +513,7 @@ test('Style#addSource', (t) => {
         delete source.type;
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.addSource('source-id', source);
-            }, Error, /type/i);
+            t.throws(() => style.addSource('source-id', source), /type/i);
             t.end();
         });
     });
@@ -610,12 +599,8 @@ test('Style#removeSource', (t) => {
                 }
             }
         }), new StubMap());
-        t.throws(() => {
-            style.removeSource('source-id');
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        t.throws(() => style.removeSource('source-id'), /load/i);
+        t.end();
     });
 
     t.test('fires "data" event', (t) => {
@@ -688,35 +673,21 @@ test('Style#removeSource', (t) => {
     t.end();
 });
 
-test('Style#setData', (t) => {
+test('Style#setGeoJSONSourceData', (t) => {
+    const geoJSON = {type: "FeatureCollection", features: []};
+
     t.test('throws before loaded', (t) => {
         const style = new Style(createStyleJSON({
             "sources": { "source-id": createGeoJSONSource() }
         }), new StubMap());
-        const geoJSONSourceData = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": { "type": "Point", "coordinates": [125.6, 10.1] }
-                }
-            ]
-        };
-        t.throws(() => {
-            style.setGeoJSONSourceData('source-id', geoJSONSourceData);
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        t.throws(() => style.setGeoJSONSourceData('source-id', geoJSON), /load/i);
+        t.end();
     });
 
     t.test('throws on non-existence', (t) => {
-        const style = new Style(createStyleJSON(), new StubMap()),
-            geoJSONSourceData = { type: "FeatureCollection", "features": [] };
+        const style = new Style(createStyleJSON(), new StubMap());
         style.on('style.load', () => {
-            t.throws(() => {
-                style.setGeoJSONSourceData('source-id', geoJSONSourceData);
-            }, Error, /There is no source with this ID/);
+            t.throws(() => style.setGeoJSONSourceData('source-id', geoJSON), /There is no source with this ID/);
             t.end();
         });
     });
@@ -726,14 +697,9 @@ test('Style#setData', (t) => {
 
 test('Style#addLayer', (t) => {
     t.test('throw before loaded', (t) => {
-        const style = new Style(createStyleJSON(), new StubMap()),
-            layer = {id: 'background', type: 'background'};
-        t.throws(() => {
-            style.addLayer(layer);
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        const style = new Style(createStyleJSON(), new StubMap());
+        t.throws(() => style.addLayer({id: 'background', type: 'background'}), /load/i);
+        t.end();
     });
 
     t.test('sets up layer event forwarding', (t) => {
@@ -1019,12 +985,8 @@ test('Style#removeLayer', (t) => {
         const style = new Style(createStyleJSON({
             "layers": [{id: 'background', type: 'background'}]
         }), new StubMap());
-        t.throws(() => {
-            style.removeLayer('background');
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        t.throws(() => style.removeLayer('background'), /load/i);
+        t.end();
     });
 
     t.test('fires "data" event', (t) => {
@@ -1122,12 +1084,8 @@ test('Style#moveLayer', (t) => {
         const style = new Style(createStyleJSON({
             "layers": [{id: 'background', type: 'background'}]
         }));
-        t.throws(() => {
-            style.moveLayer('background');
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        t.throws(() => style.moveLayer('background'), /load/i);
+        t.end();
     });
 
     t.test('fires "data" event', (t) => {
@@ -1302,11 +1260,7 @@ test('Style#setFilter', (t) => {
 
     t.test('throws if style is not loaded', (t) => {
         const style = createStyle();
-
-        t.throws(() => {
-            style.setFilter('symbol', ['==', 'id', 1]);
-        }, Error, /load/i);
-
+        t.throws(() => style.setFilter('symbol', ['==', 'id', 1]), /load/i);
         t.end();
     });
 
@@ -1369,12 +1323,8 @@ test('Style#setLayerZoomRange', (t) => {
 
     t.test('throw before loaded', (t) => {
         const style = createStyle();
-        t.throws(() => {
-            style.setLayerZoomRange('symbol', 5, 12);
-        }, Error, /load/i);
-        style.on('style.load', () => {
-            t.end();
-        });
+        t.throws(() => style.setLayerZoomRange('symbol', 5, 12), /load/i);
+        t.end();
     });
 
     t.test('fires an error if layer not found', (t) => {
