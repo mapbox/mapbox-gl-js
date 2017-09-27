@@ -192,17 +192,22 @@ class Style extends Evented {
             this.addSource(id, json.sources[id], {validate: false});
         }
 
-        loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
-            if (err) {
-                this.fire('error', err);
-            } else if (images) {
-                for (const id in images) {
-                    this.imageManager.addImage(id, images[id]);
+        if (json.sprite) {
+            loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
+                if (err) {
+                    this.fire('error', err);
+                } else if (images) {
+                    for (const id in images) {
+                        this.imageManager.addImage(id, images[id]);
+                    }
                 }
-            }
 
+                this.imageManager.setLoaded(true);
+                this.fire('data', {dataType: 'style'});
+            });
+        } else {
             this.imageManager.setLoaded(true);
-        });
+        }
 
         this.glyphManager.setURL(json.glyphs);
         this._resolve();
