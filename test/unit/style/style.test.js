@@ -386,38 +386,6 @@ test('Style#_resolve', (t) => {
         });
     });
 
-    t.test('handles ref layer preceding referent', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON({
-            "version": 8,
-            "sources": {
-                "foo": {
-                    "type": "vector"
-                }
-            },
-            "layers": [{
-                "id": "ref",
-                "ref": "referent"
-            }, {
-                "id": "referent",
-                "source": "foo",
-                "source-layer": "source-layer",
-                "type": "fill",
-                "layout": {"visibility": "none"}
-            }]
-        });
-
-        style.on('error', (event) => { t.error(event.error); });
-
-        style.on('style.load', () => {
-            const ref = style.getLayer('ref'),
-                referent = style.getLayer('referent');
-            t.equal(ref.type, 'fill');
-            t.deepEqual(ref.layout, referent.layout);
-            t.end();
-        });
-    });
-
     t.end();
 });
 
