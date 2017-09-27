@@ -5,8 +5,31 @@
 module.exports = {
     summaryStatistics,
     regression,
-    kde
+    kde,
+    probabilitiesOfSuperiority
 };
+
+function probabilitiesOfSuperiority(before, after) {
+    const timerPrecision = 0.005;
+
+    let superiorCount = 0;
+    let inferiorCount = 0;
+    let equalCount = 0;
+    let N = 0;
+    for (const b of before) {
+        for (const a of after) {
+            N++;
+            if (b - a > timerPrecision) superiorCount++;
+            else if (a - b > timerPrecision) inferiorCount++;
+            else equalCount++;
+        }
+    }
+
+    return {
+        superior: (superiorCount + equalCount) / N,
+        inferior: (inferiorCount + equalCount) / N
+    };
+}
 
 function summaryStatistics(data) {
     const variance = d3.variance(data);

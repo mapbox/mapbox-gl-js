@@ -13,6 +13,7 @@ window.mapboxglVersions.push(version);
 function register(Benchmark) {
     window.mapboxglBenchmarks[Benchmark.name] = window.mapboxglBenchmarks[Benchmark.name] || {};
     window.mapboxglBenchmarks[Benchmark.name][version] = new Benchmark();
+    window.mapboxglBenchmarks[Benchmark.name].master = new Benchmark();
 }
 
 register(require('./benchmarks/layout'));
