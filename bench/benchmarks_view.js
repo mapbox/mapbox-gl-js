@@ -265,12 +265,12 @@ class BenchmarkRow extends React.Component {
                             (version) => `${formatSample(version.regression.slope)} ms / ${version.regression.correlation.toFixed(3)} ${
                                 version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
                                 version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}`)}
-                        {this.renderStatistic('Mean',
-                            (version) => `${formatSample(version.summary.mean)} ms`)}
+                        {this.renderStatistic('(20% trimmed) Mean',
+                            (version) => `${formatSample(version.summary.trimmedMean)} ms`)}
                         {this.renderStatistic('Minimum',
                             (version) => `${formatSample(version.summary.min)} ms`)}
-                        {this.renderStatistic('Deviation',
-                            (version) => `${formatSample(version.summary.deviation)} ms`)}
+                        {this.renderStatistic('(Windsorized) Deviation',
+                            (version) => `${formatSample(version.summary.windsorizedDeviation)} ms`)}
                     </table>
                     {ended && <StatisticsPlot versions={this.props.versions}/>}
                     {ended && <RegressionPlot versions={this.props.versions}/>}
