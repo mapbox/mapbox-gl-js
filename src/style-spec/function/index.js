@@ -56,9 +56,6 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
     let isConvertedStopFunction = false;
     if (!isFunctionDefinition(parameters)) {
         expr = convert.value(parameters, propertySpec);
-        if (expr === null) {
-            expr = getDefaultValue(propertySpec);
-        }
     } else if (typeof parameters === 'object' && parameters !== null && typeof parameters.expression !== 'undefined') {
         expr = parameters.expression;
     } else {
@@ -177,12 +174,6 @@ function isFunctionDefinition(value: FunctionParameters): boolean {
         return Array.isArray(value.stops) ||
             (typeof value.type === 'string' && value.type === 'identity');
     }
-}
-
-function getDefaultValue(propertySpec) {
-    return (typeof propertySpec.default !== 'undefined') ?
-        convert.value(propertySpec.default, propertySpec) :
-        ['error', 'No default property value available'];
 }
 
 function getExpectedType(spec) {
