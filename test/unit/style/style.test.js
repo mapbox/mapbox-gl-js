@@ -1,7 +1,6 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const Style = require('../../../src/style/style');
 const SourceCache = require('../../../src/source/source_cache');
@@ -1165,7 +1164,7 @@ test('Style#setPaintProperty', (t) => {
             source.on('data', (e) => setImmediate(() => {
                 if (!begun && sourceCache.loaded()) {
                     begun = true;
-                    sinon.stub(sourceCache, 'reload').callsFake(() => {
+                    t.stub(sourceCache, 'reload').callsFake(() => {
                         t.ok(styleUpdateCalled, 'loadTile called before layer data broadcast');
                         t.end();
                     });
