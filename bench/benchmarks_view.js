@@ -261,15 +261,17 @@ class BenchmarkRow extends React.Component {
     render() {
         const endedCount = this.props.versions.filter(version => version.status === 'ended').length;
 
-        let effectSize = '';
+        let master;
+        let current;
+        if (/master/.test(this.props.versions[0].name)) {
+            [master, current] = this.props.versions;
+        } else {
+            [current, master] = this.props.versions;
+        }
+
+        let change = '';
+        let pInferiority = '';
         if (endedCount === 2) {
-            let master;
-            let current;
-            if (this.props.versions[0].name === 'master') {
-                [master, current] = this.props.versions;
-            } else {
-                [current, master] = this.props.versions;
-            }
             const delta = current.summary.trimmedMean - master.summary.trimmedMean;
             // Use "Cohen's d" (modified to used the trimmed mean/sd) to decide
             // how much to emphasize difference between means
@@ -285,22 +287,17 @@ class BenchmarkRow extends React.Component {
 
             const {inferior} = probabilitiesOfSuperiority(master.samples, current.samples);
 
-            effectSize = <div>
-                <div className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>
-                    Change = {delta > 0 ? '+' : ''}{formatSample(delta)} ms ({d.toFixed(1)} std devs)
-                </div>
-                <div className={inferior > 0.90 ? 'strong' : 'quiet'}>
-                    P({current.name} > {master.name}) = {formatSample(inferior)}
-                </div>
-            </div>;
+            change = <span className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>
+                {delta > 0 ? '+' : ''}{formatSample(delta)} ms ({d.toFixed(1)} std devs)
+            </span>;
+            pInferiority = <span className={inferior > 0.90 ? 'strong' : 'quiet'}>
+                {formatSample(inferior)}
+            </span>;
         }
 
         return (
             <div className="col12 clearfix space-bottom">
-                <div className="col4">
-                    <h2><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2>
-                    {effectSize}
-                </div>
+                <h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2>
                 <div className="col8">
                     <table className="fixed space-bottom">
                         <tr><th></th>{this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
@@ -314,6 +311,14 @@ class BenchmarkRow extends React.Component {
                             (version) => `${formatSample(version.summary.min)} ms`)}
                         {this.renderStatistic('(Windsorized) Deviation',
                             (version) => `${formatSample(version.summary.windsorizedDeviation)} ms`)}
+                        <tr>
+                            <th>Change</th>
+                            <td colspan="2">{change}</td>
+                        </tr>
+                        <tr>
+                            <th>P({current.name} > {master.name})</th>
+                            <td colspan="2">{pInferiority}</td>
+                        </tr>
                     </table>
                     {endedCount > 0 && <StatisticsPlot versions={this.props.versions}/>}
                     {endedCount > 0 && <RegressionPlot versions={this.props.versions}/>}
