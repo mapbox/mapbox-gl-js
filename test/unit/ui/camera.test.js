@@ -1210,7 +1210,7 @@ test('camera', (t) => {
                 .on('moveend', () => {
                     endTime = new Date();
                     timeDiff = endTime - startTime;
-                    t.equalWithPrecision(timeDiff, 0, 1e-6);
+                    t.equalWithPrecision(timeDiff, 0, 1e+1);
                     t.end();
                 });
 
