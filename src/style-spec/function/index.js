@@ -53,6 +53,7 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
     let expr;
 
     let defaultValue = propertySpec.default;
+    let isConvertedStopFunction = false;
     if (!isFunctionDefinition(parameters)) {
         expr = convert.value(parameters, propertySpec);
         if (expr === null) {
@@ -62,6 +63,7 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
         expr = parameters.expression;
     } else {
         expr = convert.function(parameters, propertySpec);
+        isConvertedStopFunction = true;
         if (parameters && typeof parameters.default !== 'undefined') {
             defaultValue = parameters.default;
         }
@@ -90,7 +92,7 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
                     }
                     return val;
                 } catch (e) {
-                    if (!warningHistory[e.message]) {
+                    if (!isConvertedStopFunction && !warningHistory[e.message]) {
                         warningHistory[e.message] = true;
                         if (typeof console !== 'undefined') {
                             console.warn(e.message);
