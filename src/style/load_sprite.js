@@ -8,14 +8,9 @@ const {RGBAImage} = require('../util/image');
 import type {StyleImage} from './style_image';
 import type {RequestTransformFunction} from '../ui/map';
 
-module.exports = function(baseURL: ?string,
+module.exports = function(baseURL: string,
                           transformRequestCallback: RequestTransformFunction,
                           callback: Callback<{[string]: StyleImage}>) {
-    if (!baseURL) {
-        callback(null, {});
-        return;
-    }
-
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 

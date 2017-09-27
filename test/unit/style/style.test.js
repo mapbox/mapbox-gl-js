@@ -10,6 +10,8 @@ const util = require('../../../src/util/util');
 const Evented = require('../../../src/util/evented');
 const window = require('../../../src/util/window');
 const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
+const ajax = require('../../../src/util/ajax');
+const browser = require('../../../src/util/browser');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -170,7 +172,7 @@ test('Style#loadJSON', (t) => {
         callback();
     });
 
-    t.test('fires "dataloading"', (t) => {
+    t.test('fires "dataloading" (synchronously)', (t) => {
         const style = new Style(new StubMap());
         const spy = t.spy();
 
@@ -181,6 +183,54 @@ test('Style#loadJSON', (t) => {
         t.equal(spy.getCall(0).args[0].target, style);
         t.equal(spy.getCall(0).args[0].dataType, 'style');
         t.end();
+    });
+
+    t.test('fires "data" (asynchronously)', (t) => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON());
+
+        style.on('data', (e) => {
+            t.equal(e.target, style);
+            t.equal(e.dataType, 'style');
+            t.end();
+        });
+    });
+
+    t.test('fires "data" when the sprite finishes loading', (t) => {
+        window.useFakeXMLHttpRequest();
+        window.server.respondWith('http://example.com/sprite.json', '{}');
+
+        // Stubbing rather than using a fake response because we need to bypass several Web APIs that
+        // aren't supported by jsdom:
+        //
+        // * `URL.createObjectURL` in ajax.getImage (https://github.com/tmpvar/jsdom/issues/1721)
+        // * `canvas.getContext('2d')` in browser.getImageData
+        //
+        t.stub(ajax, 'getImage').yields(null, new window.Image());
+        t.stub(browser, 'getImageData');
+
+        const style = new Style(new StubMap());
+
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [],
+            "sprite": "http://example.com/sprite"
+        });
+
+        style.once('data', (e) => {
+            t.equal(e.target, style);
+            t.equal(e.dataType, 'style');
+
+            style.once('data', (e) => {
+                t.equal(e.target, style);
+                t.equal(e.dataType, 'style');
+                t.end();
+            });
+
+            window.server.respond();
+        });
     });
 
     t.test('validates the style', (t) => {
