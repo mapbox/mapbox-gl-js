@@ -1663,7 +1663,6 @@ test('Style#addSourceType', (t) => {
 
     t.test('adds factory function', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(createStyleJSON());
         const SourceType = function () {};
 
         // expect no call to load worker source
@@ -1681,7 +1680,6 @@ test('Style#addSourceType', (t) => {
 
     t.test('triggers workers to load worker source code', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(createStyleJSON());
         const SourceType = function () {};
         SourceType.workerSourceURL = 'worker-source.js';
 
@@ -1699,7 +1697,6 @@ test('Style#addSourceType', (t) => {
 
     t.test('refuses to add new type over existing name', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(createStyleJSON());
         style.addSourceType('existing', () => {}, (err) => {
             t.ok(err);
             t.end();
