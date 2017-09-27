@@ -13,8 +13,8 @@ uniform vec2 u_latrange;
 
 uniform int u_mode;
 uniform float u_mipmap;
-uniform float u_lightintensity;
-uniform vec3 u_lightpos;
+
+uniform vec3 u_light;
 
 uniform vec4 u_shadow;
 uniform vec4 u_highlight;
@@ -35,14 +35,14 @@ void main() {
     float slope = atan(1.25 * length(deriv)) / scaleFactor;
     float aspect = deriv.x != 0.0 ? atan(deriv.y, -deriv.x) : PI / 2.0 * (deriv.y > 0.0 ? 1.0 : -1.0);
 
-    float azimuth =  u_lightpos.y;
-    float polar = u_lightpos.z;
+    float azimuth =  u_light.y;
+    float polar = u_light.z;
 
     if (u_mode == mode_raw) {
         gl_FragColor = texture2D(u_image, v_pos);
     } else if (u_mode == mode_color) {
         float accent = cos(slope);
-        vec4 accent_color = u_lightintensity * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
+        vec4 accent_color = u_light.x * clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
         float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
         vec4 shade_color = mix(u_shadow, u_highlight, shade) * slope * sin(polar);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;

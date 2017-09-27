@@ -47,7 +47,6 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
                     }
                 }
             }
-
             renderHillshade(painter, tile, layer, bordersLoaded);
         }
     }
@@ -57,13 +56,16 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 function setLight(program, painter) {
     const gl = painter.gl;
     const light = painter.style.light;
-    const lightPositionRadians = (light.getLightProperty('position'): any).map((el, i)=>{ return i === 0 ? el : el * Math.PI / 180; });
+
+    const lightPositionRadians = (light.getLightProperty('position'): any).map(el => el * Math.PI / 180);
 
     // modify azimuthal angle by map rotation if light is anchored at the viewport
     if (light.calculated.anchor === 'viewport')  lightPositionRadians[1] -= painter.transform.angle;
 
-    gl.uniform3fv(program.uniforms.u_lightpos, lightPositionRadians);
-    gl.uniform1f(program.uniforms.u_lightintensity, light.calculated.intensity);
+    // we don't use the radial coordinate when rendering hillshade, so we replace that value with the intensity variable
+    lightPositionRadians[0] = light.calculated.intensity;
+    gl.uniform3fv(program.uniforms.u_light, lightPositionRadians);
+
 }
 
 function getTileLatRange(painter, coord) {
