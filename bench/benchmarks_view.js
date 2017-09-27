@@ -301,16 +301,6 @@ class BenchmarkRow extends React.Component {
                 <div className="col8">
                     <table className="fixed space-bottom">
                         <tr><th></th>{this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
-                        {this.renderStatistic('R² Slope / Correlation',
-                            (version) => `${formatSample(version.regression.slope)} ms / ${version.regression.correlation.toFixed(3)} ${
-                                version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
-                                version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}`)}
-                        {this.renderStatistic('(20% trimmed) Mean',
-                            (version) => `${formatSample(version.summary.trimmedMean)} ms`)}
-                        {this.renderStatistic('Minimum',
-                            (version) => `${formatSample(version.summary.min)} ms`)}
-                        {this.renderStatistic('(Windsorized) Deviation',
-                            (version) => `${formatSample(version.summary.windsorizedDeviation)} ms`)}
                         <tr>
                             <th>Change</th>
                             <td colspan="2">{change}</td>
@@ -319,6 +309,16 @@ class BenchmarkRow extends React.Component {
                             <th>P({current.name} > {master.name})</th>
                             <td colspan="2">{pInferiority}</td>
                         </tr>
+                        {this.renderStatistic('R² Slope / Correlation',
+                            (version) => `${formatSample(version.regression.slope)} ms / ${version.regression.correlation.toFixed(3)} ${
+                                version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
+                                version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}`)}
+                        {this.renderStatistic('(20% trimmed) Mean',
+                            (version) => `${formatSample(version.summary.trimmedMean)} ms`)}
+                        {this.renderStatistic('(Windsorized) Deviation',
+                            (version) => `${formatSample(version.summary.windsorizedDeviation)} ms`)}
+                        {this.renderStatistic('Minimum',
+                            (version) => `${formatSample(version.summary.min)} ms`)}
                     </table>
                     {endedCount > 0 && <StatisticsPlot versions={this.props.versions}/>}
                     {endedCount > 0 && <RegressionPlot versions={this.props.versions}/>}
