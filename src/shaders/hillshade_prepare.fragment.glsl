@@ -35,7 +35,7 @@ void main() {
         (c + f + f + i) - (a + d + d + g),
         (g + h + h + i) - (a + b + b + c)
         // decrease the value u_zoom is subtracted from to intensify terrain appearance
-    ) / pow(2.0, 19.0 - u_zoom);
+    ) /  pow(2.0, 14.5 - u_zoom * 0.5);
 
 
     gl_FragColor = clamp(vec4(
