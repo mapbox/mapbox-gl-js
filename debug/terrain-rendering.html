@@ -75,13 +75,12 @@ var map = window.map = new mapboxgl.Map({
     transformRequest: (url, resourceType) =>{
         if (resourceType === 'Tile' && url.search('terrain')) {
             return {
-                url: url.replace('@2x.webp', '.pngraw')
+                url: url.replace('@2x', '').replace(/(\.webp)|(\.png)/, '.pngraw')
             };
         }
     }
 });
 map.on('load', ()=> {
-    map.setLight({position: [1.15, 225, 30]});
     // map.addSource('rasterTerrain',
     // {
     //     "type": "raster-terrain",
