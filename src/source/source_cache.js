@@ -46,8 +46,6 @@ class SourceCache extends Evented {
     _paused: boolean;
     _shouldReloadOnResume: boolean;
     _needsFullPlacement: boolean;
-    _placementIDs: Array<number>;
-    _placementIndex: number;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: string) => boolean;
@@ -90,9 +88,6 @@ class SourceCache extends Evented {
         this._maxTileCacheSize = null;
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
-
-        this._placementIndex = 0;
-        this._placementIDs = [];
 
         this._coveredTiles = {};
     }
@@ -611,8 +606,6 @@ class SourceCache extends Evented {
 
     _updatePlacement() {
         this._needsFullPlacement = true;
-        this._placementIDs = this.getRenderableIds();
-        this._placementIndex = 0;
     }
 
     /**
@@ -679,20 +672,6 @@ class SourceCache extends Evented {
         }
 
         return tileResults;
-    }
-
-    placeLayer(collisionIndex: CollisionIndex, showCollisionBoxes: boolean, layer: any, shouldPausePlacement: any) {
-        while (this._placementIndex < this._placementIDs.length) {
-            const tile = this.getTileByID(this._placementIDs[this._placementIndex]);
-            tile.placeLayer(showCollisionBoxes, collisionIndex, layer);
-
-            this._placementIndex++;
-            if (shouldPausePlacement()) {
-                return true;
-            }
-        }
-        this._placementIndex = 0; // Start over at the first tile
-        return false;
     }
 
     commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any) {

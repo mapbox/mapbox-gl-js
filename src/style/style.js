@@ -25,13 +25,14 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
-const CollisionIndex = require('../symbol/collision_index');
+const Placement = require('./placement');
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
 import type {Source} from '../source/source';
 import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
+import type CollisionIndex from '../symbol/collision_index';
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -92,9 +93,9 @@ class Style extends Evented {
     _updatedPaintProps: {[layer: string]: {[class: string]: true}};
     _updatedAllPaintProps: boolean;
     _updatedSymbolOrder: boolean;
-    _currentPlacementIndex: number;
 
     collisionIndex: CollisionIndex;
+    placement: Placement;
     z: number;
 
     constructor(stylesheet: StyleSpecification, map: Map, options: StyleOptions) {
@@ -964,48 +965,20 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement(transform: Transform, showCollisionBoxes: boolean, collisionFadeTimes: any) {
+    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number) {
         const forceFullPlacement = this.getNeedsFullPlacement();
 
-        if (forceFullPlacement ||
-            typeof this._currentPlacementIndex === 'undefined' ||
-            this._currentPlacementIndex < 0) {
-            // Create a new CollisionIndex using the current transform state
-            // and start doing placement
-            this._currentPlacementIndex = this._order.length - 1;
-            this.collisionIndex = new CollisionIndex(transform.clone());
+        if (forceFullPlacement || !this.placement || this.placement.isDone()) {
+            this.placement = new Placement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, this.placement);
         }
 
-        const startPlacement = browser.now();
-        let pausedPlacement = false;
-        const shouldPausePlacement = () => {
-            const elapsedTime = browser.now() - startPlacement;
-            return forceFullPlacement ? false : elapsedTime > 2;
-        };
+        this.placement.continuePlacement(this._order, this._layers, this.sourceCaches);
 
-        while (this._currentPlacementIndex >= 0) {
-            if (pausedPlacement) {
-                // We didn't finish placing all layers within 2ms,
-                // but we can keep rendering with a partial placement
-                // We'll resume here on the next frame
-                return true;
-            }
+        if (this.placement.isDone()) this.collisionIndex = this.placement.collisionIndex;
 
-            const layerId = this._order[this._currentPlacementIndex];
-            const layer = this._layers[layerId];
-            if (layer.type === 'symbol') {
-                for (const id in this.sourceCaches) {
-                    pausedPlacement = this.sourceCaches[id].placeLayer(this.collisionIndex, showCollisionBoxes, layer, shouldPausePlacement);
-                }
-            }
-            if (!pausedPlacement) {
-                this._currentPlacementIndex--;
-            }
-        }
-        for (const id in this.sourceCaches) {
-            this.sourceCaches[id].commitPlacement(this.collisionIndex, collisionFadeTimes);
-        }
-        return false;
+        // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
+        const needsRerender = !this.placement.isDone() || this.placement.stillFading();
+        return needsRerender;
     }
 
     // Callbacks from web workers

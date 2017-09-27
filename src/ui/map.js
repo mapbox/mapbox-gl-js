@@ -240,6 +240,7 @@ class Map extends Camera {
     _frameId: any;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
+    _placementDirty: ?boolean;
     _loaded: boolean;
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
@@ -247,9 +248,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
-    _placementInProgress: boolean;
-    _lastPlacement: number;
-    _collisionFadeTimes: any;
+    _collisionFadeDuration: number;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -276,6 +275,7 @@ class Map extends Camera {
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
+        this._collisionFadeDuration = options.collisionFadeDuration;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -354,13 +354,6 @@ class Map extends Camera {
 
         this.on('data', this._onData);
         this.on('dataloading', this._onDataLoading);
-
-        this._lastPlacement = 0;
-        this._collisionFadeTimes = {
-            latestStart: 0,
-            duration: options.collisionFadeDuration
-        };
-        this._placementInProgress = false;
     }
 
     /**
@@ -1505,7 +1498,7 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the map is fully loaded.
      */
     loaded() {
-        if (this._styleDirty || this._sourcesDirty)
+        if (this._styleDirty || this._sourcesDirty || this._placementDirty)
             return false;
         if (!this.style || !this.style.loaded())
             return false;
@@ -1561,15 +1554,7 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
-        let pendingCollisionDetection = false;
-        let skippedPlacement = true;
-        if (this.style &&
-            (this._placementInProgress || this.style.getNeedsFullPlacement() || browser.now() > (this._lastPlacement + 300))) {
-            this._lastPlacement = browser.now();
-            skippedPlacement = false;
-            pendingCollisionDetection = this._placementInProgress =
-                this.style._redoPlacement(this.painter.transform, this.showCollisionBoxes, this._collisionFadeTimes);
-        }
+        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._collisionFadeDuration);
 
         // Actually draw
         this.painter.render(this.style, {
@@ -1577,13 +1562,8 @@ class Map extends Camera {
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.rotating,
             zooming: this.zooming,
-            collisionFadeDuration: this._collisionFadeTimes.duration
+            collisionFadeDuration: this._collisionFadeDuration
         });
-
-        // Flag an ongoing transition
-        if (skippedPlacement || pendingCollisionDetection || this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration > Date.now()) {
-            this._styleDirty = true;
-        }
 
         this.fire('render');
 
@@ -1607,7 +1587,7 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty) {
+        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this._rerender();
         }
 
