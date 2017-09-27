@@ -205,7 +205,22 @@ class Style extends Evented {
         });
 
         this.glyphManager.setURL(json.glyphs);
-        this._resolve();
+
+        const layers = deref(this.stylesheet.layers);
+
+        this._order = layers.map((layer) => layer.id);
+
+        this._layers = {};
+        for (let layer of layers) {
+            layer = StyleLayer.create(layer);
+            layer.setEventedParent(this, {layer: {id: layer.id}});
+            this._layers[layer.id] = layer;
+        }
+
+        this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
+
+        this.light = new Light(this.stylesheet.light);
+
         this.fire('data', {dataType: 'style'});
         this.fire('style.load');
     }
@@ -248,23 +263,6 @@ class Style extends Evented {
             return false;
 
         return true;
-    }
-
-    _resolve() {
-        const layers = deref(this.stylesheet.layers);
-
-        this._order = layers.map((layer) => layer.id);
-
-        this._layers = {};
-        for (let layer of layers) {
-            layer = StyleLayer.create(layer);
-            layer.setEventedParent(this, {layer: {id: layer.id}});
-            this._layers[layer.id] = layer;
-        }
-
-        this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
-
-        this.light = new Light(this.stylesheet.light);
     }
 
     _serializeLayers(ids: Array<string>) {

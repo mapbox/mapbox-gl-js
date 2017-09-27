@@ -213,6 +213,30 @@ test('Style#loadJSON', (t) => {
         }));
     });
 
+    t.test('creates layers', (t) => {
+        const style = new Style(new StubMap());
+
+        style.on('style.load', () => {
+            t.ok(style.getLayer('fill') instanceof StyleLayer);
+            t.end();
+        });
+
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "foo": {
+                    "type": "vector"
+                }
+            },
+            "layers": [{
+                "id": "fill",
+                "source": "foo",
+                "source-layer": "source-layer",
+                "type": "fill"
+            }]
+        });
+    });
+
     t.test('transforms sprite json and image URLs before request', (t) => {
         window.useFakeXMLHttpRequest();
 
@@ -358,35 +382,6 @@ test('Style#update', (t) => {
 
         style.update();
     });
-});
-
-test('Style#_resolve', (t) => {
-    t.test('creates StyleLayers', (t) => {
-        const style = new Style(new StubMap());
-        style.loadJSON({
-            "version": 8,
-            "sources": {
-                "foo": {
-                    "type": "vector"
-                }
-            },
-            "layers": [{
-                "id": "fill",
-                "source": "foo",
-                "source-layer": "source-layer",
-                "type": "fill"
-            }]
-        });
-
-        style.on('error', (error) => { t.error(error); });
-
-        style.on('style.load', () => {
-            t.ok(style.getLayer('fill') instanceof StyleLayer);
-            t.end();
-        });
-    });
-
-    t.end();
 });
 
 test('Style#setState', (t) => {
