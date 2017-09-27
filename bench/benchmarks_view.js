@@ -252,7 +252,7 @@ class BenchmarkStatistic extends React.Component {
         case 'error':
             return <p>{this.props.error.message}</p>;
         default:
-            return <p>{this.props.statistic(this.props)}</p>;
+            return this.props.statistic(this.props);
         }
     }
 }
@@ -287,42 +287,38 @@ class BenchmarkRow extends React.Component {
 
             const {inferior} = probabilitiesOfSuperiority(master.samples, current.samples);
 
-            change = <span className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>
-                {delta > 0 ? '+' : ''}{formatSample(delta)} ms ({d.toFixed(1)} std devs)
-            </span>;
-            pInferiority = <span className={inferior > 0.90 ? 'strong' : 'quiet'}>
-                {formatSample(inferior)}
-            </span>;
+            change = <span className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>(
+                {delta > 0 ? '+' : ''}{formatSample(delta)} ms / {d.toFixed(1)} std devs
+            )</span>;
+            pInferiority = <p className="center">
+                <span className={inferior > 0.90 ? 'strong' : 'quiet'}>{((1 - inferior) * 100).toFixed(0)}</span>%
+                chance that a random <svg width={8} height={8}><circle fill={versionColor(current.name)} cx={4} cy={4} r={4} /></svg> sample is
+                faster than a random <svg width={8} height={8}><circle fill={versionColor(master.name)} cx={4} cy={4} r={4} /></svg> sample.
+            </p>;
         }
 
         return (
             <div className="col12 clearfix space-bottom">
-                <h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2>
-                <div className="col8">
-                    <table className="fixed space-bottom">
-                        <tr><th></th>{this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
-                        <tr>
-                            <th>Change</th>
-                            <td colspan="2">{change}</td>
-                        </tr>
-                        <tr>
-                            <th>P({current.name} > {master.name})</th>
-                            <td colspan="2">{pInferiority}</td>
-                        </tr>
-                        {this.renderStatistic('R² Slope / Correlation',
-                            (version) => `${formatSample(version.regression.slope)} ms / ${version.regression.correlation.toFixed(3)} ${
-                                version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
-                                version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}`)}
-                        {this.renderStatistic('(20% trimmed) Mean',
-                            (version) => `${formatSample(version.summary.trimmedMean)} ms`)}
-                        {this.renderStatistic('(Windsorized) Deviation',
-                            (version) => `${formatSample(version.summary.windsorizedDeviation)} ms`)}
-                        {this.renderStatistic('Minimum',
-                            (version) => `${formatSample(version.summary.min)} ms`)}
-                    </table>
-                    {endedCount > 0 && <StatisticsPlot versions={this.props.versions}/>}
-                    {endedCount > 0 && <RegressionPlot versions={this.props.versions}/>}
-                </div>
+                <table className="fixed space-bottom">
+                    <tr><th><h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2></th>
+                        {this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
+                    {this.renderStatistic('R² Slope / Correlation',
+                        (version) => <p>{formatSample(version.regression.slope)} ms / {version.regression.correlation.toFixed(3)} {
+                            version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
+                            version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}</p>)}
+                    {this.renderStatistic('(20% trimmed) Mean',
+                        (version) => <p>
+                            {formatSample(version.summary.trimmedMean)} ms
+                            {version.name === current.name && change}
+                        </p> )}
+                    {this.renderStatistic('(Windsorized) Deviation',
+                        (version) => <p>{formatSample(version.summary.windsorizedDeviation)} ms</p>)}
+                    {this.renderStatistic('Minimum',
+                        (version) => <p>{formatSample(version.summary.min)} ms</p>)}
+                    {pInferiority && <tr><td colspan={3}>{pInferiority}</td></tr>}
+                </table>
+                {endedCount > 0 && <StatisticsPlot versions={this.props.versions}/>}
+                {endedCount > 0 && <RegressionPlot versions={this.props.versions}/>}
             </div>
         );
     }
