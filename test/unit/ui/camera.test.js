@@ -1201,6 +1201,22 @@ test('camera', (t) => {
             camera.flyTo(flyOptions);
         });
 
+        t.test('resets duration to 0 if it exceeds maxDuration', (t) => {
+            let startTime, endTime, timeDiff;
+            const camera = createCamera({ center: [37.63454, 55.75868], zoom: 18});
+
+            camera
+                .on('movestart', () => { startTime = new Date(); })
+                .on('moveend', () => {
+                    endTime = new Date();
+                    timeDiff = endTime - startTime;
+                    t.equalWithPrecision(timeDiff, 0, 1e-6);
+                    t.end();
+                });
+
+            camera.flyTo({ center: [-122.3998631, 37.7884307], maxDuration: 100 });
+        });
+
         t.end();
     });
 
