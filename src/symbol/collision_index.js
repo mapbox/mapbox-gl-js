@@ -139,10 +139,9 @@ class CollisionIndex {
 
         for (let k = 0; k < collisionCircles.length; k += 5) {
             const boxDistanceToAnchor = collisionCircles[k + 3];
-            const tileUnitRadius = collisionCircles[k + 2];
             if (!firstAndLastGlyph ||
                 (boxDistanceToAnchor < -firstTileDistance) ||
-                (boxDistanceToAnchor - tileUnitRadius > lastTileDistance)) {
+                (boxDistanceToAnchor > lastTileDistance)) {
                 // The label either doesn't fit on its line or we
                 // don't need to use this circle because the label
                 // doesn't extend this far. Either way, mark the circle unused.
@@ -151,6 +150,7 @@ class CollisionIndex {
             }
 
             const projectedPoint = this.projectPoint(posMatrix, collisionCircles[k], collisionCircles[k + 1]);
+            const tileUnitRadius = collisionCircles[k + 2];
             const radius = tileUnitRadius / tileToViewportScaled;
 
             const atLeastOneCirclePlaced = placedCollisionCircles.length > 0;

@@ -163,10 +163,18 @@ class CollisionFeature {
             const p1 = line[index + 1];
             const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
 
+            // If the box is within boxSize of the anchor, force the box to be used
+            // (so even 0-width labels use at least one box)
+            // Otherwise, the .8 multiplication gives us a little bit of conservative
+            // padding in choosing which boxes to use (see CollisionIndex#placedCollisionCircles)
+            const paddedAnchorDistance = Math.abs(boxDistanceToAnchor - firstBoxOffset) < step ?
+                0 :
+                (boxDistanceToAnchor - firstBoxOffset) * 0.8;
+
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2,
                 featureIndex, sourceLayerIndex, bucketIndex,
-                boxSize / 2, (boxDistanceToAnchor - firstBoxOffset) * 0.8);
+                boxSize / 2, paddedAnchorDistance);
         }
     }
 }
