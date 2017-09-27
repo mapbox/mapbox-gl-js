@@ -95,22 +95,14 @@ class Style extends Evented {
     _updatedSymbolOrder: boolean;
     z: number;
 
-    constructor(stylesheet: StyleSpecification | string, map: Map, options: StyleOptions) {
+    constructor(map: Map, options: StyleOptions = {}) {
         super();
-
-        options = util.extend({
-            validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
-        }, options);
-
-        const transformRequest = (url, resourceType) => {
-            return this.map ? this.map._transformRequest(url, resourceType) : { url };
-        };
 
         this.map = map;
         this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
-        this.glyphManager = new GlyphManager(transformRequest, options.localIdeographFontFamily);
+        this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
 
         this._layers = {};
@@ -123,9 +115,6 @@ class Style extends Evented {
 
         this._resetUpdates();
 
-        this.setEventedParent(map);
-        this.fire('dataloading', {dataType: 'style'});
-
         const self = this;
         this._rtlTextPluginCallback = rtlTextPlugin.registerForPluginAvailability((args) => {
             self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginBlobURL, args.errorCallback);
@@ -133,49 +122,6 @@ class Style extends Evented {
                 self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
             }
         });
-
-        const stylesheetLoaded = (stylesheet: StyleSpecification) => {
-            if (options.validate && validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
-
-            this._loaded = true;
-            this.stylesheet = stylesheet;
-
-            this.updateClasses();
-
-            for (const id in stylesheet.sources) {
-                this.addSource(id, stylesheet.sources[id], options);
-            }
-
-            loadSprite(stylesheet.sprite, transformRequest, (err, images) => {
-                if (err) {
-                    this.fire('error', err);
-                } else if (images) {
-                    for (const id in images) {
-                        this.imageManager.addImage(id, images[id]);
-                    }
-                }
-
-                this.imageManager.setLoaded(true);
-            });
-
-            this.glyphManager.setURL(stylesheet.glyphs);
-            this._resolve();
-            this.fire('data', {dataType: 'style'});
-            this.fire('style.load');
-        };
-
-        if (typeof stylesheet === 'string') {
-            ajax.getJSON(transformRequest(mapbox.normalizeStyleURL(stylesheet), ajax.ResourceType.Style), (error, json) => {
-                if (error) {
-                    this.fire('error', {error});
-                } else if (stylesheet) {
-                    stylesheetLoaded((json: any));
-                }
-            });
-        } else {
-            const json = stylesheet;
-            browser.frame(() => stylesheetLoaded(json));
-        }
 
         this.on('data', (event) => {
             if (event.dataType !== 'source' || event.sourceDataType !== 'metadata') {
@@ -199,6 +145,69 @@ class Style extends Evented {
                 }
             }
         });
+    }
+
+    loadURL(url: string, options: {
+        validate?: boolean,
+        accessToken?: string
+    } = {}) {
+        this.fire('dataloading', {dataType: 'style'});
+
+        const validate = typeof options.validate === 'boolean' ?
+            options.validate : !mapbox.isMapboxURL(url);
+
+        url = mapbox.normalizeStyleURL(url, options.accessToken);
+        const request = this.map._transformRequest(url, ajax.ResourceType.Style);
+
+        ajax.getJSON(request, (error, json) => {
+            if (error) {
+                this.fire('error', {error});
+            } else if (json) {
+                this._load((json: any), validate);
+            }
+        });
+    }
+
+    loadJSON(json: StyleSpecification, options: {
+        validate?: boolean
+    } = {}) {
+        this.fire('dataloading', {dataType: 'style'});
+
+        browser.frame(() => {
+            this._load(json, options.validate !== false);
+        });
+    }
+
+    _load(json: StyleSpecification, validate: boolean) {
+        if (validate && validateStyle.emitErrors(this, validateStyle(json))) {
+            return;
+        }
+
+        this._loaded = true;
+        this.stylesheet = json;
+
+        this.updateClasses();
+
+        for (const id in json.sources) {
+            this.addSource(id, json.sources[id], {validate: false});
+        }
+
+        loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
+            if (err) {
+                this.fire('error', err);
+            } else if (images) {
+                for (const id in images) {
+                    this.imageManager.addImage(id, images[id]);
+                }
+            }
+
+            this.imageManager.setLoaded(true);
+        });
+
+        this.glyphManager.setURL(json.glyphs);
+        this._resolve();
+        this.fire('data', {dataType: 'style'});
+        this.fire('style.load');
     }
 
     _validateLayer(layer: StyleLayer) {

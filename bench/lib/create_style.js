@@ -13,7 +13,8 @@ class StubMap extends Evented {
 
 module.exports = function (styleJSON: StyleSpecification): Promise<Style> {
     return new Promise((resolve, reject) => {
-        const style = new Style(styleJSON, (new StubMap(): any), {});
+        const style = new Style((new StubMap(): any));
+        style.loadJSON(styleJSON);
 
         style
             .on('style.load', () => resolve(style))

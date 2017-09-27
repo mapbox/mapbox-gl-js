@@ -1002,13 +1002,19 @@ class Map extends Camera {
         }
 
         if (!style) {
-            this.style = (null: any);
+            delete this.style;
             return this;
         } else {
-            this.style = new Style(style, this, options || {});
+            this.style = new Style(this, options || {});
         }
 
         this.style.setEventedParent(this, {style: this.style});
+
+        if (typeof style === 'string') {
+            this.style.loadURL(style);
+        } else {
+            this.style.loadJSON(style);
+        }
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
