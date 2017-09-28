@@ -53,19 +53,37 @@ type StylePropertySpecification = {
     value: 'number' | 'string' | 'boolean',
     length?: number,
     default?: Array<mixed>
+} | {
+    type: 'color',
+    default?: string
 };
 
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
 function createFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): StyleFunction {
-    let expr;
+    if (typeof parameters === 'string' && propertySpec.type === 'color') {
+        const color = parseColor(parameters);
+        return {
+            isFeatureConstant: true,
+            isZoomConstant: true,
+            evaluate() { return color; }
+        };
+    }
 
+    if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
+        return {
+            isFeatureConstant: true,
+            isZoomConstant: true,
+            evaluate() { return parameters; }
+        };
+    }
+
+    let expr;
     let defaultValue = propertySpec.default;
     let isConvertedStopFunction = false;
-    if (!isFunctionDefinition(parameters)) {
-        expr = convert.value(parameters, propertySpec);
-    } else if (typeof parameters === 'object' && parameters !== null && typeof parameters.expression !== 'undefined') {
+
+    if (parameters.expression) {
         expr = parameters.expression;
     } else {
         expr = convert.function(parameters, propertySpec);
