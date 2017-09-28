@@ -317,28 +317,6 @@ test('StyleLayer#setPaintProperty', (t) => {
         t.end();
     });
 
-    test('StyleLayer#getPaintValueStopZoomLevels', (t) => {
-        t.test('get undefined paint value stop zoom levels', (t) => {
-            const layer = StyleLayer.create({
-                "id": "background",
-                "type": "fill",
-                "paint.blue": {
-                    "fill-color": "#8ccbf7",
-                    "fill-opacity": 1
-                },
-                "paint": {
-                    "fill-opacity": 0
-                }
-            });
-
-            t.deepEqual(layer.getPaintValueStopZoomLevels('background-color'), []);
-
-            t.end();
-        });
-
-        t.end();
-    });
-
     test('StyleLayer#isPaintValueZoomConstant', (t) => {
         t.test('is paint value zoom constant undefined', (t) => {
             const layer = StyleLayer.create({
