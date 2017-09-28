@@ -29,36 +29,18 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    getLayoutValueStopZoomLevels(name: string) {
-        const declaration = this._layoutDeclarations[name];
-        if (declaration) {
-            return declaration.stopZoomLevels;
-        } else {
-            return [];
-        }
-    }
-
-    getLayoutInterpolationFactor(name: string, input: number, lower: number, upper: number) {
-        const declaration = this._layoutDeclarations[name];
-        return declaration.interpolationFactor(input, lower, upper);
+    getLayoutDeclaration(name: string) {
+        return this._layoutDeclarations[name];
     }
 
     isLayoutValueFeatureConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
-        if (declaration) {
-            return declaration.isFeatureConstant;
-        } else {
-            return true;
-        }
+        return !declaration || declaration.function.isFeatureConstant;
     }
 
     isLayoutValueZoomConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
-        if (declaration) {
-            return declaration.isZoomConstant;
-        } else {
-            return true;
-        }
+        return !declaration || declaration.function.isZoomConstant;
     }
 
     createBucket(parameters: BucketParameters) {

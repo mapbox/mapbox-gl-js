@@ -13,13 +13,9 @@ import type {StyleFunction, Feature} from '../style-spec/function';
 class StyleDeclaration {
     value: any;
     isFunction: boolean;
-    isFeatureConstant: boolean;
-    isZoomConstant: boolean;
     json: mixed;
     minimum: number;
     function: StyleFunction;
-    stopZoomLevels: Array<number>;
-    _zoomCurve: ?Curve;
 
     constructor(reference: any, value: any) {
         this.value = util.clone(value);
@@ -30,16 +26,6 @@ class StyleDeclaration {
 
         this.minimum = reference.minimum;
         this.function = createFunction(this.value, reference);
-        this.isFeatureConstant = this.function.isFeatureConstant;
-        this.isZoomConstant = this.function.isZoomConstant;
-
-        if (!this.function.isZoomConstant) {
-            this._zoomCurve = this.function.zoomCurve;
-            this.stopZoomLevels = [];
-            for (const stop of this.function.zoomCurve.stops) {
-                this.stopZoomLevels.push(stop[0]);
-            }
-        }
     }
 
     calculate(globalProperties: {+zoom?: number} = {}, feature?: Feature) {
@@ -53,18 +39,18 @@ class StyleDeclaration {
     /**
      * Calculate the interpolation factor for the given zoom stops and current
      * zoom level.
-     *
-     * Only valid for composite functions.
-     * @private
      */
     interpolationFactor(zoom: number, lower: number, upper: number) {
-        if (!this._zoomCurve) return 0;
-        return Curve.interpolationFactor(
-            this._zoomCurve.interpolation,
-            zoom,
-            lower,
-            upper
-        );
+        if (this.function.isZoomConstant) {
+            return 0;
+        } else {
+            return Curve.interpolationFactor(
+                this.function.zoomCurve.interpolation,
+                zoom,
+                lower,
+                upper
+            );
+        }
     }
 }
 
