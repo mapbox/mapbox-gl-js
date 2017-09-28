@@ -2,11 +2,16 @@
 
 /* global d3 */
 
-const versionColor = d3.scaleOrdinal(d3.schemeCategory10);
-versionColor(0); // Skip blue -- too similar to link color.
+const versionColor = d3.scaleOrdinal(['#1b9e77', '#7570b3']);
 
 const formatSample = d3.format(".3r");
 const Axis = require('./lib/axis');
+const {
+    summaryStatistics,
+    regression,
+    kde,
+    probabilitiesOfSuperiority
+} = require('./lib/statistics');
 
 class StatisticsPlot extends React.Component {
     constructor(props) {
@@ -15,23 +20,6 @@ class StatisticsPlot extends React.Component {
     }
 
     render() {
-        function kernelDensityEstimator(kernel, ticks) {
-            return function(samples) {
-                if (samples.length === 0) {
-                    return [];
-                }
-                // https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator
-                const bandwidth = 1.06 * d3.deviation(samples) * Math.pow(samples.length, -0.2);
-                return ticks.map((x) => {
-                    return [x, d3.mean(samples, (v) => kernel((x - v) / bandwidth)) / bandwidth];
-                });
-            };
-        }
-
-        function kernelEpanechnikov(v) {
-            return Math.abs(v) <= 1 ? 0.75 * (1 - v * v) : 0;
-        }
-
         const margin = {top: 0, right: 20, bottom: 20, left: 0};
         const width = this.state.width - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
@@ -39,8 +27,8 @@ class StatisticsPlot extends React.Component {
 
         const t = d3.scaleLinear()
             .domain([
-                d3.min(this.props.versions.map(v => d3.min(v.samples))),
-                d3.max(this.props.versions.map(v => d3.max(v.samples)))
+                d3.min(this.props.versions.map(v => v.summary.min || Infinity)),
+                d3.max(this.props.versions.map(v => v.summary.max || -Infinity))
             ])
             .range([height, 0])
             .nice();
@@ -51,11 +39,11 @@ class StatisticsPlot extends React.Component {
             .paddingOuter(0.15)
             .paddingInner(0.3);
 
-        const kde = kernelDensityEstimator(kernelEpanechnikov, t.ticks(50));
         const versions = this.props.versions.map(v => ({
             name: v.name,
             samples: v.samples,
-            density: kde(v.samples)
+            summary: v.summary,
+            density: kde(v.samples, t.ticks(50))
         }));
 
         const p = d3.scaleLinear()
@@ -89,17 +77,16 @@ class StatisticsPlot extends React.Component {
                             .domain([0, v.samples.length])
                             .range([0, bandwidth]);
 
-                        const sorted = v.samples.slice().sort(d3.ascending);
-                        const [q1, q2, q3] = [.25, .5, .75].map((d) => d3.quantile(sorted, d));
-                        const mean = d3.mean(sorted);
-
-                        let min = [NaN, Infinity];
-                        let max = [NaN, -Infinity];
-                        for (let i = 0; i < v.samples.length; i++) {
-                            const s = v.samples[i];
-                            if (s < min[1]) min = [i, s];
-                            if (s > max[1]) max = [i, s];
-                        }
+                        const {
+                            mean,
+                            q1,
+                            q2,
+                            q3,
+                            min,
+                            max,
+                            argmin,
+                            argmax
+                        } = v.summary;
 
                         return <g key={i}>
                             <path
@@ -115,7 +102,7 @@ class StatisticsPlot extends React.Component {
                                         fill={color}
                                         cx={scale(i)}
                                         cy={t(d)}
-                                        r={i === min[0] || i === max[0] ? 2 : 1} />
+                                        r={i === argmin || i === argmax ? 2 : 1} />
                                 )}
                                 <line // quartiles
                                     x1={bandwidth / 2}
@@ -152,7 +139,7 @@ class StatisticsPlot extends React.Component {
                                         fontSize={10}
                                         fontFamily='sans-serif'>{formatSample(d)}</text>
                                 )}
-                                {[min, max].map((d, i) =>
+                                {[[argmin, min], [argmax, max]].map((d, i) =>
                                     <text // extent
                                         key={i}
                                         dx={0}
@@ -185,14 +172,6 @@ class StatisticsPlot extends React.Component {
     componentDidMount() {
         this.setState({ width: this.ref.clientWidth });
     }
-}
-
-function regression(samples) {
-    const result = [];
-    for (let i = 0, n = 1; i + n < samples.length; i += n, n++) {
-        result.push([n, samples.slice(i, i + n).reduce(((sum, sample) => sum + sample), 0)]);
-    }
-    return result;
 }
 
 class RegressionPlot extends React.Component {
@@ -272,34 +251,76 @@ class BenchmarkStatistic extends React.Component {
         case 'error':
             return <p>{this.props.error.message}</p>;
         default:
-            return <p>{this.props.statistic(this.props)}</p>;
+            return this.props.statistic(this.props);
         }
     }
 }
 
 class BenchmarkRow extends React.Component {
     render() {
-        const ended = this.props.versions.find(version => version.status === 'ended');
+        const endedCount = this.props.versions.filter(version => version.status === 'ended').length;
+
+        let master;
+        let current;
+        if (/master/.test(this.props.versions[0].name)) {
+            [master, current] = this.props.versions;
+        } else {
+            [current, master] = this.props.versions;
+        }
+
+        let change = '';
+        let pInferiority = '';
+        if (endedCount === 2) {
+            const delta = current.summary.trimmedMean - master.summary.trimmedMean;
+            // Use "Cohen's d" (modified to used the trimmed mean/sd) to decide
+            // how much to emphasize difference between means
+            // https://en.wikipedia.org/wiki/Effect_size#Cohen.27s_d
+            const pooledDeviation = Math.sqrt(
+                (
+                    (master.samples.length - 1) * Math.pow(master.summary.windsorizedDeviation, 2) +
+                    (current.samples.length - 1) * Math.pow(current.summary.windsorizedDeviation, 2)
+                ) /
+                (master.samples.length + current.samples.length - 2)
+            );
+            const d = delta / pooledDeviation;
+
+            const {superior, inferior} = probabilitiesOfSuperiority(master.samples, current.samples);
+
+            change = <span className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>(
+                {delta > 0 ? '+' : ''}{formatSample(delta)} ms / {d.toFixed(1)} std devs
+            )</span>;
+
+            const comparison = inferior > superior ? 'SLOWER' : 'faster';
+            const probability = Math.max(inferior, superior);
+            pInferiority = <p className={`center ${probability > 0.90 ? 'strong' : 'quiet'}`}>
+                {(probability * 100).toFixed(0)}%
+                chance that a random <svg width={8} height={8}><circle fill={versionColor(current.name)} cx={4} cy={4} r={4} /></svg> sample is
+                {comparison} than a random <svg width={8} height={8}><circle fill={versionColor(master.name)} cx={4} cy={4} r={4} /></svg> sample.
+            </p>;
+        }
+
         return (
             <div className="col12 clearfix space-bottom">
-                <h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2>
-                <div className="col8">
-                    <table className="fixed space-bottom">
-                        <tr><th></th>{this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
-                        {this.renderStatistic('R² Slope / Correlation',
-                            (version) => `${formatSample(version.regression.slope)} ms / ${version.regression.correlation.toFixed(3)} ${
-                                version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
-                                version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}`)}
-                        {this.renderStatistic('Mean',
-                            (version) => `${formatSample(d3.mean(version.samples))} ms`)}
-                        {this.renderStatistic('Minimum',
-                            (version) => `${formatSample(d3.min(version.samples))} ms`)}
-                        {this.renderStatistic('Deviation',
-                            (version) => `${formatSample(d3.deviation(version.samples))} ms`)}
-                    </table>
-                    {ended && <StatisticsPlot versions={this.props.versions}/>}
-                    {ended && <RegressionPlot versions={this.props.versions}/>}
-                </div>
+                <table className="fixed space-bottom">
+                    <tr><th><h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2></th>
+                        {this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
+                    {this.renderStatistic('(20% trimmed) Mean',
+                        (version) => <p>
+                            {formatSample(version.summary.trimmedMean)} ms
+                            {version.name === current.name && change}
+                        </p>)}
+                    {this.renderStatistic('(Windsorized) Deviation',
+                        (version) => <p>{formatSample(version.summary.windsorizedDeviation)} ms</p>)}
+                    {this.renderStatistic('R² Slope / Correlation',
+                        (version) => <p>{formatSample(version.regression.slope)} ms / {version.regression.correlation.toFixed(3)} {
+                            version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
+                            version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}</p>)}
+                    {this.renderStatistic('Minimum',
+                        (version) => <p>{formatSample(version.summary.min)} ms</p>)}
+                    {pInferiority && <tr><td colspan={3}>{pInferiority}</td></tr>}
+                </table>
+                {endedCount > 0 && <StatisticsPlot versions={this.props.versions}/>}
+                {endedCount > 0 && <RegressionPlot versions={this.props.versions}/>}
             </div>
         );
     }
@@ -350,7 +371,8 @@ for (const name in window.mapboxglBenchmarks) {
             name: ver,
             status: 'waiting',
             logs: [],
-            samples: []
+            samples: [],
+            summary: {}
         };
 
         benchmark.versions.push(version);
@@ -363,7 +385,8 @@ for (const name in window.mapboxglBenchmarks) {
                 .then(samples => {
                     version.status = 'ended';
                     version.samples = samples;
-                    version.regression = leastSquaresRegression(regression(samples));
+                    version.summary = summaryStatistics(samples);
+                    version.regression = regression(samples);
                     update();
                 })
                 .catch(error => {
@@ -387,19 +410,3 @@ function update() {
     );
 }
 
-function leastSquaresRegression(data) {
-    const meanX = d3.sum(data, d => d[0]) / data.length;
-    const meanY = d3.sum(data, d => d[1]) / data.length;
-    const varianceX = d3.variance(data, d => d[0]);
-    const sdX = Math.sqrt(varianceX);
-    const sdY = d3.deviation(data, d => d[1]);
-    const covariance = d3.sum(data, ([x, y]) =>
-        (x - meanX) * (y - meanY)
-    ) / (data.length - 1);
-
-    const correlation = covariance / sdX / sdY;
-    const slope = covariance / varianceX;
-    const intercept = meanY - slope * meanX;
-
-    return { correlation, slope, intercept, data };
-}
