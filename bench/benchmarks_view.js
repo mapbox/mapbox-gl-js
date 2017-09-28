@@ -285,15 +285,18 @@ class BenchmarkRow extends React.Component {
             );
             const d = delta / pooledDeviation;
 
-            const {inferior} = probabilitiesOfSuperiority(master.samples, current.samples);
+            const {superior, inferior} = probabilitiesOfSuperiority(master.samples, current.samples);
 
             change = <span className={d < 0.2 ? 'quiet' : d < 1.5 ? '' : 'strong'}>(
                 {delta > 0 ? '+' : ''}{formatSample(delta)} ms / {d.toFixed(1)} std devs
             )</span>;
-            pInferiority = <p className="center">
-                <span className={inferior > 0.90 ? 'strong' : 'quiet'}>{((1 - inferior) * 100).toFixed(0)}</span>%
+
+            const comparison = inferior > superior ? 'SLOWER' : 'faster';
+            const probability = Math.max(inferior, superior);
+            pInferiority = <p className={`center ${probability > 0.90 ? 'strong' : 'quiet'}`}>
+                {(probability * 100).toFixed(0)}%
                 chance that a random <svg width={8} height={8}><circle fill={versionColor(current.name)} cx={4} cy={4} r={4} /></svg> sample is
-                faster than a random <svg width={8} height={8}><circle fill={versionColor(master.name)} cx={4} cy={4} r={4} /></svg> sample.
+                {comparison} than a random <svg width={8} height={8}><circle fill={versionColor(master.name)} cx={4} cy={4} r={4} /></svg> sample.
             </p>;
         }
 
@@ -302,17 +305,17 @@ class BenchmarkRow extends React.Component {
                 <table className="fixed space-bottom">
                     <tr><th><h2 className="col4"><a href={`#${this.props.name}`} onClick={this.reload}>{this.props.name}</a></h2></th>
                         {this.props.versions.map(version => <th style={{color: versionColor(version.name)}} key={version.name}>{version.name}</th>)}</tr>
-                    {this.renderStatistic('R² Slope / Correlation',
-                        (version) => <p>{formatSample(version.regression.slope)} ms / {version.regression.correlation.toFixed(3)} {
-                            version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
-                            version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}</p>)}
                     {this.renderStatistic('(20% trimmed) Mean',
                         (version) => <p>
                             {formatSample(version.summary.trimmedMean)} ms
                             {version.name === current.name && change}
-                        </p> )}
+                        </p>)}
                     {this.renderStatistic('(Windsorized) Deviation',
                         (version) => <p>{formatSample(version.summary.windsorizedDeviation)} ms</p>)}
+                    {this.renderStatistic('R² Slope / Correlation',
+                        (version) => <p>{formatSample(version.regression.slope)} ms / {version.regression.correlation.toFixed(3)} {
+                            version.regression.correlation < 0.9 ? '\u2620\uFE0F' :
+                            version.regression.correlation < 0.99 ? '\u26A0\uFE0F' : ''}</p>)}
                     {this.renderStatistic('Minimum',
                         (version) => <p>{formatSample(version.summary.min)} ms</p>)}
                     {pInferiority && <tr><td colspan={3}>{pInferiority}</td></tr>}
