@@ -8,7 +8,7 @@ const VectorTile = require('@mapbox/vector-tile').VectorTile;
 const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
 const CollisionTile = require('../../../src/symbol/collision_tile');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
-const StyleLayer = require('../../../src/style/style_layer');
+const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
 const util = require('../../../src/util/util');
 const featureFilter = require('../../../src/style-spec/feature_filter');
 
@@ -24,7 +24,7 @@ const collision = new CollisionTile(0, 0, 1, 1, collisionBoxArray);
 const stacks = { 'Test': glyphs };
 
 function bucketSetup() {
-    const layer = new StyleLayer({
+    const layer = new SymbolStyleLayer({
         id: 'test',
         type: 'symbol',
         layout: { 'text-font': ['Test'], 'text-field': 'abcde' },

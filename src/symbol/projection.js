@@ -6,7 +6,7 @@ const symbolSize = require('./symbol_size');
 const {addDynamicAttributes} = require('../data/bucket/symbol_bucket');
 
 import type Painter from '../render/painter';
-import type StyleLayer from '../style/style_layer';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type Transform from '../geo/transform';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 
@@ -144,7 +144,7 @@ function updateLineLabels(bucket: SymbolBucket,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           pixelsToTileUnits: number,
-                          layer: StyleLayer) {
+                          layer: SymbolStyleLayer) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
     const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
