@@ -33,7 +33,7 @@ class StyleDeclaration {
         this.isFeatureConstant = this.function.isFeatureConstant;
         this.isZoomConstant = this.function.isZoomConstant;
 
-        if (!this.isZoomConstant) {
+        if (!this.function.isZoomConstant) {
             this._zoomCurve = this.function.zoomCurve;
             this.stopZoomLevels = [];
             for (const stop of this.function.zoomCurve.stops) {
@@ -43,7 +43,7 @@ class StyleDeclaration {
     }
 
     calculate(globalProperties: {+zoom?: number} = {}, feature?: Feature) {
-        const value = this.function(globalProperties, feature);
+        const value = this.function.evaluate(globalProperties, feature);
         if (this.minimum !== undefined && value < this.minimum) {
             return this.minimum;
         }

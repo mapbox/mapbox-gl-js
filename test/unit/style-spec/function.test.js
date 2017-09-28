@@ -5,7 +5,7 @@ const createFunction = require('../../../src/style-spec/function');
 
 test('constant function', (t) => {
     t.test('number', (t) => {
-        const f = createFunction(1, {type: 'number'});
+        const f = createFunction(1, {type: 'number'}).evaluate;
 
         t.equal(f({zoom: 0}), 1);
         t.equal(f({zoom: 1}), 1);
@@ -15,7 +15,7 @@ test('constant function', (t) => {
     });
 
     t.test('string', (t) => {
-        const f = createFunction('mapbox', {type: 'string'});
+        const f = createFunction('mapbox', {type: 'string'}).evaluate;
 
         t.equal(f({zoom: 0}), 'mapbox');
         t.equal(f({zoom: 1}), 'mapbox');
@@ -25,7 +25,7 @@ test('constant function', (t) => {
     });
 
     t.test('color', (t) => {
-        const f = createFunction('red', {type: 'color'});
+        const f = createFunction('red', {type: 'color'}).evaluate;
 
         t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
         t.deepEqual(f({zoom: 1}), [1, 0, 0, 1]);
@@ -35,7 +35,7 @@ test('constant function', (t) => {
     });
 
     t.test('array', (t) => {
-        const f = createFunction([1], {type: 'array'});
+        const f = createFunction([1], {type: 'array'}).evaluate;
 
         t.deepEqual(f({zoom: 0}), [1]);
         t.deepEqual(f({zoom: 1}), [1]);
@@ -55,7 +55,7 @@ test('binary search', (t) => {
         }, {
             type: 'number',
             function: 'interpolated'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 17}), 11);
 
@@ -72,7 +72,7 @@ test('exponential function', (t) => {
         }, {
             type: 'number',
             function: 'interpolated'
-        });
+        }).evaluate;
 
         t.equalWithPrecision(f({zoom: 2}), 30 / 9, 1e-6);
 
@@ -86,7 +86,7 @@ test('exponential function', (t) => {
             base: 2
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equalWithPrecision(f({zoom: 0}), 2, 1e-6);
         t.equalWithPrecision(f({zoom: 1}), 2, 1e-6);
@@ -103,7 +103,7 @@ test('exponential function', (t) => {
             stops: [[1, 2]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}), 2);
         t.equal(f({zoom: 1}), 2);
@@ -118,7 +118,7 @@ test('exponential function', (t) => {
             stops: [[1, 2], [3, 6]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}), 2);
         t.equal(f({zoom: 1}), 2);
@@ -135,7 +135,7 @@ test('exponential function', (t) => {
             stops: [[1, 2], [3, 6], [5, 10]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}), 2);
         t.equal(f({zoom: 1}), 2);
@@ -156,7 +156,7 @@ test('exponential function', (t) => {
             stops: [[1, 2], [3, 6], [5, 10], [7, 14]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}), 2);
         t.equal(f({zoom: 1}), 2);
@@ -197,7 +197,7 @@ test('exponential function', (t) => {
             stops: stops
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equalWithPrecision(f({zoom: 2}), 100, 1e-6);
         t.equalWithPrecision(f({zoom: 20}), 133.9622641509434, 1e-6);
@@ -218,7 +218,7 @@ test('exponential function', (t) => {
             stops: [[1, 'red'], [11, 'blue']]
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
         t.deepEqual(f({zoom: 5}), [0.6, 0, 0.4, 1]);
@@ -234,7 +234,7 @@ test('exponential function', (t) => {
             stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}), [0, 0, 0, 1]);
         t.deepEqual(f({zoom: 5}).map((n) => {
@@ -251,7 +251,7 @@ test('exponential function', (t) => {
             stops: [[0, [0, 0, 0, 1]], [10, [1, 1, 1, 1]]]
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 5}).map((n) => {
             return parseFloat(n.toFixed(3));
@@ -295,7 +295,7 @@ test('exponential function', (t) => {
             stops: [[0, 0], [1, 2]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), 2);
 
@@ -310,7 +310,7 @@ test('exponential function', (t) => {
             default: 3
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 3);
 
@@ -325,7 +325,7 @@ test('exponential function', (t) => {
         }, {
             type: 'number',
             default: 3
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 3);
 
@@ -340,7 +340,7 @@ test('exponential function', (t) => {
             default: 3
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 'string'}}), 3);
 
@@ -355,7 +355,7 @@ test('exponential function', (t) => {
         }, {
             type: 'string',
             default: 3
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 'string'}}), 3);
 
@@ -369,7 +369,7 @@ test('exponential function', (t) => {
             stops: [[{ zoom: 1, value: 1 }, 2]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: { prop: 0 }}), 2);
         t.equal(f({zoom: 1}, {properties: { prop: 0 }}), 2);
@@ -396,7 +396,7 @@ test('exponential function', (t) => {
                 [{ zoom: 3, value: 2 }, 12]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: { prop: 1 }}), 2);
         t.equal(f({zoom: 1}, {properties: { prop: 1 }}), 2);
@@ -426,7 +426,7 @@ test('exponential function', (t) => {
                 [{ zoom: 5, value: 2}, 20]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: { prop: 1 }}), 2);
         t.equal(f({zoom: 1}, {properties: { prop: 1 }}), 2);
@@ -446,7 +446,7 @@ test('exponential function', (t) => {
             ]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 1.9}, {properties: { prop: 1 }}), 4);
         t.equal(f({zoom: 2}, {properties: { prop: 1 }}), 6);
@@ -468,7 +468,7 @@ test('exponential function', (t) => {
             ]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 1}, {properties: { prop: 0 }}), 0);
         t.equal(f({zoom: 1.5}, {properties: { prop: 0 }}), 1);
@@ -492,7 +492,7 @@ test('exponential function', (t) => {
             ]
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), undefined);
         t.equal(f({zoom: 0.5}, {properties: {}}), undefined);
@@ -511,7 +511,7 @@ test('interval function', (t) => {
         }, {
             type: 'number',
             function: 'piecewise-constant'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);
         t.equal(f({zoom: -0.5}), 11);
@@ -527,7 +527,7 @@ test('interval function', (t) => {
             stops: [[0, 11]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: -0.5}), 11);
         t.equal(f({zoom: 0}), 11);
@@ -542,7 +542,7 @@ test('interval function', (t) => {
             stops: [[-1, 11], [0, 111]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);
         t.equal(f({zoom: -0.5}), 11);
@@ -558,7 +558,7 @@ test('interval function', (t) => {
             stops: [[-1, 11], [0, 111], [1, 1111]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);
         t.equal(f({zoom: -0.5}), 11);
@@ -576,7 +576,7 @@ test('interval function', (t) => {
             stops: [[-1, 11], [0, 111], [1, 1111], [2, 11111]]
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);
         t.equal(f({zoom: -0.5}), 11);
@@ -596,7 +596,7 @@ test('interval function', (t) => {
             stops: [[1, 'red'], [11, 'blue']]
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
         t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
@@ -612,7 +612,7 @@ test('interval function', (t) => {
             stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 1.5}}), 'good');
 
@@ -627,7 +627,7 @@ test('interval function', (t) => {
             default: 'default'
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 'default');
 
@@ -642,7 +642,7 @@ test('interval function', (t) => {
         }, {
             type: 'string',
             default: 'default'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 'default');
 
@@ -657,7 +657,7 @@ test('interval function', (t) => {
             default: 'default'
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 'string'}}), 'default');
 
@@ -672,7 +672,7 @@ test('interval function', (t) => {
         }, {
             type: 'string',
             default: 'default'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 'string'}}), 'default');
 
@@ -690,7 +690,7 @@ test('categorical function', (t) => {
             stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), 'bad');
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), 'good');
@@ -707,7 +707,7 @@ test('categorical function', (t) => {
             default: 'default'
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 'default');
         t.equal(f({zoom: 0}, {properties: {foo: 3}}), 'default');
@@ -724,7 +724,7 @@ test('categorical function', (t) => {
         }, {
             type: 'string',
             function: 'interval'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 'default');
         t.equal(f({zoom: 0}, {properties: {foo: 3}}), 'default');
@@ -741,7 +741,7 @@ test('categorical function', (t) => {
             default: 'default'
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         const stringKeys = createFunction({
             property: 'foo',
@@ -750,7 +750,7 @@ test('categorical function', (t) => {
             default: 'default'
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(numberKeys(0, {foo: '0'}), 'default');
         t.equal(numberKeys(0, {foo: '1'}), 'default');
@@ -774,7 +774,7 @@ test('categorical function', (t) => {
         }, {
             type: 'string',
             default: 'default'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 'default');
         t.equal(f({zoom: 0}, {properties: {foo: 3}}), 'default');
@@ -789,7 +789,7 @@ test('categorical function', (t) => {
             stops: [[0, 'red'], [1, 'blue']]
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {foo: 0}}), [1, 0, 0, 1]);
         t.deepEqual(f({zoom: 1}, {properties: {foo: 1}}), [0, 0, 1, 1]);
@@ -805,7 +805,7 @@ test('categorical function', (t) => {
             default: 'lime'
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {}}), [0, 1, 0, 1]);
         t.deepEqual(f({zoom: 0}, {properties: {foo: 3}}), [0, 1, 0, 1]);
@@ -821,7 +821,7 @@ test('categorical function', (t) => {
         }, {
             type: 'color',
             default: 'lime'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {}}), [0, 1, 0, 1]);
         t.deepEqual(f({zoom: 0}, {properties: {foo: 3}}), [0, 1, 0, 1]);
@@ -836,7 +836,7 @@ test('categorical function', (t) => {
             stops: [[true, 'true'], [false, 'false']]
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: true}}), 'true');
         t.equal(f({zoom: 0}, {properties: {foo: false}}), 'false');
@@ -854,7 +854,7 @@ test('identity function', (t) => {
             type: 'identity'
         }, {
             type: 'number'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 1}}), 1);
 
@@ -868,7 +868,7 @@ test('identity function', (t) => {
             default: 1
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 1);
 
@@ -882,7 +882,7 @@ test('identity function', (t) => {
         }, {
             type: 'string',
             default: 1
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {}}), 1);
 
@@ -895,7 +895,7 @@ test('identity function', (t) => {
             type: 'identity'
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {foo: 'red'}}), [1, 0, 0, 1]);
         t.deepEqual(f({zoom: 1}, {properties: {foo: 'blue'}}), [0, 0, 1, 1]);
@@ -910,7 +910,7 @@ test('identity function', (t) => {
             default: 'red'
         }, {
             type: 'color'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {}}), [1, 0, 0, 1]);
 
@@ -924,7 +924,7 @@ test('identity function', (t) => {
         }, {
             type: 'color',
             default: 'red'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {}}), [1, 0, 0, 1]);
 
@@ -938,7 +938,7 @@ test('identity function', (t) => {
         }, {
             type: 'color',
             default: 'red'
-        });
+        }).evaluate;
 
         t.deepEqual(f({zoom: 0}, {properties: {foo: 'invalid'}}), [1, 0, 0, 1]);
 
@@ -952,7 +952,7 @@ test('identity function', (t) => {
             default: 'default'
         }, {
             type: 'string'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), 'default');
 
@@ -966,7 +966,7 @@ test('identity function', (t) => {
         }, {
             type: 'string',
             default: 'default'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 0}}), 'default');
 
@@ -983,7 +983,7 @@ test('identity function', (t) => {
                 bar: {}
             },
             default: 'def'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 'bar'}}), 'bar');
 
@@ -1000,7 +1000,7 @@ test('identity function', (t) => {
                 bar: {}
             },
             default: 'def'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 'baz'}}), 'def');
 
@@ -1017,7 +1017,7 @@ test('identity function', (t) => {
                 bar: {}
             },
             default: 'def'
-        });
+        }).evaluate;
 
         t.equal(f({zoom: 0}, {properties: {foo: 3}}), 'def');
 
