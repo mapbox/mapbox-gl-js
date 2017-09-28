@@ -6,6 +6,7 @@ const util = require('../util/util');
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 
 module.exports = {
+    getSizeData,
     evaluateSizeForFeature,
     evaluateSizeForZoom
 };
@@ -24,6 +25,54 @@ export type SizeData = {
     functionType: 'composite',
     coveringZoomRange: [number, number]
 };
+
+// For {text,icon}-size, get the bucket-level data that will be needed by
+// the painter to set symbol-size-related uniforms
+function getSizeData(tileZoom: number, layer: SymbolStyleLayer, sizeProperty: string): SizeData {
+    const isFeatureConstant = layer.isLayoutValueFeatureConstant(sizeProperty);
+    const isZoomConstant = layer.isLayoutValueZoomConstant(sizeProperty);
+
+    if (isZoomConstant && !isFeatureConstant) {
+        return { functionType: 'source' };
+    }
+
+    if (isZoomConstant && isFeatureConstant) {
+        return {
+            functionType: 'constant',
+            layoutSize: layer.getLayoutValue(sizeProperty, {zoom: tileZoom + 1})
+        };
+    }
+
+    // calculate covering zoom stops for zoom-dependent values
+    const levels = layer.getLayoutValueStopZoomLevels(sizeProperty);
+    let lower = 0;
+    while (lower < levels.length && levels[lower] <= tileZoom) lower++;
+    lower = Math.max(0, lower - 1);
+    let upper = lower;
+    while (upper < levels.length && levels[upper] < tileZoom + 1) upper++;
+    upper = Math.min(levels.length - 1, upper);
+
+    const coveringZoomRange: [number, number] = [levels[lower], levels[upper]];
+
+    if (!isFeatureConstant) {
+        return {
+            functionType: 'composite',
+            coveringZoomRange
+        };
+    } else {
+        // for camera functions, also save off the function values
+        // evaluated at the covering zoom levels
+        return {
+            functionType: 'camera',
+            layoutSize: layer.getLayoutValue(sizeProperty, {zoom: tileZoom + 1}),
+            coveringZoomRange,
+            coveringStopValues: [
+                layer.getLayoutValue(sizeProperty, {zoom: levels[lower]}),
+                layer.getLayoutValue(sizeProperty, {zoom: levels[upper]})
+            ]
+        };
+    }
+}
 
 function evaluateSizeForFeature(sizeData: SizeData,
                                 partiallyEvaluatedSize: { uSize: number, uSizeT: number },
