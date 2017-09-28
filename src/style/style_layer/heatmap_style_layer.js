@@ -3,7 +3,6 @@
 const StyleLayer = require('../style_layer');
 const HeatmapBucket = require('../../data/bucket/heatmap_bucket');
 const RGBAImage = require('../../util/image').RGBAImage;
-const util = require('../../util/util');
 
 import type Texture from '../../render/texture';
 
