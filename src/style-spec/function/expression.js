@@ -171,26 +171,14 @@ class CompilationContext {
         return this._prelude;
     }
 
-    // if isCompleteFunctionBody === false (the default), then `body` is
-    // treated as a pure JS expression, i.e. one that can be placed after a
-    // `return` statement;  otherwise, it is treated as the entire contents of
-    // a function, and should include its own return statement.
-    //
-    // ^ The need for the latter, and thus the isCompleteFunctionBody
-    // parameter, will be eliminated when we address
-    // https://github.com/mapbox/mapbox-gl-js/issues/5234
-    addExpression(body: string, isCompleteFunctionBody: boolean = false): string {
+    addExpression(body: string): string {
         let id = this._cache[body];
         if (!id) {
             id = `e${this._id++}`;
             this._cache[body] = id;
 
-            if (!isCompleteFunctionBody) {
-                assert(!/return/.test(body));
-                body = `return ${body}`;
-            }
-
-            this._prelude += `\nfunction ${id}() { ${body} }`;
+            assert(!/return/.test(body));
+            this._prelude += `\nfunction ${id}() { return ${body} }`;
         }
 
         return id;
