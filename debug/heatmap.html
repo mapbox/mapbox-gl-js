@@ -48,15 +48,25 @@ map.on('load', function() {
             },
             "heatmap-intensity": 0.9,
             "heatmap-color": {
-                "stops": [
-                    [0, "rgba(0, 0, 255, 0)"],
-                    [0.1, "royalblue"],
-                    [0.3, "cyan"],
-                    [0.5, "lime"],
-                    [0.7, "yellow"],
-                    [1, "red"]
-                ],
-                "default": "rgba(0, 0, 0, 0)"
+                // "stops": [
+                //     [0, "rgba(0, 0, 255, 0)"],
+                //     [0.1, "royalblue"],
+                //     [0.3, "cyan"],
+                //     [0.5, "lime"],
+                //     [0.7, "yellow"],
+                //     [1, "red"]
+                // ]
+                "expression": [
+                    "curve",
+                    ["linear"],
+                    ["heatmap-density"],
+                    0, "rgba(0, 0, 255, 0)",
+                    0.1, "royalblue",
+                    0.3, "cyan",
+                    0.5, "lime",
+                    0.7, "yellow",
+                    1, "red"
+                ]
             }
         }
     }, 'waterway-label');

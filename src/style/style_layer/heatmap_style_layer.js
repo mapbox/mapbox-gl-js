@@ -33,7 +33,7 @@ class HeatmapStyleLayer extends StyleLayer {
         if (name === 'heatmap-color') {
             const len = this.colorRampData.length;
             for (let i = 4; i < len; i += 4) {
-                const pxColor = this.getPaintValue('heatmap-color', {zoom: i / len});
+                const pxColor = this.getPaintValue('heatmap-color', {heatmapDensity: i / len, zoom: -1});
                 const alpha = pxColor[3];
                 // the colors are being unpremultiplied because getPaintValue returns
                 // premultiplied values, and the Texture class expects unpremultiplied ones
