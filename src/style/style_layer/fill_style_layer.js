@@ -39,14 +39,6 @@ class FillStyleLayer extends StyleLayer {
         return super.getPaintValue(name, globalProperties, feature);
     }
 
-    getPaintValueStopZoomLevels(name: string) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.getPaintValueStopZoomLevels('fill-color');
-        } else {
-            return super.getPaintValueStopZoomLevels(name);
-        }
-    }
-
     getPaintInterpolationFactor(name: string, ...args: *) {
         if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
             return super.getPaintInterpolationFactor('fill-color', ...args);

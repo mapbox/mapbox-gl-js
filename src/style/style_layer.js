@@ -195,15 +195,6 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintValueStopZoomLevels(name: string) {
-        const transition = this._paintTransitions[name];
-        if (transition) {
-            return transition.declaration.stopZoomLevels;
-        } else {
-            return [];
-        }
-    }
-
     getLayoutValueStopZoomLevels(name: string) {
         const declaration = this._layoutDeclarations[name];
 
