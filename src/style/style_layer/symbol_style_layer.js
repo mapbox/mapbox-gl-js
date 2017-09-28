@@ -10,7 +10,7 @@ import type {BucketParameters} from '../../data/bucket';
 
 class SymbolStyleLayer extends StyleLayer {
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, feature?: Feature) {
+    getLayoutValue(name: string, globalProperties?: GlobalProperties, feature?: Feature): any {
         const value = super.getLayoutValue(name, globalProperties, feature);
         if (value !== 'auto') {
             return value;
@@ -26,6 +26,38 @@ class SymbolStyleLayer extends StyleLayer {
             return this.getLayoutValue('icon-rotation-alignment', globalProperties, feature);
         default:
             return value;
+        }
+    }
+
+    getLayoutValueStopZoomLevels(name: string) {
+        const declaration = this._layoutDeclarations[name];
+        if (declaration) {
+            return declaration.stopZoomLevels;
+        } else {
+            return [];
+        }
+    }
+
+    getLayoutInterpolationFactor(name: string, input: number, lower: number, upper: number) {
+        const declaration = this._layoutDeclarations[name];
+        return declaration.interpolationFactor(input, lower, upper);
+    }
+
+    isLayoutValueFeatureConstant(name: string) {
+        const declaration = this._layoutDeclarations[name];
+        if (declaration) {
+            return declaration.isFeatureConstant;
+        } else {
+            return true;
+        }
+    }
+
+    isLayoutValueZoomConstant(name: string) {
+        const declaration = this._layoutDeclarations[name];
+        if (declaration) {
+            return declaration.isZoomConstant;
+        } else {
+            return true;
         }
     }
 

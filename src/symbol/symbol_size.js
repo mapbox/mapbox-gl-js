@@ -3,7 +3,7 @@
 const interpolate = require('../style-spec/util/interpolate');
 const util = require('../util/util');
 
-import type StyleLayer from '../style/style_layer';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 
 module.exports = {
     evaluateSizeForFeature,
@@ -40,7 +40,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
 
 function evaluateSizeForZoom(sizeData: SizeData,
                              tr: { zoom: number },
-                             layer: StyleLayer,
+                             layer: SymbolStyleLayer,
                              isText: boolean) {
     const sizeUniforms = {};
     if (sizeData.functionType === 'composite') {

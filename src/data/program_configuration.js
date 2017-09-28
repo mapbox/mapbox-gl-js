@@ -362,7 +362,7 @@ class ProgramConfiguration {
 class ProgramConfigurationSet {
     programConfigurations: {[string]: ProgramConfiguration};
 
-    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays?: {+[string]: ?SerializedProgramConfiguration}) {
+    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<StyleLayer>, zoom: number, arrays?: {+[string]: ?SerializedProgramConfiguration}) {
         this.programConfigurations = {};
         if (arrays) {
             for (const layer of layers) {

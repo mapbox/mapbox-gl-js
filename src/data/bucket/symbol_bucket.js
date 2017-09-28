@@ -36,7 +36,7 @@ import type {
     StructArray,
     SerializedStructArray
 } from '../../util/struct_array';
-import type StyleLayer from '../../style/style_layer';
+import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type {Shaping, PositionedIcon} from '../../symbol/shaping';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
@@ -231,7 +231,7 @@ class SymbolBuffers {
     dynamicLayoutVertexArray: StructArray;
     dynamicLayoutVertexBuffer: VertexBuffer;
 
-    constructor(programInterface: ProgramInterface, layers: Array<StyleLayer>, zoom: number, arrays?: SerializedSymbolBuffer) {
+    constructor(programInterface: ProgramInterface, layers: Array<SymbolStyleLayer>, zoom: number, arrays?: SerializedSymbolBuffer) {
         this.programInterface = programInterface;
 
         const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
@@ -323,7 +323,7 @@ class SymbolBucket implements Bucket {
     collisionBoxArray: CollisionBoxArray;
     zoom: number;
     overscaling: number;
-    layers: Array<StyleLayer>;
+    layers: Array<SymbolStyleLayer>;
     index: number;
     sdfIcons: boolean;
     iconsNeedLinear: boolean;
@@ -376,7 +376,7 @@ class SymbolBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
-        const layer: StyleLayer = this.layers[0];
+        const layer: SymbolStyleLayer = this.layers[0];
         const layout = layer.layout;
         const textFont = layout['text-font'];
 
@@ -996,7 +996,7 @@ class SymbolBucket implements Bucket {
                       line: Array<Point>,
                       shapedTextOrientations: ShapedTextOrientations,
                       shapedIcon: PositionedIcon | void,
-                      layer: StyleLayer,
+                      layer: SymbolStyleLayer,
                       addToBuffers: boolean,
                       collisionBoxArray: CollisionBoxArray,
                       featureIndex: number,
@@ -1094,7 +1094,7 @@ class SymbolBucket implements Bucket {
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
 // the painter to set symbol-size-related uniforms
-function getSizeData(tileZoom: number, layer: StyleLayer, sizeProperty: string): SizeData {
+function getSizeData(tileZoom: number, layer: SymbolStyleLayer, sizeProperty: string): SizeData {
     const isFeatureConstant = layer.isLayoutValueFeatureConstant(sizeProperty);
     const isZoomConstant = layer.isLayoutValueZoomConstant(sizeProperty);
 
@@ -1140,7 +1140,7 @@ function getSizeData(tileZoom: number, layer: StyleLayer, sizeProperty: string):
     }
 }
 
-function getSizeVertexData(layer: StyleLayer, tileZoom: number, sizeData: SizeData, sizeProperty, feature) {
+function getSizeVertexData(layer: SymbolStyleLayer, tileZoom: number, sizeData: SizeData, sizeProperty, feature) {
     if (sizeData.functionType === 'source') {
         return [
             10 * layer.getLayoutValue(sizeProperty, ({}: any), feature)

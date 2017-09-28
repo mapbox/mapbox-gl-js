@@ -195,24 +195,9 @@ class StyleLayer extends Evented {
         }
     }
 
-    getLayoutValueStopZoomLevels(name: string) {
-        const declaration = this._layoutDeclarations[name];
-
-        if (declaration) {
-            return declaration.stopZoomLevels;
-        } else {
-            return [];
-        }
-    }
-
     getPaintInterpolationFactor(name: string, input: number, lower: number, upper: number) {
         const transition = this._paintTransitions[name];
         return transition.declaration.interpolationFactor(input, lower, upper);
-    }
-
-    getLayoutInterpolationFactor(name: string, input: number, lower: number, upper: number) {
-        const declaration = this._layoutDeclarations[name];
-        return declaration.interpolationFactor(input, lower, upper);
     }
 
     isPaintValueFeatureConstant(name: string) {
@@ -225,31 +210,11 @@ class StyleLayer extends Evented {
         }
     }
 
-    isLayoutValueFeatureConstant(name: string) {
-        const declaration = this._layoutDeclarations[name];
-
-        if (declaration) {
-            return declaration.isFeatureConstant;
-        } else {
-            return true;
-        }
-    }
-
     isPaintValueZoomConstant(name: string) {
         const transition = this._paintTransitions[name];
 
         if (transition) {
             return transition.declaration.isZoomConstant;
-        } else {
-            return true;
-        }
-    }
-
-    isLayoutValueZoomConstant(name: string) {
-        const declaration = this._layoutDeclarations[name];
-
-        if (declaration) {
-            return declaration.isZoomConstant;
         } else {
             return true;
         }
