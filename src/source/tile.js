@@ -16,8 +16,10 @@ const TileCoord = require('./tile_coord');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
 const VertexBuffer = require('../gl/vertex_buffer');
-const VertexArrayObject = require('../render/vertex_array_object');
+const IndexBuffer = require('../gl/index_buffer');
 const Texture = require('../render/texture');
+const {SegmentVector} = require('../data/segment');
+const {TriangleIndexArray} = require('../data/index_array_type');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -74,7 +76,8 @@ class Tile {
     mask: Mask;
     aborted: ?boolean;
     maskedBoundsBuffer: ?VertexBuffer;
-    maskedBoundsVAO: ?VertexArrayObject;
+    maskedIndexBuffer: ?IndexBuffer;
+    segments: ?SegmentVector;
     request: any;
     texture: any;
     refreshedUponExpiration: boolean;
@@ -362,39 +365,68 @@ class Tile {
         }
     }
 
+    clearMask() {
+        if (this.segments) {
+            this.segments.destroy();
+            delete this.segments;
+        }
+        if (this.maskedBoundsBuffer) {
+            this.maskedBoundsBuffer.destroy();
+            delete this.maskedBoundsBuffer;
+        }
+        if (this.maskedIndexBuffer) {
+            this.maskedIndexBuffer.destroy();
+            delete this.maskedIndexBuffer;
+        }
+    }
+
     setMask(mask: Mask, gl: WebGLRenderingContext) {
 
         // don't redo buffer work if the mask is the same;
         if (util.deepEqual(this.mask, mask)) return;
 
         this.mask = mask;
-        this.maskedBoundsBuffer = undefined;
-        this.maskedBoundsVAO = undefined;
+        this.clearMask();
 
         // We want to render the full tile, and keeping the segments/vertices/indices empty means
         // using the global shared buffers for covering the entire tile.
         if (util.deepEqual(mask, {'0': true})) return;
-        const maskArray = Object.keys(mask);
-        // mask is empty because all four children are loaded
-        if (maskArray.length === 0) return;
-
 
         const maskedBoundsArray = new RasterBoundsArray();
+        const indexArray = new TriangleIndexArray();
 
+        this.segments = new SegmentVector();
+        // Create a new segment so that we will upload (empty) buffers even when there is nothing to
+        // draw for this tile.
+        this.segments.prepareSegment(0, maskedBoundsArray, indexArray);
+
+        const maskArray = Object.keys(mask);
         for (let i = 0; i < maskArray.length; i++) {
             const maskCoord = TileCoord.fromID(+maskArray[i]);
             const vertexExtent = EXTENT >> maskCoord.z;
             const tlVertex = new Point(maskCoord.x * vertexExtent, maskCoord.y * vertexExtent);
             const brVertex = new Point(tlVertex.x + vertexExtent, tlVertex.y + vertexExtent);
 
+            // not sure why flow is complaining here because it doesn't complain at L401
+            const segment = (this.segments: any).prepareSegment(4, maskedBoundsArray, indexArray);
+
             maskedBoundsArray.emplaceBack(tlVertex.x, tlVertex.y, tlVertex.x, tlVertex.y);
             maskedBoundsArray.emplaceBack(brVertex.x, tlVertex.y, brVertex.x, tlVertex.y);
             maskedBoundsArray.emplaceBack(tlVertex.x, brVertex.y, tlVertex.x, brVertex.y);
             maskedBoundsArray.emplaceBack(brVertex.x, brVertex.y, brVertex.x, brVertex.y);
+
+            const offset = segment.vertexLength;
+            // 0, 1, 2
+            // 1, 2, 3
+            indexArray.emplaceBack(offset, offset + 1, offset + 2);
+            indexArray.emplaceBack(offset + 1, offset + 2, offset + 3);
+
+            segment.vertexLength += 4;
+            segment.primitiveLength += 2;
         }
 
         this.maskedBoundsBuffer = new VertexBuffer(gl, maskedBoundsArray);
-        this.maskedBoundsVAO = new VertexArrayObject();
+        this.maskedIndexBuffer = new IndexBuffer(gl, indexArray);
     }
 
     hasData() {
