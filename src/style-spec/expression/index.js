@@ -2,7 +2,7 @@
 
 const parseColor = require('../util/parse_color');
 const compileExpression = require('./compile');
-const convert = require('./convert');
+const convertFunction = require('../function/convert');
 const {
     ColorType,
     StringType,
@@ -86,7 +86,7 @@ function createExpression(parameters: FunctionParameters, propertySpec: StylePro
     if (parameters.expression) {
         expr = parameters.expression;
     } else {
-        expr = convert.function(parameters, propertySpec);
+        expr = convertFunction(parameters, propertySpec);
         isConvertedStopFunction = true;
         if (parameters && typeof parameters.default !== 'undefined') {
             defaultValue = parameters.default;
