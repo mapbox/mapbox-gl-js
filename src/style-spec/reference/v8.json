@@ -380,6 +380,7 @@
           "doc": "A heatmap.",
           "sdk-support": {
             "basic functionality": {
+              "js": "0.41.0"
             }
           }
         },
@@ -3036,12 +3037,12 @@
       "property-function": false,
       "transition": true,
       "units": "pixels",
-      "doc": "Heatmap radius.",
+      "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed.",
       "sdk-support": {
         "basic functionality": {
+          "js": "0.41.0"
         },
-        "data-driven styling": {
-        }
+        "data-driven styling": {}
       }
     },
     "heatmap-weight": {
@@ -3052,11 +3053,13 @@
       "zoom-function": true,
       "property-function": true,
       "transition": false,
-      "doc": "Heatmap weight.",
+      "doc": "A measure of how much an individual point contributes to the heatmap. A value of 10 would be equivalent to having 10 points of weight 1 in the same spot. Especially useful when combined with clustering.",
       "sdk-support": {
         "basic functionality": {
+          "js": "0.41.0"
         },
         "data-driven styling": {
+          "js": "0.41.0"
         }
       }
     },
@@ -3068,12 +3071,12 @@
       "zoom-function": true,
       "property-function": false,
       "transition": true,
-      "doc": "Heatmap intensity.",
+      "doc": "Similar to `heatmap-weight` but controls the intensity of the heatmap globally. Primarily used for adjusting the heatmap based on zoom level.",
       "sdk-support": {
         "basic functionality": {
+          "js": "0.41.0"
         },
-        "data-driven styling": {
-        }
+        "data-driven styling": {}
       }
     },
     "heatmap-color": {
@@ -3086,24 +3089,23 @@
               [0.5, "lime"],
               [0.7, "yellow"],
               [1, "red"]
-          ],
-          "default": "rgba(0, 0, 0, 0)"
+          ]
       },
-      "doc": "The fill color of the heatmap.",
+      "doc": "Defines the color of each pixel based on its density value in a heatmap. Should be either a stop function with input values ranging from `0` to `1`, or a curve expression with a special `[\"heatmap-density\"]` keyword as the input.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": false,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "0.41.0"
         },
-        "data-driven styling": {
-        }
+        "data-driven styling": {}
       }
     },
     "heatmap-opacity": {
       "type": "number",
-      "doc": "The global opacity at which the heatmap will be drawn.",
+      "doc": "The global opacity at which the heatmap layer will be drawn.",
       "default": 1,
       "minimum": 0,
       "maximum": 1,
@@ -3113,9 +3115,9 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "0.41.0"
         },
-        "data-driven styling": {
-        }
+        "data-driven styling": {}
       }
     }
   },
