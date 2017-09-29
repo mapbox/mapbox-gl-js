@@ -24,7 +24,7 @@ export type Feature = {
     +properties: {[string]: any}
 };
 
-export type StyleFunction = {
+export type StyleExpression = {
     isZoomConstant: true,
     isFeatureConstant: boolean,
     evaluate: ({+zoom?: number}, feature?: Feature) => any
@@ -61,7 +61,7 @@ type StylePropertySpecification = {
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
-function createFunction(parameters: FunctionParameters, propertySpec: StylePropertySpecification): StyleFunction {
+function createExpression(parameters: FunctionParameters, propertySpec: StylePropertySpecification): StyleExpression {
     if (typeof parameters === 'string' && propertySpec.type === 'color') {
         const color = parseColor(parameters);
         return {
@@ -156,8 +156,8 @@ function createFunction(parameters: FunctionParameters, propertySpec: StylePrope
     }
 }
 
-module.exports = createFunction;
-module.exports.isFunctionDefinition = isFunctionDefinition;
+module.exports = createExpression;
+module.exports.isExpression = isExpression;
 module.exports.getExpectedType = getExpectedType;
 module.exports.findZoomCurve = findZoomCurve;
 
@@ -198,7 +198,7 @@ function findZoomCurve(expression: Expression): null | Curve | {key: string, err
     }
 }
 
-function isFunctionDefinition(value: FunctionParameters): boolean {
+function isExpression(value: FunctionParameters): boolean {
     if (value === null || typeof value !== 'object' || Array.isArray(value)) {
         return false;
     } else if (typeof value.expression !== 'undefined') {

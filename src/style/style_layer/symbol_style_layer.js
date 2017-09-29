@@ -35,12 +35,12 @@ class SymbolStyleLayer extends StyleLayer {
 
     isLayoutValueFeatureConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
-        return !declaration || declaration.function.isFeatureConstant;
+        return !declaration || declaration.expression.isFeatureConstant;
     }
 
     isLayoutValueZoomConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
-        return !declaration || declaration.function.isZoomConstant;
+        return !declaration || declaration.expression.isZoomConstant;
     }
 
     createBucket(parameters: BucketParameters) {

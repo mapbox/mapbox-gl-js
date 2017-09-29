@@ -21,7 +21,7 @@ const QueryFeatures = require('../source/query_features');
 const SourceCache = require('../source/source_cache');
 const GeoJSONSource = require('../source/geojson_source');
 const styleSpec = require('../style-spec/reference/latest');
-const MapboxGLFunction = require('../style-spec/expression');
+const {isExpression} = require('../style-spec/expression');
 const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
@@ -790,7 +790,7 @@ class Style extends Evented {
 
         const isFeatureConstant = !(
             value &&
-            MapboxGLFunction.isFunctionDefinition(value) &&
+            isExpression(value) &&
             value.property !== '$zoom' &&
             value.property !== undefined
         );
