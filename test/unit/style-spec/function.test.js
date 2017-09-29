@@ -1,15 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const createExpression = require('../../../src/style-spec/expression');
-const convertFunction = require('../../../src/style-spec/function/convert');
-
-function createFunction(parameters, propertySpec) {
-    return createExpression(convertFunction(parameters, propertySpec), propertySpec, {
-        defaultValue: parameters.default,
-        isConvertedFunction: true
-    });
-}
+const createFunction = require('../../../src/style-spec/function');
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -996,7 +988,7 @@ test('unknown function', (t) => {
         type: 'nonesuch', stops: [[]]
     }, {
         type: 'string'
-    }), /Unknown zoom function type "nonesuch"/);
+    }), /Unknown function type "nonesuch"/);
     t.end();
 });
 
