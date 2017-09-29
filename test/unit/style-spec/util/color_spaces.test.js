@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const colorSpaces = require('../../../../src/style-spec/expression/color_spaces');
+const colorSpaces = require('../../../../src/style-spec/util/color_spaces');
 
 test('#hclToRgb zero', (t) => {
     const hclColor = [0, 0, 0, null];
