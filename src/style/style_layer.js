@@ -10,7 +10,7 @@ const Evented = require('../util/evented');
 
 import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
-import type {Feature} from '../style-spec/function';
+import type {Feature} from '../style-spec/expression';
 import type RenderTexture from '../render/render_texture';
 
 export type GlobalProperties = {

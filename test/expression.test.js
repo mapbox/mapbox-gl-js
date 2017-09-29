@@ -2,8 +2,8 @@
 
 require('flow-remove-types/register');
 const expressionSuite = require('./integration').expression;
-const compileExpression = require('../src/style-spec/function/compile');
-const { toString } = require('../src/style-spec/function/types');
+const compileExpression = require('../src/style-spec/expression/compile');
+const { toString } = require('../src/style-spec/expression/types');
 
 let tests;
 

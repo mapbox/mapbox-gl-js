@@ -4,7 +4,7 @@ const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
 const assert = require('assert');
 
-import type {Feature} from '../../style-spec/function';
+import type {Feature} from '../../style-spec/expression';
 import type {GlobalProperties} from '../style_layer';
 import type {BucketParameters} from '../../data/bucket';
 

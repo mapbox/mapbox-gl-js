@@ -5,7 +5,7 @@ const FillExtrusionBucket = require('../../data/bucket/fill_extrusion_bucket');
 const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
 const {translateDistance, translate} = require('../query_utils');
 
-import type {Feature} from '../../style-spec/function';
+import type {Feature} from '../../style-spec/expression';
 import type {GlobalProperties} from '../style_layer';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';

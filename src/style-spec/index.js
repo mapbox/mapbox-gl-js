@@ -10,7 +10,7 @@ exports.composite = require('./composite');
 exports.diff = require('./diff');
 exports.ValidationError = require('./error/validation_error');
 exports.ParsingError = require('./error/parsing_error');
-exports.function = require('./function');
+exports.function = require('./expression');
 exports.featureFilter = require('./feature_filter');
 
 exports.validate = require('./validate_style');

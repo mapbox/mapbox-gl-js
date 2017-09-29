@@ -1,8 +1,8 @@
 
 const ValidationError = require('../error/validation_error');
-const {findZoomCurve, getExpectedType} = require('../function');
-const compile = require('../function/compile');
-const Curve = require('../function/definitions/curve');
+const {findZoomCurve, getExpectedType} = require('../expression');
+const compile = require('../expression/compile');
+const Curve = require('../expression/definitions/curve');
 const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateExpression(options) {

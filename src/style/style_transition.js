@@ -5,7 +5,7 @@ const util = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
 
 import type StyleDeclaration from './style_declaration';
-import type {Feature} from '../style-spec/function';
+import type {Feature} from '../style-spec/expression';
 
 const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 0 };
 

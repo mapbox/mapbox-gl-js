@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const createFunction = require('../../../src/style-spec/function');
+const createFunction = require('../../../src/style-spec/expression');
 
 test('constant function', (t) => {
     t.test('number', (t) => {

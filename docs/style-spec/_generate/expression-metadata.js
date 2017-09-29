@@ -2,11 +2,11 @@
 require('flow-remove-types/register');
 
 const ref = require('../../../src/style-spec/reference/latest');
-const toString = require('../../../src/style-spec/function/types').toString;
-const CompoundExpression = require('../../../src/style-spec/function/compound_expression').CompoundExpression;
+const toString = require('../../../src/style-spec/expression/types').toString;
+const CompoundExpression = require('../../../src/style-spec/expression/compound_expression').CompoundExpression;
 
 // registers compound expressions
-require('../../../src/style-spec/function/definitions');
+require('../../../src/style-spec/expression/definitions');
 
 const types = {
     string: [{
