@@ -4,7 +4,9 @@ const { Color, isValue, typeOf } = require('../values');
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
-import type { Expression, ParsingContext, CompilationContext }  from '../expression';
+import type { Expression } from '../expression';
+import type ParsingContext from '../parsing_context';
+import type CompilationContext  from '../compilation_context';
 
 const u2028 = /\u2028/g;
 const u2029 = /\u2029/g;

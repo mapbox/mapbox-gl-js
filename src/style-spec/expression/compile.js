@@ -3,10 +3,8 @@
 const assert = require('assert');
 module.exports = compileExpression;
 
-const {
-    ParsingContext,
-    CompilationContext
-} = require('./expression');
+const ParsingContext = require('./parsing_context');
+const CompilationContext = require('./compilation_context');
 const parseExpression = require('./parse_expression');
 const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
@@ -16,7 +14,8 @@ const {
 } = require('./is_constant');
 
 import type { Type } from './types.js';
-import type { Expression, ParsingError } from './expression.js';
+import type { Expression } from './expression';
+import type ParsingError from './parsing_error';
 
 type CompileErrors = {|
     result: 'error',

@@ -1,8 +1,10 @@
 // @flow
 
 const Literal = require('./definitions/literal');
-const {CompilationContext} = require('./expression');
-import type {ParsingContext, Expression} from './expression';
+const CompilationContext = require('./compilation_context');
+
+import type {Expression} from './expression';
+import type ParsingContext from './parsing_context';
 
 /**
  * Parse the given JSON expression.
