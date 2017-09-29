@@ -308,12 +308,11 @@ class StyleLayer extends Evented {
     // update layout value if it's constant, or mark it as zoom-dependent
     _updateLayoutValue(name: string) {
         const declaration = this._layoutDeclarations[name];
-
-        if (declaration && declaration.isExpression) {
-            this._layoutFunctions[name] = true;
-        } else {
+        if (!declaration || (declaration.expression.isZoomConstant && declaration.expression.isFeatureConstant)) {
             delete this._layoutFunctions[name];
             this.layout[name] = this.getLayoutValue(name);
+        } else {
+            this._layoutFunctions[name] = true;
         }
     }
 

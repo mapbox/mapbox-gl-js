@@ -2,7 +2,6 @@
 
 const parseColor = require('../style-spec/util/parse_color');
 const createExpression = require('../style-spec/expression');
-const {isExpression} = require('../style-spec/expression');
 const convertFunction = require('../style-spec/function/convert');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
@@ -43,14 +42,12 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
  */
 class StyleDeclaration {
     value: any;
-    isExpression: boolean;
     json: mixed;
     minimum: number;
     expression: StyleExpression;
 
     constructor(reference: any, value: any) {
         this.value = util.clone(value);
-        this.isExpression = isExpression(value);
 
         // immutable representation of value. used for comparison
         this.json = JSON.stringify(this.value);
