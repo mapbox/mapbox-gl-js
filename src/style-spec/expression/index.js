@@ -62,9 +62,7 @@ type StylePropertySpecification = {
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
-function createExpression(expression: mixed,
-                          propertySpec: StylePropertySpecification,
-                          options: { isConvertedFunction?: boolean, defaultValue?: any } = {}): StyleExpression {
+function createExpression(expression: mixed, propertySpec: StylePropertySpecification): StyleExpression {
     const expectedType = getExpectedType(propertySpec);
     const compiled = compileExpression(expression, expectedType);
 
@@ -73,7 +71,7 @@ function createExpression(expression: mixed,
         throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
     }
 
-    let defaultValue = options.defaultValue || propertySpec.default;
+    let defaultValue = propertySpec.default;
     if (propertySpec.type === 'color') {
         defaultValue = parseColor((defaultValue: any));
     }
@@ -87,7 +85,7 @@ function createExpression(expression: mixed,
             }
             return val;
         } catch (e) {
-            if (!options.isConvertedFunction && !warningHistory[e.message]) {
+            if (!warningHistory[e.message]) {
                 warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
                     console.warn(e.message);

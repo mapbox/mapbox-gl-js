@@ -121,7 +121,9 @@ function createFunction(parameters, propertySpec) {
         return {
             isFeatureConstant: true,
             isZoomConstant: false,
-            interpolation: {name: type === 'exponential' ? 'exponential' : 'step'},
+            interpolation: type === 'exponential' ?
+                {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1} :
+                {name: 'step'},
             zoomStops: parameters.stops.map(s => s[0]),
             evaluate({zoom}) {
                 return outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType));

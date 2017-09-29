@@ -2,7 +2,7 @@
 
 const parseColor = require('../style-spec/util/parse_color');
 const createExpression = require('../style-spec/expression');
-const convertFunction = require('../style-spec/function/convert');
+const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
 
@@ -29,10 +29,7 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
     if (parameters.expression) {
         return createExpression(parameters.expression, propertySpec);
     } else {
-        return createExpression(convertFunction(parameters, propertySpec), propertySpec, {
-            defaultValue: parameters.default,
-            isConvertedFunction: true
-        });
+        return createFunction(parameters, propertySpec);
     }
 }
 
