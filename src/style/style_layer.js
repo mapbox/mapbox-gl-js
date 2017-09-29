@@ -202,12 +202,12 @@ class StyleLayer extends Evented {
 
     isPaintValueFeatureConstant(name: string) {
         const transition = this._paintTransitions[name];
-        return !transition || transition.declaration.function.isFeatureConstant;
+        return !transition || transition.declaration.expression.isFeatureConstant;
     }
 
     isPaintValueZoomConstant(name: string) {
         const transition = this._paintTransitions[name];
-        return !transition || transition.declaration.function.isZoomConstant;
+        return !transition || transition.declaration.expression.isZoomConstant;
     }
 
     isHidden(zoom: number) {
@@ -309,7 +309,7 @@ class StyleLayer extends Evented {
     _updateLayoutValue(name: string) {
         const declaration = this._layoutDeclarations[name];
 
-        if (declaration && declaration.isFunction) {
+        if (declaration && declaration.isExpression) {
             this._layoutFunctions[name] = true;
         } else {
             delete this._layoutFunctions[name];

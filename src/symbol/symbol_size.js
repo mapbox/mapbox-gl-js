@@ -31,9 +31,9 @@ export type SizeData = {
 // the painter to set symbol-size-related uniforms
 function getSizeData(tileZoom: number, layer: SymbolStyleLayer, sizeProperty: string): SizeData {
     const declaration: StyleDeclaration = layer.getLayoutDeclaration(sizeProperty);
-    const isFeatureConstant = !declaration || declaration.function.isFeatureConstant;
+    const isFeatureConstant = !declaration || declaration.expression.isFeatureConstant;
 
-    if (!declaration || declaration.function.isZoomConstant) {
+    if (!declaration || declaration.expression.isZoomConstant) {
         return isFeatureConstant ? {
             functionType: 'constant',
             layoutSize: layer.getLayoutValue(sizeProperty, {zoom: tileZoom + 1})
@@ -42,7 +42,7 @@ function getSizeData(tileZoom: number, layer: SymbolStyleLayer, sizeProperty: st
 
     // calculate covering zoom stops for zoom-dependent values
     const levels = [];
-    for (const stop of declaration.function.zoomCurve.stops) {
+    for (const stop of declaration.expression.zoomCurve.stops) {
         levels.push(stop[0]);
     }
 
