@@ -41,10 +41,7 @@ function getSizeData(tileZoom: number, layer: SymbolStyleLayer, sizeProperty: st
     }
 
     // calculate covering zoom stops for zoom-dependent values
-    const levels = [];
-    for (const stop of declaration.expression.zoomCurve.stops) {
-        levels.push(stop[0]);
-    }
+    const levels = declaration.expression.zoomStops;
 
     let lower = 0;
     while (lower < levels.length && levels[lower] <= tileZoom) lower++;

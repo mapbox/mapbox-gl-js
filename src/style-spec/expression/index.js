@@ -16,6 +16,7 @@ const Coalesce = require('./definitions/coalesce');
 const Let = require('./definitions/let');
 
 import type {Expression} from './expression';
+import type {InterpolationType} from './definitions/curve';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -31,7 +32,8 @@ export type StyleExpression = {
     isZoomConstant: false,
     isFeatureConstant: boolean,
     evaluate: ({+zoom?: number}, feature?: Feature) => any,
-    zoomCurve: Curve
+    interpolation: InterpolationType,
+    zoomStops: Array<number>
 };
 
 type StylePropertySpecification = {
@@ -113,7 +115,8 @@ function createExpression(expression: mixed,
         return {
             isZoomConstant: false,
             isFeatureConstant: compiled.isFeatureConstant,
-            zoomCurve,
+            interpolation: zoomCurve.interpolation,
+            zoomStops: zoomCurve.stops.map(s => s[0]),
             evaluate
         };
     }

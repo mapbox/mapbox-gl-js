@@ -73,7 +73,7 @@ class StyleDeclaration {
             return 0;
         } else {
             return Curve.interpolationFactor(
-                this.expression.zoomCurve.interpolation,
+                this.expression.interpolation,
                 zoom,
                 lower,
                 upper
