@@ -1,10 +1,10 @@
 // @flow
 
-const createFunction = require('../style-spec/function');
+const createFunction = require('../style-spec/expression');
 const util = require('../util/util');
-const Curve = require('../style-spec/function/definitions/curve');
+const Curve = require('../style-spec/expression/definitions/curve');
 
-import type {StyleFunction, Feature} from '../style-spec/function';
+import type {StyleFunction, Feature} from '../style-spec/expression';
 
 /**
  * A style property declaration

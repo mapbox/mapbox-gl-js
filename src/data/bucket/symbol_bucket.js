@@ -28,7 +28,7 @@ const createStructArrayType = require('../../util/struct_array');
 const verticalizePunctuation = require('../../util/verticalize_punctuation');
 const {getSizeData} = require('../../symbol/symbol_size');
 
-import type {Feature as ExpressionFeature} from '../../style-spec/function';
+import type {Feature as ExpressionFeature} from '../../style-spec/expression';
 import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
 import type {ProgramInterface, SerializedProgramConfiguration} from '../program_configuration';
 import type CollisionBoxArray, {CollisionBox} from '../../symbol/collision_box';

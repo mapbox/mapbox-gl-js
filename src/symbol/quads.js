@@ -6,7 +6,7 @@ const {GLYPH_PBF_BORDER} = require('../style/parse_glyph_pbf');
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type StyleLayer from '../style/style_layer';
-import type {Feature} from '../style-spec/function';
+import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
 
 module.exports = {
