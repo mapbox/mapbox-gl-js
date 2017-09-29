@@ -23,6 +23,7 @@ register(require('./benchmarks/style_validate'));
 register(require('./benchmarks/style_layer_create'));
 register(require('./benchmarks/query_point'));
 register(require('./benchmarks/query_box'));
+require('./benchmarks/expressions').forEach(register);
 register(require('./benchmarks/filter_create'));
 register(require('./benchmarks/filter_evaluate'));
 
