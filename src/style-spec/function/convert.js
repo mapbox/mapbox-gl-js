@@ -1,8 +1,7 @@
 const assert = require('assert');
 const extend = require('../util/extend');
 
-module.exports.function = convertFunction;
-module.exports.value = convertValue;
+module.exports = convertFunction;
 
 function convertFunction(parameters, propertySpec) {
     let expression;
