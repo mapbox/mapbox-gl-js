@@ -5,7 +5,9 @@ const parseExpression = require('../parse_expression');
 const { typeOf } = require('../values');
 const Literal = require('./literal');
 
-import type { Expression, ParsingContext, CompilationContext } from '../expression';
+import type { Expression } from '../expression';
+import type ParsingContext from '../parsing_context';
+import type CompilationContext  from '../compilation_context';
 import type { Type } from '../types';
 
 // Map input label values to output expression index

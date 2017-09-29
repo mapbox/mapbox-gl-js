@@ -1,11 +1,12 @@
 // @flow
 
 const { toString } = require('./types');
-const { ParsingContext } = require('./expression');
+const ParsingContext = require('./parsing_context');
 const parseExpression = require('./parse_expression');
 const assert = require('assert');
 
-import type { Expression, CompilationContext }  from './expression';
+import type { Expression }  from './expression';
+import type CompilationContext  from './compilation_context';
 import type { Type } from './types';
 
 type Varargs = {| type: Type |};

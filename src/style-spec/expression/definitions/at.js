@@ -7,7 +7,9 @@ const {
     NumberType
 } = require('../types');
 
-import type { Expression, ParsingContext, CompilationContext } from '../expression';
+import type { Expression } from '../expression';
+import type ParsingContext from '../parsing_context';
+import type CompilationContext  from '../compilation_context';
 import type { Type, ArrayType } from '../types';
 
 class At implements Expression {

@@ -1,8 +1,11 @@
 // @flow
 
 const parseExpression = require('../parse_expression');
+
 import type { Type } from '../types';
-import type { Expression, ParsingContext, CompilationContext }  from '../expression';
+import type { Expression } from '../expression';
+import type ParsingContext from '../parsing_context';
+import type CompilationContext  from '../compilation_context';
 
 class Let implements Expression {
     key: string;
