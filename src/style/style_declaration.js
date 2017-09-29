@@ -1,11 +1,41 @@
 // @flow
 
+const parseColor = require('../style-spec/util/parse_color');
 const createExpression = require('../style-spec/expression');
 const {isExpression} = require('../style-spec/expression');
+const convertFunction = require('../style-spec/function/convert');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
 
 import type {StyleExpression, Feature} from '../style-spec/expression';
+
+function normalizeToExpression(parameters, propertySpec): StyleExpression {
+    if (typeof parameters === 'string' && propertySpec.type === 'color') {
+        const color = parseColor(parameters);
+        return {
+            isFeatureConstant: true,
+            isZoomConstant: true,
+            evaluate() { return color; }
+        };
+    }
+
+    if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
+        return {
+            isFeatureConstant: true,
+            isZoomConstant: true,
+            evaluate() { return parameters; }
+        };
+    }
+
+    if (parameters.expression) {
+        return createExpression(parameters.expression, propertySpec);
+    } else {
+        return createExpression(convertFunction(parameters, propertySpec), propertySpec, {
+            defaultValue: parameters.default,
+            isConvertedFunction: true
+        });
+    }
+}
 
 /**
  * A style property declaration
@@ -26,7 +56,7 @@ class StyleDeclaration {
         this.json = JSON.stringify(this.value);
 
         this.minimum = reference.minimum;
-        this.expression = createExpression(this.value, reference);
+        this.expression = normalizeToExpression(this.value, reference);
     }
 
     calculate(globalProperties: {+zoom?: number} = {}, feature?: Feature) {
