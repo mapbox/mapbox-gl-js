@@ -74,7 +74,7 @@ function convertIdentityFunction(parameters, propertySpec, defaultExpression) {
 function convertValue(value, spec) {
     if (typeof value === 'undefined' || value === null) return null;
     if (spec.type === 'color') {
-        return ['to-color', value];
+        return value;
     } else if (spec.type === 'array') {
         return ['literal', value];
     } else {
