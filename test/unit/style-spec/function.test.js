@@ -1,51 +1,15 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const createFunction = require('../../../src/style-spec/expression');
+const createExpression = require('../../../src/style-spec/expression');
+const convertFunction = require('../../../src/style-spec/function/convert');
 
-test('constant function', (t) => {
-    t.test('number', (t) => {
-        const f = createFunction(1, {type: 'number'}).evaluate;
-
-        t.equal(f({zoom: 0}), 1);
-        t.equal(f({zoom: 1}), 1);
-        t.equal(f({zoom: 2}), 1);
-
-        t.end();
+function createFunction(parameters, propertySpec) {
+    return createExpression(convertFunction(parameters, propertySpec), propertySpec, {
+        defaultValue: parameters.default,
+        isConvertedFunction: true
     });
-
-    t.test('string', (t) => {
-        const f = createFunction('mapbox', {type: 'string'}).evaluate;
-
-        t.equal(f({zoom: 0}), 'mapbox');
-        t.equal(f({zoom: 1}), 'mapbox');
-        t.equal(f({zoom: 2}), 'mapbox');
-
-        t.end();
-    });
-
-    t.test('color', (t) => {
-        const f = createFunction('red', {type: 'color'}).evaluate;
-
-        t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 1}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 2}), [1, 0, 0, 1]);
-
-        t.end();
-    });
-
-    t.test('array', (t) => {
-        const f = createFunction([1], {type: 'array'}).evaluate;
-
-        t.deepEqual(f({zoom: 0}), [1]);
-        t.deepEqual(f({zoom: 1}), [1]);
-        t.deepEqual(f({zoom: 2}), [1]);
-
-        t.end();
-    });
-
-    t.end();
-});
+}
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -1037,17 +1001,6 @@ test('unknown function', (t) => {
 });
 
 test('isConstant', (t) => {
-    t.test('constant', (t) => {
-        const f = createFunction(1, {
-            type: 'number'
-        });
-
-        t.ok(f.isZoomConstant);
-        t.ok(f.isFeatureConstant);
-
-        t.end();
-    });
-
     t.test('zoom', (t) => {
         const f = createFunction({
             stops: [[1, 1]]

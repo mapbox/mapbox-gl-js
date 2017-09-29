@@ -10,6 +10,58 @@ test('StyleDeclaration', (t) => {
         t.end();
     });
 
+    t.test('number constant', (t) => {
+        const d = new StyleDeclaration({type: 'number'}, 1);
+
+        t.ok(d.expression.isZoomConstant);
+        t.ok(d.expression.isFeatureConstant);
+
+        t.equal(d.calculate({zoom: 0}), 1);
+        t.equal(d.calculate({zoom: 1}), 1);
+        t.equal(d.calculate({zoom: 2}), 1);
+
+        t.end();
+    });
+
+    t.test('string constant', (t) => {
+        const d = new StyleDeclaration({type: 'string'}, 'mapbox');
+
+        t.ok(d.expression.isZoomConstant);
+        t.ok(d.expression.isFeatureConstant);
+
+        t.equal(d.calculate({zoom: 0}), 'mapbox');
+        t.equal(d.calculate({zoom: 1}), 'mapbox');
+        t.equal(d.calculate({zoom: 2}), 'mapbox');
+
+        t.end();
+    });
+
+    t.test('color constant', (t) => {
+        const d = new StyleDeclaration({type: 'color'}, 'red');
+
+        t.ok(d.expression.isZoomConstant);
+        t.ok(d.expression.isFeatureConstant);
+
+        t.deepEqual(d.calculate({zoom: 0}), [1, 0, 0, 1]);
+        t.deepEqual(d.calculate({zoom: 1}), [1, 0, 0, 1]);
+        t.deepEqual(d.calculate({zoom: 2}), [1, 0, 0, 1]);
+
+        t.end();
+    });
+
+    t.test('array constant', (t) => {
+        const d = new StyleDeclaration({type: 'array'}, [1]);
+
+        t.ok(d.expression.isZoomConstant);
+        t.ok(d.expression.isFeatureConstant);
+
+        t.deepEqual(d.calculate({zoom: 0}), [1]);
+        t.deepEqual(d.calculate({zoom: 1}), [1]);
+        t.deepEqual(d.calculate({zoom: 2}), [1]);
+
+        t.end();
+    });
+
     t.test('interpolated functions', (t) => {
         const reference = {type: "number", function: "interpolated"};
         t.equal((new StyleDeclaration(reference, { stops: [[0, 1]] })).calculate({zoom: 0}), 1);

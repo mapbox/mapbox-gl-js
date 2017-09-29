@@ -2,7 +2,6 @@
 
 const parseColor = require('../util/parse_color');
 const compileExpression = require('./compile');
-const convertFunction = require('../function/convert');
 const {
     ColorType,
     StringType,
@@ -61,56 +60,20 @@ type StylePropertySpecification = {
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
-function createExpression(parameters: FunctionParameters, propertySpec: StylePropertySpecification): StyleExpression {
-    if (typeof parameters === 'string' && propertySpec.type === 'color') {
-        const color = parseColor(parameters);
-        return {
-            isFeatureConstant: true,
-            isZoomConstant: true,
-            evaluate() { return color; }
-        };
-    }
-
-    if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
-        return {
-            isFeatureConstant: true,
-            isZoomConstant: true,
-            evaluate() { return parameters; }
-        };
-    }
-
-    let expr;
-    let defaultValue = propertySpec.default;
-    let isConvertedStopFunction = false;
-
-    if (parameters.expression) {
-        expr = parameters.expression;
-    } else {
-        expr = convertFunction(parameters, propertySpec);
-        isConvertedStopFunction = true;
-        if (parameters && typeof parameters.default !== 'undefined') {
-            defaultValue = parameters.default;
-        }
-    }
-
-    if (propertySpec.type === 'color') {
-        defaultValue = parseColor((defaultValue: any));
-    }
-
-    if (expr === null) {
-        return {
-            isFeatureConstant: true,
-            isZoomConstant: true,
-            evaluate() { return defaultValue; }
-        };
-    }
-
+function createExpression(expression: mixed,
+                          propertySpec: StylePropertySpecification,
+                          options: { isConvertedFunction?: boolean, defaultValue?: any } = {}): StyleExpression {
     const expectedType = getExpectedType(propertySpec);
-    const compiled = compileExpression(expr, expectedType);
+    const compiled = compileExpression(expression, expectedType);
 
     if (compiled.result !== 'success') {
         // this should have been caught in validation
         throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+    }
+
+    let defaultValue = options.defaultValue || propertySpec.default;
+    if (propertySpec.type === 'color') {
+        defaultValue = parseColor((defaultValue: any));
     }
 
     const warningHistory: {[key: string]: boolean} = {};
@@ -122,7 +85,7 @@ function createExpression(parameters: FunctionParameters, propertySpec: StylePro
             }
             return val;
         } catch (e) {
-            if (!isConvertedStopFunction && !warningHistory[e.message]) {
+            if (!options.isConvertedFunction && !warningHistory[e.message]) {
                 warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
                     console.warn(e.message);
