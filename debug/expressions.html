@@ -43,15 +43,75 @@
         /* global StylePropertyEditor */
         var map = window.map = new mapboxgl.Map({
             container: 'map',
-            zoom: 12.5,
-            center: [-77.01866, 38.888],
             style: 'mapbox://styles/mapbox/streets-v10',
             hash: true
         });
 
         map.on('load', function () {
+            map.addSource('circles', {
+                "type": "geojson",
+                "data": "/test/integration/data/places.geojson"
+            });
+
+            map.addLayer({
+                "id": "circles",
+                "type": "circle",
+                "source": "circles",
+                "paint": {
+                    "circle-radius": {
+                        "expression": [
+                            "curve",
+                            ["exponential", 2.0],
+                            ["zoom"],
+                            0, 5,
+                            5, ['*', ["get", "scalerank"], 20],
+                        ]
+                    },
+                    "circle-color": {
+                        "type": "categorical",
+                        "property": "featureclass",
+                        "stops": [
+                            ["cape", "orange"],
+                            ["island", "#0088ff"],
+                            ["plain", "yellow"],
+                            ["pole", "white"],
+                            ["waterfall", "blue"],
+                        ],
+                        "default": "red"
+                    },
+                    "circle-pitch-scale": "map",
+                    "circle-pitch-alignment": "map"
+                }
+            });
+
+            map.addLayer({
+                "id": "labels",
+                "type": "symbol",
+                "source": "circles",
+                "minzoom": 1,
+                "layout": {
+                    "text-field": {
+                        "expression": [
+                            "concat",
+                            ["get", "name"],
+                            " (",
+                            [
+                                "coalesce",
+                                ["get", "subregion"],
+                                ["get", "region"]
+                            ],
+                            ")"
+                        ]
+                    }
+                }
+            });
+
             ReactDOM.render(
-                React.createElement(StylePropertyEditor, {map}, null),
+                React.createElement(StylePropertyEditor, {
+                    map,
+                    layer: "circles",
+                    property: "paint.circle-color"
+                }, null),
                 document.getElementById('main'));
         });
     </script>
