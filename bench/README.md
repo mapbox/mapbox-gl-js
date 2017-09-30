@@ -14,6 +14,8 @@ To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench`](
 
 To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/#Layout`](http://localhost:9966/bench/#Layout).
 
+In either case, if you want to run only benchmarks from your local branch, without also running the current master branch build, then include a `no-master` query parameter, i.e. [localhost:9966/bench?no-master](http://localhost:9966/bench?no-master) or [localhost:9966/bench?no-master#Layout](http://localhost:9966/bench?no-master#Layout).
+
 ## Writing a Benchmark
 
 Good benchmarks
