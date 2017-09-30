@@ -90,6 +90,7 @@ class StatisticsPlot extends React.Component {
 
                         const {
                             mean,
+                            trimmedMean,
                             q1,
                             q2,
                             q3,
@@ -98,6 +99,8 @@ class StatisticsPlot extends React.Component {
                             argmin,
                             argmax
                         } = v.summary;
+
+                        const tMax = t.domain()[1];
 
                         return <g key={i}>
                             <path
@@ -148,18 +151,20 @@ class StatisticsPlot extends React.Component {
                                     stroke={color}
                                     strokeWidth={bandwidth}
                                     strokeOpacity={1} />
-                                <line // mean
-                                    x1={bandwidth / 2}
-                                    x2={bandwidth / 2}
-                                    y1={t(mean) - 0.5}
-                                    y2={t(mean) + 0.5}
-                                    stroke='white'
-                                    strokeWidth={bandwidth}
-                                    strokeOpacity={1} />
-                                {[mean].map((d, i) =>
+                                <use href="#up-arrow" // mean
+                                    style={{ stroke: color, fill: color, fillOpacity: 0.4 }}
+                                    transform={mean >= tMax ? 'translate(-10, 0)' : `translate(-5, ${t(mean)}) rotate(90)`}
+                                    x={0}
+                                    y={0} />
+                                <use href="#up-arrow" // trimmed mean
+                                    style={{ stroke: color, fill: color }}
+                                    transform={`translate(-5, ${t(trimmedMean)}) rotate(90)`}
+                                    x={0}
+                                    y={0} />
+                                {[mean, trimmedMean].map(d =>
                                     <text // left
                                         key={i}
-                                        dx={-6}
+                                        dx={-16}
                                         dy='.3em'
                                         x={0}
                                         y={t(d)}
