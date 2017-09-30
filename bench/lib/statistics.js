@@ -70,10 +70,14 @@ function summaryStatistics(data) {
     };
 }
 
-function regression(samples) {
+function regression(measurements) {
     const result = [];
-    for (let i = 0, n = 1; i + n < samples.length; i += n, n++) {
-        result.push([n, samples.slice(i, i + n).reduce(((sum, sample) => sum + sample), 0)]);
+    for (let i = 0, n = 1; i + n < measurements.length; i += n, n++) {
+        const subset = measurements.slice(i, i + n);
+        result.push([
+            subset.reduce((sum, measurement) => sum + measurement.iterations, 0),
+            subset.reduce((sum, measurement) => sum + measurement.time, 0)
+        ]);
     }
     return leastSquaresRegression(result);
 }

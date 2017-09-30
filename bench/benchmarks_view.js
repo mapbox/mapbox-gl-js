@@ -382,11 +382,14 @@ for (const name in window.mapboxglBenchmarks) {
             update();
 
             return window.mapboxglBenchmarks[name][ver].run()
-                .then(samples => {
+                .then(measurements => {
+                    // scale measurements down by iteration count, so that
+                    // they represent (average) time for a single iteration
+                    const samples = measurements.map(({time, iterations}) => time / iterations);
                     version.status = 'ended';
                     version.samples = samples;
                     version.summary = summaryStatistics(samples);
-                    version.regression = regression(samples);
+                    version.regression = regression(measurements);
                     update();
                 })
                 .catch(error => {

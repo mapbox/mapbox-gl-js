@@ -2,9 +2,22 @@
 
 'use strict';
 
+// According to https://developer.mozilla.org/en-US/docs/Web/API/Performance/now,
+// performance.now() should be accurate to 0.005ms. Set the minimum running
+// time for a single measurement at 5ms, so that the error due to timer
+// precision is < 0.1%.
+const minTimeForMeasurement = 0.005 * 1000;
+
+/*::
+export type Measurement = {
+    iterations: number,
+    time: number
+};
+*/
+
 class Benchmark {
     constructor() {
-        this._async = this._async.bind(this);
+        this._measureAsync = this._measureAsync.bind(this);
     }
 
     /**
@@ -29,64 +42,85 @@ class Benchmark {
      */
     teardown(): Promise<void> | void {}
 
-    _async: () => Promise<Array<number>>;
+    _measureAsync: () => Promise<Array<Measurement>>;
     _elapsed: number;
-    _samples: Array<number>;
+    _measurements: Array<Measurement>;
+    _iterationsPerMeasurement: number;
     _start: number;
 
     /**
      * Run the benchmark by executing `setup` once, sampling the execution time of `bench` some number of
      * times, and then executing `teardown`. Yields an array of execution times.
      */
-    run(): Promise<Array<number>> {
+    run(): Promise<Array<Measurement>> {
         return Promise.resolve(this.setup()).then(() => this._begin());
     }
 
     _done() {
         // 210 samples => 20 observations for regression
-        return this._elapsed >= 500 && this._samples.length > 210;
+        return this._elapsed >= 500 && this._measurements.length > 210;
     }
 
-    _begin(): Promise<Array<number>> {
-        this._samples = [];
+    _begin(): Promise<Array<Measurement>> {
+        this._measurements = [];
         this._elapsed = 0;
+        this._iterationsPerMeasurement = 1;
         this._start = performance.now();
 
         const bench = this.bench();
         if (bench instanceof Promise) {
-            return bench.then(this._async);
+            return bench.then(this._measureAsync);
         } else {
-            return (this._sync(): any);
+            return (this._measureSync(): any);
         }
     }
 
-    _sync() {
+    _measureSync() {
         // Avoid Promise overhead for sync benchmarks.
         while (true) {
-            const sample = performance.now() - this._start;
-            this._samples.push(sample);
-            this._elapsed += sample;
+            const time = performance.now() - this._start;
+            this._elapsed += time;
+            if (time < minTimeForMeasurement) {
+                this._iterationsPerMeasurement++;
+            } else {
+                this._measurements.push({time, iterations: this._iterationsPerMeasurement});
+            }
             if (this._done()) {
                 return this._end();
             }
             this._start = performance.now();
-            this.bench();
+            for (let i = this._iterationsPerMeasurement; i > 0; --i) {
+                this.bench();
+            }
         }
     }
 
-    _async(): Promise<Array<number>> {
-        const sample = performance.now() - this._start;
-        this._samples.push(sample);
-        this._elapsed += sample;
+    _measureAsync(): Promise<Array<Measurement>> {
+        const time = performance.now() - this._start;
+        this._elapsed += time;
+        if (time < minTimeForMeasurement) {
+            this._iterationsPerMeasurement++;
+        } else {
+            this._measurements.push({time, iterations: this._iterationsPerMeasurement});
+        }
         if (this._done()) {
             return this._end();
         }
         this._start = performance.now();
-        return ((this.bench(): any): Promise<void>).then(this._async);
+        return this._runAsync(this._iterationsPerMeasurement).then(this._measureAsync);
     }
 
-    _end(): Promise<Array<number>> {
-        return Promise.resolve(this.teardown()).then(() => this._samples);
+    _runAsync(n: number): Promise<void> {
+        const bench = ((this.bench(): any): Promise<void>);
+        if (n === 1) {
+            return bench;
+        } else {
+            return bench.then(() => this._runAsync(n - 1));
+        }
+    }
+
+    _end(): Promise<Array<Measurement>> {
+        return Promise.resolve(this.teardown()).then(() => this._measurements);
     }
 }
 
