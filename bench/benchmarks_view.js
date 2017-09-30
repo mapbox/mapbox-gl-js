@@ -43,7 +43,7 @@ class StatisticsPlot extends React.Component {
             name: v.name,
             samples: v.samples,
             summary: v.summary,
-            density: kde(v.samples, t.ticks(50))
+            density: kde(v.samples, v.summary, t.ticks(50))
         }));
 
         const p = d3.scaleLinear()

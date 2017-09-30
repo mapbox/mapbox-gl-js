@@ -99,14 +99,14 @@ function leastSquaresRegression(data) {
     return { correlation, slope, intercept, data };
 }
 
-function kde(samples, ticks) {
+function kde(samples, summary, ticks) {
     const kernel = kernelEpanechnikov;
 
     if (samples.length === 0) {
         return [];
     }
     // https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator
-    const bandwidth = 1.06 * d3.deviation(samples) * Math.pow(samples.length, -0.2);
+    const bandwidth = 1.06 * summary.windsorizedDeviation * Math.pow(samples.length, -0.2);
     return ticks.map((x) => {
         return [x, d3.mean(samples, (v) => kernel((x - v) / bandwidth)) / bandwidth];
     });
