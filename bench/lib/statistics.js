@@ -63,6 +63,7 @@ function summaryStatistics(data) {
         q1,
         q2,
         q3,
+        iqr: q3 - q1,
         argmin: min[0], // index of minimum value
         min: min[1],
         argmax: max[0], // index of maximum value

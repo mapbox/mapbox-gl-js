@@ -25,12 +25,17 @@ class StatisticsPlot extends React.Component {
         const height = 400 - margin.top - margin.bottom;
         const kdeWidth = 100;
 
+        const summaries = this.props.versions
+            .filter(v => v.status === 'ended')
+            .map(v => v.summary);
+
         const t = d3.scaleLinear()
             .domain([
-                d3.min(this.props.versions.map(v => v.summary.min || Infinity)),
-                d3.max(this.props.versions.map(v => v.summary.max || -Infinity))
+                d3.min(summaries.map(s => s.min)),
+                d3.max(summaries.map(s => Math.min(s.max, s.q2 + 3 * s.iqr)))
             ])
             .range([height, 0])
+            .clamp(true)
             .nice();
 
         const b = d3.scaleBand()
@@ -61,6 +66,12 @@ class StatisticsPlot extends React.Component {
                 height={height + margin.top + margin.bottom}
                 style={{overflow: 'visible'}}
                 ref={(ref) => { this.ref = ref; }}>
+                <defs>
+                    <g id="up-arrow">
+                        <path transform="translate(-6, -2)" style={{stroke: "inherit", fill: "inherit"}}
+                            d="M2,10 L6,2 L10,10"></path>
+                    </g>
+                </defs>
                 <g transform={`translate(${margin.left},${margin.top})`}>
                     <Axis orientation="bottom" scale={p} ticks={[2, "%"]} transform={`translate(0,${height})`}>
                     </Axis>
@@ -102,8 +113,25 @@ class StatisticsPlot extends React.Component {
                                         fill={color}
                                         cx={scale(i)}
                                         cy={t(d)}
-                                        r={i === argmin || i === argmax ? 2 : 1} />
+                                        r={i === argmin || i === argmax ? 2 : 1}
+                                        style={{
+                                            fillOpacity: d < tMax ? 1 : 0
+                                        }}
+                                    />
                                 )}
+                                {v.samples.filter(d => d >= tMax)
+                                    .map((d, i) =>
+                                        <use href="#up-arrow"
+                                            x={scale(i)}
+                                            y={t(d)}
+                                            style={{
+                                                stroke:color,
+                                                strokeWidth: i === argmin || i === argmax ? 2 : 1,
+                                                fill: 'rgba(200, 0, 0, 0.5)'
+                                            }}
+                                        />
+                                    )
+                                }
                                 <line // quartiles
                                     x1={bandwidth / 2}
                                     x2={bandwidth / 2}
