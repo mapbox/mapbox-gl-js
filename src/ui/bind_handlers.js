@@ -46,7 +46,10 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseDown(e: MouseEvent) {
-        map.stop();
+        if (!map.doubleClickZoom.isActive()) {
+            map.stop();
+        }
+
         startPos = DOM.mousePos(el, e);
         fireMouseEvent('mousedown', e);
 
