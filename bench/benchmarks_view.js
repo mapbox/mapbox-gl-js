@@ -342,13 +342,43 @@ class BenchmarkRow extends React.Component {
 }
 
 class BenchmarksTable extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {sharing: false};
+        this.share = this.share.bind(this);
+    }
+
     render() {
         return (
             <div style={{width: 960, margin: '2em auto'}}>
-                <h1 className="space-bottom1">Mapbox GL JS Benchmarks – {this.props.finished ? 'Finished' : 'Running'}</h1>
+                {this.state.sharing && <span className='loading'></span>}
+                <h1 className="space-bottom1">Mapbox GL JS Benchmarks – {
+                    this.props.finished ?
+                        <span>Finished <button className='button fr icon share' onClick={this.share}>Share</button></span> :
+                        <span>Running</span>}</h1>
                 {this.props.benchmarks.map(benchmark => <BenchmarkRow key={benchmark.name} {...benchmark}/>)}
             </div>
         );
+    }
+
+    share() {
+        document.querySelectorAll('script').forEach(e => e.remove());
+        const share = document.querySelector('.share');
+        share.style.display = 'none';
+
+        const body = JSON.stringify({
+            "public": true,
+            "files": {
+                "index.html": {
+                    "content": document.body.parentElement.outerHTML
+                }
+            }
+        });
+        this.setState({sharing: true});
+
+        fetch('https://api.github.com/gists', { method: 'POST', body })
+            .then(response => response.json())
+            .then(json => { window.location = `https://bl.ocks.org/anonymous/raw/${json.id}/`; });
     }
 }
 
