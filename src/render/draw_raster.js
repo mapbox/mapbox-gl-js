@@ -70,16 +70,21 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLaye
         gl.uniform1f(program.uniforms.u_fade_t, fade.mix);
         gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint['raster-opacity']);
 
+
         if (source instanceof ImageSource) {
             const buffer = source.boundsBuffer;
             const vao = source.boundsVAO;
             vao.bind(gl, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
-        } else if (tile.maskedBoundsBuffer && tile.maskedBoundsVAO) {
-            const buffer = tile.maskedBoundsBuffer;
-            const vao = tile.maskedBoundsVAO;
-            vao.bind(gl, program, buffer);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+        } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
+            program.draw(
+                gl,
+                gl.TRIANGLES,
+                layer.id,
+                tile.maskedBoundsBuffer,
+                tile.maskedIndexBuffer,
+                tile.segments
+            );
         } else {
             const buffer = painter.rasterBoundsBuffer;
             const vao = painter.rasterBoundsVAO;
