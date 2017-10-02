@@ -13,6 +13,7 @@ import type Point from '@mapbox/point-geometry';
 import type {Feature, GlobalProperties} from '../style-spec/expression';
 import type RenderTexture from '../render/render_texture';
 import type AnimationLoop from './animation_loop';
+import type {FeatureFilter} from '../style-spec/feature_filter';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -26,11 +27,12 @@ class StyleLayer extends Evented {
     sourceLayer: ?string;
     minzoom: ?number;
     maxzoom: ?number;
-    filter: any;
+    filter: mixed;
     paint: { [string]: any };
     layout: { [string]: any };
 
     viewportFrame: ?RenderTexture;
+    _featureFilter: FeatureFilter;
 
     _paintSpecifications: any;
     _layoutSpecifications: any;
@@ -66,6 +68,8 @@ class StyleLayer extends Evented {
 
         this.paint = {};
         this.layout = {};
+
+        this._featureFilter = () => true;
 
         this._paintSpecifications = styleSpec[`paint_${this.type}`];
         this._layoutSpecifications = styleSpec[`layout_${this.type}`];

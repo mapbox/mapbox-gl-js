@@ -16,6 +16,7 @@ import type CollisionTile from '../symbol/collision_tile';
 import type TileCoord from '../source/tile_coord';
 import type StyleLayer from '../style/style_layer';
 import type {SerializedStructArray} from '../util/struct_array';
+import type {FeatureFilter} from '../style-spec/feature_filter';
 
 const FeatureIndexArray = createStructArrayType({
     members: [
@@ -178,7 +179,7 @@ class FeatureIndex {
         matching: Array<any>,
         array: any,
         queryGeometry: Array<Array<Point>>,
-        filter: any,
+        filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
         bearing: number,
@@ -201,7 +202,7 @@ class FeatureIndex {
             const sourceLayer = this.vtLayers[sourceLayerName];
             const feature = sourceLayer.feature(match.featureIndex);
 
-            if (!filter(feature)) continue;
+            if (!filter({zoom: this.coord.z}, feature)) continue;
 
             let geometry = null;
 
