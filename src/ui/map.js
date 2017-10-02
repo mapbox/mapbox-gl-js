@@ -223,6 +223,7 @@ class Map extends Camera {
 
     _classes: Array<string>;
     _container: HTMLElement;
+    _missingCSSContainer: HTMLElement;
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
     _controlPositions: {[string]: HTMLElement};
