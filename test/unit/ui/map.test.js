@@ -749,7 +749,7 @@ test('Map', (t) => {
 
     t.test('#remove', (t) => {
         const map = createMap();
-        t.equal(map.getContainer().childNodes.length, 2);
+        t.equal(map.getContainer().childNodes.length, 3);
         map.remove();
         t.equal(map.getContainer().childNodes.length, 0);
         t.end();
