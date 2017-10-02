@@ -97,7 +97,7 @@ function renderToTexture(gl, painter, layer) {
 
 function bindTextureFramebuffer(gl, painter, texture, fbo) {
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, painter.width / 4, painter.height / 4, 0, gl.RGB,
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA,
         painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
