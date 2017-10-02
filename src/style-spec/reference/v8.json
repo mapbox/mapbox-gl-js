@@ -469,6 +469,7 @@
     "layout_fill",
     "layout_line",
     "layout_circle",
+    "layout_heatmap",
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
@@ -539,6 +540,26 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        }
+      }
+    }
+  },
+  "layout_heatmap": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
         }
       }
     }
@@ -1975,6 +1996,10 @@
       "zoom": {
         "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level [\"curve\"] expression.",
         "group": "Zoom"
+      },
+      "heatmap-density": {
+        "doc": "Gets the density of a pixel in a heatmap layer. Can only be used in `heatmap-color` property.",
+        "group": "Heatmap"
       },
       "+": {
         "doc": "",

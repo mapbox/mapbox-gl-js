@@ -49,6 +49,7 @@ navigation:
     - title: Raster
     - title: Circle
     - title: Fill-Extrusion
+    - title: Heatmap
   - title: Types
     subnav:
     - title: Color
@@ -657,7 +658,7 @@ navigation:
     </div>
 
 
-    <% var layer_types = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion']; %>
+    <% var layer_types = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap']; %>
 
     <div class='pad2 prose'>
       <a id='layers' class='anchor'></a>
@@ -946,7 +947,7 @@ navigation:
 {% endhighlight %}
 </div>
 
-A <a id="zoom-function" class="anchor"></a><strong>zoom function</strong> is any function defined using an expression that includes a reference to <code>["zoom"]</code>.  Such functions allow the appearance of a map feature change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density.  
+A <a id="zoom-function" class="anchor"></a><strong>zoom function</strong> is any function defined using an expression that includes a reference to <code>["zoom"]</code>.  Such functions allow the appearance of a map feature change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density.
 
           A zoom function must be of the following form (see <a href="#types-expression-curve">curves</a> for more details):
 
