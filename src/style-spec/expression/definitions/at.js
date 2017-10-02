@@ -1,6 +1,5 @@
 // @flow
 
-const parseExpression = require('../parse_expression');
 const {
     array,
     ValueType,
@@ -29,8 +28,8 @@ class At implements Expression {
         if (args.length !== 3)
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
-        const index = parseExpression(args[1], context.concat(1, NumberType));
-        const input = parseExpression(args[2], context.concat(2, array(context.expectedType || ValueType)));
+        const index = context.parse(args[1], 1, NumberType);
+        const input = context.parse(args[2], 2, array(context.expectedType || ValueType));
 
         if (!index || !input) return null;
 

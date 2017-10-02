@@ -1,7 +1,5 @@
 // @flow
 
-const parseExpression = require('../parse_expression');
-
 import type { Type } from '../types';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -59,14 +57,13 @@ class Let implements Expression {
                 return context.error(`Variable names must contain only alphanumeric characters or '_'.`, i);
             }
 
-            const value = parseExpression(args[i + 1], context.concat(i + 1));
+            const value = context.parse(args[i + 1], i + 1);
             if (!value) return null;
 
             bindings.push([name, value]);
         }
 
-        const resultContext = context.concat(args.length - 1, undefined, bindings);
-        const result = parseExpression(args[args.length - 1], resultContext);
+        const result = context.parse(args[args.length - 1], args.length - 1, undefined, bindings);
         if (!result) return null;
 
         return new Let(context.key, bindings, result);

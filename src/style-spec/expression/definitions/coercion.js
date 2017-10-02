@@ -1,7 +1,6 @@
 // @flow
 
 const assert = require('assert');
-const parseExpression = require('../parse_expression');
 const {
     ColorType,
     ValueType,
@@ -47,7 +46,7 @@ class Coercion implements Expression {
 
         const parsed = [];
         for (let i = 1; i < args.length; i++) {
-            const input = parseExpression(args[i], context.concat(i, ValueType));
+            const input = context.parse(args[i], i, ValueType);
             if (!input) return null;
             parsed.push(input);
         }

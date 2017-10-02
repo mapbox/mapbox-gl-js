@@ -5,7 +5,6 @@ const {
     toString,
     NumberType
 } = require('../types');
-const parseExpression = require('../parse_expression');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -97,7 +96,7 @@ class Curve implements Expression {
             return context.error(`Expected an ${parity === 0 ? 'even' : 'odd'} number of arguments.`);
         }
 
-        input = parseExpression(input, context.concat(2, NumberType));
+        input = context.parse(input, 2, NumberType);
         if (!input) return null;
 
         const stops: Stops = [];
@@ -126,7 +125,7 @@ class Curve implements Expression {
                 return context.error('Input/output pairs for "curve" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 
-            const parsed = parseExpression(value, context.concat(valueKey, outputType));
+            const parsed = context.parse(value, valueKey, outputType);
             if (!parsed) return null;
             outputType = outputType || parsed.type;
             stops.push([label, parsed]);
