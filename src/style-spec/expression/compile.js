@@ -5,7 +5,6 @@ module.exports = compileExpression;
 
 const ParsingContext = require('./parsing_context');
 const CompilationContext = require('./compilation_context');
-const parseExpression = require('./parse_expression');
 const definitions = require('./definitions');
 const evaluationContext = require('./evaluation_context');
 const {
@@ -58,7 +57,7 @@ function compileExpression(
     expectedType?: Type
 ): CompiledExpression | CompileErrors {
     const context = new ParsingContext(definitions, [], expectedType || null);
-    const parsed = parseExpression(expr, context);
+    const parsed = context.parse(expr);
     if (!parsed) {
         assert(context.errors.length > 0);
         return {

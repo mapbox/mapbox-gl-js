@@ -2,7 +2,6 @@
 
 const { toString } = require('./types');
 const ParsingContext = require('./parsing_context');
-const parseExpression = require('./parse_expression');
 const assert = require('assert');
 
 import type { Expression }  from './expression';
@@ -75,7 +74,7 @@ class CompoundExpression implements Expression {
                     params[i - 1] :
                     params.type;
             }
-            const parsed = parseExpression(arg, context.concat(1 + parsedArgs.length, expected));
+            const parsed = context.parse(arg, 1 + parsedArgs.length, expected);
             if (!parsed) return null;
             parsedArgs.push(parsed);
         }

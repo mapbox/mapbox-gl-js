@@ -1,6 +1,5 @@
 // @flow
 
-const parseExpression = require('../parse_expression');
 const {
     toString,
     array,
@@ -60,7 +59,7 @@ class ArrayAssertion implements Expression {
 
         const type = array(itemType, N);
 
-        const input = parseExpression(args[args.length - 1], context.concat(args.length - 1, ValueType));
+        const input = context.parse(args[args.length - 1], args.length - 1, ValueType);
         if (!input) return null;
 
         return new ArrayAssertion(context.key, type, input);

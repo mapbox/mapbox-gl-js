@@ -1,7 +1,6 @@
 // @flow
 
 const assert = require('assert');
-const parseExpression = require('../parse_expression');
 const { BooleanType } = require('../types');
 
 import type { Expression } from '../expression';
@@ -38,10 +37,10 @@ class Case implements Expression {
 
         const branches = [];
         for (let i = 1; i < args.length - 1; i += 2) {
-            const test = parseExpression(args[i], context.concat(i, BooleanType));
+            const test = context.parse(args[i], i, BooleanType);
             if (!test) return null;
 
-            const result = parseExpression(args[i + 1], context.concat(i + 1, outputType));
+            const result = context.parse(args[i + 1], i + 1, outputType);
             if (!result) return null;
 
             branches.push([test, result]);
@@ -49,7 +48,7 @@ class Case implements Expression {
             outputType = outputType || result.type;
         }
 
-        const otherwise = parseExpression(args[args.length - 1], context.concat(args.length - 1, outputType));
+        const otherwise = context.parse(args[args.length - 1], args.length - 1, outputType);
         if (!otherwise) return null;
 
         assert(outputType);

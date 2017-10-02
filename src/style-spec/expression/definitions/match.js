@@ -1,7 +1,6 @@
 // @flow
 
 const assert = require('assert');
-const parseExpression = require('../parse_expression');
 const { typeOf } = require('../values');
 const Literal = require('./literal');
 
@@ -81,16 +80,16 @@ class Match implements Expression {
                 cases[String(label)] = outputs.length;
             }
 
-            const result = parseExpression(value, context.concat(i, outputType));
+            const result = context.parse(value, i, outputType);
             if (!result) return null;
             outputType = outputType || result.type;
             outputs.push(result);
         }
 
-        const input = parseExpression(args[1], context.concat(1, inputType));
+        const input = context.parse(args[1], 1, inputType);
         if (!input) return null;
 
-        const otherwise = parseExpression(args[args.length - 1], context.concat(args.length - 1, outputType));
+        const otherwise = context.parse(args[args.length - 1], args.length - 1, outputType);
         if (!otherwise) return null;
 
         assert(inputType && outputType);

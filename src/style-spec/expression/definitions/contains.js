@@ -1,6 +1,5 @@
 // @flow
 
-const parseExpression = require('../parse_expression');
 const {
     array,
     BooleanType,
@@ -29,11 +28,11 @@ class Contains implements Expression {
         if (args.length !== 3)
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
-        const arrayExpr = parseExpression(args[2], context.concat(2, array(ValueType)));
+        const arrayExpr = context.parse(args[2], 2, array(ValueType));
         if (!arrayExpr) return null;
 
         const t: ArrayType = (arrayExpr.type: any);
-        const value = parseExpression(args[1], context.concat(1, t.itemType));
+        const value = context.parse(args[1], 1, t.itemType);
         if (!value) return null;
 
         const itemType = value.type.kind;
