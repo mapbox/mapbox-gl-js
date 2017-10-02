@@ -6,7 +6,6 @@ module.exports = compileExpression;
 const ParsingContext = require('./parsing_context');
 const CompilationContext = require('./compilation_context');
 const definitions = require('./definitions');
-const evaluationContext = require('./evaluation_context');
 const {
     isFeatureConstant,
     isZoomConstant
@@ -67,7 +66,7 @@ function compileExpression(
     }
 
     const compilationContext = new CompilationContext();
-    const compiled = compilationContext.compileToFunction(parsed, evaluationContext());
+    const compiled = compilationContext.compileToFunction(parsed);
 
     return {
         result: 'success',

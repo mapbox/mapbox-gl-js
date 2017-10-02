@@ -58,46 +58,52 @@ function ensure(condition: any, message: string) {
     return true;
 }
 
+class EvaluationContext {
+    types: typeof types;
+    Color: typeof Color;
+    ensure: typeof ensure;
+    _parseColorCache: {[string]: ?Color};
 
-module.exports = () => ({
-    types: types,
+    constructor() {
+        this._parseColorCache = {};
+    }
 
-    Color: Color, // used for compiling color literals
-    ensure: ensure,
-    error: (msg: string) => ensure(false, msg),
+    error(msg: string) {
+        ensure(false, msg);
+    }
 
-    at: function (index: number, array: Array<Value>) {
+    at(index: number, array: Array<Value>) {
         ensure(index >= 0 && index < array.length,
             `Array index out of bounds: ${index} > ${array.length}.`);
         ensure(index === Math.floor(index),
             `Array index must be an integer, but found ${String(index)} instead.`);
         return array[index];
-    },
+    }
 
-    get: function (obj: {[string]: Value}, key: string) {
+    get(obj: {[string]: Value}, key: string) {
         const v = obj[key];
         return typeof v === 'undefined' ? null : v;
-    },
+    }
 
-    has: function (obj: {[string]: Value}, key: string, name?: string) {
+    has(obj: {[string]: Value}, key: string, name?: string) {
         ensure(obj, `Cannot get property ${key} from null object${name ? ` ${name}` : ''}.`);
         ensure(typeof obj === 'object', `Expected ${name || 'value'} to be of type Object, but found ${toString(typeOf(obj))} instead.`);
         return typeof obj[key] !== 'undefined';
-    },
+    }
 
-    contains: function (value: Value, array: Array<Value>) {
+    contains(value: Value, array: Array<Value>) {
         const type = typeOf(value).kind;
         ensure(type !== 'Object' && type !== 'Array' && type !== 'Color',
             `"contains" does not support values of type ${type}`);
         return array.indexOf(value) >= 0;
-    },
+    }
 
-    typeOf: function (x: Value): string {
+    typeOf(x: Value): string {
         return toString(typeOf(x));
-    },
+    }
 
-    asJSType: function (expectedType: string, args: Array<()=>Value>) {
-        let value;
+    asJSType(expectedType: string, args: Array<()=>Value>) {
+        let value = null;
         for (const arg of args) {
             value = arg();
             if (typeof value === expectedType && value !== null) {
@@ -106,9 +112,9 @@ module.exports = () => ({
         }
         const expected = jsTypes[expectedType].kind;
         throw new RuntimeError(`Expected value to be of type ${expected}, but found ${this.typeOf(value)} instead.`);
-    },
+    }
 
-    asArray: function (value: Value, expectedType: ArrayType) {
+    asArray(value: Value, expectedType: ArrayType) {
         const type = typeOf(value);
         const typeError = checkSubtype(expectedType, type);
 
@@ -117,9 +123,9 @@ module.exports = () => ({
         }
 
         return value;
-    },
+    }
 
-    toColor: function (args: Array<()=>any>) {
+    toColor(args: Array<() => any>) {
         let input;
         let error;
         for (const arg of args) {
@@ -139,23 +145,22 @@ module.exports = () => ({
             }
         }
         throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
-    },
+    }
 
-    _parseColorCache: ({}: {[string]: ?Color}),
-    _parseColor: function (input: string): ?Color {
+    _parseColor(input: string): ?Color {
         let cached = this._parseColorCache[input];
         if (!cached) {
             const c = parseColor(input);
             cached = this._parseColorCache[input] = c ? new Color(c[0], c[1], c[2], c[3]) : null;
         }
         return cached;
-    },
+    }
 
-    rgba: function (r: number, g: number, b: number, a?: number) {
+    rgba(r: number, g: number, b: number, a?: number) {
         const error = this._validateRGBA(r, g, b, a);
         if (error) throw new RuntimeError(error);
         return new Color(r / 255, g / 255, b / 255, a);
-    },
+    }
 
     _validateRGBA(r: number, g: number, b: number, a?: number): ?string {
         if (!(
@@ -174,9 +179,9 @@ module.exports = () => ({
         }
 
         return null;
-    },
+    }
 
-    toString: function(value: Value) {
+    toString(value: Value) {
         const type = typeof value;
         if (value === null || type === 'string' || type === 'number' || type === 'boolean') {
             return String(value);
@@ -186,10 +191,10 @@ module.exports = () => ({
         } else {
             return JSON.stringify(value);
         }
-    },
+    }
 
-    toNumber: function(args: Array<()=>Value>) {
-        let value;
+    toNumber(args: Array<()=>Value>) {
+        let value = null;
         for (const arg of args) {
             value = arg();
             if (value === null) continue;
@@ -198,20 +203,20 @@ module.exports = () => ({
             return num;
         }
         throw new RuntimeError(`Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
-    },
+    }
 
-    geometryType: function(feature: Feature) {
+    geometryType(feature: Feature) {
         return typeof feature.type === 'number' ?
             geometryTypes[feature.type] : feature.type;
-    },
+    }
 
-    unwrap: function (maybeWrapped: Value) {
+    unwrap(maybeWrapped: Value) {
         if (maybeWrapped instanceof Color) {
             return maybeWrapped.value;
         }
 
         return maybeWrapped;
-    },
+    }
 
     evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<any>, interpolation: InterpolationType, resultType: string) {
         const stopCount = stopInputs.length;
@@ -241,7 +246,7 @@ module.exports = () => ({
         }
 
         return interpolate[resultType](outputLower, outputUpper, t);
-    },
+    }
 
     coalesce(args: Array<() => Value>) {
         let result = null;
@@ -251,7 +256,13 @@ module.exports = () => ({
         }
         return result;
     }
-});
+}
+
+EvaluationContext.prototype.types = types;
+EvaluationContext.prototype.Color = Color; // used for compiling color literals
+EvaluationContext.prototype.ensure = ensure;
+
+module.exports = EvaluationContext;
 
 /**
  * Returns the index of the last stop <= input, or 0 if it doesn't exist.

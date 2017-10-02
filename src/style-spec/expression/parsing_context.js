@@ -4,7 +4,6 @@ const Scope = require('./scope');
 const {checkSubtype} = require('./types');
 const ParsingError = require('./parsing_error');
 const Literal = require('./definitions/literal');
-const CompilationContext = require('./compilation_context');
 
 import type {Expression} from './expression';
 import type {Type} from './types';
@@ -94,9 +93,8 @@ class ParsingContext {
                 // it immediately and replace it with a literal value in the
                 // parsed/compiled result.
                 if (!(parsed instanceof Literal) && isConstant(parsed)) {
-                    const cc = new CompilationContext();
-                    const ec = require('./evaluation_context')();
-                    const compiled = cc.compileToFunction(parsed, ec);
+                    const cc = new (require('./compilation_context'))();
+                    const compiled = cc.compileToFunction(parsed);
                     try {
                         const value = compiled({}, {});
                         parsed = new Literal(parsed.key, parsed.type, value);
