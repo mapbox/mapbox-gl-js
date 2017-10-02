@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const Scope = require('./scope');
+const EvaluationContext = require('./evaluation_context');
 
 import type {Expression} from './expression';
 
@@ -23,7 +24,7 @@ class CompilationContext {
         return `${id}()`;
     }
 
-    compileToFunction(e: Expression, evaluationContext: Object): Function {
+    compileToFunction(e: Expression): Function {
         const finalId = this.addExpression(e.compile(this));
         const src = `
             var $globalProperties;
@@ -36,7 +37,7 @@ class CompilationContext {
                 $props = feature && $feature.properties || {};
                 return $this.unwrap(${finalId}())
             };`;
-        return (new Function('$this', src): any)(evaluationContext);
+        return (new Function('$this', src): any)(new EvaluationContext());
     }
 
     getPrelude() {
