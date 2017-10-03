@@ -1,14 +1,14 @@
 // @flow
 
 const UnitBezier = require('@mapbox/unitbezier');
-const {
-    toString,
-    NumberType
-} = require('../types');
+const interpolate = require('../../util/interpolate');
+const { toString, NumberType } = require('../types');
+const { Color } = require('../values');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type CompilationContext  from '../compilation_context';
+import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 export type InterpolationType =
@@ -142,22 +142,18 @@ class Curve implements Expression {
     }
 
     compile(ctx: CompilationContext) {
+        const type = this.type.kind.toLowerCase();
+        const interpolation = this.interpolation;
         const input = ctx.compileAndCache(this.input);
 
         const labels = [];
         const outputs = [];
         for (const [label, expression] of this.stops) {
             labels.push(label);
-            outputs.push(ctx.addExpression(expression.compile(ctx)));
+            outputs.push(ctx.compileAndCache(expression));
         }
 
-        const interpolationType = this.type.kind.toLowerCase();
-
-        const labelVariable = ctx.addVariable(`[${labels.join(',')}]`);
-        const outputsVariable = ctx.addVariable(`[${outputs.join(',')}]`);
-        const interpolation = ctx.addVariable(JSON.stringify(this.interpolation));
-
-        return `$this.evaluateCurve(${input}, ${labelVariable}, ${outputsVariable}, ${interpolation}, ${JSON.stringify(interpolationType)})`;
+        return (ctx: EvaluationContext) => evaluate(ctx, type, interpolation, input, labels, outputs);
     }
 
     serialize() {
@@ -234,3 +230,58 @@ function exponentialInterpolation(input, base, lowerValue, upperValue) {
 }
 
 module.exports = Curve;
+
+function evaluate(ctx, type, interpolation, input_, labels, outputs) {
+    const stopCount = labels.length;
+    if (labels.length === 1) return outputs[0](ctx);
+
+    const input = ((input_(ctx): any): number);
+    if (input <= labels[0]) return outputs[0](ctx);
+    if (input >= labels[stopCount - 1]) return outputs[stopCount - 1](ctx);
+
+    const index = findStopLessThanOrEqualTo(labels, input);
+
+    if (interpolation.name === 'step') {
+        return outputs[index](ctx);
+    }
+
+    const lower = labels[index];
+    const upper = labels[index + 1];
+    const t = Curve.interpolationFactor(interpolation, input, lower, upper);
+
+    const outputLower = outputs[index](ctx);
+    const outputUpper = outputs[index + 1](ctx);
+
+    if (type === 'color') {
+        return new Color(...interpolate.color((outputLower: any).value, (outputUpper: any).value, t));
+    }
+
+    return interpolate[type](outputLower, outputUpper, t);
+}
+
+/**
+ * Returns the index of the last stop <= input, or 0 if it doesn't exist.
+ * @private
+ */
+function findStopLessThanOrEqualTo(stops, input) {
+    const n = stops.length;
+    let lowerIndex = 0;
+    let upperIndex = n - 1;
+    let currentIndex = 0;
+    let currentValue, upperValue;
+
+    while (lowerIndex <= upperIndex) {
+        currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
+        currentValue = stops[currentIndex];
+        upperValue = stops[currentIndex + 1];
+        if (input === currentValue || input > currentValue && input < upperValue) { // Search complete
+            return currentIndex;
+        } else if (currentValue < input) {
+            lowerIndex = currentIndex + 1;
+        } else if (currentValue > input) {
+            upperIndex = currentIndex - 1;
+        }
+    }
+
+    return Math.max(currentIndex - 1, 0);
+}

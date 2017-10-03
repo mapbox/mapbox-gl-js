@@ -9,9 +9,14 @@ const {
     BooleanType
 } = require('../types');
 
+const RuntimeError = require('../runtime_error');
+const {checkSubtype, toString} = require('../types');
+const {typeOf} = require('../values');
+
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type CompilationContext  from '../compilation_context';
+import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 const types = {
@@ -52,13 +57,9 @@ class Assertion implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        const jsType = JSON.stringify(this.type.kind.toLowerCase());
-        const args = [];
-        for (const input of this.args) {
-            args.push(ctx.addExpression(input.compile(ctx)));
-        }
-        const inputsVar = ctx.addVariable(`[${args.join(',')}]`);
-        return `$this.asJSType(${jsType}, ${inputsVar})`;
+        const type = this.type;
+        const args = this.args.map(arg => ctx.compileAndCache(arg));
+        return (ctx: EvaluationContext) => evaluate(ctx, type, args);
     }
 
     serialize() {
@@ -71,3 +72,18 @@ class Assertion implements Expression {
 }
 
 module.exports = Assertion;
+
+function evaluate(ctx, type, args) {
+    for (let i = 0; i < args.length; i++) {
+        const value = args[i](ctx);
+        const error = checkSubtype(type, typeOf(value));
+        if (!error) {
+            return value;
+        } else if (i === args.length - 1) {
+            throw new RuntimeError(`Expected value to be of type ${toString(type)}, but found ${toString(typeOf(value))} instead.`);
+        }
+    }
+
+    assert(false);
+    return null;
+}

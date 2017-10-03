@@ -6,12 +6,17 @@ const {
     ValueType,
     StringType,
     NumberType,
-    BooleanType
+    BooleanType,
+    checkSubtype
 } = require('../types');
+
+const {typeOf} = require('../values');
+const RuntimeError = require('../runtime_error');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type CompilationContext  from '../compilation_context';
+import type EvaluationContext from '../evaluation_context';
 import type { ArrayType } from '../types';
 
 const types = {
@@ -66,7 +71,9 @@ class ArrayAssertion implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        return `$this.asArray(${ctx.compileAndCache(this.input)}, ${JSON.stringify(this.type)})`;
+        const input = ctx.compileAndCache(this.input);
+        const type = this.type;
+        return (ctx: EvaluationContext) => evaluate(ctx, type, input);
     }
 
     serialize() {
@@ -85,3 +92,12 @@ class ArrayAssertion implements Expression {
 }
 
 module.exports = ArrayAssertion;
+
+function evaluate(ctx, type, input) {
+    const value = input(ctx);
+    const error = checkSubtype(type, typeOf(value));
+    if (error) {
+        throw new RuntimeError(`Expected value to be of type ${toString(type)}, but found ${toString(typeOf(value))} instead.`);
+    }
+    return value;
+}

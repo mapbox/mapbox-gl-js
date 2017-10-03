@@ -37,7 +37,6 @@ expressionSuite.run('js', {tests: tests}, (fixture) => {
             result: expression.result,
             isZoomConstant: expression.isZoomConstant,
             isFeatureConstant: expression.isFeatureConstant,
-            functionSource: expression.source,
             type: toString(expression.parsed.type)
         }
     };
