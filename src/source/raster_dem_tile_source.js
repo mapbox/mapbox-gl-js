@@ -1,6 +1,7 @@
 // @flow
 
 const ajax = require('../util/ajax');
+const util = require('../util/util');
 const Evented = require('../util/evented');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const browser = require('../util/browser');
@@ -19,7 +20,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 15;
-        this._options = Object.assign({}, options);
+        this._options = util.extend({}, options);
     }
 
     serialize() {
