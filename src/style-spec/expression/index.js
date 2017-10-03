@@ -36,7 +36,7 @@ export type StyleExpression = {
     zoomStops: Array<number>
 };
 
-type StylePropertySpecification = {
+export type StylePropertySpecification = {
     type: 'number',
     default?: number
 } | {

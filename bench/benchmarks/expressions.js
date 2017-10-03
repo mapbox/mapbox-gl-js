@@ -1,3 +1,4 @@
+// @flow
 
 const Benchmark = require('../lib/benchmark');
 const accessToken = require('../lib/access_token');
@@ -7,7 +8,20 @@ const convertFunction = require('../../src/style-spec/function/convert');
 const {isExpression} = require('../../src/style-spec/expression');
 const createExpression = require('../../src/style-spec/expression');
 
+import type {
+    StyleExpression,
+    StylePropertySpecification
+} from '../../src/style-spec/expression';
+
 class ExpressionBenchmark extends Benchmark {
+    data: Array<{
+        propertySpec: StylePropertySpecification,
+        rawValue: mixed,
+        rawExpression: mixed,
+        compiledFunction: StyleExpression,
+        compiledExpression: StyleExpression
+    }>;
+
     setup() {
         return fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`)
             .then(response => response.json())
@@ -19,7 +33,7 @@ class ExpressionBenchmark extends Benchmark {
                         continue;
                     }
 
-                    const expressionData = function(rawValue, propertySpec) {
+                    const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
                         const compiledExpression = createExpression(rawExpression, propertySpec);
@@ -59,7 +73,7 @@ class FunctionCreate extends ExpressionBenchmark {
 class FunctionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledFunction} of this.data) {
-            compiledFunction.evaluate({zoom: 0}, {});
+            compiledFunction.evaluate({zoom: 0});
         }
     }
 }
@@ -83,7 +97,7 @@ class ExpressionCreate extends ExpressionBenchmark {
 class ExpressionEvaluate extends ExpressionBenchmark {
     bench() {
         for (const {compiledExpression} of this.data) {
-            compiledExpression.evaluate({zoom: 0}, {});
+            compiledExpression.evaluate({zoom: 0});
         }
     }
 }
