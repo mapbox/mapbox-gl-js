@@ -1,19 +1,15 @@
 // @flow
 
-'use strict';
-
 // According to https://developer.mozilla.org/en-US/docs/Web/API/Performance/now,
 // performance.now() should be accurate to 0.005ms. Set the minimum running
 // time for a single measurement at 5ms, so that the error due to timer
 // precision is < 0.1%.
 const minTimeForMeasurement = 0.005 * 1000;
 
-/*::
 export type Measurement = {
     iterations: number,
     time: number
 };
-*/
 
 class Benchmark {
     constructor() {

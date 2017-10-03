@@ -1,7 +1,5 @@
 // @flow
 
-'use strict';
-
 const Benchmark = require('../lib/benchmark');
 const createStyle = require('../lib/create_style');
 

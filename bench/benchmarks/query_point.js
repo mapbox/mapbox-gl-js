@@ -1,4 +1,3 @@
-'use strict';
 
 const Benchmark = require('../lib/benchmark');
 const createMap = require('../lib/create_map');

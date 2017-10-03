@@ -1,4 +1,3 @@
-'use strict';
 
 const filter = require('../../../src/style-spec').featureFilter;
 

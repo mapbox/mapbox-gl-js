@@ -1,7 +1,5 @@
 // @flow
 
-'use strict';
-
 const Layout = require('./layout');
 const TileCoord = require('../../src/source/tile_coord');
 

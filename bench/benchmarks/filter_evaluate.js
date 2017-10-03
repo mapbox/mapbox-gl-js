@@ -1,4 +1,3 @@
-'use strict';
 
 const Benchmark = require('../lib/benchmark');
 const VectorTile = require('@mapbox/vector-tile').VectorTile;
