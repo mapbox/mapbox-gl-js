@@ -15,7 +15,6 @@ const {typeOf} = require('../values');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
-import type CompilationContext  from '../compilation_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
@@ -56,10 +55,19 @@ class Assertion implements Expression {
         return new Assertion(context.key, type, parsed);
     }
 
-    compile(ctx: CompilationContext) {
-        const type = this.type;
-        const args = this.args.map(arg => ctx.compileAndCache(arg));
-        return (ctx: EvaluationContext) => evaluate(ctx, type, args);
+    evaluate(ctx: EvaluationContext) {
+        for (let i = 0; i < this.args.length; i++) {
+            const value = this.args[i].evaluate(ctx);
+            const error = checkSubtype(this.type, typeOf(value));
+            if (!error) {
+                return value;
+            } else if (i === this.args.length - 1) {
+                throw new RuntimeError(`Expected value to be of type ${toString(this.type)}, but found ${toString(typeOf(value))} instead.`);
+            }
+        }
+
+        assert(false);
+        return null;
     }
 
     serialize() {
@@ -72,18 +80,3 @@ class Assertion implements Expression {
 }
 
 module.exports = Assertion;
-
-function evaluate(ctx, type, args) {
-    for (let i = 0; i < args.length; i++) {
-        const value = args[i](ctx);
-        const error = checkSubtype(type, typeOf(value));
-        if (!error) {
-            return value;
-        } else if (i === args.length - 1) {
-            throw new RuntimeError(`Expected value to be of type ${toString(type)}, but found ${toString(typeOf(value))} instead.`);
-        }
-    }
-
-    assert(false);
-    return null;
-}

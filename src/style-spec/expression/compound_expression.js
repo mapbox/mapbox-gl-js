@@ -6,7 +6,6 @@ const EvaluationContext = require('./evaluation_context');
 const assert = require('assert');
 
 import type { Expression } from './expression';
-import type CompilationContext from './compilation_context';
 import type { Type } from './types';
 
 type Varargs = {| type: Type |};
@@ -19,7 +18,7 @@ class CompoundExpression implements Expression {
     key: string;
     name: string;
     type: Type;
-    evaluate: Evaluate;
+    _evaluate: Evaluate;
     args: Array<Expression>;
 
     static definitions: { [string]: Definition };
@@ -28,14 +27,12 @@ class CompoundExpression implements Expression {
         this.key = key;
         this.name = name;
         this.type = type;
-        this.evaluate = evaluate;
+        this._evaluate = evaluate;
         this.args = args;
     }
 
-    compile(ctx: CompilationContext) {
-        const evaluate = this.evaluate;
-        const args = this.args.map(arg => ctx.compileAndCache(arg));
-        return (ctx: EvaluationContext) => evaluate.apply(ctx, args.map(arg => arg(ctx)));
+    evaluate(ctx: EvaluationContext) {
+        return this._evaluate.apply(ctx, this.args.map(arg => arg.evaluate(ctx)));
     }
 
     serialize() {

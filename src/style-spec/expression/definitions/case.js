@@ -5,7 +5,6 @@ const { BooleanType } = require('../types');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
-import type CompilationContext  from '../compilation_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
@@ -56,19 +55,13 @@ class Case implements Expression {
         return new Case(context.key, (outputType: any), branches, otherwise);
     }
 
-    compile(ctx: CompilationContext) {
-        const branches = this.branches.map(([test, expression]) =>
-            [ctx.compileAndCache(test), ctx.compileAndCache(expression)]);
-        const otherwise = ctx.compileAndCache(this.otherwise);
-
-        return (ctx: EvaluationContext) => {
-            for (const [test, expression] of branches) {
-                if (test(ctx)) {
-                    return expression(ctx);
-                }
+    evaluate(ctx: EvaluationContext) {
+        for (const [test, expression] of this.branches) {
+            if (test.evaluate(ctx)) {
+                return expression.evaluate(ctx);
             }
-            return otherwise(ctx);
-        };
+        }
+        return this.otherwise.evaluate(ctx);
     }
 
     serialize() {
