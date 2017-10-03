@@ -1,7 +1,7 @@
 // @flow
 
 const parseColor = require('../style-spec/util/parse_color');
-const createExpression = require('../style-spec/expression');
+const {createExpressionWithErrorHandling, getExpectedType, getDefaultValue} = require('../style-spec/expression');
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
@@ -12,6 +12,7 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
     if (typeof parameters === 'string' && propertySpec.type === 'color') {
         const color = parseColor(parameters);
         return {
+            result: 'success',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return color; }
@@ -20,6 +21,7 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
 
     if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
         return {
+            result: 'success',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return parameters; }
@@ -27,7 +29,10 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
     }
 
     if (parameters.expression) {
-        return createExpression(parameters.expression, propertySpec);
+        return createExpressionWithErrorHandling(
+            parameters.expression,
+            getExpectedType(propertySpec),
+            getDefaultValue(propertySpec));
     } else {
         return createFunction(parameters, propertySpec);
     }

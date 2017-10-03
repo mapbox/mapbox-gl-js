@@ -5,8 +5,12 @@ const accessToken = require('../lib/access_token');
 const spec = require('../../src/style-spec/reference/latest');
 const createFunction = require('../../src/style-spec/function');
 const convertFunction = require('../../src/style-spec/function/convert');
-const {isExpression} = require('../../src/style-spec/expression');
-const createExpression = require('../../src/style-spec/expression');
+const {
+    isExpression,
+    createExpressionWithErrorHandling,
+    getExpectedType,
+    getDefaultValue
+} = require('../../src/style-spec/expression');
 
 import type {
     StyleExpression,
@@ -36,7 +40,7 @@ class ExpressionBenchmark extends Benchmark {
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
-                        const compiledExpression = createExpression(rawExpression, propertySpec);
+                        const compiledExpression = createExpressionWithErrorHandling(rawExpression, getExpectedType(propertySpec), getDefaultValue(propertySpec));
                         return {
                             propertySpec,
                             rawValue,
@@ -89,7 +93,7 @@ class FunctionConvert extends ExpressionBenchmark {
 class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {
-            createExpression(rawExpression, propertySpec);
+            createExpressionWithErrorHandling(rawExpression, getExpectedType(propertySpec), getDefaultValue(propertySpec));
         }
     }
 }

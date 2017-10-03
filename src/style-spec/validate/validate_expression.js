@@ -1,32 +1,21 @@
 
 const ValidationError = require('../error/validation_error');
-const {findZoomCurve, getExpectedType} = require('../expression');
-const compile = require('../expression/compile');
-const Curve = require('../expression/definitions/curve');
+const createExpression = require('../expression');
+const {getExpectedType, getDefaultValue} = require('../expression');
 const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateExpression(options) {
-    const expression = deepUnbundle(options.value.expression);
-    const compiled = compile(expression, getExpectedType(options.valueSpec));
+    const expression = createExpression(
+        deepUnbundle(options.value.expression),
+        getExpectedType(options.valueSpec),
+        getDefaultValue(options.valueSpec));
 
-    const key = `${options.key}.expression`;
-
-    if (compiled.result === 'success') {
-        if (!options.disallowNestedZoom || compiled.isZoomConstant) {
-            return [];
-        }
-
-        const curve = findZoomCurve(compiled.expression);
-        if (curve instanceof Curve) {
-            return [];
-        } else if (curve) {
-            return [new ValidationError(`${key}${curve.key}`, options.value, curve.error)];
-        } else {
-            return [new ValidationError(`${key}`, options.value, '"zoom" expression may only be used as input to a top-level "curve" expression.')];
-        }
+    if (expression.result === 'success') {
+        return [];
     }
 
-    return compiled.errors.map((error) => {
+    const key = `${options.key}.expression`;
+    return expression.errors.map((error) => {
         return new ValidationError(`${key}${error.key}`, options.value, error.message);
     });
 };

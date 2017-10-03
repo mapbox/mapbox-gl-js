@@ -12,7 +12,7 @@ const {
     ValueType,
     toString,
     checkSubtype} = require('./types');
-const {Color, typeOf} = require('./values');
+const {Color, typeOf, unwrap} = require('./values');
 const Curve = require('./definitions/curve');
 
 import type { ArrayType } from './types';
@@ -202,20 +202,12 @@ class EvaluationContext {
             if (isNaN(num)) continue;
             return num;
         }
-        throw new RuntimeError(`Could not convert ${JSON.stringify(this.unwrap(value))} to number.`);
+        throw new RuntimeError(`Could not convert ${JSON.stringify(unwrap(value))} to number.`);
     }
 
     geometryType(feature: Feature) {
         return typeof feature.type === 'number' ?
             geometryTypes[feature.type] : feature.type;
-    }
-
-    unwrap(maybeWrapped: Value) {
-        if (maybeWrapped instanceof Color) {
-            return maybeWrapped.value;
-        }
-
-        return maybeWrapped;
     }
 
     evaluateCurve(input: number, stopInputs: Array<number>, stopOutputs: Array<any>, interpolation: InterpolationType, resultType: string) {
