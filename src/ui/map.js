@@ -124,7 +124,8 @@ const defaultOptions = {
 
     maxTileCacheSize: null,
 
-    transformRequest: null
+    transformRequest: null,
+    collisionFadeDuration: 300
 };
 
 /**
@@ -240,6 +241,7 @@ class Map extends Camera {
     _frameId: any;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
+    _placementDirty: ?boolean;
     _loaded: boolean;
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
@@ -247,6 +249,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _collisionFadeDuration: number;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -273,6 +276,7 @@ class Map extends Camera {
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
+        this._collisionFadeDuration = options.collisionFadeDuration;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -310,8 +314,7 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('moveend', () => {
-            this.animationLoop.set(300); // text fading
+        this.on('move', () => {
             this._rerender();
         });
 
@@ -997,9 +1000,6 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.off('rotate', this.style._redoPlacement);
-            this.off('pitch', this.style._redoPlacement);
-            this.off('move', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -1016,10 +1016,6 @@ class Map extends Camera {
         } else {
             this.style.loadJSON(style);
         }
-
-        this.on('rotate', this.style._redoPlacement);
-        this.on('pitch', this.style._redoPlacement);
-        this.on('move', this.style._redoPlacement);
 
         return this;
     }
@@ -1509,7 +1505,7 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the map is fully loaded.
      */
     loaded() {
-        if (this._styleDirty || this._sourcesDirty)
+        if (this._styleDirty || this._sourcesDirty || this._placementDirty)
             return false;
         if (!this.style || !this.style.loaded())
             return false;
@@ -1565,12 +1561,15 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
+        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._collisionFadeDuration);
+
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.rotating,
-            zooming: this.zooming
+            zooming: this.zooming,
+            collisionFadeDuration: this._collisionFadeDuration
         });
 
         this.fire('render');
@@ -1580,19 +1579,22 @@ class Map extends Camera {
             this.fire('load');
         }
 
-        this._frameId = null;
-
-        // Flag an ongoing transition
+        // We should set _styleDirty for ongoing animations before firing 'render',
+        // but the test suite currently assumes that it can read still images while animations are
+        // still ongoing. See https://github.com/mapbox/mapbox-gl-js/issues/3966
         if (!this.animationLoop.stopped()) {
             this._styleDirty = true;
         }
+
+        this._frameId = null;
+
 
         // Schedule another render frame if it's needed.
         //
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty) {
+        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this._rerender();
         }
 
@@ -1673,7 +1675,11 @@ class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this.style._redoPlacement();
+        if (value) {
+            // When we turn collision boxes on we have to generate them for existing tiles
+            // When we turn them off, there's no cost to leaving existing boxes in place
+            this.style._generateCollisionBoxes();
+        }
     }
 
     /*

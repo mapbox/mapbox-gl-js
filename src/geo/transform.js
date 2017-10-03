@@ -43,6 +43,8 @@ class Transform {
     _maxZoom: number;
     _center: LngLat;
     _constraining: boolean;
+    _posMatrixCache: {[string]: Float32Array};
+
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
 
@@ -60,6 +62,7 @@ class Transform {
         this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
+        this._posMatrixCache = {};
     }
 
     clone(): Transform {
@@ -74,6 +77,7 @@ class Transform {
         clone._fov = this._fov;
         clone._pitch = this._pitch;
         clone._unmodified = this._unmodified;
+        clone._calcMatrices();
         return clone;
     }
 
@@ -394,7 +398,14 @@ class Transform {
      * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number) {
+    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number): Float32Array {
+        let posMatrixKey = tileCoord.id.toString();
+        if (maxZoom) {
+            posMatrixKey += maxZoom.toString();
+        }
+        if (this._posMatrixCache[posMatrixKey]) {
+            return this._posMatrixCache[posMatrixKey];
+        }
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         const coord = tileCoord.toCoordinate(maxZoom);
@@ -405,22 +416,8 @@ class Transform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 
-        return new Float32Array(posMatrix);
-    }
-
-    /**
-     * Calculate the distance from the center of a tile to the camera
-     * These distances are in view-space dimensions derived from the size of the
-     * viewport, similar to this.cameraToCenterDistance
-     * If the tile is dead-center in the viewport, then cameraToTileDistance == cameraToCenterDistance
-     *
-     * @param {Tile} tile
-     */
-    cameraToTileDistance(tile: Object) {
-        const posMatrix = this.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
-        const tileCenter = [tile.tileSize / 2, tile.tileSize / 2, 0, 1];
-        vec4.transformMat4(tileCenter, tileCenter, posMatrix);
-        return tileCenter[3];
+        this._posMatrixCache[posMatrixKey] = new Float32Array(posMatrix);
+        return this._posMatrixCache[posMatrixKey];
     }
 
     _constrain() {
@@ -536,6 +533,7 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
+        this._posMatrixCache = {};
     }
 }
 
