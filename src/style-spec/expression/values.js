@@ -88,8 +88,13 @@ function typeOf(value: Value): Type {
     }
 }
 
+function unwrap(value: Value): mixed {
+    return value instanceof Color ? value.value : value;
+}
+
 module.exports = {
     Color,
     isValue,
-    typeOf
+    typeOf,
+    unwrap
 };

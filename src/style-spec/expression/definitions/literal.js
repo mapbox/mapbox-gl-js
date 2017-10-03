@@ -49,8 +49,8 @@ class Literal implements Expression {
 
     compile(ctx: CompilationContext) {
         let value;
-        if (this.type.kind === 'Color') {
-            value = `(new $this.Color(${(this.value: any).join(', ')}))`;
+        if (this.value instanceof Color) {
+            value = `(new $this.Color(${this.value.value.join(', ')}))`;
         } else {
             value = Literal.compile(this.value);
         }

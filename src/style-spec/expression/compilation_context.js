@@ -35,7 +35,7 @@ class CompilationContext {
                 $globalProperties = globalProperties;
                 $feature = feature;
                 $props = feature && $feature.properties || {};
-                return $this.unwrap(${finalId}())
+                return ${finalId}()
             };`;
         return (new Function('$this', src): any)(new EvaluationContext());
     }
