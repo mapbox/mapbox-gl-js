@@ -25,8 +25,6 @@ test('Level', (t)=>{
         t.end();
     });
 
-    t.test('constructor throws on ');
-
     t.test('setters and getters return correct values', (t) => {
         const level = new Level(4, 4, 2);
 
@@ -84,7 +82,7 @@ test('DEMData constructor', (t) => {
 });
 
 
-test('DEMData#backfillBorders', (t) => {
+test('DEMData#backfillBorder', (t) => {
     const imageData0 = createMockImage(4, 4);
     const dem0 = new DEMData(0);
     const imageData1 = createMockImage(4, 4);
@@ -93,79 +91,85 @@ test('DEMData#backfillBorders', (t) => {
     dem0.loadFromImage(imageData0);
     dem1.loadFromImage(imageData1);
 
-    t.test('border region is initially empty', (t)=>{
+    t.test('border region is initially populated with neighboring data', (t)=>{
         const level0 = dem0.data[0];
         let nonempty = true;
-        for (let x = 0; x < 4; x++) {
-            for (let y = 0; y < 4; y++) {
+        for (let x = -1; x < 5; x++) {
+            for (let y = -1; y < 5; y++) {
                 if (level0.get(x, y) <= 0) {
                     nonempty = false;
                     break;
                 }
             }
         }
-        t.true(nonempty, 'pixel data is processed correctly into DEM');
-        // vertical borders empty
-        let empty = true;
+        t.true(nonempty, 'pixel data populates DEM data level');
+
+        let verticalBorderMatch = true;
         for (let x = -1; x < 5; x += 5) {
-            for (let y = -1; y < 5; y++) {
-                if (level0.get(x, y) !== -65536) {
-                    empty = false;
+            for (let y = 0; y < 4; y++) {
+                if (level0.get(x, y) !== level0.get(x < 0 ? x + 1 : x - 1, y)) {
+                    verticalBorderMatch = false;
                     break;
                 }
             }
         }
-        t.true(empty, 'vertical border of DEM data is initially empty');
+        t.true(verticalBorderMatch, 'vertical border of DEM data is initially equal to next column of data');
 
         // horizontal borders empty
-        empty = true;
+        let horizontalBorderMatch = true;
         for (let y = -1; y < 5; y += 5) {
-            for (let x = -1; x < 5; x++) {
-                if (level0.get(x, y) !== -65536) {
-                    empty = false;
+            for (let x = 0; x < 4; x++) {
+                if (level0.get(x, y) !== level0.get(x, y < 0 ? y + 1 : y - 1)) {
+                    horizontalBorderMatch = false;
                     break;
                 }
             }
         }
-        t.true(empty, 'horizontal border of DEM data is initially empty');
+        t.true(horizontalBorderMatch, 'horizontal border of DEM data is initially equal to next row of data');
+
+        t.true(level0.get(-1, 4) === level0.get(0, 3), '-1, 1 corner initially equal to closest corner data');
+        t.true(level0.get(4, 4) === level0.get(3, 3), '1, 1 corner initially equal to closest corner data');
+        t.true(level0.get(-1, -1) === level0.get(0, 0), '-1, -1 corner initially equal to closest corner data');
+        t.true(level0.get(4, -1) === level0.get(3, 0), '-1, 1 corner initially equal to closest corner data');
+
 
         t.end();
     });
 
-    t.test('backfillBorders correctly populates neighboring border', (t)=>{
+    t.test('backfillBorder correctly populates borders with neighboring data', (t)=>{
         const level0 = dem0.data[0];
 
-        dem0.backfillBorders(dem1, -1, 0);
+        dem0.backfillBorder(dem1, -1, 0);
         for (let y = 0; y < 4; y++) {
-            t.true(level0.get(-1, y) > 0, 'backfills neighbor -1, 0');
+            t.true(level0.get(-1, y) !== level0.get(0, y), 'backfills neighbor -1, 0');
         }
 
-        dem0.backfillBorders(dem1, 0, -1);
+        dem0.backfillBorder(dem1, 0, -1);
         for (let x = 0; x < 4; x++) {
-            t.true(level0.get(x, -1) > 0, 'backfills neighbor 0, -1');
+            t.true(level0.get(x, -1) !== level0.get(x, 0), 'backfills neighbor 0, -1');
         }
 
-        dem0.backfillBorders(dem1, 1, 0);
+        dem0.backfillBorder(dem1, 1, 0);
         for (let y = 0; y < 4; y++) {
-            t.true(level0.get(1, y) > 0, 'backfills neighbor 1, 0');
+            t.true(level0.get(4, y) !== level0.get(3, y), 'backfills neighbor 1, 0');
         }
 
-        dem0.backfillBorders(dem1, 0, 1);
+        dem0.backfillBorder(dem1, 0, 1);
         for (let x = 0; x < 4; x++) {
-            t.true(level0.get(x, 1) > 0, 'backfills neighbor 0, 1');
+            t.true(level0.get(x, 4) !== level0.get(x, 3), 'backfills neighbor 0, 1');
         }
 
-        dem0.backfillBorders(dem1, -1, 1);
-        t.true(level0.get(-1, 1) > 0, 'backfills neighbor -1, 1');
+        dem0.backfillBorder(dem1, -1, 1);
+        t.true(level0.get(-1, 4) !== level0.get(0, 3), 'backfills neighbor -1, 1');
 
-        dem0.backfillBorders(dem1, 1, 1);
-        t.true(level0.get(1, 1) > 0, 'backfills neighbor 1, 1');
+        dem0.backfillBorder(dem1, 1, 1);
+        t.true(level0.get(4, 4) !== level0.get(3, 3), 'backfills neighbor 1, 1');
 
-        dem0.backfillBorders(dem1, -1, -1);
-        t.true(level0.get(-1, -1) > 0, 'backfills neighbor -1, -1');
+        dem0.backfillBorder(dem1, -1, -1);
+        t.true(level0.get(-1, -1) !== level0.get(0, 0), 'backfills neighbor -1, -1');
 
-        dem0.backfillBorders(dem1, 1, -1);
-        t.true(level0.get(1, -1) > 0, 'backfills neighbor -1, 1');
+        dem0.backfillBorder(dem1, 1, -1);
+        t.true(level0.get(4, -1) !== level0.get(3, 0), 'backfills neighbor -1, 1');
 
 
         t.end();

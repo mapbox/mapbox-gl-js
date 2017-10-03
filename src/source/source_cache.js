@@ -294,7 +294,7 @@ class SourceCache extends Evented {
                 }
             }
             if (!borderTile.dem || !tile.dem) return;
-            tile.dem.backfillBorders(borderTile.dem, dx, dy);
+            tile.dem.backfillBorder(borderTile.dem, dx, dy);
             if (tile.neighboringTiles && tile.neighboringTiles[borderId])
                 tile.neighboringTiles[borderId].backfilled = true;
         }

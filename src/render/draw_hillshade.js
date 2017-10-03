@@ -28,9 +28,6 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
     painter.setDepthSublayer(0);
     gl.disable(gl.STENCIL_TEST);
 
-
-    const maxzoom = sourceCache.getSource().maxzoom;
-
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (!tile.texture && painter.renderPass === 'hillshadeprepare') {
@@ -38,16 +35,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
             continue;
         }
         if (painter.renderPass === 'translucent') {
-            let bordersLoaded = true;
-            if (painter.transform.tileZoom < maxzoom) {
-                for (const key in tile.neighboringTiles) {
-                    if (!tile.neighboringTiles[key].backfilled && sourceCache._tiles[key]) {
-                        bordersLoaded = false;
-                        break;
-                    }
-                }
-            }
-            renderHillshade(painter, tile, layer, bordersLoaded);
+            renderHillshade(painter, tile, layer);
         }
     }
 
@@ -74,7 +62,7 @@ function getTileLatRange(painter, coord) {
     return [painter.transform.coordinateLocation(coordinate0).lat, painter.transform.coordinateLocation(coordinate1).lat];
 }
 
-function renderHillshade(painter, tile, layer, bordersLoaded) {
+function renderHillshade(painter, tile, layer) {
     const gl = painter.gl;
     const program = painter.useProgram('hillshade');
     const posMatrix = painter.transform.calculatePosMatrix(tile.coord);
@@ -103,11 +91,6 @@ function renderHillshade(painter, tile, layer, bordersLoaded) {
             tile.maskedIndexBuffer,
             tile.segments
         );
-    } else if (!bordersLoaded) {
-        const buffer = painter.incompleteHillshadeBoundsBuffer;
-        const vao = painter.incompleteHillshadeBoundsVAO;
-        vao.bind(gl, program, buffer);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
     } else {
         const buffer = painter.rasterBoundsBuffer;
         const vao = painter.rasterBoundsVAO;

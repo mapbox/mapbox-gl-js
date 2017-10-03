@@ -73,6 +73,24 @@ class DEMData {
             }
         }
 
+        // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
+        // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
+        // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
+        for (let x = 0; x < data.width; x++) {
+            // left vertical border
+            level.set(-1, x, level.get(0, x));
+            // right vertical border
+            level.set(data.width, x, level.get(data.width - 1, x));
+            // left horizontal border
+            level.set(x, -1, level.get(x, 0));
+            // right horizontal border
+            level.set(x, data.width, level.get(x, data.width - 1));
+        }
+        // corners
+        level.set(-1, -1, level.get(0, 0));
+        level.set(data.width, -1, level.get(data.width - 1, 0));
+        level.set(-1, data.width, level.get(0, data.width - 1));
+        level.set(data.width, data.width, level.get(data.width - 1, data.width - 1));
         this.loaded = true;
     }
 
@@ -89,7 +107,7 @@ class DEMData {
         return references;
     }
 
-    backfillBorders(borderTile: DEMData, dx: number, dy: number) {
+    backfillBorder(borderTile: DEMData, dx: number, dy: number) {
         for (let l = 0; l < this.data.length; l++) {
             const t = this.data[l];
             const o = borderTile.data[l];
