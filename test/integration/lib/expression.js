@@ -1,6 +1,5 @@
 'use strict';
 
-const assert = require('assert');
 const path = require('path');
 const harness = require('./harness');
 const diff = require('diff');
@@ -19,14 +18,6 @@ function stringify(v) {
         s = s.replace(/\u2029/g, '\\u2029');
     }
     return s;
-}
-
-let linter;
-try {
-    const Linter = require('eslint').Linter;
-    linter = new Linter();
-} catch (_) {
-    // eslint-disable-line
 }
 
 const floatPrecision = 6; // in decimal sigfigs
@@ -78,37 +69,12 @@ exports.run = function (implementation, options, runExpressionTest) {
             const dir = path.join(directory, params.group, params.test);
 
             if (process.env.UPDATE) {
-                delete result.compiled.functionSource;
                 fixture.expected = result;
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
                 return;
             }
 
             const expected = fixture.expected;
-
-            if (result.compiled.functionSource) {
-                assert(linter);
-                params.compiledJs = result.compiled.functionSource;
-                delete result.compiled.functionSource;
-                let lint = linter.verify(params.compiledJs, {
-                    parserOptions: { ecmaVersion: 5 }
-                }, {filename: dir});
-                if (lint.filter(message => message.fatal).length > 0) {
-                    result.compiled.lintErrors = lint;
-                } else {
-                    const code = params.compiledJs.replace(/\{/g, '{\n');
-                    lint = linter.verifyAndFix(code, {
-                        parserOptions: { ecmaVersion: 5 },
-                        rules: {
-                            indent: ['error', 2]
-                        }
-                    }, {filename: dir});
-                    if (lint.fixed) {
-                        params.compiledJs = lint.output;
-                    }
-                }
-            }
-
             const compileOk = deepEqual(result.compiled, expected.compiled);
 
             const evalOk = compileOk && deepEqual(result.outputs, expected.outputs);

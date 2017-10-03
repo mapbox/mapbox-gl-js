@@ -6,10 +6,14 @@ const {
     NumberType
 } = require('../types');
 
+const RuntimeError = require('../runtime_error');
+
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type CompilationContext  from '../compilation_context';
+import type EvaluationContext from '../evaluation_context';
 import type { Type, ArrayType } from '../types';
+import type { Value } from '../values';
 
 class At implements Expression {
     key: string;
@@ -38,7 +42,9 @@ class At implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        return `$this.at(${ctx.compileAndCache(this.index)}, ${ctx.compileAndCache(this.input)})`;
+        const index = ctx.compileAndCache(this.index);
+        const input = ctx.compileAndCache(this.input);
+        return (ctx: EvaluationContext) => evaluate(ctx, index, input);
     }
 
     serialize() {
@@ -52,3 +58,15 @@ class At implements Expression {
 }
 
 module.exports = At;
+
+function evaluate(ctx, index_, array_) {
+    const index = ((index_(ctx): any): number);
+    const array = ((array_(ctx): any): Array<Value>);
+    if (index < 0 || index >= array.length) {
+        throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length}.`);
+    }
+    if (index !== Math.floor(index)) {
+        throw new RuntimeError(`Array index must be an integer, but found ${index} instead.`);
+    }
+    return array[index];
+}

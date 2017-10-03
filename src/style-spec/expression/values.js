@@ -22,6 +22,25 @@ class Color {
     }
 }
 
+function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
+    if (!(
+        typeof r === 'number' && r >= 0 && r <= 255 &&
+        typeof g === 'number' && g >= 0 && g <= 255 &&
+        typeof b === 'number' && b >= 0 && b <= 255
+    )) {
+        const value = typeof a === 'number' ? [r, g, b, a] : [r, g, b];
+        return `Invalid rgba value [${value.join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`;
+    }
+
+    if (!(
+        typeof a === 'undefined' || (typeof a === 'number' && a >= 0 && a <= 1)
+    )) {
+        return `Invalid rgba value [${[r, g, b, a].join(', ')}]: 'a' must be between 0 and 1.`;
+    }
+
+    return null;
+}
+
 export type Value = null | string | boolean | number | Color | Array<Value> | { [string]: Value }
 
 function isValue(mixed: mixed): boolean {
@@ -94,6 +113,7 @@ function unwrap(value: Value): mixed {
 
 module.exports = {
     Color,
+    validateRGBA,
     isValue,
     typeOf,
     unwrap

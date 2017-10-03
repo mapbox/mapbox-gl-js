@@ -4,6 +4,7 @@ const assert = require('assert');
 const ParsingError = require('./parsing_error');
 const ParsingContext = require('./parsing_context');
 const CompilationContext = require('./compilation_context');
+const EvaluationContext = require('./evaluation_context');
 const {CompoundExpression} = require('./compound_expression');
 const Curve = require('./definitions/curve');
 const Coalesce = require('./definitions/coalesce');
@@ -34,14 +35,12 @@ export type StyleExpression = {
     isZoomConstant: true,
     isFeatureConstant: boolean,
     evaluate: ({+zoom?: number}, feature?: Feature) => any,
-    // source: string,
     // parsed: Expression
 } | {
     result: 'success',
     isZoomConstant: false,
     isFeatureConstant: boolean,
     evaluate: ({+zoom?: number}, feature?: Feature) => any,
-    // source: string,
     // parsed: Expression,
     interpolation: InterpolationType,
     zoomStops: Array<number>
@@ -62,11 +61,17 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
     }
 
     const compiler = new CompilationContext();
-    const evaluate = compiler.compileToFunction(parsed);
+    const compiled = compiler.compileAndCache(parsed);
+
+    const evaluator = new EvaluationContext();
+    function evaluate(globals, feature) {
+        evaluator.globals = globals;
+        evaluator.feature = feature;
+        return compiled(evaluator);
+    }
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
     const isZoomConstant = isConstant.isZoomConstant(parsed);
-    const source = compiler.getPrelude();
 
     if (isZoomConstant) {
         return {
@@ -74,7 +79,6 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
             isZoomConstant,
             isFeatureConstant,
             evaluate,
-            source,
             parsed
         };
     }
@@ -97,7 +101,6 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
         isZoomConstant: false,
         isFeatureConstant,
         evaluate,
-        source,
         parsed,
 
         // capture metadata from the curve definition that's needed for

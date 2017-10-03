@@ -5,6 +5,7 @@ const assert = require('assert');
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type CompilationContext  from '../compilation_context';
+import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 class Coalesce implements Expression {
@@ -38,12 +39,8 @@ class Coalesce implements Expression {
     }
 
     compile(ctx: CompilationContext) {
-        const compiledArgs = [];
-        for (const arg of this.args) {
-            compiledArgs.push(ctx.addExpression(arg.compile(ctx)));
-        }
-        const args = ctx.addVariable(`[${compiledArgs.join(',')}]`);
-        return `$this.coalesce(${args})`;
+        const args = this.args.map(arg => ctx.compileAndCache(arg));
+        return (ctx: EvaluationContext) => evaluate(ctx, args);
     }
 
     serialize() {
@@ -56,3 +53,12 @@ class Coalesce implements Expression {
 }
 
 module.exports = Coalesce;
+
+function evaluate(ctx, args) {
+    let result = null;
+    for (const arg of args) {
+        result = arg(ctx);
+        if (result !== null) break;
+    }
+    return result;
+}

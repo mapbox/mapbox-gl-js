@@ -2,11 +2,11 @@
 
 const assert = require('assert');
 const { typeOf } = require('../values');
-const Literal = require('./literal');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type CompilationContext  from '../compilation_context';
+import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 // Map input label values to output expression index
@@ -98,23 +98,15 @@ class Match implements Expression {
 
     compile(ctx: CompilationContext) {
         const input = ctx.compileAndCache(this.input);
+        const outputs = this.outputs.map(output => ctx.compileAndCache(output));
+        const otherwise = ctx.compileAndCache(this.otherwise);
 
-        const outputs = [];
-        for (const output of this.outputs) {
-            outputs.push(ctx.addExpression(output.compile(ctx)));
+        const lookup = {};
+        for (const label in this.cases) {
+            lookup[label] = outputs[this.cases[label]];
         }
 
-        let lookup = '';
-        const labels = Object.keys(this.cases);
-        for (let i = 0; i < labels.length; i++) {
-            if (i > 0) lookup += ', ';
-            const label = labels[i];
-            lookup += `${Literal.compile(label)}: ${outputs[this.cases[label]]}`;
-        }
-
-        const lookupObject = ctx.addVariable(`{${lookup}}`);
-
-        return `(${lookupObject}[${input}] || ${ctx.addExpression(this.otherwise.compile(ctx))})();`;
+        return (ctx: EvaluationContext) => (lookup[(input(ctx): any)] || otherwise)(ctx);
     }
 
     serialize() {
