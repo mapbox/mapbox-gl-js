@@ -15,7 +15,6 @@ const RuntimeError = require('../runtime_error');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
-import type CompilationContext  from '../compilation_context';
 import type EvaluationContext from '../evaluation_context';
 import type { ArrayType } from '../types';
 
@@ -70,10 +69,13 @@ class ArrayAssertion implements Expression {
         return new ArrayAssertion(context.key, type, input);
     }
 
-    compile(ctx: CompilationContext) {
-        const input = ctx.compileAndCache(this.input);
-        const type = this.type;
-        return (ctx: EvaluationContext) => evaluate(ctx, type, input);
+    evaluate(ctx: EvaluationContext) {
+        const value = this.input.evaluate(ctx);
+        const error = checkSubtype(this.type, typeOf(value));
+        if (error) {
+            throw new RuntimeError(`Expected value to be of type ${toString(this.type)}, but found ${toString(typeOf(value))} instead.`);
+        }
+        return value;
     }
 
     serialize() {
@@ -92,12 +94,3 @@ class ArrayAssertion implements Expression {
 }
 
 module.exports = ArrayAssertion;
-
-function evaluate(ctx, type, input) {
-    const value = input(ctx);
-    const error = checkSubtype(type, typeOf(value));
-    if (error) {
-        throw new RuntimeError(`Expected value to be of type ${toString(type)}, but found ${toString(typeOf(value))} instead.`);
-    }
-    return value;
-}

@@ -3,7 +3,6 @@
 const assert = require('assert');
 const ParsingError = require('./parsing_error');
 const ParsingContext = require('./parsing_context');
-const CompilationContext = require('./compilation_context');
 const EvaluationContext = require('./evaluation_context');
 const {CompoundExpression} = require('./compound_expression');
 const Curve = require('./definitions/curve');
@@ -60,14 +59,11 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
         };
     }
 
-    const compiler = new CompilationContext();
-    const compiled = compiler.compileAndCache(parsed);
-
     const evaluator = new EvaluationContext();
     function evaluate(globals, feature) {
         evaluator.globals = globals;
         evaluator.feature = feature;
-        return compiled(evaluator);
+        return parsed.evaluate(evaluator);
     }
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
@@ -107,7 +103,7 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
         // our prepopulate-and-interpolate approach to paint properties
         // that are zoom-and-property dependent.
         interpolation: zoomCurve.interpolation,
-        zoomStops: zoomCurve.stops.map(s => s[0])
+        zoomStops: zoomCurve.labels
     };
 }
 

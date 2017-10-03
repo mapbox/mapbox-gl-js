@@ -11,7 +11,6 @@ const RuntimeError = require('../runtime_error');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
-import type CompilationContext  from '../compilation_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Type, ArrayType } from '../types';
 import type { Value } from '../values';
@@ -48,10 +47,14 @@ class Contains implements Expression {
         return new Contains(context.key, value, arrayExpr);
     }
 
-    compile(ctx: CompilationContext) {
-        const value = ctx.compileAndCache(this.value);
-        const array = ctx.compileAndCache(this.array);
-        return (ctx: EvaluationContext) => evaluate(ctx, value, array);
+    evaluate(ctx: EvaluationContext) {
+        const value = this.value.evaluate(ctx);
+        const type = typeOf(value).kind;
+        if (type === 'Object' || type === 'Array' || type === 'Color') {
+            throw new RuntimeError(`"contains" does not support values of type ${type}`);
+        }
+        const array = ((this.array.evaluate(ctx): any): Array<Value>);
+        return array.indexOf(value) >= 0;
     }
 
     serialize() {
@@ -65,13 +68,3 @@ class Contains implements Expression {
 }
 
 module.exports = Contains;
-
-function evaluate(ctx, value_, array_) {
-    const value = value_(ctx);
-    const type = typeOf(value).kind;
-    if (type === 'Object' || type === 'Array' || type === 'Color') {
-        throw new RuntimeError(`"contains" does not support values of type ${type}`);
-    }
-    const array = ((array_(ctx): any): Array<Value>);
-    return array.indexOf(value) >= 0;
-}

@@ -43,9 +43,8 @@ class Literal implements Expression {
         return new Literal(context.key, type, value);
     }
 
-    compile() {
-        const value = this.value;
-        return () => value;
+    evaluate() {
+        return this.value;
     }
 
     serialize() {

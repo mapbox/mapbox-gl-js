@@ -3,7 +3,7 @@
 import type { Type } from '../types';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
-import type CompilationContext  from '../compilation_context';
+import type EvaluationContext  from '../evaluation_context';
 
 class Let implements Expression {
     key: string;
@@ -18,9 +18,9 @@ class Let implements Expression {
         this.result = result;
     }
 
-    compile(ctx: CompilationContext) {
+    evaluate(ctx: EvaluationContext) {
         ctx.pushScope(this.bindings);
-        const result = this.result.compile(ctx);
+        const result = this.result.evaluate(ctx);
         ctx.popScope();
         return result;
     }

@@ -93,11 +93,9 @@ class ParsingContext {
                 // it immediately and replace it with a literal value in the
                 // parsed/compiled result.
                 if (!(parsed instanceof Literal) && isConstant(parsed)) {
-                    const cc = new (require('./compilation_context'))();
                     const ec = new (require('./evaluation_context'))();
-                    const compiled = parsed.compile(cc);
                     try {
-                        parsed = new Literal(parsed.key, parsed.type, compiled(ec));
+                        parsed = new Literal(parsed.key, parsed.type, parsed.evaluate(ec));
                     } catch (e) {
                         context.error(e.message);
                         return null;

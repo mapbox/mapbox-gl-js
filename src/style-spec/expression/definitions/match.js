@@ -5,7 +5,6 @@ const { typeOf } = require('../values');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
-import type CompilationContext  from '../compilation_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
@@ -96,17 +95,9 @@ class Match implements Expression {
         return new Match(context.key, (inputType: any), (outputType: any), input, cases, outputs, otherwise);
     }
 
-    compile(ctx: CompilationContext) {
-        const input = ctx.compileAndCache(this.input);
-        const outputs = this.outputs.map(output => ctx.compileAndCache(output));
-        const otherwise = ctx.compileAndCache(this.otherwise);
-
-        const lookup = {};
-        for (const label in this.cases) {
-            lookup[label] = outputs[this.cases[label]];
-        }
-
-        return (ctx: EvaluationContext) => (lookup[(input(ctx): any)] || otherwise)(ctx);
+    evaluate(ctx: EvaluationContext) {
+        const input = (this.input.evaluate(ctx): any);
+        return (this.outputs[this.cases[input]] || this.otherwise).evaluate(ctx);
     }
 
     serialize() {
