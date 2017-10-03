@@ -1,7 +1,5 @@
 // @flow
 
-'use strict';
-
 const Benchmark = require('../lib/benchmark');
 const createFilter = require('../../src/style-spec/feature_filter');
 const filters = require('../data/filters.json');

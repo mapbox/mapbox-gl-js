@@ -1,7 +1,5 @@
 // @flow
 
-'use strict';
-
 require('../src').accessToken = require('./lib/access_token');
 
 window.mapboxglVersions = window.mapboxglVersions || [];

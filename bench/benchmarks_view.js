@@ -1,5 +1,3 @@
-'use strict';
-
 /* global d3 */
 
 const versionColor = d3.scaleOrdinal(['#1b9e77', '#7570b3']);

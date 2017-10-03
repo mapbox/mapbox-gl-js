@@ -1,4 +1,3 @@
-'use strict';
 
 const Benchmark = require('../lib/benchmark');
 const accessToken = require('../lib/access_token');

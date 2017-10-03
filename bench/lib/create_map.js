@@ -1,7 +1,5 @@
 // @flow
 
-'use strict';
-
 const Map = require('../../src/ui/map');
 
 module.exports = function (options: any): Promise<Map> {

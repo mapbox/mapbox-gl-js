@@ -1,4 +1,3 @@
-'use strict';
 
 const createFunction = require('../../../src/style-spec').function.interpolated;
 

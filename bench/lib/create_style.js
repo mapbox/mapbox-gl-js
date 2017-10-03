@@ -1,7 +1,5 @@
 // @flow
 
-'use strict';
-
 const Style = require('../../src/style/style');
 const Evented = require('../../src/util/evented');
 
