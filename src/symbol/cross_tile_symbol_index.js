@@ -147,9 +147,8 @@ class CrossTileSymbolLayerIndex {
         }
 
         // make this tile block duplicate labels in lower-res parent tiles
-        let parentCoord = coord;
         for (let z = coord.z - 1; z >= minZoom; z--) {
-            parentCoord = (parentCoord: any).parent(sourceMaxZoom);
+            const parentCoord = coord.scaledTo(z, sourceMaxZoom);
             const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
             if (parentIndex) {
                 // Mark labels in the parent tile blocked, and copy opacity state
@@ -176,10 +175,8 @@ class CrossTileSymbolLayerIndex {
             return Math.min(minZoom, zoom);
         }, 25);
 
-        let parentCoord = coord;
         for (let z = coord.z - 1; z >= minZoom; z--) {
-            parentCoord = parentCoord.parent(sourceMaxZoom);
-            if (!parentCoord) break; // Flow doesn't know that z >= minZoom would prevent this
+            const parentCoord = coord.scaledTo(z, sourceMaxZoom);
             const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
             if (parentIndex) this.unblockLabels(removedIndex, parentIndex);
         }
