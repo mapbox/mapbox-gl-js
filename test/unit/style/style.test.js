@@ -1006,6 +1006,28 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('warns if before layer does not exist', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                type: 'background'
+            }]
+        }));
+        const layer = {id: 'c', type: 'background'};
+        t.stub(util, 'warnOnce');
+
+        style.on('style.load', () => {
+            style.addLayer(layer, 'z');
+            t.deepEqual(style._order, ['a', 'b', 'c']);
+            t.ok(util.warnOnce.calledOnce);
+            t.end();
+        });
+    });
+
     t.test('fires an error on non-existant source layer', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(util.extend(createStyleJSON(), {
