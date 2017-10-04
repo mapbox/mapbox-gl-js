@@ -2,7 +2,6 @@
 const TileCoord = require('../source/tile_coord');
 const Texture = require('./texture');
 const RenderTexture = require('./render_texture');
-const {RGBAImage} = require('../util/image');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -20,7 +19,6 @@ const TERRAIN_TILE_HEIGHT = 256;
 module.exports = drawHillshade;
 
 function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
-
     if (painter.renderPass === 'opaque' || painter.renderPass === '3d') return;
 
     const gl = painter.gl;
@@ -30,11 +28,12 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        if (!tile.texture && painter.renderPass === 'hillshadeprepare') {
+        if (!tile.prepared && painter.renderPass === 'hillshadeprepare') {
             prepareHillshade(painter, tile);
             continue;
         }
         if (painter.renderPass === 'translucent') {
+
             renderHillshade(painter, tile, layer);
         }
     }
@@ -71,7 +70,7 @@ function renderHillshade(painter, tile, layer) {
     const latRange = getTileLatRange(painter, tile.coord);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+    gl.bindTexture(gl.TEXTURE_2D, tile.texture.texture);
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
@@ -113,20 +112,29 @@ function prepareHillshade(painter, tile) {
     // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
     if (tile.dem && tile.dem.data) {
-        const pixelData = tile.dem.data.map((l)=> {
-            return RGBAImage.create({width: l.width + 2 * l.border, height: l.height + 2 * l.border}, new Uint8Array(l.data.buffer));
-        });
+        const pixelData = tile.dem.getPixels();
 
         gl.activeTexture(gl.TEXTURE1);
-        const dem = new Texture(gl, pixelData[0], gl.RGBA, false);
-        dem.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
 
+        if (tile.demTexture) {
+            tile.demTexture.update(pixelData[0], false);
+        } else {
+            tile.demTexture = new Texture(gl, pixelData[0], gl.RGBA, false);
+        }
+
+        (tile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         gl.activeTexture(gl.TEXTURE0);
-        const hillshadeTexture = new RenderTexture(painter, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
+
+        if (!tile.texture) {
+            tile.texture = new RenderTexture(painter, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
+        } else {
+            tile.texture.clear(TERRAIN_TILE_HEIGHT, TERRAIN_TILE_WIDTH);
+        }
+
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
         gl.viewport(0, 0, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
 
-        tile.texture = hillshadeTexture.texture;
+
 
         const matrix = mat4.create();
         // Flip rendering at y axis.
@@ -146,8 +154,8 @@ function prepareHillshade(painter, tile) {
         vao.bind(gl, program, buffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
-        hillshadeTexture.unbind();
+        tile.texture.unbind();
         gl.viewport(0, 0, painter.width, painter.height);
-
+        tile.prepared = true;
     }
 }

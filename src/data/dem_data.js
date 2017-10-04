@@ -1,5 +1,5 @@
 // @flow
-import type {RGBAImage} from '../util/image';
+const {RGBAImage} = require('../util/image');
 
 export type SerializedDEMData = {
     uid: string,
@@ -92,6 +92,12 @@ class DEMData {
         level.set(-1, data.width, level.get(0, data.width - 1));
         level.set(data.width, data.width, level.get(data.width - 1, data.width - 1));
         this.loaded = true;
+    }
+
+    getPixels() {
+        return this.data.map((l)=> {
+            return RGBAImage.create({width: l.width + 2 * l.border, height: l.height + 2 * l.border}, new Uint8Array(l.data.buffer));
+        });
     }
 
     serialize(transferables?: Array<Transferable>) {
