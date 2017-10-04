@@ -96,7 +96,7 @@ test('DEMData#backfillBorder', (t) => {
         let nonempty = true;
         for (let x = -1; x < 5; x++) {
             for (let y = -1; y < 5; y++) {
-                if (level0.get(x, y) <= 0) {
+                if (level0.get(x, y) === -65536) {
                     nonempty = false;
                     break;
                 }
