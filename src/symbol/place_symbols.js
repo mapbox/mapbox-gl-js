@@ -169,6 +169,7 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
         let placedGlyphBox = [];
         let placedIconBox = [];
         let placedGlyphCircles = [];
+        let placedCircles = false;
         if (!symbolInstance.isDuplicate) {
             // isDuplicate -> Although we're rendering this tile, this symbol is also present in
             // a child tile that will be rendered on top. Don't place this symbol, so that
@@ -205,10 +206,15 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
                     labelPlaneMatrix,
                     showCollisionBoxes,
                     pitchWithMap);
+                // If text-allow-overlap is set, force "placedCircles" to true
+                // In theory there should always be at least one circle placed
+                // in this case, but for now quirks in text-anchor
+                // and text-offset may prevent that from being true.
+                placedCircles = layout['text-allow-overlap'] || placedGlyphCircles.length > 0;
             }
         }
 
-        let placeGlyph = placedGlyphBox.length > 0 || placedGlyphCircles.length > 0;
+        let placeGlyph = placedGlyphBox.length > 0 || placedCircles;
         let placeIcon = placedIconBox.length > 0;
 
         // Combine the scales for icons and text.
