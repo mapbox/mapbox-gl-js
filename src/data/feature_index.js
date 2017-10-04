@@ -170,7 +170,7 @@ class FeatureIndex {
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         const matchingSymbols = this.collisionIndex ?
-            this.collisionIndex.queryRenderedSymbols(queryGeometry, args.scale, this.coord, args.tileSourceMaxZoom, pixelsToTileUnits, args.collisionBoxArray) :
+            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.coord, args.tileSourceMaxZoom, EXTENT / args.tileSize, args.collisionBoxArray) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);

@@ -52,9 +52,9 @@ class CollisionIndex {
         this.pitchfactor = Math.cos(transform._pitch) * transform.cameraToCenterDistance;
     }
 
-    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, scale: number, pixelsToTileUnits: number, posMatrix: mat4): Array<number> {
+    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4): Array<number> {
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
-        const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
+        const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = collisionBox.x1 / tileToViewport + projectedPoint.point.x;
         const tlY = collisionBox.y1 / tileToViewport + projectedPoint.point.y;
         const brX = collisionBox.x2 / tileToViewport + projectedPoint.point.x;
@@ -68,7 +68,7 @@ class CollisionIndex {
         return [tlX, tlY, brX, brY];
     }
 
-    approximateTileDistance(tileDistance: any, lastSegmentAngle: number, tileToViewport: number, cameraToAnchorDistance: number, pitchWithMap: boolean): number {
+    approximateTileDistance(tileDistance: any, lastSegmentAngle: number, pixelsToTileUnits: number, cameraToAnchorDistance: number, pitchWithMap: boolean): number {
         // This is a quick and dirty solution for chosing which collision circles to use (since collision circles are
         // laid out in tile units). Ideally, I think we should generate collision circles on the fly in viewport coordinates
         // at the time we do collision detection.
@@ -82,7 +82,7 @@ class CollisionIndex {
         // incidenceStretch = 1 / sin(incidenceAngle)
 
         const incidenceStretch = pitchWithMap ? 1 : cameraToAnchorDistance / this.pitchfactor;
-        const lastSegmentTile = tileDistance.lastSegmentViewportDistance * tileToViewport;
+        const lastSegmentTile = tileDistance.lastSegmentViewportDistance * pixelsToTileUnits;
         return tileDistance.prevTileDistance +
             lastSegmentTile +
             (incidenceStretch - 1) * lastSegmentTile * Math.abs(Math.sin(lastSegmentAngle));
@@ -91,7 +91,7 @@ class CollisionIndex {
     placeCollisionCircles(collisionCircles: Array<number>,
                           allowOverlap: boolean,
                           scale: number,
-                          pixelsToTileUnits: number,
+                          textPixelRatio: number,
                           key: string,
                           symbol: any,
                           lineVertexArray: any,
@@ -128,13 +128,14 @@ class CollisionIndex {
 
         let collisionDetected = false;
 
-        const tileToViewport = projectedAnchor.perspectiveRatio * pixelsToTileUnits;
-        const tileToViewportScaled = tileToViewport * scale;
+        const tileToViewport = projectedAnchor.perspectiveRatio * textPixelRatio;
+        // equivalent to pixel_to_tile_units
+        const pixelsToTileUnits = tileToViewport / scale;
 
         let firstTileDistance = 0, lastTileDistance = 0;
         if (firstAndLastGlyph) {
-            firstTileDistance = this.approximateTileDistance(firstAndLastGlyph.first.tileDistance, firstAndLastGlyph.first.angle, tileToViewport, projectedAnchor.cameraDistance, pitchWithMap);
-            lastTileDistance = this.approximateTileDistance(firstAndLastGlyph.last.tileDistance, firstAndLastGlyph.last.angle, tileToViewport, projectedAnchor.cameraDistance, pitchWithMap);
+            firstTileDistance = this.approximateTileDistance(firstAndLastGlyph.first.tileDistance, firstAndLastGlyph.first.angle, pixelsToTileUnits, projectedAnchor.cameraDistance, pitchWithMap);
+            lastTileDistance = this.approximateTileDistance(firstAndLastGlyph.last.tileDistance, firstAndLastGlyph.last.angle, pixelsToTileUnits, projectedAnchor.cameraDistance, pitchWithMap);
         }
 
         for (let k = 0; k < collisionCircles.length; k += 5) {
@@ -151,7 +152,7 @@ class CollisionIndex {
 
             const projectedPoint = this.projectPoint(posMatrix, collisionCircles[k], collisionCircles[k + 1]);
             const tileUnitRadius = collisionCircles[k + 2];
-            const radius = tileUnitRadius / tileToViewportScaled;
+            const radius = tileUnitRadius / tileToViewport;
 
             const atLeastOneCirclePlaced = placedCollisionCircles.length > 0;
             if (atLeastOneCirclePlaced) {
@@ -212,7 +213,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(queryGeometry: any, scale: number, tileCoord: TileCoord, tileSourceMaxZoom: number, pixelsToTileUnits: number, collisionBoxArray: any) {
+    queryRenderedSymbols(queryGeometry: any, tileCoord: TileCoord, tileSourceMaxZoom: number, textPixelRatio: number, collisionBoxArray: any) {
         const sourceLayerFeatures = {};
         const result = [];
 
@@ -273,7 +274,7 @@ class CollisionIndex {
             // distinction doesn't matter as much, and box geometry is easier
             // to work with.
             const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, blocking.anchorPointX, blocking.anchorPointY);
-            const tileToViewport = pixelsToTileUnits * scale * projectedPoint.perspectiveRatio;
+            const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
             const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
             const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
             const x2 = blocking.x2 / tileToViewport + projectedPoint.point.x;
