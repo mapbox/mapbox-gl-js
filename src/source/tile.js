@@ -21,7 +21,6 @@ const {SegmentVector} = require('../data/segment');
 const {TriangleIndexArray} = require('../data/index_array_type');
 const projection = require('../symbol/projection');
 const PlaceSymbols = require('../symbol/place_symbols');
-
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -215,9 +214,11 @@ class Tile {
             const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
             const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
+            const textPixelRatio = EXTENT / this.tileSize; // text size is not meant to be affected by scale
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
+
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, pixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, collisionBoxArray);
+            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, collisionBoxArray);
         }
     }
 

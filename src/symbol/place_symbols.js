@@ -133,7 +133,7 @@ function updateCollisionCircles(collisionVertexArray: StructArray, collisionCirc
     }
 }
 
-function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, pixelsToTileUnits: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
+function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, textPixelRatio: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
     const layer = bucket.layers[0];
     const layout = layer.layout;
 
@@ -181,12 +181,12 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
             // starts rendering as close as possible to its final state?
             if (symbolInstance.collisionArrays.textBox) {
                 placedGlyphBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
-                    layout['text-allow-overlap'], scale, pixelsToTileUnits, posMatrix);
+                    layout['text-allow-overlap'], textPixelRatio, posMatrix);
             }
 
             if (symbolInstance.collisionArrays.iconBox) {
                 placedIconBox = collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
-                    layout['icon-allow-overlap'], scale, pixelsToTileUnits, posMatrix);
+                    layout['icon-allow-overlap'], textPixelRatio, posMatrix);
             }
 
             const textCircles = symbolInstance.collisionArrays.textCircles;
@@ -196,7 +196,7 @@ function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisi
                 placedGlyphCircles = collisionIndex.placeCollisionCircles(textCircles,
                     layout['text-allow-overlap'],
                     scale,
-                    pixelsToTileUnits,
+                    textPixelRatio,
                     symbolInstance.key,
                     placedSymbol,
                     bucket.lineVertexArray,
