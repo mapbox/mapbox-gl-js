@@ -21,7 +21,6 @@ const QueryFeatures = require('../source/query_features');
 const SourceCache = require('../source/source_cache');
 const GeoJSONSource = require('../source/geojson_source');
 const styleSpec = require('../style-spec/reference/latest');
-const {isExpression} = require('../style-spec/expression');
 const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
@@ -792,13 +791,7 @@ class Style extends Evented {
 
         const wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
         layer.setPaintProperty(name, value);
-
-        const isFeatureConstant = !(
-            value &&
-            isExpression(value) &&
-            value.property !== '$zoom' &&
-            value.property !== undefined
-        );
+        const isFeatureConstant = layer.isPaintValueFeatureConstant(name);
 
         if (!isFeatureConstant || !wasFeatureConstant) {
             this._updateLayer(layer);
