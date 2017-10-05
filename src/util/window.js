@@ -56,9 +56,7 @@ function restore(): Window {
     window.restore = restore;
 
     window.ImageData = window.ImageData || function() { return false; };
-    window.ImageBitmap = window.ImageBitmap || function () { return false; };
-    window.HTMLVideoElement = window.HTMLVideoElement || function () { return false; };
-
+    window.ImageBitmap = window.ImageBitmap || function() { return false; };
     util.extend(module.exports, window);
 
     return window;
