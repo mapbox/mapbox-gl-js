@@ -1006,7 +1006,7 @@ test('Style#addLayer', (t) => {
         });
     });
 
-    t.test('warns if before layer does not exist', (t) => {
+    t.test('fire error if before layer does not exist', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON({
             layers: [{
@@ -1018,13 +1018,13 @@ test('Style#addLayer', (t) => {
             }]
         }));
         const layer = {id: 'c', type: 'background'};
-        t.stub(util, 'warnOnce');
 
         style.on('style.load', () => {
+            style.on('error', (error)=>{
+                t.match(error.message, /does not exist on this map/);
+                t.end();
+            });
             style.addLayer(layer, 'z');
-            t.deepEqual(style._order, ['a', 'b', 'c']);
-            t.ok(util.warnOnce.calledOnce);
-            t.end();
         });
     });
 
