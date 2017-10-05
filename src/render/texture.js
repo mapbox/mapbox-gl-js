@@ -1,7 +1,7 @@
 // @flow
 
 const {RGBAImage, AlphaImage} = require('../util/image');
-const {HTMLImageElement} = require('../util/window');
+const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData, ImageBitmap} = require('../util/window');
 
 export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'RGBA'>
@@ -55,10 +55,10 @@ class Texture {
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (true: any));
         }
 
-        if (image instanceof RGBAImage || image instanceof AlphaImage) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
-        } else {
+        if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData || image instanceof ImageBitmap) {
             gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+        } else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
         }
     }
 
