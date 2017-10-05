@@ -23,7 +23,6 @@ const Assertion = require('./assertion');
 const ArrayAssertion = require('./array');
 const Coercion = require('./coercion');
 const At = require('./at');
-const Contains = require('./contains');
 const Match = require('./match');
 const Case = require('./case');
 const Curve = require('./curve');
@@ -44,7 +43,6 @@ const expressions: { [string]: Class<Expression> } = {
     'to-number': Coercion,
     'to-color': Coercion,
     'at': At,
-    'contains': Contains,
     'case': Case,
     'match': Match,
     'coalesce': Coalesce,
