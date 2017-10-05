@@ -9,7 +9,7 @@ import type { Feature } from './index';
 import type { Expression } from './expression';
 
 class EvaluationContext {
-    globals: {+zoom?: number};
+    globals: {zoom: number};
     feature: ?Feature;
 
     scope: Scope;

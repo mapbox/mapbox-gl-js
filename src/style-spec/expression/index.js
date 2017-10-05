@@ -33,13 +33,13 @@ export type StyleExpression = {
     result: 'success',
     isZoomConstant: true,
     isFeatureConstant: boolean,
-    evaluate: ({+zoom?: number}, feature?: Feature) => any,
+    evaluate: (globals: {zoom: number}, feature?: Feature) => any,
     // parsed: Expression
 } | {
     result: 'success',
     isZoomConstant: false,
     isFeatureConstant: boolean,
-    evaluate: ({+zoom?: number}, feature?: Feature) => any,
+    evaluate: (globals: {zoom: number}, feature?: Feature) => any,
     // parsed: Expression,
     interpolation: InterpolationType,
     zoomStops: Array<number>

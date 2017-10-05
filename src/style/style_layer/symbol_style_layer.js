@@ -10,8 +10,8 @@ import type {BucketParameters} from '../../data/bucket';
 
 class SymbolStyleLayer extends StyleLayer {
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, feature?: Feature): any {
-        const value = super.getLayoutValue(name, globalProperties, feature);
+    getLayoutValue(name: string, globals: GlobalProperties, feature?: Feature): any {
+        const value = super.getLayoutValue(name, globals, feature);
         if (value !== 'auto') {
             return value;
         }
@@ -19,11 +19,11 @@ class SymbolStyleLayer extends StyleLayer {
         switch (name) {
         case 'text-rotation-alignment':
         case 'icon-rotation-alignment':
-            return this.getLayoutValue('symbol-placement', globalProperties, feature) === 'line' ? 'map' : 'viewport';
+            return this.getLayoutValue('symbol-placement', globals, feature) === 'line' ? 'map' : 'viewport';
         case 'text-pitch-alignment':
-            return this.getLayoutValue('text-rotation-alignment', globalProperties, feature);
+            return this.getLayoutValue('text-rotation-alignment', globals, feature);
         case 'icon-pitch-alignment':
-            return this.getLayoutValue('icon-rotation-alignment', globalProperties, feature);
+            return this.getLayoutValue('icon-rotation-alignment', globals, feature);
         default:
             return value;
         }

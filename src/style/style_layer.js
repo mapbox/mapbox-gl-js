@@ -104,7 +104,7 @@ class StyleLayer extends Evented {
 
         // set initial layout/paint values
         for (paintName in this._paintSpecifications) {
-            this.paint[paintName] = this.getPaintValue(paintName);
+            this.paint[paintName] = this.getPaintValue(paintName, {zoom: 0});
         }
         for (layoutName in this._layoutSpecifications) {
             this._updateLayoutValue(layoutName);
@@ -129,12 +129,12 @@ class StyleLayer extends Evented {
         );
     }
 
-    getLayoutValue(name: string, globalProperties?: GlobalProperties, feature?: Feature): any {
+    getLayoutValue(name: string, globals: GlobalProperties, feature?: Feature): any {
         const specification = this._layoutSpecifications[name];
         const declaration = this._layoutDeclarations[name];
 
         if (declaration) {
-            return declaration.calculate(globalProperties, feature);
+            return declaration.calculate(globals, feature);
         } else {
             return specification.default;
         }
@@ -182,12 +182,12 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, feature?: Feature): any {
+    getPaintValue(name: string, globals: GlobalProperties, feature?: Feature): any {
         const specification = this._paintSpecifications[name];
         const transition = this._paintTransitions[name];
 
         if (transition) {
-            return transition.calculate(globalProperties, feature);
+            return transition.calculate(globals, feature);
         } else if (specification.type === 'color' && specification.default) {
             return parseColor(specification.default);
         } else {
@@ -310,7 +310,7 @@ class StyleLayer extends Evented {
         const declaration = this._layoutDeclarations[name];
         if (!declaration || (declaration.expression.isZoomConstant && declaration.expression.isFeatureConstant)) {
             delete this._layoutFunctions[name];
-            this.layout[name] = this.getLayoutValue(name);
+            this.layout[name] = this.getLayoutValue(name, {zoom: 0});
         } else {
             this._layoutFunctions[name] = true;
         }
