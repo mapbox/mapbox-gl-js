@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": {"kind": "Color"},
+  "expression": ["curve", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
+  "inputs": [[{"heatmapDensity": 0.5}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "Color"
+    },
+    "outputs": [[0.5, 0, 0, 1]]
+  }
+}

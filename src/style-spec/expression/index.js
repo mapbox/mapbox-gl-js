@@ -24,6 +24,11 @@ export type Feature = {
     +properties: {[string]: any}
 };
 
+export type GlobalProperties = {
+    zoom: number,
+    heatmapDensity?: number
+};
+
 export type StyleExpressionErrors = {
     result: 'error',
     errors: Array<ParsingError>
@@ -33,13 +38,13 @@ export type StyleExpression = {
     result: 'success',
     isZoomConstant: true,
     isFeatureConstant: boolean,
-    evaluate: (globals: {zoom: number}, feature?: Feature) => any,
+    evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     // parsed: Expression
 } | {
     result: 'success',
     isZoomConstant: false,
     isFeatureConstant: boolean,
-    evaluate: (globals: {zoom: number}, feature?: Feature) => any,
+    evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     // parsed: Expression,
     interpolation: InterpolationType,
     zoomStops: Array<number>
@@ -67,7 +72,7 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
     }
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
-    const isZoomConstant = isConstant.isZoomConstant(parsed);
+    const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
 
     if (isZoomConstant) {
         return {

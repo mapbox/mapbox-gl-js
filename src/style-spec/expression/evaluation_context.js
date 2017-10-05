@@ -5,13 +5,13 @@ const Scope = require('./scope');
 const parseColor = require('../util/parse_color');
 const {Color} = require('./values');
 
-import type { Feature } from './index';
+import type { Feature, GlobalProperties } from './index';
 import type { Expression } from './expression';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
 class EvaluationContext {
-    globals: {zoom: number};
+    globals: GlobalProperties;
     feature: ?Feature;
 
     scope: Scope;

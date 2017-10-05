@@ -8,6 +8,7 @@ const StyleDeclaration = require('./style_declaration');
 const StyleTransition = require('./style_transition');
 
 import type AnimationLoop from './animation_loop';
+import type {GlobalProperties} from '../style-spec/expression';
 
 const TRANSITION_SUFFIX = '-transition';
 const properties = ['anchor', 'color', 'position', 'intensity'];
@@ -42,7 +43,7 @@ class Light extends Evented {
         }, lightOpts);
 
         for (const prop of properties) {
-            this._declarations[prop] = new StyleDeclaration(specifications[prop], lightOpts[prop]);
+            this._declarations[prop] = new StyleDeclaration(specifications[prop], lightOpts[prop], prop);
         }
 
         return this;
@@ -70,7 +71,7 @@ class Light extends Evented {
         }
     }
 
-    getLightValue(property: string, globalProperties: {zoom: number}) {
+    getLightValue(property: string, globalProperties: GlobalProperties) {
         if (property === 'position') {
             const calculated: any = this._transitions[property].calculate(globalProperties),
                 cartesian = util.sphericalToCartesian(calculated);
@@ -95,7 +96,7 @@ class Light extends Evented {
             } else if (value === null || value === undefined) {
                 delete this._declarations[key];
             } else {
-                this._declarations[key] = new StyleDeclaration(specifications[key], value);
+                this._declarations[key] = new StyleDeclaration(specifications[key], value, key);
             }
         }
     }
@@ -111,7 +112,7 @@ class Light extends Evented {
         const spec = specifications[property];
 
         if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default);
+            declaration = new StyleDeclaration(spec, spec.default, property);
         }
 
         if (oldTransition && oldTransition.declaration.json === declaration.json) return;
