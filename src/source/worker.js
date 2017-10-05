@@ -13,9 +13,7 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters,
-    RedoPlacementParameters,
-    RedoPlacementCallback
+    TileParameters
 } from '../source/worker_source';
 
 import type {WorkerGlobalScopeInterface} from '../util/web_worker';
@@ -94,11 +92,6 @@ class Worker {
         if (worker.removeSource !== undefined) {
             worker.removeSource(params);
         }
-    }
-
-    redoPlacement(mapId: string, params: RedoPlacementParameters & {type: string}, callback: RedoPlacementCallback) {
-        assert(params.type);
-        this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     }
 
     /**
