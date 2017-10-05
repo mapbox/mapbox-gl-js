@@ -11,7 +11,6 @@ const Let = require('./definitions/let');
 const definitions = require('./definitions');
 const isConstant = require('./is_constant');
 const {unwrap} = require('./values');
-const extend = require('../util/extend');
 
 import type {Type} from './types';
 import type {Value} from './values';
@@ -76,6 +75,15 @@ export type StyleExpression = StyleDeclarationExpression | StyleFilterExpression
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
+/**
+ * Parse and typecheck the given style spec JSON expression.  If
+ * options.defaultValue is provided, then the resulting StyleExpression's
+ * `evaluate()` method will handle errors by logging a warning (once per
+ * message) and returning the default value.  Otherwise, it will throw
+ * evaluation errors.
+ *
+ * @private
+ */
 function createExpression(expression: mixed, options: StyleExpressionOptions): StyleExpressionErrors | StyleExpression {
     const parser = new ParsingContext(definitions, [], options.expectedType);
     const parsed = parser.parse(expression);
@@ -88,10 +96,36 @@ function createExpression(expression: mixed, options: StyleExpressionOptions): S
     }
 
     const evaluator = new EvaluationContext();
-    function evaluate(globals, feature) {
-        evaluator.globals = globals;
-        evaluator.feature = feature;
-        return parsed.evaluate(evaluator);
+
+    let evaluate;
+    if (options.defaultValue === undefined) {
+        evaluate = function (globals, feature) {
+            evaluator.globals = globals;
+            evaluator.feature = feature;
+            return parsed.evaluate(evaluator);
+        };
+    } else {
+        const warningHistory: {[key: string]: boolean} = {};
+        const defaultValue = options.defaultValue;
+        evaluate = function (globals, feature) {
+            evaluator.globals = globals;
+            evaluator.feature = feature;
+            try {
+                const val = parsed.evaluate(evaluator);
+                if (val === null || val === undefined) {
+                    return unwrap(defaultValue);
+                }
+                return unwrap(val);
+            } catch (e) {
+                if (!warningHistory[e.message]) {
+                    warningHistory[e.message] = true;
+                    if (typeof console !== 'undefined') {
+                        console.warn(e.message);
+                    }
+                }
+                return unwrap(defaultValue);
+            }
+        };
     }
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
@@ -146,41 +180,7 @@ function createExpression(expression: mixed, options: StyleExpressionOptions): S
     };
 }
 
-function createExpressionWithErrorHandling(expression: mixed, options: StyleExpressionOptions): StyleExpression {
-    expression = createExpression(expression, options);
-    const defaultValue = options.defaultValue === undefined ? null : options.defaultValue;
-
-    if (expression.result !== 'success') {
-        // this should have been caught in validation
-        throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
-    }
-
-    const evaluate = expression.evaluate;
-    const warningHistory: {[key: string]: boolean} = {};
-
-    return extend({}, expression, {
-        evaluate(globals, feature) {
-            try {
-                const val = evaluate(globals, feature);
-                if (val === null || val === undefined) {
-                    return unwrap(defaultValue);
-                }
-                return unwrap(val);
-            } catch (e) {
-                if (!warningHistory[e.message]) {
-                    warningHistory[e.message] = true;
-                    if (typeof console !== 'undefined') {
-                        console.warn(e.message);
-                    }
-                }
-                return unwrap(defaultValue);
-            }
-        }
-    });
-}
-
-module.exports = createExpression;
-module.exports.createExpressionWithErrorHandling = createExpressionWithErrorHandling;
+module.exports.createExpression = createExpression;
 module.exports.isExpression = isExpression;
 module.exports.getExpectedType = getExpectedType;
 module.exports.getDefaultValue = getDefaultValue;

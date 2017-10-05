@@ -1,7 +1,7 @@
 // @flow
 
 const parseColor = require('../style-spec/util/parse_color');
-const {createExpressionWithErrorHandling, getExpectedType, getDefaultValue} = require('../style-spec/expression');
+const {createExpression, getExpectedType, getDefaultValue} = require('../style-spec/expression');
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
@@ -31,12 +31,17 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
     }
 
     if (parameters.expression) {
-        const expression = createExpressionWithErrorHandling(
+        const expression = createExpression(
             parameters.expression, {
                 context: 'declaration',
                 expectedType: getExpectedType(propertySpec),
                 defaultValue: getDefaultValue(propertySpec)
             });
+
+        if (expression.result !== 'success') {
+            // this should have been caught in validation
+            throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+        }
 
         if (expression.context === 'declaration') {
             return expression;

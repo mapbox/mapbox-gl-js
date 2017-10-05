@@ -7,7 +7,7 @@ const createFunction = require('../../src/style-spec/function');
 const convertFunction = require('../../src/style-spec/function/convert');
 const {
     isExpression,
-    createExpressionWithErrorHandling,
+    createExpression,
     getExpectedType,
     getDefaultValue
 } = require('../../src/style-spec/expression');
@@ -40,11 +40,14 @@ class ExpressionBenchmark extends Benchmark {
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
-                        const compiledExpression = createExpressionWithErrorHandling(rawExpression, {
+                        const compiledExpression = createExpression(rawExpression, {
                             context: 'declaration',
                             expectedType: getExpectedType(propertySpec),
                             defaultValue: getDefaultValue(propertySpec)
                         });
+                        if (compiledExpression.result !== 'success') {
+                            throw new Error(compiledExpression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+                        }
                         return {
                             propertySpec,
                             rawValue,
@@ -97,7 +100,7 @@ class FunctionConvert extends ExpressionBenchmark {
 class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {
-            createExpressionWithErrorHandling(rawExpression, {
+            createExpression(rawExpression, {
                 context: 'declaration',
                 expectedType: getExpectedType(propertySpec),
                 defaultValue: getDefaultValue(propertySpec)

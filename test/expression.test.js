@@ -2,7 +2,7 @@
 
 require('flow-remove-types/register');
 const expressionSuite = require('./integration').expression;
-const createExpression = require('../src/style-spec/expression');
+const { createExpression } = require('../src/style-spec/expression');
 const { toString } = require('../src/style-spec/expression/types');
 const { unwrap } = require('../src/style-spec/expression/values');
 
@@ -16,8 +16,7 @@ expressionSuite.run('js', {tests: tests}, (fixture) => {
     const expression = createExpression(
         fixture.expression, {
             context: 'declaration',
-            expectedType: fixture.expectExpressionType || null,
-            defaultValue: null
+            expectedType: fixture.expectExpressionType || null
         });
 
     if (expression.result === 'error') {

@@ -1,6 +1,6 @@
 
 const ValidationError = require('../error/validation_error');
-const createExpression = require('../expression');
+const {createExpression} = require('../expression');
 const {getExpectedType, getDefaultValue} = require('../expression');
 const unbundle = require('../util/unbundle_jsonlint');
 
