@@ -12,8 +12,8 @@ import type Point from '@mapbox/point-geometry';
 
 class FillExtrusionStyleLayer extends StyleLayer {
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, feature?: Feature) {
-        const value = super.getPaintValue(name, globalProperties, feature);
+    getPaintValue(name: string, globals: GlobalProperties, feature?: Feature) {
+        const value = super.getPaintValue(name, globals, feature);
         if (name === 'fill-extrusion-color' && value) {
             value[3] = 1;
         }

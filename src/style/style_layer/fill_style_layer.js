@@ -12,11 +12,11 @@ import type Point from '@mapbox/point-geometry';
 
 class FillStyleLayer extends StyleLayer {
 
-    getPaintValue(name: string, globalProperties?: GlobalProperties, feature?: Feature) {
+    getPaintValue(name: string, globals: GlobalProperties, feature?: Feature) {
         if (name === 'fill-outline-color') {
             // Special-case handling of undefined fill-outline-color values
             if (this.getPaintProperty('fill-outline-color') === undefined) {
-                return super.getPaintValue('fill-color', globalProperties, feature);
+                return super.getPaintValue('fill-color', globals, feature);
             }
 
             // Handle transitions from fill-outline-color: undefined
@@ -29,14 +29,14 @@ class FillStyleLayer extends StyleLayer {
                 );
 
                 if (!declaredValue) {
-                    return super.getPaintValue('fill-color', globalProperties, feature);
+                    return super.getPaintValue('fill-color', globals, feature);
                 }
 
                 transition = transition.oldTransition;
             }
         }
 
-        return super.getPaintValue(name, globalProperties, feature);
+        return super.getPaintValue(name, globals, feature);
     }
 
     getPaintInterpolationFactor(name: string, ...args: *) {

@@ -1,6 +1,5 @@
 // @flow
 
-const assert = require('assert');
 const util = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
 
@@ -58,8 +57,8 @@ class StyleTransition {
     /*
      * Return the value of the transitioning property.
      */
-    calculate(globalProperties?: {zoom: number}, feature?: Feature, time?: number) {
-        const value = this._calculateTargetValue(globalProperties, feature);
+    calculate(globals: {zoom: number}, feature?: Feature, time?: number) {
+        const value = this._calculateTargetValue(globals, feature);
 
         if (this.instant())
             return value;
@@ -69,18 +68,17 @@ class StyleTransition {
         if (time >= this.endTime)
             return value;
 
-        const oldValue = (this.oldTransition: any).calculate(globalProperties, feature, this.startTime);
+        const oldValue = (this.oldTransition: any).calculate(globals, feature, this.startTime);
         const t = util.easeCubicInOut((time - this.startTime - this.delay) / this.duration);
         return this.interp(oldValue, value, t);
     }
 
-    _calculateTargetValue(globalProperties?: {zoom: number}, feature?: Feature) {
+    _calculateTargetValue(globals: {zoom: number}, feature?: Feature) {
         if (!this.zoomTransitioned)
-            return this.declaration.calculate(globalProperties, feature);
+            return this.declaration.calculate(globals, feature);
 
         // calculate zoom transition between discrete values, such as images and dasharrays.
-        assert(globalProperties && typeof globalProperties.zoom === 'number');
-        const z: number = (globalProperties: any).zoom;
+        const z = globals.zoom;
         const lastIntegerZoom = this.zoomHistory.lastIntegerZoom;
 
         const fromScale = z > lastIntegerZoom ? 2 : 0.5;

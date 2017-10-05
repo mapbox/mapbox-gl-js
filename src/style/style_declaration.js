@@ -58,8 +58,8 @@ class StyleDeclaration {
         this.expression = normalizeToExpression(this.value, reference);
     }
 
-    calculate(globalProperties: {+zoom?: number} = {}, feature?: Feature) {
-        const value = this.expression.evaluate(globalProperties, feature);
+    calculate(globals: {zoom: number}, feature?: Feature) {
+        const value = this.expression.evaluate(globals, feature);
         if (this.minimum !== undefined && value < this.minimum) {
             return this.minimum;
         }
