@@ -7,10 +7,11 @@ const assert = require('assert');
 
 import type { Expression } from './expression';
 import type { Type } from './types';
+import type { Value } from './values';
 
 type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;
-type Evaluate = Function;
+type Evaluate = (EvaluationContext, Array<Expression>) => Value;
 type Definition = [Type, Signature, Evaluate] |
     {|type: Type, overloads: Array<[Signature, Evaluate]>|};
 
@@ -32,7 +33,7 @@ class CompoundExpression implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        return this._evaluate.apply(ctx, this.args.map(arg => arg.evaluate(ctx)));
+        return this._evaluate(ctx, this.args);
     }
 
     serialize() {
