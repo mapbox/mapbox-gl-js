@@ -1,5 +1,5 @@
 #ifdef GL_ES
-precision mediump float;
+precision highp float;
 #else
 #define lowp
 #define mediump
@@ -13,9 +13,7 @@ uniform float u_zoom;
 
 float getElevation(vec2 coord, float bias) {
     // Convert encoded elevation value to meters
-    vec4 data = texture2D(u_image, coord, bias) * 255.0;
-    // return data.r * 256.0 + data.g + data.b / 256.0 - 32768.0;
-    // return ((data.r * 256.0 * 256.0 + data.g * 256.0 + data.b) / 10.0 - 10000.0) * 2.0;
+    vec4 data = texture2D(u_image, coord) * 255.0;
     return (data.r + data.g * 256.0 + data.b * 256.0 * 256.0) / 4.0;
 }
 
