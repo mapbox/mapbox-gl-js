@@ -185,6 +185,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.zoom
     ],
+    'heatmap-density': [
+        NumberType,
+        [],
+        (ctx) => ctx.globals.heatmapDensity || 0
+    ],
     '+': [
         NumberType,
         varargs(NumberType),

@@ -1,18 +1,19 @@
 // @flow
 
 const parseColor = require('../style-spec/util/parse_color');
-const {createExpressionWithErrorHandling, getExpectedType, getDefaultValue} = require('../style-spec/expression');
+const {createExpression, getExpectedType, getDefaultValue} = require('../style-spec/expression');
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
 
-import type {StyleExpression, Feature} from '../style-spec/expression';
+import type {StyleDeclarationExpression, Feature, GlobalProperties} from '../style-spec/expression';
 
-function normalizeToExpression(parameters, propertySpec): StyleExpression {
+function normalizeToExpression(parameters, propertySpec, name): StyleDeclarationExpression {
     if (typeof parameters === 'string' && propertySpec.type === 'color') {
         const color = parseColor(parameters);
         return {
             result: 'success',
+            context: 'property',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return color; }
@@ -22,6 +23,7 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
     if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
         return {
             result: 'success',
+            context: 'property',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return parameters; }
@@ -29,12 +31,25 @@ function normalizeToExpression(parameters, propertySpec): StyleExpression {
     }
 
     if (parameters.expression) {
-        return createExpressionWithErrorHandling(
-            parameters.expression,
-            getExpectedType(propertySpec),
-            getDefaultValue(propertySpec));
+        const expression = createExpression(
+            parameters.expression, {
+                context: 'property',
+                expectedType: getExpectedType(propertySpec),
+                defaultValue: getDefaultValue(propertySpec)
+            });
+
+        if (expression.result !== 'success') {
+            // this should have been caught in validation
+            throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+        }
+
+        if (expression.context === 'property') {
+            return expression;
+        } else {
+            throw new Error(`Incorrect expression context ${expression.context}`);
+        }
     } else {
-        return createFunction(parameters, propertySpec);
+        return createFunction(parameters, propertySpec, name);
     }
 }
 
@@ -46,19 +61,19 @@ class StyleDeclaration {
     value: any;
     json: mixed;
     minimum: number;
-    expression: StyleExpression;
+    expression: StyleDeclarationExpression;
 
-    constructor(reference: any, value: any) {
+    constructor(reference: any, value: any, name: string) {
         this.value = util.clone(value);
 
         // immutable representation of value. used for comparison
         this.json = JSON.stringify(this.value);
 
         this.minimum = reference.minimum;
-        this.expression = normalizeToExpression(this.value, reference);
+        this.expression = normalizeToExpression(this.value, reference, name);
     }
 
-    calculate(globals: {zoom: number}, feature?: Feature) {
+    calculate(globals: GlobalProperties, feature?: Feature) {
         const value = this.expression.evaluate(globals, feature);
         if (this.minimum !== undefined && value < this.minimum) {
             return this.minimum;

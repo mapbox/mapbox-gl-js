@@ -1,14 +1,17 @@
 
 const ValidationError = require('../error/validation_error');
-const createExpression = require('../expression');
+const {createExpression} = require('../expression');
 const {getExpectedType, getDefaultValue} = require('../expression');
 const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateExpression(options) {
     const expression = createExpression(
         deepUnbundle(options.value.expression),
-        getExpectedType(options.valueSpec),
-        getDefaultValue(options.valueSpec));
+        {
+            context: options.expressionContext,
+            expectedType: getExpectedType(options.valueSpec),
+            defaultValue: getDefaultValue(options.valueSpec)
+        });
 
     if (expression.result === 'success') {
         return [];

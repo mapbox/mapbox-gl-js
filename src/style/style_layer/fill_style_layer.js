@@ -5,8 +5,7 @@ const FillBucket = require('../../data/bucket/fill_bucket');
 const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
 const {translateDistance, translate} = require('../query_utils');
 
-import type {Feature} from '../../style-spec/expression';
-import type {GlobalProperties} from '../style_layer';
+import type {Feature, GlobalProperties} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 

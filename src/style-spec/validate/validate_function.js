@@ -12,7 +12,7 @@ const extend = require('../util/extend');
 module.exports = function validateFunction(options) {
     if (options.value.expression) {
         return validateExpression(extend({}, options, {
-            disallowNestedZoom: true
+            context: 'declaration'
         }));
     }
 

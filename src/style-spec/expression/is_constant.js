@@ -26,16 +26,16 @@ function isFeatureConstant(e: Expression) {
     return result;
 }
 
-function isZoomConstant(e: Expression) {
-    if (e instanceof CompoundExpression && e.name === 'zoom') { return false; }
+function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
+    if (e instanceof CompoundExpression && properties.indexOf(e.name) >= 0) { return false; }
     let result = true;
     e.eachChild((arg) => {
-        if (result && !isZoomConstant(arg)) { result = false; }
+        if (result && !isGlobalPropertyConstant(arg, properties)) { result = false; }
     });
     return result;
 }
 
 module.exports = {
     isFeatureConstant,
-    isZoomConstant,
+    isGlobalPropertyConstant,
 };

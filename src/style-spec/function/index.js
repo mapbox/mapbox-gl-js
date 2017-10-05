@@ -9,7 +9,7 @@ function identityFunction(x) {
     return x;
 }
 
-function createFunction(parameters, propertySpec) {
+function createFunction(parameters, propertySpec, name) {
     const isColor = propertySpec.type === 'color';
     const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
@@ -118,6 +118,12 @@ function createFunction(parameters, propertySpec) {
             }
         };
     } else if (zoomDependent) {
+        let evaluate;
+        if (name === 'heatmap-color') {
+            evaluate = ({heatmapDensity}) => outputFunction(innerFun(parameters, propertySpec, heatmapDensity, hashedStops, categoricalKeyType));
+        } else {
+            evaluate = ({zoom}) => outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType));
+        }
         return {
             isFeatureConstant: true,
             isZoomConstant: false,
@@ -125,9 +131,7 @@ function createFunction(parameters, propertySpec) {
                 {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1} :
                 {name: 'step'},
             zoomStops: parameters.stops.map(s => s[0]),
-            evaluate({zoom}) {
-                return outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType));
-            }
+            evaluate
         };
     } else {
         return {
