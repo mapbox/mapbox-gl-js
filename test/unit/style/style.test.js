@@ -1006,6 +1006,28 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('fire error if before layer does not exist', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                type: 'background'
+            }]
+        }));
+        const layer = {id: 'c', type: 'background'};
+
+        style.on('style.load', () => {
+            style.on('error', (error)=>{
+                t.match(error.message, /does not exist on this map/);
+                t.end();
+            });
+            style.addLayer(layer, 'z');
+        });
+    });
+
     t.test('fires an error on non-existant source layer', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(util.extend(createStyleJSON(), {

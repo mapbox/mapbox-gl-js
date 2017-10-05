@@ -568,7 +568,13 @@ class Style extends Evented {
 
         layer.setEventedParent(this, {layer: {id: id}});
 
+
         const index = before ? this._order.indexOf(before) : this._order.length;
+        if (before && index === -1) {
+            this.fire('error', { message: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            return;
+        }
+
         this._order.splice(index, 0, id);
 
         this._layers[id] = layer;
