@@ -121,7 +121,11 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
 
     unloadTile(tile: Tile) {
-        tile.unloadDEMData();
+        if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
+        if (tile.dem) delete tile.dem;
+        delete tile.neighboringTiles;
+
+        tile.state = 'unloaded';
         this.dispatcher.send('removeDEMTile', { uid: tile.uid, source: this.id }, undefined, tile.workerID);
     }
 

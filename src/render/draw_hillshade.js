@@ -116,13 +116,23 @@ function prepareHillshade(painter, tile) {
 
         gl.activeTexture(gl.TEXTURE1);
 
+        // if UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to true prior to drawHillshade being called
+        // tiles will appear blank, because as you can see above the alpha value for these textures
+        // is always 0
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
+
+
+        tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
         if (tile.demTexture) {
             tile.demTexture.update(pixelData[0], false);
+            // for some reason flow thinks tile.demTexture can be null or undefined here :sob:
+            (tile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         } else {
             tile.demTexture = new Texture(gl, pixelData[0], gl.RGBA, false);
+            tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
-        (tile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+
         gl.activeTexture(gl.TEXTURE0);
 
         if (!tile.texture) {
@@ -131,7 +141,6 @@ function prepareHillshade(painter, tile) {
             tile.texture.clear(TERRAIN_TILE_HEIGHT, TERRAIN_TILE_WIDTH);
         }
 
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
         gl.viewport(0, 0, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT);
 
 
