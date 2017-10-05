@@ -172,18 +172,18 @@ class StyleLayer extends Evented {
     }
 
     getPaintInterpolationFactor(name: string, input: number, lower: number, upper: number) {
-        const transition = this._paintTransitions[name];
-        return transition.declaration.interpolationFactor(input, lower, upper);
+        const declaration = this._paintDeclarations[name];
+        return declaration ? declaration.interpolationFactor(input, lower, upper) : 0;
     }
 
     isPaintValueFeatureConstant(name: string) {
-        const transition = this._paintTransitions[name];
-        return !transition || transition.declaration.expression.isFeatureConstant;
+        const declaration = this._paintDeclarations[name];
+        return !declaration || declaration.expression.isFeatureConstant;
     }
 
     isPaintValueZoomConstant(name: string) {
-        const transition = this._paintTransitions[name];
-        return !transition || transition.declaration.expression.isZoomConstant;
+        const declaration = this._paintDeclarations[name];
+        return !declaration || declaration.expression.isZoomConstant;
     }
 
     isHidden(zoom: number) {
