@@ -29,19 +29,31 @@ export type GlobalProperties = {
     heatmapDensity?: number
 };
 
+export type StyleExpressionContext = 'declaration' | 'filter';
+
+export type StyleExpressionOptions = {
+    context: StyleExpressionContext,
+    expectedType: Type | null,
+    defaultValue?: Value | null
+}
+
 export type StyleExpressionErrors = {
     result: 'error',
     errors: Array<ParsingError>
 };
 
-export type StyleExpression = {
+type ZoomConstantExpression = {
     result: 'success',
+    context: StyleExpressionContext,
     isZoomConstant: true,
     isFeatureConstant: boolean,
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     // parsed: Expression
-} | {
+};
+
+export type StyleDeclarationExpression = ZoomConstantExpression | {
     result: 'success',
+    context: 'declaration',
     isZoomConstant: false,
     isFeatureConstant: boolean,
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
@@ -50,11 +62,22 @@ export type StyleExpression = {
     zoomStops: Array<number>
 };
 
+export type StyleFilterExpression = ZoomConstantExpression | {
+    result: 'success',
+    context: 'filter',
+    isZoomConstant: false,
+    isFeatureConstant: boolean,
+    evaluate: (GlobalProperties, feature?: Feature) => any,
+    // parsed: Expression,
+};
+
+export type StyleExpression = StyleDeclarationExpression | StyleFilterExpression;
+
 type StylePropertyValue = null | string | number | Array<string> | Array<number>;
 type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
 
-function createExpression(expression: mixed, expectedType: Type | null): StyleExpressionErrors | StyleExpression {
-    const parser = new ParsingContext(definitions, [], expectedType);
+function createExpression(expression: mixed, options: StyleExpressionOptions): StyleExpressionErrors | StyleExpression {
+    const parser = new ParsingContext(definitions, [], options.expectedType);
     const parsed = parser.parse(expression);
     if (!parsed) {
         assert(parser.errors.length > 0);
@@ -77,7 +100,17 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
     if (isZoomConstant) {
         return {
             result: 'success',
-            isZoomConstant,
+            context: options.context,
+            isZoomConstant: true,
+            isFeatureConstant,
+            evaluate,
+            parsed
+        };
+    } else if (options.context === 'filter') {
+        return {
+            result: 'success',
+            context: 'filter',
+            isZoomConstant: false,
             isFeatureConstant,
             evaluate,
             parsed
@@ -99,6 +132,7 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
 
     return {
         result: 'success',
+        context: 'declaration',
         isZoomConstant: false,
         isFeatureConstant,
         evaluate,
@@ -112,8 +146,9 @@ function createExpression(expression: mixed, expectedType: Type | null): StyleEx
     };
 }
 
-function createExpressionWithErrorHandling(expression: mixed, expectedType: Type | null, defaultValue: Value | null): StyleExpression {
-    expression = createExpression(expression, expectedType);
+function createExpressionWithErrorHandling(expression: mixed, options: StyleExpressionOptions): StyleExpression {
+    expression = createExpression(expression, options);
+    const defaultValue = options.defaultValue === undefined ? null : options.defaultValue;
 
     if (expression.result !== 'success') {
         // this should have been caught in validation

@@ -7,8 +7,11 @@ const unbundle = require('../util/unbundle_jsonlint');
 module.exports = function validateExpression(options) {
     const expression = createExpression(
         deepUnbundle(options.value.expression),
-        getExpectedType(options.valueSpec),
-        getDefaultValue(options.valueSpec));
+        {
+            context: options.expressionContext,
+            expectedType: getExpectedType(options.valueSpec),
+            defaultValue: getDefaultValue(options.valueSpec)
+        });
 
     if (expression.result === 'success') {
         return [];

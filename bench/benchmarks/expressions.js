@@ -40,7 +40,11 @@ class ExpressionBenchmark extends Benchmark {
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
-                        const compiledExpression = createExpressionWithErrorHandling(rawExpression, getExpectedType(propertySpec), getDefaultValue(propertySpec));
+                        const compiledExpression = createExpressionWithErrorHandling(rawExpression, {
+                            context: 'declaration',
+                            expectedType: getExpectedType(propertySpec),
+                            defaultValue: getDefaultValue(propertySpec)
+                        });
                         return {
                             propertySpec,
                             rawValue,
@@ -93,7 +97,11 @@ class FunctionConvert extends ExpressionBenchmark {
 class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {
-            createExpressionWithErrorHandling(rawExpression, getExpectedType(propertySpec), getDefaultValue(propertySpec));
+            createExpressionWithErrorHandling(rawExpression, {
+                context: 'declaration',
+                expectedType: getExpectedType(propertySpec),
+                defaultValue: getDefaultValue(propertySpec)
+            });
         }
     }
 }

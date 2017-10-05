@@ -14,9 +14,11 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 
 expressionSuite.run('js', {tests: tests}, (fixture) => {
     const expression = createExpression(
-        fixture.expression,
-        fixture.expectExpressionType || null,
-        null);
+        fixture.expression, {
+            context: 'declaration',
+            expectedType: fixture.expectExpressionType || null,
+            defaultValue: null
+        });
 
     if (expression.result === 'error') {
         return {

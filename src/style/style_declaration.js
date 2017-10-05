@@ -6,13 +6,14 @@ const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
 
-import type {StyleExpression, Feature, GlobalProperties} from '../style-spec/expression';
+import type {StyleDeclarationExpression, Feature, GlobalProperties} from '../style-spec/expression';
 
-function normalizeToExpression(parameters, propertySpec, name): StyleExpression {
+function normalizeToExpression(parameters, propertySpec, name): StyleDeclarationExpression {
     if (typeof parameters === 'string' && propertySpec.type === 'color') {
         const color = parseColor(parameters);
         return {
             result: 'success',
+            context: 'declaration',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return color; }
@@ -22,6 +23,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleExpression 
     if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
         return {
             result: 'success',
+            context: 'declaration',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return parameters; }
@@ -29,10 +31,18 @@ function normalizeToExpression(parameters, propertySpec, name): StyleExpression 
     }
 
     if (parameters.expression) {
-        return createExpressionWithErrorHandling(
-            parameters.expression,
-            getExpectedType(propertySpec),
-            getDefaultValue(propertySpec));
+        const expression = createExpressionWithErrorHandling(
+            parameters.expression, {
+                context: 'declaration',
+                expectedType: getExpectedType(propertySpec),
+                defaultValue: getDefaultValue(propertySpec)
+            });
+
+        if (expression.context === 'declaration') {
+            return expression;
+        } else {
+            throw new Error(`Incorrect expression context ${expression.context}`);
+        }
     } else {
         return createFunction(parameters, propertySpec, name);
     }
@@ -46,7 +56,7 @@ class StyleDeclaration {
     value: any;
     json: mixed;
     minimum: number;
-    expression: StyleExpression;
+    expression: StyleDeclarationExpression;
 
     constructor(reference: any, value: any, name: string) {
         this.value = util.clone(value);
