@@ -34,6 +34,7 @@ import type TileCoord from '../source/tile_coord';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
+import type Texture from './texture';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 
@@ -55,7 +56,7 @@ type PainterOptions = {
 class Painter {
     gl: WebGLRenderingContext;
     transform: Transform;
-    _tileTextures: { [number]: Array<WebGLTexture> };
+    _tileTextures: { [number]: Array<Texture> };
     frameHistory: FrameHistory;
     numSublayers: number;
     depthEpsilon: number;
@@ -485,10 +486,10 @@ class Painter {
         return translatedMatrix;
     }
 
-    saveTileTexture(texture: WebGLTexture & { size: number }) {
-        const textures = this._tileTextures[texture.size];
+    saveTileTexture(texture: Texture) {
+        const textures = this._tileTextures[texture.size[0]];
         if (!textures) {
-            this._tileTextures[texture.size] = [texture];
+            this._tileTextures[texture.size[0]] = [texture];
         } else {
             textures.push(texture);
         }
