@@ -1864,11 +1864,7 @@
         "doc": "Retrieves an item from an array.",
         "group": "Lookup"
       },
-      "contains": {
-        "doc": "Tests whether a value exists in an array.",
-        "group": "Lookup"
-      },
-      "case": {
+        "case": {
         "doc": "Yields the value of the first output expression whose corresponding test evaluates to true.",
         "group": "Decision"
       },
