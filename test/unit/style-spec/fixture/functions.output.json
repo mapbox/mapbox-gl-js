@@ -165,14 +165,14 @@
   },
   {
     "message": "layers[47].paint.fill-color.expression: Expected Color but found Number instead.",
-    "line": 900
+    "line": 898
   },
   {
     "message": "layers[48].paint.fill-color.expression[2]: Expected Number but found String instead.",
-    "line": 911
+    "line": 907
   },
   {
     "message": "layers[49].paint.fill-opacity.expression: \"zoom\" expression may only be used as input to a top-level \"curve\" expression.",
-    "line": 922
+    "line": 916
   }
 ]

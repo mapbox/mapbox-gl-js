@@ -5,6 +5,10 @@ const extend = require('../util/extend');
 const getType = require('../util/get_type');
 const interpolate = require('../util/interpolate');
 
+function isFunction(value) {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function identityFunction(x) {
     return x;
 }
@@ -297,4 +301,7 @@ function interpolationFactor(input, base, lowerValue, upperValue) {
     }
 }
 
-module.exports = createFunction;
+module.exports = {
+    createFunction,
+    isFunction
+};

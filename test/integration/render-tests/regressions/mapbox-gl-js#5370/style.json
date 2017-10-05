@@ -12,9 +12,7 @@
           "setPaintProperty",
           "circle",
           "circle-radius",
-          {
-            "expression": ["get", "radius"]
-          }
+          ["get", "radius"]
         ],
         [
           "wait"

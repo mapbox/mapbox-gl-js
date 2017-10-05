@@ -39,14 +39,12 @@
       "source": "geojson",
       "layout": {
         "text-field": "Test",
-        "text-font": {
-          "expression": [
-            "curve", ["step"], ["zoom"],
-            [ "literal", [ "Open Sans Semibold", "Arial Unicode MS Bold" ]],
-            1,
-            ["literal", [ "Open Sans Semibold", "Arial Unicode MS Bold" ]]
-          ]
-        }
+        "text-font": [
+          "curve", ["step"], ["zoom"],
+          [ "literal", [ "Open Sans Semibold", "Arial Unicode MS Bold" ]],
+          1,
+          ["literal", [ "Open Sans Semibold", "Arial Unicode MS Bold" ]]
+        ]
       },
       "paint": {
         "text-opacity": 1

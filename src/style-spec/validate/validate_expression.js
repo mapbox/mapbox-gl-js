@@ -8,8 +8,7 @@ module.exports = function validateExpression(options) {
     const defaultValue = options.key.endsWith('heatmap-color') ? [0, 0, 0, 0] :
         getDefaultValue(options.valueSpec);
     const expression = createExpression(
-        deepUnbundle(options.value.expression),
-        {
+        unbundle.deep(options.value), {
             context: options.expressionContext,
             expectedType: getExpectedType(options.valueSpec),
             defaultValue
@@ -24,10 +23,3 @@ module.exports = function validateExpression(options) {
         return new ValidationError(`${key}${error.key}`, options.value, error.message);
     });
 };
-
-function deepUnbundle (value) {
-    if (Array.isArray(value)) {
-        return value.map(deepUnbundle);
-    }
-    return unbundle(value);
-}
