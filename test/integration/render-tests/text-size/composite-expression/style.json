@@ -48,9 +48,7 @@
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
         ],
-        "text-size": {
-          "expression": [ "match", ["number", ["get", "x"]], 5, 24, 12]
-        },
+        "text-size": ["match", ["number", ["get", "x"]], 5, 24, 12],
         "text-ignore-placement": true,
         "text-allow-overlap": true
       }
@@ -65,17 +63,15 @@
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
         ],
-        "text-size": {
-          "expression": [
-            "curve",
-            ["cubic-bezier", 0, 0.9, 0.1, 1],
-            ["zoom"],
-            0,
-            2,
-            1,
-            [ "match", ["number", ["get", "x"]], 5, 24, 12]
-          ]
-        },
+        "text-size": [
+          "curve",
+          ["cubic-bezier", 0, 0.9, 0.1, 1],
+          ["zoom"],
+          0,
+          2,
+          1,
+          [ "match", ["number", ["get", "x"]], 5, 24, 12]
+        ],
         "text-offset": [0, 1],
         "text-ignore-placement": true,
         "text-allow-overlap": true

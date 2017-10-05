@@ -72,8 +72,10 @@ export type StyleFilterExpression = ZoomConstantExpression | {
 
 export type StyleExpression = StyleDeclarationExpression | StyleFilterExpression;
 
-type StylePropertyValue = null | string | number | Array<string> | Array<number>;
-type FunctionParameters = DataDrivenPropertyValueSpecification<StylePropertyValue>
+function isExpression(expression: mixed) {
+    return Array.isArray(expression) && expression.length > 0 &&
+        typeof expression[0] === 'string' && expression[0] in definitions;
+}
 
 /**
  * Parse and typecheck the given style spec JSON expression.  If
@@ -219,17 +221,6 @@ function findZoomCurve(expression: Expression): null | Curve | {key: string, err
         return result;
     } else {
         return null;
-    }
-}
-
-function isExpression(value: FunctionParameters): boolean {
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-        return false;
-    } else if (typeof value.expression !== 'undefined') {
-        return true;
-    } else {
-        return Array.isArray(value.stops) ||
-            (typeof value.type === 'string' && value.type === 'identity');
     }
 }
 

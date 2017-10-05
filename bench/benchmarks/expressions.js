@@ -3,14 +3,9 @@
 const Benchmark = require('../lib/benchmark');
 const accessToken = require('../lib/access_token');
 const spec = require('../../src/style-spec/reference/latest');
-const createFunction = require('../../src/style-spec/function');
 const convertFunction = require('../../src/style-spec/function/convert');
-const {
-    isExpression,
-    createExpression,
-    getExpectedType,
-    getDefaultValue
-} = require('../../src/style-spec/expression');
+const {isFunction, createFunction} = require('../../src/style-spec/function');
+const {createExpression, getExpectedType, getDefaultValue} = require('../../src/style-spec/expression');
 
 import type {
     StyleExpression,
@@ -58,13 +53,13 @@ class ExpressionBenchmark extends Benchmark {
                     };
 
                     for (const key in layer.paint) {
-                        if (isExpression(layer.paint[key])) {
+                        if (isFunction(layer.paint[key])) {
                             this.data.push(expressionData(layer.paint[key], spec[`paint_${layer.type}`][key]));
                         }
                     }
 
                     for (const key in layer.layout) {
-                        if (isExpression(layer.layout[key])) {
+                        if (isFunction(layer.layout[key])) {
                             this.data.push(expressionData(layer.layout[key], spec[`layout_${layer.type}`][key]));
                         }
                     }

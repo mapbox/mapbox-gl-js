@@ -5,17 +5,9 @@ const validate = require('./validate');
 const validateObject = require('./validate_object');
 const validateArray = require('./validate_array');
 const validateNumber = require('./validate_number');
-const validateExpression = require('./validate_expression');
 const unbundle = require('../util/unbundle_jsonlint');
-const extend = require('../util/extend');
 
 module.exports = function validateFunction(options) {
-    if (options.value.expression) {
-        return validateExpression(extend({}, options, {
-            context: 'declaration'
-        }));
-    }
-
     const functionValueSpec = options.valueSpec;
     const functionType = unbundle(options.value.type);
     let stopKeyType;

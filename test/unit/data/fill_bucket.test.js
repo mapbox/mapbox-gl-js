@@ -52,9 +52,7 @@ test('FillBucket segmentation', (t) => {
         type: 'fill',
         layout: {},
         paint: {
-            'fill-color': {
-                expression: ['to-color', ['get', 'foo'], '#000']
-            }
+            'fill-color': ['to-color', ['get', 'foo'], '#000']
         }
     });
 

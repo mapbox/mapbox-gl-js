@@ -2,6 +2,9 @@
 const ValidationError = require('../error/validation_error');
 const getType = require('../util/get_type');
 const extend = require('../util/extend');
+const unbundle = require('../util/unbundle_jsonlint');
+const {isExpression} = require('../expression');
+const {isFunction} = require('../function');
 
 // Main recursive validation function. Tracks:
 //
@@ -15,6 +18,7 @@ const extend = require('../util/extend');
 module.exports = function validate(options) {
 
     const validateFunction = require('./validate_function');
+    const validateExpression = require('./validate_expression');
     const validateObject = require('./validate_object');
     const VALIDATORS = {
         '*': function() {
@@ -51,8 +55,13 @@ module.exports = function validate(options) {
         options = extend({}, options, { value: style.constants[value] });
     }
 
-    if (valueSpec.function && getType(value) === 'object') {
+    if (valueSpec.function && isFunction(unbundle(value))) {
         return validateFunction(options);
+
+    } else if (valueSpec.function && isExpression(unbundle.deep(value))) {
+        return validateExpression(extend({}, options, {
+            context: 'declaration'
+        }));
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
         return VALIDATORS[valueSpec.type](options);
