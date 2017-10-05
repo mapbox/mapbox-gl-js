@@ -41,7 +41,7 @@ class ExpressionBenchmark extends Benchmark {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
                         const compiledExpression = createExpression(rawExpression, {
-                            context: 'declaration',
+                            context: 'property',
                             expectedType: getExpectedType(propertySpec),
                             defaultValue: getDefaultValue(propertySpec)
                         });
@@ -101,7 +101,7 @@ class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {
             createExpression(rawExpression, {
-                context: 'declaration',
+                context: 'property',
                 expectedType: getExpectedType(propertySpec),
                 defaultValue: getDefaultValue(propertySpec)
             });

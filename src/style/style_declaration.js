@@ -13,7 +13,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
         const color = parseColor(parameters);
         return {
             result: 'success',
-            context: 'declaration',
+            context: 'property',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return color; }
@@ -23,7 +23,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
     if (parameters === null || typeof parameters !== 'object' || Array.isArray(parameters)) {
         return {
             result: 'success',
-            context: 'declaration',
+            context: 'property',
             isFeatureConstant: true,
             isZoomConstant: true,
             evaluate() { return parameters; }
@@ -33,7 +33,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
     if (parameters.expression) {
         const expression = createExpression(
             parameters.expression, {
-                context: 'declaration',
+                context: 'property',
                 expectedType: getExpectedType(propertySpec),
                 defaultValue: getDefaultValue(propertySpec)
             });
@@ -43,7 +43,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
             throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
         }
 
-        if (expression.context === 'declaration') {
+        if (expression.context === 'property') {
             return expression;
         } else {
             throw new Error(`Incorrect expression context ${expression.context}`);

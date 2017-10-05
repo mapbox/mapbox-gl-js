@@ -28,7 +28,7 @@ export type GlobalProperties = {
     heatmapDensity?: number
 };
 
-export type StyleExpressionContext = 'declaration' | 'filter';
+export type StyleExpressionContext = 'property' | 'filter';
 
 export type StyleExpressionOptions = {
     context: StyleExpressionContext,
@@ -52,7 +52,7 @@ type ZoomConstantExpression = {
 
 export type StyleDeclarationExpression = ZoomConstantExpression | {
     result: 'success',
-    context: 'declaration',
+    context: 'property',
     isZoomConstant: false,
     isFeatureConstant: boolean,
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
@@ -166,7 +166,7 @@ function createExpression(expression: mixed, options: StyleExpressionOptions): S
 
     return {
         result: 'success',
-        context: 'declaration',
+        context: 'property',
         isZoomConstant: false,
         isFeatureConstant,
         evaluate,
