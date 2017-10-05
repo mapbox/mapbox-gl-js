@@ -61,7 +61,7 @@ export type StyleOptions = {
     localIdeographFontFamily?: string
 };
 
-type ZoomHistory = {
+export type ZoomHistory = {
     lastIntegerZoom: number,
     lastIntegerZoomTime: number,
     lastZoom: number
@@ -274,7 +274,7 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _applyPaintPropertyUpdates(options: ?{}) {
+    _applyPaintPropertyUpdates(options: ?{transition?: boolean}) {
         if (!this._loaded) return;
 
         options = options || {transition: true};
@@ -359,7 +359,7 @@ class Style extends Evented {
     /**
      * Apply queued style updates in a batch
      */
-    update(options: ?{}) {
+    update(options: ?{transition?: boolean}) {
         if (!this._changed) return;
 
         const updatedIds = Object.keys(this._updatedLayers);
