@@ -89,7 +89,8 @@ class Program {
          indexBuffer: IndexBuffer,
          segments: SegmentVector,
          configuration: ?ProgramConfiguration,
-         dynamicLayoutBuffer: ?VertexBuffer) {
+         dynamicLayoutBuffer: ?VertexBuffer,
+         dynamicLayoutBuffer2: ?VertexBuffer) {
 
         const primitiveSize = {
             [gl.LINES]: 2,
@@ -107,7 +108,9 @@ class Program {
                 indexBuffer,
                 configuration && configuration.paintVertexBuffer,
                 segment.vertexOffset,
-                dynamicLayoutBuffer);
+                dynamicLayoutBuffer,
+                dynamicLayoutBuffer2
+            );
 
             gl.drawElements(
                 drawMode,

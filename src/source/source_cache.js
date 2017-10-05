@@ -16,6 +16,7 @@ import type Style from '../style/style';
 import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
+import type CollisionIndex from '../symbol/collision_index';
 
 /**
  * `SourceCache` is responsible for
@@ -44,6 +45,7 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
+    _needsFullPlacement: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: number) => boolean;
@@ -86,6 +88,8 @@ class SourceCache extends Evented {
         this._maxTileCacheSize = null;
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
+
+        this._coveredTiles = {};
     }
 
     onAdd(map: Map) {
@@ -123,6 +127,10 @@ class SourceCache extends Evented {
 
     pause() {
         this._paused = true;
+    }
+
+    getNeedsFullPlacement() {
+        return this._needsFullPlacement;
     }
 
     resume() {
@@ -232,6 +240,10 @@ class SourceCache extends Evented {
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
+
+        this._updatePlacement();
+        if (this.map)
+            tile.added(this.map.painter.crossTileSymbolIndex);
     }
 
     /**
@@ -513,9 +525,12 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
+
         tile = this._cache.get((tileCoord.id: any));
         if (tile) {
-            tile.redoPlacement(this._source);
+            this._updatePlacement();
+            if (this.map)
+                tile.added(this.map.painter.crossTileSymbolIndex);
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 delete this._cacheTimers[tileCoord.id];
@@ -580,10 +595,13 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        tile.stopPlacementThrottler();
+        this._updatePlacement();
+        if (this.map)
+            tile.removed(this.map.painter.crossTileSymbolIndex);
 
         if (tile.hasData()) {
-            const wrappedId = tile.coord.wrapped().id;
+            tile.coord = tile.coord.wrapped();
+            const wrappedId = tile.coord.id;
             this._cache.add((wrappedId: any), tile);
             this._setCacheInvalidationTimer(wrappedId, tile);
         } else {
@@ -591,6 +609,10 @@ class SourceCache extends Evented {
             this._abortTile(tile);
             this._unloadTile(tile);
         }
+    }
+
+    _updatePlacement() {
+        this._needsFullPlacement = true;
     }
 
     /**
@@ -659,11 +681,12 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement() {
+    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any) {
+        this._needsFullPlacement = false;
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this._source);
+            tile.commitPlacement(collisionIndex, collisionFadeTimes, this.transform.angle);
         }
     }
 
