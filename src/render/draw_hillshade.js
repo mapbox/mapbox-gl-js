@@ -31,9 +31,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
         if (!tile.prepared && painter.renderPass === 'hillshadeprepare') {
             prepareHillshade(painter, tile);
             continue;
-        }
-        if (painter.renderPass === 'translucent') {
-
+        } else if (painter.renderPass === 'translucent') {
             renderHillshade(painter, tile, layer);
         }
     }

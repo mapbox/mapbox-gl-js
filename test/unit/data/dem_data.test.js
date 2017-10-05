@@ -212,24 +212,3 @@ test('DEMData#backfillBorder', (t) => {
 
     t.end();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

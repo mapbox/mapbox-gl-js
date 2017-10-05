@@ -42,17 +42,11 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             delete tile.request;
             if (tile.aborted) {
                 this.state = 'unloaded';
-                return callback(null);
-            }
-
-            if (err) {
+                callback(null);
+            } else if (err) {
                 this.state = 'errored';
-                return callback(err);
-            }
-
-            if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
-
-            if (img) {
+                callback(err);
+            } else if (img) {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
@@ -65,7 +59,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     rawImageData: rawImageData
                 };
 
-                if (!tile.workerID || tile.state === 'expired' || tile.state === 'unloaded') {
+                if (!tile.workerID || tile.state === 'expired') {
                     tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
                 }
             }
