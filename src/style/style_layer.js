@@ -12,6 +12,7 @@ import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {Feature, GlobalProperties} from '../style-spec/expression';
 import type RenderTexture from '../render/render_texture';
+import type AnimationLoop from './animation_loop';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -34,8 +35,8 @@ class StyleLayer extends Evented {
     _paintSpecifications: any;
     _layoutSpecifications: any;
     _paintTransitions: {[string]: StyleTransition};
-    _paintTransitionOptions: {[string]: {[string]: TransitionSpecification}};
-    _paintDeclarations: {[string]: {[string]: StyleDeclaration}};
+    _paintTransitionOptions: {[string]: TransitionSpecification};
+    _paintDeclarations: {[string]: StyleDeclaration};
     _layoutDeclarations: {[string]: StyleDeclaration};
     _layoutFunctions: {[string]: boolean};
 
@@ -97,7 +98,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    setLayoutProperty(name: string, value: any, options: any) {
+    setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
         if (value == null) {
             delete this._layoutDeclarations[name];
         } else {
@@ -193,7 +194,10 @@ class StyleLayer extends Evented {
         return false;
     }
 
-    updatePaintTransitions(options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
+    updatePaintTransitions(options: {transition?: boolean},
+                           globalOptions?: TransitionSpecification,
+                           animationLoop?: AnimationLoop,
+                           zoomHistory?: any) {
         let name;
         for (name in this._paintDeclarations) { // apply new declarations
             this._applyPaintDeclaration(name, this._paintDeclarations[name], options, globalOptions, animationLoop, zoomHistory);
@@ -204,7 +208,11 @@ class StyleLayer extends Evented {
         }
     }
 
-    updatePaintTransition(name: any, options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
+    updatePaintTransition(name: string,
+                          options: {transition?: boolean},
+                          globalOptions: TransitionSpecification,
+                          animationLoop: AnimationLoop,
+                          zoomHistory: any) {
         const declaration = this._paintDeclarations[name];
         this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory);
     }
@@ -241,7 +249,12 @@ class StyleLayer extends Evented {
     }
 
     // set paint transition based on a given paint declaration
-    _applyPaintDeclaration(name: any, declaration: any, options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
+    _applyPaintDeclaration(name: string,
+                           declaration: StyleDeclaration | null | void,
+                           options: {transition?: boolean},
+                           globalOptions?: TransitionSpecification,
+                           animationLoop?: AnimationLoop,
+                           zoomHistory?: any) {
         const oldTransition = options.transition ? this._paintTransitions[name] : undefined;
         const spec = this._paintSpecifications[name];
 
@@ -259,6 +272,9 @@ class StyleLayer extends Evented {
         const newTransition = this._paintTransitions[name] =
             new StyleTransition(spec, declaration, oldTransition, transitionOptions, zoomHistory);
 
+        if (!animationLoop) {
+            return;
+        }
         if (!newTransition.instant()) {
             newTransition.loopID = animationLoop.set(newTransition.endTime - Date.now());
         }
@@ -278,7 +294,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    _validate(validate: any, key: any, name: string, value: any, options: any) {
+    _validate(validate: Function, key: string, name: string, value: mixed, options: {validate: boolean}) {
         if (options && options.validate === false) {
             return false;
         }
