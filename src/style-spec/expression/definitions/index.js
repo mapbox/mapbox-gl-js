@@ -191,12 +191,24 @@ CompoundExpression.register(expressions, {
     '+': [
         NumberType,
         varargs(NumberType),
-        (ctx, args) => args.reduce((a, b) => a + b.evaluate(ctx), 0)
+        (ctx, args) => {
+            let result = 0;
+            for (const arg of args) {
+                result += arg.evaluate(ctx);
+            }
+            return result;
+        }
     ],
     '*': [
         NumberType,
         varargs(NumberType),
-        (ctx, args) => args.reduce((a, b) => a * b.evaluate(ctx), 1)
+        (ctx, args) => {
+            let result = 1;
+            for (const arg of args) {
+                result *= arg.evaluate(ctx);
+            }
+            return result;
+        }
     ],
     '-': {
         type: NumberType,
@@ -344,12 +356,24 @@ CompoundExpression.register(expressions, {
     'all': [
         BooleanType,
         varargs(BooleanType),
-        (ctx, args) => args.reduce((a, b) => a && b.evaluate(ctx), true)
+        (ctx, args) => {
+            for (const arg of args) {
+                if (!arg.evaluate(ctx))
+                    return false;
+            }
+            return true;
+        }
     ],
     'any': [
         BooleanType,
         varargs(BooleanType),
-        (ctx, args) => args.reduce((a, b) => a || b.evaluate(ctx), false)
+        (ctx, args) => {
+            for (const arg of args) {
+                if (arg.evaluate(ctx))
+                    return true;
+            }
+            return false;
+        }
     ],
     '!': [
         BooleanType,
