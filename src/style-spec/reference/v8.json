@@ -1998,7 +1998,7 @@
         "group": "Zoom"
       },
       "heatmap-density": {
-        "doc": "Gets the density of a pixel in a heatmap layer. Can only be used in `heatmap-color` property.",
+        "doc": "Gets the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
         "group": "Heatmap"
       },
       "+": {
