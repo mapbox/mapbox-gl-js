@@ -353,28 +353,44 @@ CompoundExpression.register(expressions, {
             [[StringType, StringType], lteq]
         ]
     },
-    'all': [
-        BooleanType,
-        varargs(BooleanType),
-        (ctx, args) => {
-            for (const arg of args) {
-                if (!arg.evaluate(ctx))
-                    return false;
-            }
-            return true;
-        }
-    ],
-    'any': [
-        BooleanType,
-        varargs(BooleanType),
-        (ctx, args) => {
-            for (const arg of args) {
-                if (arg.evaluate(ctx))
+    'all': {
+        type: BooleanType,
+        overloads: [
+            [
+                [BooleanType, BooleanType],
+                (ctx, [a, b]) => a.evaluate(ctx) && b.evaluate(ctx)
+            ],
+            [
+                varargs(BooleanType),
+                (ctx, args) => {
+                    for (const arg of args) {
+                        if (!arg.evaluate(ctx))
+                            return false;
+                    }
                     return true;
-            }
-            return false;
-        }
-    ],
+                }
+            ]
+        ]
+    },
+    'any': {
+        type: BooleanType,
+        overloads: [
+            [
+                [BooleanType, BooleanType],
+                (ctx, [a, b]) => a.evaluate(ctx) || b.evaluate(ctx)
+            ],
+            [
+                varargs(BooleanType),
+                (ctx, args) => {
+                    for (const arg of args) {
+                        if (arg.evaluate(ctx))
+                            return true;
+                    }
+                    return false;
+                }
+            ]
+        ]
+    },
     '!': [
         BooleanType,
         [BooleanType],
