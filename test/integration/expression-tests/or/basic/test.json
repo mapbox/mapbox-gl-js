@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["any", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
   "inputs": [
     [{}, {"properties": {"x": true, "y": true}}],

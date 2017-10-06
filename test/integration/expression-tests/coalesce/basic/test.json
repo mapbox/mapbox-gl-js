@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["coalesce", ["get", "x"], ["get", "y"], ["get", "z"], 0],
   "inputs": [
     [{}, {"properties": {"x": 1}}],

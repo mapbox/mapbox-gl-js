@@ -1,5 +1,5 @@
 {
-  "expectExpressionType": {"kind": "Number"},
+  "propertySpec": {"type": "number"},
   "expression": ["curve", ["linear"], ["get", "x"], 0, 100, 10, 200],
   "inputs": [
     [{}, {"properties": {"x": 0}}],

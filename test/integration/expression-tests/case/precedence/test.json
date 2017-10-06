@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["boolean", ["all", false, ["case", true, true, true]]],
   "inputs": [[{}, {}]],
   "expected": {

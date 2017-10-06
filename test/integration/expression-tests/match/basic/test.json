@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["match", ["get", "x"], "a", "Apple", "b", "Banana", "Kumquat"],
   "inputs": [
     [{}, {"properties": {"x": "a"}}],

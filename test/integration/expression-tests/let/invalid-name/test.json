@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["let", "$a", 1, ["var", "$a"]],
   "inputs": [],
   "expected": {

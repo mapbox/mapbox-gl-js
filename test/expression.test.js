@@ -13,12 +13,11 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 }
 
 expressionSuite.run('js', {tests: tests}, (fixture) => {
-    const expression = createExpression(
-        fixture.expression, {
-            context: 'declaration',
-            expectedType: fixture.expectExpressionType || null
-        });
+    const spec = fixture.propertySpec || {};
+    spec['function'] = true;
+    spec['property-function'] = true;
 
+    const expression = createExpression(fixture.expression, spec, 'property', {handleErrors: false});
     if (expression.result === 'error') {
         return {
             compiled: {

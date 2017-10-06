@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["object", ["get", "x"]],
   "inputs": [
     [{}, {"properties": {"x": {"inner": "object"}}}],

@@ -1,5 +1,5 @@
 {
-  "expectExpressionType": {"kind": "Color"},
+  "propertySpec": {"type": "color"},
   "expression": [
     "curve",
     ["step"],

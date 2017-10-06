@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": "ah\u2028\u2029oy!",
   "inputs": [[{}, {}]],
   "expected": {

@@ -164,15 +164,27 @@
     "line": 857
   },
   {
-    "message": "layers[47].paint.fill-color.expression: Expected Color but found Number instead.",
+    "message": "layers[47].paint.fill-color: Expected Color but found Number instead.",
     "line": 898
   },
   {
-    "message": "layers[48].paint.fill-color.expression[2]: Expected Number but found String instead.",
+    "message": "layers[48].paint.fill-color[2]: Expected Number but found String instead.",
     "line": 907
   },
   {
-    "message": "layers[49].paint.fill-opacity.expression: \"zoom\" expression may only be used as input to a top-level \"curve\" expression.",
+    "message": "layers[49].paint.fill-opacity: \"zoom\" expression may only be used as input to a top-level \"curve\" expression.",
     "line": 916
+  },
+  {
+    "message": "layers[50].layout.visibility: expected one of [visible, none], [\"literal\",true] found",
+    "line": 925
+  },
+  {
+    "message": "layers[51].paint.fill-extrusion-opacity: property expressions not supported",
+    "line": 934
+  },
+  {
+    "message": "layers[52].paint.line-dasharray: interpolation type must be \"step\" for this property",
+    "line": 943
   }
 ]

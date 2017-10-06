@@ -1,5 +1,5 @@
 {
-  "expectExpressionType": {"kind": "Color"},
+  "propertySpec": {"type": "color", "default": "rgb(0,0,0)"},
   "expression": ["curve", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
   "inputs": [[{"heatmapDensity": 0.5}, {}]],
   "expected": {

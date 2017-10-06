@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": [
     "number",
     ["at", ["number", ["get", "i"]], ["array", ["get", "arr"]]]

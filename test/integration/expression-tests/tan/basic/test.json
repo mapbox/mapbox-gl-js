@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["tan", 0.7853981633974483],
   "inputs": [[{}, {}]],
   "expected": {

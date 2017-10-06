@@ -1,5 +1,5 @@
 {
-  "expectExpressionType": {"kind": "Array", "itemType": {"kind": "Number"}},
+  "propertySpec": {"type": "array", "value": "number"},
   "expression": ["literal", []],
   "inputs": [],
   "expected": {

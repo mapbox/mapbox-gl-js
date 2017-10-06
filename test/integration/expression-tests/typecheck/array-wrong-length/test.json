@@ -1,8 +1,8 @@
 {
-  "expectExpressionType": {
-    "kind": "Array",
-    "itemType": {"kind": "Number"},
-    "N": 3
+  "propertySpec": {
+    "type": "array",
+    "value": "number",
+    "length": 3
   },
   "expression": ["array", "number", 2, ["get", "x"]],
   "inputs": [],

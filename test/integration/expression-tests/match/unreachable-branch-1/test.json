@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": [
     "match",
     ["string", ["get", "x"]],
