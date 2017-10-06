@@ -5,12 +5,14 @@ const {getExpectedType, getDefaultValue} = require('../expression');
 const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateExpression(options) {
+    const defaultValue = options.key.endsWith('heatmap-color') ? [0, 0, 0, 0] :
+        getDefaultValue(options.valueSpec);
     const expression = createExpression(
         deepUnbundle(options.value.expression),
         {
             context: options.expressionContext,
             expectedType: getExpectedType(options.valueSpec),
-            defaultValue: getDefaultValue(options.valueSpec)
+            defaultValue
         });
 
     if (expression.result === 'success') {

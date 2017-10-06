@@ -376,6 +376,14 @@
             }
           }
         },
+        "heatmap": {
+          "doc": "A heatmap.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.41.0"
+            }
+          }
+        },
         "fill-extrusion": {
           "doc": "An extruded (3D) polygon.",
           "sdk-support": {
@@ -461,6 +469,7 @@
     "layout_fill",
     "layout_line",
     "layout_circle",
+    "layout_heatmap",
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
@@ -531,6 +540,26 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        }
+      }
+    }
+  },
+  "layout_heatmap": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
         }
       }
     }
@@ -1968,6 +1997,10 @@
         "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level [\"curve\"] expression.",
         "group": "Zoom"
       },
+      "heatmap-density": {
+        "doc": "Gets the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
+        "group": "Heatmap"
+      },
       "+": {
         "doc": "",
         "group": "Math"
@@ -2174,6 +2207,7 @@
     "paint_fill",
     "paint_line",
     "paint_circle",
+    "paint_heatmap",
     "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
@@ -3015,6 +3049,100 @@
           "ios": "3.5.0",
           "macos": "0.4.0"
         }
+      }
+    }
+  },
+  "paint_heatmap": {
+    "heatmap-radius": {
+      "type": "number",
+      "default": 30,
+      "minimum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "heatmap-weight": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": false,
+      "doc": "A measure of how much an individual point contributes to the heatmap. A value of 10 would be equivalent to having 10 points of weight 1 in the same spot. Especially useful when combined with clustering.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
+        },
+        "data-driven styling": {
+          "js": "0.41.0"
+        }
+      }
+    },
+    "heatmap-intensity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "doc": "Similar to `heatmap-weight` but controls the intensity of the heatmap globally. Primarily used for adjusting the heatmap based on zoom level.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "heatmap-color": {
+      "type": "color",
+      "default": {
+          "stops": [
+              [0, "rgba(0, 0, 255, 0)"],
+              [0.1, "royalblue"],
+              [0.3, "cyan"],
+              [0.5, "lime"],
+              [0.7, "yellow"],
+              [1, "red"]
+          ]
+      },
+      "doc": "Defines the color of each pixel based on its density value in a heatmap. Should be either a stop function with input values ranging from `0` to `1`, or a curve expression with a special `[\"heatmap-density\"]` keyword as the input.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "heatmap-opacity": {
+      "type": "number",
+      "doc": "The global opacity at which the heatmap layer will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.41.0"
+        },
+        "data-driven styling": {}
       }
     }
   },

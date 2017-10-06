@@ -31,11 +31,16 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
     }
 
     if (parameters.expression) {
+        // Special case for heatmap-color: it uses the 'default:' to define a
+        // default color ramp, but createExpression expects a simple value to fall
+        // back to in case of runtime errors
+        const defaultValue = name === 'heatmap-color' ? [0, 0, 0, 0] :
+            getDefaultValue(propertySpec);
         const expression = createExpression(
             parameters.expression, {
                 context: 'property',
                 expectedType: getExpectedType(propertySpec),
-                defaultValue: getDefaultValue(propertySpec)
+                defaultValue
             });
 
         if (expression.result !== 'success') {

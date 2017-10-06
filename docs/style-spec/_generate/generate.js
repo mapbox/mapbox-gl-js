@@ -22,7 +22,8 @@ const groupedExpressions = [
     'String',
     'Color',
     'Math',
-    'Zoom'
+    'Zoom',
+    'Heatmap'
 ].map(group => ({
     name: group,
     expressions: expressionGroups[group]

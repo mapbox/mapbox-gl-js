@@ -20,6 +20,7 @@ const updateTileMasks = require('./tile_mask');
 const draw = {
     symbol: require('./draw_symbol'),
     circle: require('./draw_circle'),
+    heatmap: require('./draw_heatmap'),
     line: require('./draw_line'),
     fill: require('./draw_fill'),
     'fill-extrusion': require('./draw_fill_extrusion'),
@@ -75,8 +76,11 @@ class Painter {
     debugVAO: VertexArrayObject;
     rasterBoundsBuffer: VertexBuffer;
     rasterBoundsVAO: VertexArrayObject;
+    viewportBuffer: VertexBuffer;
+    viewportVAO: VertexArrayObject;
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
+    extTextureHalfFloat: any;
     _tileClippingMaskIDs: { [number]: number };
     style: Style;
     options: PainterOptions;
@@ -176,6 +180,14 @@ class Painter {
         this.rasterBoundsBuffer = new VertexBuffer(gl, rasterBoundsArray);
         this.rasterBoundsVAO = new VertexArrayObject();
 
+        const viewportArray = new PosArray();
+        viewportArray.emplaceBack(0, 0);
+        viewportArray.emplaceBack(1, 0);
+        viewportArray.emplaceBack(0, 1);
+        viewportArray.emplaceBack(1, 1);
+        this.viewportBuffer = new VertexBuffer(gl, viewportArray);
+        this.viewportVAO = new VertexArrayObject();
+
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
             gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
@@ -183,6 +195,11 @@ class Painter {
         );
         if (this.extTextureFilterAnisotropic) {
             this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        }
+
+        this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
+        if (this.extTextureHalfFloat) {
+            gl.getExtension('OES_texture_half_float_linear');
         }
     }
 

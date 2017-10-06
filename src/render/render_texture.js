@@ -1,8 +1,7 @@
 // @flow
 
-const VertexBuffer = require('../gl/vertex_buffer');
-const VertexArrayObject = require('./vertex_array_object');
-const PosArray = require('../data/pos_array');
+import type VertexBuffer from '../gl/vertex_buffer';
+import type VertexArrayObject from './vertex_array_object';
 
 import type Painter from './painter';
 
@@ -30,14 +29,6 @@ class RenderTexture {
         const fbo = this.fbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-        const array = new PosArray();
-        array.emplaceBack(0, 0);
-        array.emplaceBack(1, 0);
-        array.emplaceBack(0, 1);
-        array.emplaceBack(1, 1);
-        this.buffer = new VertexBuffer(gl, array);
-        this.vao = new VertexArrayObject();
     }
 
     bindWithDepth(depthRbo: WebGLRenderbuffer) {
