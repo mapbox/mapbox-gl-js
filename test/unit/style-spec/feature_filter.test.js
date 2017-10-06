@@ -299,7 +299,7 @@ test('in, null', (t) => {
     t.equal(f({zoom: 0}, {properties: {foo: true}}), false);
     t.equal(f({zoom: 0}, {properties: {foo: false}}), false);
     t.equal(f({zoom: 0}, {properties: {foo: null}}), true);
-    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
+    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
     t.end();
 });
 
@@ -312,7 +312,23 @@ test('in, multiple', (t) => {
 });
 
 test('in, large_multiple', (t) => {
-    const f = filter(['in', 'foo'].concat(Array.apply(null, {length: 2000}).map(Number.call, Number)));
+    const values = Array.apply(null, {length: 2000}).map(Number.call, Number);
+    values.reverse();
+    const f = filter(['in', 'foo'].concat(values));
+    t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
+    t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
+    t.equal(f({zoom: 0}, {properties: {foo: 1999}}), true);
+    t.equal(f({zoom: 0}, {properties: {foo: 2000}}), false);
+    t.end();
+});
+
+test('in, large_multiple, heterogeneous', (t) => {
+    const values = Array.apply(null, {length: 2000}).map(Number.call, Number);
+    values.push('a');
+    values.unshift('b');
+    const f = filter(['in', 'foo'].concat(values));
+    t.equal(f({zoom: 0}, {properties: {foo: 'b'}}), true);
+    t.equal(f({zoom: 0}, {properties: {foo: 'a'}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: 1}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: 1999}}), true);
@@ -364,7 +380,7 @@ test('!in, null', (t) => {
     t.equal(f({zoom: 0}, {properties: {foo: 0}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: '0'}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: null}}), false);
-    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
+    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
     t.end();
 });
 
@@ -449,7 +465,7 @@ test('has', (t) => {
     t.equal(f({zoom: 0}, {properties: {foo: true}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: false}}), true);
     t.equal(f({zoom: 0}, {properties: {foo: null}}), true);
-    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
+    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
     t.equal(f({zoom: 0}, {properties: {}}), false);
     t.end();
 });
@@ -462,7 +478,7 @@ test('!has', (t) => {
     t.equal(f({zoom: 0}, {properties: {foo: false}}), false);
     t.equal(f({zoom: 0}, {properties: {foo: false}}), false);
     t.equal(f({zoom: 0}, {properties: {foo: null}}), false);
-    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), true);
+    t.equal(f({zoom: 0}, {properties: {foo: undefined}}), false);
     t.equal(f({zoom: 0}, {properties: {}}), true);
     t.end();
 });

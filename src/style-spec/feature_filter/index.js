@@ -1,7 +1,6 @@
 // @flow
 
 const {createExpression} = require('../expression');
-const {typeOf} = require('../expression/values');
 
 import type {GlobalProperties} from '../expression';
 export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
@@ -83,7 +82,7 @@ function convertFilter(filter: ?Array<any>): mixed {
     if (filter.length <= 1) return (op !== 'any');
     const converted =
         op === '==' ? compileComparisonOp(filter[1], filter[2], '==') :
-        op === '!=' ? compileComparisonOp(filter[1], filter[2], '!=') :
+        op === '!=' ? compileNegation(compileComparisonOp(filter[1], filter[2], '==')) :
         op === '<' ||
         op === '>' ||
         op === '<=' ||
@@ -99,39 +98,15 @@ function convertFilter(filter: ?Array<any>): mixed {
     return converted;
 }
 
-function compilePropertyReference(property: string, type?: ?string) {
-    if (property === '$type') return ['geometry-type'];
-    const ref = property === '$id' ? ['id'] : ['get', property];
-    return type ? [type, ref] : ref;
-}
-
 function compileComparisonOp(property: string, value: any, op: string) {
-    const untypedReference = compilePropertyReference(property);
-    const typedReference = compilePropertyReference(property, typeof value);
-
-    if (value === null) {
-        const expression = [
-            'all',
-            compileHasOp(property),
-            ['==', ['typeof', untypedReference], 'Null']
-        ];
-        return op === '!=' ? ['!', expression] : expression;
+    switch (property) {
+    case '$type':
+        return [`filter-type-${op}`, value];
+    case '$id':
+        return [`filter-id-${op}`, value];
+    default:
+        return [`filter-${op}`, property, value];
     }
-
-    const type = typeOf(value).kind;
-    if (op === '!=') {
-        return [
-            'any',
-            ['!=', ['typeof', untypedReference], type],
-            ['!=', typedReference, value]
-        ];
-    }
-
-    return [
-        'all',
-        ['==', ['typeof', untypedReference], type],
-        [op, typedReference, value]
-    ];
 }
 
 function compileDisjunctionOp(filters: Array<Array<any>>) {
@@ -139,66 +114,30 @@ function compileDisjunctionOp(filters: Array<Array<any>>) {
 }
 
 function compileInOp(property: string, values: Array<any>) {
-    if (values.length === 0) {
-        return false;
-    }
-
-    // split the input values into separate lists by type, so that
-    // we can first test the input's type and dispatch to a typed 'match'
-    // expression
-    const valuesByType = {};
-    for (const value of values) {
-        const type = typeOf(value).kind;
-        valuesByType[type] = valuesByType[type] || [];
-        valuesByType[type].push(value);
-    }
-
-    const input = compilePropertyReference(property);
-    const expression = [
-        'let',
-        'input', input
-    ];
-
-    const match = ['match', ['typeof', ['var', 'input']]];
-    for (const type in valuesByType) {
-        match.push(type);
-        if (type === 'Null') {
-            match.push(true);
+    if (values.length === 0) { return false; }
+    switch (property) {
+    case '$type':
+        return [`filter-type-in`, ['literal', values]];
+    case '$id':
+        return [`filter-id-in`, ['literal', values]];
+    default:
+        if (values.length > 200 && !values.some(v => typeof v !== typeof values[0])) {
+            return ['filter-in-large', property, ['literal', values.sort((a, b) => a < b ? -1 : a > b ? 1 : 0)]];
         } else {
-            match.push([
-                'match',
-                ['var', 'input'],
-                valuesByType[type],
-                true,
-                false
-            ]);
+            return ['filter-in-small', property, ['literal', values]];
         }
     }
-
-    if (match.length === 4) {
-        const type = match[2];
-        expression.push([
-            'all',
-            ['==', ['typeof', ['var', 'input']], type],
-            match[3]
-        ]);
-    } else {
-        expression.push(match);
-    }
-
-    return expression;
 }
 
 function compileHasOp(property: string) {
-    if (property === '$id') {
-        return ['!=', ['typeof', ['id']], 'Null'];
-    }
-
-    if (property === '$type') {
+    switch (property) {
+    case '$type':
         return true;
+    case '$id':
+        return [`filter-has-id`];
+    default:
+        return [`filter-has`, property];
     }
-
-    return ['has', property];
 }
 
 function compileNegation(filter: mixed) {
