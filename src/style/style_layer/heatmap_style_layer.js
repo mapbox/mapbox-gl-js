@@ -28,6 +28,9 @@ class HeatmapStyleLayer extends StyleLayer {
         }
     }
 
+    // we can't directly override setPaintProperty because it's asynchronous in the sense that
+    // getPaintValue call immediately after it won't return relevant values, it needs to wait
+    // until all paint transition have been updated (which usually happens once per frame)
     _applyPaintDeclaration(name: any, declaration: any, options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
         super._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory);
         if (name === 'heatmap-color') {
