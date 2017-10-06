@@ -20,6 +20,12 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Coordinate from '../geo/coordinate';
 
+export type ImageTextureSource =
+  ImageData |
+  HTMLImageElement |
+  HTMLCanvasElement |
+  HTMLVideoElement;
+
 /**
  * A data source containing an image.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
@@ -183,7 +189,7 @@ class ImageSource extends Evented implements Source {
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
-    _prepareImage(gl: WebGLRenderingContext, image: TexImageSource, resize?: boolean) {
+    _prepareImage(gl: WebGLRenderingContext, image: ImageTextureSource, resize?: boolean) {
         if (!this.boundsBuffer) {
             this.boundsBuffer = new VertexBuffer(gl, this._boundsArray);
         }
