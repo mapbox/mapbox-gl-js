@@ -67,10 +67,6 @@ const types = {
         type: 'T',
         parameters: [{repeat: 'T'}]
     }],
-    contains: [{
-        type: 'Boolean',
-        parameters: ['T', 'Array<T> | Array<T, N>']
-    }],
     curve: [{
         type: 'T',
         parameters: [
