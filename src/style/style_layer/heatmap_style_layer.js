@@ -19,7 +19,7 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     isOpacityZero(zoom: number) {
-        return super.getPaintValue('heatmap-opacity', { zoom: zoom }) === 0;
+        return this.getPaintValue('heatmap-opacity', { zoom: zoom }) === 0;
     }
 
     constructor(layer: LayerSpecification) {

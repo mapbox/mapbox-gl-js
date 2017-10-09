@@ -24,7 +24,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     isOpacityZero(zoom: number) {
-        return super.getPaintValue('fill-extrusion-opacity', { zoom: zoom }) === 0;
+        return this.getPaintValue('fill-extrusion-opacity', { zoom: zoom }) === 0;
     }
 
     queryRadius(): number {

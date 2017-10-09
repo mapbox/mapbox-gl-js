@@ -14,12 +14,12 @@ class CircleStyleLayer extends StyleLayer {
     }
 
     isOpacityZero(zoom: number) {
-        return super.isPaintValueFeatureConstant('circle-opacity') &&
-            super.getPaintValue('circle-opacity', { zoom: zoom }) === 0 &&
-            (super.isPaintValueFeatureConstant('circle-stroke-width') &&
-                super.getPaintValue('circle-stroke-width', { zoom: zoom }) === 0) ||
-            (super.isPaintValueFeatureConstant('circle-stroke-opacity') &&
-                super.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0);
+        return this.isPaintValueFeatureConstant('circle-opacity') &&
+            this.getPaintValue('circle-opacity', { zoom: zoom }) === 0 &&
+            (this.isPaintValueFeatureConstant('circle-stroke-width') &&
+                this.getPaintValue('circle-stroke-width', { zoom: zoom }) === 0) ||
+            (this.isPaintValueFeatureConstant('circle-stroke-opacity') &&
+                this.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0);
     }
 
     queryRadius(bucket: Bucket): number {

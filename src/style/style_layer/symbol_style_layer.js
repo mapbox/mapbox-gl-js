@@ -48,6 +48,10 @@ class SymbolStyleLayer extends StyleLayer {
         return (new SymbolBucket((parameters: any)): any);
     }
 
+    isHidden(zoom: number) { // eslint-disable-line
+        return false;
+    }
+
     queryRadius(): number {
         return 0;
     }

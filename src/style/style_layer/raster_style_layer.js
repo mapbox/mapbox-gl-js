@@ -4,7 +4,7 @@ const StyleLayer = require('../style_layer');
 
 class RasterStyleLayer extends StyleLayer {
     isOpacityZero(zoom: number) {
-        return super.getPaintValue('raster-opacity', { zoom: zoom }) === 0;
+        return this.getPaintValue('raster-opacity', { zoom: zoom }) === 0;
     }
 }
 

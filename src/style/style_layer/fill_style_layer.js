@@ -68,7 +68,7 @@ class FillStyleLayer extends StyleLayer {
 
     isOpacityZero(zoom: number) {
         return this.isPaintValueFeatureConstant('fill-opacity') &&
-            super.getPaintValue('fill-opacity', { zoom: zoom }) === 0;
+            this.getPaintValue('fill-opacity', { zoom: zoom }) === 0;
     }
 
     queryRadius(): number {
