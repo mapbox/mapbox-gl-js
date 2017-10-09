@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["min", 0, -1, 10],
   "inputs": [[{}, {}]],
   "expected": {

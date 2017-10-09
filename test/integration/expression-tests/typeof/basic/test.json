@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["typeof", ["get", "x"]],
   "inputs": [
     [{}, {"properties": {"x": null}}],

@@ -2,7 +2,7 @@
 
 const parseColor = require('../style-spec/util/parse_color');
 const {isFunction, createFunction} = require('../style-spec/function');
-const {isExpression, createExpression, getExpectedType, getDefaultValue} = require('../style-spec/expression');
+const {isExpression, createExpression} = require('../style-spec/expression');
 const util = require('../util/util');
 const Curve = require('../style-spec/expression/definitions/curve');
 
@@ -12,18 +12,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
     if (isFunction(parameters)) {
         return createFunction(parameters, propertySpec, name);
     } else if (isExpression(parameters)) {
-        // Special case for heatmap-color: it uses the 'default:' to define a
-        // default color ramp, but createExpression expects a simple value to fall
-        // back to in case of runtime errors
-        const defaultValue = name === 'heatmap-color' ? [0, 0, 0, 0] :
-            getDefaultValue(propertySpec);
-        const expression = createExpression(
-            parameters, {
-                context: 'property',
-                expectedType: getExpectedType(propertySpec),
-                defaultValue
-            });
-
+        const expression = createExpression(parameters, propertySpec, 'property');
         if (expression.result !== 'success') {
             // this should have been caught in validation
             throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));

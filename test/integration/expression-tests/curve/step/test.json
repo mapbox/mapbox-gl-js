@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": [
     "number",
     ["curve", ["step"], ["number", ["get", "x"]], 11, 0, 111, 1, 1111]

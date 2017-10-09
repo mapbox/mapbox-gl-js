@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["to-string", ["rgba", 85, 255, 0, 0.5]],
   "inputs": [[{}, {}]],
   "expected": {

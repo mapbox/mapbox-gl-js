@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["to-boolean", ["get", "x"]],
   "inputs": [
     [{}, {}],

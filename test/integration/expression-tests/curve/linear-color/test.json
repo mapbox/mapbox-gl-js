@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": [
     "to-rgba",
     ["curve", ["exponential", 1], ["get", "x"], 1, "red", 11, ["get", "color"]]

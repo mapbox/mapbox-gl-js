@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["<", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
   "expected": {
     "compiled": {

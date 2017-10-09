@@ -59,9 +59,7 @@ module.exports = function validate(options) {
         return validateFunction(options);
 
     } else if (valueSpec.function && isExpression(unbundle.deep(value))) {
-        return validateExpression(extend({}, options, {
-            context: 'declaration'
-        }));
+        return validateExpression(options);
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
         return VALIDATORS[valueSpec.type](options);

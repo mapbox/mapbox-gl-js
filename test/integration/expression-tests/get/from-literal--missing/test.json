@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["number", ["get", "x", ["literal", {"y": 0}]]],
   "inputs": [[{}, {}]],
   "expected": {

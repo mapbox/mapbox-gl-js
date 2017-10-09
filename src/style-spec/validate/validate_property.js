@@ -52,6 +52,7 @@ module.exports = function validateProperty(options, propertyType) {
         value: value,
         valueSpec: valueSpec,
         style: style,
-        styleSpec: styleSpec
+        styleSpec: styleSpec,
+        expressionContext: 'property'
     }));
 };

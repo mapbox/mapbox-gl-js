@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["log2", 1024],
   "inputs": [[{}, {}]],
   "expected": {

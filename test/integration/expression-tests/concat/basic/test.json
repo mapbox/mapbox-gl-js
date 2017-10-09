@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["concat", "a", "b", "c"],
   "inputs": [[{}, {}]],
   "expected": {

@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["any", true, ["error", "unreachable"]],
   "inputs": [
     [{}, {}]

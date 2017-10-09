@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["to-color", "red"],
   "inputs": [[{}, {}]],
   "expected": {

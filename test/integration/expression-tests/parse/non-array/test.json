@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["+", ["-", 0, {}], 10],
   "expected": {
     "compiled": {

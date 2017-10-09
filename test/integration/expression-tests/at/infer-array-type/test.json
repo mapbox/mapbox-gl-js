@@ -1,5 +1,5 @@
 {
-  "expectExpressionType": {"kind": "String"},
+  "propertySpec": {"type": "string"},
   "expression": ["at", 1, ["literal", [1, 2, 3]]],
   "inputs": [],
   "expected": {

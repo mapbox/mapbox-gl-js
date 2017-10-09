@@ -1,5 +1,4 @@
 {
-  "expectExpressionType": null,
   "expression": ["sin", 0],
   "inputs": [[{}, {}]],
   "expected": {

@@ -8,7 +8,7 @@
     "line": 22
   },
   {
-    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none, has, !has], = found",
+    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none, has, !has], \"=\" found",
     "line": 30
   },
   {
@@ -28,7 +28,7 @@
     "line": 71
   },
   {
-    "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], \"value\" found",
     "line": 82
   },
   {
@@ -36,7 +36,7 @@
     "line": 90
   },
   {
-    "message": "layers[8].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "message": "layers[8].filter[2]: expected one of [Point, LineString, Polygon], \"value\" found",
     "line": 93
   },
   {
