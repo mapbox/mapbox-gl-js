@@ -120,7 +120,8 @@ class StyleLayer extends Evented {
         const specification = this._layoutSpecifications[name];
         const declaration = this._layoutDeclarations[name];
 
-        if (declaration) {
+        // Avoid attempting to calculate a value for data-driven properties if `feature` is undefined.
+        if (declaration && (declaration.expression.isFeatureConstant || feature)) {
             return declaration.calculate(globals, feature);
         } else {
             return specification.default;
@@ -162,7 +163,8 @@ class StyleLayer extends Evented {
         const specification = this._paintSpecifications[name];
         const transition = this._paintTransitions[name];
 
-        if (transition) {
+        // Avoid attempting to calculate a value for data-driven properties if `feature` is undefined.
+        if (transition && (transition.declaration.expression.isFeatureConstant || feature)) {
             return transition.calculate(globals, feature);
         } else if (specification.type === 'color' && specification.default) {
             return parseColor(specification.default);

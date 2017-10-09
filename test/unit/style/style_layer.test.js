@@ -414,6 +414,37 @@ test('StyleLayer#serialize', (t) => {
     t.end();
 });
 
+test('StyleLayer#getPaintValue', (t) => {
+    t.test('returns property default if the value is data-driven and no feature is provided', (t) => {
+        const layer = StyleLayer.create({
+            "type": "circle",
+            "paint": {
+                "circle-opacity": ["get", "opacity"]
+            }
+        });
+        layer.updatePaintTransitions({});
+        t.deepEqual(layer.getPaintValue("circle-opacity"), 1);
+        t.end();
+    });
+
+    t.end();
+});
+
+test('StyleLayer#getLayoutValue', (t) => {
+    t.test('returns property default if the value is data-driven and no feature is provided', (t) => {
+        const layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "icon-rotate": ["get", "rotate"]
+            }
+        });
+        t.deepEqual(layer.getLayoutValue("icon-rotate"), 0);
+        t.end();
+    });
+
+    t.end();
+});
+
 test('StyleLayer#getLayoutValue (default exceptions)', (t) => {
     t.test('symbol-placement:point => *-rotation-alignment:viewport', (t) => {
         const layer = StyleLayer.create({
