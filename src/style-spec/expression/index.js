@@ -163,7 +163,7 @@ function createExpression(expression: mixed,
     }
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
-    if (!isFeatureConstant && !propertySpec['property-function']) {
+    if (!isFeatureConstant && context === 'property' && !propertySpec['property-function']) {
         return {
             result: 'error',
             errors: [new ParsingError('', 'property expressions not supported')]
