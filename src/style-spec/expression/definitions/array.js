@@ -78,16 +78,6 @@ class ArrayAssertion implements Expression {
         return value;
     }
 
-    serialize() {
-        if (typeof this.type.N === 'number') {
-            return [ 'array', toString(this.type.itemType), this.type.N, this.input.serialize() ];
-        } else if (this.type.itemType.kind !== 'value') {
-            return [ 'array', toString(this.type.itemType), this.input.serialize() ];
-        } else {
-            return [ 'array', this.input.serialize() ];
-        }
-    }
-
     eachChild(fn: (Expression) => void) {
         fn(this.input);
     }

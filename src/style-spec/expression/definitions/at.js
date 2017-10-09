@@ -55,10 +55,6 @@ class At implements Expression {
         return array[index];
     }
 
-    serialize() {
-        return [ 'at', this.index.serialize(), this.input.serialize() ];
-    }
-
     eachChild(fn: (Expression) => void) {
         fn(this.index);
         fn(this.input);

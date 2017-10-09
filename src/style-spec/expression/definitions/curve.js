@@ -185,23 +185,6 @@ class Curve implements Expression {
         return interpolate[type](outputLower, outputUpper, t);
     }
 
-    serialize() {
-        const result = ['curve'];
-        const interp = [this.interpolation.name];
-        if (this.interpolation.name === 'exponential') {
-            interp.push(this.interpolation.base);
-        } else if (this.interpolation.name === 'cubic-bezier') {
-            interp.push.apply(interp, this.interpolation.controlPoints);
-        }
-        result.push(interp);
-        result.push(this.input.serialize());
-        for (let i = 0; i < this.labels.length; i++) {
-            result.push(this.labels[i]);
-            result.push(this.outputs[i].serialize());
-        }
-        return result;
-    }
-
     eachChild(fn: (Expression) => void) {
         fn(this.input);
         for (const expression of this.outputs) {

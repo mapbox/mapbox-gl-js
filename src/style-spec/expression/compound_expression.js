@@ -36,12 +36,6 @@ class CompoundExpression implements Expression {
         return this._evaluate(ctx, this.args);
     }
 
-    serialize() {
-        const name = this.name;
-        const args = this.args.map(e => e.serialize());
-        return [ name ].concat(args);
-    }
-
     eachChild(fn: (Expression) => void) {
         this.args.forEach(fn);
     }

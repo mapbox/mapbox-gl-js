@@ -32,10 +32,6 @@ class Var implements Expression {
         return ctx.scope.get(this.name).evaluate(ctx);
     }
 
-    serialize() {
-        return [this.name];
-    }
-
     eachChild() {}
 }
 

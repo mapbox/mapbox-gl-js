@@ -70,10 +70,6 @@ class Assertion implements Expression {
         return null;
     }
 
-    serialize() {
-        return [ this.type.kind.toLowerCase() ].concat(this.args.map(i => i.serialize()));
-    }
-
     eachChild(fn: (Expression) => void) {
         this.args.forEach(fn);
     }

@@ -25,15 +25,6 @@ class Let implements Expression {
         return result;
     }
 
-    serialize() {
-        const serialized = ['let'];
-        for (const [name, expression] of this.bindings) {
-            serialized.push(name, expression.serialize());
-        }
-        serialized.push(this.result.serialize());
-        return serialized;
-    }
-
     eachChild(fn: (Expression) => void) {
         for (const binding of this.bindings) {
             fn(binding[1]);

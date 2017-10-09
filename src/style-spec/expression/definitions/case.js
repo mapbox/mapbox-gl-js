@@ -64,16 +64,6 @@ class Case implements Expression {
         return this.otherwise.evaluate(ctx);
     }
 
-    serialize() {
-        const result = ['case'];
-        for (const [test, expression] of this.branches) {
-            result.push(test.serialize());
-            result.push(expression.serialize());
-        }
-        result.push(this.otherwise.serialize());
-        return result;
-    }
-
     eachChild(fn: (Expression) => void) {
         for (const [test, expression] of this.branches) {
             fn(test);
