@@ -58,15 +58,13 @@
                 "type": "circle",
                 "source": "circles",
                 "paint": {
-                    "circle-radius": {
-                        "expression": [
-                            "curve",
-                            ["exponential", 2.0],
-                            ["zoom"],
-                            0, 5,
-                            5, ['*', ["get", "scalerank"], 20],
-                        ]
-                    },
+                    "circle-radius": [
+                        "curve",
+                        ["exponential", 2.0],
+                        ["zoom"],
+                        0, 5,
+                        5, ['*', ["get", "scalerank"], 20],
+                    ],
                     "circle-color": {
                         "type": "categorical",
                         "property": "featureclass",
@@ -90,19 +88,17 @@
                 "source": "circles",
                 "minzoom": 1,
                 "layout": {
-                    "text-field": {
-                        "expression": [
-                            "concat",
-                            ["get", "name"],
-                            " (",
-                            [
-                                "coalesce",
-                                ["get", "subregion"],
-                                ["get", "region"]
-                            ],
-                            ")"
-                        ]
-                    }
+                    "text-field": [
+                        "concat",
+                        ["get", "name"],
+                        " (",
+                        [
+                            "coalesce",
+                            ["get", "subregion"],
+                            ["get", "region"]
+                        ],
+                        ")"
+                    ]
                 }
             });
 

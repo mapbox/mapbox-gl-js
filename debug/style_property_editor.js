@@ -1,4 +1,5 @@
 const convertFunction = require('../src/style-spec/function/convert');
+const {isFunction} = require('../src/style-spec/function');
 const util = require('../src/util/util');
 const spec = require('../src/style-spec/reference/v8.json');
 const stringify = require('json-stringify-pretty-compact');
@@ -48,7 +49,7 @@ class StylePropertyEditor extends React.Component {
             try {
                 const input = JSON.parse(this.state.propertyValue);
 
-                if (input === null || !(input.stops || input.type === 'identity') || input.expression) {
+                if (!isFunction(input)) {
                     converted = input;
                 } else {
                     converted = convertFunction(input, this.state.propertySpec);
