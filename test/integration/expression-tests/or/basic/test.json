@@ -1,6 +1,6 @@
 {
   "expectExpressionType": null,
-  "expression": ["||", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
+  "expression": ["any", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
   "inputs": [
     [{}, {"properties": {"x": true, "y": true}}],
     [{}, {"properties": {"x": true, "y": false}}],

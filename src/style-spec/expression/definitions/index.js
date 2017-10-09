@@ -341,12 +341,12 @@ CompoundExpression.register(expressions, {
             [[StringType, StringType], lteq]
         ]
     },
-    '&&': [
+    'all': [
         BooleanType,
         varargs(BooleanType),
         (ctx, args) => args.reduce((a, b) => a && b.evaluate(ctx), true)
     ],
-    '||': [
+    'any': [
         BooleanType,
         varargs(BooleanType),
         (ctx, args) => args.reduce((a, b) => a || b.evaluate(ctx), false)

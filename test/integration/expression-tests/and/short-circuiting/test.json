@@ -1,6 +1,6 @@
 {
   "expectExpressionType": null,
-  "expression": ["&&", false, ["error", "unreachable"]],
+  "expression": ["all", false, ["error", "unreachable"]],
   "inputs": [
     [{}, {}]
   ],
