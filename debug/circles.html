@@ -41,27 +41,23 @@ map.on('load', function() {
         "type": "circle",
         "source": "circles",
         "paint": {
-            "circle-radius": {
-                "expression": [
-                    "curve",
-                    ["exponential", 2.0],
-                    ["zoom"],
-                    0, 5,
-                    5, ['*', ["get", "scalerank"], 20],
-                ]
-            },
-            "circle-color": {
-                "expression": [
-                    "match",
-                    ["get", "featureclass"],
-                    "cape", "orange",
-                    "island", "#0088ff",
-                    "plain", "yellow",
-                    "pole", "white",
-                    "waterfall", "blue",
-                    "red"
-                ]
-            },
+            "circle-radius": [
+                "curve",
+                ["exponential", 2.0],
+                ["zoom"],
+                0, 5,
+                5, ['*', ["get", "scalerank"], 20],
+            ],
+            "circle-color": [
+                "match",
+                ["get", "featureclass"],
+                "cape", "orange",
+                "island", "#0088ff",
+                "plain", "yellow",
+                "pole", "white",
+                "waterfall", "blue",
+                "red"
+            ],
             "circle-pitch-scale": "map",
             "circle-pitch-alignment": "map"
         }
@@ -73,19 +69,17 @@ map.on('load', function() {
         "source": "circles",
         "minzoom": 1,
         "layout": {
-            "text-field": {
-                "expression": [
-                    "concat",
-                    ["get", "name"],
-                    " (",
-                    [
-                        "coalesce",
-                        ["get", "subregion"],
-                        ["get", "region"]
-                    ],
-                    ")"
-                ]
-            }
+            "text-field": [
+                "concat",
+                ["get", "name"],
+                " (",
+                [
+                    "coalesce",
+                    ["get", "subregion"],
+                    ["get", "region"]
+                ],
+                ")"
+            ]
         }
     });
 });
