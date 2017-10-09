@@ -1,13 +1,13 @@
 {
-  "expression": ["-", 5],
+  "expression": ["concat", "foo"],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": ["foo"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Number"
-    },
-    "outputs": [-5]
+      "isFeatureConstant": true,
+      "type": "String"
+    }
   }
 }

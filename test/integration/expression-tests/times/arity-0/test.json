@@ -1,8 +1,8 @@
 {
-  "expression": ["-", 5, 7],
+  "expression": ["*"],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [-2],
+    "outputs": [1],
     "compiled": {
       "result": "success",
       "isZoomConstant": true,
