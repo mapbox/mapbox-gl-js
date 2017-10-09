@@ -18,7 +18,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Style
 
     const pass = (!image && color[3] === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
-    if (opacity === 0) return;
 
     gl.disable(gl.STENCIL_TEST);
 

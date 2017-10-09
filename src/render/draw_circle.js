@@ -12,7 +12,6 @@ module.exports = drawCircles;
 
 function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
-    if (layer.paint['circle-opacity'] === 0 && layer.paint['circle-stroke-opacity'] === 0) return;
 
     const gl = painter.gl;
 

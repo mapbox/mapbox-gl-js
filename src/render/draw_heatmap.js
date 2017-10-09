@@ -14,7 +14,6 @@ module.exports = drawHeatmap;
 
 function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapStyleLayer, coords: Array<TileCoord>) {
     if (painter.isOpaquePass) return;
-    if (layer.paint['heatmap-opacity'] === 0) return;
 
     const gl = painter.gl;
 
