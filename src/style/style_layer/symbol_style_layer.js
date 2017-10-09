@@ -49,6 +49,9 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     isHidden(zoom: number) { // eslint-disable-line
+        // We'll need to be more nuanced than in other types since symbol layers
+        // can have separate icon-opacity and text-opacity values: check those
+        // during their individual draw functions.
         return false;
     }
 
