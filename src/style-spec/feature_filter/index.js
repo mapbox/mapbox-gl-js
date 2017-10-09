@@ -1,4 +1,41 @@
 module.exports = createFilter;
+module.exports.isExpressionFilter = isExpressionFilter;
+
+function isExpressionFilter(filter) {
+    if (!Array.isArray(filter) || filter.length === 0) {
+        return false;
+    }
+    switch (filter[0]) {
+    case 'has':
+        return filter.length >= 2 && filter[1] !== '$id' && filter[1] !== '$type';
+
+    case 'in':
+    case '!in':
+    case '!has':
+    case 'none':
+        return false;
+
+    case '==':
+    case '!=':
+    case '>':
+    case '>=':
+    case '<':
+    case '<=':
+        return filter.length === 3 && (Array.isArray(filter[1]) || Array.isArray(filter[2]));
+
+    case 'any':
+    case 'all':
+        for (const f of filter.slice(1)) {
+            if (!isExpressionFilter(f)) {
+                return false;
+            }
+        }
+        return true;
+
+    default:
+        return true;
+    }
+}
 
 const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
