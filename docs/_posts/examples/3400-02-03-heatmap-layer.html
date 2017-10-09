@@ -48,15 +48,17 @@ map.on('load', function() {
                     [9, 3]
                 ]
             },
-            //Color ramp for heatmap.  Domain is 0 (low) to 1 (high)
+            //Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+            //Begin color ramp at 0-stop with a 0-transparancy color
+            //to create a blur-like effect.
             "heatmap-color": {
                 "stops": [
-                    [0, "#2166ac"],
-                    [0.2, "#67a9cf"],
-                    [0.4, "#d1e5f0"],
-                    [0.6, "#fddbc7"],
-                    [0.8, "#ef8a62"],
-                    [1, "#b2182b"],
+                    [0, "rgba(33,102,172,0)"],
+                    [0.2, "rgb(103,169,207)"],
+                    [0.4, "rgb(209,229,240)"],
+                    [0.6, "rgb(253,219,199)"],
+                    [0.8, "rgb(239,138,98)"],
+                    [1, "rgb(178,24,43)"]
                 ]
             },
             //Adjust the heatmap radius by zoom level
@@ -99,12 +101,12 @@ map.on('load', function() {
                 "property": "mag",
                 "type": "exponential",
                 "stops": [
-                    [1, "#2166ac"],
-                    [2, "#67a9cf"],
-                    [3, "#d1e5f0"],
-                    [4, "#fddbc7"],
-                    [5, "#ef8a62"],
-                    [6, "#b2182b"]
+                    [1, "rgba(33,102,172,0)"],
+                    [2, "rgb(103,169,207)"],
+                    [3, "rgb(209,229,240)"],
+                    [4, "rgb(253,219,199)"],
+                    [5, "rgb(239,138,98)"],
+                    [6, "rgb(178,24,43)"]
                 ]
             },
             "circle-stroke-color": "white",
