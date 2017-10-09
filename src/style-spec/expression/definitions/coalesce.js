@@ -46,10 +46,6 @@ class Coalesce implements Expression {
         return result;
     }
 
-    serialize() {
-        return ['coalesce'].concat(this.args.map(a => a.serialize()));
-    }
-
     eachChild(fn: (Expression) => void) {
         this.args.forEach(fn);
     }

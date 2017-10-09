@@ -92,10 +92,6 @@ class Coercion implements Expression {
         }
     }
 
-    serialize() {
-        return [ `to-${this.type.kind.toLowerCase()}` ].concat(this.args.map(i => i.serialize()));
-    }
-
     eachChild(fn: (Expression) => void) {
         this.args.forEach(fn);
     }

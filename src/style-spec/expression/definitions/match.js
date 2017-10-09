@@ -100,25 +100,6 @@ class Match implements Expression {
         return (this.outputs[this.cases[input]] || this.otherwise).evaluate(ctx);
     }
 
-    serialize() {
-        const result = ['match'];
-        result.push(this.input.serialize());
-        const branches = [];
-        for (const output of this.outputs) {
-            branches.push([[], output.serialize()]);
-        }
-        for (const label in this.cases) {
-            const index = this.cases[label];
-            branches[index][0].push(label);
-        }
-        for (const [labels, expression] of branches) {
-            result.push(labels);
-            result.push(expression);
-        }
-        result.push(this.otherwise.serialize());
-        return result;
-    }
-
     eachChild(fn: (Expression) => void) {
         fn(this.input);
         this.outputs.forEach(fn);

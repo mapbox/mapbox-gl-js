@@ -1,6 +1,6 @@
 // @flow
 
-const { Color, isValue, typeOf } = require('../values');
+const { isValue, typeOf } = require('../values');
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
@@ -45,16 +45,6 @@ class Literal implements Expression {
 
     evaluate() {
         return this.value;
-    }
-
-    serialize() {
-        if (this.value === null || typeof this.value === 'string' || typeof this.value === 'boolean' || typeof this.value === 'number') {
-            return this.value;
-        } else if (this.value instanceof Color) {
-            return ["rgba"].concat(this.value.value);
-        } else {
-            return ["literal", this.value];
-        }
     }
 
     eachChild() {}

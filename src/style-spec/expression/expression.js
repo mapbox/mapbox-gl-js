@@ -11,6 +11,5 @@ export interface Expression {
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression;
     evaluate(ctx: EvaluationContext): any;
 
-    serialize(): any;
     eachChild(fn: Expression => void): void;
 }
