@@ -314,7 +314,7 @@ class StyleLayer extends Evented {
         return false;
     }
 
-    isOpacityZero(zoom: number) {
+    isOpacityZero() {
         return false;
     }
 
