@@ -12,6 +12,7 @@ module.exports = drawRaster;
 
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
+    if (layer.paint['raster-opacity'] === 0) return;
 
     const gl = painter.gl;
     const source = sourceCache.getSource();

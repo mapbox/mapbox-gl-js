@@ -11,6 +11,7 @@ import type TileCoord from '../source/tile_coord';
 module.exports = drawFill;
 
 function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<TileCoord>) {
+    if (layer.paint['fill-opacity'] === 0) return;
     const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 

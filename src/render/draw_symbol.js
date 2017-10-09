@@ -40,21 +40,25 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    drawLayerSymbols(painter, sourceCache, layer, coords, false,
-        layer.paint['icon-translate'],
-        layer.paint['icon-translate-anchor'],
-        layer.layout['icon-rotation-alignment'],
-        layer.layout['icon-pitch-alignment'],
-        layer.layout['icon-keep-upright']
-    );
+    if (layer.paint['icon-opacity'] !== 0) {
+        drawLayerSymbols(painter, sourceCache, layer, coords, false,
+            layer.paint['icon-translate'],
+            layer.paint['icon-translate-anchor'],
+            layer.layout['icon-rotation-alignment'],
+            layer.layout['icon-pitch-alignment'],
+            layer.layout['icon-keep-upright']
+        );
+    }
 
-    drawLayerSymbols(painter, sourceCache, layer, coords, true,
-        layer.paint['text-translate'],
-        layer.paint['text-translate-anchor'],
-        layer.layout['text-rotation-alignment'],
-        layer.layout['text-pitch-alignment'],
-        layer.layout['text-keep-upright']
-    );
+    if (layer.paint['text-opacity'] !== 0) {
+        drawLayerSymbols(painter, sourceCache, layer, coords, true,
+            layer.paint['text-translate'],
+            layer.paint['text-translate-anchor'],
+            layer.layout['text-rotation-alignment'],
+            layer.layout['text-pitch-alignment'],
+            layer.layout['text-keep-upright']
+        );
+    }
 
     if (sourceCache.map.showCollisionBoxes) {
         drawCollisionDebug(painter, sourceCache, layer, coords);
