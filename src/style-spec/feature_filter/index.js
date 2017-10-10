@@ -33,7 +33,7 @@ function isExpressionFilter(filter) {
     case 'any':
     case 'all':
         for (const f of filter.slice(1)) {
-            if (!isExpressionFilter(f)) {
+            if (!isExpressionFilter(f) && typeof f !== 'boolean') {
                 return false;
             }
         }
