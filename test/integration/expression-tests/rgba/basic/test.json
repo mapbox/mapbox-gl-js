@@ -6,7 +6,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Color"
+      "type": "color"
     },
     "outputs": [[0, 0, 1, 1]]
   }

@@ -21,7 +21,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": false,
-      "type": "Number"
+      "type": "number"
     },
     "outputs": [20]
   }

@@ -7,7 +7,7 @@
       "result": "success",
       "isZoomConstant": true,
       "isFeatureConstant": true,
-      "type": "Boolean"
+      "type": "boolean"
     }
   }
 }

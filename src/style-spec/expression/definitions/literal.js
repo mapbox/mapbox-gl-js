@@ -31,10 +31,10 @@ class Literal implements Expression {
         // special case: infer the item type if possible for zero-length arrays
         const expected = context.expectedType;
         if (
-            type.kind === 'Array' &&
+            type.kind === 'array' &&
             type.N === 0 &&
             expected &&
-            expected.kind === 'Array' &&
+            expected.kind === 'array' &&
             (typeof expected.N !== 'number' || expected.N === 0)
         ) {
             type = expected;

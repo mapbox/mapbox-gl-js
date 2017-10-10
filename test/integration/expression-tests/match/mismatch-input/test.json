@@ -4,7 +4,7 @@
     "compiled": {
       "result": "error",
       "errors": [
-        {"key": "[1]", "error": "Expected Number but found String instead."}
+        {"key": "[1]", "error": "Expected number but found string instead."}
       ]
     }
   }

@@ -6,7 +6,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected arguments of type (Number, Number) | (String, String), but found (String, Number) instead."
+          "error": "Expected arguments of type (number, number) | (string, string), but found (string, number) instead."
         }
       ]
     }

@@ -108,7 +108,7 @@ class Curve implements Expression {
         const stops: Stops = [];
 
         let outputType: Type = (null: any);
-        if (context.expectedType && context.expectedType.kind !== 'Value') {
+        if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
 
@@ -138,9 +138,9 @@ class Curve implements Expression {
         }
 
         if (interpolation.name !== 'step' &&
-            outputType.kind !== 'Number' &&
-            outputType.kind !== 'Color' &&
-            !(outputType.kind === 'Array' && outputType.itemType.kind === 'Number')) {
+            outputType.kind !== 'number' &&
+            outputType.kind !== 'color' &&
+            !(outputType.kind === 'array' && outputType.itemType.kind === 'number')) {
             return context.error(`Type ${toString(outputType)} is not interpolatable, and thus cannot be used as a ${interpolation.name} curve's output type.`);
         }
 

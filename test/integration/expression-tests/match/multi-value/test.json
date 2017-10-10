@@ -23,7 +23,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "String"
+      "type": "string"
     },
     "outputs": ["Apple", "Apple", "Banana", "Banana", "Kumquat"]
   }

@@ -31,7 +31,7 @@ class Case implements Expression {
             return context.error(`Expected an odd number of arguments.`);
 
         let outputType: ?Type;
-        if (context.expectedType && context.expectedType.kind !== 'Value') {
+        if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
 

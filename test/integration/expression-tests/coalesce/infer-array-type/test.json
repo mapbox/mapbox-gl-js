@@ -13,7 +13,7 @@
       "errors": [
         {
           "key": "[3]",
-          "error": "Expected Array<String> but found Null instead."
+          "error": "Expected array<string> but found null instead."
         }
       ]
     }

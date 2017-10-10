@@ -16,18 +16,18 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "String"
+      "type": "string"
     },
     "outputs": [
-      "Null",
-      "String",
-      "Number",
-      "Boolean",
-      "Array<Number, 3>",
-      "Array<String, 3>",
-      "Array<Boolean, 2>",
-      "Array<Value, 2>",
-      "Object"
+      "null",
+      "string",
+      "number",
+      "boolean",
+      "array<number, 3>",
+      "array<string, 3>",
+      "array<boolean, 2>",
+      "array<value, 2>",
+      "object"
     ]
   }
 }

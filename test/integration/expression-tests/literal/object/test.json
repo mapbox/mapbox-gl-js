@@ -6,7 +6,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Object"
+      "type": "object"
     },
     "outputs": [{"x": 1}]
   }

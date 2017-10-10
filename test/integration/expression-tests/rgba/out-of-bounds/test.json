@@ -17,7 +17,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Color"
+      "type": "color"
     },
     "outputs": [
       {

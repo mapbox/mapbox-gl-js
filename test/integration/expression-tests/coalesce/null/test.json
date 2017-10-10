@@ -14,7 +14,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Value"
+      "type": "value"
     },
     "outputs": [1, 0]
   }

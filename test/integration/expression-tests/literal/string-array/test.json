@@ -6,7 +6,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Array<String, 2>"
+      "type": "array<string, 2>"
     },
     "outputs": [["1", "2"]]
   }

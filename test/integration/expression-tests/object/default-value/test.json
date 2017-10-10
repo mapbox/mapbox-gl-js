@@ -12,7 +12,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Object"
+      "type": "object"
     },
     "outputs": [
       {"inner": "object"},

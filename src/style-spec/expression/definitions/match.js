@@ -39,7 +39,7 @@ class Match implements Expression {
 
         let inputType;
         let outputType;
-        if (context.expectedType && context.expectedType.kind !== 'Value') {
+        if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
         const cases = {};

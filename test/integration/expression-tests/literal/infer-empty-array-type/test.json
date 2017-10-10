@@ -7,7 +7,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Array<Number>"
+      "type": "array<number>"
     },
     "outputs": []
   }
