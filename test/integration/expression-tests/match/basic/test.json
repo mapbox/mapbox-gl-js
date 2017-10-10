@@ -11,14 +11,14 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "String"
+      "type": "string"
     },
     "outputs": [
       "Apple",
       "Banana",
       "Kumquat",
       {
-        "error": "Expected value to be of type String, but found Number instead."
+        "error": "Expected value to be of type string, but found number instead."
       }
     ]
   }

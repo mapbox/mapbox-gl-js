@@ -14,7 +14,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Number"
+      "type": "number"
     },
     "outputs": [
       100,
@@ -23,7 +23,7 @@
       100,
       200,
       {
-        "error": "Expected value to be of type Number, but found String instead."
+        "error": "Expected value to be of type number, but found string instead."
       }
     ]
   }

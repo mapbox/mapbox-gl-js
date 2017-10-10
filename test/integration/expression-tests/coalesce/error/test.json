@@ -17,14 +17,14 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Number"
+      "type": "number"
     },
     "outputs": [
       1,
       1,
-      {"error": "Expected value to be of type Number, but found Null instead."},
-      {"error": "Expected value to be of type Number, but found Null instead."},
-      {"error": "Expected value to be of type Number, but found Null instead."}
+      {"error": "Expected value to be of type number, but found null instead."},
+      {"error": "Expected value to be of type number, but found null instead."},
+      {"error": "Expected value to be of type number, but found null instead."}
     ]
   }
 }

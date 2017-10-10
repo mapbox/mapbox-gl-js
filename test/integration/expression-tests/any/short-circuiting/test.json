@@ -8,7 +8,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Boolean"
+      "type": "boolean"
     },
     "outputs": [true]
   }

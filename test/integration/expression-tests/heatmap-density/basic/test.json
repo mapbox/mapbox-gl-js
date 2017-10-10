@@ -19,7 +19,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Color"
+      "type": "color"
     },
     "outputs": [[0.5, 0, 0, 1]]
   }

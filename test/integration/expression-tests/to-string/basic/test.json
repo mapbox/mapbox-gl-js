@@ -12,7 +12,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "String"
+      "type": "string"
     },
     "outputs": ["1", "false", "null", "[1,2]", "{\"y\":1}"]
   }

@@ -7,7 +7,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected arguments of type (Number, Number) | (Number), but found () instead."
+          "error": "Expected arguments of type (number, number) | (number), but found () instead."
         }
       ]
     }

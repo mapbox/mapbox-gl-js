@@ -13,7 +13,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "String"
+      "type": "string"
     },
     "outputs": [
       "x",
@@ -21,7 +21,7 @@
       "y",
       "otherwise",
       {
-        "error": "Expected value to be of type Boolean, but found String instead."
+        "error": "Expected value to be of type boolean, but found string instead."
       }
     ]
   }

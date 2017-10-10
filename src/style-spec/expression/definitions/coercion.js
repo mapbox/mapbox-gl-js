@@ -58,7 +58,7 @@ class Coercion implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        if (this.type.kind === 'Color') {
+        if (this.type.kind === 'color') {
             let input;
             let error;
             for (const arg of this.args) {

@@ -164,11 +164,11 @@
     "line": 857
   },
   {
-    "message": "layers[47].paint.fill-color: Expected Color but found Number instead.",
+    "message": "layers[47].paint.fill-color: Expected color but found number instead.",
     "line": 898
   },
   {
-    "message": "layers[48].paint.fill-color[2]: Expected Number but found String instead.",
+    "message": "layers[48].paint.fill-color[2]: Expected number but found string instead.",
     "line": 907
   },
   {

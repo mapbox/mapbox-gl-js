@@ -12,7 +12,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected Array<Number, 3> but found Array<Number> instead."
+          "error": "Expected array<number, 3> but found array<number> instead."
         }
       ]
     }

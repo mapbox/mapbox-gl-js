@@ -1,13 +1,13 @@
 // @flow
 
-export type NullTypeT = { kind: 'Null' };
-export type NumberTypeT = { kind: 'Number' };
-export type StringTypeT = { kind: 'String' };
-export type BooleanTypeT = { kind: 'Boolean' };
-export type ColorTypeT = { kind: 'Color' };
-export type ObjectTypeT = { kind: 'Object' };
-export type ValueTypeT = { kind: 'Value' };
-export type ErrorTypeT = { kind: 'Error' };
+export type NullTypeT = { kind: 'null' };
+export type NumberTypeT = { kind: 'number' };
+export type StringTypeT = { kind: 'string' };
+export type BooleanTypeT = { kind: 'boolean' };
+export type ColorTypeT = { kind: 'color' };
+export type ObjectTypeT = { kind: 'object' };
+export type ValueTypeT = { kind: 'value' };
+export type ErrorTypeT = { kind: 'error' };
 
 export type Type =
     NullTypeT |
@@ -21,34 +21,34 @@ export type Type =
     ErrorTypeT
 
 export type ArrayType = {
-    kind: 'Array',
+    kind: 'array',
     itemType: Type,
     N: ?number
 }
 
-const NullType = { kind: 'Null' };
-const NumberType = { kind: 'Number' };
-const StringType = { kind: 'String' };
-const BooleanType = { kind: 'Boolean' };
-const ColorType = { kind: 'Color' };
-const ObjectType = { kind: 'Object' };
-const ValueType = { kind: 'Value' };
-const ErrorType = { kind: 'Error' };
+const NullType = { kind: 'null' };
+const NumberType = { kind: 'number' };
+const StringType = { kind: 'string' };
+const BooleanType = { kind: 'boolean' };
+const ColorType = { kind: 'color' };
+const ObjectType = { kind: 'object' };
+const ValueType = { kind: 'value' };
+const ErrorType = { kind: 'error' };
 
 function array(itemType: Type, N: ?number): ArrayType {
     return {
-        kind: 'Array',
+        kind: 'array',
         itemType,
         N
     };
 }
 
 function toString(type: Type): string {
-    if (type.kind === 'Array') {
+    if (type.kind === 'array') {
         const itemType = toString(type.itemType);
         return typeof type.N === 'number' ?
-            `Array<${itemType}, ${type.N}>` :
-            type.itemType.kind === 'Value' ? 'Array' : `Array<${itemType}>`;
+            `array<${itemType}, ${type.N}>` :
+            type.itemType.kind === 'value' ? 'array' : `array<${itemType}>`;
     } else {
         return type.kind;
     }
@@ -70,18 +70,18 @@ const valueMemberTypes = [
  * * @private
  */
 function checkSubtype(expected: Type, t: Type): ?string {
-    if (t.kind === 'Error') {
+    if (t.kind === 'error') {
         // Error is a subtype of every type
         return null;
-    } else if (expected.kind === 'Array') {
-        if (t.kind === 'Array' &&
+    } else if (expected.kind === 'array') {
+        if (t.kind === 'array' &&
             !checkSubtype(expected.itemType, t.itemType) &&
             (typeof expected.N !== 'number' || expected.N === t.N)) {
             return null;
         }
     } else if (expected.kind === t.kind) {
         return null;
-    } else if (expected.kind === 'Value') {
+    } else if (expected.kind === 'value') {
         for (const memberType of valueMemberTypes) {
             if (!checkSubtype(memberType, t)) {
                 return null;

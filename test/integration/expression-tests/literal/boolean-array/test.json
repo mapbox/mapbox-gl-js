@@ -6,7 +6,7 @@
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "Array<Boolean, 2>"
+      "type": "array<boolean, 2>"
     },
     "outputs": [[true, false]]
   }

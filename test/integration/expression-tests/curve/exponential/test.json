@@ -15,7 +15,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Number"
+      "type": "number"
     },
     "outputs": [2, 2, 3.3333333333333335, 6, 6]
   }

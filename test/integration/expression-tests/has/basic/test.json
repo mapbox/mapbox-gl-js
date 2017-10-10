@@ -12,7 +12,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Boolean"
+      "type": "boolean"
     },
     "outputs": [false, true, true, true, true]
   }

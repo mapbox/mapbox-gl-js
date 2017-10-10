@@ -15,7 +15,7 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "Array<String>"
+      "type": "array<string>"
     },
     "outputs": []
   }

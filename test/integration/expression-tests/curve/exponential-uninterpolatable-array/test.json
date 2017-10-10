@@ -15,7 +15,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Type Array<String, 1> is not interpolatable, and thus cannot be used as a exponential curve's output type."
+          "error": "Type array<string, 1> is not interpolatable, and thus cannot be used as a exponential curve's output type."
         }
       ]
     }
