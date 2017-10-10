@@ -25,6 +25,18 @@ test('expression, compare two properties', (t) => {
     t.end();
 });
 
+test('expression, any/all', (t) => {
+    t.equal(filter(['all'])(), true);
+    t.equal(filter(['all', true])(), true);
+    t.equal(filter(['all', true, false])(), false);
+    t.equal(filter(['all', true, true])(), true);
+    t.equal(filter(['any'])(), false);
+    t.equal(filter(['any', true])(), true);
+    t.equal(filter(['any', true, false])(), true);
+    t.equal(filter(['any', false, false])(), false);
+    t.end();
+});
+
 test('expression, type error', (t) => {
     t.throws(() => {
         filter(['==', ['number', ['get', 'x']], ['string', ['get', 'y']]]);
