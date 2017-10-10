@@ -80,7 +80,7 @@ const types = {
         type: 'T (number, array<number>, or Color)',
         parameters: [
             'input: number',
-            'interpolation: ["step"] | ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
+            'interpolation: ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
             'stop_input_1: number, stop_output_1: T',
             'stop_input_n: number, stop_output_n: T, ...'
         ]
