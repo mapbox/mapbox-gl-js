@@ -1906,7 +1906,7 @@
         "group": "Decision"
       },
       "curve": {
-        "doc": "Interpolates an output value from the given input/output pairs using the specified interpolation strategy.  The input levels must be numeric literals in strictly ascending order.",
+        "doc": "Interpolates an output value based on a set of input/output pairs using the specified interpolation strategy. A set of one input and one output value is known as a \"stop.\" Stop inputs must be numeric literals in strictly ascending order.\n\nInterpolation types:\n- `[\"step\"]`: returns the output value of the stop just less than the input , or the first input if the input is less than the first stop.\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input .\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input . `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y2, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points",
         "group": "Ramps, scales, curves"
       },
       "ln2": {
