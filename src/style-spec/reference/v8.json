@@ -2093,11 +2093,11 @@
         "doc": "",
         "group": "Decision"
       },
-      "&&": {
+      "all": {
         "doc": "",
         "group": "Decision"
       },
-      "||": {
+      "any": {
         "doc": "",
         "group": "Decision"
       },
