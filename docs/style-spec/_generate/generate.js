@@ -73,8 +73,6 @@ function renderParams (params, maxLength) {
     for (const t of params) {
         if (typeof t === 'string') {
             result.push(t);
-        } else if (t.name) {
-            result.push(`${t.name}: ${t.type}`);
         } else if (t.repeat) {
             const repeated = renderParams(t.repeat, Infinity);
             result.push(`${repeated.slice(2)}, (${repeated.slice(2)}${repeated}, ...)`);
