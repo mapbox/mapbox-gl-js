@@ -9,6 +9,8 @@ import type StyleLayer from '../style/style_layer';
 module.exports = drawBackground;
 
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: StyleLayer) {
+    if (layer.isOpacityZero(painter.transform.zoom)) return;
+
     const gl = painter.gl;
     const transform = painter.transform;
     const tileSize = transform.tileSize;

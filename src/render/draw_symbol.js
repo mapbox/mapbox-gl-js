@@ -40,8 +40,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    if (!layer.isPaintValueFeatureConstant('icon-opacity') ||
-        layer.getPaintValue('icon-opacity', { zoom: painter.transform.zoom }) !== 0) {
+    if (!layer.isOpacityZero(painter.transform.zoom, 'icon-opacity')) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
             layer.paint['icon-translate'],
             layer.paint['icon-translate-anchor'],
@@ -51,8 +50,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
         );
     }
 
-    if (!layer.isPaintValueFeatureConstant('text-opacity') ||
-        layer.getPaintValue('text-opacity', { zoom: painter.transform.zoom }) !== 0) {
+    if (!layer.isOpacityZero(painter.transform.zoom, 'text-opacity')) {
         drawLayerSymbols(painter, sourceCache, layer, coords, true,
             layer.paint['text-translate'],
             layer.paint['text-translate-anchor'],

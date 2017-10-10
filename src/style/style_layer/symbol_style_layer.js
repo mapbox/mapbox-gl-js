@@ -48,11 +48,11 @@ class SymbolStyleLayer extends StyleLayer {
         return (new SymbolBucket((parameters: any)): any);
     }
 
-    isHidden(zoom: number) { // eslint-disable-line
-        // We'll need to be more nuanced than in other types since symbol layers
-        // can have separate icon-opacity and text-opacity values: check those
-        // during their individual draw functions.
-        return false;
+    isOpacityZero(zoom: number, property?: string) {
+        if (!property) throw new Error('Must specify which symbol opacity property to check for zero opacity.');
+
+        return this.isPaintValueFeatureConstant(property) &&
+            this.getPaintValue(property, { zoom: zoom }) === 0;
     }
 
     queryRadius(): number {

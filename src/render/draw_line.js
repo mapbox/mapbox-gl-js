@@ -11,6 +11,7 @@ import type TileCoord from '../source/tile_coord';
 
 module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
+    if (layer.isOpacityZero(painter.transform.zoom)) return;
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 

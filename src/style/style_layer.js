@@ -41,7 +41,7 @@ class StyleLayer extends Evented {
     _layoutFunctions: {[string]: boolean};
 
     +createBucket: (parameters: BucketParameters) => Bucket;
-    +isOpacityZero: (zoom: number) => boolean;
+    +isOpacityZero: (zoom: number, property?: string) => boolean;
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
                               feature: VectorTileFeature,
@@ -191,7 +191,6 @@ class StyleLayer extends Evented {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
         if (this.layout['visibility'] === 'none') return true;
-        if (this.isOpacityZero(zoom)) return true;
 
         return false;
     }
