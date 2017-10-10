@@ -13,7 +13,8 @@ function isFeatureConstant(e: Expression) {
         } else if (
             e.name === 'properties' ||
             e.name === 'geometry-type' ||
-            e.name === 'id'
+            e.name === 'id' ||
+            /^filter-/.test(e.name)
         ) {
             return false;
         }

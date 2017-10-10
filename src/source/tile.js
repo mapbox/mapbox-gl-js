@@ -357,7 +357,7 @@ class Tile {
 
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
-            if (filter(feature)) {
+            if (filter({zoom: this.coord.z}, feature)) {
                 const geojsonFeature = new GeoJSONFeature(feature, this.coord.z, this.coord.x, this.coord.y);
                 (geojsonFeature: any).tile = coord;
                 result.push(geojsonFeature);

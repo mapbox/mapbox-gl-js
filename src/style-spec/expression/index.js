@@ -306,5 +306,5 @@ function getDefaultValue(spec: StylePropertySpecification): Value | null {
         assert(Array.isArray(c));
         return new Color(c[0], c[1], c[2], c[3]);
     }
-    return defaultValue || null;
+    return defaultValue === undefined ? null : defaultValue;
 }

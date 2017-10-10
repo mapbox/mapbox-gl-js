@@ -11,7 +11,7 @@ import type { Value } from './values';
 
 type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;
-type Evaluate = (EvaluationContext, Array<Expression>) => Value;
+type Evaluate = (EvaluationContext) => Value;
 type Definition = [Type, Signature, Evaluate] |
     {|type: Type, overloads: Array<[Signature, Evaluate]>|};
 
@@ -19,7 +19,7 @@ class CompoundExpression implements Expression {
     key: string;
     name: string;
     type: Type;
-    _evaluate: Evaluate;
+    evaluate: (ctx: EvaluationContext) => any;
     args: Array<Expression>;
 
     static definitions: { [string]: Definition };
@@ -28,12 +28,8 @@ class CompoundExpression implements Expression {
         this.key = key;
         this.name = name;
         this.type = type;
-        this._evaluate = evaluate;
+        this.evaluate = evaluate;
         this.args = args;
-    }
-
-    evaluate(ctx: EvaluationContext) {
-        return this._evaluate(ctx, this.args);
     }
 
     serialize() {
