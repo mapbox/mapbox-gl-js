@@ -25,7 +25,6 @@ class RasterTileSource extends Evented implements Source {
 
     bounds: ?[number, number, number, number];
     tileBounds: TileBounds;
-    state: 'unloaded' | 'loaded' | 'errored';
     roundZoom: boolean;
     dispatcher: Dispatcher;
     map: Map;
@@ -89,10 +88,10 @@ class RasterTileSource extends Evented implements Source {
             delete tile.request;
 
             if (tile.aborted) {
-                this.state = 'unloaded';
+                tile.state = 'unloaded';
                 callback(null);
             } else if (err) {
-                this.state = 'errored';
+                tile.state = 'errored';
                 callback(err);
             } else if (img) {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
