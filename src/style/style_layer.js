@@ -333,8 +333,8 @@ const subclasses = {
     'fill-extrusion': require('./style_layer/fill_extrusion_style_layer'),
     'line': require('./style_layer/line_style_layer'),
     'symbol': require('./style_layer/symbol_style_layer'),
-    'background': StyleLayer,
-    'raster': StyleLayer
+    'background': require('./style_layer/background_style_layer'),
+    'raster': require('./style_layer/raster_style_layer')
 };
 
 StyleLayer.create = function(layer: LayerSpecification) {

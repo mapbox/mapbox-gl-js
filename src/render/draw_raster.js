@@ -5,13 +5,14 @@ const ImageSource = require('../source/image_source');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type StyleLayer from '../style/style_layer';
+import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type TileCoord from '../source/tile_coord';
 
 module.exports = drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
+    if (layer.isOpacityZero(painter.transform.zoom)) return;
 
     const gl = painter.gl;
     const source = sourceCache.getSource();

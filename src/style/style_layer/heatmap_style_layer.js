@@ -18,6 +18,10 @@ class HeatmapStyleLayer extends StyleLayer {
         return new HeatmapBucket(options);
     }
 
+    isOpacityZero(zoom: number) {
+        return this.getPaintValue('heatmap-opacity', { zoom: zoom }) === 0;
+    }
+
     constructor(layer: LayerSpecification) {
         super(layer);
         this.colorRampData = new Uint8Array(256 * 4);

@@ -66,6 +66,11 @@ class FillStyleLayer extends StyleLayer {
         return new FillBucket(parameters);
     }
 
+    isOpacityZero(zoom: number) {
+        return this.isPaintValueFeatureConstant('fill-opacity') &&
+            this.getPaintValue('fill-opacity', { zoom: zoom }) === 0;
+    }
+
     queryRadius(): number {
         return translateDistance(this.paint['fill-translate']);
     }

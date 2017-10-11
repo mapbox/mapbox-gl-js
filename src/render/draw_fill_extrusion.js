@@ -15,6 +15,8 @@ import type TileCoord from '../source/tile_coord';
 module.exports = draw;
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<TileCoord>) {
+    if (layer.isOpacityZero(painter.transform.zoom)) return;
+
     if (painter.renderPass === '3d') {
         const gl = painter.gl;
 

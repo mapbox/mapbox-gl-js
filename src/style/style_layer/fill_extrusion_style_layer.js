@@ -23,6 +23,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new FillExtrusionBucket(parameters);
     }
 
+    isOpacityZero(zoom: number) {
+        return this.getPaintValue('fill-extrusion-opacity', { zoom: zoom }) === 0;
+    }
+
     queryRadius(): number {
         return translateDistance(this.paint['fill-extrusion-translate']);
     }

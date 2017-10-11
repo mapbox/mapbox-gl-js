@@ -13,6 +13,15 @@ class CircleStyleLayer extends StyleLayer {
         return new CircleBucket(parameters);
     }
 
+    isOpacityZero(zoom: number) {
+        return this.isPaintValueFeatureConstant('circle-opacity') &&
+            this.getPaintValue('circle-opacity', { zoom: zoom }) === 0 &&
+            (this.isPaintValueFeatureConstant('circle-stroke-width') &&
+                this.getPaintValue('circle-stroke-width', { zoom: zoom }) === 0) ||
+            (this.isPaintValueFeatureConstant('circle-stroke-opacity') &&
+                this.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0);
+    }
+
     queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket = (bucket: any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
