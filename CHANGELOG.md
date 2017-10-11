@@ -1,3 +1,60 @@
+# 0.41.0 (October 11, 2017)
+
+### :warning: Breaking changes
+- Removed support for paint classes [#3643](https://github.com/mapbox/mapbox-gl-js/pull/3643). Instead, use runtime styling APIs or `Map#setStyle`.
+- Reverted the `canvas` source `contextType` option added in 0.40.0 [#5449](https://github.com/mapbox/mapbox-gl-js/pull/5449)
+
+### :bug: Bug fixes
+- Clip raster tiles to avoid tile overlap [#5105](https://github.com/mapbox/mapbox-gl-js/pull/5105)
+- Guard for offset edgecase in flyTo [#5331](https://github.com/mapbox/mapbox-gl-js/pull/5331)
+- Ensure the map is updated after the sprite loads [#5367](https://github.com/mapbox/mapbox-gl-js/pull/5367)
+- Limit animation duration on flyTo with maxDuration option [#5349](https://github.com/mapbox/mapbox-gl-js/pull/5349)
+- Make double-tapping on make zoom in by a factor of 2 on iOS [#5274](https://github.com/mapbox/mapbox-gl-js/pull/5274)
+- Fix rendering error with translucent raster tiles [#5380](https://github.com/mapbox/mapbox-gl-js/pull/5380)
+- Error if invalid 'before' argument is passed to Map#addLayer [#5401](https://github.com/mapbox/mapbox-gl-js/pull/5401)
+- Revert CanvasSource intermediary image buffer fix [#5449](https://github.com/mapbox/mapbox-gl-js/pull/5449)
+
+### :sparkles: Features and improvements
+- Use setData operation when diffing geojson sources [#5332](https://github.com/mapbox/mapbox-gl-js/pull/5332)
+- Return early from draw calls on layers where opacity=0 [#5429](https://github.com/mapbox/mapbox-gl-js/pull/5429)
+- A [heatmap](https://www.mapbox.com/mapbox-gl-js/example/heatmap-layer/) layer type is now available. This layer type allows you to visualize and explore massive datasets of points, reflecting the shape and density of data well while also looking beautiful. See [the blog post](https://blog.mapbox.com/sneak-peek-at-heatmaps-in-mapbox-gl-73b41d4b16ae) for further details.
+  ![](https://cdn-images-1.medium.com/max/1600/1*Dme5MAgdA3pYdTRHUQzvLw.png)
+- The value of a style property or filter can now be an [expression](http://www.mapbox.com/mapbox-gl-js/style-spec/#types-expression). Expressions are a way of doing data-driven and zoom-driven styling that provides more flexibility and control, and unifies property and filter syntax.
+
+  Previously, data-driven and zoom-driven styling relied on stop functions: you specify a feature property and a set of input-output pairs that essentially define a “scale” for how the style should be calculated based on the feature property. For example, the following would set circle colors on a green-to-red scale based on the value of `feature.properties.population`:
+
+  ```
+  "circle-color": {
+    "property": "population",
+    "stops": [
+      [0, "green"],
+      [1000000, "red"]
+    ]
+  }
+  ```
+
+  This approach is powerful, but we’ve seen a number of use cases that stop functions don't satisfy. Expressions provide the flexibility to address use cases like these:
+
+  **Multiple feature properties**
+  Using more than one feature property to calculate a given style property. E.g., styling land polygon colors based on both `feature.properties.land_use_category` and `feature.properties.elevation`.
+
+  **Arithmetic**
+  For some use cases it’s necessary to do some arithmetic on the input data. One example is sizing circles to represent quantitative data. Since a circle’s visual size on the screen is really its area (and A=πr^2), the right way to scale `circle-radius` is `square_root(feature.properties.input_data_value)`. Another example is unit conversions: feature data may include properties that are in some particular unit. Displaying such data in units appropriate to, say, a user’s preference or location, requires being able to do simple arithmetic (multiplication, division) on whatever value is in the data.
+
+  **Conditional logic**
+  This is a big one: basic if-then logic, for example to decide exactly what text to display for a label based on which properties are available in the feature or even the length of the name. A key example of this is properly supporting bilingual labels, where we have to decide whether to show local + English, local-only, or English-only, based on the data that’s available for each feature.
+
+  **String manipulation**
+  More dynamic control over label text with things like uppercase/lowercase/title case transforms, localized number formatting, etc. Without this functionality, crafting and iterating on label content entails a large data-prep burden.
+
+  **Filters**
+  Style layer filters had similar limitations. Moreover, they use a different syntax, even though their job is very similar to that of data-driven styling functions: filters say, “here’s how to look at a feature and decide whether to draw it,” and data-driven style functions say, “here’s how to look at a feature and decide how to size/color/place it.” Expressions provide a unified syntax for defining parts of a style that need to be calculated dynamically from feature data.
+
+  For information on the syntax and behavior of expressions, please see [the documentation](http://www.mapbox.com/mapbox-gl-js/style-spec/#types-expression).
+
+### :wrench: Development workflow improvements
+- Made the performance benchmarking runner more informative and statistically robust
+
 ## 0.40.1 (September 18, 2017)
 
 ### :bug: Bug fixes
