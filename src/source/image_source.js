@@ -204,7 +204,7 @@ class ImageSource extends Evented implements Source {
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         } else if (resize) {
             this.texture.update(image);
-        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData) {
+        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData || image instanceof window.HTMLCanvasElement) {
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }
