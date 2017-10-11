@@ -48,9 +48,7 @@ class SymbolStyleLayer extends StyleLayer {
         return (new SymbolBucket((parameters: any)): any);
     }
 
-    isOpacityZero(zoom: number, property?: string) {
-        if (!property) throw new Error('Must specify which symbol opacity property to check for zero opacity.');
-
+    isOpacityZero(zoom: number, property: string) {
         return this.isPaintValueFeatureConstant(property) &&
             this.getPaintValue(property, { zoom: zoom }) === 0;
     }

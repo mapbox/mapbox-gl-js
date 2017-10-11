@@ -4,11 +4,11 @@ const pattern = require('./pattern');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type StyleLayer from '../style/style_layer';
+import type BackgroundStyleLayer from '../style/style_layer/background_style_layer';
 
 module.exports = drawBackground;
 
-function drawBackground(painter: Painter, sourceCache: SourceCache, layer: StyleLayer) {
+function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer) {
     if (layer.isOpacityZero(painter.transform.zoom)) return;
 
     const gl = painter.gl;

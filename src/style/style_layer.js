@@ -41,7 +41,6 @@ class StyleLayer extends Evented {
     _layoutFunctions: {[string]: boolean};
 
     +createBucket: (parameters: BucketParameters) => Bucket;
-    +isOpacityZero: (zoom: number, property?: string) => boolean;
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
                               feature: VectorTileFeature,
