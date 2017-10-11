@@ -25,6 +25,7 @@ const groupedExpressions = [
     'Zoom',
     'Heatmap'
 ].map(group => ({
+    slug: group.toLowerCase().replace(/[^a-zA-Z]+/g, '-'),
     name: group,
     expressions: expressionGroups[group]
         .sort((a, b) => a.localeCompare(b))
