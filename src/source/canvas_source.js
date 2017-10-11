@@ -98,7 +98,6 @@ class CanvasSource extends ImageSource {
     }
 
     prepare() {
-        console.log('prepare');
         if (this._hasInvalidDimensions()) return;
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
