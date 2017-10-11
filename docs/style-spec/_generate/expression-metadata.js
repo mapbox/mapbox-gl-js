@@ -10,58 +10,58 @@ require('../../../src/style-spec/expression/definitions');
 
 const types = {
     string: [{
-        type: 'String',
-        parameters: ['Value']
+        type: 'string',
+        parameters: ['value']
     }, {
-        type: 'String',
-        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+        type: 'string',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
     number: [{
-        type: 'Number',
-        parameters: ['Value']
+        type: 'number',
+        parameters: ['value']
     }, {
-        type: 'Number',
-        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+        type: 'number',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
     boolean: [{
-        type: 'Boolean',
-        parameters: ['Value']
+        type: 'boolean',
+        parameters: ['value']
     }, {
-        type: 'Boolean',
-        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+        type: 'boolean',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
     array: [{
-        type: 'Array',
-        parameters: ['Value'],
+        type: 'array',
+        parameters: ['value'],
     }, {
-        type: 'Array<type>',
+        type: 'array<type>',
         parameters: [
-            {name: 'type', type: '"String" | "Number" | "Boolean"'},
-            'Value'
+            'type: "string" | "number" | "boolean"',
+            'value'
         ],
     }, {
-        type: 'Array<type, N>',
+        type: 'array<type, N>',
         parameters: [
-            {name: 'type', type: '"String" | "Number" | "Boolean"'},
-            {name: 'N', type: 'Number (literal)'},
-            'Value'
+            'type: "string" | "number" | "boolean"',
+            'N: number (literal)',
+            'value'
         ]
     }],
     'to-number': [{
-        type: 'Number',
-        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+        type: 'number',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
     'to-color': [{
-        type: 'Color',
-        parameters: ['Value', { repeat: [ {name: 'fallback', type: 'Value'} ] }]
+        type: 'color',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
     at: [{
         type: 'T',
-        parameters: ['Number', 'Array']
+        parameters: ['number', 'array']
     }],
     case: [{
         type: 'T',
-        parameters: [{ repeat: ['Boolean', 'T'] }, 'T']
+        parameters: [{ repeat: ['condition: boolean', 'output: T'] }, 'default: T']
     }],
     coalesce: [{
         type: 'T',
@@ -70,25 +70,27 @@ const types = {
     curve: [{
         type: 'T',
         parameters: [
-            {name: 'input', type: 'Number'},
+            'input: value',
             '["step"]',
-            'T',
-            {repeat: ['Number', 'T']}
+            'stop_output_0: T',
+            'stop_input_1: number, stop_output_1: T',
+            'stop_input_n: number, stop_output_n: T, ...'
         ]
     }, {
-        type: 'T: Number, ',
+        type: 'T (number, array<number>, or Color)',
         parameters: [
-            {name: 'input', type: 'Number'},
-            {name: 'interpolation', type: '["step"] | ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]'},
-            {repeat: ['Number', 'T']}
+            'input: number',
+            'interpolation: ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
+            'stop_input_1: number, stop_output_1: T',
+            'stop_input_n: number, stop_output_n: T, ...'
         ]
     }],
     let: [{
         type: 'T',
-        parameters: [{ repeat: ['String (alphanumeric literal)', 'any']}, 'T']
+        parameters: [{ repeat: ['string (alphanumeric literal)', 'any']}, 'T']
     }],
     literal: [{
-        type: 'Array<T, N>',
+        type: 'array<T, N>',
         parameters: ['[...] (JSON array literal)']
     }, {
         type: 'Object',
@@ -97,9 +99,10 @@ const types = {
     match: [{
         type: 'U',
         parameters: [
-            {name: 'input', type: 'T: Number (integer literal) | String (literal)'},
-            {repeat: ['T | [T, T, ...]', 'U']},
-            'U'
+            'input: T (number or string)',
+            'label_1: T | [T, T, ...], output_1: U',
+            'label_n: T | [T, T, ...], output_n: U, ...',
+            'default: U'
         ]
     }],
     var: [{
