@@ -18,7 +18,6 @@ function createSource(options) {
     options = util.extend({
         canvas: 'id',
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
-        contextType: '2d'
     }, options);
 
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
