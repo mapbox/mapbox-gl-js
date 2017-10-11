@@ -97,12 +97,34 @@ class CanvasSource extends ImageSource {
         this.pause();
     }
 
+    /**
+     * Sets the canvas's coordinates and re-renders the map.
+     *
+     * @method setCoordinates
+     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
+     *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
+     *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.
+     *   They do not have to represent a rectangle.
+     * @returns {CanvasSource} this
+     */
+    // setCoordinates inherited from ImageSource
+
     prepare() {
+        let resize = false;
+        if (this.canvas.width !== this.width) {
+            this.width = this.canvas.width;
+            resize = true;
+        }
+        if (this.canvas.height !== this.height) {
+            this.height = this.canvas.height;
+            resize = true;
+        }
+
         if (this._hasInvalidDimensions()) return;
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
 
-        this._prepareImage(this.map.painter.gl, this.canvas, true);
+        this._prepareImage(this.map.painter.gl, this.canvas, resize);
     }
 
     serialize(): Object {
