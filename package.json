@@ -1,5 +1,5 @@
 {
-  "name": "mapbox-gl",
+  "name": "@3drobotics/mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "0.40.1",
   "main": "dist/mapbox-gl.js",
