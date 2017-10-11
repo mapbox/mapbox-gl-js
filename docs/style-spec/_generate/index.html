@@ -695,14 +695,13 @@ navigation:
         <code>paint</code> properties.
       </p>
       <p>
-        <em>Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the rendering process and
-        define how data for that layer is passed to the GPU. For efficiency, a layer can share layout properties with
-        another layer via the <code>"ref"</code> layer property, and should do so where possible. This will decrease
-        processing time and allow the two layers will share GPU memory and other resources associated with the layer.
+        <em>Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the
+          rendering process and define how data for that layer is passed to the GPU. Changes to a layout property
+          require an asynchronous "layout" step.
       </p>
       <p>
-        <em>Paint properties</em> are applied later in the rendering process. A layer that shares layout properties with another
-        layer can have independent paint properties. Paint properties appear in the layer's <code>"paint"</code> object.
+        <em>Paint properties</em> are applied later in the rendering process. Paint properties appear in the layer's
+          <code>"paint"</code> object. Changes to a paint property are cheap and happen synchronously.
       </p>
       <p class='space-bottom4 quiet small'>Key:
         <a class='icon smooth-ramp quiet micro space-right inline' href='#types-expression-curve' title='Supports all interpolation types'>supports all interpolation types</a>

@@ -405,10 +405,6 @@
       "type": "*",
       "doc": "Arbitrary properties useful to track with the layer, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
-    "ref": {
-      "type": "string",
-      "doc": "References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `layout` properties from. This allows the layers to share processing and be more efficient."
-    },
     "source": {
       "type": "string",
       "doc": "Name of a source description to be used for this layer."
