@@ -12,7 +12,10 @@ test('abortTile', (t) => {
             source: 'source',
             uid: 0,
             request: { url: 'http://localhost:2900/abort' }
-        }, t.fail);
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
+        });
 
         source.abortTile({
             source: 'source',

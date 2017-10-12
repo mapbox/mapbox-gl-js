@@ -114,7 +114,7 @@ class VectorTileSource extends Evented implements Source {
 
         function done(err, data) {
             if (tile.aborted)
-                return;
+                return callback(null);
 
             if (err) {
                 return callback(err);
