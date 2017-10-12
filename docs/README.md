@@ -18,14 +18,15 @@ API documentation is written as [JSDoc comments](http://usejsdoc.org/) and proce
 
 ## Writing Examples
 
-Examples are written as Jekyll posts in `docs/_posts/examples`. The Jekyll front matter should include the following items:
+Examples are written as [Batfish](https://github.com/mapbox/batfish) pages in `docs/pages/example`. Each example requires two files: an `.html` file containing the source
+code for the example, and a `.js` file containing example boilerplate and front matter. The front matter should include the following items:
 
-* `layout`: `example`
-* `category`: `example`
 * `title`: A short title for the example in **sentence case** as a **verb phrase**
 * `description`: A one sentence description of the example
+* `tags`: An array of tags for the example, which determine the sections it is listed in in the sidebar navigation
+* `pathname`: The relative path of the example, including leading `/mapbox-gl-js/example/` path
 
-In the post body, write the HTML and JavaScript constituting the example.
+In the `.html` file, write the HTML and JavaScript constituting the example.
 
 * Use **4 space indentation**. Exception: do not add an initial level of indentation to code within `<script>` tags (it should start flush left).
 * Do **not** include an access token in the example code. The access token will be inserted automatically by the template, using the current logged in user's default public token, or a placeholder `<insert token here>` string if the user is not logged in.
@@ -39,26 +40,7 @@ To start a documentation server locally run
 npm run start-docs
 ```
 
-You can view the documentation at
-
-```bash
-open http://127.0.0.1:4000/mapbox-gl-js/
-```
-
-### Troubleshooting
-
-Ensure you have the right version of all dependencies
-
-```bash
-npm install
-```
-
-Ensure you are running Jekyll version 3.2.x
-
-```bash
-jekyll -v
- > jekyll 3.2.1
-```
+The command will print the URL you can use to view the documentation.
 
 ## Committing and Publishing Documentation
 

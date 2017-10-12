@@ -1,6 +1,4 @@
-/docs/api
-/docs/style-spec/index.html
-/_site
+/docs/components/api.json
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
 *.js.map
@@ -17,3 +15,5 @@ test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/diff.png
 .eslintcache
+_batfish_site
+_batfish_tmp
