@@ -204,8 +204,9 @@ class GeoJSONSource extends Evented implements Source {
         tile.workerID = this.dispatcher.send(message, params, (err, data) => {
             tile.unloadVectorData();
 
-            if (tile.aborted)
-                return;
+            if (tile.aborted) {
+                return callback(null);
+            }
 
             if (err) {
                 return callback(err);
