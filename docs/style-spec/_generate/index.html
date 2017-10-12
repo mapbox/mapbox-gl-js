@@ -876,22 +876,22 @@ navigation:
       </tbody>
       </table>
 
-      <p>A <a id="property-expression" class="anchor"></a><strong>property expression</strong> is any expression defined using an expression that includes a reference to feature property data. Property expressions allow the appearance of a feature to change with its properties. They can be used to visually differentate types of features within the same layer or create data visualizations. Note that support for property expressions is not available across all properties and platforms at this time.</p>
+      <p>A <a id="property-expression" class="anchor"></a><strong>property expression</strong> is any expression defined using an expression that includes a reference to feature property data. Property expressions allow the appearance of a feature to change with its properties. They can be used to visually differentate types of features within the same layer or create data visualizations.</p>
 
       <h4>Example: a property expression</h4>
       <div class='col12 space-bottom'>
-        {% highlight js %}
-      {
-      "circle-color": [
+{% highlight js %}
+{
+    "circle-color": [
         'rgb',
         // red is higher when feature.properties.temperature is higher
         ["get", "temperature"],
         0,
         // blue is higher when feature.properties.temperature is lower
         ["-", 100, ["get", "temperature"]]
-      ]
-      }
-      {% endhighlight %}
+    ]
+}
+{% endhighlight %}
       </div>
 
       <p>A <a id="zoom-expression" class="anchor"></a><strong>zoom expression</strong> is any expression defined using an expression that includes <code>["zoom"]</code>.  Such expressions allow the the appearance of a layer to change with the map’s zoom level. Zoom expressions can be used to create the illusion of depth and control data density.</p>
@@ -899,62 +899,60 @@ navigation:
       <p>Any zoom expression used in a layout or paint property must be of the following form (see <a href="#types-expression-curve">curves</a> for more details):</p>
 
       <div class='col12 space-bottom'>
-      {% highlight js %}
-      [ "curve", interpolation, ["zoom"], ... ]
-      {% endhighlight %}
+{% highlight js %}
+[ "curve", interpolation, ["zoom"], ... ]
+{% endhighlight %}
       </div>
 
       <p>Or:</p>
 
       <div class='col12 space-bottom'>
-      {% highlight js %}
-      [
-      "let",
-      ... variable bindings...,
-      [ "curve", interpolation, ["zoom"], ... ]
-      ]
-      {% endhighlight %}
+{% highlight js %}
+[
+    "let",
+    ... variable bindings...,
+    [ "curve", interpolation, ["zoom"], ... ]
+]
+{% endhighlight %}
       </div>
 
       <p>That is, in layout or paint properties, <code>["zoom"]</code> may only appear as the input to an outer <a href="#types-expression-curve">curve</a>, and may not appear anywhere else in the expression.</p>
 
       <h4>Example: a zoom-only expression</h4>
       <div class='col12 space-bottom'>
-      {% highlight js %}
-      {
-      "circle-radius": {
-        "expression": [
-          "curve", "linear", ["zoom"],
-          // zoom is 5 (or less) -> circle radius will be 1px
-          // zoom is 10 (or greater) -> circle radius will be 2px
-          5, 1, 10, 2
-        ]
-      }
-      }
-      {% endhighlight %}
+{% highlight js %}
+{
+    "circle-radius": [
+        "curve", ["linear"], ["zoom"],
+        // zoom is 5 (or less) -> circle radius will be 1px
+        5, 1,
+        // zoom is 10 (or greater) -> circle radius will be 2px
+        10, 2
+    ]
+}
+{% endhighlight %}
       </div>
 
       <h4>Example: a zoom-and-property expression</h4>
       <p>Combining zoom and property expressions allows a layer's or appearance to change with both the zoom level <em>and</em> each feature's properties.</p>
 
       <div class='col12 space-bottom'>
-      {% highlight js %}
-      {
-      "circle-radius": [
-        "curve", "linear", ["zoom"],
-
+{% highlight js %}
+{
+    "circle-radius": [
+        "curve", ["linear"], ["zoom"],
         // zoom is 0 and "rating" is 0 -> circle radius will be 0px
         // zoom is 0 and "rating" is 5 -> circle radius will be 5px
-        0, ["number", [ "get", "rating" ],
-        // zoom is 20 and "rating" is 0 -> circle radius will be 4 * 0 = 0px
-        // zoom is 20 and "rating" is 5 -> circle radius will be 4 * 5 = 20px
-        10, [ "*", 4, [ "number", [ "get", ["properties"] ] ] ]
-      ]
-      }
-      {% endhighlight %}
+        0, ["get", "rating"],
+        // zoom is 10 and "rating" is 0 -> circle radius will be 4 * 0 = 0px
+        // zoom is 10 and "rating" is 5 -> circle radius will be 4 * 5 = 20px
+        10, ["*", 4, ["get", "rating"]]
+    ]
+}
+{% endhighlight %}
       </div>
 
-      <p>There is an important difference between the way that zoom functions render for <em>layout</em> and <em>paint</em> properties. Paint properties are continuously re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the function will be re-evaluated according to the function, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom function, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
+      <p>There is an important difference between <em>layout</em> and <em>paint</em> properties in the way that expressions are evaluated. Paint properties are re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the expression will be re-evaluated, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom expression, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
 
       <div class='keyline-all fill-white'>
       <% for (var group of groupedExpressions) { %>
