@@ -36,10 +36,15 @@ class Dispatcher {
      * Broadcast a message to all Workers.
      */
     broadcast(type: string, data: mixed, cb?: Function) {
-        cb = cb || function () {};
-        util.asyncAll(this.actors, (actor, done) => {
-            actor.send(type, data, done);
-        }, cb);
+        if (cb) {
+            util.asyncAll(this.actors, (actor, done) => {
+                actor.send(type, data, done);
+            }, cb);
+        } else {
+            this.actors.forEach(actor => {
+                actor.send(type, data);
+            });
+        }
     }
 
     /**
