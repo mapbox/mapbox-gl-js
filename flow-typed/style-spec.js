@@ -78,10 +78,10 @@ declare type TileSourceSpecification = {
     "type": "vector" | "raster",
     "url"?: string,
     "tiles"?: Array<string>,
+    "bounds"?: [number, number, number, number],
     "minzoom"?: number,
     "maxzoom"?: number,
-    "tileSize"?: number,
-    "bounds"?: [number, number, number, number]
+    "tileSize"?: number
 }
 
 declare type GeojsonSourceSpecification = {|
@@ -111,8 +111,7 @@ declare type CanvasSourceSpecification = {|
     "type": "canvas",
     "coordinates": [[number, number], [number, number], [number, number], [number, number]],
     "animate"?: boolean,
-    "canvas": string,
-    "contextType": "2d" | "webgl" | "experimental-webgl" | "webgl2"
+    "canvas": string
 |}
 
 declare type SourceSpecification =
@@ -216,6 +215,7 @@ declare type SymbolLayerSpecification = {|
         "icon-padding"?: PropertyValueSpecification<number>,
         "icon-keep-upright"?: PropertyValueSpecification<boolean>,
         "icon-offset"?: DataDrivenPropertyValueSpecification<[number, number]>,
+        "icon-anchor"?: DataDrivenPropertyValueSpecification<"center" | "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right">,
         "icon-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "text-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "text-rotation-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
@@ -261,6 +261,27 @@ declare type CircleLayerSpecification = {|
         "circle-stroke-width"?: DataDrivenPropertyValueSpecification<number>,
         "circle-stroke-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "circle-stroke-opacity"?: DataDrivenPropertyValueSpecification<number>
+    |},
+    "paint"?: {|
+        "visibility"?: "visible" | "none"
+    |}
+|}
+
+declare type HeatmapLayerSpecification = {|
+    "id": string,
+    "type": "heatmap",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "heatmap-radius"?: PropertyValueSpecification<number>,
+        "heatmap-weight"?: DataDrivenPropertyValueSpecification<number>,
+        "heatmap-intensity"?: PropertyValueSpecification<number>,
+        "heatmap-color"?: PropertyValueSpecification<ColorSpecification>,
+        "heatmap-opacity"?: PropertyValueSpecification<number>
     |},
     "paint"?: {|
         "visibility"?: "visible" | "none"
@@ -334,6 +355,7 @@ declare type LayerSpecification =
     | LineLayerSpecification
     | SymbolLayerSpecification
     | CircleLayerSpecification
+    | HeatmapLayerSpecification
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
     | BackgroundLayerSpecification;
