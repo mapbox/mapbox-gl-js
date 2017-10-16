@@ -37,6 +37,16 @@ class Level {
     }
 }
 
+// DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
+// data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
+// loaded from a image tile, we decode the pixel values using the mapbox terrain-rgb tileset decoding formula, but we store the
+// elevation data in a Level as an Int32 value. we add 65536 (2^16) to eliminate negative values and enable the use of
+// integer overflow when creating the texture used in the hillshadePrepare step.
+
+// DEMData also handles the backfilling of data from a tile's neighboring tiles. This is necessary because we use a pixel's 8
+// surrounding pixel values to compute the slope at that pixel, and we cannot accurately calculate the slope at pixels on a
+// tile's edge without backfilling from neighboring tiles.
+
 class DEMData {
     uid: string;
     scale: number;
@@ -68,7 +78,7 @@ class DEMData {
             for (let x = 0; x < data.width; x++) {
                 const i = y * data.width + x;
                 const j = i * 4;
-                // decoding
+                // decoding per https://blog.mapbox.com/global-elevation-data-6689f1d0ba65
                 level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
             }
         }

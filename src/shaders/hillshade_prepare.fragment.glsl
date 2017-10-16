@@ -19,6 +19,22 @@ float getElevation(vec2 coord, float bias) {
 
 void main() {
     vec2 epsilon = 1.0 / u_dimension;
+
+    // queried pixels:
+    // +-----------+
+    // |   |   |   |
+    // | a | b | c |
+    // |   |   |   |
+    // +-----------+
+    // |   |   |   |
+    // | d | e | f |
+    // |   |   |   |
+    // +-----------+
+    // |   |   |   |
+    // | g | h | i |
+    // |   |   |   |
+    // +-----------+
+
     float a = getElevation(v_pos + vec2(-epsilon.x, -epsilon.y), 0.0);
     float b = getElevation(v_pos + vec2(0, -epsilon.y), 0.0);
     float c = getElevation(v_pos + vec2(epsilon.x, -epsilon.y), 0.0);
