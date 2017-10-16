@@ -41,10 +41,10 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         function imageLoaded(err, img) {
             delete tile.request;
             if (tile.aborted) {
-                this.state = 'unloaded';
+                tile.state = 'unloaded';
                 callback(null);
             } else if (err) {
-                this.state = 'errored';
+                tile.state = 'errored';
                 callback(err);
             } else if (img) {
                 if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
@@ -67,7 +67,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
         function done(err, data) {
             if (err) {
-                this.state = 'errored';
+                tile.state = 'errored';
                 callback(err);
             }
 
