@@ -181,7 +181,7 @@ test('CollisionFeature', (t) => {
     function pluckDistancesToAnchor(cf) {
         const result = [];
         for (let i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
-            result.push(collisionBoxArray.get(i).distanceToAnchor);
+            result.push(collisionBoxArray.get(i).signedDistanceFromAnchor);
         }
         return result;
     }

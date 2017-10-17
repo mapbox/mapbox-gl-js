@@ -638,7 +638,6 @@ class SymbolBucket implements Bucket {
             addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
 
             addDynamicAttributes(dynamicLayoutVertexArray, labelAnchor, 0);
-            arrays.opacityVertexArray.emplaceBack(0);
 
             indexArray.emplaceBack(index, index + 1, index + 2);
             indexArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -743,7 +742,7 @@ class SymbolBucket implements Bucket {
                     collisionArrays.textCircles = [];
                 }
                 const used = 1; // May be updated at collision detection time
-                collisionArrays.textCircles.push(box.anchorPointX, box.anchorPointY, box.radius, box.distanceToAnchor, used);
+                collisionArrays.textCircles.push(box.anchorPointX, box.anchorPointY, box.radius, box.signedDistanceFromAnchor, used);
             }
         }
         for (let k = iconStartIndex; k < iconEndIndex; k++) {
