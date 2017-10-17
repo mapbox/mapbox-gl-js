@@ -343,7 +343,7 @@ class SymbolBuffers {
  *    and icons needed (by this bucket and any others). When glyphs and icons
  *    have been received, the WorkerTile creates a CollisionIndex and invokes:
  *
- * 3. PrepareSymbols#prepare(bucket, stacks, icons) perform texts shaping and
+ * 3. performSymbolLayout(bucket, stacks, icons) perform texts shaping and
  *    layout on a Symbol Bucket. This step populates:
  *      `this.symbolInstances`: metadata on generated symbols
  *      `this.collisionBoxArray`: collision data for use by foreground
@@ -353,7 +353,7 @@ class SymbolBuffers {
  *      `this.collisionCircle`: Debug SymbolBuffers for collision circles
  *    The results are sent to the foreground for rendering
  *
- * 4. PlaceSymbols#place(bucket, collisionIndex): is run on the foreground,
+ * 4. performSymbolPlacement(bucket, collisionIndex) is run on the foreground,
  *    and uses the CollisionIndex along with current camera settings to determine
  *    which symbols can actually show on the map. Collided symbols are hidden
  *    using a dynamic "OpacityVertexArray".

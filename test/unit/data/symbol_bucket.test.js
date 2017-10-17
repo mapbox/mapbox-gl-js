@@ -11,8 +11,8 @@ const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
 const util = require('../../../src/util/util');
 const featureFilter = require('../../../src/style-spec/feature_filter');
-const PrepareSymbols = require('../../../src/symbol/prepare_symbols');
-const PlaceSymbols = require('../../../src/symbol/place_symbols');
+const {performSymbolLayout} = require('../../../src/symbol/symbol_layout');
+const {performSymbolPlacement} = require('../../../src/symbol/symbol_placement');
 const Transform = require('../../../src/geo/transform');
 
 const mat4 = require('@mapbox/gl-matrix').mat4;
@@ -64,8 +64,8 @@ test('SymbolBucket', (t) => {
     // add feature from bucket A
     const a = collision.grid.keysLength();
     bucketA.populate([{feature}], options);
-    PrepareSymbols.prepare(bucketA, stacks, {});
-    PlaceSymbols.place(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolLayout(bucketA, stacks, {});
+    performSymbolPlacement(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
 
     const b = collision.grid.keysLength();
     t.notEqual(a, b, 'places feature');
@@ -73,8 +73,8 @@ test('SymbolBucket', (t) => {
     // add same feature from bucket B
     const a2 = collision.grid.keysLength();
     bucketB.populate([{feature}], options);
-    PrepareSymbols.prepare(bucketB, stacks, {});
-    PlaceSymbols.place(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolLayout(bucketB, stacks, {});
+    performSymbolPlacement(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
     const b2 = collision.grid.keysLength();
     t.equal(b2, a2, 'detects collision and does not place feature');
     t.end();
@@ -89,7 +89,7 @@ test('SymbolBucket integer overflow', (t) => {
 
     bucket.populate([{feature}], options);
     const fakeGlyph = { rect: { w: 10, h: 10 }, metrics: { left: 10, top: 10, advance: 10 } };
-    PrepareSymbols.prepare(bucket, stacks, { 'Test': {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph} });
+    performSymbolLayout(bucket, stacks, { 'Test': {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph} });
 
     t.ok(util.warnOnce.calledOnce);
     t.ok(util.warnOnce.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
@@ -101,9 +101,9 @@ test('SymbolBucket redo placement', (t) => {
     const options = {iconDependencies: {}, glyphDependencies: {}};
 
     bucket.populate([{feature}], options);
-    PrepareSymbols.prepare(bucket, stacks, {});
-    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
-    PlaceSymbols.place(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolLayout(bucket, stacks, {});
+    performSymbolPlacement(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolPlacement(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
 
     t.end();
 });
