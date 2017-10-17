@@ -44,7 +44,7 @@
     "line": 103
   },
   {
-    "message": "layers[12].filter: Expected arguments of type (string) | (string, object), but found (string, string) instead.",
+    "message": "layers[12].filter[2]: Expected object but found string instead.",
     "line": 131
   },
   {
