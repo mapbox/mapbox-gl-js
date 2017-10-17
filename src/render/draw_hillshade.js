@@ -113,9 +113,8 @@ function prepareHillshade(painter, tile) {
     // base 10 - 0, 1, 6, 236 (this order is reversed in the resulting array via the overflow.
     // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
-    if (tile.dem && tile.dem.data) {
+    if (tile.dem && tile.dem.level) {
         const pixelData = tile.dem.getPixels();
-
         gl.activeTexture(gl.TEXTURE1);
 
         // if UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to true prior to drawHillshade being called
@@ -127,10 +126,10 @@ function prepareHillshade(painter, tile) {
         tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
         if (tile.demTexture) {
             const demTexture = tile.demTexture;
-            demTexture.update(pixelData[0], false);
+            demTexture.update(pixelData, false);
             demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         } else {
-            tile.demTexture = new Texture(gl, pixelData[0], gl.RGBA, false);
+            tile.demTexture = new Texture(gl, pixelData, gl.RGBA, false);
             tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 

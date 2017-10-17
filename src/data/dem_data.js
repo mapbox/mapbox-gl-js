@@ -5,23 +5,22 @@ const util = require('../util/util');
 export type SerializedDEMData = {
     uid: string,
     scale: number,
-    levels: Array<ArrayBuffer>
+    dim: number,
+    level: ArrayBuffer
 };
 
 class Level {
-    width: number;
-    height: number;
+    dim: number;
     border: number;
     stride: number;
     data: Int32Array;
 
-    constructor(width: number, height: number, border: number, data: ?Int32Array) {
-        if (height <= 0 || width <= 0) throw new RangeError('Level must have positive height and width');
-        this.width = width;
-        this.height = height;
+    constructor(dim: number, border: number, data: ?Int32Array) {
+        if (dim <= 0) throw new RangeError('Level must have positive dimension');
+        this.dim = dim;
         this.border = border;
-        this.stride = this.width + 2 * this.border;
-        this.data = data || new Int32Array((this.width + 2 * this.border) * (this.height + 2 * this.border));
+        this.stride = this.dim + 2 * this.border;
+        this.data = data || new Int32Array((this.dim + 2 * this.border) * (this.dim + 2 * this.border));
     }
 
     set(x: number, y: number, value: number) {
@@ -33,7 +32,7 @@ class Level {
     }
 
     _idx(x: number, y: number) {
-        if (x < -this.border || x >= this.width + this.border ||  y < -this.border || y >= this.height + this.border) throw new RangeError('out of range source coordinates for DEM data');
+        if (x < -this.border || x >= this.dim + this.border ||  y < -this.border || y >= this.dim + this.border) throw new RangeError('out of range source coordinates for DEM data');
         return (y + this.border) * this.stride + (x + this.border);
     }
 }
@@ -51,27 +50,27 @@ class Level {
 class DEMData {
     uid: string;
     scale: number;
-    data: Array<Level>;
+    level: Level;
     loaded: boolean;
 
     static deserialize(serializedData: SerializedDEMData) {
-        const structdata = new Int32Array(serializedData.levels[0]);
-        const stride = Math.sqrt(structdata.length);
-        const data = [new Level(stride / 2, stride / 2, stride / 4, structdata)];
+        const structdata = new Int32Array(serializedData.level);
+        const data = new Level(serializedData.dim, serializedData.dim / 2, structdata);
         return new DEMData(serializedData.uid, serializedData.scale, data);
     }
 
-    constructor(uid: string, scale: ?number, data: ?Array<Level>) {
+    constructor(uid: string, scale: ?number, data: ?Level) {
         this.uid = uid;
         this.scale = scale || 1;
-        this.data = data ? data : [];
+        // if no data is provided, use a temporary empty level to satisfy gl
+        this.level = data || new Level(256, 512);
         this.loaded = !!data;
     }
 
     loadFromImage(data: RGBAImage) {
+        if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         // Build level 0
-        this.data = [new Level(data.width, data.height, data.width / 2)];
-        const level = this.data[0];
+        const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
 
         // unpack
@@ -106,67 +105,61 @@ class DEMData {
     }
 
     getPixels() {
-        return this.data.map((l)=> {
-            return RGBAImage.create({width: l.width + 2 * l.border, height: l.height + 2 * l.border}, new Uint8Array(l.data.buffer));
-        });
+        return RGBAImage.create({width: this.level.dim + 2 * this.level.border, height: this.level.dim + 2 * this.level.border}, new Uint8Array(this.level.data.buffer));
     }
 
     serialize(transferables?: Array<Transferable>) {
         const references = {
             uid: this.uid,
             scale: this.scale,
-            levels: []
+            dim: this.level.dim,
+            level: this.level.data.buffer
         };
 
 
-        if (transferables) transferables.push(this.data[0].data.buffer);
-        references.levels.push(this.data[0].data.buffer);
+        if (transferables) transferables.push(this.level.data.buffer);
         return references;
     }
 
     backfillBorder(borderTile: DEMData, dx: number, dy: number) {
-        for (let l = 0; l < this.data.length; l++) {
-            const t = this.data[l];
-            const o = borderTile.data[l];
+        const t = this.level;
+        const o = borderTile.level;
 
-            if (t.width !== o.width) throw new Error('level mismatch (width)');
-            if (t.height !== o.height) throw new Error('level mismatch (height)');
+        if (t.dim !== o.dim) throw new Error('level mismatch (dem dimension)');
 
+        let _xMin = dx * t.dim,
+            _xMax = dx * t.dim + t.dim,
+            _yMin = dy * t.dim,
+            _yMax = dy * t.dim + t.dim;
 
-            let _xMin = dx * t.width,
-                _xMax = dx * t.width + t.width,
-                _yMin = dy * t.height,
-                _yMax = dy * t.height + t.height;
+        switch (dx) {
+        case -1:
+            _xMin = _xMax - 1;
+            break;
+        case 1:
+            _xMax = _xMin + 1;
+            break;
+        }
 
-            switch (dx) {
-            case -1:
-                _xMin = _xMax - 1;
-                break;
-            case 1:
-                _xMax = _xMin + 1;
-                break;
-            }
+        switch (dy) {
+        case -1:
+            _yMin = _yMax - 1;
+            break;
+        case 1:
+            _yMax = _yMin + 1;
+            break;
+        }
 
-            switch (dy) {
-            case -1:
-                _yMin = _yMax - 1;
-                break;
-            case 1:
-                _yMax = _yMin + 1;
-                break;
-            }
+        const xMin = util.clamp(_xMin, -t.border, t.dim + t.border);
+        const xMax = util.clamp(_xMax, -t.border, t.dim + t.border);
+        const yMin = util.clamp(_yMin, -t.border, t.dim + t.border);
+        const yMax = util.clamp(_yMax, -t.border, t.dim + t.border);
 
-            const xMin = util.clamp(_xMin, -t.border, t.width + t.border);
-            const xMax = util.clamp(_xMax, -t.border, t.width + t.border);
-            const yMin = util.clamp(_yMin, -t.border, t.height + t.border);
-            const yMax = util.clamp(_yMax, -t.border, t.height + t.border);
-
-            const ox = -dx * t.width;
-            const oy = -dy * t.height;
-            for (let y = yMin; y < yMax; y++) {
-                for (let x = xMin; x < xMax; x++) {
-                    t.set(x, y, o.get(x + ox, y + oy));
-                }
+        const ox = -dx * t.dim;
+        const oy = -dy * t.dim;
+        for (let y = yMin; y < yMax; y++) {
+            for (let x = xMin; x < xMax; x++) {
+                t.set(x, y, o.get(x + ox, y + oy));
             }
         }
     }

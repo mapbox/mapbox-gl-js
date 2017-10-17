@@ -15,9 +15,8 @@ function createMockImage(height, width) {
 test('Level', (t)=>{
 
     t.test('constructor correctly creates Level', (t) => {
-        const level = new Level(4, 4, 2);
-        t.equal(level.height, 4);
-        t.equal(level.width, 4);
+        const level = new Level(4, 2);
+        t.equal(level.dim, 4);
         t.equal(level.border, 2);
         t.equal(level.stride, 8);
 
@@ -26,7 +25,7 @@ test('Level', (t)=>{
     });
 
     t.test('setters and getters return correct values', (t) => {
-        const level = new Level(4, 4, 2);
+        const level = new Level(4, 2);
 
         t.deepEqual(level.data, new Int32Array(8 * 8));
         level.set(0, 0, 255);
@@ -35,7 +34,7 @@ test('Level', (t)=>{
     });
 
     t.test('setters and getters throw for invalid data coordinates', (t) => {
-        const level = new Level(4, 4, 2);
+        const level = new Level(4, 2);
 
         t.deepEqual(level.data, new Int32Array(8 * 8));
         t.throws(()=>level.set(20, 0, 255), 'out of range source coordinates for DEM data', 'detects and throws on invalid input');
@@ -55,7 +54,7 @@ test('DEMData constructor', (t) => {
         t.equal(dem.uid, 0);
 
         dem.loadFromImage({width: 4, height: 4, data: new Uint8ClampedArray(4 * 4 * 4)});
-        t.equal(dem.data.length, 1, 'dem loads in data from typed array of pixel data');
+        t.true(dem.level instanceof Level, 'dem loads in data from typed array of pixel data');
         t.end();
     });
 
@@ -69,11 +68,10 @@ test('DEMData constructor', (t) => {
     });
 
     t.test('constructor with data', (t) => {
-        const data = [new Level(16, 16, 8, new Int32Array(32 * 32))];
+        const data = new Level(16, 8, new Int32Array(32 * 32));
         const dem = new DEMData(0, 1, data);
-        t.equal(dem.data.length, 1);
-        t.equal(dem.data[0].height, 16);
-        t.equal(dem.data[0].border, 8);
+        t.equal(dem.level.dim, 16);
+        t.equal(dem.level.border, 8);
 
         t.end();
     });
@@ -92,7 +90,7 @@ test('DEMData#backfillBorder', (t) => {
     dem1.loadFromImage(imageData1);
 
     t.test('border region is initially populated with neighboring data', (t)=>{
-        const level0 = dem0.data[0];
+        const level0 = dem0.level;
         let nonempty = true;
         for (let x = -1; x < 5; x++) {
             for (let y = -1; y < 5; y++) {
@@ -137,7 +135,7 @@ test('DEMData#backfillBorder', (t) => {
     });
 
     t.test('backfillBorder correctly populates borders with neighboring data', (t)=>{
-        const level0 = dem0.data[0];
+        const level0 = dem0.level;
 
         dem0.backfillBorder(dem1, -1, 0);
         for (let y = 0; y < 4; y++) {
@@ -185,13 +183,14 @@ test('DEMData#backfillBorder', (t) => {
         t.deepEqual(serialized, {
             uid: 0,
             scale: 1,
-            levels: [new ArrayBuffer()]
+            dim: 4,
+            level: new ArrayBuffer()
         }, 'serializes DEM');
 
 
         const transferrables = [];
         dem0.serialize(transferrables);
-        t.deepEqual(new Uint32Array(transferrables[0]), dem0.data[0].data, 'populates transferrables with correct data');
+        t.deepEqual(new Uint32Array(transferrables[0]), dem0.level.data, 'populates transferrables with correct data');
 
         t.end();
     });

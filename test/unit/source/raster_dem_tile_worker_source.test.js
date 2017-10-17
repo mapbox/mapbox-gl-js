@@ -11,11 +11,12 @@ test('loadTile', (t) => {
         source.loadTile({
             source: 'source',
             uid: 0,
-            rawImageData: {data: new Uint8ClampedArray(256), height: 8, width: 8}
+            rawImageData: {data: new Uint8ClampedArray(256), height: 8, width: 8},
+            dim: 256
         }, (err, data)=>{
             if (err) t.fail();
             t.deepEqual(source.loading, { source: {} });
-            t.deepEqual(Object.keys(data), ['uid', 'scale', 'levels'], 'returns serialized DEM data');
+            t.deepEqual(Object.keys(data), ['uid', 'scale', 'dim', 'level'], 'returns serialized DEM data');
 
             t.end();
         });
