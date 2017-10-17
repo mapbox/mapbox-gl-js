@@ -72,6 +72,7 @@ class CollisionIndex {
         // This is a quick and dirty solution for chosing which collision circles to use (since collision circles are
         // laid out in tile units). Ideally, I think we should generate collision circles on the fly in viewport coordinates
         // at the time we do collision detection.
+        // See https://github.com/mapbox/mapbox-gl-js/issues/5474
 
         // incidenceStretch is the ratio of how much y space a label takes up on a tile while drawn perpendicular to the viewport vs
         //  how much space it would take up if it were drawn flat on the tile
@@ -142,10 +143,13 @@ class CollisionIndex {
         }
 
         for (let k = 0; k < collisionCircles.length; k += 5) {
-            const boxDistanceToAnchor = collisionCircles[k + 3];
+            const anchorPointX = collisionCircles[k];
+            const anchorPointY = collisionCircles[k + 1];
+            const tileUnitRadius = collisionCircles[k + 2];
+            const boxSignedDistanceFromAnchor = collisionCircles[k + 3];
             if (!firstAndLastGlyph ||
-                (boxDistanceToAnchor < -firstTileDistance) ||
-                (boxDistanceToAnchor > lastTileDistance)) {
+                (boxSignedDistanceFromAnchor < -firstTileDistance) ||
+                (boxSignedDistanceFromAnchor > lastTileDistance)) {
                 // The label either doesn't fit on its line or we
                 // don't need to use this circle because the label
                 // doesn't extend this far. Either way, mark the circle unused.
@@ -153,8 +157,7 @@ class CollisionIndex {
                 continue;
             }
 
-            const projectedPoint = this.projectPoint(posMatrix, collisionCircles[k], collisionCircles[k + 1]);
-            const tileUnitRadius = collisionCircles[k + 2];
+            const projectedPoint = this.projectPoint(posMatrix, anchorPointX, anchorPointY);
             const radius = tileUnitRadius / tileToViewport;
 
             const atLeastOneCirclePlaced = placedCollisionCircles.length > 0;
@@ -213,6 +216,7 @@ class CollisionIndex {
      * converts them back to viewport coordinates. The change to a viewport coordinate
      * CollisionIndex means it's now possible to re-design queryRenderedSymbols to
      * run entirely in viewport coordinates, saving unnecessary conversions.
+     * See https://github.com/mapbox/mapbox-gl-js/issues/5475
      *
      * @private
      */

@@ -7,8 +7,6 @@ export type CollisionBox = {
     anchorPoint: Point,
     anchorPointX: number,
     anchorPointY: number,
-    offsetX: number,
-    offsetY: number,
     x1: number,
     y1: number,
     x2: number,
@@ -17,7 +15,7 @@ export type CollisionBox = {
     sourceLayerIndex: number,
     bucketIndex: number,
     radius: number,
-    distanceToAnchor: number
+    signedDistanceFromAnchor: number
 };
 
 /**
@@ -29,7 +27,9 @@ export type CollisionBox = {
  * Line labels are represented by a set of these boxes spaced out along the
  * line. When we calculate collision geometries, we use the circle inscribed
  * in the box, rather than the box itself. This makes collision detection more
- * stable during rotation.
+ * stable during rotation. The circle geometry is based solely on the line
+ * geometry and the total length of the label -- individual glyph shapings
+ * doesn't factor into collision detection.
  *
  * @class CollisionBoxArray
  * @private
@@ -58,7 +58,7 @@ const CollisionBoxArray = createStructArrayType({
         // so that they can be ignored if the projected label doesn't extend into
         // the box area
         { type: 'Int16', name: 'radius' },
-        { type: 'Int16', name: 'distanceToAnchor' }
+        { type: 'Int16', name: 'signedDistanceFromAnchor' }
 
     ]
 });
