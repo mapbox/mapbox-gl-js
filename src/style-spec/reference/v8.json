@@ -1947,7 +1947,7 @@
         "group": "Color"
       },
       "get": {
-        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object.",
+        "doc": "Retrieves an object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object.",
         "group": "Lookup"
       },
       "has": {
