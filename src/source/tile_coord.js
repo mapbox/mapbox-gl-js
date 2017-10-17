@@ -30,11 +30,7 @@ class TileCoord {
         this.y = +y;
         this.w = +w;
 
-        // calculate id
-        w *= 2;
-        if (w < 0) w = w * -1 - 1;
-        const dim = 1 << this.z;
-        this.id = ((dim * dim * w + dim * this.y + this.x) * 32) + this.z;
+        this.id = TileCoord.idFromCoord(this.z, this.x, this.y, this.w);
 
         // for caching pos matrix calculation when rendering
         (this: any).posMatrix = null;
@@ -184,6 +180,18 @@ class TileCoord {
         if (w % 2 !== 0) w = w * -1 - 1;
         w /= 2;
         return new TileCoord(z, x, y, w);
+    }
+
+    static idFromCoord(z: number, x: number, y: number, w: number) {
+        assert(!isNaN(z) && z >= 0 && z % 1 === 0);
+        assert(!isNaN(x) && x >= 0 && x % 1 === 0);
+        assert(!isNaN(y) && y >= 0 && y % 1 === 0);
+
+        if (w === undefined || isNaN(w)) w = 0;
+        w *= 2;
+        if (w < 0) w = w * -1 - 1;
+        const dim = 1 << z;
+        return ((dim * dim * w + dim * y + x) * 32) + z;
     }
 }
 

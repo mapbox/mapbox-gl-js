@@ -1,5 +1,6 @@
 // @flow
 const {RGBAImage} = require('../util/image');
+const util = require('../util/util');
 
 export type SerializedDEMData = {
     uid: string,
@@ -24,14 +25,14 @@ class Level {
     }
 
     set(x: number, y: number, value: number) {
-        this.data[this.idx(x, y)] = value + 65536;
+        this.data[this._idx(x, y)] = value + 65536;
     }
 
     get(x: number, y: number) {
-        return this.data[this.idx(x, y)] - 65536;
+        return this.data[this._idx(x, y)] - 65536;
     }
 
-    idx(x: number, y: number) {
+    _idx(x: number, y: number) {
         if (x < -this.border || x >= this.width + this.border ||  y < -this.border || y >= this.height + this.border) throw new RangeError('out of range source coordinates for DEM data');
         return (y + this.border) * this.stride + (x + this.border);
     }
@@ -155,10 +156,10 @@ class DEMData {
                 break;
             }
 
-            const xMin = clamp(_xMin, -t.border, t.width + t.border);
-            const xMax = clamp(_xMax, -t.border, t.width + t.border);
-            const yMin = clamp(_yMin, -t.border, t.height + t.border);
-            const yMax = clamp(_yMax, -t.border, t.height + t.border);
+            const xMin = util.clamp(_xMin, -t.border, t.width + t.border);
+            const xMax = util.clamp(_xMax, -t.border, t.width + t.border);
+            const yMin = util.clamp(_yMin, -t.border, t.height + t.border);
+            const yMax = util.clamp(_yMax, -t.border, t.height + t.border);
 
             const ox = -dx * t.width;
             const oy = -dy * t.height;
@@ -167,10 +168,6 @@ class DEMData {
                     t.set(x, y, o.get(x + ox, y + oy));
                 }
             }
-        }
-
-        function clamp(value, min, max) {
-            return value < min ? min : (value > max ? max : value);
         }
     }
 }

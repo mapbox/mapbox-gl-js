@@ -19,7 +19,7 @@ const TERRAIN_TILE_HEIGHT = 256;
 module.exports = drawHillshade;
 
 function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
-    if (painter.renderPass === 'opaque' || painter.renderPass === '3d') return;
+    if (painter.renderPass !== 'hillshadeprepare' && painter.renderPass !== 'translucent') return;
 
     const gl = painter.gl;
 
@@ -28,7 +28,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleL
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        if (!tile.prepared && painter.renderPass === 'hillshadeprepare') {
+        if (tile.needsHillshadePrepare && painter.renderPass === 'hillshadeprepare') {
             prepareHillshade(painter, tile);
             continue;
         } else if (painter.renderPass === 'translucent') {
@@ -63,6 +63,7 @@ function renderHillshade(painter, tile, layer) {
     const gl = painter.gl;
     const program = painter.useProgram('hillshade');
     const posMatrix = painter.transform.calculatePosMatrix(tile.coord);
+    const zoom = painter.transform.zoom;
     setLight(program, painter);
     // for scaling the magnitude of a points slope by its latitude
     const latRange = getTileLatRange(painter, tile.coord);
@@ -73,9 +74,9 @@ function renderHillshade(painter, tile, layer) {
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
     gl.uniform1i(program.uniforms.u_mode, 1);
-    gl.uniform4fv(program.uniforms.u_shadow, layer.paint["hillshade-shadow-color"]);
-    gl.uniform4fv(program.uniforms.u_highlight, layer.paint["hillshade-highlight-color"]);
-    gl.uniform4fv(program.uniforms.u_accent, layer.paint["hillshade-accent-color"]);
+    gl.uniform4fv(program.uniforms.u_shadow, layer.getPaintValue("hillshade-shadow-color", {zoom: zoom}));
+    gl.uniform4fv(program.uniforms.u_highlight, layer.getPaintValue("hillshade-highlight-color", {zoom: zoom}));
+    gl.uniform4fv(program.uniforms.u_accent, layer.getPaintValue("hillshade-accent-color", {zoom: zoom}));
 
     // this is to prevent purple/yellow seams from flashing when the dem tiles haven't been totally
     // backfilled from their neighboring tiles.
@@ -125,9 +126,9 @@ function prepareHillshade(painter, tile) {
 
         tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
         if (tile.demTexture) {
-            tile.demTexture.update(pixelData[0], false);
-            // for some reason flow thinks tile.demTexture can be null or undefined here :sob:
-            (tile.demTexture: any).bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            const demTexture = tile.demTexture;
+            demTexture.update(pixelData[0], false);
+            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         } else {
             tile.demTexture = new Texture(gl, pixelData[0], gl.RGBA, false);
             tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
@@ -166,6 +167,6 @@ function prepareHillshade(painter, tile) {
 
         tile.texture.unbind();
         gl.viewport(0, 0, painter.width, painter.height);
-        tile.prepared = true;
+        tile.needsHillshadePrepare = false;
     }
 }

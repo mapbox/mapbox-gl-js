@@ -73,6 +73,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
             if (data) {
                 tile.dem =  DEMData.deserialize(data);
+                tile.needsHillshadePrepare = true;
                 tile.state = 'loaded';
                 callback(null);
             }
@@ -89,28 +90,23 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         const nxw = x + 1 === dim ? w + 1 : w;
 
         const neighboringTiles = {};
-        neighboringTiles[getTileId({ z: z, x: px, y: y, w: pxw })] = {backfilled: false};
-        neighboringTiles[getTileId({ z: z, x: nx, y: y, w: nxw })] = {backfilled: false};
+        neighboringTiles[TileCoord.idFromCoord(z, px, y, pxw)] = {backfilled: false};
+        neighboringTiles[TileCoord.idFromCoord(z, nx, y, nxw)] = {backfilled: false};
 
         // Add upper neighboringTiles
         if (y > 0) {
-            neighboringTiles[getTileId({ z: z, x: px, y: y - 1, w: pxw  })] = {backfilled: false};
-            neighboringTiles[getTileId({ z: z, x: x, y: y - 1, w: w  })] = {backfilled: false};
-            neighboringTiles[getTileId({ z: z, x: nx, y: y - 1, w: nxw  })] = {backfilled: false};
+            neighboringTiles[TileCoord.idFromCoord(z, px, y - 1, pxw)] = {backfilled: false};
+            neighboringTiles[TileCoord.idFromCoord(z, x, y - 1, w)] = {backfilled: false};
+            neighboringTiles[TileCoord.idFromCoord(z, nx, y - 1, nxw)] = {backfilled: false};
         }
         // Add lower neighboringTiles
         if (y + 1 < dim) {
-            neighboringTiles[getTileId({ z: z, x: px, y: y + 1, w: pxw  })] = {backfilled: false};
-            neighboringTiles[getTileId({ z: z, x: x, y: y + 1, w: w  })] = {backfilled: false};
-            neighboringTiles[getTileId({ z: z, x: nx, y: y + 1, w: nxw  })] = {backfilled: false};
+            neighboringTiles[TileCoord.idFromCoord(z, px, y + 1, pxw)] = {backfilled: false};
+            neighboringTiles[TileCoord.idFromCoord(z, x, y + 1, w)] = {backfilled: false};
+            neighboringTiles[TileCoord.idFromCoord(z, nx, y + 1, nxw)] = {backfilled: false};
         }
 
         return neighboringTiles;
-
-        function getTileId(coord) {
-            const tilecoord = new TileCoord(coord.z, coord.x, coord.y, coord.w);
-            return tilecoord.id;
-        }
     }
 
 
