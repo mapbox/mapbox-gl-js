@@ -53,9 +53,9 @@ class CompoundExpression implements Expression {
 
         const overloads = Array.isArray(definition) ?
             [[definition[1], definition[2]]] :
-            definition.overloads.filter(overload => (
-                !Array.isArray(overload[0][0]) || // varags
-                overload[0][0].length === args.length - 1 // correct param count
+            definition.overloads.filter(([signature]) => (
+                !Array.isArray(signature) || // varags
+                signature.length === args.length - 1 // correct param count
             ));
 
         // First parse all the args
@@ -99,7 +99,7 @@ class CompoundExpression implements Expression {
             }
         }
 
-        assert(signatureContext.errors.length > 0);
+        assert(!signatureContext || signatureContext.errors.length > 0);
 
         if (overloads.length === 1) {
             context.errors.push.apply(context.errors, signatureContext.errors);
