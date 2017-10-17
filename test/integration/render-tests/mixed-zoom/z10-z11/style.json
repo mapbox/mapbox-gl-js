@@ -1,0 +1,24 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 512,
+            "height": 512,
+            "debug": true,
+            "collisionDebug": true,
+            "operations": [
+              ["setStyle", "local://../../node_modules/mapbox-gl-styles/styles/basic-v9.json"],
+              ["wait"],
+              ["setZoom", 11.1],
+              ["sleep", 3000]
+            ]
+        }
+    },
+    "center": [
+        -118.303,
+        33.908
+    ],
+    "zoom": 10.5,
+    "sources": {},
+    "layers": []
+}
