@@ -51,12 +51,14 @@ class CompoundExpression implements Expression {
         const type = Array.isArray(definition) ?
             definition[0] : definition.type;
 
-        const overloads = Array.isArray(definition) ?
+        const availableOverloads = Array.isArray(definition) ?
             [[definition[1], definition[2]]] :
-            definition.overloads.filter(overload => (
-                !Array.isArray(overload[0][0]) || // varags
-                overload[0][0].length === args.length - 1 // correct param count
-            ));
+            definition.overloads;
+
+        const overloads = availableOverloads.filter(([signature]) => (
+            !Array.isArray(signature) || // varags
+            signature.length === args.length - 1 // correct param count
+        ));
 
         // First parse all the args
         const parsedArgs: Array<Expression> = [];
@@ -99,12 +101,13 @@ class CompoundExpression implements Expression {
             }
         }
 
-        assert(signatureContext.errors.length > 0);
+        assert(!signatureContext || signatureContext.errors.length > 0);
 
         if (overloads.length === 1) {
             context.errors.push.apply(context.errors, signatureContext.errors);
         } else {
-            const signatures = overloads
+            const expected = overloads.length ? overloads : availableOverloads;
+            const signatures = expected
                 .map(([params]) => stringifySignature(params))
                 .join(' | ');
             const actualTypes = parsedArgs
