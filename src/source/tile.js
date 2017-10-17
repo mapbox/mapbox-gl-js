@@ -20,7 +20,7 @@ const Texture = require('../render/texture');
 const {SegmentVector} = require('../data/segment');
 const {TriangleIndexArray} = require('../data/index_array_type');
 const projection = require('../symbol/projection');
-const PlaceSymbols = require('../symbol/place_symbols');
+const {performSymbolPlacement, updateOpacities} = require('../symbol/symbol_placement');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -218,7 +218,7 @@ class Tile {
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
 
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
-            PlaceSymbols.place(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, collisionBoxArray);
+            performSymbolPlacement(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, collisionBoxArray);
         }
     }
 
@@ -227,7 +227,7 @@ class Tile {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
-                PlaceSymbols.updateOpacities(bucket, collisionFadeTimes);
+                updateOpacities(bucket, collisionFadeTimes);
                 bucket.sortFeatures(angle);
             }
         }

@@ -11,7 +11,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 
 module.exports = {
     updateOpacities: updateOpacities,
-    place: place
+    performSymbolPlacement: performSymbolPlacement
 };
 
 function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any) {
@@ -133,7 +133,7 @@ function updateCollisionCircles(collisionVertexArray: StructArray, collisionCirc
     }
 }
 
-function place(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, textPixelRatio: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
+function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, textPixelRatio: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
     const layer = bucket.layers[0];
     const layout = layer.layout;
 

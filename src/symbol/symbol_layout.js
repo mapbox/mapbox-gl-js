@@ -26,15 +26,15 @@ import type {GlyphPosition} from '../render/glyph_atlas';
 const Point = require('@mapbox/point-geometry');
 
 module.exports = {
-    prepare
+    performSymbolLayout
 };
 
-function prepare(bucket: SymbolBucket,
-                 glyphMap: {[string]: {[number]: ?StyleGlyph}},
-                 glyphPositions: {[string]: {[number]: GlyphPosition}},
-                 imageMap: {[string]: StyleImage},
-                 imagePositions: {[string]: ImagePosition},
-                 showCollisionBoxes: boolean) {
+function performSymbolLayout(bucket: SymbolBucket,
+                             glyphMap: {[string]: {[number]: ?StyleGlyph}},
+                             glyphPositions: {[string]: {[number]: GlyphPosition}},
+                             imageMap: {[string]: StyleImage},
+                             imagePositions: {[string]: ImagePosition},
+                             showCollisionBoxes: boolean) {
     bucket.createArrays();
     bucket.symbolInstances = [];
 
