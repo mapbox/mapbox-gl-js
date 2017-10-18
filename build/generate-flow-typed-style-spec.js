@@ -87,11 +87,11 @@ function flowLayer(key) {
     delete layer['paint.*'];
 
     layer.paint.type = () => {
-        return flowObject(spec[`layout_${key}`], '    ', '|');
+        return flowObject(spec[`paint_${key}`], '    ', '|');
     };
 
     layer.layout.type = () => {
-        return flowObject(spec[`paint_${key}`], '    ', '|');
+        return flowObject(spec[`layout_${key}`], '    ', '|');
     };
 
     if (key === 'background') {
