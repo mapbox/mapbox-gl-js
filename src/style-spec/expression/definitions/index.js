@@ -100,7 +100,7 @@ CompoundExpression.register(expressions, {
                 return String(v);
             } else if (v instanceof Color) {
                 const [r, g, b, a] = v.value;
-                return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+                return `rgba(${r * 255},${g * 255},${b * 255},${a})`;
             } else {
                 return JSON.stringify(v);
             }
