@@ -106,7 +106,7 @@ class DragPanHandler {
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
-        if (!this.isEnabled()) return this._onMouseUp(); // allow disable() mid-drag (#2419)
+        if (!this.isEnabled()) return this._onMouseUp(e); // allow disable() mid-drag (#2419)
         if (this._ignoreEvent(e)) return;
 
         if (!this.isActive()) {
