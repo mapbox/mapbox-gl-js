@@ -65,9 +65,7 @@ export type SymbolInstance = {
     textOffset: [number, number],
     iconOffset: [number, number],
     anchor: Anchor,
-    line: Array<Point>,
     featureIndex: number,
-    feature: ExpressionFeature,
     textCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     placedTextSymbolIndices: Array<number>;
