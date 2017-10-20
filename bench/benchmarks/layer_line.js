@@ -1,4 +1,3 @@
-// @flow
 
 const Benchmark = require('../lib/benchmark');
 const createMap = require('../lib/create_map');
