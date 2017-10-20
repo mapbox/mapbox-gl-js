@@ -2002,6 +2002,10 @@
         "doc": "",
         "group": "Math"
       },
+      "sqrt": {
+        "doc": "",
+        "group": "Math"
+      },
       "log10": {
         "doc": "",
         "group": "Math"
