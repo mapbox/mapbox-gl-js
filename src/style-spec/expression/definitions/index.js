@@ -251,6 +251,11 @@ CompoundExpression.register(expressions, {
         [NumberType, NumberType],
         (ctx, [b, e]) => Math.pow(b.evaluate(ctx), e.evaluate(ctx))
     ],
+    'sqrt': [
+        NumberType,
+        [NumberType],
+        (ctx, [x]) => Math.sqrt(x.evaluate(ctx))
+    ],
     'log10': [
         NumberType,
         [NumberType],
