@@ -14,7 +14,7 @@ module.exports = class LayerHeatmap extends Benchmark {
                 'maxzoom': 23
             }
         };
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'heatmaplayer',
             'type': 'heatmap',
             'source': 'heatmap',
@@ -36,7 +36,7 @@ module.exports = class LayerHeatmap extends Benchmark {
                     1, "red"
                 ]
             }
-        });
+        }];
     }
 
     bench() {

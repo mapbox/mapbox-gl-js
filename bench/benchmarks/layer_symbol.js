@@ -6,7 +6,7 @@ const style = require('../data/empty.json');
 module.exports = class LayerSymbol extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'symbollayer',
             'type': 'symbol',
             'source': 'composite',
@@ -15,7 +15,7 @@ module.exports = class LayerSymbol extends Benchmark {
                 'icon-image': 'dot-11',
                 'text-field': '{name_en}'
             }
-        });
+        }];
     }
 
     bench() {

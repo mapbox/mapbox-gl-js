@@ -6,7 +6,7 @@ const style = require('../data/empty.json');
 module.exports = class LayerFill extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'filllayer',
             'type': 'fill',
             'source': 'composite',
@@ -15,7 +15,7 @@ module.exports = class LayerFill extends Benchmark {
                 'fill-color': 'black',
                 'fill-outline-color': 'red'
             }
-        });
+        }];
     }
 
     bench() {

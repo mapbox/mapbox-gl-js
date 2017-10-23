@@ -6,7 +6,7 @@ const style = require('../data/empty.json');
 module.exports = class LayerFillExtrusion extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'fillextrusionlayer',
             'type': 'fill-extrusion',
             'source': 'composite',
@@ -14,7 +14,7 @@ module.exports = class LayerFillExtrusion extends Benchmark {
             'paint': {
                 'fill-extrusion-height': 30
             }
-        });
+        }];
     }
 
     bench() {

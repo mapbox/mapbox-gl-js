@@ -13,11 +13,11 @@ module.exports = class LayerRaster extends Benchmark {
                 'tileSize': 256
             }
         };
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'rasterlayer',
             'type': 'raster',
             'source': 'satellite'
-        });
+        }];
     }
 
     bench() {

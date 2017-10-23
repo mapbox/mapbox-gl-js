@@ -6,12 +6,12 @@ const style = require('../data/empty.json');
 module.exports = class LayerLine extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'linelayer',
             'type': 'line',
             'source': 'composite',
             'source-layer': 'road'
-        });
+        }];
     }
 
     bench() {

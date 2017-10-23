@@ -6,10 +6,10 @@ const style = require('../data/empty.json');
 module.exports = class LayerBackground extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'backgroundlayer',
             'type': 'background'
-        });
+        }];
     }
 
     bench() {

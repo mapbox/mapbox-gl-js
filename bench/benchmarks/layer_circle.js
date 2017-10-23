@@ -6,12 +6,12 @@ const style = require('../data/empty.json');
 module.exports = class LayerCircle extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
-        this.style.layers.push({
+        this.style.layers = [{
             'id': 'circlelayer',
             'type': 'circle',
             'source': 'composite',
             'source-layer': 'poi_label'
-        });
+        }];
     }
 
     bench() {
