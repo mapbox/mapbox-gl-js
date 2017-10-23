@@ -178,10 +178,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         }
     }
 
-    removeSource(params: {source: string}) {
+    removeSource(params: {source: string}, callback: Callback<mixed>) {
         if (this._geoJSONIndexes[params.source]) {
             delete this._geoJSONIndexes[params.source];
         }
+        callback();
     }
 }
 

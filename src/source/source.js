@@ -60,8 +60,8 @@ export interface Source {
 
     loadTile(tile: Tile, callback: Callback<void>): void;
     +hasTile?: (coord: TileCoord) => boolean;
-    +abortTile?: (tile: Tile) => void;
-    +unloadTile?: (tile: Tile) => void;
+    +abortTile?: (tile: Tile, callback: Callback<void>) => void;
+    +unloadTile?: (tile: Tile, callback: Callback<void>) => void;
 
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
