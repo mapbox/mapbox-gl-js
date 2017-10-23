@@ -27,7 +27,10 @@ module.exports = class QueryPoint extends Benchmark {
                 center: [-77.032194, 38.912753],
                 style: 'mapbox://styles/mapbox/streets-v9'
             });
-        })).then(maps => { this.maps = maps; });
+        })).then(maps => { this.maps = maps; })
+            .catch(error => {
+                console.error(error);
+            });
     }
 
     bench() {

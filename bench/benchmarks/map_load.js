@@ -10,6 +10,9 @@ module.exports = class MapLoad extends Benchmark {
                 sources: {},
                 layers: []
             }
-        }).then(map => map.remove());
+        }).then(map => map.remove())
+            .catch(error => {
+                console.error(error);
+            });
     }
 };

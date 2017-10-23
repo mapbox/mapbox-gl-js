@@ -20,7 +20,6 @@ register(require('./benchmarks/layer_background'));
 register(require('./benchmarks/layer_circle'));
 register(require('./benchmarks/layer_fill'));
 register(require('./benchmarks/layer_fill_extrusion'));
-register(require('./benchmarks/layer_heatmap'));
 register(require('./benchmarks/layer_line'));
 register(require('./benchmarks/layer_raster'));
 register(require('./benchmarks/layer_symbol'));
