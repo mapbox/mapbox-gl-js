@@ -20,6 +20,9 @@ test('abortTile', (t) => {
         source.abortTile({
             source: 'source',
             uid: 0
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
         });
 
         t.deepEqual(source.loading, { source: {} });
@@ -42,6 +45,9 @@ test('removeTile', (t) => {
         source.removeTile({
             source: 'source',
             uid: 0
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
         });
 
         t.deepEqual(source.loaded, { source: {} });

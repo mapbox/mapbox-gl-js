@@ -163,13 +163,14 @@ class VectorTileWorkerSource implements WorkerSource {
      * @param params.source The id of the source for which we're loading this tile.
      * @param params.uid The UID for this tile.
      */
-    abortTile(params: TileParameters) {
+    abortTile(params: TileParameters, callback: WorkerTileCallback) {
         const loading = this.loading[params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
             delete loading[uid];
         }
+        callback();
     }
 
     /**
@@ -179,12 +180,13 @@ class VectorTileWorkerSource implements WorkerSource {
      * @param params.source The id of the source for which we're loading this tile.
      * @param params.uid The UID for this tile.
      */
-    removeTile(params: TileParameters) {
+    removeTile(params: TileParameters, callback: WorkerTileCallback) {
         const loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
         }
+        callback();
     }
 }
 

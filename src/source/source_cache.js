@@ -148,12 +148,12 @@ class SourceCache extends Evented {
 
     _unloadTile(tile: Tile) {
         if (this._source.unloadTile)
-            return this._source.unloadTile(tile);
+            return this._source.unloadTile(tile, () => {});
     }
 
     _abortTile(tile: Tile) {
         if (this._source.abortTile)
-            return this._source.abortTile(tile);
+            return this._source.abortTile(tile, () => {});
     }
 
     serialize() {
