@@ -15,7 +15,7 @@ module.exports = class LayerHeatmap extends Benchmark {
             }
         };
         this.style.layers.push({
-            'id': 'layer',
+            'id': 'heatmaplayer',
             'type': 'heatmap',
             'source': 'heatmap',
             'paint': {
@@ -46,6 +46,9 @@ module.exports = class LayerHeatmap extends Benchmark {
             height: 768,
             center: [-76.216, 38.67],
             style: this.style
-        }).then(map => map.remove());
+        }).then(map => map.remove())
+            .catch(error => {
+                console.error(error);
+            });
     }
 };

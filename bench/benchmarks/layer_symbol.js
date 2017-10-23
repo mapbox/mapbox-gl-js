@@ -7,7 +7,7 @@ module.exports = class LayerSymbol extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
         this.style.layers.push({
-            'id': 'layer',
+            'id': 'symbollayer',
             'type': 'symbol',
             'source': 'composite',
             'source-layer': 'poi_label',
@@ -25,6 +25,9 @@ module.exports = class LayerSymbol extends Benchmark {
             height: 768,
             center: [-77.032194, 38.912753],
             style: this.style
-        }).then(map => map.remove());
+        }).then(map => map.remove())
+            .catch(error => {
+                console.error(error);
+            });
     }
 };

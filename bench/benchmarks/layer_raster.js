@@ -14,7 +14,7 @@ module.exports = class LayerRaster extends Benchmark {
             }
         };
         this.style.layers.push({
-            'id': 'layer',
+            'id': 'rasterlayer',
             'type': 'raster',
             'source': 'satellite'
         });
@@ -27,6 +27,9 @@ module.exports = class LayerRaster extends Benchmark {
             height: 768,
             center: [-77.032194, 38.912753],
             style: this.style
-        }).then(map => map.remove());
+        }).then(map => map.remove())
+            .catch(error => {
+                console.error(error);
+            });
     }
 };

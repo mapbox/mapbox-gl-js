@@ -7,7 +7,7 @@ module.exports = class LayerBackground extends Benchmark {
     setup() {
         this.style = Object.assign({}, style);
         this.style.layers.push({
-            'id': 'layer',
+            'id': 'backgroundlayer',
             'type': 'background'
         });
     }
@@ -19,6 +19,9 @@ module.exports = class LayerBackground extends Benchmark {
             height: 768,
             center: [-77.032194, 38.912753],
             style: this.style
-        }).then(map => map.remove());
+        }).then(map => map.remove())
+            .catch(error => {
+                console.error(error);
+            });
     }
 };
