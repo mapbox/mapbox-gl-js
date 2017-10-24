@@ -16,13 +16,7 @@ function register(Benchmark) {
 register(require('./benchmarks/layout'));
 register(require('./benchmarks/layout_dds'));
 register(require('./benchmarks/paint'));
-register(require('./benchmarks/layer_background'));
-register(require('./benchmarks/layer_circle'));
-register(require('./benchmarks/layer_fill'));
-register(require('./benchmarks/layer_fill_extrusion'));
-register(require('./benchmarks/layer_line'));
-register(require('./benchmarks/layer_raster'));
-register(require('./benchmarks/layer_symbol'));
+require('./benchmarks/layers').forEach(register);
 register(require('./benchmarks/map_load'));
 register(require('./benchmarks/style_validate'));
 register(require('./benchmarks/style_layer_create'));
