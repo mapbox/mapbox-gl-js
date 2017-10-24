@@ -25,6 +25,7 @@ class CircleStyleLayer extends StyleLayer {
     queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket = (bucket: any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
+            getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
             translateDistance(this.paint['circle-translate']);
     }
 
@@ -38,8 +39,9 @@ class CircleStyleLayer extends StyleLayer {
             this.getPaintValue('circle-translate', {zoom}, feature),
             this.getPaintValue('circle-translate-anchor', {zoom}, feature),
             bearing, pixelsToTileUnits);
-        const circleRadius = this.getPaintValue('circle-radius', {zoom}, feature) * pixelsToTileUnits;
-        return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius);
+        const radius = this.getPaintValue('circle-radius', {zoom}, feature) * pixelsToTileUnits;
+        const stroke = this.getPaintValue('circle-stroke-width', {zoom}, feature) * pixelsToTileUnits;
+        return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, radius + stroke);
     }
 }
 
