@@ -76,7 +76,7 @@ function renderParams (params, maxLength) {
             result.push(t);
         } else if (t.repeat) {
             const repeated = renderParams(t.repeat, Infinity);
-            result.push(`${repeated.slice(2)}, (${repeated.slice(2)}${repeated}, ...)`);
+            result.push(`${repeated.slice(2)}${repeated}, ...`);
         }
     }
 

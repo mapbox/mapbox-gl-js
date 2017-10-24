@@ -56,38 +56,38 @@ const types = {
         parameters: ['value', { repeat: [ 'fallback: value' ] }]
     }],
     at: [{
-        type: 'T',
+        type: 'ItemType',
         parameters: ['number', 'array']
     }],
     case: [{
-        type: 'T',
-        parameters: [{ repeat: ['condition: boolean', 'output: T'] }, 'default: T']
+        type: 'OutputType',
+        parameters: [{ repeat: ['condition: boolean', 'output: OutputType'] }, 'default: OutputType']
     }],
     coalesce: [{
-        type: 'T',
-        parameters: [{repeat: 'T'}]
+        type: 'OutputType',
+        parameters: [{repeat: ['OutputType']}]
     }],
     curve: [{
-        type: 'T',
+        type: 'OutputType',
         parameters: [
-            'input: value',
+            'input: number',
             '["step"]',
-            'stop_output_0: T',
-            'stop_input_1: number, stop_output_1: T',
-            'stop_input_n: number, stop_output_n: T, ...'
+            'stop_output_0: OutputType',
+            'stop_input_1: number, stop_output_1: OutputType',
+            'stop_input_n: number, stop_output_n: OutputType, ...'
         ]
     }, {
-        type: 'T (number, array<number>, or Color)',
+        type: 'OutputType (number, array<number>, or Color)',
         parameters: [
             'input: number',
             'interpolation: ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
-            'stop_input_1: number, stop_output_1: T',
-            'stop_input_n: number, stop_output_n: T, ...'
+            'stop_input_1: number, stop_output_1: OutputType',
+            'stop_input_n: number, stop_output_n: OutputType, ...'
         ]
     }],
     let: [{
-        type: 'T',
-        parameters: [{ repeat: ['string (alphanumeric literal)', 'any']}, 'T']
+        type: 'OutputType',
+        parameters: [{ repeat: ['string (alphanumeric literal)', 'any']}, 'OutputType']
     }],
     literal: [{
         type: 'array<T, N>',
@@ -97,12 +97,12 @@ const types = {
         parameters: ['{...} (JSON object literal)']
     }],
     match: [{
-        type: 'U',
+        type: 'OutputType',
         parameters: [
-            'input: T (number or string)',
-            'label_1: T | [T, T, ...], output_1: U',
-            'label_n: T | [T, T, ...], output_n: U, ...',
-            'default: U'
+            'input: InputType (number or string)',
+            'label_1: InputType | [InputType, InputType, ...], output_1: OutputType',
+            'label_n: InputType | [InputType, InputType, ...], output_n: OutputType, ...',
+            'default: OutputType'
         ]
     }],
     var: [{
