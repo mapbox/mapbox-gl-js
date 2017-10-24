@@ -17,7 +17,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     if (opacity === 0) return;
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const transform = painter.transform;
     const tileSize = transform.tileSize;
     const image = layer.paint.get('background-pattern');
@@ -26,7 +27,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
 
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
     painter.setDepthSublayer(0);
 
@@ -44,12 +45,12 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         program = painter.useProgram('fillPattern', configuration);
         configuration.setUniforms(gl, program, properties, globals);
         pattern.prepare(image, painter, program);
-        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
+        painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer);
     } else {
         const configuration = ProgramConfiguration.forBackgroundColor(color, opacity);
         program = painter.useProgram('fill', configuration);
-        configuration.setUniforms(gl, program, properties, globals);
-        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
+        configuration.setUniforms(context, program, properties, globals);
+        painter.tileExtentVAO.bind(context, program, painter.tileExtentBuffer);
     }
 
     const coords = transform.coveringTiles({tileSize});

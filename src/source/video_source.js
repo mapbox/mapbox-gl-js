@@ -113,7 +113,7 @@ class VideoSource extends ImageSource {
 
     prepare() {
         if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) return; // not enough data for current position
-        this._prepareImage(this.map.painter.gl, this.video);
+        this._prepareImage(this.map.painter.context, this.video);
     }
 
     serialize() {

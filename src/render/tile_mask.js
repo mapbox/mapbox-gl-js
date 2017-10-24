@@ -3,6 +3,7 @@
 const TileCoord = require('../source/tile_coord');
 
 import type Tile from './../source/tile';
+import type Context from '../gl/context';
 
 export type Mask = {
     [number]: boolean
@@ -59,7 +60,7 @@ export type Mask = {
 // 2/1/3, since it is not a descendant of it.
 
 
-module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContext) {
+module.exports = function(renderableTiles: Array<Tile>, context: Context) {
     const sortedRenderables = renderableTiles.sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
@@ -72,7 +73,7 @@ module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContex
         // can never be children of the current wrap.
 
         computeTileMasks(tile.coord.wrapped(), tile.coord, childArray, new TileCoord(0, 0, 0, tile.coord.w + 1), mask);
-        tile.setMask(mask, gl);
+        tile.setMask(mask, context);
     }
 };
 

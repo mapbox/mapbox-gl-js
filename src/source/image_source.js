@@ -10,7 +10,6 @@ const ajax = require('../util/ajax');
 const browser = require('../util/browser');
 const EXTENT = require('../data/extent');
 const RasterBoundsArray = require('../data/raster_bounds_array');
-const VertexBuffer = require('../gl/vertex_buffer');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
 
@@ -20,6 +19,8 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Coordinate from '../geo/coordinate';
 import type {Callback} from '../types/callback';
+import type Context from '../gl/context';
+import type VertexBuffer from '../gl/vertex_buffer';
 
 export type ImageTextureSource =
   ImageData |
@@ -187,12 +188,13 @@ class ImageSource extends Evented implements Source {
 
     prepare() {
         if (Object.keys(this.tiles).length === 0 || !this.image) return;
-        this._prepareImage(this.map.painter.gl, this.image);
+        this._prepareImage(this.map.painter.context, this.image);
     }
 
-    _prepareImage(gl: WebGLRenderingContext, image: ImageTextureSource, resize?: boolean) {
+    _prepareImage(context: Context, image: ImageTextureSource, resize?: boolean) {
+        const gl = context.gl;
         if (!this.boundsBuffer) {
-            this.boundsBuffer = new VertexBuffer(gl, this._boundsArray);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray);
         }
 
         if (!this.boundsVAO) {
@@ -201,7 +203,7 @@ class ImageSource extends Evented implements Source {
 
         if (!this.textureLoaded) {
             this.textureLoaded = true;
-            this.texture = new Texture(gl, image, gl.RGBA);
+            this.texture = new Texture(context, image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         } else if (resize) {
             this.texture.update(image);

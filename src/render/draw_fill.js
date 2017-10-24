@@ -20,8 +20,8 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         return;
     }
 
-    const gl = painter.gl;
-    gl.enable(gl.STENCIL_TEST);
+    const context = painter.context;
+    context.stencilTest.set(true);
 
     const pass = (!layer.paint.get('fill-pattern') &&
         color.constantOr(Color.transparent).a === 1 &&
@@ -32,14 +32,14 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         painter.setDepthSublayer(1);
-        painter.depthMask(painter.renderPass === 'opaque');
+        context.depthMask.set(painter.renderPass === 'opaque');
         drawFillTiles(painter, sourceCache, layer, coords, drawFillTile);
     }
 
     // Draw stroke
     if (painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
         painter.lineWidth(2);
-        painter.depthMask(false);
+        context.depthMask.set(false);
 
         // If we defined a different color for the fill outline, we are
         // going to ignore the bits in 0x07 and just care about the global
@@ -70,13 +70,13 @@ function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
 }
 
 function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
-    const gl = painter.gl;
+    const gl = painter.context.gl;
     const programConfiguration = bucket.programConfigurations.get(layer.id);
 
     const program = setFillProgram('fill', layer.paint.get('fill-pattern'), painter, programConfiguration, layer, tile, coord, firstTile);
 
     program.draw(
-        gl,
+        painter.context,
         gl.TRIANGLES,
         layer.id,
         bucket.layoutVertexBuffer,
@@ -86,7 +86,7 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTil
 }
 
 function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
-    const gl = painter.gl;
+    const gl = painter.context.gl;
     const programConfiguration = bucket.programConfigurations.get(layer.id);
     const pattern = layer.getPaintProperty('fill-outline-color') ? null : layer.paint.get('fill-pattern');
 
@@ -94,7 +94,7 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     program.draw(
-        gl,
+        painter.context,
         gl.LINES,
         layer.id,
         bucket.layoutVertexBuffer,
@@ -109,17 +109,17 @@ function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programCon
     if (!pat) {
         program = painter.useProgram(programId, programConfiguration);
         if (firstTile || program !== prevProgram) {
-            programConfiguration.setUniforms(painter.gl, program, layer.paint, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
         }
     } else {
         program = painter.useProgram(`${programId}Pattern`, programConfiguration);
         if (firstTile || program !== prevProgram) {
-            programConfiguration.setUniforms(painter.gl, program, layer.paint, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
             pattern.prepare(pat, painter, program);
         }
         pattern.setTile(tile, painter, program);
     }
-    painter.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
+    painter.context.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,
         layer.paint.get('fill-translate'),
         layer.paint.get('fill-translate-anchor')

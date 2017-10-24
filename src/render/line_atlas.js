@@ -2,6 +2,8 @@
 
 const util = require('../util/util');
 
+import type Context from '../gl/context';
+
 /**
  * A LineAtlas lets us reuse rendered dashed lines
  * by writing many of them to a texture and then fetching their positions
@@ -128,10 +130,11 @@ class LineAtlas {
         return pos;
     }
 
-    bind(gl: WebGLRenderingContext) {
+    bind(context: Context) {
+        const gl = context.gl;
         if (!this.texture) {
             this.texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            context.bindTexture.set(this.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -139,7 +142,7 @@ class LineAtlas {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.data);
 
         } else {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            context.bindTexture.set(this.texture);
 
             if (this.dirty) {
                 this.dirty = false;

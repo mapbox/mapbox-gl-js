@@ -18,22 +18,22 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         return;
     }
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
 
     painter.setDepthSublayer(0);
-    painter.depthMask(false);
+    context.depthMask.set(false);
 
     // Allow kernels to be drawn across boundaries, so that
     // large kernels are not clipped to tiles
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
-    renderToTexture(gl, painter, layer);
+    renderToTexture(context, painter, layer);
 
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    context.clear({ color: [0, 0, 0, 0] });
 
     // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-    gl.blendFunc(gl.ONE, gl.ONE);
+    context.blendFunc.set([gl.ONE, gl.ONE]);
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
@@ -50,7 +50,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('heatmap', programConfiguration);
         const {zoom} = painter.transform;
-        programConfiguration.setUniforms(gl, program, layer.paint, {zoom});
+        programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
         gl.uniform1f(program.uniforms.u_radius, layer.paint.get('heatmap-radius'));
 
         gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));
@@ -59,7 +59,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         program.draw(
-            gl,
+            context,
             gl.TRIANGLES,
             layer.id,
             bucket.layoutVertexBuffer,
@@ -68,21 +68,22 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             programConfiguration);
     }
 
-    renderTextureToMap(gl, painter, layer);
+    renderTextureToMap(context, painter, layer);
 }
 
-function renderToTexture(gl, painter, layer) {
-    gl.activeTexture(gl.TEXTURE1);
+function renderToTexture(context, painter, layer) {
+    const gl = context.gl;
+    context.activeTexture.set(gl.TEXTURE1);
 
     // Use a 4x downscaled screen texture for better performance
-    gl.viewport(0, 0, painter.width / 4, painter.height / 4);
+    context.viewport.set([0, 0, painter.width / 4, painter.height / 4]);
 
     let texture = layer.heatmapTexture;
     let fbo = layer.heatmapFbo;
 
     if (!texture) {
         texture = layer.heatmapTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        context.bindTexture.set(texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -90,47 +91,49 @@ function renderToTexture(gl, painter, layer) {
 
         fbo = layer.heatmapFbo = gl.createFramebuffer();
 
-        bindTextureFramebuffer(gl, painter, texture, fbo);
+        bindTextureFramebuffer(context, painter, texture, fbo);
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        context.bindTexture.set(texture);
+        context.bindFramebuffer.set(fbo);
     }
 }
 
-function bindTextureFramebuffer(gl, painter, texture, fbo) {
+function bindTextureFramebuffer(context, painter, texture, fbo) {
+    const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width / 4, painter.height / 4, 0, gl.RGBA,
         painter.extTextureHalfFloat ? painter.extTextureHalfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE, null);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    context.bindFramebuffer.set(fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
     // If using half-float texture as a render target is not supported, fall back to a low precision texture
     if (painter.extTextureHalfFloat && gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
         painter.extTextureHalfFloat = null;
-        bindTextureFramebuffer(gl, painter, texture, fbo);
+        bindTextureFramebuffer(context, painter, texture, fbo);
     }
 }
 
-function renderTextureToMap(gl, painter, layer) {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+function renderTextureToMap(context, painter, layer) {
+    const gl = context.gl;
+    context.bindFramebuffer.set(null);
 
-    gl.activeTexture(gl.TEXTURE2);
+    context.activeTexture.set(gl.TEXTURE2);
     let colorRampTexture = layer.colorRampTexture;
     if (!colorRampTexture) {
-        colorRampTexture = layer.colorRampTexture = new Texture(gl, layer.colorRamp, gl.RGBA);
+        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
     const program = painter.useProgram('heatmapTexture');
 
-    gl.viewport(0, 0, painter.width, painter.height);
+    context.viewport.set([0, 0, painter.width, painter.height]);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, layer.heatmapTexture);
+    context.activeTexture.set(gl.TEXTURE0);
+    context.bindTexture.set(layer.heatmapTexture);
 
     const opacity = layer.paint.get('heatmap-opacity');
     gl.uniform1f(program.uniforms.u_opacity, opacity);
@@ -141,12 +144,12 @@ function renderTextureToMap(gl, painter, layer) {
     mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
-    gl.disable(gl.DEPTH_TEST);
+    context.depthTest.set(false);
 
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    painter.viewportVAO.bind(gl, program, painter.viewportBuffer);
+    painter.viewportVAO.bind(painter.context, program, painter.viewportBuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    gl.enable(gl.DEPTH_TEST);
+    context.depthTest.set(true);
 }

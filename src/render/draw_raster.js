@@ -15,16 +15,17 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    gl.enable(gl.DEPTH_TEST);
-    painter.depthMask(layer.paint.get('raster-opacity') === 1);
+    context.depthTest.set(true);
+    context.depthMask.set(layer.paint.get('raster-opacity') === 1);
     // Change depth function to prevent double drawing in areas where tiles overlap.
     gl.depthFunc(gl.LESS);
 
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
     // Constant parameters.
     gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));
@@ -54,10 +55,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         let parentScaleBy, parentTL;
 
-        gl.activeTexture(gl.TEXTURE0);
+        context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
-        gl.activeTexture(gl.TEXTURE1);
+        context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
             parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
@@ -78,11 +79,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         if (source instanceof ImageSource) {
             const buffer = source.boundsBuffer;
             const vao = source.boundsVAO;
-            vao.bind(gl, program, buffer);
+            vao.bind(context, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
             program.draw(
-                gl,
+                context,
                 gl.TRIANGLES,
                 layer.id,
                 tile.maskedBoundsBuffer,
@@ -92,12 +93,12 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         } else {
             const buffer = painter.rasterBoundsBuffer;
             const vao = painter.rasterBoundsVAO;
-            vao.bind(gl, program, buffer);
+            vao.bind(context, program, buffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         }
     }
 
-    gl.depthFunc(gl.LEQUAL);
+    context.depthFunc.set(gl.LEQUAL);
 }
 
 function spinWeights(angle) {
