@@ -16,10 +16,10 @@ class CircleStyleLayer extends StyleLayer {
     isOpacityZero(zoom: number) {
         return this.isPaintValueFeatureConstant('circle-opacity') &&
             this.getPaintValue('circle-opacity', { zoom: zoom }) === 0 &&
-            (this.isPaintValueFeatureConstant('circle-stroke-width') &&
+            ((this.isPaintValueFeatureConstant('circle-stroke-width') &&
                 this.getPaintValue('circle-stroke-width', { zoom: zoom }) === 0) ||
             (this.isPaintValueFeatureConstant('circle-stroke-opacity') &&
-                this.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0);
+                this.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0));
     }
 
     queryRadius(bucket: Bucket): number {
