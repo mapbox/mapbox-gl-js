@@ -78,8 +78,7 @@
       "type": "fill",
       "source": "geojson",
       "paint": {
-        "fill-color": "red",
-        "fill-outline-color": "blue"
+        "fill-color": "red"
       }
     }
   ]
