@@ -718,8 +718,8 @@ navigation:
           <code>"paint"</code> object. Changes to a paint property are cheap and happen synchronously.
       </p>
       <p class='space-bottom4 quiet small'>Key:
-        <a class='icon smooth-ramp quiet micro space-right inline' href='#types-expression-curve' title='Supports all interpolation types'>supports all interpolation types</a>
-        <a class='icon step-ramp quiet micro space-right inline' href='#types-expression-curve' title='Supports step interpolation only'>supports "step" interpolation only</a>
+        <a class='icon smooth-ramp quiet micro space-right inline' href='#expressions-curve' title='Supports all interpolation types'>supports all interpolation types</a>
+        <a class='icon step-ramp quiet micro space-right inline' href='#expressions-curve' title='Supports step interpolation only'>supports "step" interpolation only</a>
         <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
       </p>
 
@@ -876,6 +876,16 @@ navigation:
       </tbody>
       </table>
 
+      <h3>Syntax</h3>
+      <p>Mapbox GL JS expressions uses a Lisp-like syntax, represented using JSON arrays. Expressions follow this format:</p>
+      <div class='col12 space-bottom'>
+{% highlight js %}
+[expression_name, argument_0, argurment_1, ...]
+{% endhighlight %}
+    </div>
+    <p>The <code>expression_name</code> is the name of a specific expression, e.g. <a href="#expressions-*"><code>'*'</code></a> or <a href="#expressions-case"><code>'case'</code></a>.  Each <code>argument_i</code> is either a literal value (a string, number, boolean, or <code>null</code>), or else another expression in the array form above.</p>
+
+      <h3>Property expressions</h3>
       <p>A <a id="property-expression" class="anchor"></a><strong>property expression</strong> is any expression defined using an expression that includes a reference to feature property data. Property expressions allow the appearance of a feature to change with its properties. They can be used to visually differentate types of features within the same layer or create data visualizations.</p>
 
       <h4>Example: a property expression</h4>
@@ -894,9 +904,29 @@ navigation:
 {% endhighlight %}
       </div>
 
+      <p>In this example <code>["get", "temperature"]</code> uses <a href="#expressions-get"><code>'get'</code></a> to look up the <code>"temperature"</code> property of each feature.  That value is then used in the <a href="#expressions-rgb"><code>'rgb'</code></a> expression to define a color in terms of its red, green, and blue components.
+
+      <h3>Zoom expressions</h3>
       <p>A <a id="zoom-expression" class="anchor"></a><strong>zoom expression</strong> is any expression defined using an expression that includes <code>["zoom"]</code>.  Such expressions allow the the appearance of a layer to change with the map’s zoom level. Zoom expressions can be used to create the illusion of depth and control data density.</p>
 
-      <p>Any zoom expression used in a layout or paint property must be of the following form (see <a href="#types-expression-curve">curves</a> for more details):</p>
+      <h4>Example: a zoom-only expression</h4>
+      <div class='col12 space-bottom'>
+{% highlight js %}
+{
+    "circle-radius": [
+        "curve", ["linear"], ["zoom"],
+        // zoom is 5 (or less) -> circle radius will be 1px
+        5, 1,
+        // zoom is 10 (or greater) -> circle radius will be 2px
+        10, 2
+    ]
+}
+{% endhighlight %}
+      </div>
+
+      <p>This example uses a <a href="#expressions-curve"><code>'curve'</code></a> expression to define a linear relationship between zoom level and circle size using a set of input-output pairs.  In this case, the expression indicates that the circle radius should be 1 pixel when the zoom level is 5, and 2 pixels when the zoom is 10. (See <a href="#expressions-curve"><code>the 'curve' documentation</code></a> for more details.)
+
+      <p>Note that any zoom expression used in a layout or paint property must be of the following form:</p>
 
       <div class='col12 space-bottom'>
 {% highlight js %}
@@ -916,22 +946,7 @@ navigation:
 {% endhighlight %}
       </div>
 
-      <p>That is, in layout or paint properties, <code>["zoom"]</code> may only appear as the input to an outer <a href="#types-expression-curve">curve</a>, and may not appear anywhere else in the expression.</p>
-
-      <h4>Example: a zoom-only expression</h4>
-      <div class='col12 space-bottom'>
-{% highlight js %}
-{
-    "circle-radius": [
-        "curve", ["linear"], ["zoom"],
-        // zoom is 5 (or less) -> circle radius will be 1px
-        5, 1,
-        // zoom is 10 (or greater) -> circle radius will be 2px
-        10, 2
-    ]
-}
-{% endhighlight %}
-      </div>
+      <p>That is, in layout or paint properties, <code>["zoom"]</code> may only appear as the input to an outer <a href="#expressions-curve">curve</a>, and may not appear anywhere else in the expression.</p>
 
       <h4>Example: a zoom-and-property expression</h4>
       <p>Combining zoom and property expressions allows a layer's or appearance to change with both the zoom level <em>and</em> each feature's properties.</p>
@@ -941,11 +956,9 @@ navigation:
 {
     "circle-radius": [
         "curve", ["linear"], ["zoom"],
-        // zoom is 0 and "rating" is 0 -> circle radius will be 0px
-        // zoom is 0 and "rating" is 5 -> circle radius will be 5px
+        // when zoom is 0, set each feature's circle radius to the value of its "rating" property
         0, ["get", "rating"],
-        // zoom is 10 and "rating" is 0 -> circle radius will be 4 * 0 = 0px
-        // zoom is 10 and "rating" is 5 -> circle radius will be 4 * 5 = 20px
+        // when zoom is 0, set each feature's circle radius to four times the value of its "rating" property
         10, ["*", 4, ["get", "rating"]]
     ]
 }
@@ -954,10 +967,39 @@ navigation:
 
       <p>There is an important difference between <em>layout</em> and <em>paint</em> properties in the way that expressions are evaluated. Paint properties are re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the expression will be re-evaluated, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom expression, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
 
+      <h3>Expression reference</h3>
+
       <div class='keyline-all fill-white'>
       <% for (var group of groupedExpressions) { %>
         <div class='pad2 keyline-bottom'>
           <h4 style='font-size: 100%' class="pad2x"><a id='expressions-<%= group.slug %>' href='#expressions-<%= group.slug %>'><%= group.name %></a></h4>
+
+          <% if (group.slug === 'types') { %>
+          <p>
+            The expressions in this section are provided for the purpose of
+            testing for and converting between different data types like strings,
+            numbers, and boolean values.</p>
+          <p>Often, such tests and conversions are
+            unnecessary, but they may be necessary in some expressions where the
+            type of a certain sub-expression is ambiguous.  They can also be
+            useful in cases where your feature data has inconsistent types; for
+            example, you could use <code>to-number</code> to make sure that
+            values like <code>"1.5"</code> (instead of <code>1.5</code>) are
+            treated as numeric values.
+          </p>
+          <% } else if (group.slug === 'decision') { %>
+          <p>
+            The expressions in this section can be used to add conditional
+            logic to your styles. For example, the <a
+              href="#expressions-case"><code>'case'</code></a> expression
+            provides basic "if/then/else" logic, and <a
+              href="#expressions-match"><code>'match'</code></a> allows you to
+            map specific values of an input expression to different output
+            expressions.
+          </p>
+
+          <% } %>
+
           <% for (var expression of group.expressions) { %>
             <%= renderExpression(expression) %>
           <% } %>
