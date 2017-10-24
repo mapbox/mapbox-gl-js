@@ -13,16 +13,16 @@ class LayerBenchmark extends Benchmark {
             style: this.layerStyle
         }).then(map => {
             this.map = map;
+
+            this.map.on('error', (e) => {
+                console.error(e);
+            });
         }).catch(error => {
             console.error(error);
         });
     }
 
     bench() {
-        this.map.on('error', (e) => {
-            console.error(e);
-        });
-
         this.map._styleDirty = true;
         this.map._sourcesDirty = true;
         this.map._render();
