@@ -1,0 +1,38 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "queryGeometry": [
+        10,
+        32
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "white",
+        "circle-stroke-width": 10,
+        "circle-stroke-color": "black"
+      }
+    }
+  ]
+}
