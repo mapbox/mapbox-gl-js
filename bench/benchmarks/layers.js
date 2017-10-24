@@ -133,7 +133,7 @@ class LayerHeatmap extends LayerBenchmark {
                     ]
                 }
             }]
-        })
+        });
     }
 }
 
