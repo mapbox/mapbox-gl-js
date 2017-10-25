@@ -1139,14 +1139,14 @@ export default class extends React.Component {
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td><code>layout and paint properties</code></td>
+                                    <td>Layout and paint property expressions</td>
                                     <td className='center'>&gt;= 0.41.0</td>
                                     <td className='center'>Not yet supported</td>
                                     <td className='center'>Not yet supported</td>
                                     <td className='center'>Not yet supported</td>
                                 </tr>
                                 <tr>
-                                    <td><code>filter</code></td>
+                                    <td>Filter expressions</td>
                                     <td className='center'>&gt;= 0.41.0</td>
                                     <td className='center'>Not yet supported</td>
                                     <td className='center'>Not yet supported</td>
