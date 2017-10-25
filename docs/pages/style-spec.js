@@ -1119,8 +1119,8 @@ export default class extends React.Component {
                             <a id='expressions' className='anchor'/>
                             <h2><a href='#expressions' title='link to expressions'>Expressions</a></h2>
 
-                            <p>The value for any <a href="#layer-layout">layout property</a>, <a
-                                href="#layer-paint">paint property</a>, or <a
+                            <p>The value for any <a href="#layout-property">layout property</a>, <a
+                                href="#paint-property">paint property</a>, or <a
                                 href="#layer-filter">filter</a> may be specified as an <em>expression</em>.
                                 Expressions define how one or more feature
                                 property values and/or the current zoom level are combined using
