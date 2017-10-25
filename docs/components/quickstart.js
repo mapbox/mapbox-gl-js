@@ -121,9 +121,9 @@ export default class extends React.Component {
 
                     <div className='rounded-toggle space-bottom2 inline'>
                         <a onClick={() => this.setState({tab: 'cdn'})}
-                           className={this.state.tab === 'cdn' ? 'active' : ''}>Mapbox CDN</a>
+                            className={this.state.tab === 'cdn' ? 'active' : ''}>Mapbox CDN</a>
                         <a onClick={() => this.setState({tab: 'bundler'})}
-                           className={this.state.tab !== 'cdn' ? 'active' : ''}>module bundler</a>
+                            className={this.state.tab !== 'cdn' ? 'active' : ''}>module bundler</a>
                     </div>
 
                     {this.state.tab === 'cdn' && <QuickstartCDN token={this.props.token}/>}

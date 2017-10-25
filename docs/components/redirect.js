@@ -10,4 +10,4 @@ export default function (target) {
             return null;
         }
     };
-};
+}

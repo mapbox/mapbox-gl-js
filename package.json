@@ -138,7 +138,7 @@
     "build-docs": "documentation build --github --format json --config ./docs/documentation.yml --output docs/components/api.json src/index.js",
     "build": "run-s build-docs && DEPLOY_ENV=production batfish build # invoked by publisher when publishing docs on the mb-pages branch",
     "start-docs": "run-s build-min build-docs && DEPLOY_ENV=local batfish start",
-    "lint": "eslint --cache --ignore-path .gitignore src test bench docs/pages/example/*.html debug/*.html",
+    "lint": "eslint --cache --ignore-path .gitignore src test bench docs docs/pages/example/*.html debug/*.html",
     "lint-docs": "documentation lint src/index.js",
     "lint-css": "stylelint 'dist/mapbox-gl.css'",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/pages/example/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",

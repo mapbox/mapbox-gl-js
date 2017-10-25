@@ -1,6 +1,8 @@
 /docs/components/api.json
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
+/docs/pages/dist/mapbox-gl-dev.js
+/docs/pages/dist/mapbox-gl.js
 *.js.map
 node_modules
 npm-debug.log

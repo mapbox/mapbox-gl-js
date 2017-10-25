@@ -85,7 +85,7 @@ ${html}
                     <LeftNav>
                         <div className="space-bottom">
                             <input onChange={e => this.setState({filter: e.target.value})}
-                                   type='text' className='space-bottom' name='filter' placeholder='Filter examples' />
+                                type='text' className='space-bottom' name='filter' placeholder='Filter examples' />
                         </div>
                         {entries(tags).map(([tag, title], i) =>
                             <div key={i} className='space-bottom1'>
@@ -124,7 +124,7 @@ ${html}
 
                                 {supported() &&
                                     <iframe id='demo' className='row10 col12' allowFullScreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'
-                                            ref={(iframe) => { this.iframe = iframe; }}/>}
+                                        ref={(iframe) => { this.iframe = iframe; }}/>}
 
                                 <div className='fill-white js-replace-token keyline-top'>
                                     <div id='code'>{highlightMarkup(this.displayHTML())}</div>
@@ -154,5 +154,5 @@ ${html}
             this.setState({copied: true});
             setTimeout(() => this.setState({copied: false}), 1000);
         }
-    }
-};
+    };
+}
