@@ -11,11 +11,6 @@ import type StyleLayer from '../style/style_layer';
 const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 
-
-//size of raster terrain tile
-const TERRAIN_TILE_WIDTH = 256;
-const TERRAIN_TILE_HEIGHT = 256;
-
 module.exports = drawHillshade;
 
 function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
@@ -114,6 +109,8 @@ function prepareHillshade(painter, tile) {
     // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
     if (tile.dem && tile.dem.level) {
+        const tileSize = tile.dem.level.dim;
+
         const pixelData = tile.dem.getPixels();
         gl.activeTexture(gl.TEXTURE1);
 
@@ -137,12 +134,12 @@ function prepareHillshade(painter, tile) {
         gl.activeTexture(gl.TEXTURE0);
 
         if (!tile.texture) {
-            tile.texture = new RenderTexture(painter, TERRAIN_TILE_HEIGHT, TERRAIN_TILE_WIDTH);
+            tile.texture = new RenderTexture(painter, tileSize, tileSize);
         } else {
-            tile.texture.clear(TERRAIN_TILE_HEIGHT, TERRAIN_TILE_WIDTH);
+            tile.texture.clear(tileSize, tileSize);
         }
 
-        gl.viewport(0, 0, TERRAIN_TILE_HEIGHT, TERRAIN_TILE_WIDTH);
+        gl.viewport(0, 0, tileSize, tileSize);
 
 
 
@@ -155,7 +152,7 @@ function prepareHillshade(painter, tile) {
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
         gl.uniform1f(program.uniforms.u_zoom, tile.coord.z);
-        gl.uniform2fv(program.uniforms.u_dimension, [512, 512]);
+        gl.uniform2fv(program.uniforms.u_dimension, [tileSize * 2, tileSize * 2]);
         gl.uniform1i(program.uniforms.u_image, 1);
 
         const buffer = painter.rasterBoundsBuffer;
