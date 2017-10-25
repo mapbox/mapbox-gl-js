@@ -354,16 +354,16 @@ a.mapboxgl-ctrl-logo {
 
 .mapboxgl-user-location-dot {
     background-color: #1da1f2;
-    width: 17px;
-    height: 17px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
 }
 .mapboxgl-user-location-dot::before {
     background-color: #1da1f2;
     content: '';
-    width: 17px;
-    height: 17px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     position: absolute;
     -webkit-animation: mapboxgl-user-location-dot-pulse 2s infinite;
@@ -375,24 +375,26 @@ a.mapboxgl-ctrl-logo {
     border-radius: 50%;
     border: 2px solid #fff;
     content: '';
-    height: 17px;
+    height: 15px;
+    left: -2px;
     position: absolute;
-    width: 17px;
+    top: -2px;
+    width: 15px;
 }
 
 @-webkit-keyframes mapboxgl-user-location-dot-pulse {
     0%   { -webkit-transform: scale(1); opacity: 1; }
-    70%  { -webkit-transform: scale(2); opacity: 0; }
+    70%  { -webkit-transform: scale(3); opacity: 0; }
     100% { -webkit-transform: scale(1); opacity: 0; }
 }
 @-ms-keyframes mapboxgl-user-location-dot-pulse {
     0%   { -ms-transform: scale(1); opacity: 1; }
-    70%  { -ms-transform: scale(2); opacity: 0; }
+    70%  { -ms-transform: scale(3); opacity: 0; }
     100% { -ms-transform: scale(1); opacity: 0; }
 }
 @keyframes mapboxgl-user-location-dot-pulse {
     0%   { transform: scale(1); opacity: 1; }
-    70%  { transform: scale(2); opacity: 0; }
+    70%  { transform: scale(3); opacity: 0; }
     100% { transform: scale(1); opacity: 0; }
 }
 .mapboxgl-user-location-dot-stale {
