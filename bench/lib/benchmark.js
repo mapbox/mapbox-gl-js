@@ -48,7 +48,7 @@ class Benchmark {
      * Run the benchmark by executing `setup` once, sampling the execution time of `bench` some number of
      * times, and then executing `teardown`. Yields an array of execution times.
      */
-    run(): Promise<Array<Measurement>> {
+    run(): Promise<?Array<Measurement>> {
         return Promise.resolve(this.setup())
             .then(() => this._begin())
             .catch(e => {
