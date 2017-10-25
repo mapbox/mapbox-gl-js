@@ -14,9 +14,9 @@ const meta = {
 };
 
 const createFormatters = require('documentation/lib/output/util/formatters');
-const createLinkerStack = require('documentation/lib/output/util/linker_stack');
+const LinkerStack = require('documentation/lib/output/util/linker_stack');
 
-const linkerStack = createLinkerStack({})
+const linkerStack = new LinkerStack({})
     .namespaceResolver(docs, function (namespace) {
         const slugger = new GithubSlugger();
         return '#' + slugger.slug(namespace);
@@ -179,12 +179,12 @@ class Item extends React.Component {
                     <div className='clearfix'>
                         <h2 className='fl' id={section.namespace.toLowerCase()}>{section.name}</h2>
                         {section.context && section.context.github &&
-                            <a className='fr fill-darken0 round round pad1x quiet small' href={section.context.github}><span>{section.context.path}</span></a>}
+                            <a className='fr fill-darken0 round round pad1x quiet small' href={section.context.github.url}><span>{section.context.github.path}</span></a>}
                     </div>}
 
                 {md(section.description)}
 
-                {section.augments &&
+                {!empty(section.augments) &&
                     <p>Extends {section.augments.map((tag, i) =>
                         <span key={i} dangerouslySetInnerHTML={{__html: formatters.autolink(tag.name)}}/>)}.</p>}
 

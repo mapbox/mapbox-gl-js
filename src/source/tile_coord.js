@@ -122,13 +122,6 @@ class TileCoord {
         }
     }
 
-    /**
-     *
-     * @memberof Map
-     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
-     * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
-     * @private
-     */
     isChildOf(parent: any) {
         // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
         return parent.z === 0 || (parent.z < this.z && parent.x === (this.x >> (this.z - parent.z)) && parent.y === (this.y >> (this.z - parent.z)));

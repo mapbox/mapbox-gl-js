@@ -468,12 +468,7 @@ class Painter {
 
     /**
      * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
-     * @param {Float32Array} matrix
-     * @param {Tile} tile
-     * @param {Array<number>} translate
-     * @param {string} anchor
-     * @param {boolean} inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
-     *
+     * @param inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
      * @returns {Float32Array} matrix
      */
     translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {

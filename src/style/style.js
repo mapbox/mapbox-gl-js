@@ -543,7 +543,6 @@ class Style extends Evented {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
      */
     addLayer(layerObject: LayerSpecification, before?: string, options?: {validate?: boolean}) {
@@ -606,7 +605,6 @@ class Style extends Evented {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
      */
     moveLayer(id: string, before?: string) {
