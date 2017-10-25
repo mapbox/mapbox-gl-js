@@ -5,6 +5,8 @@ toc:
   - version
   - setRTLTextPlugin
   - AnimationOptions
+  - PaddingOptions
+  - RequestParameters
   - name: Geography & Geometry
     description: |
       `LngLat` and `LngLatBounds` represent points and rectanges in geographic

@@ -67,7 +67,7 @@ const valueMemberTypes = [
 /**
  * Returns null if `t` is a subtype of `expected`; otherwise returns an
  * error message.
- * * @private
+ * @private
  */
 function checkSubtype(expected: Type, t: Type): ?string {
     if (t.kind === 'error') {
