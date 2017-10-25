@@ -17,9 +17,9 @@ const createFormatters = require('documentation/lib/output/util/formatters');
 const LinkerStack = require('documentation/lib/output/util/linker_stack');
 
 const linkerStack = new LinkerStack({})
-    .namespaceResolver(docs, function (namespace) {
+    .namespaceResolver(docs, (namespace) => {
         const slugger = new GithubSlugger();
-        return '#' + slugger.slug(namespace);
+        return `#${slugger.slug(namespace)}`;
     });
 
 const formatters = createFormatters(linkerStack.link);
@@ -81,8 +81,8 @@ class TableOfContentsItem extends React.Component {
         return (
             <li>
                 <a href={href(doc)}
-                   className={`toggle-sibling rcon tight-icon ${this.state.disclosed ? 'caret-down strong' : 'caret-right'}`}
-                   onClick={() => this.setState({disclosed: !this.state.disclosed})}>{doc.name}</a>
+                    className={`toggle-sibling rcon tight-icon ${this.state.disclosed ? 'caret-down strong' : 'caret-right'}`}
+                    onClick={() => this.setState({disclosed: !this.state.disclosed})}>{doc.name}</a>
 
                 {this.state.disclosed &&
                     <div className='toggle-target space-bottom1'>
@@ -121,12 +121,12 @@ class ItemMember extends React.Component {
         return (
             <div className='keyline-bottom'>
                 <div id={member.namespace.toLowerCase()}
-                     className='clearfix small pointer toggle-sibling'
-                     onClick={(e) => {
-                         this.setState({disclosed: !this.state.disclosed});
-                         window.location = href(member);
-                         e.preventDefault();
-                     }}>
+                    className='clearfix small pointer toggle-sibling'
+                    onClick={(e) => {
+                        this.setState({disclosed: !this.state.disclosed});
+                        window.location = href(member);
+                        e.preventDefault();
+                    }}>
                     <div className='pad1y contain'>
                         <a className={`rcon pin-right pad1y dark-link ${this.state.disclosed ? 'caret-down strong' : 'caret-right'}`}/>
                         <span className='code strong strong truncate'>{member.name}</span>
@@ -190,7 +190,7 @@ class Item extends React.Component {
 
                 {section.kind === 'class' && !section.interface &&
                     <div className='code pad1 small round fill-light'
-                         dangerouslySetInnerHTML={{__html: `new ${section.name}${formatters.parameters(section)}`}}/>}
+                        dangerouslySetInnerHTML={{__html: `new ${section.name}${formatters.parameters(section)}`}}/>}
 
                 {section.version && <div>Version: {section.version}</div>}
                 {section.license && <div>License: {section.license}</div>}
@@ -223,15 +223,15 @@ class Item extends React.Component {
                                                 </tr>
                                             </thead>
                                             <tbody className='space-top1'>
-                                            {param.properties.map((property, i) =>
-                                                <tr key={i}>
-                                                    <td className='break-word'>
-                                                        <span className='code strong'>{property.name}</span>
-                                                        <code className='quiet'>{formatType(property.type)}</code>
-                                                        {property.default && <span>{'('}default <code>{property.default}</code>{')'}</span>}
-                                                    </td>
-                                                    <td className='break-word'><span>{md(property.description, true)}</span></td>
-                                                </tr>)}
+                                                {param.properties.map((property, i) =>
+                                                    <tr key={i}>
+                                                        <td className='break-word'>
+                                                            <span className='code strong'>{property.name}</span>
+                                                            <code className='quiet'>{formatType(property.type)}</code>
+                                                            {property.default && <span>{'('}default <code>{property.default}</code>{')'}</span>}
+                                                        </td>
+                                                        <td className='break-word'><span>{md(property.description, true)}</span></td>
+                                                    </tr>)}
                                             </tbody>
                                         </table>}
                                 </div>)}
@@ -312,7 +312,7 @@ export default class extends React.Component {
             <PageShell meta={meta} onUser={(_, token) => this.setState({token})}>
                 <LeftNav>
                     <div className='space-bottom1'>
-                      <span className='block truncate quiet'>API</span>
+                        <span className='block truncate quiet'>API</span>
                     </div>
                     <ul id='toc' className='list-reset h5 py1-ul'>
                         {docs.map((doc, i) => doc.kind === 'note' ?
@@ -333,10 +333,10 @@ export default class extends React.Component {
                             {docs.map((doc, i) => doc.kind === 'note' ?
                                 <Note key={i} {...doc}/> :
                                 <Item key={i} {...doc}/>)}
-                         </div>
+                        </div>
                     </div>
                 </div>
             </PageShell>
         );
     }
-};
+}

@@ -1,5 +1,5 @@
 import Prism from 'prismjs';
-import React from 'react';
+import React from 'react'; // eslint-disable-line no-unused-vars
 
 import 'prismjs/components/prism-json';
 
@@ -13,7 +13,7 @@ export default function prismHighlight(code, language) {
     if (dedentSize) {
         code = code.replace(new RegExp(`^ {0,${dedentSize}}`, 'mg'), '');
     }
-    return <pre><code className={`language-${language}`} dangerouslySetInnerHTML={highlight(code.trim(), language)}/></pre>
+    return <pre><code className={`language-${language}`} dangerouslySetInnerHTML={highlight(code.trim(), language)}/></pre>;
 }
 
 export function highlightMarkup(code) {
@@ -29,5 +29,5 @@ export function highlightJSON(code) {
 }
 
 export function highlightShell(code) {
-    return <pre><code className={`language-shell`}/>{code}</pre>
+    return <pre><code className={`language-shell`}/>{code}</pre>;
 }

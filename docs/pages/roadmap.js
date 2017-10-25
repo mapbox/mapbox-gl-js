@@ -1,6 +1,4 @@
 import React from 'react';
-import slug from 'slugg';
-import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import PageShell from '../components/page_shell';
 import LeftNav from "../components/left_nav";
 import TopNav from "../components/top_nav";
@@ -138,10 +136,10 @@ export default class extends React.Component {
                                                     <div className="space-top">
                                                         {item.issues && item.issues.map((issue, i) =>
                                                             <code key={i}><a target="_blank" className="roadmap-issue"
-                                                                             href={`https://github.com/mapbox/mapbox-gl-js/issues/${issue}`}>#{issue}</a></code>)}
+                                                                href={`https://github.com/mapbox/mapbox-gl-js/issues/${issue}`}>#{issue}</a></code>)}
                                                         {item.project &&
                                                         <code><a target="_blank"
-                                                                 href={`https://github.com/mapbox/mapbox-gl-js/projects/${item.project}`}>project#{item.project}</a></code>}
+                                                            href={`https://github.com/mapbox/mapbox-gl-js/projects/${item.project}`}>project#{item.project}</a></code>}
                                                     </div>
                                                 </div>
                                             )}
@@ -155,4 +153,4 @@ export default class extends React.Component {
             </PageShell>
         );
     }
-};
+}

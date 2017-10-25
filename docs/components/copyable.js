@@ -11,7 +11,7 @@ export default class extends React.Component {
         return (
             <div className='space-bottom1 contain'>
                 <a className='icon clipboard' style={{position: 'absolute', right: '10px', bottom: '10px'}}
-                   href='#' onClick={(e) => this.copy(e)}>{this.state.copied && 'Copied to clipboard!'}</a>
+                    href='#' onClick={(e) => this.copy(e)}>{this.state.copied && 'Copied to clipboard!'}</a>
                 <div ref={(ref) => { this.ref = ref; }}>{this.props.children}</div>
             </div>
         );
