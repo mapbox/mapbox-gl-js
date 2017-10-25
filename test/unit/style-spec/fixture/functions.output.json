@@ -184,7 +184,7 @@
     "line": 934
   },
   {
-    "message": "layers[52].paint.line-dasharray: interpolation type must be \"step\" for this property",
+    "message": "layers[52].paint.line-dasharray: Type array<number> is not interpolatable, and thus cannot be used as a linear curve's output type.",
     "line": 943
   }
 ]
