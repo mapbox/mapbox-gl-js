@@ -308,43 +308,55 @@ class Item extends React.Component {
     render() {
         return (
             <div className='col12 clearfix pad0y pad2x'>
-                <div>
-                    <span className='code space-right'><a id={this.props.id}
-                                                          href={`#${this.props.id}`}>{this.props.name}</a></span>
-                    {this.props.function === "interpolated" &&
-                    <span className='icon smooth-ramp inline quiet' title='Supports interpolated functions'/>}
-                    {this.props.function === "piecewise-constant" &&
-                    <span className='icon step-ramp inline quiet' title='Supports piecewise constant functions'/>}
-                    {this.props.transition &&
-                    <span className='icon opacity inline quiet' title='Transitionable'/>}
+                <div className='code space-bottom1'>
+                    <a id={this.props.id} href={`#${this.props.id}`}>{this.props.name}</a>
                 </div>
 
-                <div>
-                    <em className='inline quiet'>
-                        <span>{this.props.required ? 'Required' : 'Optional'}
+                <div className='space-bottom1'>
+                    {this.props.kind === 'paint' &&
+                    <em className='quiet'><a href='#paint-property'>Paint</a> property. </em>}
+                    {this.props.kind === 'layout' &&
+                    <em className='quiet'><a href='#layout-property'>Layout</a> property. </em>}
+
+                    <em className='quiet'>
+                        {this.props.required ? 'Required' : 'Optional'}
                         {this.props.type && this.props.type !== '*' &&
-                        <span> <a href={`#types-${this.props.type}`}>{this.props.type}</a></span>}.&nbsp;</span>
-                    </em>
+                        <span> <a href={`#types-${this.props.type}`}>{this.props.type}</a></span>}
+                        {'minimum' in this.props && 'maximum' in this.props &&
+                        <span> between <var>{this.props.minimum}</var> and <var>{this.props.maximum}</var> inclusive</span>}
+                        {'minimum' in this.props && !('maximum' in this.props) &&
+                        <span> greater than or equal to <var>{this.props.minimum}</var></span>}
+                        {!('minimum' in this.props) && 'maximum' in this.props &&
+                        <span> less than or equal to <var>{this.props.minimum}</var></span>}. </em>
 
                     {this.props.values && !Array.isArray(this.props.values) && // skips $root.version
-                    <span className='space-right quiet'>
-                            <em>One of</em> {Object.keys(this.props.values)
+                    <em className='quiet'>
+                        One of {Object.keys(this.props.values)
                             .map((opt, i) => <var key={i}>{opt}</var>)
-                            .reduce((prev, curr) => [prev, ', ', curr])}. </span>}
+                            .reduce((prev, curr) => [prev, ', ', curr])}. </em>}
 
                     {this.props.units &&
-                    <span className='space-right quiet'>
-                            <em>Units in</em> <var>{this.props.units}</var>. </span>}
+                    <em className='quiet'>
+                        Units in <var>{this.props.units}</var>. </em>}
 
                     {this.props.default !== undefined &&
-                    <span className='space-right quiet'>
-                            <em>Defaults to </em> <var>{typeof this.props.default !== 'string' ?
-                        JSON.stringify(this.props.default) :
-                        this.props.default}</var>. </span>}
+                    <em className='quiet'>
+                        Defaults to <var>{typeof this.props.default !== 'string' ? JSON.stringify(this.props.default) : this.props.default}</var>. </em>}
 
                     {this.props.requires &&
-                    <span className='space-right quiet'>
-                            {this.props.requires.map((r, i) => this.requires(r, i))} </span>}
+                    <em className='quiet'>
+                        {this.props.requires.map((r, i) => this.requires(r, i))} </em>}
+
+                    {this.props.function === "interpolated" &&
+                    <em className='quiet'>
+                        Supports all <a href='#expressions-curve'><span className='icon smooth-ramp inline'/>curve</a> types. </em>}
+
+                    {this.props.function === "piecewise-constant" &&
+                    <em className='quiet'>
+                        Supports <a href='#expressions-curve'><span className='icon step-ramp inline' /><code>step</code> curves</a> only. </em>}
+
+                    {this.props.transition &&
+                    <em className='quiet'><span className='icon opacity inline quiet' />Transitionable. </em>}
                 </div>
 
                 {this.props.doc &&
@@ -1003,37 +1015,24 @@ export default class extends React.Component {
                                 <code>paint</code> properties.
                             </p>
                             <p>
-                                <em>Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the
+                                <em id="layout-property">Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the
                                 rendering process and define how data for that layer is passed to the GPU. Changes to a layout property
                                 require an asynchronous "layout" step.
                             </p>
                             <p>
-                                <em>Paint properties</em> are applied later in the rendering process. Paint properties appear in the layer's
+                                <em id="paint-property">Paint properties</em> are applied later in the rendering process. Paint properties appear in the layer's
                                 <code>"paint"</code> object. Changes to a paint property are cheap and happen synchronously.
                             </p>
-                            <p className='space-bottom4 quiet small'>Key:
-                                <a className='icon smooth-ramp quiet micro space-right inline' href='#expressions-curve' title='Supports all interpolation types'>supports all interpolation types</a>
-                                <a className='icon step-ramp quiet micro space-right inline' href='#expressions-curve' title='Supports step interpolation only'>supports "step" interpolation only</a>
-                                <span className='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
-                            </p>
                             <div className='space-bottom4 fill-white keyline-all'>
-                                {layerTypes.map((t, i) =>
-                                    <div key={i} id={`layers-${t}`} className='pad2 keyline-bottom'>
-                                        <h3 className='space-bottom1'><a href={`#layers-${t}`} title={`link to layer: ${t}`}>{t}</a></h3>
+                                {layerTypes.map((type, i) =>
+                                    <div key={i} id={`layers-${type}`} className='pad2 keyline-bottom'>
+                                        <h3 className='space-bottom1'><a href={`#layers-${type}`}>{type}</a></h3>
 
-                                        <div>
-                                            <h4 className='pad1y'><a href={`#layout_${t}`} title={`link to layout: ${t}`} className='quiet'>Layout Properties</a></h4>
-                                            { Object.keys(ref[`layout_${t}`]).length === 0 ?
-                                                <div className='col12 clearfix pad0y space-bottom1'><span className='quiet'>None</span></div> :
-                                                entries(ref['layout_'+t]).map(([name, prop], i) =>
-                                                    <Item key={i} id={`layout-${t}-${name}`} name={name} {...prop}/> ) }
-                                        </div>
+                                        { entries(ref[`layout_${type}`]).map(([name, prop], i) =>
+                                            <Item key={i} id={`layout-${type}-${name}`} name={name} kind="layout" {...prop}/> )}
 
-                                        <div>
-                                            <h4 className='pad1y'><a href={`#paint_${t}`} title={`link to paint: ${t}`} className='quiet'>Paint Properties</a></h4>
-                                            { entries(ref[`paint_${t}`]).map(([name, prop], i) =>
-                                                <Item key={i} id={`paint-${t}-${name}`} name={name} {...prop}/> ) }
-                                        </div>
+                                        { entries(ref[`paint_${type}`]).map(([name, prop], i) =>
+                                            <Item key={i} id={`paint-${type}-${name}`} name={name} kind="paint" {...prop}/> )}
                                     </div>)}
                             </div>
                         </div>
