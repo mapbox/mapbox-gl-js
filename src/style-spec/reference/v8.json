@@ -436,10 +436,6 @@
     "paint": {
       "type": "paint",
       "doc": "Default paint properties for this layer."
-    },
-    "paint.*": {
-      "type": "paint",
-      "doc": "[Deprecated] Class-specific paint properties for this layer. The class name is the part after the first dot. Note: style classes are deprecated and will be removed in the next version of this spec."
     }
   },
   "layout": [
