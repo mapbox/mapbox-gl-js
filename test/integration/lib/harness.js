@@ -217,7 +217,7 @@ module.exports = function (directory, implementation, options, run) {
         const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
-        const failed = results.filter(r => /failed/.test(r.status));
+        const failed = results.filter(r => r.status === 'failed');
 
         const resultsShell = resultsTemplate({ failed, sequence, shuffle: options.shuffle, seed: options.seed })
             .split('<!-- results go here -->');
