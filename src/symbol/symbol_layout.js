@@ -85,7 +85,7 @@ function performSymbolLayout(bucket: SymbolBucket,
                     bucket.layers[0].getLayoutValue('icon-anchor', {zoom: bucket.zoom}, feature));
                 if (bucket.sdfIcons === undefined) {
                     bucket.sdfIcons = image.sdf;
-                } else if (this.sdfIcons !== image.sdf) {
+                } else if (bucket.sdfIcons !== image.sdf) {
                     util.warnOnce('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                 }
                 if (image.pixelRatio !== bucket.pixelRatio) {
