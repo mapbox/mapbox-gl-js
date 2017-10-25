@@ -10,11 +10,11 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function() {
-    //Add a geojson point source.  
+    //Add a geojson point source.
     //Heatmap layers also work with a vector tile source.
     map.addSource('earthquakes', {
         "type": "geojson",
-        "data": "{{site.baseurl}}/assets/earthquakes.geojson"
+        "data": "/mapbox-gl-js/assets/earthquakes.geojson"
     });
 
     map.addLayer({

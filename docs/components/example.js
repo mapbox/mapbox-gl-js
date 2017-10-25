@@ -22,7 +22,6 @@ const tags = {
 };
 
 export default function (html) {
-    html = html.replace(/{{site.baseurl}}/g, prefixUrl(''));
     return class extends React.Component {
         constructor(props) {
             super(props);
