@@ -39,11 +39,20 @@
 </div>
 <% } %>
 <button id='toggle-passed'>Toggle showing passed tests</button>
+<button id='toggle-ignored'>Toggle showing ignored tests</button>
 <script>
 const passedButton = document.getElementById('toggle-passed');
 passedButton.addEventListener('click', function (e) {
   const passed = document.querySelectorAll('tr.passed');
   for (const row of passed) {
+    row.classList.toggle('hide');
+  }
+});
+
+const ignoredButton = document.getElementById('toggle-ignored');
+ignoredButton.addEventListener('click', function (e) {
+  const ignored = document.querySelectorAll('tr.ignored');
+  for (const row of ignored) {
     row.classList.toggle('hide');
   }
 });
