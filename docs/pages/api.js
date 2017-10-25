@@ -149,6 +149,7 @@ class ItemMember extends React.Component {
 
     componentDidMount() {
         window.addEventListener("hashchange", this.hashChange);
+        this.hashChange();
     }
 
     componentWillUnmount() {
