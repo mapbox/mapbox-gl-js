@@ -53,6 +53,16 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('initial bounds in constructor options', (t) => {
+        const bounds = [[-133, 16], [-68, 50]];
+        const map = createMap({bounds});
+
+        t.deepEqual(fixedLngLat(map.getCenter(), 4), { lng: -100.5, lat: 34.7171 });
+        t.equal(fixedNum(map.getZoom(), 3), 2.469);
+
+        t.end();
+    });
+
     t.test('disables handlers', (t) => {
         t.test('disables all handlers', (t) => {
             const map = createMap(t, {interactive: false});
