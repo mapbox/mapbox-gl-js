@@ -55,7 +55,7 @@
     "browserify": "^14.0.0",
     "coveralls": "^2.11.8",
     "derequire": "^2.0.6",
-    "documentation": "4.0.0-beta12",
+    "documentation": "5.3.3",
     "envify": "^4.0.0",
     "eslint": "4.1.1",
     "eslint-config-mourner": "^2.0.0",

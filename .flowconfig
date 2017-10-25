@@ -6,6 +6,7 @@
 .*/node_modules/babel-plugin-transform-react-remove-prop-types/.*
 .*/node_modules/conventional-changelog-core/.*
 .*/node_modules/htmltojsx/.*
+.*/node_modules/documentation/.*
 .*/test/unit/style-spec/fixture/invalidjson.input.json
 
 [options]

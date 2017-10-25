@@ -698,12 +698,12 @@ class Map extends Camera {
      * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
      * either a single point or southwest and northeast points describing a bounding box.
      * Omitting this parameter (i.e. calling {@link Map#queryRenderedFeatures} with zero arguments,
-     * or with only a `parameters` argument) is equivalent to passing a bounding box encompassing the entire
+     * or with only a `options` argument) is equivalent to passing a bounding box encompassing the entire
      * map viewport.
-     * @param {Object} [parameters]
-     * @param {Array<string>} [parameters.layers] An array of style layer IDs for the query to inspect.
+     * @param {Object} [options]
+     * @param {Array<string>} [options.layers] An array of style layer IDs for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
-     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
+     * @param {Array} [options.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
@@ -764,17 +764,27 @@ class Map extends Camera {
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
-    queryRenderedFeatures(...args: [PointLike | [PointLike, PointLike], Object] | [PointLike | [PointLike, PointLike]] | [Object]) {
-        let params = {};
-        let geometry;
-
-        if (args.length === 2) {
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object) {
+        // The first parameter can be omitted entirely, making this effectively an overloaded method
+        // with two signatures:
+        //
+        //     queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: Object)
+        //     queryRenderedFeatures(options?: Object)
+        //
+        // There no way to express that in a way that's compatible with both flow and documentation.js.
+        // Related: https://github.com/facebook/flow/issues/1556
+        if (arguments.length === 2) {
             geometry = arguments[0];
-            params = arguments[1];
-        } else if (args.length === 1 && isPointLike(args[0])) {
-            geometry = args[0];
-        } else if (args.length === 1) {
-            params = args[0];
+            options = arguments[1];
+        } else if (arguments.length === 1 && isPointLike(arguments[0])) {
+            geometry = arguments[0];
+            options = {};
+        } else if (arguments.length === 1) {
+            geometry = undefined;
+            options = arguments[0];
+        } else {
+            geometry = undefined;
+            options = {};
         }
 
         if (!this.style) {
@@ -783,7 +793,7 @@ class Map extends Camera {
 
         return this.style.queryRenderedFeatures(
             this._makeQueryGeometry(geometry),
-            params,
+            options,
             this.transform.zoom,
             this.transform.angle
         );
