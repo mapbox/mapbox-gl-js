@@ -1158,7 +1158,7 @@ export default class extends React.Component {
                             <h3>Syntax</h3>
                             <p>Mapbox GL JS expressions uses a Lisp-like syntax, represented using JSON arrays. Expressions follow this format:</p>
                             <div className='col12 space-bottom'>
-                                {highlightJSON(`[expression_name, argument_0, argurment_1, ...]`)}
+                                {highlightJSON(`[expression_name, argument_0, argument_1, ...]`)}
                             </div>
                             <p>The <code>expression_name</code> is the name of a specific expression, e.g. <a
                                 href="#expressions-*"><code>'*'</code></a> or <a
@@ -1178,12 +1178,12 @@ export default class extends React.Component {
                                 {highlightJSON(`
                                     {
                                         "circle-color": [
-                                        'rgb',
-                                        // red is higher when feature.properties.temperature is higher
-                                        ["get", "temperature"],
-                                        0,
-                                        // blue is higher when feature.properties.temperature is lower
-                                        ["-", 100, ["get", "temperature"]]
+                                            "rgb",
+                                            // red is higher when feature.properties.temperature is higher
+                                            ["get", "temperature"],
+                                            0,
+                                            // blue is higher when feature.properties.temperature is lower
+                                            ["-", 100, ["get", "temperature"]]
                                         ]
                                     }`)}
                             </div>
@@ -1206,11 +1206,11 @@ export default class extends React.Component {
                                 {highlightJSON(`
                                     {
                                         "circle-radius": [
-                                        "curve", ["linear"], ["zoom"],
-                                        // zoom is 5 (or less) -> circle radius will be 1px
-                                        5, 1,
-                                        // zoom is 10 (or greater) -> circle radius will be 2px
-                                        10, 2
+                                            "curve", ["linear"], ["zoom"],
+                                            // zoom is 5 (or less) -> circle radius will be 1px
+                                            5, 1,
+                                            // zoom is 10 (or greater) -> circle radius will be 2px
+                                            10, 2
                                         ]
                                     }`)}
                             </div>
@@ -1244,7 +1244,7 @@ export default class extends React.Component {
                                 else in the expression.</p>
 
                             <h4>Example: a zoom-and-property expression</h4>
-                            <p>Combining zoom and property expressions allows a layer's or appearance to change with
+                            <p>Combining zoom and property expressions allows a layer's appearance to change with
                                 both the zoom level <em>and</em> each feature's properties.</p>
 
                             <div className='col12 space-bottom'>
