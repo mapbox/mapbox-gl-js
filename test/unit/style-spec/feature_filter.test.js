@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const filter = require('../../../src/style-spec').featureFilter;
+const filter = require('../../../src/style-spec/feature_filter');
 
 test('expression, zoom', (t) => {
     const f = filter(['>=', ['number', ['get', 'x']], ['zoom']]);

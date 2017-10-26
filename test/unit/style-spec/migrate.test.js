@@ -4,11 +4,11 @@
 const t = require('mapbox-gl-js-test').test,
     fs = require('fs'),
     glob = require('glob'),
-    spec = require('../../../src/style-spec'),
+    spec = require('../../../src/style-spec/style-spec'),
     path = require('path'),
-    validate = require('../../../src/style-spec').validate,
+    validate = require('../../../src/style-spec/validate_style'),
     v8 = require('../../../src/style-spec/reference/v8'),
-    migrate = require('../../../src/style-spec').migrate;
+    migrate = require('../../../src/style-spec/migrate');
 
 const UPDATE = !!process.env.UPDATE;
 

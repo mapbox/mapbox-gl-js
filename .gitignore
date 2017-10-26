@@ -18,3 +18,4 @@ test/integration/**/actual.png
 test/integration/**/actual.json
 test/integration/**/diff.png
 .eslintcache
+src/style-spec/dist/index.js

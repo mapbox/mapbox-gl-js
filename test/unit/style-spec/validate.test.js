@@ -5,7 +5,7 @@ const t = require('mapbox-gl-js-test').test,
     glob = require('glob'),
     fs = require('fs'),
     path = require('path'),
-    validate = require('../../../src/style-spec').validate;
+    validate = require('../../../src/style-spec/validate_style');
 
 const UPDATE = !!process.env.UPDATE;
 
