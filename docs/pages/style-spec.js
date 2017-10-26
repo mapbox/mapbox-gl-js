@@ -278,6 +278,24 @@ function renderParams(params, maxLength) {
 }
 
 class Item extends React.Component {
+    type() {
+        switch (this.props.type) {
+        case null:
+        case '*':
+            return;
+        case 'light':
+            return <span> <a href='#light'>light</a></span>;
+        case 'transition':
+            return <span> <a href='#transition'>transition</a></span>;
+        case 'sources':
+            return <span> object with <a href='#sources'>source</a> values</span>;
+        case 'array':
+            return <span> <a href='#types-array'>array</a>{this.props.value && <span> of <a href={this.props.value === 'layer' ? `#layers` : `#types-${this.props.value}`}>{this.props.value}s</a></span>}</span>;
+        default:
+            return <span> <a href={`#types-${this.props.type}`}>{this.props.type}</a></span>;
+        }
+    }
+
     support(support, sdk) {
         if (!support) return 'Not yet supported';
         support = support[sdk];
@@ -320,8 +338,7 @@ class Item extends React.Component {
 
                     <em className='quiet'>
                         {this.props.required ? 'Required' : 'Optional'}
-                        {this.props.type && this.props.type !== '*' &&
-                        <span> <a href={`#types-${this.props.type}`}>{this.props.type}</a></span>}
+                        {this.type()}
                         {'minimum' in this.props && 'maximum' in this.props &&
                         <span> between <var>{this.props.minimum}</var> and <var>{this.props.maximum}</var> inclusive</span>}
                         {'minimum' in this.props && !('maximum' in this.props) &&
