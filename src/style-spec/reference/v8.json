@@ -407,7 +407,7 @@
     },
     "source": {
       "type": "string",
-      "doc": "Name of a source description to be used for this layer."
+      "doc": "Name of a source description to be used for this layer. Required for all layer types except `background`."
     },
     "source-layer": {
       "type": "string",
