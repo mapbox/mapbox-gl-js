@@ -218,7 +218,7 @@ export type MapEvent =
     | 'contextmenu'
 
     /**
-     * Fired when a touch point is placed on the map.
+     * Fired when a [`touchstart`](https://developer.mozilla.org/en-US/docs/Web/Events/touchstart) event occurs within the map.
      *
      * @event touchstart
      * @memberof Map
@@ -228,7 +228,7 @@ export type MapEvent =
     | 'touchstart'
 
     /**
-     * Fired when a touch point is removed from the map.
+     * Fired when a [`touchend`](https://developer.mozilla.org/en-US/docs/Web/Events/touchend) event occurs within the map.
      *
      * @event touchend
      * @memberof Map
@@ -238,7 +238,7 @@ export type MapEvent =
     | 'touchend'
 
     /**
-     * Fired when a touch point is moved within the map.
+     * Fired when a [`touchmove`](https://developer.mozilla.org/en-US/docs/Web/Events/touchmove) event occurs within the map.
      *
      * @event touchmove
      * @memberof Map
@@ -248,7 +248,7 @@ export type MapEvent =
     | 'touchmove'
 
     /**
-     * Fired when a touch point has been disrupted.
+     * Fired when a [`touchcancel`](https://developer.mozilla.org/en-US/docs/Web/Events/touchcancel) event occurs within the map.
      *
      * @event touchcancel
      * @memberof Map
