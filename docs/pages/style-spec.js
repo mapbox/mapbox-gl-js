@@ -690,7 +690,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_tile).map(([name, prop], i) =>
+                                        { entries(ref.source_geojson).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-geojson-${name}`} name={name} {...prop}/>)}
                                     </div>
