@@ -590,7 +590,7 @@ export default class extends React.Component {
                                             href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
                                         Vector Tile format</a>. All geometric coordinates in vector tiles must be
                                         between <code>-1 * extent</code> and <code>(extent * 2) - 1</code> inclusive.
-                                        All layers that use a vector source must specify a <code>"source-layer"</code>
+                                        All layers that use a vector source must specify a <a href='#layer-source-layer'><code>"source-layer"</code></a>
                                         value.
                                         For vector tiles hosted by Mapbox, the <code>"url"</code> value should be of the
                                         form <code>mapbox://<var>mapid</var></code>.
