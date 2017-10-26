@@ -1,8 +1,7 @@
 /*---
 title: Set a point after Geocoder result
 description: >-
-  Listen to the <code>geocoder.input</code> event from the <a target="_blank"
-  href="https://github.com/mapbox/mapbox-gl-geocoder">Geocoder plugin</a> and
+  Listen to the `geocoder.input` event from the [Geocoder plugin](https://github.com/mapbox/mapbox-gl-geocoder) and
   place a point on the coordinate results.
 tags:
   - controls-and-overlays

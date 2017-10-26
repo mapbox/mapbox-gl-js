@@ -1,9 +1,7 @@
 /*---
 title: Swipe between maps
 description: >-
-  Use <a target="_blank"
-  href="https://github.com/mapbox/mapbox-gl-compare">mapbox-gl-compare</a> to
-  swipe between map instances &amp; sync their movement.
+  Use [mapbox-gl-compare](https://github.com/mapbox/mapbox-gl-compare) to swipe between and synchronize two maps.
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/mapbox-gl-compare/
