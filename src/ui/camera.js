@@ -13,17 +13,17 @@ import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 
 /**
- * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo},
- * controlling the destination's location, zoom level, bearing, and pitch.
- * All properties are optional. Unspecified
- * options will default to the map's current value for that property.
+ * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
+ * zoom, bearing, and pitch of the camera. All properties are optional, and when a property is omitted, the current
+ * camera value for that property will remain unchanged.
  *
  * @typedef {Object} CameraOptions
- * @property {LngLatLike} center The destination's center.
- * @property {number} zoom The destination's zoom level.
- * @property {number} bearing The destination's bearing (rotation), measured in degrees counter-clockwise from north.
- * @property {number} pitch The destination's pitch (tilt), measured in degrees.
- * @property {LngLatLike} around If a `zoom` is specified, `around` determines the zoom center (defaults to the center of the map).
+ * @property {LngLatLike} center The desired center.
+ * @property {number} zoom The desired zoom level.
+ * @property {number} bearing The desired bearing, in degrees counter-clockwise from north. A `bearing` of 90° orients the map
+ * so that east is up.
+ * @property {number} pitch The desired pitch, in degrees.
+ * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  */
 type CameraOptions = {
     center?: LngLatLike,
