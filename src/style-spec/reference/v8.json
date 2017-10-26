@@ -411,7 +411,7 @@
     },
     "source-layer": {
       "type": "string",
-      "doc": "Layer to use from a vector tile source. Required if the source supports multiple layers."
+      "doc": "Layer to use from a vector tile source. Required for vector tile sources; prohibited for all other source types, including GeoJSON sources."
     },
     "minzoom": {
       "type": "number",
