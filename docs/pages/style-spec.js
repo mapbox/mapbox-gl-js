@@ -1330,8 +1330,8 @@ export default class extends React.Component {
                             <h2><a href='#other' title='link to other'>Other</a></h2>
                             <div className='keyline-all fill-white'>
                                 <div className='pad2 keyline-bottom'>
-                                    <a id='types-function' className='anchor'/>
-                                    <h3 className='space-bottom1'><a href='#types-function' title='link to function'>Function</a></h3>
+                                    <a id='other-function' className='anchor'/>
+                                    <h3 className='space-bottom1'><a href='#other-function' title='link to function'>Function</a></h3>
 
                                     <p>The value for any layout or paint property may be specified as a
                                         <em>function</em>. Functions allow you to make the appearance of a map feature
@@ -1596,8 +1596,8 @@ export default class extends React.Component {
                                 </div>
 
                                 <div className='pad2'>
-                                    <a id='types-filter' className='anchor'></a>
-                                    <h3 className='space-bottom1'><a href='#types-filter' title='link to filter'>Filter</a></h3>
+                                    <a id='#other-filter' className='anchor'></a>
+                                    <h3 className='space-bottom1'><a href='#other-filter' title='link to filter'>Filter</a></h3>
                                     <p>A filter selects specific features from a layer. A filter is defined using any boolean <a href="#types-expression">expression</a>. In previous versions of the style specification, filters were defined using the deprecated syntax documented below:</p>
 
                                     <div className='col12 clearfix space-bottom2'>
