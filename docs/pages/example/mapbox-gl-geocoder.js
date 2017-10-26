@@ -1,8 +1,7 @@
 /*---
 title: Add a geocoder
 description: >-
-  Use the <a target="_blank"
-  href="https://github.com/mapbox/mapbox-gl-geocoder">mapbox-gl-geocoder</a>
+  Use the [mapbox-gl-geocoder](https://github.com/mapbox/mapbox-gl-geocoder)
   control to search for places using Mapbox Geocoding API.
 tags:
   - controls-and-overlays

@@ -1,8 +1,7 @@
 /*---
 title: Change the default position for attribution
 description: >-
-  Place attribution in the <code>top-left</code> position when initializing a
-  map.
+  Place attribution in the `top-left` position when initializing a map.
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/attribution-position/

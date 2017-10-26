@@ -1,8 +1,7 @@
 import React from 'react';
 import slug from 'slugg';
 import assert from 'assert';
-import remark from 'remark';
-import reactRenderer from 'remark-react';
+import md from '../components/md';
 import PageShell from '../components/page_shell';
 import LeftNav from '../components/left_nav';
 import TopNav from '../components/top_nav';
@@ -221,10 +220,6 @@ const navigation = [
         ]
     }
 ];
-
-function md(str) {
-    return remark().use(reactRenderer).processSync(str).contents;
-}
 
 const sourceTypes = ['vector', 'raster', 'geojson', 'image', 'video', 'canvas'];
 const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap'];

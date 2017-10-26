@@ -1,8 +1,7 @@
 /*---
 title: Display driving directions
 description: >-
-  Use the <a target="_blank"
-  href="https://github.com/mapbox/mapbox-gl-directions">mapbox-gl-directions</a>
+  Use the [mapbox-gl-directions](https://github.com/mapbox/mapbox-gl-directions)
   plugin to show results from the Mapbox Directions API. Click the map to add an
   origin and destination.
 tags:

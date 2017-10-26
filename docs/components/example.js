@@ -1,6 +1,7 @@
 import React from 'react';
 import {prefixUrl} from '@mapbox/batfish/modules/prefix-url';
 import urls from './urls';
+import md from './md';
 import PageShell from './page_shell';
 import LeftNav from './left_nav';
 import TopNav from './top_nav';
@@ -111,7 +112,7 @@ ${html}
                                 `}</style>
 
                                 <div className='prose'>
-                                    <div className='pad2'><strong>{frontMatter.title}</strong><br/>{frontMatter.description}</div>
+                                    <div className='pad2'><strong>{frontMatter.title}</strong><br/>{md(frontMatter.description)}</div>
 
                                     {!supported() &&
                                         <div id='unsupported' className='pad2 hidden dark'>
