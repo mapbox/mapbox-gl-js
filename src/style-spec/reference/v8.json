@@ -2321,7 +2321,7 @@
             "doc": "The fill is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `fill-translate`.",
       "default": "map",
       "requires": [
         "fill-translate"
@@ -2436,7 +2436,7 @@
             "doc": "The fill extrusion is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `fill-extrusion-translate`.",
       "default": "map",
       "requires": [
         "fill-extrusion-translate"
@@ -2610,7 +2610,7 @@
             "doc": "The line is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `line-translate`.",
       "default": "map",
       "requires": [
         "line-translate"
@@ -2891,7 +2891,7 @@
             "doc": "The circle is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `circle-translate`.",
       "default": "map",
       "requires": [
         "circle-translate"
@@ -3294,7 +3294,7 @@
             "doc": "Icons are translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `icon-translate`.",
       "default": "map",
       "requires": [
         "icon-image",
@@ -3484,7 +3484,7 @@
             "doc": "The text is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `text-translate`.",
       "default": "map",
       "requires": [
         "text-field",
