@@ -146,7 +146,7 @@ class Worker {
                 }
             };
 
-            this.workerSources[mapId][type] = new this.workerSourceTypes[type]((actor: any), this.getLayerIndex(mapId));
+            this.workerSources[mapId][type] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId));
         }
 
         return this.workerSources[mapId][type];

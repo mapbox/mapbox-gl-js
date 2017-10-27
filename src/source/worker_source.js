@@ -1,8 +1,6 @@
 // @flow
 
 import type TileCoord from './tile_coord';
-import type Actor from '../util/actor';
-import type StyleLayerIndex from '../style/style_layer_index';
 import type {SerializedBucket} from '../data/bucket';
 import type {SerializedFeatureIndex} from '../data/feature_index';
 import type {SerializedStructArray} from '../util/struct_array';
@@ -51,7 +49,8 @@ export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, tran
  * @param layerIndex
  */
 export interface WorkerSource {
-    constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
+    // Disabled due to https://github.com/facebook/flow/issues/5208
+    // constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send

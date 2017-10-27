@@ -52,8 +52,6 @@ export interface Source {
     reparseOverscaled?: boolean,
     vectorLayerIds?: Array<string>,
 
-    constructor(id: string, source: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented): Source;
-
     fire(type: string, data: Object): mixed;
 
     +onAdd?: (map: Map) => void;
@@ -75,7 +73,7 @@ export interface Source {
     +prepare?: () => void;
 }
 
-const sourceTypes: {[string]: Class<Source>} = {
+const sourceTypes = {
     'vector': require('../source/vector_tile_source'),
     'raster': require('../source/raster_tile_source'),
     'geojson': require('../source/geojson_source'),
@@ -95,7 +93,7 @@ const sourceTypes: {[string]: Class<Source>} = {
  * @returns {Source}
  */
 exports.create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
-    const source = new sourceTypes[specification.type](id, specification, dispatcher, eventedParent);
+    const source = new sourceTypes[specification.type](id, (specification: any), dispatcher, eventedParent);
 
     if (source.id !== id) {
         throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);
