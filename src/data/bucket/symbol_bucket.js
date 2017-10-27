@@ -19,7 +19,7 @@ const OpacityState = require('../../symbol/opacity_state');
 const {getSizeData} = require('../../symbol/symbol_size');
 
 import type {Feature as ExpressionFeature} from '../../style-spec/expression';
-import type {Bucket, BucketParameters, IndexedFeature, PopulateParameters} from '../bucket';
+import type {Bucket, IndexedFeature, PopulateParameters} from '../bucket';
 import type {ProgramInterface, SerializedProgramConfiguration} from '../program_configuration';
 import type CollisionBoxArray, {CollisionBox} from '../../symbol/collision_box';
 import type {
@@ -28,18 +28,6 @@ import type {
 } from '../../util/struct_array';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type {SymbolQuad} from '../../symbol/quads';
-
-type SymbolBucketParameters = BucketParameters & {
-    sdfIcons: boolean,
-    iconsNeedLinear: boolean,
-    fontstack: string,
-    textSizeData: any,
-    iconSizeData: any,
-    placedGlyphArray: StructArray,
-    placedIconArray: StructArray,
-    glyphOffsetArray: StructArray,
-    lineVertexArray: StructArray,
-}
 
 export type SingleCollisionBox = {
     x1: number;
@@ -399,7 +387,7 @@ class SymbolBucket implements Bucket {
     uploaded: boolean;
     collisionCircle: SymbolBuffers;
 
-    constructor(options: SymbolBucketParameters) {
+    constructor(options: any) {
         this.collisionBoxArray = options.collisionBoxArray;
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
