@@ -16,7 +16,7 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-    
+
     // Find the index of the bottom-most type: symbol layer in the map style
     // Insert the layer beneath any symbol layer.
     var layers = map.getStyle().layers.reverse();
