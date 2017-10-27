@@ -12,11 +12,17 @@ test('abortTile', (t) => {
             source: 'source',
             uid: 0,
             request: { url: 'http://localhost:2900/abort' }
-        }, t.fail);
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
+        });
 
         source.abortTile({
             source: 'source',
             uid: 0
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
         });
 
         t.deepEqual(source.loading, { source: {} });
@@ -39,6 +45,9 @@ test('removeTile', (t) => {
         source.removeTile({
             source: 'source',
             uid: 0
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
         });
 
         t.deepEqual(source.loaded, { source: {} });

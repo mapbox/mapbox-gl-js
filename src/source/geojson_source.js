@@ -204,8 +204,9 @@ class GeoJSONSource extends Evented implements Source {
         tile.workerID = this.dispatcher.send(message, params, (err, data) => {
             tile.unloadVectorData();
 
-            if (tile.aborted)
-                return;
+            if (tile.aborted) {
+                return callback(null);
+            }
 
             if (err) {
                 return callback(err);
@@ -223,11 +224,11 @@ class GeoJSONSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
+        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
 
     onRemove() {
-        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id }, () => {});
+        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id });
     }
 
     serialize() {

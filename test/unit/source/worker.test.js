@@ -33,12 +33,12 @@ test('isolates different instances\' data', (t) => {
 
     worker.setLayers(0, [
         { id: 'one', type: 'circle' }
-    ]);
+    ], () => {});
 
     worker.setLayers(1, [
         { id: 'one', type: 'circle' },
         { id: 'two', type: 'circle' },
-    ]);
+    ], () => {});
 
     t.notEqual(worker.layerIndexes[0], worker.layerIndexes[1]);
     t.end();

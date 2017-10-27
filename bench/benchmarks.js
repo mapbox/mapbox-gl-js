@@ -16,6 +16,7 @@ function register(Benchmark) {
 register(require('./benchmarks/layout'));
 register(require('./benchmarks/layout_dds'));
 register(require('./benchmarks/paint'));
+require('./benchmarks/layers').forEach(register);
 register(require('./benchmarks/map_load'));
 register(require('./benchmarks/style_validate'));
 register(require('./benchmarks/style_layer_create'));

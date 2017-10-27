@@ -16,15 +16,16 @@ class CircleStyleLayer extends StyleLayer {
     isOpacityZero(zoom: number) {
         return this.isPaintValueFeatureConstant('circle-opacity') &&
             this.getPaintValue('circle-opacity', { zoom: zoom }) === 0 &&
-            (this.isPaintValueFeatureConstant('circle-stroke-width') &&
+            ((this.isPaintValueFeatureConstant('circle-stroke-width') &&
                 this.getPaintValue('circle-stroke-width', { zoom: zoom }) === 0) ||
             (this.isPaintValueFeatureConstant('circle-stroke-opacity') &&
-                this.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0);
+                this.getPaintValue('circle-stroke-opacity', { zoom: zoom }) === 0));
     }
 
     queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket = (bucket: any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
+            getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
             translateDistance(this.paint['circle-translate']);
     }
 
@@ -38,8 +39,9 @@ class CircleStyleLayer extends StyleLayer {
             this.getPaintValue('circle-translate', {zoom}, feature),
             this.getPaintValue('circle-translate-anchor', {zoom}, feature),
             bearing, pixelsToTileUnits);
-        const circleRadius = this.getPaintValue('circle-radius', {zoom}, feature) * pixelsToTileUnits;
-        return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius);
+        const radius = this.getPaintValue('circle-radius', {zoom}, feature) * pixelsToTileUnits;
+        const stroke = this.getPaintValue('circle-stroke-width', {zoom}, feature) * pixelsToTileUnits;
+        return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, radius + stroke);
     }
 }
 

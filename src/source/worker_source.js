@@ -69,12 +69,12 @@ export interface WorkerSource {
     /**
      * Aborts loading a tile that is in progress.
      */
-    abortTile(params: TileParameters): void;
+    abortTile(params: TileParameters, callback: WorkerTileCallback): void;
 
     /**
      * Removes this tile from any local caches.
      */
-    removeTile(params: TileParameters): void;
+    removeTile(params: TileParameters, callback: WorkerTileCallback): void;
 
-    removeSource?: (params: {source: string}) => void;
+    removeSource?: (params: {source: string}, callback: WorkerTileCallback) => void;
 }

@@ -58,12 +58,14 @@ class Worker {
         };
     }
 
-    setLayers(mapId: string, layers: Array<LayerSpecification>) {
+    setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
         this.getLayerIndex(mapId).replace(layers);
+        callback();
     }
 
-    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>, symbolOrder: ?Array<string>}) {
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>, symbolOrder: ?Array<string>}, callback: WorkerTileCallback) {
         this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
+        callback();
     }
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
@@ -76,21 +78,23 @@ class Worker {
         this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
     }
 
-    abortTile(mapId: string, params: TileParameters & {type: string}) {
+    abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type).abortTile(params);
+        this.getWorkerSource(mapId, params.type).abortTile(params, callback);
     }
 
-    removeTile(mapId: string, params: TileParameters & {type: string}) {
+    removeTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type).removeTile(params);
+        this.getWorkerSource(mapId, params.type).removeTile(params, callback);
     }
 
-    removeSource(mapId: string, params: {source: string} & {type: string}) {
+    removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         const worker = this.getWorkerSource(mapId, params.type);
         if (worker.removeSource !== undefined) {
-            worker.removeSource(params);
+            worker.removeSource(params, callback);
+        } else {
+            callback();
         }
     }
 

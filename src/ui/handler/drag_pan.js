@@ -111,7 +111,6 @@ class DragPanHandler {
             if (e.touches) return this._onTouchEnd(e);
             else return this._onMouseUp(e);
         }
-        
         if (this._ignoreEvent(e)) return;
 
         if (!this.isActive()) {

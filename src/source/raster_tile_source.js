@@ -120,15 +120,17 @@ class RasterTileSource extends Evented implements Source {
         });
     }
 
-    abortTile(tile: Tile) {
+    abortTile(tile: Tile, callback: Callback<void>) {
         if (tile.request) {
             tile.request.abort();
             delete tile.request;
         }
+        callback();
     }
 
-    unloadTile(tile: Tile) {
+    unloadTile(tile: Tile, callback: Callback<void>) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
+        callback();
     }
 }
 
