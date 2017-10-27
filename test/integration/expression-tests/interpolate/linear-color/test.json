@@ -1,7 +1,7 @@
 {
   "expression": [
     "to-rgba",
-    ["curve", ["exponential", 1], ["get", "x"], 1, "red", 11, ["get", "color"]]
+    ["interpolate", ["exponential", 1], ["get", "x"], 1, "red", 11, ["get", "color"]]
   ],
   "inputs": [
     [{}, {"properties": {"x": 0, "color": "blue"}}],

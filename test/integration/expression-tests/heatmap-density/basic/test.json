@@ -12,7 +12,7 @@
       ]
     }
   },
-  "expression": ["curve", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
+  "expression": ["interpolate", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
   "inputs": [[{"heatmapDensity": 0.5}, {}]],
   "expected": {
     "compiled": {

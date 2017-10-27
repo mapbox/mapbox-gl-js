@@ -4,6 +4,7 @@ const parseColor = require('../util/parse_color');
 const extend = require('../util/extend');
 const getType = require('../util/get_type');
 const interpolate = require('../util/interpolate');
+const Interpolate = require('../expression/definitions/interpolate');
 
 function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -112,7 +113,7 @@ function createFunction(parameters, propertySpec, name) {
 
         return {
             isFeatureConstant: false,
-            interpolation: {name: 'linear'},
+            interpolationFactor: Interpolate.interpolationFactor.bind(undefined, {name: 'linear'}),
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
                 return outputFunction(evaluateExponentialFunction({
@@ -131,9 +132,9 @@ function createFunction(parameters, propertySpec, name) {
         return {
             isFeatureConstant: true,
             isZoomConstant: false,
-            interpolation: type === 'exponential' ?
-                {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1} :
-                {name: 'step'},
+            interpolationFactor: type === 'exponential' ?
+                Interpolate.interpolationFactor.bind(undefined, {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1}) :
+                () => 0,
             zoomStops: parameters.stops.map(s => s[0]),
             evaluate
         };

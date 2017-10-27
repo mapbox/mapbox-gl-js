@@ -1,8 +1,7 @@
 {
   "propertySpec": {"type": "color"},
   "expression": [
-    "curve",
-    ["step"],
+    "step",
     ["get", "x"],
     "black",
     0,
@@ -21,7 +20,7 @@
     "compiled": {
       "result": "error",
       "errors": [
-        {"key": "[5]", "error": "Could not parse color from value 'invalid'"}
+        {"key": "[4]", "error": "Could not parse color from value 'invalid'"}
       ]
     }
   }

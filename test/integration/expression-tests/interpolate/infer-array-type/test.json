@@ -1,8 +1,7 @@
 {
   "propertySpec": {"type": "array", "value": "string"},
   "expression": [
-    "curve",
-    ["step"],
+    "step",
     ["number", ["get", "x"]],
     ["literal", ["one"]],
     10,

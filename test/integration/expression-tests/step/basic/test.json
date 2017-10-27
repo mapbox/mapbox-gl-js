@@ -1,7 +1,7 @@
 {
   "expression": [
     "number",
-    ["curve", ["step"], ["number", ["get", "x"]], 11, 0, 111, 1, 1111]
+    ["step", ["number", ["get", "x"]], 11, 0, 111, 1, 1111]
   ],
   "inputs": [
     [{}, {"properties": {"x": -1.5}}],

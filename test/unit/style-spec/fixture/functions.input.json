@@ -913,7 +913,7 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-opacity": ["+", 0.5, ["curve", ["linear"], ["zoom"], 0, 0, 1, 1]]
+        "fill-opacity": ["+", 0.5, ["interpolate", ["linear"], ["zoom"], 0, 0, 1, 1]]
       }
     },
     {
@@ -940,7 +940,7 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "line-dasharray": ["curve", ["linear"], ["zoom"], 0, ["literal", [1, 2]], 1, ["literal", [3, 4]]]
+        "line-dasharray": ["interpolate", ["linear"], ["zoom"], 0, ["literal", [1, 2]], 1, ["literal", [3, 4]]]
       }
     }
   ]

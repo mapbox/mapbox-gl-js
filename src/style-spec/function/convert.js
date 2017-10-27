@@ -109,24 +109,27 @@ function convertZoomAndPropertyFunction(parameters, propertySpec, stops, default
     // for which it's being used: linear for interpolatable properties, step
     // otherwise.
     const functionType = getFunctionType({}, propertySpec);
-    let interpolationType;
-    let isStep = false;
     if (functionType === 'exponential') {
-        interpolationType = ['linear'];
+        const expression = ['interpolate', ['linear'], ['zoom']];
+
+        for (const z of zoomStops) {
+            const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z], defaultExpression);
+            appendStopPair(expression, z, output, false);
+        }
+
+        return expression;
     } else {
-        interpolationType = ['step'];
-        isStep = true;
+        const expression = ['step', ['zoom']];
+
+        for (const z of zoomStops) {
+            const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z], defaultExpression);
+            appendStopPair(expression, z, output, true);
+        }
+
+        fixupDegenerateStepCurve(expression);
+
+        return expression;
     }
-    const expression = ['curve', interpolationType, ['zoom']];
-
-    for (const z of zoomStops) {
-        const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z], defaultExpression);
-        appendStopPair(expression, z, output, isStep);
-    }
-
-    fixupDegenerateStepCurve(expression);
-
-    return expression;
 }
 
 function convertPropertyFunction(parameters, propertySpec, stops, defaultExpression) {
@@ -158,11 +161,11 @@ function convertPropertyFunction(parameters, propertySpec, stops, defaultExpress
     } else if (type === 'categorical') {
         expression = ['match', input];
     } else if (type === 'interval') {
-        expression = ['curve', ['step'], input];
+        expression = ['step', input];
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['curve', ['exponential', base], input];
+        expression = ['interpolate', ['exponential', base], input];
     } else {
         throw new Error(`Unknown property function type ${type}`);
     }
@@ -185,11 +188,11 @@ function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) 
     let expression;
     let isStep = false;
     if (type === 'interval') {
-        expression = ['curve', ['step'], input];
+        expression = ['step', input];
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['curve', ['exponential', base], input];
+        expression = ['interpolate', ['exponential', base], input];
     } else {
         throw new Error(`Unknown zoom function type "${type}"`);
     }
@@ -205,7 +208,7 @@ function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) 
 
 function fixupDegenerateStepCurve(expression) {
     // degenerate step curve (i.e. a constant function): add a noop stop
-    if (expression[0] === 'curve' && expression[1][0] === 'step' && expression.length === 4) {
+    if (expression[0] === 'step' && expression.length === 3) {
         expression.push(0);
         expression.push(expression[3]);
     }
@@ -213,7 +216,7 @@ function fixupDegenerateStepCurve(expression) {
 
 function appendStopPair(curve, input, output, isStep) {
     // step curves don't get the first input value, as it is redundant.
-    if (!(isStep && curve.length === 3)) {
+    if (!(isStep && curve.length === 2)) {
         curve.push(input);
     }
     curve.push(output);

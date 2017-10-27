@@ -5,7 +5,8 @@ const ParsingError = require('./parsing_error');
 const ParsingContext = require('./parsing_context');
 const EvaluationContext = require('./evaluation_context');
 const {CompoundExpression} = require('./compound_expression');
-const Curve = require('./definitions/curve');
+const Step = require('./definitions/step');
+const Interpolate = require('./definitions/interpolate');
 const Coalesce = require('./definitions/coalesce');
 const Let = require('./definitions/let');
 const definitions = require('./definitions');
@@ -15,7 +16,6 @@ const {unwrap} = require('./values');
 import type {Type} from './types';
 import type {Value} from './values';
 import type {Expression} from './expression';
-import type {InterpolationType} from './definitions/curve';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -51,7 +51,7 @@ export type StyleDeclarationExpression = ZoomConstantExpression | {
     isFeatureConstant: boolean,
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     // parsed: Expression,
-    interpolation: InterpolationType,
+    interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };
 
@@ -195,17 +195,17 @@ function createExpression(expression: mixed,
     if (!zoomCurve) {
         return {
             result: 'error',
-            errors: [new ParsingError('', '"zoom" expression may only be used as input to a top-level "curve" expression.')]
+            errors: [new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]
         };
-    } else if (!(zoomCurve instanceof Curve)) {
+    } else if (!(zoomCurve instanceof Step || zoomCurve instanceof Interpolate)) {
         return {
             result: 'error',
             errors: [new ParsingError(zoomCurve.key, zoomCurve.error)]
         };
-    } else if (zoomCurve.interpolation.name !== 'step' && propertySpec['function'] === 'piecewise-constant') {
+    } else if (zoomCurve instanceof Interpolate && propertySpec['function'] === 'piecewise-constant') {
         return {
             result: 'error',
-            errors: [new ParsingError(zoomCurve.key, 'interpolation type must be "step" for this property')]
+            errors: [new ParsingError(zoomCurve.key, '"interpolate" expressions cannot be used with this property')]
         };
     }
 
@@ -220,7 +220,9 @@ function createExpression(expression: mixed,
         // capture metadata from the curve definition that's needed for
         // our prepopulate-and-interpolate approach to paint properties
         // that are zoom-and-property dependent.
-        interpolation: zoomCurve.interpolation,
+        interpolationFactor: zoomCurve instanceof Interpolate ?
+            Interpolate.interpolationFactor.bind(undefined, zoomCurve.interpolation) :
+            () => 0,
         zoomStops: zoomCurve.labels
     };
 }
@@ -228,11 +230,11 @@ function createExpression(expression: mixed,
 module.exports.createExpression = createExpression;
 module.exports.isExpression = isExpression;
 
-// Zoom-dependent expressions may only use ["zoom"] as the input to a
-// 'top-level' "curve" expression. (The curve may be wrapped in one or more
-// "let" or "coalesce" expressions.)
-function findZoomCurve(expression: Expression): null | Curve | {key: string, error: string} {
-    if (expression instanceof Curve) {
+// Zoom-dependent expressions may only use ["zoom"] as the input to a top-level "step" or "interpolate"
+// expression (collectively referred to as a "curve"). The curve may be wrapped in one or more "let" or
+// "coalesce" expressions.
+function findZoomCurve(expression: Expression): null | Step | Interpolate | {key: string, error: string} {
+    if (expression instanceof Step || expression instanceof Interpolate) {
         const input = expression.input;
         if (input instanceof CompoundExpression && input.name === 'zoom') {
             return expression;
@@ -249,12 +251,12 @@ function findZoomCurve(expression: Expression): null | Curve | {key: string, err
                 continue;
             } else if (e.error) {
                 return e;
-            } else if (e instanceof Curve && !result) {
+            } else if ((e instanceof Step || e instanceof Interpolate) && !result) {
                 result = e;
             } else {
                 return {
                     key: e.key,
-                    error: 'Only one zoom-based curve may be used in a style function.'
+                    error: 'Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.'
                 };
             }
         }

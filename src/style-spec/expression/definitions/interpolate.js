@@ -4,21 +4,20 @@ const UnitBezier = require('@mapbox/unitbezier');
 const interpolate = require('../../util/interpolate');
 const { toString, NumberType } = require('../types');
 const { Color } = require('../values');
+const { findStopLessThanOrEqualTo } = require("../stops");
 
+import type { Stops } from '../stops';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 export type InterpolationType =
-    { name: 'step' } |
     { name: 'linear' } |
     { name: 'exponential', base: number } |
     { name: 'cubic-bezier', controlPoints: [number, number, number, number] };
 
-type Stops = Array<[number, Expression]>;
-
-class Curve implements Expression {
+class Interpolate implements Expression {
     key: string;
     type: Type;
 
@@ -62,9 +61,7 @@ class Curve implements Expression {
             return context.error(`Expected an interpolation type expression.`, 1);
         }
 
-        if (interpolation[0] === 'step') {
-            interpolation = { name: 'step' };
-        } else if (interpolation[0] === 'linear') {
+        if (interpolation[0] === 'linear') {
             interpolation = { name: 'linear' };
         } else if (interpolation[0] === 'exponential') {
             const base = interpolation[1];
@@ -91,15 +88,12 @@ class Curve implements Expression {
             return context.error(`Unknown interpolation type ${String(interpolation[0])}`, 1, 0);
         }
 
-        const isStep = interpolation.name === 'step';
+        if (args.length - 1 < 4) {
+            return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
+        }
 
-        const minArgs = isStep ? 5 : 4;
-        if (args.length - 1 < minArgs)
-            return context.error(`Expected at least ${minArgs} arguments, but found only ${args.length - 1}.`);
-
-        const parity = minArgs % 2;
-        if ((args.length - 1) % 2 !== parity) {
-            return context.error(`Expected an ${parity === 0 ? 'even' : 'odd'} number of arguments.`);
+        if ((args.length - 1) % 2 !== 0) {
+            return context.error(`Expected an even number of arguments.`);
         }
 
         input = context.parse(input, 2, NumberType);
@@ -112,23 +106,19 @@ class Curve implements Expression {
             outputType = context.expectedType;
         }
 
-        if (isStep) {
-            rest.unshift(-Infinity);
-        }
-
         for (let i = 0; i < rest.length; i += 2) {
             const label = rest[i];
             const value = rest[i + 1];
 
-            const labelKey = isStep ? i + 2 : i + 3;
-            const valueKey = isStep ? i + 3 : i + 4;
+            const labelKey = i + 3;
+            const valueKey = i + 4;
 
             if (typeof label !== 'number') {
-                return context.error('Input/output pairs for "curve" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
+                return context.error('Input/output pairs for "interpolate" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
             }
 
             if (stops.length && stops[stops.length - 1][0] > label) {
-                return context.error('Input/output pairs for "curve" expressions must be arranged with input values in strictly ascending order.', labelKey);
+                return context.error('Input/output pairs for "interpolate" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 
             const parsed = context.parse(value, valueKey, outputType);
@@ -137,8 +127,7 @@ class Curve implements Expression {
             stops.push([label, parsed]);
         }
 
-        if (interpolation.name !== 'step' &&
-            outputType.kind !== 'number' &&
+        if (outputType.kind !== 'number' &&
             outputType.kind !== 'color' &&
             !(
                 outputType.kind === 'array' &&
@@ -146,10 +135,10 @@ class Curve implements Expression {
                 typeof outputType.N === 'number'
             )
         ) {
-            return context.error(`Type ${toString(outputType)} is not interpolatable, and thus cannot be used as a ${interpolation.name} curve's output type.`);
+            return context.error(`Type ${toString(outputType)} is not interpolatable.`);
         }
 
-        return new Curve(context.key, outputType, interpolation, input, stops);
+        return new Interpolate(context.key, outputType, interpolation, input, stops);
     }
 
     evaluate(ctx: EvaluationContext) {
@@ -171,13 +160,9 @@ class Curve implements Expression {
         }
 
         const index = findStopLessThanOrEqualTo(labels, value);
-        if (this.interpolation.name === 'step') {
-            return outputs[index].evaluate(ctx);
-        }
-
         const lower = labels[index];
         const upper = labels[index + 1];
-        const t = Curve.interpolationFactor(this.interpolation, value, lower, upper);
+        const t = Interpolate.interpolationFactor(this.interpolation, value, lower, upper);
 
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
@@ -246,31 +231,4 @@ function exponentialInterpolation(input, base, lowerValue, upperValue) {
     }
 }
 
-module.exports = Curve;
-
-/**
- * Returns the index of the last stop <= input, or 0 if it doesn't exist.
- * @private
- */
-function findStopLessThanOrEqualTo(stops, input) {
-    const n = stops.length;
-    let lowerIndex = 0;
-    let upperIndex = n - 1;
-    let currentIndex = 0;
-    let currentValue, upperValue;
-
-    while (lowerIndex <= upperIndex) {
-        currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
-        currentValue = stops[currentIndex];
-        upperValue = stops[currentIndex + 1];
-        if (input === currentValue || input > currentValue && input < upperValue) { // Search complete
-            return currentIndex;
-        } else if (currentValue < input) {
-            lowerIndex = currentIndex + 1;
-        } else if (currentValue > input) {
-            upperIndex = currentIndex - 1;
-        }
-    }
-
-    return Math.max(currentIndex - 1, 0);
-}
+module.exports = Interpolate;

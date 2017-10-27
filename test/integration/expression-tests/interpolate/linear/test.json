@@ -1,6 +1,6 @@
 {
   "propertySpec": {"type": "number"},
-  "expression": ["curve", ["linear"], ["get", "x"], 0, 100, 10, 200],
+  "expression": ["interpolate", ["linear"], ["get", "x"], 0, 100, 10, 200],
   "inputs": [
     [{}, {"properties": {"x": 0}}],
     [{}, {"properties": {"x": 5}}],

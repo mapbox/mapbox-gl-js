@@ -1,7 +1,7 @@
 {
   "expression": [
     "number",
-    ["curve", ["exponential", 2], ["number", ["get", "x"]], 1, 2]
+    ["interpolate", ["exponential", 2], ["number", ["get", "x"]], 1, 2]
   ],
   "inputs": [
     [{}, {"properties": {"x": 0}}],

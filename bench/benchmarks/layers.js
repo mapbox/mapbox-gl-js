@@ -115,7 +115,7 @@ class LayerHeatmap extends LayerBenchmark {
                     },
                     "heatmap-intensity": 0.9,
                     "heatmap-color": [
-                        "curve",
+                        "interpolate",
                         ["linear"],
                         ["heatmap-density"],
                         0, "rgba(0, 0, 255, 0)",

@@ -6,7 +6,7 @@
     "z20_value",
     30,
     [
-      "curve",
+      "interpolate",
       ["linear"],
       ["zoom"],
       0,
