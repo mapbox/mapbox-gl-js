@@ -1,11 +1,10 @@
 import { test } from 'mapbox-gl-js-test';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, LineWidth, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from '../../../src/gl/value';
+import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from '../../../src/gl/value';
 import Context from '../../../src/gl/context';
 import Color from '../../../src/style-spec/util/color';
 import { deepEqual } from '../../../src/util/util';
 
 const context = new Context(require('gl')(10, 10));
-context.lineWidthRange = [0, 1];
 
 function ValueTest(Constructor, options, t) {
     t.test('#constructor', (t) => {
@@ -95,10 +94,6 @@ test('BlendColor', ValueTest.bind(ValueTest, BlendColor, {
 test('Program', ValueTest.bind(ValueTest, Program, {
     equality: (a, b) => a === b,
     setValue: context.gl.createProgram()
-}));
-
-test('LineWidth', ValueTest.bind(ValueTest, LineWidth, {
-    setValue: 0.5
 }));
 
 test('ActiveTextureUnit', ValueTest.bind(ValueTest, ActiveTextureUnit, {

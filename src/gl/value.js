@@ -2,8 +2,6 @@
 
 import Color from '../style-spec/util/color';
 
-import { clamp } from '../util/util';
-
 import type Context from './context';
 import type {
     BlendFuncType,
@@ -351,27 +349,6 @@ export class Program implements Value<?WebGLProgram> {
     set(v: ?WebGLProgram): void {
         if (this.current !== v) {
             this.context.gl.useProgram(v);
-            this.current = v;
-        }
-    }
-}
-
-export class LineWidth implements Value<number> {
-    context: Context;
-    current: number;
-
-    constructor(context: Context) {
-        this.context = context;
-        this.current = 1;
-    }
-
-    get(): number { return this.current; }
-
-    set(v: number): void {
-        const range = this.context.lineWidthRange;
-        const clamped = clamp(v, range[0], range[1]);
-        if (this.current !== clamped) {
-            this.context.gl.lineWidth(clamped);
             this.current = v;
         }
     }
