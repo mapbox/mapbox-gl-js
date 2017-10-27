@@ -1,3 +1,7 @@
+## 10.0.1
+
+* Fix bug preventing @mapbox/mapbox-gl-style-spec package from being usable outside of mapbox-gl-js (#5502)
+
 ## 10.0.0
 
 * Add expression and heatmap layer support. See Mapbox GL JS v0.40.1 changelog entry for details.
