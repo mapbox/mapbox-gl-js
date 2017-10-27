@@ -35,6 +35,7 @@ test('DragPanHandler stops dragging in response to dragPan.disable() mid-drag', 
     t.ok(drag.calledOnce);
 
     map.dragPan.disable();
+    simulate.mousemove(map.getCanvas());
     t.ok(dragend.calledOnce);
 
     map.remove();
