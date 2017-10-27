@@ -4,7 +4,6 @@ const parseColor = require('../style-spec/util/parse_color');
 const {isFunction, createFunction} = require('../style-spec/function');
 const {isExpression, createExpression} = require('../style-spec/expression');
 const util = require('../util/util');
-const Curve = require('../style-spec/expression/definitions/curve');
 
 import type {StyleDeclarationExpression, Feature, GlobalProperties} from '../style-spec/expression';
 
@@ -74,12 +73,7 @@ class StyleDeclaration {
         if (this.expression.isZoomConstant) {
             return 0;
         } else {
-            return Curve.interpolationFactor(
-                this.expression.interpolation,
-                zoom,
-                lower,
-                upper
-            );
+            return this.expression.interpolationFactor(zoom, lower, upper);
         }
     }
 }

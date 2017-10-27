@@ -64,20 +64,20 @@ const types = {
         type: 'OutputType',
         parameters: [{repeat: ['OutputType']}]
     }],
-    curve: [{
+    step: [{
         type: 'OutputType',
         parameters: [
             'input: number',
-            '["step"]',
             'stop_output_0: OutputType',
             'stop_input_1: number, stop_output_1: OutputType',
             'stop_input_n: number, stop_output_n: OutputType, ...'
         ]
-    }, {
+    }],
+    interpolate: [{
         type: 'OutputType (number, array<number>, or Color)',
         parameters: [
-            'input: number',
             'interpolation: ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
+            'input: number',
             'stop_input_1: number, stop_output_1: OutputType',
             'stop_input_n: number, stop_output_n: OutputType, ...'
         ]

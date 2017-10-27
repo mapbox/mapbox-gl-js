@@ -64,7 +64,7 @@
           "Arial Unicode MS Bold"
         ],
         "text-size": [
-          "curve",
+          "interpolate",
           ["cubic-bezier", 0, 0.9, 0.1, 1],
           ["zoom"],
           0,

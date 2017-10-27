@@ -2,7 +2,7 @@
   "expression": [
     "number",
     [
-      "curve",
+      "interpolate",
       ["exponential", 1],
       ["number", ["get", "x"]],
       2,

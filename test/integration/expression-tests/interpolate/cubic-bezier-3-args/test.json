@@ -2,7 +2,7 @@
   "expression": [
     "number",
     [
-      "curve",
+      "interpolate",
       ["cubic-bezier", 0, 0, 1],
       ["number", ["get", "x"]],
       0,

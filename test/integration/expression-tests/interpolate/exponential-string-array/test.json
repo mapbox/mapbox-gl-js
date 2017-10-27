@@ -1,12 +1,12 @@
 {
   "expression": [
-    "curve",
+    "interpolate",
     ["exponential", 2],
     ["number", ["get", "x"]],
     1,
-    ["array", "number", ["get", "array"]],
+    ["literal", ["a"]],
     3,
-    ["array", "number", ["get", "array_two"]]
+    ["literal", ["b"]]
   ],
   "inputs": [],
   "expected": {
@@ -15,7 +15,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Type array<number> is not interpolatable, and thus cannot be used as a exponential curve's output type."
+          "error": "Type array<string, 1> is not interpolatable."
         }
       ]
     }

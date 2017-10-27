@@ -361,11 +361,7 @@ class Item extends React.Component {
 
                     {this.props.function === "interpolated" &&
                     <em className='quiet'>
-                        Supports all <a href='#expressions-curve'><span className='icon smooth-ramp inline'/>curve</a> types. </em>}
-
-                    {this.props.function === "piecewise-constant" &&
-                    <em className='quiet'>
-                        Supports <a href='#expressions-curve'><span className='icon step-ramp inline' /><code>step</code> curves</a> only. </em>}
+                        Supports <a href='#expressions-interpolate'><span className='icon smooth-ramp inline'/><code>interpolate</code></a> expressions. </em>}
 
                     {this.props.transition &&
                     <em className='quiet'><span className='icon opacity inline quiet' />Transitionable. </em>}
@@ -1218,7 +1214,7 @@ export default class extends React.Component {
                                 {highlightJSON(`
                                     {
                                         "circle-radius": [
-                                            "curve", ["linear"], ["zoom"],
+                                            "interpolate", ["linear"], ["zoom"],
                                             // zoom is 5 (or less) -> circle radius will be 1px
                                             5, 1,
                                             // zoom is 10 (or greater) -> circle radius will be 2px
@@ -1227,17 +1223,23 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <p>This example uses a <a href="#expressions-curve"><code>'curve'</code></a> expression to
+                            <p>This example uses an <a href="#expressions-interpolate"><code>interpolate</code></a> expression to
                                 define a linear relationship between zoom level and circle size using a set of
                                 input-output pairs. In this case, the expression indicates that the circle radius should
                                 be 1 pixel when the zoom level is 5, and 2 pixels when the zoom is 10. (See <a
-                                    href="#expressions-curve"><code>the 'curve' documentation</code></a> for more
+                                    href="#expressions-interpolate">the <code>interpolate</code> documentation</a> for more
                                 details.)</p>
 
-                            <p>Note that any zoom expression used in a layout or paint property must be of the following form:</p>
+                            <p>Note that any zoom expression used in a layout or paint property must be of the following forms:</p>
 
                             <div className='col12 space-bottom'>
-                                {highlightJSON(`[ "curve", interpolation, ["zoom"], ... ]`)}
+                                {highlightJSON(`[ "interpolate", interpolation, ["zoom"], ... ]`)}
+                            </div>
+
+                            <p>Or:</p>
+
+                            <div className='col12 space-bottom'>
+                                {highlightJSON(`[ "step", ["zoom"], ... ]`)}
                             </div>
 
                             <p>Or:</p>
@@ -1247,13 +1249,25 @@ export default class extends React.Component {
                                     [
                                         "let",
                                         ... variable bindings...,
-                                        [ "curve", interpolation, ["zoom"], ... ]
+                                        [ "interpolate", interpolation, ["zoom"], ... ]
                                     ]`)}
                             </div>
 
-                            <p>That is, in layout or paint properties, <code>["zoom"]</code> may only appear as the
-                                input to an outer <a href="#expressions-curve">curve</a>, and may not appear anywhere
-                                else in the expression.</p>
+                            <p>Or:</p>
+
+                            <div className='col12 space-bottom'>
+                                {highlightJSON(`
+                                    [
+                                        "let",
+                                        ... variable bindings...,
+                                        [ "step", ["zoom"], ... ]
+                                    ]`)}
+                            </div>
+
+                            <p>That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
+                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or
+                                <a href="#expressions-step"><code>step</code></a> expression, or such an expression within a
+                                <a href="#expressions-let"><code>let</code></a> expression.</p>
 
                             <h4>Example: a zoom-and-property expression</h4>
                             <p>Combining zoom and property expressions allows a layer's appearance to change with
@@ -1263,11 +1277,11 @@ export default class extends React.Component {
                                 {highlightJSON(`
                                     {
                                         "circle-radius": [
-                                        "curve", ["linear"], ["zoom"],
-                                        // when zoom is 0, set each feature's circle radius to the value of its "rating" property
-                                        0, ["get", "rating"],
-                                        // when zoom is 0, set each feature's circle radius to four times the value of its "rating" property
-                                        10, ["*", 4, ["get", "rating"]]
+                                            "interpolate", ["linear"], ["zoom"],
+                                            // when zoom is 0, set each feature's circle radius to the value of its "rating" property
+                                            0, ["get", "rating"],
+                                            // when zoom is 0, set each feature's circle radius to four times the value of its "rating" property
+                                            10, ["*", 4, ["get", "rating"]]
                                         ]
                                     }`)}
                             </div>
