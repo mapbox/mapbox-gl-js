@@ -275,7 +275,6 @@ class Transform {
 
     /**
      * latitude to absolute x coord
-     * @param {number} lon
      * @returns {number} pixel coordinate
      */
     lngX(lng: number) {
@@ -283,7 +282,6 @@ class Transform {
     }
     /**
      * latitude to absolute y coord
-     * @param {number} lat
      * @returns {number} pixel coordinate
      */
     latY(lat: number) {

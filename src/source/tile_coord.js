@@ -131,6 +131,7 @@ class TileCoord {
      * @param {TileCoord} parent TileCoord that is potentially a parent of this TileCoord
      * @param {number} sourceMaxZoom x and y coordinates only shift with z up to sourceMaxZoom
      * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
+     * @private
      */
     isChildOf(parent: TileCoord, sourceMaxZoom: number) {
         const parentZ = Math.min(sourceMaxZoom, parent.z);

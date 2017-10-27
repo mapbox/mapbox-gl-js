@@ -52,6 +52,20 @@ class CanvasSource extends ImageSource {
         this.animate = options.animate !== undefined ? options.animate : true;
     }
 
+    /**
+     * Enables animation. The image will be copied from the canvas to the map on each frame.
+     * @method play
+     * @instance
+     * @memberof CanvasSource
+     */
+
+    /**
+     * Disables animation. The map will display a static copy of the canvas image.
+     * @method pause
+     * @instance
+     * @memberof CanvasSource
+     */
+
     load() {
         this.canvas = this.canvas || window.document.getElementById(this.options.canvas);
         this.width = this.canvas.width;
@@ -101,6 +115,8 @@ class CanvasSource extends ImageSource {
      * Sets the canvas's coordinates and re-renders the map.
      *
      * @method setCoordinates
+     * @instance
+     * @memberof CanvasSource
      * @param {Array<Array<number>>} coordinates Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the canvas.
      *   The coordinates start at the top left corner of the canvas and proceed in clockwise order.

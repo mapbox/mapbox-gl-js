@@ -1,0 +1,165 @@
+<style>
+.map-overlay {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 25%;
+    top: 0;
+    left: 0;
+    padding: 10px;
+}
+
+.map-overlay .map-overlay-inner {
+    background-color: #fff;
+    box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.map-overlay h2 {
+    line-height: 24px;
+    display: block;
+    margin: 0 0 10px;
+}
+
+.map-overlay .legend .bar {
+    height: 10px;
+    width: 100%;
+    background: linear-gradient(to right, #FCA107, #7F3121);
+}
+
+.map-overlay input {
+    background-color: transparent;
+    display: inline-block;
+    width: 100%;
+    position: relative;
+    margin: 0;
+    cursor: ew-resize;
+}
+</style>
+
+<div id='map'></div>
+
+<div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+        <h2>Significant earthquakes in 2015</h2>
+        <label id='month'></label>
+        <input id='slider' type='range' min='0' max='11' step='1' value='0' />
+    </div>
+    <div class='map-overlay-inner'>
+        <div id='legend' class='legend'>
+            <div class='bar'></div>
+            <div>Magnitude (m)</div>
+        </div>
+    </div>
+</div>
+
+<script src='//d3js.org/d3.v3.min.js' charset='utf-8'></script>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [31.4606, 20.7927],
+    zoom: 0.5
+});
+
+var months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+];
+
+function filterBy(month) {
+
+    var filters = ['==', 'month', month];
+    map.setFilter('earthquake-circles', filters);
+    map.setFilter('earthquake-labels', filters);
+
+    // Set the label to the month
+    document.getElementById('month').textContent = months[month];
+}
+
+map.on('load', function() {
+
+    // Data courtesy of http://earthquake.usgs.gov/
+    // Query for significant earthquakes in 2015 URL request looked like this:
+    // http://earthquake.usgs.gov/fdsnws/event/1/query
+    //    ?format=geojson
+    //    &starttime=2015-01-01
+    //    &endtime=2015-12-31
+    //    &minmagnitude=6'
+    //
+    // Here we're using d3 to help us make the ajax request but you can use
+    // Any request method (library or otherwise) you wish.
+    d3.json('/mapbox-gl-js/assets/significant-earthquakes-2015.geojson', function(err, data) {
+        if (err) throw err;
+
+        // Create a month property value based on time
+        // used to filter against.
+        data.features = data.features.map(function(d) {
+            d.properties.month = new Date(d.properties.time).getMonth();
+            return d;
+        });
+
+        map.addSource('earthquakes', {
+            'type': 'geojson',
+            'data': data
+        });
+
+        map.addLayer({
+            'id': 'earthquake-circles',
+            'type': 'circle',
+            'source': 'earthquakes',
+            'paint': {
+                'circle-color': {
+                    property: 'mag',
+                    stops: [
+                        [6, '#FCA107'],
+                        [8, '#7F3121']
+                    ]
+                },
+                'circle-opacity': 0.75,
+                'circle-radius': {
+                    property: 'mag',
+                    stops: [
+                        [6, 20],
+                        [8, 40]
+                    ]
+                }
+            }
+        });
+
+        map.addLayer({
+            'id': 'earthquake-labels',
+            'type': 'symbol',
+            'source': 'earthquakes',
+            'layout': {
+                'text-field': '{mag}m',
+                'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                'text-size': 12
+            },
+            'paint': {
+                'text-color': 'rgba(0,0,0,0.5)'
+            }
+        });
+
+        // Set filter to first month of the year
+        // 0 = January
+        filterBy(0);
+
+        document.getElementById('slider').addEventListener('input', function(e) {
+            var month = parseInt(e.target.value, 10);
+            filterBy(month);
+        });
+    });
+});
+</script>

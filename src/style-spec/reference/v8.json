@@ -424,11 +424,11 @@
     },
     "source": {
       "type": "string",
-      "doc": "Name of a source description to be used for this layer."
+      "doc": "Name of a source description to be used for this layer. Required for all layer types except `background`."
     },
     "source-layer": {
       "type": "string",
-      "doc": "Layer to use from a vector tile source. Required if the source supports multiple layers."
+      "doc": "Layer to use from a vector tile source. Required for vector tile sources; prohibited for all other source types, including GeoJSON sources."
     },
     "minzoom": {
       "type": "number",
@@ -453,10 +453,6 @@
     "paint": {
       "type": "paint",
       "doc": "Default paint properties for this layer."
-    },
-    "paint.*": {
-      "type": "paint",
-      "doc": "[Deprecated] Class-specific paint properties for this layer. The class name is the part after the first dot. Note: style classes are deprecated and will be removed in the next version of this spec."
     }
   },
   "layout": [
@@ -1880,7 +1876,7 @@
         "group": "Types"
       },
       "array": {
-        "doc": "Asserts that the input is an array (optinally with a specific item type and length).",
+        "doc": "Asserts that the input is an array (optionally with a specific item type and length).  If, when the input expression is evaluated, it is not of the asserted type, then this assertion will cause the whole expression to be aborted.",
         "group": "Types"
       },
       "at": {
@@ -1888,11 +1884,11 @@
         "group": "Lookup"
       },
         "case": {
-        "doc": "Yields the value of the first output expression whose corresponding test evaluates to true.",
+        "doc": "Selects the first output whose corresponding test condition evaluates to true.",
         "group": "Decision"
       },
       "match": {
-        "doc": "Yields the output value whose label value matches the input, or the fallback value if no match is found.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The `input` can be any string or number expression (e.g. `[\"get\", \"building_type\"]`). Each label can either be a single literal value or an array of values.",
         "group": "Decision"
       },
       "coalesce": {
@@ -1900,7 +1896,7 @@
         "group": "Decision"
       },
       "curve": {
-        "doc": "Interpolates an output value based on a set of input/output pairs using the specified interpolation strategy. A set of one input and one output value is known as a \"stop.\" Stop inputs must be numeric literals in strictly ascending order.\n\nInterpolation types:\n- `[\"step\"]`: returns the output value of the stop just less than the input , or the first input if the input is less than the first stop.\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input .\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input . `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y2, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points\n\nNote that interpolation types other that \"step\" are only supported when the output type is `number`, `array<number>`, or `Color`.",
+        "doc": "Interpolates an output value based on a set of input/output pairs using the specified interpolation strategy. A set of one input and one output value is known as a \"stop.\"  \n\nThe `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`).  Stop inputs must be numeric literals in strictly ascending order.\n\nInterpolation types:\n- `[\"step\"]`: returns the output value of the stop just less than the input , or the first input if the input is less than the first stop.\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input .\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input . `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y2, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points\n\nNote that interpolation types other that \"step\" are only supported when the output type is `number`, `array<number>`, or `Color`.",
         "group": "Ramps, scales, curves"
       },
       "ln2": {
@@ -1920,15 +1916,15 @@
         "group": "Types"
       },
       "string": {
-        "doc": "Asserts that the input value is a String. If multiple values are provided, each one is evaluated in order until a String value is obtained.",
+        "doc": "Asserts that the input value is a string. If multiple values are provided, each one is evaluated in order until a string value is obtained. If, when the last provided input is evaluated, it is not of the asserted type, then this assertion will cause the whole expression to be aborted.",
         "group": "Types"
       },
       "number": {
-        "doc": "Asserts that the input value is a Number. If multiple values are provided, each one is evaluated in order until a Number value is obtained.",
+        "doc": "Asserts that the input value is a number. If multiple values are provided, each one is evaluated in order until a number value is obtained. If, when the last provided input is evaluated, it is not a number, then this assertion will cause the whole expression to be aborted.",
         "group": "Types"
       },
       "boolean": {
-        "doc": "Asserts that the input value is a Boolean. If multiple values are provided, each one is evaluated in order until a Boolean value is obtained.",
+        "doc": "Asserts that the input value is a boolean. If multiple values are provided, each one is evaluated in order until a boolean value is obtained. If, when the last provided input is evaluated, it is not of the asserted type, then this assertion will cause the whole expression to be aborted.",
         "group": "Types"
       },
       "object": {
@@ -1936,15 +1932,15 @@
         "group": "Types"
       },
       "to-string": {
-        "doc": "Coerces the input value to a String.",
+        "doc": "Coerces the input value to a string.",
         "group": "Types"
       },
       "to-number": {
-        "doc": "Coerces the input value to a Number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
+        "doc": "Coerces the input value to a number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
         "group": "Types"
       },
       "to-boolean": {
-        "doc": "Coerces the input value to a Boolean.",
+        "doc": "Coerces the input value to a boolean.",
         "group": "Types"
       },
       "to-rgba": {
@@ -1952,7 +1948,7 @@
         "group": "Color"
       },
       "to-color": {
-        "doc": "Coerces the input value to a Color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
+        "doc": "Coerces the input value to a color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
         "group": "Types"
       },
       "rgb": {
@@ -1964,11 +1960,11 @@
         "group": "Color"
       },
       "get": {
-        "doc": "Retrieves an the object property value.  If it's not provided, the object argument defaults to [\"properties\"].  Returns null if the requested property is missing from the object.",
+        "doc": "Retrieves a property value from the current feature's properties (or from another object if one is provided).  Returns null if the requested property is missing.",
         "group": "Lookup"
       },
       "has": {
-        "doc": "Tests for the presence of an object property value.  If it's not provided, the object argument defaults to [\"properties\"].",
+        "doc": "Tests for the presence of an property value in the current featur's properties (or from another object if one is provided).",
         "group": "Lookup"
       },
       "length": {
@@ -2346,7 +2342,7 @@
             "doc": "The fill is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `fill-translate`.",
       "default": "map",
       "requires": [
         "fill-translate"
@@ -2461,7 +2457,7 @@
             "doc": "The fill extrusion is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `fill-extrusion-translate`.",
       "default": "map",
       "requires": [
         "fill-extrusion-translate"
@@ -2635,7 +2631,7 @@
             "doc": "The line is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `line-translate`.",
       "default": "map",
       "requires": [
         "line-translate"
@@ -2916,7 +2912,7 @@
             "doc": "The circle is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `circle-translate`.",
       "default": "map",
       "requires": [
         "circle-translate"
@@ -3319,7 +3315,7 @@
             "doc": "Icons are translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `icon-translate`.",
       "default": "map",
       "requires": [
         "icon-image",
@@ -3509,7 +3505,7 @@
             "doc": "The text is translated relative to the viewport."
         }
       },
-      "doc": "Controls the translation reference point.",
+      "doc": "Controls the frame of reference for `text-translate`.",
       "default": "map",
       "requires": [
         "text-field",

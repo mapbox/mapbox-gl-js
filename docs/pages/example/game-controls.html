@@ -1,0 +1,52 @@
+
+<div id='map'></div>
+
+<script>
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v9',
+        center: [-87.6298, 41.8781],
+        zoom: 17,
+        bearing: -12,
+        pitch: 60,
+        interactive: false
+    });
+
+    // pixels the map pans when the up or down arrow is clicked
+    var deltaDistance = 100;
+
+    // degrees the map rotates when the left or right arrow is clicked
+    var deltaDegrees = 25;
+
+    function easing(t) {
+        return t * (2 - t);
+    }
+
+    map.on('load', function() {
+        map.getCanvas().focus();
+
+        map.getCanvas().addEventListener('keydown', function(e) {
+            e.preventDefault();
+            if (e.which === 38) { // up
+                map.panBy([0, -deltaDistance], {
+                    easing: easing
+                });
+            } else if (e.which === 40) { // down
+                map.panBy([0, deltaDistance], {
+                    easing: easing
+                });
+            } else if (e.which === 37) { // left
+                map.easeTo({
+                    bearing: map.getBearing() - deltaDegrees,
+                    easing: easing
+                });
+            } else if (e.which === 39) { // right
+                map.easeTo({
+                    bearing: map.getBearing() + deltaDegrees,
+                    easing: easing
+                });
+            }
+        }, true);
+    });
+
+</script>

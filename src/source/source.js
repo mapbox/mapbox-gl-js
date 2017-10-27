@@ -37,6 +37,7 @@ export interface Source {
     /**
      * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource}
      * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
+     * @private
      */
     static workerSourceURL?: URL;
 
@@ -67,6 +68,7 @@ export interface Source {
      * @returns A plain (stringifiable) JS object representing the current state of the source.
      * Creating a source using the returned object as the `options` should result in a Source that is
      * equivalent to this one.
+     * @private
      */
     serialize(): Object;
 
