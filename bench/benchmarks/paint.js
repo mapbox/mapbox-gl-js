@@ -16,7 +16,13 @@ module.exports = class Paint extends Benchmark {
                 center: [-77.032194, 38.912753],
                 style: 'mapbox://styles/mapbox/streets-v9'
             });
-        })).then(maps => { this.maps = maps; });
+        })).then(maps => {
+            this.maps = maps;
+            for (const map of this.maps) {
+                // Stub out `_rerender`; we want to be the only trigger of `_render`.
+                map._rerender = () => {};
+            }
+        });
     }
 
     bench() {
