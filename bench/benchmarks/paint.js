@@ -18,10 +18,6 @@ module.exports = class Paint extends Benchmark {
             });
         })).then(maps => {
             this.maps = maps;
-            for (const map of this.maps) {
-                // Stub out `_rerender`; we want to be the only trigger of `_render`.
-                map._rerender = () => {};
-            }
         });
     }
 

@@ -13,8 +13,6 @@ class LayerBenchmark extends Benchmark {
             style: this.layerStyle
         }).then(map => {
             this.map = map;
-            // Stub out `_rerender`; we want to be the only trigger of `_render`.
-            this.map._rerender = () => {};
         });
     }
 
