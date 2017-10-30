@@ -82,22 +82,22 @@ const navigation = [
         "title": "Sources",
         "subnav": [
             {
-                "title": "Vector"
+                "title": "vector"
             },
             {
-                "title": "Raster"
+                "title": "raster"
             },
             {
-                "title": "GeoJSON"
+                "title": "geojson"
             },
             {
-                "title": "Image"
+                "title": "image"
             },
             {
-                "title": "Video"
+                "title": "video"
             },
             {
-                "title": "Canvas"
+                "title": "canvas"
             }
         ]
     },
@@ -122,28 +122,28 @@ const navigation = [
         "title": "Layers",
         "subnav": [
             {
-                "title": "Background"
+                "title": "background"
             },
             {
-                "title": "Fill"
+                "title": "fill"
             },
             {
-                "title": "Line"
+                "title": "line"
             },
             {
-                "title": "Symbol"
+                "title": "symbol"
             },
             {
-                "title": "Raster"
+                "title": "raster"
             },
             {
-                "title": "Circle"
+                "title": "circle"
             },
             {
-                "title": "Fill-Extrusion"
+                "title": "fill-extrusion"
             },
             {
-                "title": "Heatmap"
+                "title": "heatmap"
             }
         ]
     },
