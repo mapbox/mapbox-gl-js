@@ -89,6 +89,7 @@ class Style extends Evented {
     _rtlTextPluginCallback: Function;
     _changed: boolean;
     _updatedSources: {[string]: 'clear' | 'reload'};
+    _removedUsedSources: {[string]: boolean};
     _updatedLayers: {[string]: true};
     _removedLayers: {[string]: StyleLayer};
     _updatedPaintProps: {[layer: string]: {[class: string]: true}};
@@ -381,6 +382,12 @@ class Style extends Evented {
             }
         }
 
+        for (const id in this._removedUsedSources) {
+            if (this._removedUsedSources[id]) {
+                throw new Error(`Source "${id}" was removed while there are still layers using it.`);
+            }
+        }
+
         this._applyPaintPropertyUpdates(options);
         this._resetUpdates();
 
@@ -405,6 +412,7 @@ class Style extends Evented {
         this._updatedSymbolOrder = false;
 
         this._updatedSources = {};
+        this._removedUsedSources = {};
 
         this._updatedPaintProps = {};
         this._updatedAllPaintProps = false;
@@ -495,6 +503,7 @@ class Style extends Evented {
 
         sourceCache.onAdd(this.map);
         this._changed = true;
+        this._removedUsedSources[id] = false;
     }
 
     /**
@@ -511,6 +520,7 @@ class Style extends Evented {
         const sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
         delete this._updatedSources[id];
+        this._removedUsedSources[id] = sourceCache.used;
         sourceCache.fire('data', {sourceDataType: 'metadata', dataType:'source', sourceId: id});
         sourceCache.setEventedParent(null);
         sourceCache.clearTiles();

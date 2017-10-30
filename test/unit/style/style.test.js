@@ -693,6 +693,48 @@ test('Style#removeSource', (t) => {
         });
     });
 
+    function createStyle(callback) {
+        const style = new Style(new StubMap());
+        style.loadJSON(createStyleJSON({
+            'sources': {
+                'mapbox-source': createGeoJSONSource()
+            },
+            'layers': [{
+                'id': 'mapbox-layer',
+                'type': 'circle',
+                'source': 'mapbox-source',
+                'source-layer': 'whatever'
+            }]
+        }));
+        style.on('style.load', () => {
+            style.update();
+            style._recalculate(1);
+            callback(style);
+        });
+        return style;
+    }
+
+    t.test('does not throw is source is in use and readded', (t) => {
+        createStyle((style) => {
+            style.removeSource('mapbox-source');
+            style.addSource('mapbox-source', createSource());
+            t.doesNotThrow(() => {
+                style.update();
+            });
+            t.end();
+        });
+    });
+
+    t.test('throws if source is in use and not readded', (t) => {
+        createStyle((style) => {
+            style.removeSource('mapbox-source');
+            t.throws(() => {
+                style.update();
+            }, /\"mapbox\-source\"/);
+            t.end();
+        });
+    });
+
     t.test('tears down source event forwarding', (t) => {
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
