@@ -220,7 +220,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(queryGeometry: any, tileCoord: TileCoord, tileSourceMaxZoom: number, textPixelRatio: number, collisionBoxArray: any) {
+    queryRenderedSymbols(queryGeometry: any, tileCoord: TileCoord, tileSourceMaxZoom: number, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
         const sourceLayerFeatures = {};
         const result = [];
 
@@ -252,13 +252,13 @@ class CollisionIndex {
         const thisTileFeatures = [];
         const features = this.grid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < features.length; i++) {
-            if (features[i].tileID === tileID) {
+            if (features[i].sourceID === sourceID && features[i].tileID === tileID) {
                 thisTileFeatures.push(features[i].boxIndex);
             }
         }
         const ignoredFeatures = this.ignoredGrid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < ignoredFeatures.length; i++) {
-            if (ignoredFeatures[i].tileID === tileID) {
+            if (ignoredFeatures[i].sourceID === sourceID && ignoredFeatures[i].tileID === tileID) {
                 thisTileFeatures.push(ignoredFeatures[i].boxIndex);
             }
         }
@@ -301,18 +301,18 @@ class CollisionIndex {
         return result;
     }
 
-    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
+    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, tileID: number, sourceID: string, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { tileID: tileID, boxIndex: boxStartIndex };
+        const key = { tileID: tileID, sourceID: sourceID, boxIndex: boxStartIndex };
         grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
-    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, tileID: number, boxStartIndex: number) {
+    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, tileID: number, sourceID: string, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 4) {
-            const key = { tileID: tileID, boxIndex: boxStartIndex + collisionCircles[k + 3] };
+            const key = { tileID: tileID, sourceID: sourceID, boxIndex: boxStartIndex + collisionCircles[k + 3] };
             grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }
     }

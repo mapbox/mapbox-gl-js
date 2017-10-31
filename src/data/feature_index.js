@@ -40,7 +40,8 @@ type QueryParameters = {
         layers: Array<string>,
     },
     tileSourceMaxZoom: number,
-    collisionBoxArray: any
+    collisionBoxArray: any,
+    sourceID: string
 }
 
 export type SerializedFeatureIndex = {
@@ -170,7 +171,7 @@ class FeatureIndex {
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         const matchingSymbols = this.collisionIndex ?
-            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.coord, args.tileSourceMaxZoom, EXTENT / args.tileSize, args.collisionBoxArray) :
+            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.coord, args.tileSourceMaxZoom, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);

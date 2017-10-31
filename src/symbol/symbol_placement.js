@@ -133,7 +133,7 @@ function updateCollisionCircles(collisionVertexArray: StructArray, collisionCirc
     }
 }
 
-function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, textPixelRatio: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, collisionBoxArray: CollisionBoxArray) {
+function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionIndex, showCollisionBoxes: boolean, zoom: number, textPixelRatio: number, posMatrix: mat4, labelPlaneMatrix: mat4, tileID: number, sourceID: string, collisionBoxArray: CollisionBoxArray) {
     const layer = bucket.layers[0];
     const layout = layer.layout;
 
@@ -234,7 +234,7 @@ function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionI
                 updateCollisionBox(collisionDebugBoxArray, placeGlyph);
             }
             if (placeGlyph) {
-                collisionIndex.insertCollisionBox(placedGlyphBox, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
+                collisionIndex.insertCollisionBox(placedGlyphBox, layout['text-ignore-placement'], tileID, sourceID, symbolInstance.textBoxStartIndex);
             }
         }
         if (symbolInstance.collisionArrays.iconBox) {
@@ -242,7 +242,7 @@ function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionI
                 updateCollisionBox(collisionDebugBoxArray, placeIcon);
             }
             if (placeIcon) {
-                collisionIndex.insertCollisionBox(placedIconBox, layout['icon-ignore-placement'], tileID, symbolInstance.iconBoxStartIndex);
+                collisionIndex.insertCollisionBox(placedIconBox, layout['icon-ignore-placement'], tileID, sourceID, symbolInstance.iconBoxStartIndex);
             }
         }
         if (symbolInstance.collisionArrays.textCircles) {
@@ -250,7 +250,7 @@ function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionI
                 updateCollisionCircles(collisionDebugCircleArray, symbolInstance.collisionArrays.textCircles, placeGlyph, symbolInstance.isDuplicate);
             }
             if (placeGlyph) {
-                collisionIndex.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, symbolInstance.textBoxStartIndex);
+                collisionIndex.insertCollisionCircles(placedGlyphCircles, layout['text-ignore-placement'], tileID, sourceID, symbolInstance.textBoxStartIndex);
             }
         }
 

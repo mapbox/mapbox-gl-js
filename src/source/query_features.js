@@ -25,7 +25,8 @@ exports.rendered = function(sourceCache: SourceCache,
                 tileIn.queryGeometry,
                 tileIn.scale,
                 params,
-                bearing)
+                bearing,
+                sourceCache.id)
         });
     }
 

@@ -206,7 +206,7 @@ class Tile {
         }
     }
 
-    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any) {
+    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, sourceID: string) {
         const bucket = this.getBucket(layer);
         const collisionBoxArray = this.collisionBoxArray;
 
@@ -218,7 +218,7 @@ class Tile {
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
 
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
-            performSymbolPlacement(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, collisionBoxArray);
+            performSymbolPlacement(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, sourceID, collisionBoxArray);
         }
     }
 
@@ -267,7 +267,8 @@ class Tile {
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
-                          bearing: number): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          bearing: number,
+                          sourceID: string): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.featureIndex)
             return {};
 
@@ -288,7 +289,8 @@ class Tile {
             params: params,
             additionalRadius: additionalRadius,
             tileSourceMaxZoom: this.sourceMaxZoom,
-            collisionBoxArray: this.collisionBoxArray
+            collisionBoxArray: this.collisionBoxArray,
+            sourceID: sourceID
         }, layers);
     }
 
