@@ -141,6 +141,7 @@ class Worker {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
+                parent: this.actor.parent,
                 send: (type, data, callback, buffers) => {
                     this.actor.send(type, data, callback, buffers, mapId);
                 }
