@@ -28,6 +28,7 @@ class StyleLayer extends Evented {
     minzoom: ?number;
     maxzoom: ?number;
     filter: mixed;
+    visibility: 'visible' | 'none';
     paint: { [string]: any };
     layout: { [string]: any };
 
@@ -59,6 +60,7 @@ class StyleLayer extends Evented {
         this.type = layer.type;
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
+        this.visibility = 'visible';
 
         if (layer.type !== 'background') {
             this.source = layer.source;
@@ -103,6 +105,10 @@ class StyleLayer extends Evented {
     }
 
     setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
+        if (name === 'visibility') {
+            this.visibility = value === 'none' ? value : 'visible';
+            return;
+        }
         if (value == null) {
             delete this._layoutDeclarations[name];
         } else {
@@ -114,6 +120,9 @@ class StyleLayer extends Evented {
     }
 
     getLayoutProperty(name: string) {
+        if (name === 'visibility') {
+            return this.visibility;
+        }
         return (
             this._layoutDeclarations[name] &&
             this._layoutDeclarations[name].value
@@ -195,9 +204,7 @@ class StyleLayer extends Evented {
     isHidden(zoom: number) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
-        if (this.layout['visibility'] === 'none') return true;
-
-        return false;
+        return this.visibility === 'none';
     }
 
     updatePaintTransitions(options: {transition?: boolean},
@@ -246,6 +253,10 @@ class StyleLayer extends Evented {
             'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue),
             'paint': util.mapObject(this._paintDeclarations, getDeclarationValue)
         };
+
+        if (this.visibility === 'none') {
+            output.layout.visibility = 'none';
+        }
 
         return util.filterObject(output, (value, key) => {
             return value !== undefined &&

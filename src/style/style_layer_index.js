@@ -46,7 +46,7 @@ class StyleLayerIndex {
             const layers = layerConfigs.map((layerConfig) => this._layers[layerConfig.id]);
 
             const layer = layers[0];
-            if (layer.layout && layer.layout.visibility === 'none') {
+            if (layer.visibility === 'none') {
                 continue;
             }
 
