@@ -45,10 +45,10 @@ function packColor(color: Color): [number, number] {
 
 interface Binder {
     property: string;
+    statistics: { max: number };
 
     populatePaintArray(layer: StyleLayer,
                        paintArray: StructArray,
-                       statistics: PaintPropertyStatistics,
                        start: number,
                        length: number,
                        feature: Feature): void;
@@ -66,12 +66,14 @@ class ConstantBinder implements Binder {
     type: string;
     property: string;
     useIntegerZoom: boolean;
+    statistics: { max: number };
 
     constructor(name: string, type: string, property: string, useIntegerZoom: boolean) {
         this.name = name;
         this.type = type;
         this.property = property;
         this.useIntegerZoom = useIntegerZoom;
+        this.statistics = { max: -Infinity };
     }
 
     defines() {
@@ -94,11 +96,13 @@ class SourceFunctionBinder implements Binder {
     name: string;
     type: string;
     property: string;
+    statistics: { max: number };
 
     constructor(name: string, type: string, property: string) {
         this.name = name;
         this.type = type;
         this.property = property;
+        this.statistics = { max: -Infinity };
     }
 
     defines() {
@@ -107,7 +111,6 @@ class SourceFunctionBinder implements Binder {
 
     populatePaintArray(layer: StyleLayer,
                        paintArray: StructArray,
-                       statistics: PaintPropertyStatistics,
                        start: number,
                        length: number,
                        feature: Feature) {
@@ -126,8 +129,7 @@ class SourceFunctionBinder implements Binder {
                 struct[`a_${this.name}`] = value;
             }
 
-            const stats = statistics[this.property];
-            stats.max = Math.max(stats.max, value);
+            this.statistics.max = Math.max(this.statistics.max, value);
         }
     }
 
@@ -142,6 +144,7 @@ class CompositeFunctionBinder implements Binder {
     property: string;
     useIntegerZoom: boolean;
     zoom: number;
+    statistics: { max: number };
 
     constructor(name: string, type: string, property: string, useIntegerZoom: boolean, zoom: number) {
         this.name = name;
@@ -149,6 +152,7 @@ class CompositeFunctionBinder implements Binder {
         this.property = property;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
+        this.statistics = { max: -Infinity };
     }
 
     defines() {
@@ -157,7 +161,6 @@ class CompositeFunctionBinder implements Binder {
 
     populatePaintArray(layer: StyleLayer,
                        paintArray: StructArray,
-                       statistics: PaintPropertyStatistics,
                        start: number,
                        length: number,
                        feature: Feature) {
@@ -181,8 +184,7 @@ class CompositeFunctionBinder implements Binder {
                 struct[`a_${this.name}1`] = max;
             }
 
-            const stats = statistics[this.property];
-            stats.max = Math.max(stats.max, min, max);
+            this.statistics.max = Math.max(this.statistics.max, min, max);
         }
     }
 
@@ -285,19 +287,6 @@ class ProgramConfiguration {
         return self;
     }
 
-    // Since this object is accessed frequently during populatePaintArray, it
-    // is helpful to initialize it ahead of time to avoid recalculating
-    // 'hidden class' optimizations to take effect
-    createPaintPropertyStatistics() {
-        const paintPropertyStatistics: PaintPropertyStatistics = {};
-        for (const name in this.binders) {
-            paintPropertyStatistics[this.binders[name].property] = {
-                max: -Infinity
-            };
-        }
-        return paintPropertyStatistics;
-    }
-
     populatePaintArray(length: number, feature: Feature) {
         const paintArray = this.paintVertexArray;
         if (paintArray.bytesPerElement === 0) return;
@@ -308,7 +297,6 @@ class ProgramConfiguration {
         for (const name in this.binders) {
             this.binders[name].populatePaintArray(
                 this.layer, paintArray,
-                this.paintPropertyStatistics,
                 start, length,
                 feature);
         }
@@ -332,10 +320,16 @@ class ProgramConfiguration {
         if (this.paintVertexArray.length === 0) {
             return null;
         }
+
+        const statistics: PaintPropertyStatistics = {};
+        for (const name in this.binders) {
+            statistics[this.binders[name].property] = this.binders[name].statistics;
+        }
+
         return {
             array: this.paintVertexArray.serialize(transferables),
             type: this.paintVertexArray.constructor.serialize(),
-            statistics: this.paintPropertyStatistics
+            statistics
         };
     }
 
@@ -375,7 +369,6 @@ class ProgramConfigurationSet {
             for (const layer of layers) {
                 const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
                 programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
-                programConfiguration.paintPropertyStatistics = programConfiguration.createPaintPropertyStatistics();
                 this.programConfigurations[layer.id] = programConfiguration;
             }
         }
