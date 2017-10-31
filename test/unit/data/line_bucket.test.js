@@ -8,7 +8,7 @@ const VectorTile = require('@mapbox/vector-tile').VectorTile;
 const Point = require('@mapbox/point-geometry');
 const segment = require('../../../src/data/segment');
 const LineBucket = require('../../../src/data/bucket/line_bucket');
-const StyleLayer = require('../../../src/style/style_layer');
+const LineStyleLayer = require('../../../src/style/style_layer/line_style_layer');
 
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -23,7 +23,9 @@ function createLine(numPoints) {
 }
 
 test('LineBucket', (t) => {
-    const layer = new StyleLayer({ id: 'test', type: 'line' });
+    const layer = new LineStyleLayer({ id: 'test', type: 'line' });
+    layer.recalculate({zoom: 0, zoomHistory: {}});
+
     const bucket = new LineBucket({ layers: [layer] });
 
     const line = {
@@ -102,7 +104,9 @@ test('LineBucket segmentation', (t) => {
     // breaking across array groups without tests taking a _long_ time.
     t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
 
-    const layer = new StyleLayer({ id: 'test', type: 'line' });
+    const layer = new LineStyleLayer({ id: 'test', type: 'line' });
+    layer.recalculate({zoom: 0, zoomHistory: {}});
+
     const bucket = new LineBucket({ layers: [layer] });
 
     // first add an initial, small feature to make sure the next one starts at

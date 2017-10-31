@@ -2,13 +2,16 @@
 
 const Point = require('@mapbox/point-geometry');
 
-import type StyleLayer from './style_layer';
+import type {PossiblyEvaluatedValue} from "./properties";
+import type StyleLayer from '../style/style_layer';
+import type {Bucket} from '../data/bucket';
 
-function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: *) {
-    if (layer.isPaintValueFeatureConstant(property)) {
-        return layer.paint[property];
+function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: Bucket): number {
+    const value: PossiblyEvaluatedValue<any> = (layer.paint: any).get(property).value;
+    if (value.kind === 'constant') {
+        return value.value;
     } else {
-        return bucket.programConfigurations.get(layer.id)
+        return (bucket: any).programConfigurations.get(layer.id)
             .paintPropertyStatistics[property].max;
     }
 }

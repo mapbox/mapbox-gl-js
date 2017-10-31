@@ -46,10 +46,10 @@ function performSymbolLayout(bucket: SymbolBucket,
     const layout = bucket.layers[0].layout;
 
     const oneEm = 24;
-    const lineHeight = layout['text-line-height'] * oneEm;
-    const fontstack = layout['text-font'].join(',');
-    const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
-    const keepUpright = layout['text-keep-upright'];
+    const lineHeight = layout.get('text-line-height') * oneEm;
+    const fontstack = layout.get('text-font').join(',');
+    const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
+    const keepUpright = layout.get('text-keep-upright');
 
     const glyphs = glyphMap[fontstack] || {};
     const glyphPositionMap = glyphPositions[fontstack] || {};
@@ -60,13 +60,13 @@ function performSymbolLayout(bucket: SymbolBucket,
         const text = feature.text;
         if (text) {
             const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
-            const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom}, feature).map((t)=> t * oneEm);
-            const spacing = bucket.layers[0].getLayoutValue('text-letter-spacing', {zoom: bucket.zoom}, feature) * oneEm;
+            const textOffset: [number, number] = (layout.get('text-offset').evaluate({zoom: bucket.zoom}, feature).map((t)=> t * oneEm): any);
+            const spacing = layout.get('text-letter-spacing').evaluate({zoom: bucket.zoom}, feature) * oneEm;
             const spacingIfAllowed = scriptDetection.allowsLetterSpacing(text) ? spacing : 0;
-            const textAnchor = bucket.layers[0].getLayoutValue('text-anchor', {zoom: bucket.zoom}, feature);
-            const textJustify = bucket.layers[0].getLayoutValue('text-justify', {zoom: bucket.zoom}, feature);
-            const maxWidth = layout['symbol-placement'] !== 'line' ?
-                bucket.layers[0].getLayoutValue('text-max-width', {zoom: bucket.zoom}, feature) * oneEm :
+            const textAnchor = layout.get('text-anchor').evaluate({zoom: bucket.zoom}, feature);
+            const textJustify = layout.get('text-justify').evaluate({zoom: bucket.zoom}, feature);
+            const maxWidth = layout.get('symbol-placement') !== 'line' ?
+                layout.get('text-max-width').evaluate({zoom: bucket.zoom}, feature) * oneEm :
                 0;
 
             shapedTextOrientations.horizontal = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
@@ -81,8 +81,8 @@ function performSymbolLayout(bucket: SymbolBucket,
             if (image) {
                 shapedIcon = shapeIcon(
                     imagePositions[feature.icon],
-                    bucket.layers[0].getLayoutValue('icon-offset', {zoom: bucket.zoom}, feature),
-                    bucket.layers[0].getLayoutValue('icon-anchor', {zoom: bucket.zoom}, feature));
+                    layout.get('icon-offset').evaluate({zoom: bucket.zoom}, feature),
+                    layout.get('icon-anchor').evaluate({zoom: bucket.zoom}, feature));
                 if (bucket.sdfIcons === undefined) {
                     bucket.sdfIcons = image.sdf;
                 } else if (bucket.sdfIcons !== image.sdf) {
@@ -90,7 +90,7 @@ function performSymbolLayout(bucket: SymbolBucket,
                 }
                 if (image.pixelRatio !== bucket.pixelRatio) {
                     bucket.iconsNeedLinear = true;
-                } else if (layout['icon-rotate'] !== 0 || !bucket.layers[0].isLayoutValueFeatureConstant('icon-rotate')) {
+                } else if (layout.get('icon-rotate').constantOr(1) !== 0) {
                     bucket.iconsNeedLinear = true;
                 }
             }
@@ -119,34 +119,34 @@ function addFeature(bucket: SymbolBucket,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | void,
                     glyphPositionMap: {[number]: GlyphPosition}) {
-    const layoutTextSize = bucket.layers[0].getLayoutValue('text-size', {zoom: bucket.zoom + 1}, feature);
-    const layoutIconSize = bucket.layers[0].getLayoutValue('icon-size', {zoom: bucket.zoom + 1}, feature);
+    const layout = bucket.layers[0].layout;
+    const layoutTextSize = layout.get('text-size').evaluate({zoom: bucket.zoom + 1}, feature);
+    const layoutIconSize = layout.get('icon-size').evaluate({zoom: bucket.zoom + 1}, feature);
 
-    const textOffset = bucket.layers[0].getLayoutValue('text-offset', {zoom: bucket.zoom }, feature);
-    const iconOffset = bucket.layers[0].getLayoutValue('icon-offset', {zoom: bucket.zoom }, feature);
+    const textOffset = layout.get('text-offset').evaluate({zoom: bucket.zoom }, feature);
+    const iconOffset = layout.get('icon-offset').evaluate({zoom: bucket.zoom }, feature);
 
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
     // use the same value when calculating anchor positions.
-    let textMaxSize = bucket.layers[0].getLayoutValue('text-size', {zoom: 18}, feature);
+    let textMaxSize = layout.get('text-size').evaluate({zoom: 18}, feature);
     if (textMaxSize === undefined) {
         textMaxSize = layoutTextSize;
     }
 
-    const layout = bucket.layers[0].layout,
-        glyphSize = 24,
+    const glyphSize = 24,
         fontScale = layoutTextSize / glyphSize,
         textBoxScale = bucket.tilePixelRatio * fontScale,
         textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
         iconBoxScale = bucket.tilePixelRatio * layoutIconSize,
-        symbolMinDistance = bucket.tilePixelRatio * layout['symbol-spacing'],
-        textPadding = layout['text-padding'] * bucket.tilePixelRatio,
-        iconPadding = layout['icon-padding'] * bucket.tilePixelRatio,
-        textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
-        textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
-        iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
-        symbolPlacement = layout['symbol-placement'],
+        symbolMinDistance = bucket.tilePixelRatio * layout.get('symbol-spacing'),
+        textPadding = layout.get('text-padding') * bucket.tilePixelRatio,
+        iconPadding = layout.get('icon-padding') * bucket.tilePixelRatio,
+        textMaxAngle = layout.get('text-max-angle') / 180 * Math.PI,
+        textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line',
+        iconAlongLine = layout.get('icon-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line',
+        symbolPlacement = layout.get('symbol-placement'),
         textRepeatDistance = symbolMinDistance / 2;
 
     const addSymbolAtAnchor = (line, anchor) => {
@@ -374,13 +374,13 @@ function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anc
 function getSizeVertexData(layer: SymbolStyleLayer, tileZoom: number, sizeData: SizeData, sizeProperty: string, feature: SymbolFeature) {
     if (sizeData.functionType === 'source') {
         return [
-            10 * layer.getLayoutValue(sizeProperty, ({}: any), feature)
+            10 * layer.layout.get(sizeProperty).evaluate(({}: any), feature)
         ];
     } else if (sizeData.functionType === 'composite') {
-        const zoomRange = sizeData.coveringZoomRange;
+        const {zoomRange} = sizeData;
         return [
-            10 * layer.getLayoutValue(sizeProperty, {zoom: zoomRange[0]}, feature),
-            10 * layer.getLayoutValue(sizeProperty, {zoom: zoomRange[1]}, feature)
+            10 * layer.layout.get(sizeProperty).evaluate({zoom: zoomRange.min}, feature),
+            10 * layer.layout.get(sizeProperty).evaluate({zoom: zoomRange.max}, feature)
         ];
     }
     return null;
