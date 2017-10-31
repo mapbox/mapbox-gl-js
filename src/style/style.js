@@ -281,24 +281,19 @@ class Style extends Evented {
         if (!this._loaded) return;
 
         options = options || {transition: true};
-        const transition = this.stylesheet.transition || {};
+
+        const transition = util.extend({
+            duration: 300,
+            delay: 0
+        }, this.stylesheet.transition);
 
         const layers = this._updatedAllPaintProps ? this._layers : this._updatedPaintProps;
 
         for (const id in layers) {
-            const layer = this._layers[id];
-            const props = this._updatedPaintProps[id];
-
-            if (this._updatedAllPaintProps || props.all) {
-                layer.updatePaintTransitions(options, transition, this.animationLoop, this.zoomHistory);
-            } else {
-                for (const paintName in props) {
-                    this._layers[id].updatePaintTransition(paintName, options, transition, this.animationLoop, this.zoomHistory);
-                }
-            }
+            this._layers[id].updatePaintTransitions(options, transition);
         }
 
-        this.light.updateLightTransitions(options, transition, this.animationLoop);
+        this.light.updateTransitions(options, transition);
     }
 
     _recalculate(z: number) {
@@ -307,18 +302,23 @@ class Style extends Evented {
         for (const sourceId in this.sourceCaches)
             this.sourceCaches[sourceId].used = false;
 
-        this._updateZoomHistory(z);
+        const parameters = {
+            zoom: z,
+            now: Date.now(),
+            defaultFadeDuration: 300,
+            zoomHistory: this._updateZoomHistory(z)
+        };
 
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(z);
+            layer.recalculate(parameters);
             if (!layer.isHidden(z) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
         }
 
-        this.light.recalculate(z);
+        this.light.recalculate(parameters);
 
         const maxZoomTransitionDuration = 300;
         if (Math.floor(this.z) !== Math.floor(z)) {
@@ -351,6 +351,7 @@ class Style extends Evented {
         }
 
         zh.lastZoom = z;
+        return zh;
     }
 
     _checkLoaded() {
@@ -774,11 +775,11 @@ class Style extends Evented {
 
         if (util.deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
+        const wasDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
         layer.setPaintProperty(name, value);
-        const isFeatureConstant = layer.isPaintValueFeatureConstant(name);
+        const isDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
 
-        if (!isFeatureConstant || !wasFeatureConstant) {
+        if (isDataDriven || wasDataDriven) {
             this._updateLayer(layer);
         }
 
@@ -909,7 +910,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification, transitionOptions?: {}) {
+    setLight(lightOptions: LightSpecification, options: ?{transition?: boolean}) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -922,10 +923,15 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const transition = this.stylesheet.transition || {};
+        options = options || {transition: true};
+
+        const transition = util.extend({
+            duration: 300,
+            delay: 0
+        }, this.stylesheet.transition);
 
         this.light.setLight(lightOptions);
-        this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
+        this.light.updateTransitions(options, transition);
     }
 
     _validate(validate: ({}) => void, key: string, value: any, props: any, options?: {validate?: boolean}) {

@@ -414,13 +414,13 @@ class SymbolBucket implements Bucket {
             this.symbolInstances = options.symbolInstances;
 
             const layout = options.layers[0].layout;
-            this.sortFeaturesByY = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-                layout['text-ignore-placement'] || layout['icon-ignore-placement'];
+            this.sortFeaturesByY = layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
+                layout.get('text-ignore-placement') || layout.get('icon-ignore-placement');
 
         } else {
-            const layer = this.layers[0];
-            this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
-            this.iconSizeData = getSizeData(this.zoom, layer, 'icon-size');
+            const layer: SymbolStyleLayer = this.layers[0];
+            this.textSizeData = getSizeData(this.zoom, layer._unevaluatedLayout._values['text-size']);
+            this.iconSizeData = getSizeData(this.zoom, layer._unevaluatedLayout._values['icon-size']);
         }
     }
 
@@ -437,12 +437,14 @@ class SymbolBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
-        const layer: SymbolStyleLayer = this.layers[0];
+        const layer = this.layers[0];
         const layout = layer.layout;
-        const textFont = layout['text-font'];
 
-        const hasText = (!layer.isLayoutValueFeatureConstant('text-field') || layout['text-field']) && textFont;
-        const hasIcon = (!layer.isLayoutValueFeatureConstant('icon-image') || layout['icon-image']);
+        const textFont = layout.get('text-font').join(',');
+        const textField = layout.get('text-field');
+        const iconImage = layout.get('icon-image');
+        const hasText = textField.value.kind !== 'constant' || textField.value.value.length > 0 && textFont.length > 0;
+        const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.length > 0;
 
         this.features = [];
 
@@ -494,7 +496,7 @@ class SymbolBucket implements Bucket {
             }
 
             if (text) {
-                const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+                const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
                 const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
                 for (let i = 0; i < text.length; i++) {
                     stack[text.charCodeAt(i)] = true;
@@ -508,7 +510,7 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        if (layout['symbol-placement'] === 'line') {
+        if (layout.get('symbol-placement') === 'line') {
             // Merge adjacent lines with the same text to improve labelling.
             // It's better to place labels on one long line than on many short segments.
             this.features = mergeLines(this.features);

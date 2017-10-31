@@ -1,0 +1,47 @@
+<%
+  const type = locals.type;
+  const layoutProperties = locals.layoutProperties;
+  const paintProperties = locals.paintProperties;
+-%>
+// This file is generated. Edit build/generate-style-code.js, then run `node build/generate-style-code.js`.
+// @flow
+/* eslint-disable */
+
+const styleSpec = require('../../style-spec/reference/latest');
+
+const {
+    DataConstantProperty,
+    DataDrivenProperty,
+    CrossFadedProperty,
+    HeatmapColorProperty
+} = require('../properties');
+
+import type Color from '../../style-spec/util/color';
+
+<% if (layoutProperties.length) { -%>
+export type LayoutProperties = {|
+<% for (const property of layoutProperties) { -%>
+    "<%= property.name %>": <%- propertyType(property) %>,
+<% } -%>
+|};
+
+const layout: LayoutProperties = {
+<% for (const property of layoutProperties) { -%>
+    "<%= property.name %>": <%- propertyValue(property, 'layout') %>,
+<% } -%>
+};
+<% } -%>
+
+export type PaintProperties = {|
+<% for (const property of paintProperties) { -%>
+    "<%= property.name %>": <%- propertyType(property) %>,
+<% } -%>
+|};
+
+const paint: PaintProperties = {
+<% for (const property of paintProperties) { -%>
+    "<%= property.name %>": <%- propertyValue(property, 'paint') %>,
+<% } -%>
+};
+
+module.exports = { paint<% if (layoutProperties.length) { %>, layout<% } %> };

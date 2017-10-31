@@ -62,7 +62,6 @@ class Painter {
     numSublayers: number;
     depthEpsilon: number;
     lineWidthRange: [number, number];
-    basicFillProgramConfiguration: ProgramConfiguration;
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
@@ -110,7 +109,6 @@ class Painter {
 
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
-        this.basicFillProgramConfiguration = ProgramConfiguration.createBasicFill();
         this.emptyProgramConfiguration = new ProgramConfiguration();
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
@@ -250,7 +248,7 @@ class Painter {
 
             gl.stencilFunc(gl.ALWAYS, id, 0xFF);
 
-            const program = this.useProgram('fill', this.basicFillProgramConfiguration);
+            const program = this.useProgram('fill', this.emptyProgramConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
             // Draw the clipping mask

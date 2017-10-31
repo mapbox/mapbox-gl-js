@@ -6,10 +6,41 @@ const StyleLayer = require('../style_layer');
 const LineBucket = require('../../data/bucket/line_bucket');
 const {multiPolygonIntersectsBufferedMultiLine} = require('../../util/intersection_tests');
 const {getMaximumPaintValue, translateDistance, translate} = require('../query_utils');
+const properties = require('./line_style_layer_properties');
+
+const {
+    Transitionable,
+    Transitioning,
+    Layout,
+    PossiblyEvaluated,
+    DataDrivenProperty
+} = require('../properties');
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
+import type {LayoutProperties, PaintProperties} from './line_style_layer_properties';
+import type {EvaluationParameters} from '../properties';
+
+const lineFloorwidthProperty = new DataDrivenProperty(properties.paint['line-width'].specification, true);
 
 class LineStyleLayer extends StyleLayer {
+    _unevaluatedLayout: Layout<LayoutProperties>;
+    layout: PossiblyEvaluated<LayoutProperties>;
+
+    _transitionablePaint: Transitionable<PaintProperties>;
+    _transitioningPaint: Transitioning<PaintProperties>;
+    paint: PossiblyEvaluated<PaintProperties>;
+
+    constructor(layer: LayerSpecification) {
+        super(layer, properties);
+    }
+
+    recalculate(parameters: EvaluationParameters) {
+        super.recalculate(parameters);
+
+        (this.paint._values: any)['line-floorwidth'] =
+            lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
+    }
+
     createBucket(parameters: BucketParameters) {
         return new LineBucket(parameters);
     }
@@ -20,7 +51,7 @@ class LineStyleLayer extends StyleLayer {
             getMaximumPaintValue('line-width', this, lineBucket),
             getMaximumPaintValue('line-gap-width', this, lineBucket));
         const offset = getMaximumPaintValue('line-offset', this, lineBucket);
-        return width / 2 + Math.abs(offset) + translateDistance(this.paint['line-translate']);
+        return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
     queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
@@ -30,13 +61,13 @@ class LineStyleLayer extends StyleLayer {
                            bearing: number,
                            pixelsToTileUnits: number): boolean {
         const translatedPolygon = translate(queryGeometry,
-            this.getPaintValue('line-translate', {zoom}, feature),
-            this.getPaintValue('line-translate-anchor', {zoom}, feature),
+            this.paint.get('line-translate'),
+            this.paint.get('line-translate-anchor'),
             bearing, pixelsToTileUnits);
         const halfWidth = pixelsToTileUnits / 2 * getLineWidth(
-            this.getPaintValue('line-width', {zoom}, feature),
-            this.getPaintValue('line-gap-width', {zoom}, feature));
-        const lineOffset = this.getPaintValue('line-offset', {zoom}, feature);
+            this.paint.get('line-width').evaluate({zoom}, feature),
+            this.paint.get('line-gap-width').evaluate({zoom}, feature));
+        const lineOffset = this.paint.get('line-offset').evaluate({zoom}, feature);
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
         }

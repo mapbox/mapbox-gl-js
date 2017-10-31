@@ -19,6 +19,10 @@ class Color {
         this.a = a;
     }
 
+    static black: Color;
+    static white: Color;
+    static transparent: Color;
+
     static parse(input: ?string): Color | void {
         if (!input) {
             return undefined;
@@ -45,5 +49,9 @@ class Color {
         );
     }
 }
+
+Color.black = new Color(0, 0, 0, 1);
+Color.white = new Color(1, 1, 1, 1);
+Color.transparent = new Color(0, 0, 0, 0);
 
 module.exports = Color;

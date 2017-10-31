@@ -12,7 +12,6 @@ const window = require('../../../src/util/window');
 const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
 const ajax = require('../../../src/util/ajax');
 const browser = require('../../../src/util/browser');
-const Color = require('../../../src/style-spec/util/color');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -1441,20 +1440,20 @@ test('Style#queryRenderedFeatures', (t) => {
                 const features = {
                     'land': [{
                         type: 'Feature',
-                        layer: style._layers.land,
+                        layer: style._layers.land.serialize(),
                         geometry: {
                             type: 'Polygon'
                         }
                     }, {
                         type: 'Feature',
-                        layer: style._layers.land,
+                        layer: style._layers.land.serialize(),
                         geometry: {
                             type: 'Point'
                         }
                     }],
                     'landref': [{
                         type: 'Feature',
-                        layer: style._layers.landref,
+                        layer: style._layers.landref.serialize(),
                         geometry: {
                             type: 'Line'
                         }
@@ -1559,7 +1558,7 @@ test('Style#queryRenderedFeatures', (t) => {
 
         t.test('includes paint properties', (t) => {
             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-            t.deepEqual(results[2].layer.paint['line-color'], new Color(1, 0, 0, 1));
+            t.deepEqual(results[2].layer.paint['line-color'], 'red');
             t.end();
         });
 

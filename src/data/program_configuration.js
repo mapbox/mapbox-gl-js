@@ -1,5 +1,7 @@
 // @flow
 
+import type {GlobalProperties} from "../style-spec/expression/index";
+
 const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const VertexBuffer = require('../gl/vertex_buffer');
@@ -7,8 +9,9 @@ const VertexBuffer = require('../gl/vertex_buffer');
 import type StyleLayer from '../style/style_layer';
 import type {ViewType, StructArray, SerializedStructArray, StructArrayTypeParameters} from '../util/struct_array';
 import type Program from '../render/program';
-import type {Feature} from '../style-spec/expression';
+import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
 import type Color from '../style-spec/util/color';
+import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
 
 type LayoutAttribute = {
     name: string,
@@ -43,12 +46,11 @@ function packColor(color: Color): [number, number] {
     ];
 }
 
-interface Binder {
+interface Binder<T> {
     property: string;
     statistics: { max: number };
 
-    populatePaintArray(layer: StyleLayer,
-                       paintArray: StructArray,
+    populatePaintArray(paintArray: StructArray,
                        start: number,
                        length: number,
                        feature: Feature): void;
@@ -57,22 +59,22 @@ interface Binder {
 
     setUniforms(gl: WebGLRenderingContext,
                 program: Program,
-                layer: StyleLayer,
-                globalProperties: { zoom: number }): void;
+                globals: GlobalProperties,
+                currentValue: PossiblyEvaluatedPropertyValue<T>): void;
 }
 
-class ConstantBinder implements Binder {
+class ConstantBinder<T> implements Binder<T> {
+    value: T;
     name: string;
     type: string;
     property: string;
-    useIntegerZoom: boolean;
     statistics: { max: number };
 
-    constructor(name: string, type: string, property: string, useIntegerZoom: boolean) {
+    constructor(value: T, name: string, type: string, property: string) {
+        this.value = value;
         this.name = name;
         this.type = type;
         this.property = property;
-        this.useIntegerZoom = useIntegerZoom;
         this.statistics = { max: -Infinity };
     }
 
@@ -82,8 +84,11 @@ class ConstantBinder implements Binder {
 
     populatePaintArray() {}
 
-    setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, {zoom}: { zoom: number }) {
-        const value = layer.getPaintValue(this.property, { zoom: this.useIntegerZoom ? Math.floor(zoom) : zoom });
+    setUniforms(gl: WebGLRenderingContext,
+                program: Program,
+                globals: GlobalProperties,
+                currentValue: PossiblyEvaluatedPropertyValue<T>) {
+        const value: any = currentValue.constantOr(this.value);
         if (this.type === 'color') {
             gl.uniform4f(program.uniforms[`u_${this.name}`], value.r, value.g, value.b, value.a);
         } else {
@@ -92,13 +97,15 @@ class ConstantBinder implements Binder {
     }
 }
 
-class SourceFunctionBinder implements Binder {
+class SourceExpressionBinder<T> implements Binder<T> {
+    expression: SourceExpression;
     name: string;
     type: string;
     property: string;
     statistics: { max: number };
 
-    constructor(name: string, type: string, property: string) {
+    constructor(expression: SourceExpression, name: string, type: string, property: string) {
+        this.expression = expression;
         this.name = name;
         this.type = type;
         this.property = property;
@@ -109,12 +116,11 @@ class SourceFunctionBinder implements Binder {
         return [];
     }
 
-    populatePaintArray(layer: StyleLayer,
-                       paintArray: StructArray,
+    populatePaintArray(paintArray: StructArray,
                        start: number,
                        length: number,
                        feature: Feature) {
-        const value = layer.getPaintValue(this.property, {zoom: 0}, feature);
+        const value = this.expression.evaluate({zoom: 0}, feature);
 
         if (this.type === 'color') {
             const color = packColor(value);
@@ -138,7 +144,8 @@ class SourceFunctionBinder implements Binder {
     }
 }
 
-class CompositeFunctionBinder implements Binder {
+class CompositeExpressionBinder<T> implements Binder<T> {
+    expression: CompositeExpression;
     name: string;
     type: string;
     property: string;
@@ -146,7 +153,8 @@ class CompositeFunctionBinder implements Binder {
     zoom: number;
     statistics: { max: number };
 
-    constructor(name: string, type: string, property: string, useIntegerZoom: boolean, zoom: number) {
+    constructor(expression: CompositeExpression, name: string, type: string, property: string, useIntegerZoom: boolean, zoom: number) {
+        this.expression = expression;
         this.name = name;
         this.type = type;
         this.property = property;
@@ -159,13 +167,12 @@ class CompositeFunctionBinder implements Binder {
         return [];
     }
 
-    populatePaintArray(layer: StyleLayer,
-                       paintArray: StructArray,
+    populatePaintArray(paintArray: StructArray,
                        start: number,
                        length: number,
                        feature: Feature) {
-        const min = layer.getPaintValue(this.property, {zoom: this.zoom    }, feature);
-        const max = layer.getPaintValue(this.property, {zoom: this.zoom + 1}, feature);
+        const min = this.expression.evaluate({zoom: this.zoom    }, feature);
+        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature);
 
         if (this.type === 'color') {
             const minColor = packColor(min);
@@ -188,9 +195,16 @@ class CompositeFunctionBinder implements Binder {
         }
     }
 
-    setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, {zoom}: { zoom: number }) {
-        const f = layer.getPaintInterpolationFactor(this.property, this.useIntegerZoom ? Math.floor(zoom) : zoom, this.zoom, this.zoom + 1);
-        gl.uniform1f(program.uniforms[`a_${this.name}_t`], f);
+    interpolationFactor(currentZoom: number) {
+        if (this.useIntegerZoom) {
+            return this.expression.interpolationFactor(Math.floor(currentZoom), this.zoom, this.zoom + 1);
+        } else {
+            return this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1);
+        }
+    }
+
+    setUniforms(gl: WebGLRenderingContext, program: Program, globals: GlobalProperties) {
+        gl.uniform1f(program.uniforms[`a_${this.name}_t`], this.interpolationFactor(globals.zoom));
     }
 }
 
@@ -221,7 +235,7 @@ export type SerializedProgramConfiguration = {
  * @private
  */
 class ProgramConfiguration {
-    binders: { [string]: Binder };
+    binders: { [string]: Binder<any> };
     cacheKey: string;
     interface: ?ProgramInterface;
     PaintVertexArray: Class<StructArray>;
@@ -242,15 +256,16 @@ class ProgramConfiguration {
 
         for (const attribute of programInterface.paintAttributes || []) {
             const property = attribute.property;
-            const useIntegerZoom = attribute.useIntegerZoom || false;
             const name = attribute.name || property.replace(`${layer.type}-`, '').replace(/-/g, '_');
-            const type = layer._paintSpecifications[property].type;
+            const value: PossiblyEvaluatedPropertyValue<any> = (layer.paint: any).get(property);
+            const type = value.property.specification.type;
+            const useIntegerZoom = value.property.useIntegerZoom;
 
-            if (layer.isPaintValueFeatureConstant(property)) {
-                self.binders[name] = new ConstantBinder(name, type, property, useIntegerZoom);
+            if (value.value.kind === 'constant') {
+                self.binders[name] = new ConstantBinder(value.value, name, type, property);
                 self.cacheKey += `/u_${name}`;
-            } else if (layer.isPaintValueZoomConstant(property)) {
-                self.binders[name] = new SourceFunctionBinder(name, type, property);
+            } else if (value.value.kind === 'source') {
+                self.binders[name] = new SourceExpressionBinder(value.value, name, type, property);
                 self.cacheKey += `/a_${name}`;
                 attributes.push({
                     name: `a_${name}`,
@@ -258,7 +273,7 @@ class ProgramConfiguration {
                     components: type === 'color' ? 2 : 1
                 });
             } else {
-                self.binders[name] = new CompositeFunctionBinder(name, type, property, useIntegerZoom, zoom);
+                self.binders[name] = new CompositeExpressionBinder(value.value, name, type, property, useIntegerZoom, zoom);
                 self.cacheKey += `/z_${name}`;
                 attributes.push({
                     name: `a_${name}`,
@@ -275,13 +290,22 @@ class ProgramConfiguration {
         return self;
     }
 
-    static createBasicFill() {
+    static forBackgroundColor(color: Color, opacity: number) {
         const self = new ProgramConfiguration();
 
-        self.binders.color = new ConstantBinder('color', 'color', 'fill-color', false);
+        self.binders.color = new ConstantBinder(color, 'color', 'color', 'background-color');
         self.cacheKey += `/u_color`;
 
-        self.binders.opacity = new ConstantBinder('opacity', 'number', 'fill-opacity', false);
+        self.binders.opacity = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
+        self.cacheKey += `/u_opacity`;
+
+        return self;
+    }
+
+    static forBackgroundPattern(opacity: number) {
+        const self = new ProgramConfiguration();
+
+        self.binders.opacity = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
         self.cacheKey += `/u_opacity`;
 
         return self;
@@ -296,7 +320,7 @@ class ProgramConfiguration {
 
         for (const name in this.binders) {
             this.binders[name].populatePaintArray(
-                this.layer, paintArray,
+                paintArray,
                 start, length,
                 feature);
         }
@@ -310,9 +334,10 @@ class ProgramConfiguration {
         return result;
     }
 
-    setUniforms(gl: WebGLRenderingContext, program: Program, layer: StyleLayer, globalProperties: { zoom: number }) {
+    setUniforms<Properties: Object>(gl: WebGLRenderingContext, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         for (const name in this.binders) {
-            this.binders[name].setUniforms(gl, program, layer, globalProperties);
+            const binder = this.binders[name];
+            binder.setUniforms(gl, program, globals, properties.get(binder.property));
         }
     }
 
