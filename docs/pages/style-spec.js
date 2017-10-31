@@ -1266,7 +1266,7 @@ export default class extends React.Component {
                                         "curve", ["linear"], ["zoom"],
                                         // when zoom is 0, set each feature's circle radius to the value of its "rating" property
                                         0, ["get", "rating"],
-                                        // when zoom is 0, set each feature's circle radius to four times the value of its "rating" property
+                                        // when zoom is 10, set each feature's circle radius to four times the value of its "rating" property
                                         10, ["*", 4, ["get", "rating"]]
                                         ]
                                     }`)}
