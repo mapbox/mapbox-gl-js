@@ -239,6 +239,27 @@ function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: any, lineOf
     return { first: firstPlacedGlyph, last: lastPlacedGlyph };
 }
 
+function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
+    if (writingMode === WritingMode.horizontal) {
+        // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
+        // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
+        // and vertical versions can have slightly different projections which could lead to angles where both or
+        // neither showed.
+        const rise = Math.abs(lastPoint.y - firstPoint.y);
+        const run = Math.abs(lastPoint.x - firstPoint.x) * aspectRatio;
+        if (rise > run) {
+            return { useVertical: true };
+        }
+    }
+
+    if (writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
+        // Includes "horizontalOnly" case for labels without vertical glyphs
+        return { needsFlipping: true };
+    }
+
+    return null;
+}
+
 function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontSize;
@@ -260,23 +281,10 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
         const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix).point;
 
         if (keepUpright && !flip) {
-            if (symbol.writingMode === WritingMode.horizontal) {
-                // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
-                // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
-                // and vertical versions can have slightly different projections which could lead to angles where both or
-                // neither showed.
-                const rise = Math.abs(lastPoint.y - firstPoint.y);
-                const run = Math.abs(lastPoint.x - firstPoint.x) * aspectRatio;
-                if (rise > run) {
-                    return { useVertical: true };
-                }
+            const orientationChange = requiresOrientationChange(symbol.writingMode, firstPoint, lastPoint, aspectRatio);
+            if (orientationChange) {
+                return orientationChange;
             }
-
-            if (symbol.writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
-                // Includes "horizontalOnly" case for labels without vertical glyphs
-                return { needsFlipping: true };
-            }
-
         }
 
         placedGlyphs = [firstAndLastGlyph.first];
@@ -303,8 +311,10 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
                 projectedVertex.point :
                 projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
 
-            if (symbol.vertical ? b.y > a.y : b.x < a.x) {
-                return { needsFlipping: true };
+
+            const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
+            if (orientationChange) {
+                return orientationChange;
             }
         }
         // $FlowFixMe
