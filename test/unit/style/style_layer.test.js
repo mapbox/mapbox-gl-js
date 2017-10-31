@@ -4,6 +4,7 @@ const test = require('mapbox-gl-js-test').test;
 const StyleLayer = require('../../../src/style/style_layer');
 const FillStyleLayer = require('../../../src/style/style_layer/fill_style_layer');
 const util = require('../../../src/util/util');
+const Color = require('../../../src/style-spec/util/color');
 
 test('StyleLayer', (t) => {
     t.test('instantiates the correct subclass', (t) => {
@@ -27,7 +28,7 @@ test('StyleLayer#updatePaintTransition', (t) => {
             }
         });
         layer.updatePaintTransition('background-color', [], {});
-        t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
+        t.deepEqual(layer.getPaintValue('background-color'), new Color(1, 0, 0, 1));
         t.end();
     });
 
@@ -75,7 +76,7 @@ test('StyleLayer#setPaintProperty', (t) => {
         layer.setPaintProperty('background-color', null);
         layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
 
-        t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 0, 1]);
+        t.deepEqual(layer.getPaintValue('background-color'), new Color(0, 0, 0, 1));
         t.equal(layer.getPaintProperty('background-color'), undefined);
         t.equal(layer.getPaintValue('background-opacity'), 1);
         t.equal(layer.getPaintProperty('background-opacity'), 1);
@@ -158,10 +159,10 @@ test('StyleLayer#setPaintProperty', (t) => {
 
         layer.setPaintProperty('fill-outline-color', '#f00');
         layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
-        t.deepEqual(layer.getPaintValue('fill-outline-color'), [1, 0, 0, 1]);
+        t.deepEqual(layer.getPaintValue('fill-outline-color'), new Color(1, 0, 0, 1));
         layer.setPaintProperty('fill-outline-color', undefined);
         layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
-        t.deepEqual(layer.getPaintValue('fill-outline-color'), [0, 0, 1, 1]);
+        t.deepEqual(layer.getPaintValue('fill-outline-color'), new Color(0, 0, 1, 1));
 
         t.end();
     });

@@ -1,37 +1,32 @@
+// @flow
+
+const Color = require('./color');
 
 module.exports = interpolate;
 
-function interpolate(a, b, t) {
+function interpolate(a: number, b: number, t: number) {
     return (a * (1 - t)) + (b * t);
 }
 
 interpolate.number = interpolate;
 
-interpolate.vec2 = function(from, to, t) {
+interpolate.vec2 = function(from: [number, number], to: [number, number], t: number) {
     return [
         interpolate(from[0], to[0], t),
         interpolate(from[1], to[1], t)
     ];
 };
 
-/*
- * Interpolate between two colors given as 4-element arrays.
- *
- * @param {Color} from
- * @param {Color} to
- * @param {number} t interpolation factor between 0 and 1
- * @returns {Color} interpolated color
- */
-interpolate.color = function(from, to, t) {
-    return [
-        interpolate(from[0], to[0], t),
-        interpolate(from[1], to[1], t),
-        interpolate(from[2], to[2], t),
-        interpolate(from[3], to[3], t)
-    ];
+interpolate.color = function(from: Color, to: Color, t: number) {
+    return new Color(
+        interpolate(from.r, to.r, t),
+        interpolate(from.g, to.g, t),
+        interpolate(from.b, to.b, t),
+        interpolate(from.a, to.a, t)
+    );
 };
 
-interpolate.array = function(from, to, t) {
+interpolate.array = function(from: Array<number>, to: Array<number>, t: number) {
     return from.map((d, i) => {
         return interpolate(d, to[i], t);
     });

@@ -1,6 +1,7 @@
 // @flow
 
 const assert = require('assert');
+const Color = require('../util/color');
 
 const {
     NullType,
@@ -14,13 +15,6 @@ const {
 } = require('./types');
 
 import type { Type } from './types';
-
-class Color {
-    value: [number, number, number, number];
-    constructor(r: number, g: number, b: number, a: number = 1) {
-        this.value = [r, g, b, a];
-    }
-}
 
 function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     if (!(
@@ -107,14 +101,9 @@ function typeOf(value: Value): Type {
     }
 }
 
-function unwrap(value: Value): mixed {
-    return value instanceof Color ? value.value : value;
-}
-
 module.exports = {
     Color,
     validateRGBA,
     isValue,
-    typeOf,
-    unwrap
+    typeOf
 };

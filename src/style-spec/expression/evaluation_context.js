@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const Scope = require('./scope');
-const parseColor = require('../util/parse_color');
 const {Color} = require('./values');
 
 import type { Feature, GlobalProperties } from './index';
@@ -46,8 +45,7 @@ class EvaluationContext {
     parseColor(input: string): ?Color {
         let cached = this._parseColorCache[input];
         if (!cached) {
-            const c = parseColor(input);
-            cached = this._parseColorCache[input] = c ? new Color(c[0], c[1], c[2], c[3]) : null;
+            cached = this._parseColorCache[input] = Color.parse(input);
         }
         return cached;
     }

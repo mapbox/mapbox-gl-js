@@ -3,7 +3,6 @@
 const UnitBezier = require('@mapbox/unitbezier');
 const interpolate = require('../../util/interpolate');
 const { toString, NumberType } = require('../types');
-const { Color } = require('../values');
 const { findStopLessThanOrEqualTo } = require("../stops");
 
 import type { Stops } from '../stops';
@@ -167,12 +166,7 @@ class Interpolate implements Expression {
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
-        const type = this.type.kind.toLowerCase();
-        if (type === 'color') {
-            return new Color(...interpolate.color((outputLower: any).value, (outputUpper: any).value, t));
-        }
-
-        return interpolate[type](outputLower, outputUpper, t);
+        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t);
     }
 
     eachChild(fn: (Expression) => void) {

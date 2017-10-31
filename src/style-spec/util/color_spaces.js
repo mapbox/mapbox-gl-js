@@ -1,3 +1,20 @@
+// @flow
+
+const Color = require('./color');
+
+type LABColor = {
+    l: number,
+    a: number,
+    b: number,
+    alpha: number
+};
+
+type HCLColor = {
+    h: number,
+    c: number,
+    l: number,
+    alpha: number
+};
 
 // Constants
 const Xn = 0.950470, // D65 standard referent
@@ -29,62 +46,59 @@ function rgb2xyz(x) {
 }
 
 // LAB
-function rgbToLab(rgbColor) {
-    const b = rgb2xyz(rgbColor[0]),
-        a = rgb2xyz(rgbColor[1]),
-        l = rgb2xyz(rgbColor[2]),
+function rgbToLab(rgbColor: Color): LABColor {
+    const b = rgb2xyz(rgbColor.r),
+        a = rgb2xyz(rgbColor.g),
+        l = rgb2xyz(rgbColor.b),
         x = xyz2lab((0.4124564 * b + 0.3575761 * a + 0.1804375 * l) / Xn),
         y = xyz2lab((0.2126729 * b + 0.7151522 * a + 0.0721750 * l) / Yn),
         z = xyz2lab((0.0193339 * b + 0.1191920 * a + 0.9503041 * l) / Zn);
 
-    return [
-        116 * y - 16,
-        500 * (x - y),
-        200 * (y - z),
-        rgbColor[3]
-    ];
+    return {
+        l: 116 * y - 16,
+        a: 500 * (x - y),
+        b: 200 * (y - z),
+        alpha: rgbColor.a
+    };
 }
 
-function labToRgb(labColor) {
-    let y = (labColor[0] + 16) / 116,
-        x = isNaN(labColor[1]) ? y : y + labColor[1] / 500,
-        z = isNaN(labColor[2]) ? y : y - labColor[2] / 200;
+function labToRgb(labColor: LABColor): Color {
+    let y = (labColor.l + 16) / 116,
+        x = isNaN(labColor.a) ? y : y + labColor.a / 500,
+        z = isNaN(labColor.b) ? y : y - labColor.b / 200;
     y = Yn * lab2xyz(y);
     x = Xn * lab2xyz(x);
     z = Zn * lab2xyz(z);
-    return [
+    return new Color(
         xyz2rgb(3.2404542 * x - 1.5371385 * y - 0.4985314 * z), // D65 -> sRGB
         xyz2rgb(-0.9692660 * x + 1.8760108 * y + 0.0415560 * z),
         xyz2rgb(0.0556434 * x - 0.2040259 * y + 1.0572252 * z),
-        labColor[3]
-    ];
+        labColor.alpha
+    );
 }
 
 // HCL
-function rgbToHcl(rgbColor) {
-    const labColor = rgbToLab(rgbColor);
-    const l = labColor[0],
-        a = labColor[1],
-        b = labColor[2];
+function rgbToHcl(rgbColor: Color): HCLColor {
+    const {l, a, b} = rgbToLab(rgbColor);
     const h = Math.atan2(b, a) * rad2deg;
-    return [
-        h < 0 ? h + 360 : h,
-        Math.sqrt(a * a + b * b),
-        l,
-        rgbColor[3]
-    ];
+    return {
+        h: h < 0 ? h + 360 : h,
+        c: Math.sqrt(a * a + b * b),
+        l: l,
+        alpha: rgbColor.a
+    };
 }
 
-function hclToRgb(hclColor) {
-    const h = hclColor[0] * deg2rad,
-        c = hclColor[1],
-        l = hclColor[2];
-    return labToRgb([
-        l,
-        Math.cos(h) * c,
-        Math.sin(h) * c,
-        hclColor[3]
-    ]);
+function hclToRgb(hclColor: HCLColor): Color {
+    const h = hclColor.h * deg2rad,
+        c = hclColor.c,
+        l = hclColor.l;
+    return labToRgb({
+        l: l,
+        a: Math.cos(h) * c,
+        b: Math.sin(h) * c,
+        alpha: hclColor.alpha
+    });
 }
 
 module.exports = {

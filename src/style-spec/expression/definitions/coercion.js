@@ -7,7 +7,7 @@ const {
     NumberType,
 } = require('../types');
 
-const { Color, validateRGBA, unwrap } = require('../values');
+const { Color, validateRGBA } = require('../values');
 const RuntimeError = require('../runtime_error');
 
 import type { Expression } from '../expression';
@@ -88,7 +88,7 @@ class Coercion implements Expression {
                 if (isNaN(num)) continue;
                 return num;
             }
-            throw new RuntimeError(`Could not convert ${JSON.stringify(unwrap(value))} to number.`);
+            throw new RuntimeError(`Could not convert ${JSON.stringify(value)} to number.`);
         }
     }
 
