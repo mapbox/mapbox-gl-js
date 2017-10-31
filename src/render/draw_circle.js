@@ -12,7 +12,13 @@ module.exports = drawCircles;
 
 function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+
+    if (layer.isPaintValueFeatureConstant('circle-opacity') &&
+        layer.getPaintValue('circle-opacity', { zoom: painter.transform.zoom }) === 0 &&
+        ((layer.isPaintValueFeatureConstant('circle-stroke-width') &&
+            layer.getPaintValue('circle-stroke-width', { zoom: painter.transform.zoom }) === 0) ||
+            (layer.isPaintValueFeatureConstant('circle-stroke-opacity') &&
+                layer.getPaintValue('circle-stroke-opacity', { zoom: painter.transform.zoom }) === 0))) return;
 
     const gl = painter.gl;
 
