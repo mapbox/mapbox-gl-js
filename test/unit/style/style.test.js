@@ -314,12 +314,7 @@ test('Style#loadJSON', (t) => {
             sources: {
                 '-source-id-': { type: "vector", tiles: [] }
             },
-            layers: [{
-                'id': '-layer-id-',
-                'type': 'circle',
-                'source': '-source-id-',
-                'source-layer': '-source-layer-'
-            }]
+            layers: []
         }));
 
         style.on('style.load', () => {
@@ -328,6 +323,12 @@ test('Style#loadJSON', (t) => {
             const source = createSource();
             source['vector_layers'] = [{ id: 'green' }];
             style.addSource('-source-id-', source);
+            style.addLayer({
+                'id': '-layer-id-',
+                'type': 'circle',
+                'source': '-source-id-',
+                'source-layer': '-source-layer-'
+            });
             style.update();
         });
 
@@ -714,22 +715,20 @@ test('Style#removeSource', (t) => {
         return style;
     }
 
-    t.test('does not throw is source is in use and readded', (t) => {
+    t.test('throws if source is in use', (t) => {
         createStyle((style) => {
-            style.removeSource('mapbox-source');
-            style.addSource('mapbox-source', createSource());
-            t.doesNotThrow(() => {
-                style.update();
-            });
+            t.throws(() => {
+                style.removeSource('mapbox-source');
+            }, /\"mapbox\-source\"/);
             t.end();
         });
     });
 
-    t.test('throws if source is in use and not readded', (t) => {
+    t.test('does not throw if source is not in use', (t) => {
         createStyle((style) => {
-            style.removeSource('mapbox-source');
-            t.throws(() => {
-                style.update();
+            style.removeLayer('mapbox-layer');
+            t.doesNotThrow(() => {
+                style.removeSource('mapbox-source');
             }, /\"mapbox\-source\"/);
             t.end();
         });
