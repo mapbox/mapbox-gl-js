@@ -10,7 +10,7 @@ import type Color from '../style-spec/util/color';
 module.exports = drawBackground;
 
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer) {
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+    if (layer.getPaintValue('background-opacity', { zoom: painter.transform.zoom }) === 0) return;
 
     const gl = painter.gl;
     const transform = painter.transform;

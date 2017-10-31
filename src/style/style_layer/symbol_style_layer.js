@@ -60,11 +60,6 @@ class SymbolStyleLayer extends StyleLayer {
         return (new SymbolBucket((parameters: any)): any);
     }
 
-    isOpacityZero(zoom: number, property: string) {
-        return this.isPaintValueFeatureConstant(property) &&
-            this.getPaintValue(property, { zoom: zoom }) === 0;
-    }
-
     queryRadius(): number {
         return 0;
     }

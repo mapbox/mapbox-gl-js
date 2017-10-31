@@ -13,7 +13,7 @@ module.exports = drawRaster;
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<TileCoord>) {
     const zoom = painter.transform.zoom;
     if (painter.renderPass !== 'translucent') return;
-    if (layer.isOpacityZero(zoom)) return;
+    if (layer.getPaintValue('raster-opacity', { zoom }) === 0) return;
 
     const gl = painter.gl;
     const source = sourceCache.getSource();

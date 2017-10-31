@@ -14,11 +14,6 @@ class LineStyleLayer extends StyleLayer {
         return new LineBucket(parameters);
     }
 
-    isOpacityZero(zoom: number) {
-        return this.isPaintValueFeatureConstant('line-opacity') &&
-            this.getPaintValue('line-opacity', { zoom: zoom }) === 0;
-    }
-
     queryRadius(bucket: Bucket): number {
         const lineBucket: LineBucket = (bucket: any);
         const width = getLineWidth(
