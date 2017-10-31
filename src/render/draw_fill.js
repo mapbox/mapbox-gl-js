@@ -19,7 +19,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     const pass = (!layer.paint['fill-pattern'] &&
         layer.isPaintValueFeatureConstant('fill-color') &&
         layer.isPaintValueFeatureConstant('fill-opacity') &&
-        layer.paint['fill-color'][3] === 1 &&
+        layer.paint['fill-color'].a === 1 &&
         layer.paint['fill-opacity'] === 1) ? 'opaque' : 'translucent';
 
     // Draw fill

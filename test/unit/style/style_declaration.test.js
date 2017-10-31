@@ -2,6 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const StyleDeclaration = require('../../../src/style/style_declaration');
+const Color = require('../../../src/style-spec/util/color');
 
 test('StyleDeclaration', (t) => {
     t.test('with minimum value', (t) => {
@@ -42,9 +43,9 @@ test('StyleDeclaration', (t) => {
         t.ok(d.expression.isZoomConstant);
         t.ok(d.expression.isFeatureConstant);
 
-        t.deepEqual(d.calculate({zoom: 0}), [1, 0, 0, 1]);
-        t.deepEqual(d.calculate({zoom: 1}), [1, 0, 0, 1]);
-        t.deepEqual(d.calculate({zoom: 2}), [1, 0, 0, 1]);
+        t.deepEqual(d.calculate({zoom: 0}), new Color(1, 0, 0, 1));
+        t.deepEqual(d.calculate({zoom: 1}), new Color(1, 0, 0, 1));
+        t.deepEqual(d.calculate({zoom: 2}), new Color(1, 0, 0, 1));
 
         t.end();
     });

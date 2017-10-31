@@ -5,6 +5,7 @@ const pattern = require('./pattern');
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type BackgroundStyleLayer from '../style/style_layer/background_style_layer';
+import type Color from '../style-spec/util/color';
 
 module.exports = drawBackground;
 
@@ -14,11 +15,11 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const gl = painter.gl;
     const transform = painter.transform;
     const tileSize = transform.tileSize;
-    const color = layer.paint['background-color'];
+    const color: Color = layer.paint['background-color'];
     const image = layer.paint['background-pattern'];
     const opacity = layer.paint['background-opacity'];
 
-    const pass = (!image && color[3] === 1 && opacity === 1) ? 'opaque' : 'translucent';
+    const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
 
     gl.disable(gl.STENCIL_TEST);
@@ -33,7 +34,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
     } else {
         program = painter.useProgram('fill', painter.basicFillProgramConfiguration);
-        gl.uniform4fv(program.uniforms.u_color, color);
+        gl.uniform4f(program.uniforms.u_color, color.r, color.g, color.b, color.a);
         painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
     }
 

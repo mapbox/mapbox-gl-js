@@ -1,6 +1,6 @@
 
 const colorSpaces = require('../util/color_spaces');
-const parseColor = require('../util/parse_color');
+const Color = require('../util/color');
 const extend = require('../util/extend');
 const getType = require('../util/get_type');
 const interpolate = require('../util/interpolate');
@@ -26,14 +26,14 @@ function createFunction(parameters, propertySpec, name) {
 
         if (parameters.stops) {
             parameters.stops = parameters.stops.map((stop) => {
-                return [stop[0], parseColor(stop[1])];
+                return [stop[0], Color.parse(stop[1])];
             });
         }
 
         if (parameters.default) {
-            parameters.default = parseColor(parameters.default);
+            parameters.default = Color.parse(parameters.default);
         } else {
-            parameters.default = parseColor(propertySpec.default);
+            parameters.default = Color.parse(propertySpec.default);
         }
     }
 
@@ -216,7 +216,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
 function evaluateIdentityFunction(parameters, propertySpec, input) {
     if (propertySpec.type === 'color') {
-        input = parseColor(input);
+        input = Color.parse(input);
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }

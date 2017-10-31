@@ -111,5 +111,5 @@ function setLight(program, painter) {
 
     gl.uniform3fv(program.uniforms.u_lightpos, lightPos);
     gl.uniform1f(program.uniforms.u_lightintensity, light.calculated.intensity);
-    gl.uniform3fv(program.uniforms.u_lightcolor, light.calculated.color.slice(0, 3));
+    gl.uniform3f(program.uniforms.u_lightcolor, light.calculated.color.r, light.calculated.color.g, light.calculated.color.b);
 }

@@ -14,7 +14,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     getPaintValue(name: string, globals: GlobalProperties, feature?: Feature) {
         const value = super.getPaintValue(name, globals, feature);
         if (name === 'fill-extrusion-color' && value) {
-            value[3] = 1;
+            value.a = 1;
         }
         return value;
     }

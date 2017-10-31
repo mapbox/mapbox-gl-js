@@ -4,7 +4,6 @@ require('flow-remove-types/register');
 const expressionSuite = require('./integration').expression;
 const { createExpression } = require('../src/style-spec/expression');
 const { toString } = require('../src/style-spec/expression/types');
-const { unwrap } = require('../src/style-spec/expression/values');
 
 let tests;
 
@@ -50,7 +49,11 @@ expressionSuite.run('js', {tests: tests}, (fixture) => {
             if ('geometry' in input[1]) {
                 feature.type = input[1].geometry.type;
             }
-            outputs.push(unwrap(expression.evaluate(input[0], feature)));
+            let value = expression.evaluate(input[0], feature);
+            if (expression.parsed.type.kind === 'color') {
+                value = [value.r, value.g, value.b, value.a];
+            }
+            outputs.push(value);
         } catch (error) {
             if (error.name === 'ExpressionEvaluationError') {
                 outputs.push({ error: error.toJSON() });

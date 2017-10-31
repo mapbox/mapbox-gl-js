@@ -1,6 +1,6 @@
 // @flow
 
-const parseColor = require('../style-spec/util/parse_color');
+const Color = require('../style-spec/util/color');
 const {isFunction, createFunction} = require('../style-spec/function');
 const {isExpression, createExpression} = require('../style-spec/expression');
 const util = require('../util/util');
@@ -24,7 +24,7 @@ function normalizeToExpression(parameters, propertySpec, name): StyleDeclaration
         }
     } else {
         if (typeof parameters === 'string' && propertySpec.type === 'color') {
-            parameters = parseColor(parameters);
+            parameters = Color.parse(parameters);
         }
 
         return {

@@ -103,8 +103,7 @@ CompoundExpression.register(expressions, {
             if (v === null || type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
             } else if (v instanceof Color) {
-                const [r, g, b, a] = v.value;
-                return `rgba(${r * 255},${g * 255},${b * 255},${a})`;
+                return `rgba(${v.r * 255},${v.g * 255},${v.b * 255},${v.a})`;
             } else {
                 return JSON.stringify(v);
             }
@@ -118,7 +117,10 @@ CompoundExpression.register(expressions, {
     'to-rgba': [
         array(NumberType, 4),
         [ColorType],
-        (ctx, [v]) => v.evaluate(ctx).value
+        (ctx, [v]) => {
+            const {r, g, b, a} = v.evaluate(ctx);
+            return [r, g, b, a];
+        }
     ],
     'rgb': [
         ColorType,

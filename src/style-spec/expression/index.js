@@ -11,7 +11,6 @@ const Coalesce = require('./definitions/coalesce');
 const Let = require('./definitions/let');
 const definitions = require('./definitions');
 const isConstant = require('./is_constant');
-const {unwrap} = require('./values');
 
 import type {Type} from './types';
 import type {Value} from './values';
@@ -147,9 +146,9 @@ function createExpression(expression: mixed,
             try {
                 const val = parsed.evaluate(evaluator);
                 if (val === null || val === undefined) {
-                    return unwrap(defaultValue);
+                    return defaultValue;
                 }
-                return unwrap(val);
+                return val;
             } catch (e) {
                 if (!warningHistory[e.message]) {
                     warningHistory[e.message] = true;
@@ -157,7 +156,7 @@ function createExpression(expression: mixed,
                         console.warn(e.message);
                     }
                 }
-                return unwrap(defaultValue);
+                return defaultValue;
             }
         };
     }
@@ -293,20 +292,19 @@ function getExpectedType(spec: StylePropertySpecification): Type | null {
 }
 
 const {isFunction} = require('../function');
-const parseColor = require('../util/parse_color');
 const {Color} = require('./values');
 
-function getDefaultValue(spec: StylePropertySpecification): Value | null {
-    const defaultValue = spec.default;
-    if (spec.type === 'color' && isFunction(defaultValue)) {
+function getDefaultValue(spec: StylePropertySpecification): Value {
+    if (spec.type === 'color' && isFunction(spec.default)) {
         // Special case for heatmap-color: it uses the 'default:' to define a
         // default color ramp, but createExpression expects a simple value to fall
         // back to in case of runtime errors
-        return [0, 0, 0, 0];
+        return new Color(0, 0, 0, 0);
     } else if (spec.type === 'color') {
-        const c: [number, number, number, number] = (parseColor((defaultValue: any)): any);
-        assert(Array.isArray(c));
-        return new Color(c[0], c[1], c[2], c[3]);
+        return Color.parse(spec.default) || null;
+    } else if (spec.default === undefined) {
+        return null;
+    } else {
+        return spec.default;
     }
-    return defaultValue === undefined ? null : defaultValue;
 }

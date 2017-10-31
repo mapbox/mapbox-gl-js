@@ -5,7 +5,7 @@ const StyleTransition = require('./style_transition');
 const StyleDeclaration = require('./style_declaration');
 const styleSpec = require('../style-spec/reference/latest');
 const validateStyle = require('./validate_style');
-const parseColor = require('./../style-spec/util/parse_color');
+const Color = require('./../style-spec/util/color');
 const Evented = require('../util/evented');
 
 import type {Bucket, BucketParameters} from '../data/bucket';
@@ -171,7 +171,7 @@ class StyleLayer extends Evented {
         if (transition && (transition.declaration.expression.isFeatureConstant || feature)) {
             return transition.calculate(globals, feature);
         } else if (specification.type === 'color' && specification.default) {
-            return parseColor(specification.default);
+            return Color.parse(specification.default);
         } else {
             return specification.default;
         }
