@@ -41,7 +41,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     has3DPass() {
-        return this.paint['fill-extrusion-opacity'] !== 0 && this.layout['visibility'] !== 'none';
+        return this.paint['fill-extrusion-opacity'] !== 0 && this.visibility !== 'none';
     }
 
     resize(gl: WebGLRenderingContext) {
