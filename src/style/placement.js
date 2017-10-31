@@ -32,7 +32,7 @@ class LayerPlacement {
     continuePlacement(sourceCache, collisionIndex, showCollisionBoxes: boolean, layer, shouldPausePlacement) {
         while (this._currentTileIndex < this._tileIDs.length) {
             const tile = sourceCache.getTileByID(this._tileIDs[this._currentTileIndex]);
-            tile.placeLayer(showCollisionBoxes, collisionIndex, layer);
+            tile.placeLayer(showCollisionBoxes, collisionIndex, layer, sourceCache.id);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {

@@ -37,6 +37,7 @@ const showCollisionBoxes = false;
 const zoom = 0;
 const pixelRatio = 1;
 const tileID = 0;
+const sourceID = "source";
 
 const stacks = { 'Test': glyphs };
 
@@ -65,7 +66,7 @@ test('SymbolBucket', (t) => {
     const a = collision.grid.keysLength();
     bucketA.populate([{feature}], options);
     performSymbolLayout(bucketA, stacks, {});
-    performSymbolPlacement(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolPlacement(bucketA, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, sourceID, collisionBoxArray);
 
     const b = collision.grid.keysLength();
     t.notEqual(a, b, 'places feature');
@@ -74,7 +75,7 @@ test('SymbolBucket', (t) => {
     const a2 = collision.grid.keysLength();
     bucketB.populate([{feature}], options);
     performSymbolLayout(bucketB, stacks, {});
-    performSymbolPlacement(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolPlacement(bucketB, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, sourceID, collisionBoxArray);
     const b2 = collision.grid.keysLength();
     t.equal(b2, a2, 'detects collision and does not place feature');
     t.end();
@@ -102,8 +103,8 @@ test('SymbolBucket redo placement', (t) => {
 
     bucket.populate([{feature}], options);
     performSymbolLayout(bucket, stacks, {});
-    performSymbolPlacement(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
-    performSymbolPlacement(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, collisionBoxArray);
+    performSymbolPlacement(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, sourceID, collisionBoxArray);
+    performSymbolPlacement(bucket, collision, showCollisionBoxes, zoom, pixelRatio, labelPlaneMatrix, labelPlaneMatrix, tileID, sourceID, collisionBoxArray);
 
     t.end();
 });
