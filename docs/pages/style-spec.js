@@ -154,9 +154,6 @@ const navigation = [
                 "title": "Color"
             },
             {
-                "title": "Enum"
-            },
-            {
                 "title": "String"
             },
             {
@@ -286,6 +283,8 @@ class Item extends React.Component {
             return <span> object with <a href='#sources'>source</a> values</span>;
         case 'array':
             return <span> <a href='#types-array'>array</a>{this.props.value && <span> of <a href={this.props.value === 'layer' ? `#layers` : `#types-${this.props.value}`}>{this.props.value}s</a></span>}</span>;
+        case 'enum':
+            return <span> <a href='#types-string'>string</a></span>;
         default:
             return <span> <a href={`#types-${this.props.type}`}>{this.props.type}</a></span>;
         }
@@ -335,16 +334,16 @@ class Item extends React.Component {
                         {this.props.required ? 'Required' : 'Optional'}
                         {this.type()}
                         {'minimum' in this.props && 'maximum' in this.props &&
-                        <span> between <var>{this.props.minimum}</var> and <var>{this.props.maximum}</var> inclusive</span>}
+                        <span> between <code>{this.props.minimum}</code> and <code>{this.props.maximum}</code> inclusive</span>}
                         {'minimum' in this.props && !('maximum' in this.props) &&
-                        <span> greater than or equal to <var>{this.props.minimum}</var></span>}
+                        <span> greater than or equal to <code>{this.props.minimum}</code></span>}
                         {!('minimum' in this.props) && 'maximum' in this.props &&
-                        <span> less than or equal to <var>{this.props.minimum}</var></span>}. </em>
+                        <span> less than or equal to <code>{this.props.minimum}</code></span>}. </em>
 
                     {this.props.values && !Array.isArray(this.props.values) && // skips $root.version
                     <em className='quiet'>
                         One of {Object.keys(this.props.values)
-                            .map((opt, i) => <var key={i}>{opt}</var>)
+                            .map((opt, i) => <code key={i}>{JSON.stringify(opt)}</code>)
                             .reduce((prev, curr) => [prev, ', ', curr])}. </em>}
 
                     {this.props.units &&
@@ -353,7 +352,7 @@ class Item extends React.Component {
 
                     {this.props.default !== undefined &&
                     <em className='quiet'>
-                        Defaults to <var>{typeof this.props.default !== 'string' ? JSON.stringify(this.props.default) : this.props.default}</var>. </em>}
+                        Defaults to <code>{JSON.stringify(this.props.default)}</code>. </em>}
 
                     {this.props.requires &&
                     <em className='quiet'>
@@ -378,7 +377,7 @@ class Item extends React.Component {
                 <div className='space-bottom1'>
                     <dl>
                         {entries(this.props.values).map(([v, {doc}], i) =>
-                            [<dt key={`${i}-dt`}><var>{v}</var></dt>, <dd key={`${i}-dd`}>{md(doc)}</dd>]
+                            [<dt key={`${i}-dt`}><code>{JSON.stringify(v)}</code>:</dt>, <dd key={`${i}-dd`} className='space-bottom1'>{md(doc)}</dd>]
                         )}
                     </dl>
                 </div>}
@@ -1075,16 +1074,6 @@ export default class extends React.Component {
                                 </div>
 
                                 <div className='pad2 keyline-bottom'>
-                                    <a id='types-enum' className='anchor'/>
-                                    <h3 className='space-bottom1'><a href='#types-enum' title='link to enum'>Enum</a></h3>
-                                    <p>One of a fixed list of string values. Use quotes around values.</p>
-                                    {highlightJSON(`
-                                        {
-                                            "text-transform": "uppercase"
-                                        }`)}
-                                </div>
-
-                                <div className='pad2 keyline-bottom'>
                                     <a id='types-string' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-string' title='link to string'>String</a></h3>
                                     <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
@@ -1383,14 +1372,15 @@ export default class extends React.Component {
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
                                             <div><span className='code'><a id="function-type"
                                                 href="#function-type">type</a></span></div>
-                                            <div><em className='quiet'>Optional <a href='#types-string'>enum</a>. One of
-                                                <var>identity</var>, <var>exponential</var>, <var>interval</var>, <var>categorical</var>.</em>
+                                            <div><em className='quiet'>Optional <a href='#types-string'>string</a>. One
+                                                of <code>"identity"</code>, <code>"exponential"</code>, <code>"interval"
+                                                </code>, or <code>"categorical"</code>.</em>
                                             </div>
                                             <dl>
-                                                <dt><var>identity</var></dt>
-                                                <dd>functions return their input as their output.</dd>
-                                                <dt><var>exponential</var></dt>
-                                                <dd>functions generate an output by interpolating between stops just
+                                                <dt><code>"identity"</code></dt>
+                                                <dd>A function that returns its input as the output.</dd>
+                                                <dt><code>"exponential"</code></dt>
+                                                <dd>A function that generates an output by interpolating between stops just
                                                     less than and just greater than the
                                                     function input. The domain (input value) must be numeric, and the
                                                     style property must support
@@ -1401,8 +1391,8 @@ export default class extends React.Component {
                                                     "exponential" symbol, and <var>exponential</var> is the default
                                                     function type for these properties.
                                                 </dd>
-                                                <dt><var>interval</var></dt>
-                                                <dd>functions return the output value of the stop just less than the
+                                                <dt><code>"interval"</code></dt>
+                                                <dd>A function that returns the output value of the stop just less than the
                                                     function input. The domain (input
                                                     value) must be numeric. Any style property may use interval
                                                     functions. For properties marked with
@@ -1410,8 +1400,8 @@ export default class extends React.Component {
                                                         title='discrete'/>, the "interval"
                                                     symbol, this is the default function type.
                                                 </dd>
-                                                <dt><var>categorical</var></dt>
-                                                <dd>functions return the output value of the stop equal to the function
+                                                <dt><code>"categorical"</code></dt>
+                                                <dd>A function that returns the output value of the stop equal to the function
                                                     input.
                                                 </dd>
                                             </dl>
@@ -1447,8 +1437,8 @@ export default class extends React.Component {
                                             <div><span className='code'><a id="function-colorSpace"
                                                 href="#function-colorSpace">colorSpace</a></span>
                                             </div>
-                                            <div><em className='quiet'>Optional <a href='#types-string'>enum</a>. One of
-                                                <var>rgb</var>, <var>lab</var>, <var>hcl</var>.</em></div>
+                                            <div><em className='quiet'>Optional <a href='#types-string'>string</a>. One of
+                                                <code>"rgb"</code>, <code>"lab"</code>, <code>"hcl"</code>.</em></div>
                                             <div className=' space-bottom1'>The color space in which colors
                                                 interpolated. Interpolating colors in perceptual color spaces like LAB
                                                 and HCL tend to produce color ramps that look more consistent and
@@ -1456,11 +1446,11 @@ export default class extends React.Component {
                                                 interpolated in RGB space.
                                             </div>
                                             <dl className="space-bottom">
-                                                <dt><var>rgb</var></dt>
+                                                <dt><code>"rgb"</code></dt>
                                                 <dd>Use the RGB color space to interpolate color values</dd>
-                                                <dt><var>lab</var></dt>
+                                                <dt><code>"lab"</code></dt>
                                                 <dd>Use the LAB color space to interpolate color values.</dd>
-                                                <dt><var>hcl</var></dt>
+                                                <dt><code>"hcl"</code></dt>
                                                 <dd>Use the HCL color space to interpolate color values, interpolating
                                                     the Hue, Chroma, and Luminance channels individually.
                                                 </dd>
@@ -1561,7 +1551,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
 
-                                    <p>The rendered values of <a href='#types-color'>color</a>, <a href='#types-number'>number</a>, and <a href='#types-array'>array</a> properties are intepolated between stops. <a href='#types-enum'>Enum</a>, <a href='#types-boolean'>boolean</a>, and <a href='#types-string'>string</a> property values cannot be intepolated, so their rendered values only change at the specified stops.</p>
+                                    <p>The rendered values of <a href='#types-color'>color</a>, <a href='#types-number'>number</a>, and <a href='#types-array'>array</a> properties are intepolated between stops. <a href='#types-boolean'>Boolean</a> and <a href='#types-string'>string</a> property values cannot be intepolated, so their rendered values only change at the specified stops.</p>
 
                                     <p>There is an important difference between the way that zoom functions render for <em>layout</em> and <em>paint</em> properties. Paint properties are continuously re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the function will be re-evaluated according to the function, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom function, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
 
