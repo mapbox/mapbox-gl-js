@@ -1,3 +1,46 @@
+// @flow
+
+export type StylePropertySpecification = {
+    type: 'number',
+    'function': boolean,
+    'property-function': boolean,
+    default?: number
+} | {
+    type: 'string',
+    'function': boolean,
+    'property-function': boolean,
+    default?: string
+} | {
+    type: 'boolean',
+    'function': boolean,
+    'property-function': boolean,
+    default?: boolean
+} | {
+    type: 'enum',
+    'function': boolean,
+    'property-function': boolean,
+    values: {[string]: {}},
+    default?: string
+} | {
+    type: 'color',
+    'function': boolean,
+    'property-function': boolean,
+    default?: string
+} | {
+    type: 'array',
+    value: 'number',
+    'function': boolean,
+    'property-function': boolean,
+    length?: number,
+    default?: Array<number>
+} | {
+    type: 'array',
+    value: 'string',
+    'function': boolean,
+    'property-function': boolean,
+    length?: number,
+    default?: Array<string>
+};
 
 exports.v6 = require('./reference/v6.json');
 exports.v7 = require('./reference/v7.json');
