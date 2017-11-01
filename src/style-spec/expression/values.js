@@ -35,7 +35,7 @@ function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     return null;
 }
 
-export type Value = null | string | boolean | number | Color | Array<Value> | { [string]: Value }
+export type Value = null | string | boolean | number | Color | $ReadOnlyArray<Value> | { +[string]: Value }
 
 function isValue(mixed: mixed): boolean {
     if (mixed === null) {

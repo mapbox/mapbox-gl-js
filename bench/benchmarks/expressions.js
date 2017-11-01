@@ -7,10 +7,8 @@ const convertFunction = require('../../src/style-spec/function/convert');
 const {isFunction, createFunction} = require('../../src/style-spec/function');
 const {createExpression} = require('../../src/style-spec/expression');
 
-import type {
-    StyleExpression,
-    StylePropertySpecification
-} from '../../src/style-spec/expression';
+import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
+import type {StyleExpression} from '../../src/style-spec/expression';
 
 class ExpressionBenchmark extends Benchmark {
     data: Array<{

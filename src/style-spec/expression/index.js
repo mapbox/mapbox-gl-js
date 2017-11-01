@@ -15,6 +15,7 @@ const isConstant = require('./is_constant');
 import type {Type} from './types';
 import type {Value} from './values';
 import type {Expression} from './expression';
+import type {StylePropertySpecification} from '../style-spec';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -64,41 +65,6 @@ export type StyleFilterExpression = ZoomConstantExpression | {
 };
 
 export type StyleExpression = StyleDeclarationExpression | StyleFilterExpression;
-
-export type StylePropertySpecification = {
-    type: 'number',
-    'function': boolean,
-    'property-function': boolean,
-    default?: number
-} | {
-    type: 'string',
-    'function': boolean,
-    'property-function': boolean,
-    default?: string
-} | {
-    type: 'boolean',
-    'function': boolean,
-    'property-function': boolean,
-    default?: boolean
-} | {
-    type: 'enum',
-    'function': boolean,
-    'property-function': boolean,
-    values: {[string]: {}},
-    default?: string
-} | {
-    type: 'array',
-    'function': boolean,
-    'property-function': boolean,
-    value: 'number' | 'string' | 'boolean',
-    length?: number,
-    default?: Array<Value>
-} | {
-    type: 'color',
-    'function': boolean,
-    'property-function': boolean,
-    default?: string
-};
 
 function isExpression(expression: mixed) {
     return Array.isArray(expression) && expression.length > 0 &&
