@@ -717,19 +717,20 @@ test('Style#removeSource', (t) => {
 
     t.test('throws if source is in use', (t) => {
         createStyle((style) => {
-            t.throws(() => {
-                style.removeSource('mapbox-source');
-            }, /\"mapbox\-source\"/);
-            t.end();
+            style.on('error', (event) => {
+                t.end();
+            });
+            style.removeSource('mapbox-source');
         });
     });
 
     t.test('does not throw if source is not in use', (t) => {
         createStyle((style) => {
+            style.on('error', (event) => {
+                t.fail();
+            });
             style.removeLayer('mapbox-layer');
-            t.doesNotThrow(() => {
-                style.removeSource('mapbox-source');
-            }, /\"mapbox\-source\"/);
+            style.removeSource('mapbox-source');
             t.end();
         });
     });

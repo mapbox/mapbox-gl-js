@@ -510,7 +510,7 @@ class Style extends Evented {
         }
         for (const layerId in this._layers) {
             if (this._layers[layerId].source === id) {
-                throw new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`);
+                return this.fire('error', `Source "${id}" cannot be removed while layer "${layerId}" is using it.`);
             }
         }
 
