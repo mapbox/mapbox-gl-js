@@ -62,7 +62,7 @@ class DEMData {
     constructor(uid: string, scale: ?number, data: ?Level) {
         this.uid = uid;
         this.scale = scale || 1;
-        // if no data is provided, use a temporary empty level to satisfy gl
+        // if no data is provided, use a temporary empty level to satisfy flow
         this.level = data || new Level(256, 512);
         this.loaded = !!data;
     }
@@ -74,9 +74,9 @@ class DEMData {
         const pixels = data.data;
 
         // unpack
-        for (let y = 0; y < data.height; y++) {
-            for (let x = 0; x < data.width; x++) {
-                const i = y * data.width + x;
+        for (let y = 0; y < level.dim; y++) {
+            for (let x = 0; x < level.dim; x++) {
+                const i = y * level.dim + x;
                 const j = i * 4;
                 // decoding per https://blog.mapbox.com/global-elevation-data-6689f1d0ba65
                 level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
@@ -86,21 +86,21 @@ class DEMData {
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
         // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
-        for (let x = 0; x < data.width; x++) {
+        for (let x = 0; x < level.dim; x++) {
             // left vertical border
             level.set(-1, x, level.get(0, x));
             // right vertical border
-            level.set(data.width, x, level.get(data.width - 1, x));
+            level.set(level.dim, x, level.get(level.dim - 1, x));
             // left horizontal border
             level.set(x, -1, level.get(x, 0));
             // right horizontal border
-            level.set(x, data.width, level.get(x, data.width - 1));
+            level.set(x, level.dim, level.get(x, level.dim - 1));
         }
         // corners
         level.set(-1, -1, level.get(0, 0));
-        level.set(data.width, -1, level.get(data.width - 1, 0));
-        level.set(-1, data.width, level.get(0, data.width - 1));
-        level.set(data.width, data.width, level.get(data.width - 1, data.width - 1));
+        level.set(level.dim, -1, level.get(level.dim - 1, 0));
+        level.set(-1, level.dim, level.get(0, level.dim - 1));
+        level.set(level.dim, level.dim, level.get(level.dim - 1, level.dim - 1));
         this.loaded = true;
     }
 
