@@ -1,0 +1,113 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256
+    }
+  },
+  "center": [
+    35,
+    0
+  ],
+  "zoom": 1.5,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "spacing": "varying"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                35,
+                15
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "spacing": "fixed"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                35,
+                -15
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "These lines have the same letter spacing",
+        "text-letter-spacing": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "match",
+            [
+              "string",
+              [
+                "get",
+                "spacing"
+              ]
+            ],
+            "varying",
+            0,
+            "fixed",
+            0.8,
+            0
+          ],
+          2,
+          [
+            "match",
+            [
+              "string",
+              [
+                "get",
+                "spacing"
+              ]
+            ],
+            "varying",
+            1.6,
+            "fixed",
+            0.8,
+            0
+          ]
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

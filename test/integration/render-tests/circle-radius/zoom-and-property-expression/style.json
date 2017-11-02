@@ -1,0 +1,86 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "poi_label",
+      "type": "circle",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "paint": {
+        "circle-radius": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13.9,
+          [
+            "interpolate",
+            [
+              "exponential",
+              1
+            ],
+            [
+              "number",
+              [
+                "get",
+                "localrank"
+              ]
+            ],
+            0,
+            2,
+            50,
+            8
+          ],
+          14.2,
+          [
+            "interpolate",
+            [
+              "exponential",
+              1
+            ],
+            [
+              "number",
+              [
+                "get",
+                "localrank"
+              ]
+            ],
+            0,
+            6,
+            50,
+            24
+          ]
+        ]
+      }
+    }
+  ]
+}

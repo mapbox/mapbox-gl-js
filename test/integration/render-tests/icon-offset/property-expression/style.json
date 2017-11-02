@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "literal",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "filter": [
+        "==",
+        "maki",
+        "restaurant"
+      ],
+      "layout": {
+        "symbol-placement": "point",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-image": "{maki}-12",
+        "icon-offset": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "number",
+            [
+              "get",
+              "localrank"
+            ]
+          ],
+          0,
+          [
+            "literal",
+            [
+              0,
+              10
+            ]
+          ],
+          50,
+          [
+            "literal",
+            [
+              20,
+              10
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
