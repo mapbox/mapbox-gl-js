@@ -4,6 +4,7 @@ require('flow-remove-types/register');
 const expressionSuite = require('./integration').expression;
 const { createExpression } = require('../src/style-spec/expression');
 const { toString } = require('../src/style-spec/expression/types');
+const ignores = require('./ignores.json');
 
 let tests;
 
@@ -11,7 +12,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
     tests = process.argv.slice(2);
 }
 
-expressionSuite.run('js', {tests: tests}, (fixture) => {
+expressionSuite.run('js', { ignores, tests }, (fixture) => {
     const spec = fixture.propertySpec || {};
     spec['function'] = true;
     spec['property-function'] = true;
