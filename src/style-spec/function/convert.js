@@ -51,8 +51,9 @@ function convertFunction(parameters, propertySpec, name) {
 function convertIdentityFunction(parameters, propertySpec, defaultExpression) {
     const get = ['get', parameters.property];
     const type = propertySpec.type;
+
     if (type === 'color') {
-        return ['to-color', get, parameters.default || null, propertySpec.default || null];
+        return parameters.default === undefined ? get : ['to-color', get, parameters.default];
     } else if (type === 'array' && typeof propertySpec.length === 'number') {
         return ['array', propertySpec.value, propertySpec.length, get];
     } else if (type === 'array') {
@@ -69,7 +70,7 @@ function convertIdentityFunction(parameters, propertySpec, defaultExpression) {
             ]
         ];
     } else {
-        return [propertySpec.type, get, parameters.default || null, propertySpec.default || null];
+        return parameters.default === undefined ? get : [propertySpec.type, get, parameters.default];
     }
 }
 
