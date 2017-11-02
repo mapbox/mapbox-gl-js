@@ -3775,7 +3775,7 @@
   "paint_hillshade": {
       "hillshade-shadow-color": {
         "type": "color",
-        "default": "#0000FF",
+        "default": "#000000",
         "doc": "The shading color of areas that face away from the light source.",
         "function": "interpolated",
         "zoom-function": true,
@@ -3784,7 +3784,7 @@
       },
       "hillshade-highlight-color": {
         "type": "color",
-        "default": "#FFFF00",
+        "default": "#FFFFFF",
         "doc": "The shading color of areas that faces towards the light source.",
         "function": "interpolated",
         "zoom-function": true,
