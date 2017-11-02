@@ -1,4 +1,5 @@
 // @flow
+
 const EXTENT = require('../data/extent');
 const OpacityState = require('./opacity_state');
 const assert = require('assert');
@@ -45,7 +46,13 @@ const roundingFactor = 512 / EXTENT / 2;
 class TileLayerIndex {
     coord: TileCoord;
     sourceMaxZoom: number;
-    symbolInstances: any;
+    symbolInstances: {[string]: Array<{
+        instance: SymbolInstance,
+        coordinates: {
+            x: number,
+            y: number
+        }
+    }>};
 
     constructor(coord: TileCoord, sourceMaxZoom: number, symbolInstances: Array<SymbolInstance>) {
         this.coord = coord;
@@ -78,7 +85,7 @@ class TileLayerIndex {
     // (2) converted to the z-scale of this TileLayerIndex
     // (3) down-sampled by "roundingFactor" from tile coordinate precision in order to be
     //     more tolerant of small differences between tiles.
-    getScaledCoordinates(symbolInstance: SymbolInstance, childTileCoord: TileCoord): any {
+    getScaledCoordinates(symbolInstance: SymbolInstance, childTileCoord: TileCoord) {
         const zDifference = Math.min(this.sourceMaxZoom, childTileCoord.z) - Math.min(this.sourceMaxZoom, this.coord.z);
         const scale = roundingFactor / (1 << zDifference);
         const anchor = symbolInstance.anchor;
@@ -106,7 +113,7 @@ class TileLayerIndex {
         }
     }
 
-    forEachSymbolInstance(fn: any) {
+    forEachSymbolInstance(fn: (SymbolInstance) => void) {
         for (const key in this.symbolInstances) {
             const keyedSymbolInstances = this.symbolInstances[key];
             for (const symbolInstance of keyedSymbolInstances) {
@@ -117,7 +124,7 @@ class TileLayerIndex {
 }
 
 class CrossTileSymbolLayerIndex {
-    indexes: any;
+    indexes: {[zoom: number]: {[tileId: number]: TileLayerIndex}};
 
     constructor() {
         this.indexes = {};
@@ -138,7 +145,7 @@ class CrossTileSymbolLayerIndex {
         for (let z = maxZoom; z > coord.z; z--) {
             const zoomIndexes = this.indexes[z];
             for (const id in zoomIndexes) {
-                const childIndex = zoomIndexes[id];
+                const childIndex = zoomIndexes[(id: any)];
                 if (!childIndex.coord.isChildOf(coord, sourceMaxZoom)) continue;
                 // Mark labels in this tile blocked, and don't copy opacity state
                 // into this tile
@@ -172,9 +179,7 @@ class CrossTileSymbolLayerIndex {
             delete this.indexes[coord.z];
         }
 
-        const minZoom = Object.keys(this.indexes).reduce((minZoom, zoom) => {
-            return Math.min(minZoom, zoom);
-        }, 25);
+        const minZoom = Math.min(25, ...(Object.keys(this.indexes): any));
 
         let parentCoord = coord;
         for (let z = coord.z - 1; z >= minZoom; z--) {
@@ -231,7 +236,7 @@ class CrossTileSymbolLayerIndex {
 }
 
 class CrossTileSymbolIndex {
-    layerIndexes: any;
+    layerIndexes: {[layerId: string]: CrossTileSymbolLayerIndex};
 
     constructor() {
         this.layerIndexes = {};
