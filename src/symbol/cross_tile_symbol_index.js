@@ -153,10 +153,18 @@ class CrossTileSymbolLayerIndex {
             }
         }
 
+        const oldTileIndex = this.indexes[coord.z] && this.indexes[coord.z][coord.id];
+        if (oldTileIndex) {
+            // mark labels in the old version of the tile as blocked
+            this.blockLabels(tileIndex, oldTileIndex, true);
+
+            // remove old version of the tile
+            this.removeTile(coord, sourceMaxZoom);
+        }
+
         // make this tile block duplicate labels in lower-res parent tiles
-        let parentCoord = coord;
         for (let z = coord.z - 1; z >= minZoom; z--) {
-            parentCoord = (parentCoord: any).parent(sourceMaxZoom);
+            const parentCoord = coord.scaledTo(z, sourceMaxZoom);
             const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
             if (parentIndex) {
                 // Mark labels in the parent tile blocked, and copy opacity state
