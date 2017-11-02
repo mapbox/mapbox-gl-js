@@ -718,6 +718,8 @@ test('Style#removeSource', (t) => {
     t.test('throws if source is in use', (t) => {
         createStyle((style) => {
             style.on('error', (event) => {
+                t.ok(event.error.message.includes('"mapbox-source"'));
+                t.ok(event.error.message.includes('"mapbox-layer"'));
                 t.end();
             });
             style.removeSource('mapbox-source');
@@ -726,7 +728,7 @@ test('Style#removeSource', (t) => {
 
     t.test('does not throw if source is not in use', (t) => {
         createStyle((style) => {
-            style.on('error', (event) => {
+            style.on('error', () => {
                 t.fail();
             });
             style.removeLayer('mapbox-layer');
