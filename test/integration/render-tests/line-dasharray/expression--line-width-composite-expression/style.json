@@ -1,0 +1,152 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 1
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  -5
+                ],
+                [
+                  10,
+                  -5
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 2
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  0
+                ],
+                [
+                  10,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 3
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  5
+                ],
+                [
+                  10,
+                  5
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "road",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "match",
+            [
+              "number",
+              [
+                "get",
+                "property"
+              ]
+            ],
+            1,
+            1,
+            2,
+            2,
+            3,
+            3,
+            1
+          ],
+          1,
+          [
+            "match",
+            [
+              "number",
+              [
+                "get",
+                "property"
+              ]
+            ],
+            1,
+            4,
+            2,
+            5,
+            3,
+            6,
+            1
+          ]
+        ],
+        "line-dasharray": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "literal",
+            [
+              1,
+              1
+            ]
+          ],
+          1,
+          [
+            "literal",
+            [
+              2,
+              1
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

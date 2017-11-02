@@ -15,15 +15,22 @@
         "features": [
           {
             "type": "Feature",
-            "properties": { "x": 0 },
+            "properties": {
+              "x": 0
+            },
             "geometry": {
               "type": "Point",
-              "coordinates": [ -10, 0 ]
+              "coordinates": [
+                -10,
+                0
+              ]
             }
           },
           {
             "type": "Feature",
-            "properties": { "x": 5 },
+            "properties": {
+              "x": 5
+            },
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -39,21 +46,6 @@
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
-      "id": "reference",
-      "type": "symbol",
-      "source": "geojson",
-      "layout": {
-        "text-field": "A",
-        "text-font": [
-          "Open Sans Semibold",
-          "Arial Unicode MS Bold"
-        ],
-        "text-size": ["match", ["number", ["get", "x"]], 5, 24, 12],
-        "text-ignore-placement": true,
-        "text-allow-overlap": true
-      }
-    },
-    {
       "id": "symbol",
       "type": "symbol",
       "source": "geojson",
@@ -65,16 +57,51 @@
         ],
         "text-size": [
           "interpolate",
-          ["cubic-bezier", 0, 0.9, 0.1, 1],
-          ["zoom"],
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
           0,
-          2,
+          [
+            "interpolate",
+            [
+              "exponential",
+              1
+            ],
+            [
+              "number",
+              [
+                "get",
+                "x"
+              ]
+            ],
+            0,
+            10,
+            10,
+            20
+          ],
           1,
-          [ "match", ["number", ["get", "x"]], 5, 24, 12]
-        ],
-        "text-offset": [0, 1],
-        "text-ignore-placement": true,
-        "text-allow-overlap": true
+          [
+            "interpolate",
+            [
+              "exponential",
+              1
+            ],
+            [
+              "number",
+              [
+                "get",
+                "x"
+              ]
+            ],
+            0,
+            14,
+            10,
+            28
+          ]
+        ]
       }
     }
   ]

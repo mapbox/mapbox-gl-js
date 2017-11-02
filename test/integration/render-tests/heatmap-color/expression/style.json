@@ -36,15 +36,25 @@
       "paint": {
         "heatmap-color": [
           "interpolate",
-          ["linear"],
-          ["heatmap-density"],
-          0, "rgba(0, 0, 255, 0)",
-          0.1, "royalblue",
-          0.3, "cyan",
-          0.5, "lime",
-          0.7, "yellow",
-          1, "red"
-        ]
+          [
+            "exponential",
+            1
+          ],
+          [
+            "heatmap-density"
+          ],
+          0,
+          "white",
+          0.2,
+          "black",
+          0.5,
+          "red",
+          0.7,
+          "blue",
+          1,
+          "green"
+        ],
+        "heatmap-intensity": 0.5
       }
     }
   ]
