@@ -11,6 +11,7 @@ const Coalesce = require('./definitions/coalesce');
 const Let = require('./definitions/let');
 const definitions = require('./definitions');
 const isConstant = require('./is_constant');
+const RuntimeError = require('./runtime_error');
 
 import type {Type} from './types';
 import type {Value} from './values';
@@ -106,6 +107,10 @@ function createExpression(expression: mixed,
     } else {
         const warningHistory: {[key: string]: boolean} = {};
         const defaultValue = getDefaultValue(propertySpec);
+        let enumValues;
+        if (propertySpec.type === 'enum') {
+            enumValues = propertySpec.values;
+        }
         evaluate = function (globals, feature) {
             evaluator.globals = globals;
             evaluator.feature = feature;
@@ -113,6 +118,9 @@ function createExpression(expression: mixed,
                 const val = parsed.evaluate(evaluator);
                 if (val === null || val === undefined) {
                     return defaultValue;
+                }
+                if (enumValues && !(val in enumValues)) {
+                    throw new RuntimeError(`Expected value to be one of ${Object.keys(enumValues).map(v => JSON.stringify(v)).join(', ')}, but found ${JSON.stringify(val)} instead.`);
                 }
                 return val;
             } catch (e) {
