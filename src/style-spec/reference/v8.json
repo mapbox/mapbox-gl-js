@@ -1052,6 +1052,7 @@
     "icon-offset": {
       "type": "array",
       "value": "number",
+      "units": "pixels multiplied by the value of \"icon-size\"",
       "length": 2,
       "default": [
         0,
