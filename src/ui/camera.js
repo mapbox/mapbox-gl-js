@@ -1,7 +1,7 @@
 // @flow
 
 const util = require('../util/util');
-const interpolate = require('../style-spec/util/interpolate');
+const interpolate = require('../style-spec/util/interpolate').number;
 const browser = require('../util/browser');
 const LngLat = require('../geo/lng_lat');
 const LngLatBounds = require('../geo/lng_lat_bounds');
