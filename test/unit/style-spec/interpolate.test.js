@@ -5,17 +5,7 @@ const interpolate = require('../../../src/style-spec/util/interpolate');
 const Color = require('../../../src/style-spec/util/color');
 
 test('interpolate.number', (t) => {
-    t.equal(interpolate(0, 1, 0.5), 0.5);
-    t.end();
-});
-
-test('interpolate.number', (t) => {
     t.equal(interpolate.number(0, 1, 0.5), 0.5);
-    t.end();
-});
-
-test('interpolate.vec2', (t) => {
-    t.deepEqual(interpolate.vec2([0, 0], [1, 2], 0.5), [0.5, 1]);
     t.end();
 });
 

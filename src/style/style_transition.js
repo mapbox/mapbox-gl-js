@@ -87,7 +87,7 @@ class StyleTransition {
 
         const timeFraction = Math.min((Date.now() - this.zoomHistory.lastIntegerZoomTime) / this.duration, 1);
         const zoomFraction = Math.abs(z - lastIntegerZoom);
-        const t = interpolate(timeFraction, 1, zoomFraction);
+        const t = interpolate.number(timeFraction, 1, zoomFraction);
 
         if (from === undefined || to === undefined)
             return undefined;
