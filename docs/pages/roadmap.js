@@ -13,7 +13,7 @@ const roadmap = {
     "updated_at": "August 1, 2017",
     "roadmap_items": [
         {
-            "term": "Active development",
+            "term": "Active",
             "description": "Things actively being built right now.",
             "items": [
                 {
