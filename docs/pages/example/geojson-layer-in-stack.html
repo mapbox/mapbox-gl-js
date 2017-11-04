@@ -11,10 +11,9 @@ map.on('load', function () {
 
     var layers = map.getStyle().layers;
     // Find the index of the first symbol layer in the map style
-    var firstSymbolId = undefined;
     for (var i = 0; i < layers.length; i++) {
         if (layers[i].type === 'symbol') {
-            firstSymbolId = layers[i].id;
+            var firstSymbolId = layers[i].id;
             break;
         }
     }
