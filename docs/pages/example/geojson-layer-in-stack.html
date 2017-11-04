@@ -9,13 +9,15 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
-    // Find the index of the bottom-most type: symbol layer in the map style
-    // Insert the layer beneath any symbol layer.
-    var layers = map.getStyle().layers.reverse();
-    var labelLayerIdx = layers.findIndex(function (layer) {
-        return layer.type !== 'symbol';
-    });
-    var labelLayerId = labelLayerIdx !== -1 ? layers[labelLayerIdx].id : undefined;
+    var layers = map.getStyle().layers;
+    // Find the index of the first symbol layer in the map style
+    var firstSymbolId = undefined;
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].type === 'symbol') {
+            firstSymbolId = layers[i].id;
+            break;
+        }
+    }
     map.addLayer({
         'id': 'urban-areas-fill',
         'type': 'fill',
@@ -34,7 +36,8 @@ map.on('load', function () {
     // exists in the stylesheet already, the new layer will be positioned
     // right before that layer in the stack, making it possible to put
     // 'overlays' anywhere in the layer stack.
-    }, labelLayerId);
+    // Insert the layer beneath the first symbol layer.
+    }, firstSymbolId);
 });
 </script>
 
