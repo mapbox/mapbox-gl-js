@@ -74,14 +74,26 @@ declare type LightSpecification = {|
     "intensity"?: PropertyValueSpecification<number>
 |}
 
-declare type TileSourceSpecification = {
-    "type": "vector" | "raster",
+declare type VectorSourceSpecification = {
+    "type": "vector",
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
     "minzoom"?: number,
     "maxzoom"?: number,
-    "tileSize"?: number
+    "attribution"?: string
+}
+
+declare type RasterSourceSpecification = {
+    "type": "raster",
+    "url"?: string,
+    "tiles"?: Array<string>,
+    "bounds"?: [number, number, number, number],
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "tileSize"?: number,
+    "scheme"?: "xyz" | "tms",
+    "attribution"?: string
 }
 
 declare type GeojsonSourceSpecification = {|
@@ -115,7 +127,8 @@ declare type CanvasSourceSpecification = {|
 |}
 
 declare type SourceSpecification =
-    | TileSourceSpecification
+    | VectorSourceSpecification
+    | RasterSourceSpecification
     | GeojsonSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification

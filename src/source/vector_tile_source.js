@@ -23,7 +23,7 @@ class VectorTileSource extends Evented implements Source {
     scheme: string;
     tileSize: number;
 
-    _options: TileSourceSpecification;
+    _options: VectorSourceSpecification;
     dispatcher: Dispatcher;
     map: Map;
     bounds: ?[number, number, number, number];
@@ -32,7 +32,7 @@ class VectorTileSource extends Evented implements Source {
     reparseOverscaled: boolean;
     isTileClipped: boolean;
 
-    constructor(id: string, options: TileSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;

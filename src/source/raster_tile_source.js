@@ -31,9 +31,9 @@ class RasterTileSource extends Evented implements Source {
     tiles: Array<string>;
 
     _loaded: boolean;
-    _options: TileSourceSpecification;
+    _options: RasterSourceSpecification;
 
-    constructor(id: string, options: TileSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: RasterSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;

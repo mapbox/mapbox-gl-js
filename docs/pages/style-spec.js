@@ -593,11 +593,9 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_tile).map(([name, prop], i) =>
-                                            // note that we omit 'tileSize' here, since VECTOR and raster
-                                            // both use source_tile, but tileSize is prohibited for vector sources
-                                            name !== '*' && name !== 'type' && name !== 'tileSize' &&
-                                                <Item key={i} id={`sources-vector-${name}`} name={name} {...prop}/>)}
+                                        { entries(ref.source_vector).map(([name, prop], i) =>
+                                            name !== '*' && name !== 'type' &&
+                                            <Item key={i} id={`sources-vector-${name}`} name={name} {...prop}/>)}
                                     </div>
                                     <table className="micro">
                                         <thead>
@@ -636,9 +634,9 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_tile).map(([name, prop], i) =>
+                                        { entries(ref.source_raster).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
-                                                <Item key={i} id={`sources-raster-${name}`} name={name} {...prop}/>)}
+                                            <Item key={i} id={`sources-raster-${name}`} name={name} {...prop}/>)}
                                     </div>
                                     <table className="micro">
                                         <thead>

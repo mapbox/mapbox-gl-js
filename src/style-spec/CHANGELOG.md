@@ -2,6 +2,7 @@
 
 * v6 styles are no longer supported.
 * v7 styles are supported only for migration, not for validation.
+* Split the `source_tile` entry in the JSON schema into `source_vector` and `source_raster`.
 
 ## 10.0.1
 
