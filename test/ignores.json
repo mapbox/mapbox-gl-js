@@ -1,7 +1,5 @@
 {
   "query-tests/regressions/mapbox-gl-js#4494": "https://github.com/mapbox/mapbox-gl-js/issues/2716",
-  "query-tests/symbol/panned-after-insert": "https://github.com/mapbox/mapbox-gl-js/issues/3346",
-  "query-tests/symbol/rotated-after-insert": "https://github.com/mapbox/mapbox-gl-js/issues/3346",
   "render-tests/fill-extrusion-pattern/@2x": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
   "render-tests/fill-extrusion-pattern/function-2": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
   "render-tests/fill-extrusion-pattern/function": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
