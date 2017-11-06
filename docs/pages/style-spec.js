@@ -270,8 +270,8 @@ function renderParams(params, maxLength) {
 }
 
 class Item extends React.Component {
-    type() {
-        switch (this.props.type) {
+    type(spec = this.props, plural = false) {
+        switch (spec.type) {
         case null:
         case '*':
             return;
@@ -281,12 +281,12 @@ class Item extends React.Component {
             return <span> <a href='#transition'>transition</a></span>;
         case 'sources':
             return <span> object with <a href='#sources'>source</a> values</span>;
+        case 'layer':
+            return <span> <a href='#layers'>layer{plural && 's'}</a></span>;
         case 'array':
-            return <span> <a href='#types-array'>array</a>{this.props.value && <span> of <a href={this.props.value === 'layer' ? `#layers` : `#types-${this.props.value}`}>{this.props.value}s</a></span>}</span>;
-        case 'enum':
-            return <span> <a href='#types-string'>string</a></span>;
+            return <span> <a href='#types-array'>array</a>{spec.value && <span> of {this.type(typeof spec.value === 'string' ? {type: spec.value} : spec.value, true)}</span>}</span>;
         default:
-            return <span> <a href={`#types-${this.props.type}`}>{this.props.type}</a></span>;
+            return <span> <a href={`#types-${spec.type}`}>{spec.type}{plural && 's'}</a></span>;
         }
     }
 
@@ -757,7 +757,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_tile).map(([name, prop], i) =>
+                                        { entries(ref.source_image).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-image-${name}`} name={name} {...prop}/>)}
                                     </div>
@@ -811,7 +811,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_tile).map(([name, prop], i) =>
+                                        { entries(ref.source_video).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-video-${name}`} name={name} {...prop}/>)}
                                     </div>
@@ -869,7 +869,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_tile).map(([name, prop], i) =>
+                                        { entries(ref.source_canvas).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-canvas-${name}`} name={name} {...prop}/>)}
                                     </div>
