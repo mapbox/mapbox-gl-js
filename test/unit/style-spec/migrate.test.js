@@ -19,8 +19,10 @@ t('does not migrate from version 5', (t) => {
     t.end();
 });
 
-t('migrates to latest version from version 6', (t) => {
-    t.deepEqual(migrate({version: 6, layers: []}).version, spec.latest.$version);
+t('does not migrate from version 6', (t) => {
+    t.throws(() => {
+        migrate({version: 6, layers: []});
+    }, new Error('cannot migrate from', 6));
     t.end();
 });
 

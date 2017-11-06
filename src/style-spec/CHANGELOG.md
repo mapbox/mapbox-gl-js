@@ -1,3 +1,8 @@
+## master
+
+* v6 styles are no longer supported.
+* v7 styles are supported only for migration, not for validation.
+
 ## 10.0.1
 
 * Fix bug preventing @mapbox/mapbox-gl-style-spec package from being usable outside of mapbox-gl-js (#5502)

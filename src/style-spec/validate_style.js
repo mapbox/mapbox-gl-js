@@ -30,7 +30,7 @@ module.exports = function validateStyle(style, styleSpec) {
         }
     }
 
-    styleSpec = styleSpec || index[`v${style.version}`];
+    styleSpec = styleSpec || index.v8;
 
     return validateStyleMin(style, styleSpec);
 };
