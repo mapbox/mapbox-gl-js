@@ -6,7 +6,6 @@ const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
 const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray, LineIndexArray} = require('../index_array_type');
-const resolveTokens = require('../../util/token');
 const transformText = require('../../symbol/transform_text');
 const mergeLines = require('../../symbol/mergelines');
 const scriptDetection = require('../../util/script_detection');
@@ -463,19 +462,13 @@ class SymbolBucket implements Bucket {
 
             let text;
             if (hasText) {
-                text = layer.getLayoutValue('text-field', globalProperties, feature);
-                if (layer.isLayoutValueFeatureConstant('text-field')) {
-                    text = resolveTokens(feature.properties, text);
-                }
+                text = layer.getValueAndResolveTokens('text-field', globalProperties, feature);
                 text = transformText(text, layer, globalProperties, feature);
             }
 
             let icon;
             if (hasIcon) {
-                icon = layer.getLayoutValue('icon-image', globalProperties, feature);
-                if (layer.isLayoutValueFeatureConstant('icon-image')) {
-                    icon = resolveTokens(feature.properties, icon);
-                }
+                icon = layer.getValueAndResolveTokens('icon-image', globalProperties, feature);
             }
 
             if (!text && !icon) {

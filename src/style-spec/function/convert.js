@@ -23,6 +23,10 @@ function convertFunction(parameters, propertySpec, name) {
         const zoomDependent = zoomAndFeatureDependent || !featureDependent;
 
         const stops = parameters.stops.map((stop) => {
+            if (!featureDependent && (name === 'icon-image' || name === 'text-field') && typeof stop[1] === 'string') {
+                return [stop[0], convertTokenString(stop[1])];
+
+            }
             return [stop[0], convertValue(stop[1], propertySpec)];
         });
 
@@ -223,7 +227,7 @@ function appendStopPair(curve, input, output, isStep) {
     curve.push(output);
 }
 
-function getFunctionType (parameters, propertySpec) {
+function getFunctionType(parameters, propertySpec) {
     if (parameters.type) {
         return parameters.type;
     } else if (propertySpec.function) {
@@ -232,3 +236,28 @@ function getFunctionType (parameters, propertySpec) {
         return 'exponential';
     }
 }
+
+// "String with {name} token" => ["concat", "String with ", ["get", "name"], " token"]
+function convertTokenString(s) {
+    const result = ['concat'];
+    const re = /{([^{}]+)}/g;
+    let pos = 0;
+    let match;
+    while ((match = re.exec(s)) !== null) {
+        const literal = s.slice(pos, re.lastIndex - match[0].length);
+        pos = re.lastIndex;
+        if (literal.length > 0) result.push(literal);
+        result.push(['to-string', ['get', match[1]]]);
+    }
+
+    if (result.length === 1) {
+        return s;
+    }
+
+    if (pos < s.length) {
+        result.push(s.slice(pos));
+    }
+
+    return result;
+}
+
