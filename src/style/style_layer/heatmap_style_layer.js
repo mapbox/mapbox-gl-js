@@ -64,6 +64,14 @@ class HeatmapStyleLayer extends StyleLayer {
             this.heatmapFbo = null;
         }
     }
+
+    queryRadius(): number {
+        return 0;
+    }
+
+    queryIntersectsFeature(): boolean  {
+        return false;
+    }
 }
 
 module.exports = HeatmapStyleLayer;
