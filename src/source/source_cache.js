@@ -174,6 +174,15 @@ class SourceCache extends Evented {
      * Return all tile ids ordered with z-order, and cast to numbers
      */
     getIds(): Array<number> {
+
+        const compareKeyZoom = (a_, b_) => {
+            const a = TileCoord.fromID(a_);
+            const b = TileCoord.fromID(b_);
+            const rotatedA = (new Point(a.x, a.y)).rotate(this.transform.angle);
+            const rotatedB = (new Point(b.x, b.y)).rotate(this.transform.angle);
+            return a.z - b.z || rotatedB.y - rotatedA.y || rotatedB.x - rotatedA.x;
+        };
+
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     }
 
@@ -712,10 +721,6 @@ function coordinateToTilePoint(tileCoord: TileCoord, sourceMaxZoom: number, coor
         (zoomedCoord.column - (tileCoord.x + tileCoord.w * Math.pow(2, tileCoord.z))) * EXTENT,
         (zoomedCoord.row - tileCoord.y) * EXTENT
     );
-}
-
-function compareKeyZoom(a, b) {
-    return (a % 32) - (b % 32);
 }
 
 function isRasterType(type) {

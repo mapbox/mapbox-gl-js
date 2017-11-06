@@ -423,10 +423,10 @@ test('SourceCache#update', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(1, 0, 0).id,
-                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id,
                     new TileCoord(1, 0, 1).id,
-                    new TileCoord(1, 1, 1).id
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 0).id
                 ]);
                 t.end();
             }
@@ -459,10 +459,10 @@ test('SourceCache#update', (t) => {
 
                 t.deepEqual(sourceCache.getIds(), [
                     new TileCoord(0, 0, 0).id,
-                    new TileCoord(1, 0, 0).id,
-                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id,
                     new TileCoord(1, 0, 1).id,
-                    new TileCoord(1, 1, 1).id
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 0).id
                 ]);
                 t.end();
             }
@@ -493,10 +493,10 @@ test('SourceCache#update', (t) => {
 
                 t.deepEqual(sourceCache.getIds(), [
                     new TileCoord(0, 0, 0, 1).id,
-                    new TileCoord(1, 0, 0, 1).id,
-                    new TileCoord(1, 1, 0, 1).id,
+                    new TileCoord(1, 1, 1, 1).id,
                     new TileCoord(1, 0, 1, 1).id,
-                    new TileCoord(1, 1, 1, 1).id
+                    new TileCoord(1, 1, 0, 1).id,
+                    new TileCoord(1, 0, 0, 1).id
                 ]);
                 t.end();
             }
@@ -525,10 +525,10 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(2, 1, 1).id,
-                    new TileCoord(2, 2, 1).id,
+                    new TileCoord(2, 2, 2).id,
                     new TileCoord(2, 1, 2).id,
-                    new TileCoord(2, 2, 2).id
+                    new TileCoord(2, 2, 1).id,
+                    new TileCoord(2, 1, 1).id
                 ]);
 
                 transform.zoom = 0;
@@ -664,20 +664,20 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getRenderableIds(), [
-                    new TileCoord(16, 8191, 8191, 0).id,
-                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8192, 8192, 0).id,
                     new TileCoord(16, 8191, 8192, 0).id,
-                    new TileCoord(16, 8192, 8192, 0).id
+                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8191, 8191, 0).id
                 ]);
 
                 transform.zoom = 15;
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getRenderableIds(), [
-                    new TileCoord(16, 8191, 8191, 0).id,
-                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8192, 8192, 0).id,
                     new TileCoord(16, 8191, 8192, 0).id,
-                    new TileCoord(16, 8192, 8192, 0).id
+                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8191, 8191, 0).id
                 ]);
                 t.end();
             }
@@ -1121,10 +1121,10 @@ test('SourceCache#tilesIn', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(1, 0, 0).id,
-                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id,
                     new TileCoord(1, 0, 1).id,
-                    new TileCoord(1, 1, 1).id
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 0).id
                 ]);
 
                 const tiles = sourceCache.tilesIn([
@@ -1168,10 +1168,10 @@ test('SourceCache#tilesIn', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(2, 0, 0).id,
-                    new TileCoord(2, 1, 0).id,
+                    new TileCoord(2, 1, 1).id,
                     new TileCoord(2, 0, 1).id,
-                    new TileCoord(2, 1, 1).id
+                    new TileCoord(2, 1, 0).id,
+                    new TileCoord(2, 0, 0).id
                 ]);
 
                 const tiles = sourceCache.tilesIn([
@@ -1272,6 +1272,7 @@ test('SourceCache#getIds (ascending order by zoom level)', (t) => {
     ];
 
     const sourceCache = createSourceCache({});
+    sourceCache.transform = new Transform();
     for (let i = 0; i < ids.length; i++) {
         sourceCache._tiles[ids[i].id] = {};
     }
