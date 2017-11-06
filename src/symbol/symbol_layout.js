@@ -146,28 +146,19 @@ function addFeature(bucket: SymbolBucket,
         textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
         textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
         iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
-        mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-            layout['text-ignore-placement'] || layout['icon-ignore-placement'],
         symbolPlacement = layout['symbol-placement'],
         textRepeatDistance = symbolMinDistance / 2;
 
     const addSymbolAtAnchor = (line, anchor) => {
-        const inside = !(anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT);
+        if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
+            // Symbol layers are drawn across tile boundaries, We filter out symbols
+            // outside our tile boundaries (which may be included in vector tile buffers)
+            // to prevent double-drawing symbols.
+            return;
+        }
 
-        if (!inside) return;
-
-        // Normally symbol layers are drawn across tile boundaries. Only symbols
-        // with their anchors within the tile boundaries are added to the buffers
-        // to prevent symbols from being drawn twice.
-        //
-        // Symbols in layers with overlap are sorted in the y direction so that
-        // symbols lower on the canvas are drawn on top of symbols near the top.
-        // To preserve bucket order across tile boundaries these symbols can't
-        // be drawn across tile boundaries. Instead they need to be included in
-        // the buffers for both tiles and clipped to tile boundaries at draw time.
-        const addToBuffers = inside || mayOverlap;
         bucket.symbolInstances.push(addSymbol(bucket, anchor, line, shapedTextOrientations, shapedIcon, bucket.layers[0],
-            addToBuffers, bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
+            bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex, bucket.index,
             textBoxScale, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
             {zoom: bucket.zoom}, feature, glyphPositionMap));
@@ -214,7 +205,6 @@ function addFeature(bucket: SymbolBucket,
 }
 
 function addTextVertices(bucket: SymbolBucket,
-                         addToBuffers: boolean,
                          anchor: Point,
                          shapedText: Shaping,
                          layer: SymbolStyleLayer,
@@ -226,10 +216,8 @@ function addTextVertices(bucket: SymbolBucket,
                          writingMode: number,
                          placedTextSymbolIndices: Array<number>,
                          glyphPositionMap: {[number]: GlyphPosition}) {
-    const glyphQuads = addToBuffers ?
-        getGlyphQuads(anchor, shapedText,
-            layer, textAlongLine, globalProperties, feature, glyphPositionMap) :
-        [];
+    const glyphQuads = getGlyphQuads(anchor, shapedText,
+                            layer, textAlongLine, globalProperties, feature, glyphPositionMap);
 
     const textSizeData = getSizeVertexData(layer,
         bucket.zoom,
@@ -269,7 +257,6 @@ function addSymbol(bucket: SymbolBucket,
                            shapedTextOrientations: any,
                            shapedIcon: PositionedIcon | void,
                            layer: SymbolStyleLayer,
-                           addToBuffers: boolean,
                            collisionBoxArray: CollisionBoxArray,
                            featureIndex: number,
                            sourceLayerIndex: number,
@@ -298,10 +285,10 @@ function addSymbol(bucket: SymbolBucket,
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature
         // We're counting on the two versions having similar dimensions
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, bucket.overscaling);
-        numGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, placedTextSymbolIndices, glyphPositionMap);
+        numGlyphVertices += addTextVertices(bucket, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, placedTextSymbolIndices, glyphPositionMap);
 
         if (shapedTextOrientations.vertical) {
-            numVerticalGlyphVertices += addTextVertices(bucket, addToBuffers, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, WritingMode.vertical, placedTextSymbolIndices, glyphPositionMap);
+            numVerticalGlyphVertices += addTextVertices(bucket, anchor, shapedTextOrientations.vertical, layer, textAlongLine, globalProperties, feature, textOffset, lineArray, WritingMode.vertical, placedTextSymbolIndices, glyphPositionMap);
         }
     }
 
@@ -309,11 +296,9 @@ function addSymbol(bucket: SymbolBucket,
     const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : bucket.collisionBoxArray.length;
 
     if (shapedIcon) {
-        const iconQuads = addToBuffers ?
-            getIconQuads(anchor, shapedIcon, layer,
-                iconAlongLine, shapedTextOrientations.horizontal,
-                globalProperties, feature) :
-            [];
+        const iconQuads = getIconQuads(anchor, shapedIcon, layer,
+                            iconAlongLine, shapedTextOrientations.horizontal,
+                            globalProperties, feature);
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false, bucket.overscaling);
 
         numIconVertices = iconQuads.length * 4;
