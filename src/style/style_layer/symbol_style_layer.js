@@ -2,6 +2,8 @@
 
 const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
+const resolveTokens = require('../../util/token');
+const {isExpression} = require('../../style-spec/expression');
 const assert = require('assert');
 
 import type {Feature, GlobalProperties} from '../../style-spec/expression';
@@ -40,6 +42,16 @@ class SymbolStyleLayer extends StyleLayer {
     isLayoutValueZoomConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
         return !declaration || declaration.expression.isZoomConstant;
+    }
+
+    getValueAndResolveTokens(name: 'text-field' | 'icon-image', globals: GlobalProperties, feature: Feature) {
+        const value = this.getLayoutValue(name, globals, feature);
+        const declaration = this._layoutDeclarations[name];
+        if (this.isLayoutValueFeatureConstant(name) && !isExpression(declaration.value)) {
+            return resolveTokens(feature.properties, value);
+        }
+
+        return value;
     }
 
     createBucket(parameters: BucketParameters) {
