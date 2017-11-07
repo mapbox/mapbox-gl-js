@@ -1,0 +1,20 @@
+{
+  "expression": ["<", ["string", ["get", "x"]], ["string", ["get", "y"]]],
+  "inputs": [
+    [{}, {"properties": {"x": "1", "y": "1"}}],
+    [{}, {"properties": {"x": "1", "y": "2"}}],
+    [{}, {"properties": {"x": "2", "y": "1"}}],
+    [{}, {"properties": {"x": "abc", "y": "azz"}}],
+    [{}, {"properties": {"x": "abc", "y": "aaa"}}],
+    [{}, {"properties": {"x": "abc", "y": "abc"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false, true, false, true, false, false]
+  }
+}

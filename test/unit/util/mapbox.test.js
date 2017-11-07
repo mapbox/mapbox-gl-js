@@ -30,6 +30,17 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('handles custom API_URLs with paths', (t) => {
+            const previousUrl = config.API_URL;
+            config.API_URL = 'https://test.example.com/api.mapbox.com';
+            t.equal(
+                mapbox.normalizeStyleURL('mapbox://styles/foo/bar'),
+                'https://test.example.com/api.mapbox.com/styles/v1/foo/bar?access_token=key'
+            );
+            config.API_URL = previousUrl;
+            t.end();
+        });
+
         t.end();
     });
 
@@ -73,6 +84,17 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('handles custom API_URLs with paths', (t) => {
+            const previousUrl = config.API_URL;
+            config.API_URL = 'https://test.example.com/api.mapbox.com';
+            t.equal(
+                mapbox.normalizeSourceURL('mapbox://one.a'),
+                'https://test.example.com/api.mapbox.com/v4/one.a.json?secure&access_token=key'
+            );
+            config.API_URL = previousUrl;
+            t.end();
+        });
+
         t.end();
     });
 
@@ -89,6 +111,17 @@ test("mapbox", (t) => {
 
         t.test('ignores non-mapbox:// scheme', (t) => {
             t.equal(mapbox.normalizeGlyphsURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.test('handles custom API_URLs with paths', (t) => {
+            const previousUrl = config.API_URL;
+            config.API_URL = 'https://test.example.com/api.mapbox.com';
+            t.equal(
+                mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
+                'https://test.example.com/api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
+            );
+            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -139,8 +172,24 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('concantenates path, ratio, and extension for file:/// scheme', (t) => {
+            t.equal(mapbox.normalizeSpriteURL('file:///path/to/bar', '@2x', '.png'), 'file:///path/to/bar@2x.png');
+            t.end();
+        });
+
         t.test('normalizes non-mapbox:// scheme when query string exists', (t) => {
             t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar?fresh=true', '@2x', '.png'), 'http://www.foo.com/bar@2x.png?fresh=true');
+            t.end();
+        });
+
+        t.test('handles custom API_URLs with paths', (t) => {
+            const previousUrl = config.API_URL;
+            config.API_URL = 'https://test.example.com/api.mapbox.com';
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
+                'https://test.example.com/api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
+            );
+            config.API_URL = previousUrl;
             t.end();
         });
 
@@ -210,6 +259,13 @@ test("mapbox", (t) => {
         t.test('does not modify the access token for non temp tokens', (t) => {
             t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=pk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=pk.abc.123');
             t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tkk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=tkk.abc.123');
+            t.end();
+        });
+
+        t.test('throw error on falsy url input', (t) => {
+            t.throws(() => {
+                mapbox.normalizeTileURL('', mapboxSource);
+            }, new Error('Unable to parse URL object'));
             t.end();
         });
 

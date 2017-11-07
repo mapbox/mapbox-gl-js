@@ -1,4 +1,4 @@
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
 
@@ -7,7 +7,7 @@ varying vec2 v_normal;
 varying float v_gamma_scale;
 
 void main() {
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
 

@@ -1,0 +1,14 @@
+{
+  "propertySpec": {"type": "array", "value": "number"},
+  "expression": ["literal", []],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "array<number>"
+    },
+    "outputs": []
+  }
+}

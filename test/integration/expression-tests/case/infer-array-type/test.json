@@ -1,0 +1,19 @@
+{
+  "propertySpec": {"type": "array", "value": "string"},
+  "expression": [
+    "case",
+    ["boolean", ["get", "x"]],
+    ["literal", ["one"]],
+    ["literal", ["one", "two"]]
+  ],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<string>"
+    },
+    "outputs": []
+  }
+}

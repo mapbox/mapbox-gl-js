@@ -1,0 +1,26 @@
+{
+  "expression": [
+    "to-rgba",
+    ["interpolate", ["exponential", 1], ["get", "x"], 1, "red", 11, ["get", "color"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": 0, "color": "blue"}}],
+    [{}, {"properties": {"x": 5, "color": "blue"}}],
+    [{}, {"properties": {"x": 11, "color": "blue"}}],
+    [{}, {"properties": {"x": 11, "color": "oops blue"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<number, 4>"
+    },
+    "outputs": [
+      [1, 0, 0, 1],
+      [0.6, 0, 0.4, 1],
+      [0, 0, 1, 1],
+      {"error": "Could not parse color from value 'oops blue'"}
+    ]
+  }
+}

@@ -8,8 +8,8 @@ const Popup = require('../../../src/ui/popup');
 
 function createMap() {
     const container = window.document.createElement('div');
-    container.offsetWidth = 512;
-    container.offsetHeight = 512;
+    Object.defineProperty(container, 'offsetWidth', {value: 512});
+    Object.defineProperty(container, 'offsetHeight', {value: 512});
     return new Map({container: container});
 }
 
@@ -54,6 +54,24 @@ test('Marker', (t) => {
         t.ok(marker.getPopup() instanceof Popup);
         t.ok(marker.setPopup() instanceof Marker, 'passing no argument to Marker.setPopup() is valid');
         t.ok(!marker.getPopup(), 'Calling setPopup with no argument successfully removes Popup instance from Marker instance');
+        t.end();
+    });
+
+    t.test('marker centered by default', (t) => {
+        const map = createMap();
+        const element = window.document.createElement('div');
+        const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
+        const translate = Math.round(map.getContainer().offsetWidth / 2);
+        t.equal(marker.getElement().style.transform, `translate(-50%, -50%) translate(${translate}px, ${translate}px)`, 'Marker centered');
+        t.end();
+    });
+
+    t.test('togglePopup returns Marker instance', (t) => {
+        const map = createMap();
+        const element = window.document.createElement('div');
+        const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
+        marker.setPopup(new Popup());
+        t.ok(marker.togglePopup() instanceof Marker);
         t.end();
     });
 

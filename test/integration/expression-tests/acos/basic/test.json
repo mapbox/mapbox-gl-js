@@ -1,0 +1,13 @@
+{
+  "expression": ["acos", 0.5],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [1.0471975511965979]
+  }
+}

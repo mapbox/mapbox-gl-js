@@ -1,0 +1,16 @@
+{
+  "propertySpec": {"type": "string"},
+  "expression": ["at", 1, ["literal", [1, 2, 3]]],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "Expected array<string> but found array<number, 3> instead."
+        }
+      ]
+    }
+  }
+}

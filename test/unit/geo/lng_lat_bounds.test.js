@@ -86,6 +86,47 @@ test('LngLatBounds', (t) => {
         t.end();
     });
 
+    t.test('#extend with null', (t) => {
+        const bounds = new LngLatBounds([0, 0], [10, 10]);
+
+        bounds.extend(null);
+
+        t.equal(bounds.getSouth(), 0);
+        t.equal(bounds.getWest(), 0);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), 10);
+
+        t.end();
+    });
+
+    t.test('#extend undefined bounding box', (t) => {
+        const bounds1 = new LngLatBounds(undefined, undefined);
+        const bounds2 = new LngLatBounds([-10, -10], [10, 10]);
+
+        bounds1.extend(bounds2);
+
+        t.equal(bounds1.getSouth(), -10);
+        t.equal(bounds1.getWest(), -10);
+        t.equal(bounds1.getNorth(), 10);
+        t.equal(bounds1.getEast(), 10);
+
+        t.end();
+    });
+
+    t.test('#extend same LngLat instance', (t) => {
+        const point = new LngLat(0, 0);
+        const bounds = new LngLatBounds(point, point);
+
+        bounds.extend(new LngLat(15, 15));
+
+        t.equal(bounds.getSouth(), 0);
+        t.equal(bounds.getWest(), 0);
+        t.equal(bounds.getNorth(), 15);
+        t.equal(bounds.getEast(), 15);
+
+        t.end();
+    });
+
     t.test('accessors', (t) => {
         const sw = new LngLat(0, 0);
         const ne = new LngLat(-10, -20);

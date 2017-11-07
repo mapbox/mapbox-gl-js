@@ -18,7 +18,7 @@ t('diff', (t) => {
         version: 8,
         layers: [{ id: 'a' }]
     }), [
-      { command: 'setStyle', args: [{ version: 8, layers: [{ id: 'a' }] }] }
+        { command: 'setStyle', args: [{ version: 8, layers: [{ id: 'a' }] }] }
     ], 'version change');
 
 
@@ -51,8 +51,8 @@ t('diff', (t) => {
     }, {
         layers: [{ id: 'b' }, { id: 'a' }]
     }), [
-      { command: 'removeLayer', args: ['a'] },
-      { command: 'addLayer', args: [{ id: 'a' }, undefined] }
+        { command: 'removeLayer', args: ['a'] },
+        { command: 'addLayer', args: [{ id: 'a' }, undefined] }
     ], 'move a layer');
 
     t.deepEqual(diffStyles({
@@ -111,6 +111,36 @@ t('diff', (t) => {
         { command: 'addSource', args: ['foo', 1] }
     ], 'add a source');
 
+    t.deepEqual(diffStyles({
+        sources: {
+            foo: {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            }
+        }
+    }, {
+        sources: {
+            foo: {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [10, 20] }
+                    }]
+                }
+            }
+        }
+    }), [
+        { command: 'setGeoJSONSourceData', args: ['foo', {
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [10, 20] }
+            }]
+        }]}
+    ], 'update a geojson source');
+
     t.deepEqual(diffStyles({}, {
         metadata: { 'mapbox:author': 'nobody' }
     }), [], 'ignore style metadata');
@@ -126,7 +156,7 @@ t('diff', (t) => {
     }, {
         center: [1, 1]
     }), [
-      { command: 'setCenter', args: [[1, 1]] }
+        { command: 'setCenter', args: [[1, 1]] }
     ], 'center change');
 
     t.deepEqual(diffStyles({
@@ -134,7 +164,7 @@ t('diff', (t) => {
     }, {
         zoom: 15
     }), [
-      { command: 'setZoom', args: [15] }
+        { command: 'setZoom', args: [15] }
     ], 'zoom change');
 
     t.deepEqual(diffStyles({
@@ -142,7 +172,7 @@ t('diff', (t) => {
     }, {
         bearing: 180
     }), [
-      { command: 'setBearing', args: [180] }
+        { command: 'setBearing', args: [180] }
     ], 'bearing change');
 
     t.deepEqual(diffStyles({
@@ -150,7 +180,7 @@ t('diff', (t) => {
     }, {
         pitch: 1
     }), [
-      { command: 'setPitch', args: [1] }
+        { command: 'setPitch', args: [1] }
     ], 'pitch change');
 
     t.deepEqual(diffStyles({
@@ -175,7 +205,7 @@ t('diff', (t) => {
     }, {
         light: { anchor: 'viewport' }
     }), [
-      { command: 'setLight', args: [{'anchor': 'viewport'}] }
+        { command: 'setLight', args: [{'anchor': 'viewport'}] }
     ], 'light anchor change');
 
     t.deepEqual(diffStyles({
@@ -183,7 +213,7 @@ t('diff', (t) => {
     }, {
         light: { color: 'red' }
     }), [
-      { command: 'setLight', args: [{'color': 'red'}] }
+        { command: 'setLight', args: [{'color': 'red'}] }
     ], 'light color change');
 
     t.deepEqual(diffStyles({
@@ -191,7 +221,7 @@ t('diff', (t) => {
     }, {
         light: { position: [1, 0, 0] }
     }), [
-      { command: 'setLight', args: [{'position': [1, 0, 0]}] }
+        { command: 'setLight', args: [{'position': [1, 0, 0]}] }
     ], 'light position change');
 
     t.deepEqual(diffStyles({
@@ -199,7 +229,7 @@ t('diff', (t) => {
     }, {
         light: { intensity: 10 }
     }), [
-      { command: 'setLight', args: [{'intensity': 10}] }
+        { command: 'setLight', args: [{'intensity': 10}] }
     ], 'light intensity change');
 
     t.deepEqual(diffStyles({
@@ -291,6 +321,21 @@ t('diff', (t) => {
         { command: 'addSource', args: ['foo', { data: 2 }] },
         { command: 'addLayer', args: [{id: 'b', source: 'foo'}, 'c'] }
     ], 'changing a source removes and re-adds dependent layers');
+
+    t.deepEqual(diffStyles({
+        sources: { foo: { data: 1 }, bar: {} },
+        layers: [
+            { id: 'a', source: 'bar' }
+        ]
+    }, {
+        sources: { foo: { data: 1 }, bar: {} },
+        layers: [
+            { id: 'a', source: 'bar' }
+        ],
+        transition: 'transition'
+    }), [
+        { command: 'setTransition', args: ['transition'] }
+    ], 'changing transition');
 
     t.end();
 });

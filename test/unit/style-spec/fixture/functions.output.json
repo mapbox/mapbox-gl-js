@@ -28,7 +28,7 @@
     "line": 75
   },
   {
-    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
+    "message": "layers[6].paint.line-dasharray.stops[0][0]: number expected, string found",
     "line": 89
   },
   {
@@ -84,9 +84,6 @@
     "line": 401
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
-  },
-  {
     "message": "layers[23].paint.fill-color.stops: identity function may not have a \"stops\" property",
     "line": 415
   },
@@ -117,6 +114,10 @@
   {
     "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
     "line": 564
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
+    "line": 581
   },
   {
     "message": "layers[33].paint.fill-antialias: exponential functions not supported",
@@ -157,5 +158,33 @@
   {
     "message": "layers[43].paint.fill-color.default: color expected, \"invalid\" found",
     "line": 839
+  },
+  {
+    "message": "layers[44].paint.fill-opacity.stops[1][0]: stop domain values must appear in ascending order",
+    "line": 857
+  },
+  {
+    "message": "layers[47].paint.fill-color: Expected color but found number instead.",
+    "line": 898
+  },
+  {
+    "message": "layers[48].paint.fill-color[2]: Expected number but found string instead.",
+    "line": 907
+  },
+  {
+    "message": "layers[49].paint.fill-opacity: \"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression.",
+    "line": 916
+  },
+  {
+    "message": "layers[50].layout.visibility: expected one of [visible, none], [\"literal\",true] found",
+    "line": 925
+  },
+  {
+    "message": "layers[51].paint.fill-extrusion-opacity: property expressions not supported",
+    "line": 934
+  },
+  {
+    "message": "layers[52].paint.line-dasharray: Type array<number> is not interpolatable.",
+    "line": 943
   }
 ]

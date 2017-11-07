@@ -1,7 +1,10 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+const config = require('../../util/config');
+
+import type Map from '../map';
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
@@ -16,8 +19,14 @@ const util = require('../../util/util');
  *     }));
  */
 class AttributionControl {
+    options: any;
+    _map: Map;
+    _container: HTMLElement;
+    _editLink: ?HTMLAnchorElement;
+    styleId: string;
+    styleOwner: string;
 
-    constructor(options) {
+    constructor(options: any) {
         this.options = options;
 
         util.bindAll([
@@ -31,20 +40,20 @@ class AttributionControl {
         return 'bottom-right';
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         const compact = this.options && this.options.compact;
 
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
 
         if (compact) {
-            this._container.classList.add('compact');
+            this._container.classList.add('mapboxgl-compact');
         }
 
         this._updateAttributions();
         this._updateEditLink();
 
-        this._map.on('data', this._updateData);
+        this._map.on('sourcedata', this._updateData);
         this._map.on('moveend', this._updateEditLink);
 
         if (compact === undefined) {
@@ -56,26 +65,40 @@ class AttributionControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        DOM.remove(this._container);
 
-        this._map.off('data', this._updateData);
+        this._map.off('sourcedata', this._updateData);
         this._map.off('moveend', this._updateEditLink);
         this._map.off('resize', this._updateCompact);
 
-        this._map = undefined;
+        this._map = (undefined: any);
     }
 
     _updateEditLink() {
-        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
-        if (this._editLink) {
-            const center = this._map.getCenter();
-            this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
-                    center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
+        let editLink = this._editLink;
+        if (!editLink) {
+            editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'): any);
+        }
+
+        const params = [
+            {key: "owner", value: this.styleOwner},
+            {key: "id", value: this.styleId},
+            {key: "access_token", value: config.ACCESS_TOKEN}
+        ];
+
+        if (editLink) {
+            const paramString = params.reduce((acc, next, i) => {
+                if (next.value) {
+                    acc += `${next.key}=${next.value}${i < params.length - 1 ? '&' : ''}`;
+                }
+                return acc;
+            }, `?`);
+            editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
         }
     }
 
-    _updateData(event) {
-        if (event.dataType === 'source') {
+    _updateData(e: any) {
+        if (e && e.sourceDataType === 'metadata') {
             this._updateAttributions();
             this._updateEditLink();
         }
@@ -83,8 +106,13 @@ class AttributionControl {
 
     _updateAttributions() {
         if (!this._map.style) return;
+        let attributions: Array<string> = [];
 
-        let attributions = [];
+        if (this._map.style.stylesheet) {
+            const stylesheet: any = this._map.style.stylesheet;
+            this.styleOwner = stylesheet.owner;
+            this.styleId = stylesheet.id;
+        }
 
         const sourceCaches = this._map.style.sourceCaches;
         for (const id in sourceCaches) {
@@ -109,9 +137,11 @@ class AttributionControl {
     }
 
     _updateCompact() {
-        const compact = this._map.getCanvasContainer().offsetWidth <= 640;
-
-        this._container.classList[compact ? 'add' : 'remove']('compact');
+        if (this._map.getCanvasContainer().offsetWidth <= 640) {
+            this._container.classList.add('mapboxgl-compact');
+        } else {
+            this._container.classList.remove('mapboxgl-compact');
+        }
     }
 
 }

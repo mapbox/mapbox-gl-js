@@ -1,0 +1,13 @@
+{
+  "expression": ["sin", 0],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [0]
+  }
+}

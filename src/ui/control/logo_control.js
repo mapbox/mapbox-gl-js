@@ -1,7 +1,9 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+
+import type Map from '../map';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -9,40 +11,44 @@ const util = require('../../util/util');
  * vector tiles and core styles.
  *
  * @implements {IControl}
+ * @private
 **/
 
 class LogoControl {
+    _map: Map;
+    _container: HTMLElement;
 
     constructor() {
         util.bindAll(['_updateLogo'], this);
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
+        const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
+        anchor.target = "_blank";
+        anchor.href = "https://www.mapbox.com/";
+        anchor.setAttribute("aria-label", "Mapbox logo");
+        this._container.appendChild(anchor);
+        this._container.style.display = 'none';
 
-        this._map.on('data', this._updateLogo);
+        this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
         return this._container;
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map.off('data', this._updateLogo);
+        DOM.remove(this._container);
+        this._map.off('sourcedata', this._updateLogo);
     }
 
     getDefaultPosition() {
         return 'bottom-left';
     }
 
-    _updateLogo() {
-        if (this._logoRequired()) {
-            const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
-            anchor.target = "_blank";
-            anchor.href = "https://www.mapbox.com/";
-            anchor.setAttribute("aria-label", "Mapbox logo");
-            this._container.appendChild(anchor);
-            this._map.off('data', this._updateLogo);
+    _updateLogo(e: any) {
+        if (!e || e.sourceDataType === 'metadata') {
+            this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }
     }
 

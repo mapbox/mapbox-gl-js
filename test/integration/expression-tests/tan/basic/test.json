@@ -1,0 +1,13 @@
+{
+  "expression": ["tan", 0.7853981633974483],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [0.9999999999999999]
+  }
+}

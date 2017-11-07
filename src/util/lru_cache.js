@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 /**
@@ -107,6 +106,21 @@ class LRUCache<T> {
         delete this.data[key];
         this.order.splice(this.order.indexOf(key), 1);
 
+        return data;
+    }
+
+    /**
+     * Get the value attached to a specific key without removing data
+     * from the cache. If the key is not found, returns `null`
+     *
+     * @param {string} key the key to look up
+     * @returns {*} the data, or null if it isn't found
+     * @private
+     */
+    getWithoutRemoving(key: string): ?T {
+        if (!this.has(key)) { return null; }
+
+        const data = this.data[key];
         return data;
     }
 

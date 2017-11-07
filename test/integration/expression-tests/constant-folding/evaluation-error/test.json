@@ -1,0 +1,27 @@
+{
+  "propertySpec": {"type": "color"},
+  "expression": [
+    "step",
+    ["get", "x"],
+    "black",
+    0,
+    "invalid",
+    10,
+    "blue"
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": -1}}],
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 5}}],
+    [{}, {"properties": {"x": 10}}],
+    [{}, {"properties": {"x": 11}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[4]", "error": "Could not parse color from value 'invalid'"}
+      ]
+    }
+  }
+}

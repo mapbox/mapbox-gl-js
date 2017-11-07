@@ -1,8 +1,57 @@
-'use strict';
+// @flow
+
+const {createExpression} = require('../expression');
+
+import type {GlobalProperties} from '../expression';
+export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
 
 module.exports = createFilter;
+module.exports.isExpressionFilter = isExpressionFilter;
+
+function isExpressionFilter(filter) {
+    if (!Array.isArray(filter) || filter.length === 0) {
+        return false;
+    }
+    switch (filter[0]) {
+    case 'has':
+        return filter.length >= 2 && filter[1] !== '$id' && filter[1] !== '$type';
+
+    case 'in':
+    case '!in':
+    case '!has':
+    case 'none':
+        return false;
+
+    case '==':
+    case '!=':
+    case '>':
+    case '>=':
+    case '<':
+    case '<=':
+        return filter.length === 3 && (Array.isArray(filter[1]) || Array.isArray(filter[2]));
+
+    case 'any':
+    case 'all':
+        for (const f of filter.slice(1)) {
+            if (!isExpressionFilter(f) && typeof f !== 'boolean') {
+                return false;
+            }
+        }
+        return true;
+
+    default:
+        return true;
+    }
+}
 
 const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
+
+const filterSpec = {
+    'type': 'boolean',
+    'default': false,
+    'function': true,
+    'property-function': true
+};
 
 /**
  * Given a filter expressed as nested arrays, return a new function
@@ -13,8 +62,21 @@ const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter) {
-    return new Function('f', `var p = (f && f.properties || {}); return ${compile(filter)}`);
+function createFilter(filter: any): FeatureFilter {
+    if (!filter) {
+        return () => true;
+    }
+
+    if (!isExpressionFilter(filter)) {
+        return (new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`): any);
+    }
+
+    const compiled = createExpression(filter, filterSpec, 'filter');
+    if (compiled.result === 'success') {
+        return compiled.evaluate;
+    } else {
+        throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+    }
 }
 
 function compile(filter) {
@@ -34,15 +96,16 @@ function compile(filter) {
         op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
         op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
         op === 'has' ? compileHasOp(filter[1]) :
-        op === '!has' ? compileNegation(compileHasOp([filter[1]])) :
+        op === '!has' ? compileNegation(compileHasOp(filter[1])) :
         'true';
     return `(${str})`;
 }
 
 function compilePropertyReference(property) {
-    return property === '$type' ? 'f.type' :
-        property === '$id' ? 'f.id' :
-        `p[${JSON.stringify(property)}]`;
+    const ref =
+        property === '$type' ? 'f.type' :
+        property === '$id' ? 'f.id' : `p[${JSON.stringify(property)}]`;
+    return ref;
 }
 
 function compileComparisonOp(property, value, op, checkType) {
@@ -72,7 +135,7 @@ function compileInOp(property, values) {
 }
 
 function compileHasOp(property) {
-    return `${JSON.stringify(property)} in p`;
+    return property === '$id' ? '"id" in f' : `${JSON.stringify(property)} in p`;
 }
 
 function compileNegation(expression) {

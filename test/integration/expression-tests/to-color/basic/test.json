@@ -1,0 +1,29 @@
+{
+  "expression": ["to-color", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": "red"}}],
+    [{}, {"properties": {"x": "invalid"}}],
+    [{}, {"properties": {"x": "rgba(0, 255, 0, 1)"}}],
+    [{}, {"properties": {"x": [0, 255, 0, 1]}}],
+    [{}, {"properties": {"x": [0, 255, 0]}}],
+    [{}, {"properties": {"x": [0, 255]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      [1, 0, 0, 1],
+      {"error": "Could not parse color from value 'invalid'"},
+      [0, 1, 0, 1],
+      [0, 1, 0, 1],
+      [0, 1, 0, 1],
+      {
+        "error": "Invalid rbga value [0,255]: expected an array containing either three or four numeric values."
+      }
+    ]
+  }
+}

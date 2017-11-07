@@ -1,9 +1,3 @@
-url: https://122e4e-mapbox.global.ssl.fastly.net
-api: https://122e4e-mapbox.global.ssl.fastly.net/core
-tileApi: https://api-maps-staging.tilestream.net
-source: docs
-permalink: /:categories/:title/
-baseurl: /mapbox-gl-js
-excerpt_separator: ""
-mapboxglbase: /mapbox-gl-js/dist
-future: true
+# When Publisher runs Jekyll (which it always does), it will simply copy this
+# source directory to _site. Then Publisher will copy _site to S3.
+source: _batfish_site

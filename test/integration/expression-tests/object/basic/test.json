@@ -1,0 +1,31 @@
+{
+  "expression": ["object", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": {"inner": "object"}}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": "1"}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "object"
+    },
+    "outputs": [
+      {"inner": "object"},
+      {
+        "error": "Expected value to be of type object, but found number instead."
+      },
+      {
+        "error": "Expected value to be of type object, but found string instead."
+      },
+      {
+        "error": "Expected value to be of type object, but found boolean instead."
+      },
+      {"error": "Expected value to be of type object, but found null instead."}
+    ]
+  }
+}

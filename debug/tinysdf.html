@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #originalMap, #newMap { height: 100%; }
+        #originalMap, #newMap { width: 49%; }
+
+        #originalLabel {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+
+        #newLabel {
+            position: absolute;
+            background: #fff;
+            top:0;
+            right:0;
+            padding:10px;
+        }
+
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            bottom:35px;
+            left:0;
+            padding:10px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div id='originalMap' style="float: left"></div>
+<div id='newMap' style="float: right"></div>
+<label id='originalLabel'>Original Map</label>
+<label id='newLabel'>New Map</label>
+<div id='checkboxes'>
+    <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
+</div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+function localizeLayers(map) {
+    map.on('load', function() {
+        var style = map.getStyle();
+        for (var layerID in style.layers) {
+            var layer = style.layers[layerID];
+            if (layer.layout && layer.layout['text-field'] === "{name_en}") {
+                layer.layout['text-field'] = "{name}";
+            }
+        }
+        map.setStyle(style, map.style.glyphSource.localIdeographFontFamily);
+    });
+}
+
+var originalMap = window.originalMap = new mapboxgl.Map({
+    container: 'originalMap',
+    zoom: 8.8,
+    center: [121.574, 31.1489],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+localizeLayers(originalMap);
+
+var newMap = window.newMap = new mapboxgl.Map({
+    container: 'newMap',
+    zoom: 8.8,
+    center: [121.574, 31.1489],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    localIdeographFontFamily: '"Noto Sans", "Noto Sans CJK SC", sans-serif',
+    hash: true
+});
+
+localizeLayers(newMap);
+
+document.getElementById('show-overdraw-checkbox').onclick = function() {
+    originalMap.showOverdrawInspector = !!this.checked;
+    newMap.showOverdrawInspector = !!this.checked;
+};
+
+
+</script>
+</body>
+</html>

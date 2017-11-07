@@ -1,0 +1,28 @@
+{
+  "expression": [
+    "let",
+    "z0_value",
+    10,
+    "z20_value",
+    30,
+    [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0,
+      ["var", "z0_value"],
+      20,
+      ["var", "z20_value"]
+    ]
+  ],
+  "inputs": [[{"zoom": 10}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": false,
+      "type": "number"
+    },
+    "outputs": [20]
+  }
+}

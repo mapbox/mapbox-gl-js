@@ -3,6 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Light = require('../../../src/style/light');
 const spec = require('../../../src/style-spec/reference/latest').light;
+const Color = require('../../../src/style-spec/util/color');
 
 test('Light', (t) => {
     t.test('creates default light with no options', (t) => {
@@ -83,7 +84,7 @@ test('Light#getLightValue', (t) => {
     light.updateLightTransitions({ transition: true }, null, createAnimationLoop());
 
     t.equal(light.getLightValue('intensity', { zoom: 16.5 }), 0.5);
-    t.deepEqual(light.getLightValue('color', { zoom: 16.5 }), [1, 0, 0, 1]);
+    t.deepEqual(light.getLightValue('color', { zoom: 16.5 }), new Color(1, 0, 0, 1));
     t.deepEqual(light.getLightValue('position', { zoom: 16.5 }), { x: 0.2875, y: -0.4979646071760521, z: 0.9959292143521045 });
 
     t.end();
@@ -94,7 +95,7 @@ test('Light#setLight', (t) => {
     light.setLight({ color: 'red', "color-transition": { duration: 3000 }});
     light.updateLightTransitions({ transition: true }, null, createAnimationLoop());
 
-    t.deepEqual(light.getLightValue('color', { zoom: 16 }), [1, 0, 0, 1]);
+    t.deepEqual(light.getLightValue('color', { zoom: 16 }), new Color(1, 0, 0, 1));
 
     t.end();
 });

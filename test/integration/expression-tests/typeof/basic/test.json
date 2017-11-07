@@ -1,0 +1,33 @@
+{
+  "expression": ["typeof", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": null}}],
+    [{}, {"properties": {"x": "s"}}],
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": [1, 2, 3]}}],
+    [{}, {"properties": {"x": ["a", "b", "c"]}}],
+    [{}, {"properties": {"x": [true, false]}}],
+    [{}, {"properties": {"x": [1, false]}}],
+    [{}, {"properties": {"x": {}}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      "null",
+      "string",
+      "number",
+      "boolean",
+      "array<number, 3>",
+      "array<string, 3>",
+      "array<boolean, 2>",
+      "array<value, 2>",
+      "object"
+    ]
+  }
+}

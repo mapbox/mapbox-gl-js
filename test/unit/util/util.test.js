@@ -4,6 +4,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Coordinate = require('../../../src/geo/coordinate');
 const util = require('../../../src/util/util');
+const Point = require('@mapbox/point-geometry');
 
 test('util', (t) => {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');
@@ -18,12 +19,10 @@ test('util', (t) => {
     t.ok(typeof util.uniqueId() === 'number', 'uniqueId');
 
     t.test('getCoordinatesCenter', (t) => {
-        t.deepEqual(util.getCoordinatesCenter(
-            [
-                new Coordinate(0, 0, 2),
-                new Coordinate(1, 1, 2)
-            ]),
-            new Coordinate(0.5, 0.5, 0));
+        t.deepEqual(util.getCoordinatesCenter([
+            new Coordinate(0, 0, 2),
+            new Coordinate(1, 1, 2)
+        ]), new Coordinate(0.5, 0.5, 0));
         t.end();
     });
 
@@ -68,7 +67,7 @@ test('util', (t) => {
                 callback(new Error('hi'), data);
             }, data);
         }, (err, results) => {
-            t.equal(err.message, 'hi');
+            t.equal(err && err.message, 'hi');
             t.deepEqual(results, [4, 0, 1, 2]);
             t.end();
         }));
@@ -117,7 +116,7 @@ test('util', (t) => {
         util.asyncAll([1, 2, 3], (number, callback) => {
             t.equal(number, expect++);
             t.ok(callback instanceof Function);
-            callback();
+            callback(null, 0);
         }, () => {
             t.end();
         });
@@ -210,6 +209,73 @@ test('util', (t) => {
             const output = util.clone(input);
             t.notEqual(input.array, output.array);
             t.deepEqual(input.array, output.array);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('arraysIntersect', (t) => {
+        t.test('intersection', (t) => {
+            const a = ["1", "2", "3"];
+            const b = ["5", "4", "3"];
+
+            t.equal(util.arraysIntersect(a, b), true);
+            t.end();
+        });
+
+        t.test('no intersection', (t) => {
+            const a = ["1", "2", "3"];
+            const b = ["4", "5", "6"];
+
+            t.equal(util.arraysIntersect(a, b), false);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('isCounterClockwise ', (t) => {
+        t.test('counter clockwise', (t) => {
+            const a = new Point(0, 0);
+            const b = new Point(1, 0);
+            const c = new Point(1, 1);
+
+            t.equal(util.isCounterClockwise(a, b, c), true);
+            t.end();
+        });
+
+        t.test('clockwise', (t) => {
+            const a = new Point(0, 0);
+            const b = new Point(1, 0);
+            const c = new Point(1, 1);
+
+            t.equal(util.isCounterClockwise(c, b, a), false);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('isClosedPolygon', (t) => {
+        t.test('not enough points', (t) => {
+            const polygon = [new Point(0, 0), new Point(1, 0), new Point(0, 1)];
+
+            t.equal(util.isClosedPolygon(polygon), false);
+            t.end();
+        });
+
+        t.test('not equal first + last point', (t) => {
+            const polygon = [new Point(0, 0), new Point(1, 0), new Point(0, 1), new Point(1, 1)];
+
+            t.equal(util.isClosedPolygon(polygon), false);
+            t.end();
+        });
+
+        t.test('closed polygon', (t) => {
+            const polygon = [new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(0, 0)];
+
+            t.equal(util.isClosedPolygon(polygon), true);
             t.end();
         });
 

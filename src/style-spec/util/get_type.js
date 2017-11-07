@@ -1,4 +1,3 @@
-'use strict';
 
 module.exports = function getType(val) {
     if (val instanceof Number) {

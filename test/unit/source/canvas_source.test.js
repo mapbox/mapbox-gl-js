@@ -3,6 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const CanvasSource = require('../../../src/source/canvas_source');
 const Transform = require('../../../src/geo/transform');
+const AnimationLoop = require('../../../src/style/animation_loop');
 const Evented = require('../../../src/util/evented');
 const util = require('../../../src/util/util');
 const window = require('../../../src/util/window');
@@ -16,11 +17,10 @@ function createSource(options) {
 
     options = util.extend({
         canvas: 'id',
-        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
+        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
 
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
-
     source.canvas = c;
 
     return source;
@@ -30,7 +30,7 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-        this.style = { animationLoop: { set: function() {} } };
+        this.style = { animationLoop: new AnimationLoop() };
     }
 
     _rerender() {
@@ -47,13 +47,15 @@ test('CanvasSource', (t) => {
     t.test('constructor', (t) => {
         const source = createSource();
 
-        source.on('source.load', () => {
-            t.equal(source.minzoom, 0);
-            t.equal(source.maxzoom, 22);
-            t.equal(source.tileSize, 512);
-            t.equal(source.animate, true);
-            t.equal(typeof source.play, 'function');
-            t.end();
+        t.equal(source.minzoom, 0);
+        t.equal(source.maxzoom, 22);
+        t.equal(source.tileSize, 512);
+        t.equal(source.animate, true);
+        source.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                t.equal(typeof source.play, 'function');
+                t.end();
+            }
         });
 
         source.onAdd(new StubMap());
@@ -82,12 +84,52 @@ test('CanvasSource', (t) => {
             t.end();
         });
 
-        source.on('source.load', () => {
-            t.ok(true, 'fires load event without rerendering');
-            t.end();
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+                t.ok(true, 'fires load event without rerendering');
+                t.end();
+            }
         });
 
         source.onAdd(map);
+    });
+
+    t.test('onRemove stops animation', (t) => {
+        const source = createSource();
+        const map = new StubMap();
+
+        source.onAdd(map);
+
+        t.equal(map.style.animationLoop.stopped(), false, 'should animate initally');
+
+        source.onRemove();
+
+        t.equal(map.style.animationLoop.stopped(), true, 'should stop animating');
+
+        source.onAdd(map);
+
+        t.equal(map.style.animationLoop.stopped(), false, 'should animate when added again');
+
+        t.end();
+    });
+
+    t.test('play and pause animation', (t) => {
+        const source = createSource();
+        const map = new StubMap();
+
+        source.onAdd(map);
+
+        t.equal(map.style.animationLoop.stopped(), false, 'initially animating');
+
+        source.pause();
+
+        t.equal(map.style.animationLoop.stopped(), true, 'can be paused');
+
+        source.play();
+
+        t.equal(map.style.animationLoop.stopped(), false, 'can be played');
+
+        t.end();
     });
 
     t.end();

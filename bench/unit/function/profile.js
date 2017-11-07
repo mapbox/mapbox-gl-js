@@ -1,9 +1,8 @@
-'use strict';
 
 const createFunction = require('../../../src/style-spec').function.interpolated;
 
 function buildExponentialFunction(stopsCount) {
-  // Build an exponential function with a long list of stops
+    // Build an exponential function with a long list of stops
     const stops = [];
     for (let i = 0; i < stopsCount; i++) {
         stops.push([i, i * 2]);
@@ -16,7 +15,7 @@ function buildExponentialFunction(stopsCount) {
 }
 
 function buildCategoricalFunction(stopsCount, useStrings) {
-  // Build a categorical function with a long list of stops
+    // Build a categorical function with a long list of stops
     const stops = [];
     for (let i = 0; i < stopsCount; i++) {
         stops.push([useStrings ? String(i) : i, i * 2]);

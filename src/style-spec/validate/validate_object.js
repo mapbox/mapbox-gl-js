@@ -1,4 +1,3 @@
-'use strict';
 
 const ValidationError = require('../error/validation_error');
 const getType = require('../util/get_type');
@@ -44,7 +43,7 @@ module.exports = function validateObject(options) {
             styleSpec: styleSpec,
             object: object,
             objectKey: objectKey
-        }));
+        }, object));
     }
 
     for (const elementSpecKey in elementSpecs) {

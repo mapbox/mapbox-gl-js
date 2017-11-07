@@ -1,0 +1,13 @@
+{
+  "expression": ["min", 0, -1, 10],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [-1]
+  }
+}

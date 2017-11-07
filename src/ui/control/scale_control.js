@@ -1,7 +1,9 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+
+import type Map from '../map';
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
@@ -9,7 +11,7 @@ const util = require('../../util/util');
  * @implements {IControl}
  * @param {Object} [options]
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
- * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'` or `'metric'`).
+ * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
  * map.addControl(new mapboxgl.ScaleControl({
  *     maxWidth: 80,
@@ -17,8 +19,11 @@ const util = require('../../util/util');
  * }));
  */
 class ScaleControl {
+    _map: Map;
+    _container: HTMLElement;
+    options: any;
 
-    constructor(options) {
+    constructor(options: any) {
         this.options = options;
 
         util.bindAll([
@@ -34,7 +39,7 @@ class ScaleControl {
         updateScale(this._map, this._container, this.options);
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
 
@@ -45,9 +50,9 @@ class ScaleControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        DOM.remove(this._container);
         this._map.off('move', this._onMove);
-        this._map = undefined;
+        this._map = (undefined: any);
     }
 }
 
@@ -73,6 +78,9 @@ function updateScale(map, container, options) {
         } else {
             setScale(container, maxWidth, maxFeet, 'ft');
         }
+    } else if (options && options.unit === 'nautical') {
+        const maxNauticals = maxMeters / 1852;
+        setScale(container, maxWidth, maxNauticals, 'nm');
     } else {
         setScale(container, maxWidth, maxMeters, 'm');
     }

@@ -1,0 +1,20 @@
+{
+  "propertySpec": {
+    "type": "array",
+    "value": "string",
+    "length": 2
+  },
+  "expression": ["array", "number", 2, ["get", "x"]],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected array<string, 2> but found array<number, 2> instead."
+        }
+      ]
+    }
+  }
+}

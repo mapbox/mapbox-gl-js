@@ -1,0 +1,11 @@
+{
+  "expression": ["match", 1, 1.5, "thing one", "thing two"],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[2]", "error": "Numeric branch labels must be integer values."}
+      ]
+    }
+  }
+}

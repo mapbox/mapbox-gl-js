@@ -1,16 +1,16 @@
-'use strict';
+// @flow
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const window = require('./window');
 
-exports.create = function (tagName, className, container) {
+exports.create = function (tagName: *, className?: string, container?: HTMLElement) {
     const el = window.document.createElement(tagName);
     if (className) el.className = className;
     if (container) container.appendChild(el);
     return el;
 };
 
-const docStyle = window.document.documentElement.style;
+const docStyle = (window.document.documentElement: any).style;
 
 function testProp(props) {
     for (let i = 0; i < props.length; i++) {
@@ -36,16 +36,17 @@ exports.enableDrag = function () {
 };
 
 const transformProp = testProp(['transform', 'WebkitTransform']);
-exports.setTransform = function(el, value) {
-    el.style[transformProp] = value;
+exports.setTransform = function(el: HTMLElement, value: string) {
+    (el.style: any)[transformProp] = value;
 };
 
 // Suppress the next click, but only if it's immediate.
-function suppressClick(e) {
+const suppressClick: MouseEventListener = function (e) {
     e.preventDefault();
     e.stopPropagation();
     window.removeEventListener('click', suppressClick, true);
-}
+};
+
 exports.suppressClick = function() {
     window.addEventListener('click', suppressClick, true);
     window.setTimeout(() => {
@@ -53,7 +54,7 @@ exports.suppressClick = function() {
     }, 0);
 };
 
-exports.mousePos = function (el, e) {
+exports.mousePos = function (el: HTMLElement, e: any) {
     const rect = el.getBoundingClientRect();
     e = e.touches ? e.touches[0] : e;
     return new Point(
@@ -62,7 +63,7 @@ exports.mousePos = function (el, e) {
     );
 };
 
-exports.touchPos = function (el, e) {
+exports.touchPos = function (el: HTMLElement, e: any) {
     const rect = el.getBoundingClientRect(),
         points = [];
     const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
@@ -75,7 +76,7 @@ exports.touchPos = function (el, e) {
     return points;
 };
 
-exports.remove = function(node) {
+exports.remove = function(node: HTMLElement) {
     if (node.parentNode) {
         node.parentNode.removeChild(node);
     }

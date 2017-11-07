@@ -1,0 +1,15 @@
+{
+  "expression": ["-"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected arguments of type (number, number) | (number), but found () instead."
+        }
+      ]
+    }
+  }
+}

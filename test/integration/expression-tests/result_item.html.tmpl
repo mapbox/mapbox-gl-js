@@ -1,0 +1,18 @@
+<tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
+    <td>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json">&nbsp;</a></h2>
+        <pre><%- r.expression %></pre>
+    </td>
+    <td>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json"><%- r.group %>/<%- r.test %></a></h2>
+        <pre><%- r.difference %></pre>
+    </td>
+    <td>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json">&nbsp;</a></h2>
+        <div style="max-width: 400px; overflow: scroll; font-family: monospace;">
+            <pre>
+<%- r.compiledJs %>
+            </pre>
+        </div>
+    </td>
+</tr>

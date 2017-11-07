@@ -1,0 +1,56 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 256,
+            "height": 256
+        }
+    },
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": { "name": "مجتمع آپارتمانهای مرتفع Not spaced" },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [ 0, 0 ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": { "name": "Spaced" },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [ 0, 30 ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "symbol-placement": "point",
+                "symbol-spacing": 20,
+                "text-allow-overlap": true,
+                "text-letter-spacing": 1,
+                "text-rotation-alignment": "auto",
+                "text-max-width": 5,
+                "text-field": "{name}",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}

@@ -1,24 +1,21 @@
-uniform float u_zoom;
-uniform float u_maxzoom;
 
-varying float v_max_zoom;
-varying float v_placement_zoom;
+varying float v_placed;
+varying float v_notUsed;
 
 void main() {
 
     float alpha = 0.5;
 
-    gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0) * alpha;
+    // Red = collision, hide label
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0) * alpha;
 
-    if (v_placement_zoom > u_zoom) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0) * alpha;
+    // Blue = no collision, label is showing
+    if (v_placed > 0.5) {
+        gl_FragColor = vec4(0.0, 0.0, 1.0, 0.5) * alpha;
     }
 
-    if (u_zoom >= v_max_zoom) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0) * alpha * 0.25;
-    }
-
-    if (v_placement_zoom >= u_maxzoom) {
-        gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0) * alpha * 0.2;
+    if (v_notUsed > 0.5) {
+        // This box not used, fade it out
+        gl_FragColor *= .1;
     }
 }

@@ -5,16 +5,17 @@ const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const Popup = require('../../../src/ui/popup');
 const LngLat = require('../../../src/geo/lng_lat');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 
 const containerWidth = 512;
 const containerHeight = 512;
 
-function createMap() {
+function createMap(options) {
+    options = options || {};
     const container = window.document.createElement('div');
-    container.offsetWidth = containerWidth;
-    container.offsetHeight = containerHeight;
+    Object.defineProperty(container, 'offsetWidth', {value: options.width || containerWidth});
+    Object.defineProperty(container, 'offsetHeight', {value: options.height || containerHeight});
     return new Map({container: container});
 }
 
@@ -176,6 +177,104 @@ test('Popup provides LngLat accessors', (t) => {
     t.end();
 });
 
+test('Popup is positioned at the specified LngLat in a world copy', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([270, 0])
+        .setText('Test')
+        .addTo(map);
+
+    t.deepEqual(popup._pos, map.project([270, 0]));
+    t.end();
+});
+
+test('Popup preserves object constancy of position after map move', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([270, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+    t.deepEqual(popup._pos, map.project([270, 0]));
+
+    map.setCenter([-20, 0]); // longitude bounds: [-380, 340]
+    t.deepEqual(popup._pos, map.project([270, 0]));
+
+    t.end();
+});
+
+test('Popup preserves object constancy of position after auto-wrapping center (left)', (t) => {
+    const map = createMap({width: 1024});
+    map.setCenter([-175, 0]); // longitude bounds: [-535, 185]
+
+    const popup = new Popup()
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([175, 0]); // longitude bounds: [-185, 535]
+    t.deepEqual(popup._pos, map.project([360, 0]));
+
+    t.end();
+});
+
+test('Popup preserves object constancy of position after auto-wrapping center (right)', (t) => {
+    const map = createMap({width: 1024});
+    map.setCenter([175, 0]); // longitude bounds: [-185, 535]
+
+    const popup = new Popup()
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([-175, 0]); // longitude bounds: [-185, 535]
+    t.deepEqual(popup._pos, map.project([-360, 0]));
+
+    t.end();
+});
+
+test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([-355, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([10, 0]); // longitude bounds: [-350, 370]
+    t.deepEqual(popup._pos, map.project([5, 0]));
+    t.end();
+});
+
+test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([355, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+    t.deepEqual(popup._pos, map.project([-5, 0]));
+    t.end();
+});
+
+test('Popup is repositioned at the specified LngLat', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([270, 0])
+        .setText('Test')
+        .addTo(map)
+        .setLngLat([0, 0]);
+
+    t.deepEqual(popup._pos, map.project([0, 0]));
+    t.end();
+});
+
 test('Popup anchors as specified by the anchor option', (t) => {
     const map = createMap();
     const popup = new Popup({anchor: 'top-left'})
@@ -209,10 +308,10 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setText('Test')
             .addTo(map);
 
-        popup._container.offsetWidth = 100;
-        popup._container.offsetHeight = 100;
+        Object.defineProperty(popup._container, 'offsetWidth', {value: 100});
+        Object.defineProperty(popup._container, 'offsetHeight', {value: 100});
 
-        t.stub(map, 'project', () => { return point; });
+        t.stub(map, 'project').returns(point);
         popup.setLngLat([0, 0]);
 
         t.ok(popup._container.classList.contains(`mapboxgl-popup-anchor-${anchor}`));
@@ -221,7 +320,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
 
     test(`Popup translation reflects offset and ${anchor} anchor`, (t) => {
         const map = createMap();
-        t.stub(map, 'project', () => { return new Point(0, 0); });
+        t.stub(map, 'project').returns(new Point(0, 0));
 
         const popup = new Popup({anchor: anchor, offset: 10})
             .setLngLat([0, 0])
@@ -245,10 +344,10 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
         .setText('Test')
         .addTo(map);
 
-    popup._container.offsetWidth = (containerWidth / 2);
-    popup._container.offsetHeight = (containerHeight / 2);
+    Object.defineProperty(popup._container, 'offsetWidth', {value: containerWidth / 2});
+    Object.defineProperty(popup._container, 'offsetHeight', {value: containerHeight / 2});
 
-    t.stub(map, 'project', () => { return point; });
+    t.stub(map, 'project').returns(point);
     popup.setLngLat([0, 0]);
 
     t.ok(popup._container.classList.contains('mapboxgl-popup-anchor-top'));
@@ -257,7 +356,7 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
 
 test('Popup is offset via a PointLike offset option', (t) => {
     const map = createMap();
-    t.stub(map, 'project', () => { return new Point(0, 0); });
+    t.stub(map, 'project').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-left', offset: [5, 10]})
         .setLngLat([0, 0])
@@ -270,7 +369,7 @@ test('Popup is offset via a PointLike offset option', (t) => {
 
 test('Popup is offset via an object offset option', (t) => {
     const map = createMap();
-    t.stub(map, 'project', () => { return new Point(0, 0); });
+    t.stub(map, 'project').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-left', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])
@@ -283,7 +382,7 @@ test('Popup is offset via an object offset option', (t) => {
 
 test('Popup is offset via an incomplete object offset option', (t) => {
     const map = createMap();
-    t.stub(map, 'project', () => { return new Point(0, 0); });
+    t.stub(map, 'project').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-right', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])
@@ -318,5 +417,19 @@ test('Popup#addTo is idempotent (#1811)', (t) => {
         .addTo(map);
 
     t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').textContent, "Test");
+    t.end();
+});
+
+test('Popup#remove is idempotent (#2395)', (t) => {
+    const map = createMap();
+
+    new Popup({closeButton: false})
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map)
+        .remove()
+        .remove();
+
+    t.equal(map.getContainer().querySelectorAll('.mapboxgl-popup').length, 0);
     t.end();
 });

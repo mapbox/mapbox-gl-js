@@ -1,0 +1,12 @@
+{
+  "expression": ["match", "x", "y", "z"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "", "error": "Expected at least 4 arguments, but found only 3."}
+      ]
+    }
+  }
+}

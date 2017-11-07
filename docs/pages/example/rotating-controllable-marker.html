@@ -1,0 +1,92 @@
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    center: [-74.50, 40],
+    zoom: 3
+});
+
+var direction = 0, manual = false, speed = 1;
+
+// create a GeoJSON point to serve as a starting point
+var point = {
+    "type": "Point",
+    "coordinates": [-74.50, 40]
+};
+
+function setPosition() {
+    point.coordinates[0] += speed * Math.sin(direction) / 100;
+    point.coordinates[1] += speed * Math.cos(direction) / 100;
+    map.getSource('drone').setData(point);
+
+    map.setLayoutProperty('drone', 'icon-rotate', direction * (180 / Math.PI));
+
+    if (!manual && Math.random() > 0.95) {
+        direction += (Math.random() - 0.5) / 2;
+    }
+
+    map.setCenter(point.coordinates);
+}
+
+map.on('load', function () {
+    // add the GeoJSON above to a new vector tile source
+    map.addSource('drone', { type: 'geojson', data: point });
+
+    map.addLayer({
+        "id": "drone-glow-strong",
+        "type": "circle",
+        "source": "drone",
+        "paint": {
+            "circle-radius": 18,
+            "circle-color": "#fff",
+            "circle-opacity": 0.4
+        }
+    });
+
+    map.addLayer({
+        "id": "drone-glow",
+        "type": "circle",
+        "source": "drone",
+        "paint": {
+            "circle-radius": 40,
+            "circle-color": "#fff",
+            "circle-opacity": 0.1
+        }
+    });
+
+    map.addLayer({
+        "id": "drone",
+        "type": "symbol",
+        "source": "drone",
+        "layout": {
+            "icon-image": "airport-15",
+            "icon-rotation-alignment": "map"
+        }
+    });
+
+    window.setInterval(setPosition, 10);
+});
+
+// Add manual control of the airplane with left and right arrow keys, just because
+document.body.addEventListener('keydown', function (e) {
+    if (e.which === 37) { // left
+        direction -= 0.1;
+        manual = true;
+    }
+    if (e.which === 39) { // right
+        direction += 0.1;
+        manual = true;
+    }
+    if (e.which === 38) { // faster
+        speed = Math.min(speed + 0.1, 10);
+        manual = true;
+        e.preventDefault();
+    }
+    if (e.which === 40) { // slower
+        speed = Math.max(speed - 0.1, 0);
+        manual = true;
+        e.preventDefault();
+    }
+}, true);
+</script>

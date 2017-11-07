@@ -1,0 +1,18 @@
+{
+  "expression": ["string", ["get", "x"], "default"],
+  "inputs": [
+    [{}, {"properties": {"x": "1"}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["1", "default", "default", "default"]
+  }
+}

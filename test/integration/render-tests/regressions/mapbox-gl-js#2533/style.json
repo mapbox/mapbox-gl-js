@@ -32,7 +32,8 @@
       "source": "mapbox",
       "source-layer": "water",
       "paint": {
-        "fill-color": "#3bb2d0"
+        "fill-color": "#3bb2d0",
+        "fill-antialias": false
       }
     }
   ]

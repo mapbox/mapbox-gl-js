@@ -1,0 +1,16 @@
+{
+  "expression": ["number", ["get", "x"]],
+  "inputs": [[{}, {}], [{}, {"properties": {"x": 1}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      {"error": "Expected value to be of type number, but found null instead."},
+      1
+    ]
+  }
+}

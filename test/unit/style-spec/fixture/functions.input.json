@@ -83,11 +83,11 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "line-width": {
+        "line-dasharray": {
           "stops": [
             [
               "1",
-              1
+              [1, 1]
             ]
           ]
         }
@@ -838,6 +838,109 @@
           "type": "identity",
           "default": "invalid"
         }
+      }
+    },
+    {
+      "id": "invalid interval property function non-ascending stop values",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "interval",
+          "stops": [
+            [
+              1, 1
+            ],
+            [
+              0, 0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid categorical property function non-ascending stop values",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              1, 1
+            ],
+            [
+              0, 0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid expression",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": ["rgba", 10, ["number", ["get", "x"]], 30, 1]
+      }
+    },
+    {
+      "id": "invalid expression type - color",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": ["pi"]
+      }
+    },
+    {
+      "id": "invalid expression - fails type checking",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": ["rgba", 1, "should be a number", 0, 1]
+      }
+    },
+    {
+      "id": "invalid expression - nested zoom expression",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": ["+", 0.5, ["interpolate", ["linear"], ["zoom"], 0, 0, 1, 1]]
+      }
+    },
+    {
+      "id": "invalid expression - not allowed in visibility",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "layout": {
+        "visibility": ["literal", true]
+      }
+    },
+    {
+      "id": "invalid expression - not a DDS property",
+      "type": "fill-extrusion",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-extrusion-opacity": ["get", "opacity"]
+      }
+    },
+    {
+      "id": "invalid expression - line-dasharray must use step interpolation",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-dasharray": ["interpolate", ["linear"], ["zoom"], 0, ["literal", [1, 2]], 1, ["literal", [3, 4]]]
       }
     }
   ]

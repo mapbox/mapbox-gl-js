@@ -18,6 +18,16 @@ test('LRUCache', (t) => {
     t.end();
 });
 
+test('LRUCache - getWithoutRemoving', (t) => {
+    const cache = new LRUCache(10, () => {
+        t.fail();
+    });
+    t.equal(cache.add('washington', 'dc'), cache, '.add()');
+    t.equal(cache.getWithoutRemoving('washington'), 'dc', '.getWithoutRemoving()');
+    t.deepEqual(cache.keys(), ['washington'], '.keys()');
+    t.end();
+});
+
 test('LRUCache - duplicate add', (t) => {
     const cache = new LRUCache(10, () => {
         t.fail();

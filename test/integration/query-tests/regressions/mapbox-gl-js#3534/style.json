@@ -2,9 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/6670"
-      },
       "collisionDebug": true,
       "width": 500,
       "height": 500,
@@ -12,7 +9,11 @@
         266,
         271
       ],
-      "layers": ["counties-symbol"]
+      "queryOptions": {
+        "layers": [
+          "counties-symbol"
+        ]
+      }
     }
   },
   "center": [

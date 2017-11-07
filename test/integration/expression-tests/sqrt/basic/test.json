@@ -1,0 +1,13 @@
+{
+  "expression": ["sqrt", ["get", "x"]],
+  "inputs": [[{}, {"properties": {"x": 4}}], [{}, {"properties": {"x": 0.25}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [2, 0.5]
+  }
+}

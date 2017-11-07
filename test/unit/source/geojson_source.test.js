@@ -63,7 +63,7 @@ test('GeoJSONSource#setData', (t) => {
     t.test('fires "data" event', (t) => {
         const source = createSource();
         source.once('data', () => {
-            source.on('data', t.end);
+            source.once('data', t.end);
             source.setData({});
         });
         source.load();
@@ -71,10 +71,7 @@ test('GeoJSONSource#setData', (t) => {
 
     t.test('fires "dataloading" event', (t) => {
         const source = createSource();
-        source.once('data', () => {
-            source.on('dataloading', t.end);
-            source.setData({});
-        });
+        source.on('dataloading', t.end);
         source.load();
     });
 
@@ -85,7 +82,7 @@ test('GeoJSONSource#onRemove', (t) => {
     t.test('broadcasts "removeSource" event', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, {
             broadcast: function (type, data, callback) {
-                callback();
+                t.false(callback);
                 t.equal(type, 'removeSource');
                 t.deepEqual(data, { type: 'geojson', source: 'id' });
                 t.end();
@@ -142,7 +139,18 @@ test('GeoJSONSource#update', (t) => {
         }, mockDispatcher).load();
     });
 
-    t.test('fires "source.load"', (t) => {
+    t.test('transforms url before making request', (t) => {
+        const mapStub = {
+            _transformRequest: (url) => { return { url }; }
+        };
+        const transformSpy = t.spy(mapStub, '_transformRequest');
+        const source = new GeoJSONSource('id', {data: 'https://example.com/data.geojson'}, mockDispatcher);
+        source.onAdd(mapStub);
+        t.ok(transformSpy.calledOnce);
+        t.equal(transformSpy.getCall(0).args[0], 'https://example.com/data.geojson');
+        t.end();
+    });
+    t.test('fires event when metadata loads', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback, 0);
@@ -151,8 +159,8 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
-        source.on('source.load', () => {
-            t.end();
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') t.end();
         });
 
         source.load();
@@ -191,9 +199,11 @@ test('GeoJSONSource#update', (t) => {
             transform: {}
         };
 
-        source.on('source.load', () => {
-            source.setData({});
-            source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                source.setData({});
+                source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+            }
         });
 
         source.load();
@@ -203,9 +213,12 @@ test('GeoJSONSource#update', (t) => {
 });
 
 test('GeoJSONSource#serialize', (t) => {
-
+    const mapStub = {
+        _transformRequest: (url) => { return { url }; }
+    };
     t.test('serialize source with inline data', (t) => {
         const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);
+        source.map = mapStub;
         source.load();
         t.deepEqual(source.serialize(), {
             type: 'geojson',
@@ -216,6 +229,7 @@ test('GeoJSONSource#serialize', (t) => {
 
     t.test('serialize source with url', (t) => {
         const source = new GeoJSONSource('id', {data: 'local://data.json'}, mockDispatcher);
+        source.map = mapStub;
         source.load();
         t.deepEqual(source.serialize(), {
             type: 'geojson',
@@ -226,11 +240,22 @@ test('GeoJSONSource#serialize', (t) => {
 
     t.test('serialize source with updated data', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+        source.map = mapStub;
         source.load();
         source.setData(hawkHill);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: hawkHill
+        });
+        t.end();
+    });
+
+    t.test('serialize source with additional options', (t) => {
+        const source = new GeoJSONSource('id', {data: {}, cluster: true}, mockDispatcher);
+        t.deepEqual(source.serialize(), {
+            type: 'geojson',
+            data: {},
+            cluster: true
         });
         t.end();
     });

@@ -1,0 +1,26 @@
+{
+  "propertySpec": {
+    "type": "color",
+    "default": {
+      "stops": [
+        [0, "rgba(0, 0, 255, 0)"],
+        [0.1, "royalblue"],
+        [0.3, "cyan"],
+        [0.5, "lime"],
+        [0.7, "yellow"],
+        [1, "red"]
+      ]
+    }
+  },
+  "expression": ["interpolate", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
+  "inputs": [[{"heatmapDensity": 0.5}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [[0.5, 0, 0, 1]]
+  }
+}

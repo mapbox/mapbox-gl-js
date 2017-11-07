@@ -1,4 +1,3 @@
-'use strict';
 
 const validate = require('./validate');
 const ValidationError = require('../error/validation_error');
@@ -32,17 +31,18 @@ module.exports = function validateProperty(options, propertyType) {
 
     let tokenMatch;
     if (getType(value) === 'string' && valueSpec['property-function'] && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
-        return [new ValidationError(key, value, '"%s" does not support interpolation syntax\n' +
-            'Use an identity property function instead: `{ "type": "identity", "property": %s` }`.',
-            propertyKey, JSON.stringify(tokenMatch[1]))];
+        return [new ValidationError(
+            key, value,
+            '"%s" does not support interpolation syntax\n' +
+                'Use an identity property function instead: `{ "type": "identity", "property": %s` }`.',
+            propertyKey, JSON.stringify(tokenMatch[1])
+        )];
     }
 
     const errors = [];
 
     if (options.layerType === 'symbol') {
-        if (propertyKey === 'icon-image' && style && !style.sprite) {
-            errors.push(new ValidationError(key, value, 'use of "icon-image" requires a style "sprite" property'));
-        } else if (propertyKey === 'text-field' && style && !style.glyphs) {
+        if (propertyKey === 'text-field' && style && !style.glyphs) {
             errors.push(new ValidationError(key, value, 'use of "text-field" requires a style "glyphs" property'));
         }
     }
@@ -52,6 +52,7 @@ module.exports = function validateProperty(options, propertyType) {
         value: value,
         valueSpec: valueSpec,
         style: style,
-        styleSpec: styleSpec
+        styleSpec: styleSpec,
+        expressionContext: 'property'
     }));
 };

@@ -1,0 +1,33 @@
+{
+  "expression": ["to-number", ["get", "x"], ["get", "y"]],
+  "inputs": [
+    [{}, {"properties": {"x": 1, "y": -1}}],
+    [{}, {"properties": {"x": "1", "y": -1}}],
+    [{}, {"properties": {"x": "6.02e-23", "y": -1}}],
+    [{}, {"properties": {"x": "Not a number", "y": -1}}],
+    [{}, {"properties": {"x": null, "y": -1}}],
+    [{}, {"properties": {"x": [1, 2], "y": -1}}],
+    [{}, {"properties": {"x": {"y": 1}, "y": -1}}],
+    [{}, {"properties": {"y": -1}}],
+    [{}, {"properties": {"y": "bad fallback"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      1,
+      1,
+      6.02e-23,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      {"error": "Could not convert \"bad fallback\" to number."}
+    ]
+  }
+}

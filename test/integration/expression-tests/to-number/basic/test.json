@@ -1,0 +1,29 @@
+{
+  "expression": ["to-number", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": "1"}}],
+    [{}, {"properties": {"x": "6.02e-23"}}],
+    [{}, {"properties": {"x": "Not a number"}}],
+    [{}, {"properties": {"x": null}}],
+    [{}, {"properties": {"x": [1, 2]}}],
+    [{}, {"properties": {"x": {"y": 1}}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      1,
+      1,
+      6.02e-23,
+      {"error": "Could not convert \"Not a number\" to number."},
+      {"error": "Could not convert null to number."},
+      {"error": "Could not convert [1,2] to number."},
+      {"error": "Could not convert {\"y\":1} to number."}
+    ]
+  }
+}

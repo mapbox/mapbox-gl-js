@@ -1,0 +1,25 @@
+{
+  "expression": [
+    "match",
+    ["boolean", ["get", "x"]],
+    true,
+    "match",
+    "otherwise"
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": true}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": "true"}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": null}}],
+    [{}, {"properties": {}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[2]", "error": "Branch labels must be numbers or strings."}
+      ]
+    }
+  }
+}

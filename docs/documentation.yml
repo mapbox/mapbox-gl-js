@@ -1,0 +1,60 @@
+toc:
+  - Map
+  - accessToken
+  - supported
+  - version
+  - setRTLTextPlugin
+  - AnimationOptions
+  - CameraOptions
+  - PaddingOptions
+  - RequestParameters
+  - name: Geography & Geometry
+    description: |
+      `LngLat` and `LngLatBounds` represent points and rectanges in geographic
+      coordinates. `Point` represents points in screen coordinates.
+  - LngLat
+  - LngLatLike
+  - LngLatBounds
+  - LngLatBoundsLike
+  - Point
+  - PointLike
+  - name: User Interface
+    description: |
+      Controls, markers, and popups add new user interface elements to the map.
+  - IControl
+  - NavigationControl
+  - GeolocateControl
+  - AttributionControl
+  - ScaleControl
+  - FullscreenControl
+  - Popup
+  - Marker
+  - name: User Interaction Handlers
+    description: |
+      Handlers add different kinds of interactivity to the map -
+      mouse interactivity, touch interactions, and other
+      gestures.
+  - BoxZoomHandler
+  - ScrollZoomHandler
+  - DragPanHandler
+  - DragRotateHandler
+  - KeyboardHandler
+  - DoubleClickZoomHandler
+  - TouchZoomRotateHandler
+  - name: Sources
+    description: |
+      Sources specify the geographic features to be rendered on the map. Source
+      objects may be obtained from `Map#getSource`.
+  - GeoJSONSource
+  - VideoSource
+  - ImageSource
+  - CanvasSource
+  - name: Events
+    description: |
+      `Evented` is Mapbox GL JS's event system. It is sometimes extended when
+      implementing [IControls](#IControl) and other extensions.
+  - Evented
+  - MapMouseEvent
+  - MapTouchEvent
+  - MapBoxZoomEvent
+  - MapDataEvent

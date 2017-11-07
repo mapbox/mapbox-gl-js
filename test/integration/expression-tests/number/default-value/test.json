@@ -1,0 +1,18 @@
+{
+  "expression": ["number", ["get", "x"], -1],
+  "inputs": [
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": "1"}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [1, -1, -1, -1]
+  }
+}

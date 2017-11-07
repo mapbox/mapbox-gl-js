@@ -1,0 +1,20 @@
+{
+  "expression": [
+    "==",
+    ["to-string", ["get", "x"]],
+    ["to-string", ["get", "y"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": 1, "y": 1}}],
+    [{}, {"properties": {"x": 1, "y": 2}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, false]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "propertySpec": {"type": "array", "value": "string"},
+  "expression": [
+    "coalesce",
+    ["literal", ["one"]],
+    ["literal", ["one", "two"]],
+    null
+  ],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[3]",
+          "error": "Expected array<string> but found null instead."
+        }
+      ]
+    }
+  }
+}

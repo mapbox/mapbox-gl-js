@@ -1,0 +1,19 @@
+{
+  "expression": ["coalesce", ["get", "x"], ["get", "y"], ["get", "z"], 0],
+  "inputs": [
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 1, "y": 2, "z": 3}}],
+    [{}, {"properties": {"y": 2}}],
+    [{}, {"properties": {"z": 3}}],
+    [{}, {}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "value"
+    },
+    "outputs": [1, 1, 2, 3, 0]
+  }
+}
