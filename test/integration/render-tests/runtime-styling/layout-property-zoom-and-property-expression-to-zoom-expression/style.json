@@ -1,0 +1,67 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setLayoutProperty",
+          "symbol",
+          "icon-size",
+          [
+            "step",
+            [
+              "zoom"
+            ],
+            1,
+            10,
+            2
+          ]
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        },
+        "properties": {
+          "size": 0.125
+        }
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-size": [
+          "step",
+          ["zoom"],
+          ["get", "size"],
+          10,
+          0
+        ],
+        "icon-image": "circle-12"
+      }
+    }
+  ]
+}
