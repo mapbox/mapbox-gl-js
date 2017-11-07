@@ -220,6 +220,11 @@ function fixupDegenerateStepCurve(expression) {
 }
 
 function appendStopPair(curve, input, output, isStep) {
+    // Skip duplicate stop values. They were not validated for functions, but they are for expressions.
+    // https://github.com/mapbox/mapbox-gl-js/issues/4107
+    if (curve.length > 3 && input === curve[curve.length - 2]) {
+        return;
+    }
     // step curves don't get the first input value, as it is redundant.
     if (!(isStep && curve.length === 2)) {
         curve.push(input);

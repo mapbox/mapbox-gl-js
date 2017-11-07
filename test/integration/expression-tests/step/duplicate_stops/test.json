@@ -1,0 +1,15 @@
+{
+  "expression": ["step", 0, "a", 0, "b", 0, "c"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[5]",
+          "error": "Input/output pairs for \"step\" expressions must be arranged with input values in strictly ascending order."
+        }
+      ]
+    }
+  }
+}

@@ -42,5 +42,61 @@ test('convertFunction', (t) => {
         t.end();
     });
 
+    t.test('duplicate step function stops', (t) => {
+        const functionValue = {
+            stops: [
+                [0, 'a'],
+                [1, 'b'],
+                [1, 'c'],
+                [2, 'd']
+            ]
+        };
+
+        const expression = convertFunction(functionValue, {
+            type: 'string',
+            function: 'piecewise-constant'
+        }, 'text-field');
+        t.deepEqual(expression, [
+            'step',
+            ['zoom'],
+            'a',
+            1,
+            'b',
+            2,
+            'd'
+        ]);
+
+        t.end();
+    });
+
+    t.test('duplicate interpolate function stops', (t) => {
+        const functionValue = {
+            stops: [
+                [0, 'a'],
+                [1, 'b'],
+                [1, 'c'],
+                [2, 'd']
+            ]
+        };
+
+        const expression = convertFunction(functionValue, {
+            type: 'number',
+            function: 'interpolated'
+        }, 'text-size');
+        t.deepEqual(expression, [
+            'interpolate',
+            ['exponential', 1],
+            ['zoom'],
+            0,
+            'a',
+            1,
+            'b',
+            2,
+            'd'
+        ]);
+
+        t.end();
+    });
+
     t.end();
 });
