@@ -172,7 +172,7 @@
     "line": 907
   },
   {
-    "message": "layers[49].paint.fill-opacity: \"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression.",
+    "message": "layers[49].paint.fill-opacity[2]: \"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression.",
     "line": 916
   },
   {
