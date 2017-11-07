@@ -166,14 +166,15 @@ function createExpression(expression: mixed,
 
     const zoomCurve = findZoomCurve(parsed);
     if (!zoomCurve) {
+        assert(false); // Unreachable: we don't call findZoomCurve unless there's a zoom expression.
         return {
             result: 'error',
-            errors: [new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]
+            errors: []
         };
-    } else if (!(zoomCurve instanceof Step || zoomCurve instanceof Interpolate)) {
+    } else if (zoomCurve instanceof ParsingError) {
         return {
             result: 'error',
-            errors: [new ParsingError(zoomCurve.key, zoomCurve.error)]
+            errors: [zoomCurve]
         };
     } else if (zoomCurve instanceof Interpolate && propertySpec['function'] === 'piecewise-constant') {
         return {
@@ -206,38 +207,42 @@ module.exports.isExpression = isExpression;
 // Zoom-dependent expressions may only use ["zoom"] as the input to a top-level "step" or "interpolate"
 // expression (collectively referred to as a "curve"). The curve may be wrapped in one or more "let" or
 // "coalesce" expressions.
-function findZoomCurve(expression: Expression): null | Step | Interpolate | {key: string, error: string} {
-    if (expression instanceof Step || expression instanceof Interpolate) {
-        const input = expression.input;
-        if (input instanceof CompoundExpression && input.name === 'zoom') {
-            return expression;
-        } else {
-            return null;
-        }
-    } else if (expression instanceof Let) {
-        return findZoomCurve(expression.result);
+function findZoomCurve(expression: Expression): Step | Interpolate | ParsingError | null {
+    let result = null;
+    if (expression instanceof Let) {
+        result = findZoomCurve(expression.result);
+
     } else if (expression instanceof Coalesce) {
-        let result = null;
         for (const arg of expression.args) {
-            const e = findZoomCurve(arg);
-            if (!e) {
-                continue;
-            } else if (e.error) {
-                return e;
-            } else if ((e instanceof Step || e instanceof Interpolate) && !result) {
-                result = e;
-            } else {
-                return {
-                    key: e.key,
-                    error: 'Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.'
-                };
+            result = findZoomCurve(arg);
+            if (result) {
+                break;
             }
         }
 
-        return result;
-    } else {
-        return null;
+    } else if ((expression instanceof Step || expression instanceof Interpolate) &&
+        expression.input instanceof CompoundExpression &&
+        expression.input.name === 'zoom') {
+
+        result = expression;
     }
+
+    if (result instanceof ParsingError) {
+        return result;
+    }
+
+    expression.eachChild((child) => {
+        const childResult = findZoomCurve(child);
+        if (childResult instanceof ParsingError) {
+            result = childResult;
+        } else if (!result && childResult) {
+            result = new ParsingError(childResult.key, '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.');
+        } else if (result && childResult && result !== childResult) {
+            result = new ParsingError(childResult.key, 'Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.');
+        }
+    });
+
+    return result;
 }
 
 const {
