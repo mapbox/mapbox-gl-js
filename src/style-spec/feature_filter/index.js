@@ -72,11 +72,11 @@ function createFilter(filter: any): FeatureFilter {
         return (new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`): any);
     }
 
-    const compiled = createExpression(filter, filterSpec, 'filter');
-    if (compiled.result === 'success') {
-        return compiled.evaluate;
-    } else {
+    const compiled = createExpression(filter, filterSpec);
+    if (compiled.result === 'error') {
         throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+    } else {
+        return compiled.evaluate;
     }
 }
 

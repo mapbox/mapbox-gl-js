@@ -2,7 +2,7 @@
 
 require('flow-remove-types/register');
 const expressionSuite = require('./integration').expression;
-const { createExpression } = require('../src/style-spec/expression');
+const { createPropertyExpression } = require('../src/style-spec/expression');
 const { toString } = require('../src/style-spec/expression/types');
 const ignores = require('./ignores.json');
 
@@ -17,7 +17,7 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
     spec['function'] = true;
     spec['property-function'] = true;
 
-    const expression = createExpression(fixture.expression, spec, 'property', {handleErrors: false});
+    const expression = createPropertyExpression(fixture.expression, spec, {handleErrors: false});
     if (expression.result === 'error') {
         return {
             compiled: {
@@ -34,9 +34,9 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
     const result = {
         outputs,
         compiled: {
-            result: expression.result,
-            isZoomConstant: expression.isZoomConstant,
-            isFeatureConstant: expression.isFeatureConstant,
+            result: expression.result === 'error' ? 'error' : 'success',
+            isZoomConstant: expression.result === 'constant' || expression.result === 'source',
+            isFeatureConstant: expression.result === 'constant' || expression.result === 'camera',
             type: toString(expression.parsed.type)
         }
     };
