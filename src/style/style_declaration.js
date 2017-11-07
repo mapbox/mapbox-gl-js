@@ -2,37 +2,28 @@
 
 const Color = require('../style-spec/util/color');
 const {isFunction, createFunction} = require('../style-spec/function');
-const {isExpression, createExpression} = require('../style-spec/expression');
+const {isExpression, createPropertyExpression} = require('../style-spec/expression');
 const util = require('../util/util');
 
-import type {StyleDeclarationExpression, Feature, GlobalProperties} from '../style-spec/expression';
+import type {StylePropertyExpression, Feature, GlobalProperties} from '../style-spec/expression';
 
-function normalizeToExpression(parameters, propertySpec): StyleDeclarationExpression {
+function normalizeToExpression(parameters, propertySpec): StylePropertyExpression {
     if (isFunction(parameters)) {
         return createFunction(parameters, propertySpec);
     } else if (isExpression(parameters)) {
-        const expression = createExpression(parameters, propertySpec, 'property');
-        if (expression.result !== 'success') {
+        const expression = createPropertyExpression(parameters, propertySpec);
+        if (expression.result === 'error') {
             // this should have been caught in validation
             throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
         }
-
-        if (expression.context === 'property') {
-            return expression;
-        } else {
-            throw new Error(`Incorrect expression context ${expression.context}`);
-        }
+        return expression;
     } else {
         if (typeof parameters === 'string' && propertySpec.type === 'color') {
             parameters = Color.parse(parameters);
         }
-
         return {
-            result: 'success',
-            context: 'property',
-            isFeatureConstant: true,
-            isZoomConstant: true,
-            evaluate() { return parameters; }
+            result: 'constant',
+            evaluate: () => parameters
         };
     }
 }
@@ -45,7 +36,7 @@ class StyleDeclaration {
     value: any;
     json: mixed;
     minimum: number;
-    expression: StyleDeclarationExpression;
+    expression: StylePropertyExpression;
 
     constructor(reference: any, value: any) {
         this.value = util.clone(value);
@@ -55,6 +46,14 @@ class StyleDeclaration {
 
         this.minimum = reference.minimum;
         this.expression = normalizeToExpression(this.value, reference);
+    }
+
+    isFeatureConstant() {
+        return this.expression.result === 'constant' || this.expression.result === 'camera';
+    }
+
+    isZoomConstant() {
+        return this.expression.result === 'constant' || this.expression.result === 'source';
     }
 
     calculate(globals: GlobalProperties, feature?: Feature) {
@@ -70,7 +69,7 @@ class StyleDeclaration {
      * zoom level.
      */
     interpolationFactor(zoom: number, lower: number, upper: number) {
-        if (this.expression.isZoomConstant) {
+        if (this.expression.result === 'constant' || this.expression.result === 'source') {
             return 0;
         } else {
             return this.expression.interpolationFactor(zoom, lower, upper);

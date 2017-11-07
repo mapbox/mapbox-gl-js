@@ -36,12 +36,12 @@ class SymbolStyleLayer extends StyleLayer {
 
     isLayoutValueFeatureConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
-        return !declaration || declaration.expression.isFeatureConstant;
+        return !declaration || declaration.isFeatureConstant();
     }
 
     isLayoutValueZoomConstant(name: string) {
         const declaration = this._layoutDeclarations[name];
-        return !declaration || declaration.expression.isZoomConstant;
+        return !declaration || declaration.isZoomConstant();
     }
 
     getValueAndResolveTokens(name: 'text-field' | 'icon-image', globals: GlobalProperties, feature: Feature) {

@@ -125,7 +125,7 @@ class StyleLayer extends Evented {
         const declaration = this._layoutDeclarations[name];
 
         // Avoid attempting to calculate a value for data-driven properties if `feature` is undefined.
-        if (declaration && (declaration.expression.isFeatureConstant || feature)) {
+        if (declaration && (declaration.isFeatureConstant() || feature)) {
             return declaration.calculate(globals, feature);
         } else {
             return specification.default;
@@ -168,7 +168,7 @@ class StyleLayer extends Evented {
         const transition = this._paintTransitions[name];
 
         // Avoid attempting to calculate a value for data-driven properties if `feature` is undefined.
-        if (transition && (transition.declaration.expression.isFeatureConstant || feature)) {
+        if (transition && (transition.declaration.isFeatureConstant() || feature)) {
             return transition.calculate(globals, feature);
         } else if (specification.type === 'color' && specification.default) {
             return Color.parse(specification.default);
@@ -184,12 +184,12 @@ class StyleLayer extends Evented {
 
     isPaintValueFeatureConstant(name: string) {
         const declaration = this._paintDeclarations[name];
-        return !declaration || declaration.expression.isFeatureConstant;
+        return !declaration || declaration.isFeatureConstant();
     }
 
     isPaintValueZoomConstant(name: string) {
         const declaration = this._paintDeclarations[name];
-        return !declaration || declaration.expression.isZoomConstant;
+        return !declaration || declaration.isZoomConstant();
     }
 
     isHidden(zoom: number) {
@@ -292,7 +292,7 @@ class StyleLayer extends Evented {
     // update layout value if it's constant, or mark it as zoom-dependent
     _updateLayoutValue(name: string) {
         const declaration = this._layoutDeclarations[name];
-        if (!declaration || (declaration.expression.isZoomConstant && declaration.expression.isFeatureConstant)) {
+        if (!declaration || (declaration.isZoomConstant() && declaration.isFeatureConstant())) {
             delete this._layoutFunctions[name];
             this.layout[name] = this.getLayoutValue(name, {zoom: 0});
         } else {

@@ -1001,9 +1001,7 @@ test('isConstant', (t) => {
             type: 'number'
         });
 
-        t.notOk(f.isZoomConstant);
-        t.ok(f.isFeatureConstant);
-
+        t.equal(f.result, 'camera');
         t.end();
     });
 
@@ -1015,9 +1013,7 @@ test('isConstant', (t) => {
             type: 'number'
         });
 
-        t.ok(f.isZoomConstant);
-        t.notOk(f.isFeatureConstant);
-
+        t.equal(f.result, 'source');
         t.end();
     });
 
@@ -1029,9 +1025,7 @@ test('isConstant', (t) => {
             type: 'number'
         });
 
-        t.notOk(f.isZoomConstant);
-        t.notOk(f.isFeatureConstant);
-
+        t.equal(f.result, 'composite');
         t.end();
     });
 
