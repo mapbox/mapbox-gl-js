@@ -61,7 +61,6 @@ class Tile {
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
-    placementThrottler: any;
     timeAdded: any;
     fadeEndTime: any;
     rawTileData: ArrayBuffer;
