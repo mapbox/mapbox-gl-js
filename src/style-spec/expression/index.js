@@ -144,6 +144,13 @@ function createExpression(expression: mixed,
     }
 
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
+    if (!isZoomConstant && context === 'property' && propertySpec['zoom-function'] === false) {
+        return {
+            result: 'error',
+            errors: [new ParsingError('', 'zoom expressions not supported')]
+        };
+    }
+
     if (isZoomConstant) {
         return {
             result: 'success',

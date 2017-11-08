@@ -50,7 +50,8 @@ const filterSpec = {
     'type': 'boolean',
     'default': false,
     'function': true,
-    'property-function': true
+    'property-function': true,
+    'zoom-function': true
 };
 
 /**
