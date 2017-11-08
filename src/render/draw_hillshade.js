@@ -69,9 +69,13 @@ function renderHillshade(painter, tile, layer) {
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
     gl.uniform1i(program.uniforms.u_mode, 1);
-    gl.uniform4fv(program.uniforms.u_shadow, layer.getPaintValue("hillshade-shadow-color", {zoom: zoom}));
-    gl.uniform4fv(program.uniforms.u_highlight, layer.getPaintValue("hillshade-highlight-color", {zoom: zoom}));
-    gl.uniform4fv(program.uniforms.u_accent, layer.getPaintValue("hillshade-accent-color", {zoom: zoom}));
+
+    const shadowColor = layer.getPaintValue("hillshade-shadow-color", {zoom: zoom});
+    gl.uniform4f(program.uniforms.u_shadow, shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a);
+    const highlightColor = layer.getPaintValue("hillshade-highlight-color", {zoom: zoom});
+    gl.uniform4f(program.uniforms.u_highlight, highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a);
+    const accentColor = layer.getPaintValue("hillshade-accent-color", {zoom: zoom});
+    gl.uniform4f(program.uniforms.u_accent, accentColor.r, accentColor.g, accentColor.b, accentColor.a);
 
     // this is to prevent purple/yellow seams from flashing when the dem tiles haven't been totally
     // backfilled from their neighboring tiles.

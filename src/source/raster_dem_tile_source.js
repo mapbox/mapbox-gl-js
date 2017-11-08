@@ -14,9 +14,9 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
-    _options: TileSourceSpecification;
+    _options: RasterSourceSpecification;
 
-    constructor(id: string, options: TileSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: RasterSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 15;
