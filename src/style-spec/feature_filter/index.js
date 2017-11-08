@@ -74,9 +74,9 @@ function createFilter(filter: any): FeatureFilter {
 
     const compiled = createExpression(filter, filterSpec);
     if (compiled.result === 'error') {
-        throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+        throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        return compiled.evaluate;
+        return compiled.value.evaluate;
     }
 }
 

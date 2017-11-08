@@ -14,9 +14,9 @@ function normalizeToExpression(parameters, propertySpec): StylePropertyExpressio
         const expression = createPropertyExpression(parameters, propertySpec);
         if (expression.result === 'error') {
             // this should have been caught in validation
-            throw new Error(expression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+            throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));
         }
-        return expression;
+        return expression.value;
     } else {
         if (typeof parameters === 'string' && propertySpec.type === 'color') {
             parameters = Color.parse(parameters);

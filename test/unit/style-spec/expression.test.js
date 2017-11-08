@@ -5,15 +5,15 @@ const {createPropertyExpression} = require('../../../src/style-spec/expression')
 
 test('createPropertyExpression', (t) => {
     test('prohibits piecewise-constant properties from using an "interpolate" expression', (t) => {
-        const expression = createPropertyExpression([
+        const {result, value} = createPropertyExpression([
             'interpolate', ['linear'], ['zoom'], 0, 0, 10, 10
         ], {
             type: 'number',
             function: 'piecewise-constant'
         });
-        t.equal(expression.result, 'error');
-        t.equal(expression.errors.length, 1);
-        t.equal(expression.errors[0].message, '"interpolate" expressions cannot be used with this property');
+        t.equal(result, 'error');
+        t.equal(value.length, 1);
+        t.equal(value[0].message, '"interpolate" expressions cannot be used with this property');
         t.end();
     });
 
@@ -22,7 +22,7 @@ test('createPropertyExpression', (t) => {
 
 test('evaluate expression', (t) => {
     test('warns and falls back to default for invalid enum values', (t) => {
-        const expression = createPropertyExpression([ 'get', 'x' ], {
+        const {value} = createPropertyExpression([ 'get', 'x' ], {
             type: 'enum',
             values: {a: {}, b: {}, c: {}},
             default: 'a',
@@ -31,10 +31,10 @@ test('evaluate expression', (t) => {
 
         t.stub(console, 'warn');
 
-        t.equal(expression.result, 'source');
+        t.equal(value.result, 'source');
 
-        t.equal(expression.evaluate({}, { properties: {x: 'b'} }), 'b');
-        t.equal(expression.evaluate({}, { properties: {x: 'invalid'} }), 'a');
+        t.equal(value.evaluate({}, { properties: {x: 'b'} }), 'b');
+        t.equal(value.evaluate({}, { properties: {x: 'invalid'} }), 'a');
         t.ok(console.warn.calledWith(`Expected value to be one of "a", "b", "c", but found "invalid" instead.`));
 
         t.end();
