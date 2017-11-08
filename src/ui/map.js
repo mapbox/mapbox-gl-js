@@ -1,5 +1,7 @@
 // @flow
 
+const glWrapper = require('../render/webglwrapper');
+
 const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
@@ -1379,7 +1381,8 @@ class Map extends Camera {
             return;
         }
 
-        this.painter = new Painter(gl, this.transform);
+        const wrapper = new glWrapper(gl);
+        this.painter = new Painter(wrapper, this.transform);
     }
 
     _contextLost(event: Event) {

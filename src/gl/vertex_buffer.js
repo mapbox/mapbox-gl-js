@@ -47,8 +47,8 @@ class VertexBuffer {
 
         this.gl = gl;
         this.buffer = gl.createBuffer();
-        this.gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        this.gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        this.gl.gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        this.gl.gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
         if (!this.dynamicDraw) {
             delete array.arrayBuffer;
@@ -56,7 +56,7 @@ class VertexBuffer {
     }
 
     bind() {
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+        this.gl.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
     }
 
     updateData(array: SerializedStructArray) {
@@ -86,10 +86,10 @@ class VertexBuffer {
             const attribIndex: number | void = program.attributes[member.name];
 
             if (attribIndex !== undefined) {
-                gl.vertexAttribPointer(
+                gl.gl.vertexAttribPointer(
                     attribIndex,
                     member.components,
-                    (gl: any)[AttributeType[member.type]],
+                    (gl: any).gl[AttributeType[member.type]],
                     false,
                     this.itemSize,
                     member.offset + (this.itemSize * (vertexOffset || 0))
