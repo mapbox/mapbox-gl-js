@@ -22,7 +22,7 @@ function normalizeToExpression(parameters, propertySpec): StylePropertyExpressio
             parameters = Color.parse(parameters);
         }
         return {
-            result: 'constant',
+            kind: 'constant',
             evaluate: () => parameters
         };
     }
@@ -49,11 +49,11 @@ class StyleDeclaration {
     }
 
     isFeatureConstant() {
-        return this.expression.result === 'constant' || this.expression.result === 'camera';
+        return this.expression.kind === 'constant' || this.expression.kind === 'camera';
     }
 
     isZoomConstant() {
-        return this.expression.result === 'constant' || this.expression.result === 'source';
+        return this.expression.kind === 'constant' || this.expression.kind === 'source';
     }
 
     calculate(globals: GlobalProperties, feature?: Feature) {
@@ -69,7 +69,7 @@ class StyleDeclaration {
      * zoom level.
      */
     interpolationFactor(zoom: number, lower: number, upper: number) {
-        if (this.expression.result === 'constant' || this.expression.result === 'source') {
+        if (this.expression.kind === 'constant' || this.expression.kind === 'source') {
             return 0;
         } else {
             return this.expression.interpolationFactor(zoom, lower, upper);

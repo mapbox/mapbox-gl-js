@@ -37,8 +37,8 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
         outputs,
         compiled: {
             result: 'success',
-            isZoomConstant: expression.result === 'constant' || expression.result === 'source',
-            isFeatureConstant: expression.result === 'constant' || expression.result === 'camera',
+            isZoomConstant: expression.kind === 'constant' || expression.kind === 'source',
+            isFeatureConstant: expression.kind === 'constant' || expression.kind === 'camera',
             type: toString(expression.parsed.type)
         }
     };
