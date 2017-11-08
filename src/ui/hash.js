@@ -2,7 +2,7 @@
 
 const util = require('../util/util');
 const window = require('../util/window');
-const throttle = require('lodash.throttle');
+const throttle = require('../util/throttle');
 
 import type Map from './map';
 
