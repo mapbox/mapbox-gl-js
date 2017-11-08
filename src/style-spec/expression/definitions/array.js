@@ -25,12 +25,10 @@ const types = {
 };
 
 class ArrayAssertion implements Expression {
-    key: string;
     type: ArrayType;
     input: Expression;
 
-    constructor(key: string, type: ArrayType, input: Expression) {
-        this.key = key;
+    constructor(type: ArrayType, input: Expression) {
         this.type = type;
         this.input = input;
     }
@@ -66,7 +64,7 @@ class ArrayAssertion implements Expression {
         const input = context.parse(args[args.length - 1], args.length - 1, ValueType);
         if (!input) return null;
 
-        return new ArrayAssertion(context.key, type, input);
+        return new ArrayAssertion(type, input);
     }
 
     evaluate(ctx: EvaluationContext) {

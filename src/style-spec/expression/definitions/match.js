@@ -12,7 +12,6 @@ import type { Type } from '../types';
 type Cases = {[number | string]: number};
 
 class Match implements Expression {
-    key: string;
     type: Type;
     inputType: Type;
 
@@ -21,8 +20,7 @@ class Match implements Expression {
     outputs: Array<Expression>;
     otherwise: Expression;
 
-    constructor(key: string, inputType: Type, outputType: Type, input: Expression, cases: Cases, outputs: Array<Expression>, otherwise: Expression) {
-        this.key = key;
+    constructor(inputType: Type, outputType: Type, input: Expression, cases: Cases, outputs: Array<Expression>, otherwise: Expression) {
         this.inputType = inputType;
         this.type = outputType;
         this.input = input;
@@ -92,7 +90,7 @@ class Match implements Expression {
         if (!otherwise) return null;
 
         assert(inputType && outputType);
-        return new Match(context.key, (inputType: any), (outputType: any), input, cases, outputs, otherwise);
+        return new Match((inputType: any), (outputType: any), input, cases, outputs, otherwise);
     }
 
     evaluate(ctx: EvaluationContext) {

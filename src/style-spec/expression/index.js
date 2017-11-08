@@ -179,7 +179,7 @@ function createExpression(expression: mixed,
     } else if (zoomCurve instanceof Interpolate && propertySpec['function'] === 'piecewise-constant') {
         return {
             result: 'error',
-            errors: [new ParsingError(zoomCurve.key, '"interpolate" expressions cannot be used with this property')]
+            errors: [new ParsingError('', '"interpolate" expressions cannot be used with this property')]
         };
     }
 
@@ -236,9 +236,9 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
         if (childResult instanceof ParsingError) {
             result = childResult;
         } else if (!result && childResult) {
-            result = new ParsingError(childResult.key, '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.');
+            result = new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.');
         } else if (result && childResult && result !== childResult) {
-            result = new ParsingError(childResult.key, 'Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.');
+            result = new ParsingError('', 'Only one zoom-based "step" or "interpolate" subexpression may be used in an expression.');
         }
     });
 

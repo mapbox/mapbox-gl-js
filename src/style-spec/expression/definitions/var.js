@@ -6,12 +6,10 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext  from '../evaluation_context';
 
 class Var implements Expression {
-    key: string;
     type: Type;
     name: string;
 
-    constructor(key: string, name: string, type: Type) {
-        this.key = key;
+    constructor(name: string, type: Type) {
         this.type = type;
         this.name = name;
     }
@@ -25,7 +23,7 @@ class Var implements Expression {
             return context.error(`Unknown variable "${name}". Make sure "${name}" has been bound in an enclosing "let" expression before using it.`, 1);
         }
 
-        return new Var(context.key, name, context.scope.get(name).type);
+        return new Var(name, context.scope.get(name).type);
     }
 
     evaluate(ctx: EvaluationContext) {

@@ -5,7 +5,6 @@ import type ParsingContext from '../parsing_context';
 import type { Type } from '../types';
 
 class Curve implements Expression {
-    key: string;
     type: Type;
 
     static parse(args: Array<mixed>, context: ParsingContext) {

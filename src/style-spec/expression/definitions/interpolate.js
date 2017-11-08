@@ -17,7 +17,6 @@ export type InterpolationType =
     { name: 'cubic-bezier', controlPoints: [number, number, number, number] };
 
 class Interpolate implements Expression {
-    key: string;
     type: Type;
 
     interpolation: InterpolationType;
@@ -25,8 +24,7 @@ class Interpolate implements Expression {
     labels: Array<number>;
     outputs: Array<Expression>;
 
-    constructor(key: string, type: Type, interpolation: InterpolationType, input: Expression, stops: Stops) {
-        this.key = key;
+    constructor(type: Type, interpolation: InterpolationType, input: Expression, stops: Stops) {
         this.type = type;
         this.interpolation = interpolation;
         this.input = input;
@@ -137,7 +135,7 @@ class Interpolate implements Expression {
             return context.error(`Type ${toString(outputType)} is not interpolatable.`);
         }
 
-        return new Interpolate(context.key, outputType, interpolation, input, stops);
+        return new Interpolate(outputType, interpolation, input, stops);
     }
 
     evaluate(ctx: EvaluationContext) {

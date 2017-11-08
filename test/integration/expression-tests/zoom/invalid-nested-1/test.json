@@ -6,7 +6,7 @@
       "result": "error",
       "errors": [
         {
-          "key": "[2]",
+          "key": "",
           "error": "\"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression."
         }
       ]

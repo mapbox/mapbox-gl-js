@@ -8,12 +8,10 @@ import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 class Coalesce implements Expression {
-    key: string;
     type: Type;
     args: Array<Expression>;
 
-    constructor(key: string, type: Type, args: Array<Expression>) {
-        this.key = key;
+    constructor(type: Type, args: Array<Expression>) {
         this.type = type;
         this.args = args;
     }
@@ -34,7 +32,7 @@ class Coalesce implements Expression {
             parsedArgs.push(parsed);
         }
         assert(outputType);
-        return new Coalesce(context.key, (outputType: any), parsedArgs);
+        return new Coalesce((outputType: any), parsedArgs);
     }
 
     evaluate(ctx: EvaluationContext) {

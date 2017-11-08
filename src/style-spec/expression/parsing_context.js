@@ -78,10 +78,10 @@ class ParsingContext {
 
                     if (canAssert && actual.kind === 'value') {
                         const Assertion = require('./definitions/assertion');
-                        parsed = new Assertion(parsed.key, expected, [parsed]);
+                        parsed = new Assertion(expected, [parsed]);
                     } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
                         const Coercion = require('./definitions/coercion');
-                        parsed = new Coercion(parsed.key, expected, [parsed]);
+                        parsed = new Coercion(expected, [parsed]);
                     }
 
                     if (context.checkSubtype(expected, parsed.type)) {
@@ -95,7 +95,7 @@ class ParsingContext {
                 if (!(parsed instanceof Literal) && isConstant(parsed)) {
                     const ec = new (require('./evaluation_context'))();
                     try {
-                        parsed = new Literal(parsed.key, parsed.type, parsed.evaluate(ec));
+                        parsed = new Literal(parsed.type, parsed.evaluate(ec));
                     } catch (e) {
                         context.error(e.message);
                         return null;

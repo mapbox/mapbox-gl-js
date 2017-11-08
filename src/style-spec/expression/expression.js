@@ -5,7 +5,6 @@ import type ParsingContext from './parsing_context';
 import type EvaluationContext from './evaluation_context';
 
 export interface Expression {
-    key: string;
     +type: Type;
 
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression;
