@@ -15,13 +15,11 @@ import type { Type, ArrayType } from '../types';
 import type { Value } from '../values';
 
 class At implements Expression {
-    key: string;
     type: Type;
     index: Expression;
     input: Expression;
 
-    constructor(key: string, type: Type, index: Expression, input: Expression) {
-        this.key = key;
+    constructor(type: Type, index: Expression, input: Expression) {
         this.type = type;
         this.index = index;
         this.input = input;
@@ -37,7 +35,7 @@ class At implements Expression {
         if (!index || !input) return null;
 
         const t: ArrayType = (input.type: any);
-        return new At(context.key, t.itemType, index, input);
+        return new At(t.itemType, index, input);
     }
 
     evaluate(ctx: EvaluationContext) {

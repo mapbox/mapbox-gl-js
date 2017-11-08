@@ -6,13 +6,11 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext  from '../evaluation_context';
 
 class Let implements Expression {
-    key: string;
     type: Type;
     bindings: Array<[string, Expression]>;
     result: Expression;
 
-    constructor(key: string, bindings: Array<[string, Expression]>, result: Expression) {
-        this.key = key;
+    constructor(bindings: Array<[string, Expression]>, result: Expression) {
         this.type = result.type;
         this.bindings = [].concat(bindings);
         this.result = result;
@@ -57,7 +55,7 @@ class Let implements Expression {
         const result = context.parse(args[args.length - 1], args.length - 1, undefined, bindings);
         if (!result) return null;
 
-        return new Let(context.key, bindings, result);
+        return new Let(bindings, result);
     }
 }
 

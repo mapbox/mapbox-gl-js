@@ -10,15 +10,13 @@ import type EvaluationContext from '../evaluation_context';
 import type { Type } from '../types';
 
 class Step implements Expression {
-    key: string;
     type: Type;
 
     input: Expression;
     labels: Array<number>;
     outputs: Array<Expression>;
 
-    constructor(key: string, type: Type, input: Expression, stops: Stops) {
-        this.key = key;
+    constructor(type: Type, input: Expression, stops: Stops) {
         this.type = type;
         this.input = input;
 
@@ -74,7 +72,7 @@ class Step implements Expression {
             stops.push([label, parsed]);
         }
 
-        return new Step(context.key, outputType, input, stops);
+        return new Step(outputType, input, stops);
     }
 
     evaluate(ctx: EvaluationContext) {

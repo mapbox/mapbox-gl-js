@@ -10,7 +10,7 @@
       "result": "error",
       "errors": [
         {
-          "key": "[2]",
+          "key": "",
           "error": "Only one zoom-based \"step\" or \"interpolate\" subexpression may be used in an expression."
         }
       ]
