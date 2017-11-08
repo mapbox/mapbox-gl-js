@@ -166,10 +166,9 @@ function createExpression(expression: mixed,
 
     const zoomCurve = findZoomCurve(parsed);
     if (!zoomCurve) {
-        assert(false); // Unreachable: we don't call findZoomCurve unless there's a zoom expression.
         return {
             result: 'error',
-            errors: []
+            errors: [new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]
         };
     } else if (zoomCurve instanceof ParsingError) {
         return {
