@@ -17,12 +17,12 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
     spec['function'] = true;
     spec['property-function'] = true;
 
-    const expression = createPropertyExpression(fixture.expression, spec, {handleErrors: false});
+    let expression = createPropertyExpression(fixture.expression, spec, {handleErrors: false});
     if (expression.result === 'error') {
         return {
             compiled: {
-                result: expression.result,
-                errors: expression.errors.map((err) => ({
+                result: 'error',
+                errors: expression.value.map((err) => ({
                     key: err.key,
                     error: err.message
                 }))
@@ -30,11 +30,13 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
         };
     }
 
+    expression = expression.value;
+
     const outputs = [];
     const result = {
         outputs,
         compiled: {
-            result: expression.result === 'error' ? 'error' : 'success',
+            result: 'success',
             isZoomConstant: expression.result === 'constant' || expression.result === 'source',
             isFeatureConstant: expression.result === 'constant' || expression.result === 'camera',
             type: toString(expression.parsed.type)

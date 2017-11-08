@@ -12,11 +12,13 @@ const Let = require('./definitions/let');
 const definitions = require('./definitions');
 const isConstant = require('./is_constant');
 const RuntimeError = require('./runtime_error');
+const {success, error} = require('../util/result');
 
 import type {Type} from './types';
 import type {Value} from './values';
 import type {Expression} from './expression';
 import type {StylePropertySpecification} from '../style-spec';
+import type {Result} from '../util/result';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',
@@ -29,13 +31,7 @@ export type GlobalProperties = {
     heatmapDensity?: number
 };
 
-export type StyleExpressionErrors = {
-    result: 'error',
-    errors: Array<ParsingError>
-};
-
 export type StyleExpression = {
-    result: 'success',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     parsed: Expression
 };
@@ -56,15 +52,12 @@ function isExpression(expression: mixed) {
  */
 function createExpression(expression: mixed,
                           propertySpec: StylePropertySpecification,
-                          options: {handleErrors?: boolean} = {}): StyleExpressionErrors | StyleExpression {
+                          options: {handleErrors?: boolean} = {}): Result<StyleExpression, Array<ParsingError>> {
     const parser = new ParsingContext(definitions, [], getExpectedType(propertySpec));
     const parsed = parser.parse(expression);
     if (!parsed) {
         assert(parser.errors.length > 0);
-        return {
-            result: 'error',
-            errors: parser.errors
-        };
+        return error(parser.errors);
     }
 
     const evaluator = new EvaluationContext();
@@ -107,11 +100,7 @@ function createExpression(expression: mixed,
         };
     }
 
-    return {
-        result: 'success',
-        evaluate,
-        parsed
-    };
+    return success({ evaluate, parsed });
 }
 
 type ConstantExpression = {
@@ -146,52 +135,37 @@ export type StylePropertyExpression =
 
 function createPropertyExpression(expression: mixed,
                                   propertySpec: StylePropertySpecification,
-                                  options: {handleErrors?: boolean} = {}): StyleExpressionErrors | StylePropertyExpression {
+                                  options: {handleErrors?: boolean} = {}): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, options);
     if (expression.result === 'error') {
         return expression;
     }
 
-    const {evaluate, parsed} = expression;
+    const {evaluate, parsed} = expression.value;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
     if (!isFeatureConstant && !propertySpec['property-function']) {
-        return {
-            result: 'error',
-            errors: [new ParsingError('', 'property expressions not supported')]
-        };
+        return error([new ParsingError('', 'property expressions not supported')]);
     }
 
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
     if (!isZoomConstant && propertySpec['zoom-function'] === false) {
-        return {
-            result: 'error',
-            errors: [new ParsingError('', 'zoom expressions not supported')]
-        };
+        return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
-    const zoomCurve = findZoomCurve(expression.parsed);
+    const zoomCurve = findZoomCurve(parsed);
     if (!zoomCurve && !isZoomConstant) {
-        return {
-            result: 'error',
-            errors: [new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]
-        };
+        return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]);
     } else if (zoomCurve instanceof ParsingError) {
-        return {
-            result: 'error',
-            errors: [zoomCurve]
-        };
+        return error([zoomCurve]);
     } else if (zoomCurve instanceof Interpolate && propertySpec['function'] === 'piecewise-constant') {
-        return {
-            result: 'error',
-            errors: [new ParsingError('', '"interpolate" expressions cannot be used with this property')]
-        };
+        return error([new ParsingError('', '"interpolate" expressions cannot be used with this property')]);
     }
 
     if (!zoomCurve) {
-        return isFeatureConstant ?
+        return success(isFeatureConstant ?
             { result: 'constant', parsed, evaluate } :
-            { result: 'source', parsed, evaluate };
+            { result: 'source', parsed, evaluate });
     }
 
     const interpolationFactor = zoomCurve instanceof Interpolate ?
@@ -199,9 +173,9 @@ function createPropertyExpression(expression: mixed,
         () => 0;
     const zoomStops = zoomCurve.labels;
 
-    return isFeatureConstant ?
+    return success(isFeatureConstant ?
         { result: 'camera', parsed, evaluate, interpolationFactor, zoomStops } :
-        { result: 'composite', parsed, evaluate, interpolationFactor, zoomStops };
+        { result: 'composite', parsed, evaluate, interpolationFactor, zoomStops });
 }
 
 module.exports = {

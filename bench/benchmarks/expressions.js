@@ -35,14 +35,14 @@ class ExpressionBenchmark extends Benchmark {
                         const compiledFunction = createFunction(rawValue, propertySpec);
                         const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
                         if (compiledExpression.result === 'error') {
-                            throw new Error(compiledExpression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+                            throw new Error(compiledExpression.value.map(err => `${err.key}: ${err.message}`).join(', '));
                         }
                         return {
                             propertySpec,
                             rawValue,
                             rawExpression,
                             compiledFunction,
-                            compiledExpression
+                            compiledExpression: compiledExpression.value
                         };
                     };
 
