@@ -951,6 +951,14 @@
       "paint": {
         "heatmap-color": ["step", ["zoom"], ["step", ["heatmap-density"], "red", 0.5, "blue"], 1, ["step", ["heatmap-density"], "yellow", 0.5, "green"]]
       }
+    }, {
+      "id": "invalid expression - heatmap-color must not be a function",
+      "type": "heatmap",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "heatmap-color": { "stops": [[0, "red"], [1, "blue"]] }
+      }
     }
   ]
 }
