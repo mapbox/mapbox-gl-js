@@ -104,24 +104,24 @@ function createExpression(expression: mixed,
 }
 
 type ConstantExpression = {
-    result: 'constant',
+    kind: 'constant',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any
 };
 
 type SourceExpression = {
-    result: 'source',
+    kind: 'source',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
 };
 
 type CameraExpression = {
-    result: 'camera',
+    kind: 'camera',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };
 
 type CompositeExpression = {
-    result: 'composite',
+    kind: 'composite',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
@@ -164,8 +164,8 @@ function createPropertyExpression(expression: mixed,
 
     if (!zoomCurve) {
         return success(isFeatureConstant ?
-            { result: 'constant', parsed, evaluate } :
-            { result: 'source', parsed, evaluate });
+            { kind: 'constant', parsed, evaluate } :
+            { kind: 'source', parsed, evaluate });
     }
 
     const interpolationFactor = zoomCurve instanceof Interpolate ?
@@ -174,8 +174,8 @@ function createPropertyExpression(expression: mixed,
     const zoomStops = zoomCurve.labels;
 
     return success(isFeatureConstant ?
-        { result: 'camera', parsed, evaluate, interpolationFactor, zoomStops } :
-        { result: 'composite', parsed, evaluate, interpolationFactor, zoomStops });
+        { kind: 'camera', parsed, evaluate, interpolationFactor, zoomStops } :
+        { kind: 'composite', parsed, evaluate, interpolationFactor, zoomStops });
 }
 
 module.exports = {

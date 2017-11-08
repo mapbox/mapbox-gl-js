@@ -112,7 +112,7 @@ function createFunction(parameters, propertySpec) {
         }
 
         return {
-            result: 'composite',
+            kind: 'composite',
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, {name: 'linear'}),
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
@@ -124,7 +124,7 @@ function createFunction(parameters, propertySpec) {
         };
     } else if (zoomDependent) {
         return {
-            result: 'camera',
+            kind: 'camera',
             interpolationFactor: type === 'exponential' ?
                 Interpolate.interpolationFactor.bind(undefined, {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1}) :
                 () => 0,
@@ -133,7 +133,7 @@ function createFunction(parameters, propertySpec) {
         };
     } else {
         return {
-            result: 'source',
+            kind: 'source',
             evaluate(_, feature) {
                 const value = feature && feature.properties ? feature.properties[parameters.property] : undefined;
                 if (value === undefined) {

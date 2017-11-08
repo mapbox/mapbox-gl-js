@@ -31,7 +31,7 @@ test('evaluate expression', (t) => {
 
         t.stub(console, 'warn');
 
-        t.equal(value.result, 'source');
+        t.equal(value.kind, 'source');
 
         t.equal(value.evaluate({}, { properties: {x: 'b'} }), 'b');
         t.equal(value.evaluate({}, { properties: {x: 'invalid'} }), 'a');
