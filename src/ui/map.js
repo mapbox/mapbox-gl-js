@@ -197,7 +197,8 @@ const defaultOptions = {
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
- *   center: [-122.420679, 37.772537],
+ *   center: [-122.4
+ 679, 37.772537],
  *   zoom: 13,
  *   style: style_object,
  *   hash: true,
@@ -481,7 +482,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-22).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -513,7 +514,7 @@ class Map extends Camera {
      * the map will zoom to the new maximum.
      *
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
-     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
+     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
      * @returns {Map} `this`
      */
     setMaxZoom(maxZoom?: ?number) {
