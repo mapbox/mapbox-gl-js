@@ -8,14 +8,14 @@ test('throttle', (t) => {
 
     t.test('does not execute unthrottled function unless throttled function is invoked', (t) => {
         let executionCount = 0;
-        let throttledFunction = throttle(() => executionCount++, 0);
+        throttle(() => { executionCount++; }, 0);
         t.equal(executionCount, 0);
         t.end();
     });
 
     t.test('executes unthrottled function immediately when period is 0', (t) => {
         let executionCount = 0;
-        let throttledFunction = throttle(() => executionCount++, 0);
+        const throttledFunction = throttle(() => { executionCount++; }, 0);
         throttledFunction();
         throttledFunction();
         throttledFunction();
@@ -25,7 +25,7 @@ test('throttle', (t) => {
 
     t.test('executes unthrottled function immediately once when period is > 0', (t) => {
         let executionCount = 0;
-        let throttledFunction = throttle(() => executionCount++, 5);
+        const throttledFunction = throttle(() => { executionCount++; }, 5);
         throttledFunction();
         throttledFunction();
         throttledFunction();
@@ -35,7 +35,7 @@ test('throttle', (t) => {
 
     t.test('queues exactly one execution of unthrottled function when period is > 0', (t) => {
         let executionCount = 0;
-        let throttledFunction = throttle(() => executionCount++, 5);
+        const throttledFunction = throttle(() => { executionCount++; }, 5);
         throttledFunction();
         throttledFunction();
         throttledFunction();

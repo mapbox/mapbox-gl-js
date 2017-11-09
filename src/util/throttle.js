@@ -12,7 +12,7 @@ module.exports = function(unthrottledFunction: () => void, period: number): () =
     // function at a later time. `false` if there is not.
     let pending = false;
 
-    let throttledFunction = () => {
+    const throttledFunction = () => {
         const time = Date.now();
 
         if (nextTime <= time && !pending) {
@@ -20,13 +20,14 @@ module.exports = function(unthrottledFunction: () => void, period: number): () =
             unthrottledFunction();
         } else if (!pending) {
             pending = true;
+            // eslint-disable-next-line no-use-before-define
             setTimeout(_throttledFunction, nextTime - time);
         }
     };
 
     // This callback to `setTimeout` is written outside `throttledFunction` to
     // reduce the number of closures created.
-    let _throttledFunction = () => {
+    const _throttledFunction = () => {
         pending = false;
         throttledFunction();
     };
