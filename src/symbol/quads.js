@@ -71,7 +71,7 @@ function getIconQuads(anchor: Anchor,
     if (layout['icon-text-fit'] !== 'none' && shapedText) {
         const iconWidth = (right - left),
             iconHeight = (bottom - top),
-            size = layout['text-size'] / 24,
+            size = layer.getLayoutValue('text-size', globalProperties, feature) / 24,
             textLeft = shapedText.left * size,
             textRight = shapedText.right * size,
             textTop = shapedText.top * size,
