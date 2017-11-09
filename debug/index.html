@@ -26,12 +26,6 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-setInterval(() => {
-    map.flyTo({
-        bearing: map.getBearing() + 1
-    });
-}, 100);
-
 </script>
 </body>
 </html>
