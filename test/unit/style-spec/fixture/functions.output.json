@@ -186,5 +186,13 @@
   {
     "message": "layers[52].paint.line-dasharray: Type array<number> is not interpolatable.",
     "line": 943
+  },
+  {
+    "message": "layers[53].paint.heatmap-color: zoom expressions not supported",
+    "line": 952
+  },
+  {
+    "message": "layers[54].paint.heatmap-color: zoom functions not supported",
+    "line": 960
   }
 ]

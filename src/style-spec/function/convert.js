@@ -34,10 +34,7 @@ function convertFunction(parameters, propertySpec, name) {
             throw new Error('Unimplemented');
         }
 
-        if (name === 'heatmap-color') {
-            assert(zoomDependent);
-            expression = convertZoomFunction(parameters, propertySpec, stops, ['heatmap-density']);
-        } else if (zoomAndFeatureDependent) {
+        if (zoomAndFeatureDependent) {
             expression = convertZoomAndPropertyFunction(parameters, propertySpec, stops, defaultExpression);
         } else if (zoomDependent) {
             expression = convertZoomFunction(parameters, propertySpec, stops);

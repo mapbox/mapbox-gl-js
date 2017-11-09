@@ -1,3 +1,8 @@
+# master
+
+### :warning: Breaking changes
+- Require `heatmap-color` property to use expressions (not stop functions) [#5624](https://github.com/mapbox/mapbox-gl-js/issues/5624)
+
 # 0.41.0 (October 11, 2017)
 
 ### :warning: Breaking changes

@@ -49,7 +49,7 @@ module.exports = function validateFunction(options) {
     if (options.styleSpec.$version >= 8) {
         if (isPropertyFunction && !options.valueSpec['property-function']) {
             errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
-        } else if (isZoomFunction && !options.valueSpec['zoom-function']) {
+        } else if (isZoomFunction && !options.valueSpec['zoom-function'] && options.objectKey !== 'heatmap-color') {
             errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
         }
     }

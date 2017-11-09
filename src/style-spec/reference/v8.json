@@ -3149,19 +3149,20 @@
     },
     "heatmap-color": {
       "type": "color",
-      "default": {
-          "stops": [
-              [0, "rgba(0, 0, 255, 0)"],
-              [0.1, "royalblue"],
-              [0.3, "cyan"],
-              [0.5, "lime"],
-              [0.7, "yellow"],
-              [1, "red"]
-          ]
-      },
-      "doc": "Defines the color of each pixel based on its density value in a heatmap. Should be either a stop function with input values ranging from `0` to `1`, or an expression which uses `[\"heatmap-density\"]`.",
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0, "rgba(0, 0, 255, 0)",
+        0.1, "royalblue",
+        0.3, "cyan",
+        0.5, "lime",
+        0.7, "yellow",
+        1, "red"
+      ],
+      "doc": "Defines the color of each pixel based on its density value in a heatmap.  Should be an expression that uses `[\"heatmap-density\"]` as input.",
       "function": "interpolated",
-      "zoom-function": true,
+      "zoom-function": false,
       "property-function": false,
       "transition": true,
       "sdk-support": {

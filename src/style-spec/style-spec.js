@@ -4,33 +4,39 @@ export type StylePropertySpecification = {
     type: 'number',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     default?: number
 } | {
     type: 'string',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     default?: string
 } | {
     type: 'boolean',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     default?: boolean
 } | {
     type: 'enum',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     values: {[string]: {}},
     default?: string
 } | {
     type: 'color',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     default?: string
 } | {
     type: 'array',
     value: 'number',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     length?: number,
     default?: Array<number>
 } | {
@@ -38,6 +44,7 @@ export type StylePropertySpecification = {
     value: 'string',
     'function': boolean,
     'property-function': boolean,
+    'zoom-function': boolean,
     length?: number,
     default?: Array<string>
 };
