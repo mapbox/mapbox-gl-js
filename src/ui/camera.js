@@ -395,7 +395,7 @@ class Camera extends Evented {
         // (lateral and vertical padding), and the part that does (paddingOffset). We add the padding offset
         // to the options `offset` object where it can alter the map's center in the subsequent calls to
         // `easeTo` and `flyTo`.
-        const paddingOffset = [options.padding.left - options.padding.right, options.padding.top - options.padding.bottom],
+        const paddingOffset = [(options.padding.left - options.padding.right) / 2, (options.padding.top - options.padding.bottom) / 2],
             lateralPadding = Math.min(options.padding.right, options.padding.left),
             verticalPadding = Math.min(options.padding.top, options.padding.bottom);
         options.offset = [options.offset[0] + paddingOffset[0], options.offset[1] + paddingOffset[1]];

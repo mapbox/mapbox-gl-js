@@ -1378,7 +1378,7 @@ test('camera', (t) => {
             const bb = [[-133, 16], [-68, 50]];
 
             camera.fitBounds(bb, { padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0 });
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -91.5221, lat: 28.6089 }, 'pans to coordinates based on fitBounds with padding option as object applied');
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -96.5558, lat: 32.0833 }, 'pans to coordinates based on fitBounds with padding option as object applied');
             t.end();
         });
 
