@@ -197,8 +197,7 @@ const defaultOptions = {
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
- *   center: [-122.4
- 679, 37.772537],
+ *   center: [-122.4679, 37.772537],
  *   zoom: 13,
  *   style: style_object,
  *   hash: true,
@@ -1174,8 +1173,8 @@ class Map extends Camera {
      * Sets the zoom extent for the specified style layer.
      *
      * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom to set (0-20).
-     * @param {number} maxzoom The maximum zoom to set (0-20).
+     * @param {number} minzoom The minimum zoom to set (0-22).
+     * @param {number} maxzoom The maximum zoom to set (0-22).
      * @returns {Map} `this`
      * @example
      * map.setLayerZoomRange('my-layer', 2, 5);
