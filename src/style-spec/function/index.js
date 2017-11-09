@@ -14,7 +14,7 @@ function identityFunction(x) {
     return x;
 }
 
-function createFunction(parameters, propertySpec, name) {
+function createFunction(parameters, propertySpec) {
     const isColor = propertySpec.type === 'color';
     const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;

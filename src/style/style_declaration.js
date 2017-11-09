@@ -7,9 +7,9 @@ const util = require('../util/util');
 
 import type {StyleDeclarationExpression, Feature, GlobalProperties} from '../style-spec/expression';
 
-function normalizeToExpression(parameters, propertySpec, name): StyleDeclarationExpression {
+function normalizeToExpression(parameters, propertySpec): StyleDeclarationExpression {
     if (isFunction(parameters)) {
-        return createFunction(parameters, propertySpec, name);
+        return createFunction(parameters, propertySpec);
     } else if (isExpression(parameters)) {
         const expression = createExpression(parameters, propertySpec, 'property');
         if (expression.result !== 'success') {
@@ -47,14 +47,14 @@ class StyleDeclaration {
     minimum: number;
     expression: StyleDeclarationExpression;
 
-    constructor(reference: any, value: any, name: string) {
+    constructor(reference: any, value: any) {
         this.value = util.clone(value);
 
         // immutable representation of value. used for comparison
         this.json = JSON.stringify(this.value);
 
         this.minimum = reference.minimum;
-        this.expression = normalizeToExpression(this.value, reference, name);
+        this.expression = normalizeToExpression(this.value, reference);
     }
 
     calculate(globals: GlobalProperties, feature?: Feature) {

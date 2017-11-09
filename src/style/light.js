@@ -43,7 +43,7 @@ class Light extends Evented {
         }, lightOpts);
 
         for (const prop of properties) {
-            this._declarations[prop] = new StyleDeclaration(specifications[prop], lightOpts[prop], prop);
+            this._declarations[prop] = new StyleDeclaration(specifications[prop], lightOpts[prop]);
         }
 
         return this;
@@ -96,7 +96,7 @@ class Light extends Evented {
             } else if (value === null || value === undefined) {
                 delete this._declarations[key];
             } else {
-                this._declarations[key] = new StyleDeclaration(specifications[key], value, key);
+                this._declarations[key] = new StyleDeclaration(specifications[key], value);
             }
         }
     }
@@ -112,7 +112,7 @@ class Light extends Evented {
         const spec = specifications[property];
 
         if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default, property);
+            declaration = new StyleDeclaration(spec, spec.default);
         }
 
         if (oldTransition && oldTransition.declaration.json === declaration.json) return;
