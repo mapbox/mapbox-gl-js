@@ -457,29 +457,3 @@ exports.parseCacheControl = function(cacheControl: string): Object {
 
     return header;
 };
-
-/**
- * Throttle the given function to run at most every `time` milliseconds.
- */
-exports.throttle = function(fn: () => void, time: number): () => number {
-    let pending = false;
-    let timerId = 0;
-
-    const later = () => {
-        timerId = 0;
-        if (pending) {
-            fn();
-            pending = false;
-        }
-    };
-
-    return () => {
-        if (timerId) {
-            pending = true;
-        } else {
-            fn();
-            timerId = setTimeout(later, time);
-        }
-        return timerId;
-    };
-};
