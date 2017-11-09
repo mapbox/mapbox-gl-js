@@ -146,7 +146,7 @@
     "test": "run-s lint lint-css test-flow test-unit",
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/{render,query}-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "test-unit": "tap --reporter dot --no-coverage test/unit",
+    "test-unit": "tap --reporter classic --no-coverage test/unit",
     "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-expressions": "node test/expression.test.js",
