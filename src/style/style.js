@@ -93,7 +93,6 @@ class Style extends Evented {
     _removedLayers: {[string]: StyleLayer};
     _updatedPaintProps: {[layer: string]: {[class: string]: true}};
     _updatedAllPaintProps: boolean;
-    _updatedSymbolOrder: boolean;
     _layerOrderChanged: boolean;
 
     collisionIndex: CollisionIndex;
@@ -368,7 +367,7 @@ class Style extends Evented {
         const updatedIds = Object.keys(this._updatedLayers);
         const removedIds = Object.keys(this._removedLayers);
 
-        if (updatedIds.length || removedIds.length || this._updatedSymbolOrder) {
+        if (updatedIds.length || removedIds.length) {
             this._updateWorkerLayers(updatedIds, removedIds);
         }
         for (const id in this._updatedSources) {
@@ -388,12 +387,9 @@ class Style extends Evented {
     }
 
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
-        const symbolOrder = this._updatedSymbolOrder ? this._order.filter((id) => this._layers[id].type === 'symbol') : null;
-
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
-            removedIds: removedIds,
-            symbolOrder: symbolOrder
+            removedIds: removedIds
         });
     }
 
@@ -402,7 +398,6 @@ class Style extends Evented {
 
         this._updatedLayers = {};
         this._removedLayers = {};
-        this._updatedSymbolOrder = false;
 
         this._updatedSources = {};
 
@@ -599,11 +594,6 @@ class Style extends Evented {
             }
         }
         this._updateLayer(layer);
-
-        if (layer.type === 'symbol') {
-            this._updatedSymbolOrder = true;
-        }
-
         this.updatePaintProperties(id);
     }
 
@@ -634,14 +624,6 @@ class Style extends Evented {
         this._order.splice(newIndex, 0, id);
 
         this._layerOrderChanged = true;
-
-        if (layer.type === 'symbol') {
-            this._updatedSymbolOrder = true;
-            if (layer.source && !this._updatedSources[layer.source]) {
-                this._updatedSources[layer.source] = 'reload';
-                this.sourceCaches[layer.source].pause();
-            }
-        }
     }
 
     /**
@@ -672,11 +654,6 @@ class Style extends Evented {
         this._order.splice(index, 1);
 
         this._layerOrderChanged = true;
-
-        if (layer.type === 'symbol') {
-            this._updatedSymbolOrder = true;
-        }
-
         this._changed = true;
         this._removedLayers[id] = layer;
         delete this._layers[id];

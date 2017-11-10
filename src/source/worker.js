@@ -63,8 +63,8 @@ class Worker {
         callback();
     }
 
-    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>, symbolOrder: ?Array<string>}, callback: WorkerTileCallback) {
-        this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>}, callback: WorkerTileCallback) {
+        this.getLayerIndex(mapId).update(params.layers, params.removedIds);
         callback();
     }
 
