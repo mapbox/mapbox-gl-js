@@ -13,14 +13,18 @@ test('throttle', (t) => {
         t.end();
     });
 
-    t.test('executes unthrottled function immediately when period is 0', (t) => {
+    t.test('executes unthrottled function once per tick when period is 0', (t) => {
         let executionCount = 0;
         const throttledFunction = throttle(() => { executionCount++; }, 0);
         throttledFunction();
         throttledFunction();
-        throttledFunction();
-        t.equal(executionCount, 3);
-        t.end();
+        t.equal(executionCount, 1);
+        setTimeout(() => {
+            throttledFunction();
+            throttledFunction();
+            t.equal(executionCount, 2);
+            t.end();
+        }, 0);
     });
 
     t.test('executes unthrottled function immediately once when period is > 0', (t) => {

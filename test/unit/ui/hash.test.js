@@ -7,7 +7,9 @@ const Map = require('../../../src/ui/map');
 
 test('hash', (t) => {
     function createHash() {
-        return new Hash({throttle: false});
+        const hash = new Hash();
+        hash._updateHash = hash._updateHashUnthrottled.bind(hash);
+        return hash;
     }
 
     function createMap() {

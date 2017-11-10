@@ -14,17 +14,16 @@ import type Map from './map';
  */
 class Hash {
     _map: Map;
-    _updateHash: () => void;
+    _updateHash: () => number;
 
-    constructor(options: ?{throttle?: Boolean;}) {
+    constructor() {
         util.bindAll([
             '_onHashChange',
             '_updateHash'
         ], this);
 
         // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
-        const throttleTime = (options && options.throttle === false) ? 0 : 30 * 1000 / 100;
-        this._updateHash = throttle(this._updateHashUnthrottled.bind(this), throttleTime);
+        this._updateHash = throttle(this._updateHashUnthrottled.bind(this), 30 * 1000 / 100);
     }
 
     /*
