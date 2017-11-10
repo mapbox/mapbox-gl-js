@@ -218,13 +218,11 @@ class Map extends Camera {
     painter: Painter;
     animationLoop: AnimationLoop;
 
-    _classes: Array<string>;
     _container: HTMLElement;
     _missingCSSContainer: HTMLElement;
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
     _controlPositions: {[string]: HTMLElement};
-    _classOptions: ?{transition?: boolean};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
