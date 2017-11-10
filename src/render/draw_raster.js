@@ -44,7 +44,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const tile = sourceCache.getTile(coord);
         const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
-        tile.registerFadeDuration(painter.style.animationLoop, layer.paint.get('raster-fade-duration'));
+        tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 

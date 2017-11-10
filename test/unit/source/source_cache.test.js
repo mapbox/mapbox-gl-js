@@ -2,7 +2,6 @@
 
 const test = require('mapbox-gl-js-test').test;
 const SourceCache = require('../../../src/source/source_cache');
-const AnimationLoop = require('../../../src/style/animation_loop');
 const Source = require('../../../src/source/source');
 const Tile = require('../../../src/source/tile');
 const TileCoord = require('../../../src/source/tile_coord');
@@ -508,13 +507,12 @@ test('SourceCache#update', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 2;
-        const animationLoop = new AnimationLoop();
 
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.registerFadeDuration(animationLoop, 100);
+                tile.registerFadeDuration(100);
                 callback();
             }
         });
@@ -546,13 +544,11 @@ test('SourceCache#update', (t) => {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        const animationLoop = new AnimationLoop();
-
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.registerFadeDuration(animationLoop, 100);
+                tile.registerFadeDuration(100);
                 callback();
             }
         });

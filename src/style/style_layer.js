@@ -150,6 +150,10 @@ class StyleLayer extends Evented {
         }
     }
 
+    hasTransition() {
+        return this._transitioningPaint.hasTransition();
+    }
+
     recalculate(parameters: EvaluationParameters) {
         if (this._unevaluatedLayout) {
             (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters);

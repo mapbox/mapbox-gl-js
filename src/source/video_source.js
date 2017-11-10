@@ -63,17 +63,10 @@ class VideoSource extends ImageSource {
                 this.video = video;
                 this.video.loop = true;
 
-                let loopID;
-
-                // start repainting when video starts playing
+                // Start repainting when video starts playing. hasTransition() will then return
+                // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
-                    loopID = this.map.style.animationLoop.set(Infinity);
                     this.map._rerender();
-                });
-
-                // stop repainting when video stops
-                this.video.addEventListener('pause', () => {
-                    this.map.style.animationLoop.cancel(loopID);
                 });
 
                 if (this.map) {
@@ -129,6 +122,10 @@ class VideoSource extends ImageSource {
             urls: this.urls,
             coordinates: this.coordinates
         };
+    }
+
+    hasTransition() {
+        return this.video && !this.video.paused;
     }
 }
 

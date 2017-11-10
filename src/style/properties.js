@@ -210,6 +210,15 @@ class Transitioning<Properties: Object> {
         }
         return new PossiblyEvaluated(result); // eslint-disable-line no-use-before-define
     }
+
+    hasTransition() {
+        for (const property in this._values) {
+            if (this._values[property].prior) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 // ------- Layout -------

@@ -238,6 +238,10 @@ class GeoJSONSource extends Evented implements Source {
             data: this._data
         });
     }
+
+    hasTransition() {
+        return false;
+    }
 }
 
 function resolveURL(url) {

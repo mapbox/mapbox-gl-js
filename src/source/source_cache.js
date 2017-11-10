@@ -707,6 +707,23 @@ class SourceCache extends Evented {
         }
         return coords;
     }
+
+    hasTransition() {
+        if (this._source.hasTransition()) {
+            return true;
+        }
+
+        if (isRasterType(this._source.type)) {
+            for (const id in this._tiles) {
+                const tile = this._tiles[id];
+                if (tile.fadeEndTime !== undefined && tile.fadeEndTime >= Date.now()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 SourceCache.maxOverzooming = 10;

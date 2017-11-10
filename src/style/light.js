@@ -106,6 +106,10 @@ class Light extends Evented {
         }
     }
 
+    hasTransition() {
+        return this._transitioning.hasTransition();
+    }
+
     recalculate(parameters: EvaluationParameters) {
         this.properties = this._transitioning.possiblyEvaluate(parameters);
     }

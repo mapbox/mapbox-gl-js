@@ -8,7 +8,6 @@ const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
 const Style = require('../style/style');
-const AnimationLoop = require('../style/animation_loop');
 const Painter = require('../render/painter');
 
 const Transform = require('../geo/transform');
@@ -216,7 +215,6 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
-    animationLoop: AnimationLoop;
 
     _container: HTMLElement;
     _missingCSSContainer: HTMLElement;
@@ -285,8 +283,6 @@ class Map extends Camera {
         } else {
             this._container = options.container;
         }
-
-        this.animationLoop = new AnimationLoop();
 
         if (options.maxBounds) {
             this.setMaxBounds(options.maxBounds);
@@ -1451,6 +1447,9 @@ class Map extends Camera {
             this._styleDirty = false;
             this.style.update();
             this.style._recalculate(this.transform.zoom);
+            if (this.style.hasTransitions()) {
+                this._styleDirty = true;
+            }
         }
 
         // If we are in _render for any reason other than an in-progress paint
@@ -1479,15 +1478,7 @@ class Map extends Camera {
             this.fire('load');
         }
 
-        // We should set _styleDirty for ongoing animations before firing 'render',
-        // but the test suite currently assumes that it can read still images while animations are
-        // still ongoing. See https://github.com/mapbox/mapbox-gl-js/issues/3966
-        if (!this.animationLoop.stopped()) {
-            this._styleDirty = true;
-        }
-
         this._frameId = null;
-
 
         // Schedule another render frame if it's needed.
         //

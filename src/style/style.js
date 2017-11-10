@@ -13,7 +13,6 @@ const ajax = require('../util/ajax');
 const mapbox = require('../util/mapbox');
 const browser = require('../util/browser');
 const Dispatcher = require('../util/dispatcher');
-const AnimationLoop = require('./animation_loop');
 const validateStyle = require('./validate_style');
 const getSourceType = require('../source/source').getType;
 const setSourceType = require('../source/source').setType;
@@ -75,7 +74,6 @@ export type ZoomHistory = {
 class Style extends Evented {
     map: Map;
     stylesheet: StyleSpecification;
-    animationLoop: AnimationLoop;
     dispatcher: Dispatcher;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
@@ -104,7 +102,6 @@ class Style extends Evented {
         super();
 
         this.map = map;
-        this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
@@ -319,13 +316,31 @@ class Style extends Evented {
         }
 
         this.light.recalculate(parameters);
+        this.z = z;
+    }
 
-        const maxZoomTransitionDuration = 300;
-        if (Math.floor(this.z) !== Math.floor(z)) {
-            this.animationLoop.set(maxZoomTransitionDuration);
+    hasTransitions() {
+        if (this.light.hasTransition()) {
+            return true;
         }
 
-        this.z = z;
+        for (const id in this.sourceCaches) {
+            if (this.sourceCaches[id].hasTransition()) {
+                return true;
+            }
+        }
+
+        for (const id in this._layers) {
+            if (this._layers[id].hasTransition()) {
+                return true;
+            }
+        }
+
+        // if (this.placement.hasTransition()) {
+        //     return true;
+        // }
+
+        return false;
     }
 
     _updateZoomHistory(z: number) {

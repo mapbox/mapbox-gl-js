@@ -133,6 +133,10 @@ class RasterTileSource extends Evented implements Source {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
         callback();
     }
+
+    hasTransition() {
+        return false;
+    }
 }
 
 module.exports = RasterTileSource;

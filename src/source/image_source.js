@@ -243,6 +243,10 @@ class ImageSource extends Evented implements Source {
             coordinates: this.coordinates
         };
     }
+
+    hasTransition() {
+        return false;
+    }
 }
 
 module.exports = ImageSource;
