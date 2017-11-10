@@ -53,6 +53,8 @@ export interface Source {
     reparseOverscaled?: boolean,
     vectorLayerIds?: Array<string>,
 
+    hasTransition(): boolean;
+
     fire(type: string, data: Object): mixed;
 
     +onAdd?: (map: Map) => void;

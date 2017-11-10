@@ -13,7 +13,6 @@ const util = require('../util/util');
 const shaders = require('../render/shaders');
 const ProgramConfiguration = require('../data/program_configuration');
 const StyleLayer = require('../style/style_layer');
-const AnimationLoop = require('../style/animation_loop');
 
 const fillProgramInterface = require('../data/bucket/fill_bucket').programInterface;
 const circleProgramInterface = require('../data/bucket/circle_bucket').programInterface;
@@ -49,7 +48,7 @@ style.layers.forEach((layer) => {
 
 function addProgramInfo(layer, programInterface, shaderDefinition) {
     const styleLayer = new StyleLayer(layer);
-    styleLayer.updatePaintTransitions([], {}, { zoom: zoom }, new AnimationLoop(), {});
+    styleLayer.updatePaintTransitions([], {}, { zoom: zoom }, {});
     const configuration = ProgramConfiguration.createDynamic(
         programInterface, styleLayer, zoom);
     const key = `${layer.type}${configuration.cacheKey || ''}`;

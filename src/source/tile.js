@@ -105,13 +105,12 @@ class Tile {
         this.state = 'loading';
     }
 
-    registerFadeDuration(animationLoop: any, duration: number) {
+    registerFadeDuration(duration: number) {
         const fadeEndTime = duration + this.timeAdded;
         if (fadeEndTime < Date.now()) return;
         if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
 
         this.fadeEndTime = fadeEndTime;
-        animationLoop.set(this.fadeEndTime - Date.now());
     }
 
     wasRequested() {
