@@ -34,7 +34,6 @@ class WorkerTile {
     status: 'parsing' | 'done';
     data: VectorTile;
     collisionBoxArray: CollisionBoxArray;
-    symbolBuckets: Array<SymbolBucket>;
 
     abort: ?() => void;
     reloadCallback: WorkerTileCallback;
@@ -114,16 +113,6 @@ class WorkerTile {
             }
         }
 
-        // Symbol buckets must be placed in reverse order.
-        this.symbolBuckets = [];
-        for (let i = layerIndex.symbolOrder.length - 1; i >= 0; i--) {
-            const bucket = buckets[layerIndex.symbolOrder[i]];
-            if (bucket) {
-                assert(bucket instanceof SymbolBucket);
-                this.symbolBuckets.push(((bucket: any): SymbolBucket));
-            }
-        }
-
         let error: ?Error;
         let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
         let imageMap: ?{[string]: StyleImage};
@@ -163,10 +152,12 @@ class WorkerTile {
                 const glyphAtlas = makeGlyphAtlas(glyphMap);
                 const imageAtlas = makeImageAtlas(imageMap);
 
-                for (const bucket of this.symbolBuckets) {
-                    recalculateLayers(bucket, this.zoom);
-
-                    performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
+                for (const key in buckets) {
+                    const bucket = buckets[key];
+                    if (bucket instanceof SymbolBucket) {
+                        recalculateLayers(bucket, this.zoom);
+                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
+                    }
                 }
 
                 this.status = 'done';
