@@ -24,7 +24,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Roadmap](https://www.mapbox.com/mapbox-gl-js/roadmap/)
 - [Contributor documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
 
-[<img width="981" alt="Mapbox GL gallery" src="docs/assets/gallery.png">](https://www.mapbox.com/gallery/)
+[<img width="981" alt="Mapbox GL gallery" src="docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
 
 ## License
 
