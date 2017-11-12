@@ -39,21 +39,21 @@ class Marker {
             element = DOM.create('div');
 
             // create svg marker icon based on the Maki icon marker-15
-            var svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
+            const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttributeNS(null, 'height', '30');
             svg.setAttributeNS(null, 'width', '30');
             svg.setAttributeNS(null, 'x', '0');
             svg.setAttributeNS(null, 'y', '0');
             svg.setAttributeNS(null, 'viewBox', '0 0 19 19');
 
-            var rect = DOM.createNS('http://www.w3.org/2000/svg', 'rect');
+            const rect = DOM.createNS('http://www.w3.org/2000/svg', 'rect');
             rect.setAttributeNS(null, 'fill', 'none');
             rect.setAttributeNS(null, 'x', '0');
             rect.setAttributeNS(null, 'y', '0');
             rect.setAttributeNS(null, 'width', '19');
             rect.setAttributeNS(null, 'height', '19');
 
-            var path = DOM.createNS('http://www.w3.org/2000/svg', 'path');
+            const path = DOM.createNS('http://www.w3.org/2000/svg', 'path');
             path.setAttributeNS(null, 'd', 'M7.5,0C5.0676,0,2.2297,1.4865,2.2297,5.2703 C2.2297,7.8378,6.2838,13.5135,7.5,15c1.0811-1.4865,5.2703-7.027,5.2703-9.7297C12.7703,1.4865,9.9324,0,7.5,0z');
             path.setAttributeNS(null, 'fill', '#4264FB');
             path.setAttributeNS(null, 'transform', 'translate(2 2)');
