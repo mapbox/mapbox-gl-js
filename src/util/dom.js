@@ -10,6 +10,11 @@ exports.create = function (tagName: *, className?: string, container?: HTMLEleme
     return el;
 };
 
+exports.createNS = function (namespaceURI: string, tagName: string) {
+    const el = window.document.createElementNS(namespaceURI, tagName);
+    return el;
+};
+
 const docStyle = (window.document.documentElement: any).style;
 
 function testProp(props) {
