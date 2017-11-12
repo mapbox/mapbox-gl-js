@@ -13,6 +13,7 @@ import type TileCoord from './tile_coord';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type {Callback} from '../types/callback';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';

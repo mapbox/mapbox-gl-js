@@ -1,3 +1,4 @@
+// @flow
 
 // Flow can't perfectly type Node-style callbacks yet; it does not have a way to
 // express that if the first parameter is null, the second is not, so for the time
@@ -13,5 +14,4 @@
 //    });
 //
 // See https://github.com/facebook/flow/issues/2123 for more.
-
-declare type Callback<T> = (error: ?Error, result: ?T) => void;
+export type Callback<T> = (error: ?Error, result: ?T) => void;

@@ -2,6 +2,8 @@
 
 const window = require('./window');
 
+import type { Callback } from '../types/callback';
+
 /**
  * The type of a resource.
  * @private

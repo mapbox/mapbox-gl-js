@@ -19,6 +19,7 @@ import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Coordinate from '../geo/coordinate';
+import type {Callback} from '../types/callback';
 
 export type ImageTextureSource =
   ImageData |

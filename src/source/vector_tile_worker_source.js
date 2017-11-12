@@ -15,6 +15,7 @@ import type {
 
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
+import type {Callback} from '../types/callback';
 
 export type LoadVectorTileResult = {
     vectorTile: VectorTile;

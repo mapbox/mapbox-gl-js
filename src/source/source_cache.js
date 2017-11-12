@@ -17,6 +17,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type CollisionIndex from '../symbol/collision_index';
+import type {Callback} from '../types/callback';
 
 /**
  * `SourceCache` is responsible for

@@ -11,6 +11,7 @@ import type {Source} from './source';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type {Callback} from '../types/callback';
 
 /**
  * A source containing GeoJSON.
