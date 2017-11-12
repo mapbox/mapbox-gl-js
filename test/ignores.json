@@ -14,8 +14,5 @@
   "render-tests/projection/skew": "axonometric rendering in gl-js tbd",
   "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
   "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
-  "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
-  "render-tests/text-pitch-alignment/auto-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
-  "render-tests/text-pitch-alignment/map-text-rotation-alignment-map": "https://github.com/mapbox/mapbox-gl-js/issues/5118",
-  "render-tests/text-pitch-scaling/line-half": "https://github.com/mapbox/mapbox-gl-js/issues/5118"
+  "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804"
 }
