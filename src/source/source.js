@@ -7,6 +7,7 @@ import type Evented from '../util/evented';
 import type Map from '../ui/map';
 import type Tile from './tile';
 import type TileCoord from './tile_coord';
+import type {Callback} from '../types/callback';
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`,

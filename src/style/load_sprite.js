@@ -7,6 +7,7 @@ const {RGBAImage} = require('../util/image');
 
 import type {StyleImage} from './style_image';
 import type {RequestTransformFunction} from '../ui/map';
+import type {Callback} from '../types/callback';
 
 module.exports = function(baseURL: string,
                           transformRequestCallback: RequestTransformFunction,

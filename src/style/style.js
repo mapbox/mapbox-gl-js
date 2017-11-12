@@ -33,6 +33,7 @@ import type {Source} from '../source/source';
 import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type CollisionIndex from '../symbol/collision_index';
+import type {Callback} from '../types/callback';
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
