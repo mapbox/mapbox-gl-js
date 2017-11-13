@@ -1,7 +1,41 @@
-# master
+# 0.42.0 (November 10, 2017)
 
-### :warning: Breaking changes
-- Require `heatmap-color` property to use expressions (not stop functions) [#5624](https://github.com/mapbox/mapbox-gl-js/issues/5624)
+# ⚠️ Breaking changes
+
+- Require that `heatmap-color` use expressions instead of stop functions [#5624](https://github.com/mapbox/mapbox-gl-js/issues/5624)
+- Remove support for validating and migrating v6 styles
+- Remove support for validating v7 styles [#5604](https://github.com/mapbox/mapbox-gl-js/pull/5604)
+- Remove support for including `{tokens}` in expressions for `text-field` and `icon-image` [#5599](https://github.com/mapbox/mapbox-gl-js/issues/5599)
+- Split `curve` expression into `step` and `interpolate` expressions [#5542](https://github.com/mapbox/mapbox-gl-js/pull/5542)
+- Disallow interpolation in expressions for `line-dasharray` [#5519](https://github.com/mapbox/mapbox-gl-js/pull/5519)
+
+# ✨ Features and improvements
+
+- Improve label collision detection [#5150](https://github.com/mapbox/mapbox-gl-js/pull/5150)
+  - Labels from different sources will now collide with each other
+  - Collisions caused by rotation and pitch are now smoothly transitioned with a fade
+  - Improved algorithm for fewer erroneous collisions, denser label placement, and greater label stability during rotation
+- Add `sqrt` expression [#5493](https://github.com/mapbox/mapbox-gl-js/pull/5493)
+
+# 🐛 Bug fixes and error reporting improvements
+
+- Fix viewport calculations for `fitBounds` when both zooming and padding change [#4846](https://github.com/mapbox/mapbox-gl-js/issues/4846)
+- Fix WebGL "range out of bounds for buffer" error caused by sorted symbol layers [#5620](https://github.com/mapbox/mapbox-gl-js/issues/5620)
+- Fix symbol fading across tile reloads [#5491](https://github.com/mapbox/mapbox-gl-js/issues/5491)
+- Change tile rendering order to better match GL Native [#5601](https://github.com/mapbox/mapbox-gl-js/pull/5601)
+- Ensure no errors are triggered when calling `queryRenderedFeatures` on a heatmap layer [#5594](https://github.com/mapbox/mapbox-gl-js/pull/5594)
+- Fix bug causing `queryRenderedSymbols` to return results from different sources [#5554](https://github.com/mapbox/mapbox-gl-js/issues/5554)
+- Fix CJK rendering issues [#5544](https://github.com/mapbox/mapbox-gl-js/issues/5544), [#5546](https://github.com/mapbox/mapbox-gl-js/issues/5546)
+- Account for `circle-stroke-width` in `queryRenderedFeatures` [#5514](https://github.com/mapbox/mapbox-gl-js/pull/5514)
+- Fix rendering of fill layers atop raster layers [#5513](https://github.com/mapbox/mapbox-gl-js/pull/5513)
+- Fix rendering of circle layers with a `circle-stroke-opacity` of 0 [#5496](https://github.com/mapbox/mapbox-gl-js/issues/5496)
+- Fix memory leak caused by actor callbacks [#5443](https://github.com/mapbox/mapbox-gl-js/issues/5443)
+- Fix source cache size for raster sources with tile sizes other than 512px [#4313](https://github.com/mapbox/mapbox-gl-js/issues/4313)
+- Validate that zoom expressions only appear at the top level of an expression [#5609](https://github.com/mapbox/mapbox-gl-js/issues/5609)
+- Validate that step and interpolate expressions don't have any duplicate stops [#5605](https://github.com/mapbox/mapbox-gl-js/issues/5605)
+- Fix rendering for `icon-text-fit` with a data-driven `text-size` [#5632](https://github.com/mapbox/mapbox-gl-js/pull/5632)
+- Improve validation to catch uses of deprecated function syntax [#5667](https://github.com/mapbox/mapbox-gl-js/pull/5667)
+- Permit altitude coordinates in `position` field in GeoJSON [#5608](https://github.com/mapbox/mapbox-gl-js/pull/5608)
 
 # 0.41.0 (October 11, 2017)
 
