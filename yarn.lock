@@ -10548,9 +10548,9 @@ websocket-extensions@>=0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.1.tgz#76899499c184b6ef754377c2dbb0cd6cb55d29e7"
 
-webworkify@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/webworkify/-/webworkify-1.4.0.tgz#71245d1e34cacf54e426bd955f8cc6ee12d024c2"
+webworkify@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/webworkify/-/webworkify-1.5.0.tgz#734ad87a774de6ebdd546e1d3e027da5b8f4a42c"
 
 weinre@^2.0.0-pre-I0Z7U9OV:
   version "2.0.0-pre-I0Z7U9OV"
