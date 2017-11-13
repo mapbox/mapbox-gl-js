@@ -50,5 +50,9 @@
   {
     "message": "layers[13].filter[1]: Bare objects invalid. Use [\"literal\", {...}] instead.",
     "line": 142
+  },
+  {
+    "message": "layers[14].filter[2][1]: string expected, array found",
+    "line": 152
   }
 ]
