@@ -126,7 +126,7 @@ function compileInOp(property, values) {
     const left = JSON.stringify(values.sort(compare));
     const right = compilePropertyReference(property);
 
-    if (values.length <= 200) return `${left}.indexOf(${right}) !== -1`;
+    if (values.length <= 200 || values.some(v => typeof v !== typeof values[0])) return `${left}.indexOf(${right}) !== -1`;
 
     return `${'function(v, a, i, j) {' +
         'while (i <= j) { var m = (i + j) >> 1;' +
