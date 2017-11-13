@@ -30,6 +30,7 @@ import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
 import type {PossiblyEvaluatedPropertyValue} from '../../style/properties';
+import type {Transferable} from '../../types/transferable';
 
 export type SingleCollisionBox = {
     x1: number;

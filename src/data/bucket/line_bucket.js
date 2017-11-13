@@ -16,6 +16,7 @@ import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../segment';
 import type {StructArray} from '../../util/struct_array';
+import type {Transferable} from '../../types/transferable';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.

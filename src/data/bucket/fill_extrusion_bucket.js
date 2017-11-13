@@ -18,6 +18,7 @@ import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type {StructArray} from '../../util/struct_array';
 import type Point from '@mapbox/point-geometry';
+import type {Transferable} from '../../types/transferable';
 
 const fillExtrusionInterface = {
     layoutAttributes: [

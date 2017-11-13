@@ -17,6 +17,7 @@ import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
 import type {SerializedStructArray} from '../util/struct_array';
 import type {FeatureFilter} from '../style-spec/feature_filter';
+import type {Transferable} from '../types/transferable';
 
 const FeatureIndexArray = createStructArrayType({
     members: [

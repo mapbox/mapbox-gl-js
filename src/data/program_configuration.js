@@ -12,6 +12,7 @@ import type {ViewType, StructArray, SerializedStructArray, StructArrayTypeParame
 import type Program from '../render/program';
 import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
+import type {Transferable} from '../types/transferable';
 
 type LayoutAttribute = {
     name: string,
