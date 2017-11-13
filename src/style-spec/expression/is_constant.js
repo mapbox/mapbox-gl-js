@@ -16,6 +16,8 @@ function isFeatureConstant(e: Expression) {
             e.name === 'id'
         ) {
             return false;
+        } else if (e.name.startsWith('filter-')) {
+            return false;
         }
     }
 

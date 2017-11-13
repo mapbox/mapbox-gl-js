@@ -81,6 +81,20 @@ function gt(ctx, [a, b]) { return a.evaluate(ctx) > b.evaluate(ctx); }
 function lteq(ctx, [a, b]) { return a.evaluate(ctx) <= b.evaluate(ctx); }
 function gteq(ctx, [a, b]) { return a.evaluate(ctx) >= b.evaluate(ctx); }
 
+function binarySearch(v, a, i, j) {
+    while (i <= j) {
+        const m = (i + j) >> 1;
+        if (a[m] === v)
+            return true;
+        if (a[m] > v)
+            j = m - 1;
+        else
+            i = m + 1;
+    }
+    return false;
+}
+
+
 CompoundExpression.register(expressions, {
     'error': [
         ErrorType,
@@ -314,6 +328,140 @@ CompoundExpression.register(expressions, {
         NumberType,
         varargs(NumberType),
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
+    ],
+    'filter-==': [
+        BooleanType,
+        [StringType, ValueType],
+        function (ctx) {
+            return ctx.properties()[this.args[0].value] === this.args[1].value;
+        }
+    ],
+    'filter-id-==': [
+        BooleanType,
+        [ValueType],
+        function (ctx) {
+            return ctx.id() === this.args[0].value;
+        }
+    ],
+    'filter-type-==': [
+        BooleanType,
+        [StringType],
+        function (ctx) {
+            return ctx.geometryType() === this.args[0].value;
+        }
+    ],
+    'filter-<': [
+        BooleanType,
+        [StringType, ValueType],
+        function (ctx) {
+            const v = ctx.properties()[this.args[0].value];
+            const b = this.args[1];
+            return typeof v === typeof b.value && v < b.value;
+        }
+    ],
+    'filter-id-<': [
+        BooleanType,
+        [ValueType],
+        function (ctx) {
+            const v = ctx.id();
+            const b = this.args[0];
+            return typeof v === typeof b.value && v < b.value;
+        }
+    ],
+    'filter->': [
+        BooleanType,
+        [StringType, ValueType],
+        function (ctx) {
+            const v = ctx.properties()[this.args[0].value];
+            const b = this.args[1];
+            return typeof v === typeof b.value && v > b.value;
+        }
+    ],
+    'filter-id->': [
+        BooleanType,
+        [ValueType],
+        function (ctx) {
+            const v = ctx.id();
+            const b = this.args[0];
+            return typeof v === typeof b.value && v > b.value;
+        }
+    ],
+    'filter-<=': [
+        BooleanType,
+        [StringType, ValueType],
+        function (ctx) {
+            const v = ctx.properties()[this.args[0].value];
+            const b = this.args[1];
+            return typeof v === typeof b.value && v <= b.value;
+        }
+    ],
+    'filter-id-<=': [
+        BooleanType,
+        [ValueType],
+        function (ctx) {
+            const v = ctx.id();
+            const b = this.args[0];
+            return typeof v === typeof b.value && v <= b.value;
+        }
+    ],
+    'filter->=': [
+        BooleanType,
+        [StringType, ValueType],
+        function (ctx) {
+            const v = ctx.properties()[this.args[0].value];
+            const b = this.args[1];
+            return typeof v === typeof b.value && v >= b.value;
+        }
+    ],
+    'filter-id->=': [
+        BooleanType,
+        [ValueType],
+        function (ctx) {
+            const v = ctx.id();
+            const b = this.args[0];
+            return typeof v === typeof b.value && v >= b.value;
+        }
+    ],
+    'filter-has': [
+        BooleanType,
+        [ValueType],
+        function (ctx) { return this.args[0].value in ctx.properties(); }
+    ],
+    'filter-has-id': [
+        BooleanType,
+        [],
+        (ctx) => ctx.id() !== null
+    ],
+    'filter-type-in': [
+        BooleanType,
+        [array(StringType)],
+        function (ctx) { return this.args[0].value.indexOf(ctx.geometryType()) >= 0; }
+    ],
+    'filter-id-in': [
+        BooleanType,
+        [array(ValueType)],
+        function (ctx) { return this.args[0].value.indexOf(ctx.id()) >= 0; }
+    ],
+    'filter-in-small': [
+        BooleanType,
+        [StringType, array(ValueType)],
+        function (ctx) {
+            // assumes this.args[1] is an array Literal
+            const value = ctx.properties()[this.args[0].value];
+            const array = this.args[1].value;
+            return array.indexOf(value) >= 0;
+        }
+    ],
+    'filter-in-large': [
+        BooleanType,
+        [StringType, array(ValueType)],
+        function (ctx) {
+            // assumes this.args[1] is a array Literal with values
+            // sorted in ascending order and of a single type
+            const value = ctx.properties()[this.args[0].value];
+            const array = this.args[1].value;
+            return binarySearch(value, array, 0, array.length - 1);
+        }
     ],
     '>': {
         type: BooleanType,
