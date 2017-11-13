@@ -9,6 +9,15 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
+    var layers = map.getStyle().layers;
+    // Find the index of the first symbol layer in the map style
+    var firstSymbolId;
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].type === 'symbol') {
+            firstSymbolId = layers[i].id;
+            break;
+        }
+    }
     map.addLayer({
         'id': 'urban-areas-fill',
         'type': 'fill',
@@ -27,6 +36,8 @@ map.on('load', function () {
     // exists in the stylesheet already, the new layer will be positioned
     // right before that layer in the stack, making it possible to put
     // 'overlays' anywhere in the layer stack.
-    }, 'water');
+    // Insert the layer beneath the first symbol layer.
+    }, firstSymbolId);
 });
 </script>
+
