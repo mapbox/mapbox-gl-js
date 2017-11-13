@@ -708,6 +708,39 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         t.end();
     });
 
+    t.test('retains all loaded children ', (t) => {
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'errored';
+                callback();
+            }
+        });
+
+        const idealTile = new TileCoord(3, 1, 2);
+        sourceCache._tiles[idealTile.id] = new Tile(idealTile);
+        sourceCache._tiles[idealTile.id].state = 'errored';
+
+        const loadedChildren = [
+            new TileCoord(4, 2, 4, 0),
+            new TileCoord(4, 3, 4, 0),
+            new TileCoord(4, 2, 5, 0),
+            new TileCoord(5, 6, 10, 0),
+            new TileCoord(5, 7, 10, 0),
+            new TileCoord(5, 6, 11, 0),
+            new TileCoord(5, 7, 11, 0)
+        ];
+
+        for (const t of loadedChildren) {
+            sourceCache._tiles[t.id] = new Tile(t);
+            sourceCache._tiles[t.id].state = 'loaded';
+        }
+
+        const retained = sourceCache._updateRetainedTiles([idealTile]);
+        t.deepEqual(Object.keys(retained), [idealTile].concat(loadedChildren).map(t=> t.id));
+
+        t.end();
+    });
+
     t.test('adds parent tile if ideal tile errors and no child tiles are loaded', (t)=>{
         const stateCache = {};
         const sourceCache = createSourceCache({
@@ -724,12 +757,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         stateCache[idealTiles[0].id] = 'loaded';
         const retained = sourceCache._updateRetainedTiles(idealTiles, 1);
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // checks all child tiles to see if they're loaded before loading parent
-            new TileCoord(2, 0, 2),
-            new TileCoord(2, 1, 2),
-            new TileCoord(2, 0, 3),
-            new TileCoord(2, 1, 3),
-
             // when child tiles aren't found, check and request parent tile
             new TileCoord(0, 0, 0)
         ]);
@@ -769,11 +796,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
 
         sourceCache._updateRetainedTiles([idealTile], 2);
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // all children
-            new TileCoord(3, 0, 0), // not found
-            new TileCoord(3, 1, 0), // not found
-            new TileCoord(3, 0, 1), // not found
-            new TileCoord(3, 1, 1), // not found
             // parents
             new TileCoord(1, 0, 0), // not found
             new TileCoord(0, 0, 0)  // not found
@@ -812,11 +834,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         const retained = sourceCache._updateRetainedTiles([idealTile], 1);
 
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // all children
-            new TileCoord(2, 0, 2), // not found
-            new TileCoord(2, 1, 2), // not found
-            new TileCoord(2, 0, 3), // not found
-            new TileCoord(2, 1, 3), // not found
             // parents
             new TileCoord(0, 0, 0), // found
         ]);
@@ -866,11 +883,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         const getTileSpy = t.spy(sourceCache, 'getTile');
         let retained = sourceCache._updateRetainedTiles([idealTile], 1);
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // all children
-            new TileCoord(2, 0, 0),
-            new TileCoord(2, 1, 0),
-            new TileCoord(2, 0, 1),
-            new TileCoord(2, 1, 1),
             // parent
             new TileCoord(0, 0, 0)
         ]);
@@ -888,7 +900,7 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         addTileSpy.restore();
         getTileSpy.restore();
         // remove child tile and check that it only uses parent tile
-        sourceCache._tiles['2'] = null;
+        delete sourceCache._tiles['2'];
         retained = sourceCache._updateRetainedTiles([idealTile], 1);
 
         t.deepEqual(retained, {
@@ -920,13 +932,7 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         const getTileSpy = t.spy(sourceCache, 'getTile');
         const retained = sourceCache._updateRetainedTiles([idealTile], 2);
 
-        t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // all children
-            new TileCoord(3, 0, 0),
-            new TileCoord(3, 1, 0),
-            new TileCoord(3, 0, 1),
-            new TileCoord(3, 1, 1)
-        ], 'doesn\'t request parent tiles bc they are lower than minzoom');
+        t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [], 'doesn\'t request parent tiles bc they are lower than minzoom');
 
         t.deepEqual(retained, {
             // ideal tile id (2, 0, 0)
@@ -979,11 +985,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         const getTileSpy = t.spy(sourceCache, 'getTile');
         sourceCache._updateRetainedTiles(idealTiles, 8);
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // child tiles
-            new TileCoord(9, 0, 0),
-            new TileCoord(9, 1, 0),
-            new TileCoord(9, 0, 1),
-            new TileCoord(9, 1, 1),
             // parent tile ascent
             new TileCoord(7, 0, 0),
             new TileCoord(6, 0, 0),
@@ -993,11 +994,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
             new TileCoord(2, 0, 0),
             new TileCoord(1, 0, 0),
             new TileCoord(0, 0, 0),
-            // second ideal tile children, no parent ascent
-            new TileCoord(9, 2, 0),
-            new TileCoord(9, 3, 0),
-            new TileCoord(9, 2, 1),
-            new TileCoord(9, 3, 1)
         ], 'only ascends up a tile pyramid once');
 
         getTileSpy.reset();
@@ -1010,22 +1006,11 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
 
         sourceCache._updateRetainedTiles(idealTiles, 8);
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
-            // child tiles
-            new TileCoord(9, 0, 0),
-            new TileCoord(9, 1, 0),
-            new TileCoord(9, 0, 1),
-            new TileCoord(9, 1, 1),
             // parent tile ascent
             new TileCoord(7, 0, 0),
             new TileCoord(6, 0, 0),
             new TileCoord(5, 0, 0),
             new TileCoord(4, 0, 0), // tile is loaded, stops ascent
-
-            // second ideal tile children, no parent ascent
-            new TileCoord(9, 2, 0),
-            new TileCoord(9, 3, 0),
-            new TileCoord(9, 2, 1),
-            new TileCoord(9, 3, 1)
         ], 'ascent stops if a loaded parent tile is found');
 
         getTileSpy.restore();

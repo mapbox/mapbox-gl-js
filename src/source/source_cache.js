@@ -447,7 +447,7 @@ class SourceCache extends Evented {
         const retain = {};
         const checked: {[number]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
-
+        const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
         for (i = 0; i < idealTileCoords.length; i++) {
             coord = idealTileCoords[i];
@@ -478,15 +478,13 @@ class SourceCache extends Evented {
                         covered = false;
                     }
                 } else {
-                    // Check all four actual child tiles.
+                    this._findLoadedChildren(coord, maxCoveringZoom, retain);
+                    // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
                     const children = coord.children(this._source.maxzoom);
                     for (let j = 0; j < children.length; j++) {
-                        const childCoord = children[j];
-                        const childTile = childCoord ? this.getTile(childCoord) : null;
-                        if (!!childTile && childTile.hasData()) {
-                            retain[childCoord.id] = true;
-                        } else {
+                        if (!retain[children[j].id]) {
                             covered = false;
+                            break;
                         }
                     }
                 }
