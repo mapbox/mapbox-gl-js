@@ -21,6 +21,7 @@ import type {
     WorkerTileParameters,
     WorkerTileCallback,
 } from '../source/worker_source';
+import type {Transferable} from '../types/transferable';
 
 class WorkerTile {
     coord: TileCoord;

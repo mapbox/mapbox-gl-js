@@ -6,6 +6,7 @@ import type {SerializedFeatureIndex} from '../data/feature_index';
 import type {SerializedStructArray} from '../util/struct_array';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
+import type {Transferable} from '../types/transferable';
 
 export type TileParameters = {
     source: string,

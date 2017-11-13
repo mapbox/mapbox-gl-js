@@ -4,6 +4,7 @@ const util = require('./util');
 const Actor = require('./actor');
 
 import type WorkerPool from './worker_pool';
+import type {Transferable} from '../types/transferable';
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated

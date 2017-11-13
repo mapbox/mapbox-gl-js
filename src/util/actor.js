@@ -2,6 +2,8 @@
 
 const util = require('./util');
 
+import type {Transferable} from '../types/transferable';
+
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
  * that maintains the relationship between asynchronous tasks and the objects

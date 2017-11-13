@@ -4,6 +4,8 @@
 
 const assert = require('assert');
 
+import type {Transferable} from '../types/transferable';
+
 module.exports = createStructArrayType;
 
 const viewTypes = {

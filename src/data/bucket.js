@@ -6,6 +6,7 @@ import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type FeatureIndex from './feature_index';
+import type {Transferable} from '../types/transferable';
 
 export type BucketParameters = {
     index: number,
