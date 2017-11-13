@@ -479,7 +479,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-22).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -511,7 +511,7 @@ class Map extends Camera {
      * the map will zoom to the new maximum.
      *
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
-     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
+     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
      * @returns {Map} `this`
      */
     setMaxZoom(maxZoom?: ?number) {
@@ -1171,8 +1171,8 @@ class Map extends Camera {
      * Sets the zoom extent for the specified style layer.
      *
      * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom to set (0-20).
-     * @param {number} maxzoom The maximum zoom to set (0-20).
+     * @param {number} minzoom The minimum zoom to set (0-24).
+     * @param {number} maxzoom The maximum zoom to set (0-24).
      * @returns {Map} `this`
      * @example
      * map.setLayerZoomRange('my-layer', 2, 5);
