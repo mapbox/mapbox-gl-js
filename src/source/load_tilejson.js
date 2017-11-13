@@ -7,6 +7,7 @@ const normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 import type {RequestTransformFunction} from '../ui/map';
 import type {Callback} from '../types/callback';
+import type {TileJSON} from '../types/tilejson';
 
 module.exports = function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>) {
     const loaded = function(err, tileJSON: any) {

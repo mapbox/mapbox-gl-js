@@ -18,6 +18,8 @@ const {
     normalizeTileURL
 } = require('../../src/util/mapbox');
 
+import type {TileJSON} from '../../src/types/tilejson';
+
 // Note: this class is extended in turn by the LayoutDDS benchmark.
 module.exports = class Layout extends Benchmark {
     glyphs: Object;
