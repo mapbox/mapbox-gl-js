@@ -14,6 +14,7 @@ const Marker = require('./ui/marker');
 const Style = require('./style/style');
 const LngLat = require('./geo/lng_lat');
 const LngLatBounds = require('./geo/lng_lat_bounds');
+const Transform = require('./geo/transform');
 const Point = require('@mapbox/point-geometry');
 const Evented = require('./util/evented');
 const config = require('./util/config');
@@ -40,6 +41,7 @@ module.exports = {
     Point,
     Evented,
     config,
+    Transform,
 
     /**
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
