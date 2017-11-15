@@ -332,7 +332,7 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(id)) {
                 retain[id] = true;
-                return this._cache.getWithoutRemoving(id);
+                return this._cache.get(id);
             }
         }
     }
@@ -536,7 +536,7 @@ class SourceCache extends Evented {
             return tile;
 
 
-        tile = this._cache.get((tileCoord.id: any));
+        tile = this._cache.getAndRemove((tileCoord.id: any));
         if (tile) {
             this._updatePlacement();
             if (this.map)
