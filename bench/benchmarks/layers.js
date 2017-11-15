@@ -4,9 +4,9 @@ const createMap = require('../lib/create_map');
 const style = require('../data/empty.json');
 
 function generateLayers(layer) {
-    let generated = [];
+    const generated = [];
     for (let i = 0; i < 50; i++) {
-        let id = layer.id + i;
+        const id = layer.id + i;
         generated.push(Object.assign({}, layer, {id: id}));
     }
     return generated;
