@@ -1579,6 +1579,9 @@ class Map extends Camera {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
             this.style._generateCollisionBoxes();
+        } else {
+            // Otherwise, call an update to remove collision boxes
+            this._update();
         }
     }
 
