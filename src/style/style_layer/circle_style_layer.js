@@ -46,8 +46,8 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
             bearing, pixelsToTileUnits);
-        const radius = this.paint.get('circle-radius').evaluate({zoom}, feature) * pixelsToTileUnits;
-        const stroke = this.paint.get('circle-stroke-width').evaluate({zoom}, feature) * pixelsToTileUnits;
+        const radius = this.paint.get('circle-radius').evaluate(feature) * pixelsToTileUnits;
+        const stroke = this.paint.get('circle-stroke-width').evaluate(feature) * pixelsToTileUnits;
         return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, radius + stroke);
     }
 }

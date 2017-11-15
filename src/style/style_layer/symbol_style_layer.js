@@ -16,7 +16,7 @@ const {
 
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProperties, PaintProperties} from './symbol_style_layer_properties';
-import type {GlobalProperties, Feature} from '../../style-spec/expression';
+import type {Feature} from '../../style-spec/expression';
 import type {EvaluationParameters} from '../properties';
 
 class SymbolStyleLayer extends StyleLayer {
@@ -59,8 +59,8 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    getValueAndResolveTokens(name: *, globals: GlobalProperties, feature: Feature) {
-        const value = this.layout.get(name).evaluate(globals, feature);
+    getValueAndResolveTokens(name: *, feature: Feature) {
+        const value = this.layout.get(name).evaluate(feature);
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
             return resolveTokens(feature.properties, value);

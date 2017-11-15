@@ -27,9 +27,9 @@ type TransitionParameters = {
 };
 
 export type EvaluationParameters = GlobalProperties & {
-    now: TimePoint,
-    defaultFadeDuration: number,
-    zoomHistory: ZoomHistory
+    now?: TimePoint,
+    defaultFadeDuration?: number,
+    zoomHistory?: ZoomHistory
 };
 
 export interface Property<T, R> {
@@ -166,7 +166,7 @@ class TransitioningPropertyValue<T, R> {
     }
 
     possiblyEvaluate(parameters: EvaluationParameters): R {
-        const now = parameters.now;
+        const now = parameters.now || 0;
         const finalValue = this.value.possiblyEvaluate(parameters);
         const prior = this.prior;
         if (!prior) {
@@ -274,10 +274,12 @@ export type PossiblyEvaluatedValue<T> =
 class PossiblyEvaluatedPropertyValue<T> {
     property: DataDrivenProperty<T>;
     value: PossiblyEvaluatedValue<T>;
+    globals: GlobalProperties;
 
-    constructor(property: DataDrivenProperty<T>, value: PossiblyEvaluatedValue<T>) {
+    constructor(property: DataDrivenProperty<T>, value: PossiblyEvaluatedValue<T>, globals: GlobalProperties) {
         this.property = property;
         this.value = value;
+        this.globals = globals;
     }
 
     isConstant(): boolean {
@@ -292,8 +294,8 @@ class PossiblyEvaluatedPropertyValue<T> {
         }
     }
 
-    evaluate(globals: GlobalProperties, feature: Feature): T {
-        return this.property.evaluate(this.value, globals, feature);
+    evaluate(feature: Feature): T {
+        return this.property.evaluate(this.value, this.globals, feature);
     }
 }
 
@@ -348,9 +350,9 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
             parameters = extend({}, parameters, {zoom: Math.floor(parameters.zoom)});
         }
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters)});
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters)}, parameters);
         } else {
-            return new PossiblyEvaluatedPropertyValue(this, value.expression);
+            return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }
     }
 
@@ -367,7 +369,7 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
 
         const interp: ?(a: T, b: T, t: number) => T = (interpolate: any)[this.specification.type];
         if (interp) {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)});
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)}, a.globals);
         } else {
             return a;
         }
@@ -408,7 +410,7 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
         }
     }
 
-    _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
+    _calculate(min: T, mid: T, max: T, parameters: any): ?CrossFaded<T> {
         const z = parameters.zoom;
         const fraction = z - Math.floor(z);
         const d = parameters.defaultFadeDuration;
