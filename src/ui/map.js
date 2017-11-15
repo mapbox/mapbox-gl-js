@@ -140,8 +140,8 @@ const defaultOptions = {
  * @extends Evented
  * @param {Object} options
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
- * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-22).
- * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-22).
+ * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+ * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -479,7 +479,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-22).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -511,7 +511,7 @@ class Map extends Camera {
      * the map will zoom to the new maximum.
      *
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
-     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
+     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 24).
      * @returns {Map} `this`
      */
     setMaxZoom(maxZoom?: ?number) {
