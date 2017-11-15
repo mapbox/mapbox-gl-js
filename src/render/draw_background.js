@@ -21,6 +21,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const transform = painter.transform;
     const tileSize = transform.tileSize;
     const image = layer.paint.get('background-pattern');
+    const globals = {zoom: transform.zoom};
 
     const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
@@ -31,9 +32,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     const properties = new PossiblyEvaluated({
         'background-color': new PossiblyEvaluatedPropertyValue(
-            fillLayerPaintProperties['fill-color'], {kind: 'constant', value: color}),
+            fillLayerPaintProperties['fill-color'], {kind: 'constant', value: color}, globals),
         'background-opacity': new PossiblyEvaluatedPropertyValue(
-            fillLayerPaintProperties['fill-opacity'], {kind: 'constant', value: opacity})
+            fillLayerPaintProperties['fill-opacity'], {kind: 'constant', value: opacity}, globals)
     });
 
     let program;
@@ -41,13 +42,13 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         if (pattern.isPatternMissing(image, painter)) return;
         const configuration = ProgramConfiguration.forBackgroundPattern(opacity);
         program = painter.useProgram('fillPattern', configuration);
-        configuration.setUniforms(gl, program, properties, {zoom: painter.transform.zoom});
+        configuration.setUniforms(gl, program, properties, globals);
         pattern.prepare(image, painter, program);
         painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
     } else {
         const configuration = ProgramConfiguration.forBackgroundColor(color, opacity);
         program = painter.useProgram('fill', configuration);
-        configuration.setUniforms(gl, program, properties, {zoom: painter.transform.zoom});
+        configuration.setUniforms(gl, program, properties, globals);
         painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
     }
 

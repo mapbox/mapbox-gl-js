@@ -5,8 +5,8 @@ const rtlTextPlugin = require('../source/rtl_text_plugin');
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 
-module.exports = function(text: string, layer: SymbolStyleLayer, globalProperties: Object, feature: Feature) {
-    const transform = layer.layout.get('text-transform').evaluate(globalProperties, feature);
+module.exports = function(text: string, layer: SymbolStyleLayer, feature: Feature) {
+    const transform = layer.layout.get('text-transform').evaluate(feature);
     if (transform === 'uppercase') {
         text = text.toLocaleUpperCase();
     } else if (transform === 'lowercase') {

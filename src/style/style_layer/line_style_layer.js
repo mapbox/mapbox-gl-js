@@ -65,9 +65,9 @@ class LineStyleLayer extends StyleLayer {
             this.paint.get('line-translate-anchor'),
             bearing, pixelsToTileUnits);
         const halfWidth = pixelsToTileUnits / 2 * getLineWidth(
-            this.paint.get('line-width').evaluate({zoom}, feature),
-            this.paint.get('line-gap-width').evaluate({zoom}, feature));
-        const lineOffset = this.paint.get('line-offset').evaluate({zoom}, feature);
+            this.paint.get('line-width').evaluate(feature),
+            this.paint.get('line-gap-width').evaluate(feature));
+        const lineOffset = this.paint.get('line-offset').evaluate(feature);
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
         }
