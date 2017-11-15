@@ -3,6 +3,15 @@ const Benchmark = require('../lib/benchmark');
 const createMap = require('../lib/create_map');
 const style = require('../data/empty.json');
 
+function generateLayers(layer) {
+    const generated = [];
+    for (let i = 0; i < 50; i++) {
+        const id = layer.id + i;
+        generated.push(Object.assign({}, layer, {id: id}));
+    }
+    return generated;
+}
+
 class LayerBenchmark extends Benchmark {
     setup() {
         return createMap({
@@ -32,10 +41,10 @@ class LayerBackground extends LayerBenchmark {
         super();
 
         this.layerStyle = Object.assign({}, style, {
-            layers: [{
+            layers: generateLayers({
                 id: 'backgroundlayer',
                 type: 'background'
-            }]
+            })
         });
     }
 }
@@ -45,12 +54,12 @@ class LayerCircle extends LayerBenchmark {
         super();
 
         this.layerStyle = Object.assign({}, style, {
-            layers: [{
+            layers: generateLayers({
                 'id': 'circlelayer',
                 'type': 'circle',
                 'source': 'composite',
                 'source-layer': 'poi_label'
-            }]
+            })
         });
     }
 }
@@ -60,7 +69,7 @@ class LayerFill extends LayerBenchmark {
         super();
 
         this.layerStyle = Object.assign({}, style, {
-            layers: [{
+            layers: generateLayers({
                 'id': 'filllayer',
                 'type': 'fill',
                 'source': 'composite',
@@ -69,7 +78,7 @@ class LayerFill extends LayerBenchmark {
                     'fill-color': 'black',
                     'fill-outline-color': 'red'
                 }
-            }]
+            })
         });
     }
 }
@@ -79,7 +88,7 @@ class LayerFillExtrusion extends LayerBenchmark {
         super();
 
         this.layerStyle = Object.assign({}, style, {
-            layers: [{
+            layers: generateLayers({
                 'id': 'fillextrusionlayer',
                 'type': 'fill-extrusion',
                 'source': 'composite',
@@ -87,7 +96,7 @@ class LayerFillExtrusion extends LayerBenchmark {
                 'paint': {
                     'fill-extrusion-height': 30
                 }
-            }]
+            })
         });
     }
 }
@@ -104,7 +113,7 @@ class LayerHeatmap extends LayerBenchmark {
                     'maxzoom': 23
                 }
             },
-            layers: [{
+            layers: generateLayers({
                 'id': 'layer',
                 'type': 'heatmap',
                 'source': 'heatmap',
@@ -126,7 +135,7 @@ class LayerHeatmap extends LayerBenchmark {
                         1, "red"
                     ]
                 }
-            }]
+            })
         });
     }
 }
@@ -136,12 +145,12 @@ class LayerLine extends LayerBenchmark {
         super();
 
         this.layerStyle = Object.assign({}, style, {
-            layers: [{
+            layers: generateLayers({
                 'id': 'linelayer',
                 'type': 'line',
                 'source': 'composite',
                 'source-layer': 'road'
-            }]
+            })
         });
     }
 }
@@ -158,11 +167,11 @@ class LayerRaster extends LayerBenchmark {
                     'tileSize': 256
                 }
             },
-            layers: [{
+            layers: generateLayers({
                 'id': 'rasterlayer',
                 'type': 'raster',
                 'source': 'satellite'
-            }]
+            })
         });
     }
 }
@@ -172,7 +181,7 @@ class LayerSymbol extends LayerBenchmark {
         super();
 
         this.layerStyle = Object.assign({}, style, {
-            layers: [{
+            layers: generateLayers({
                 'id': 'symbollayer',
                 'type': 'symbol',
                 'source': 'composite',
@@ -181,7 +190,7 @@ class LayerSymbol extends LayerBenchmark {
                     'icon-image': 'dot-11',
                     'text-field': '{name_en}'
                 }
-            }]
+            })
         });
     }
 }
