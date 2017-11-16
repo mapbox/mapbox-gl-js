@@ -5,6 +5,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -14,7 +15,7 @@ const {
 import type Color from '../../style-spec/util/color';
 
 
-export type PaintProperties = {|
+export type PaintProps = {|
     "fill-extrusion-opacity": DataConstantProperty<number>,
     "fill-extrusion-color": DataDrivenProperty<Color>,
     "fill-extrusion-translate": DataConstantProperty<[number, number]>,
@@ -24,7 +25,7 @@ export type PaintProperties = {|
     "fill-extrusion-base": DataDrivenProperty<number>,
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-opacity": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-opacity"]),
     "fill-extrusion-color": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-color"]),
     "fill-extrusion-translate": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-translate"]),
@@ -32,6 +33,6 @@ const paint: PaintProperties = {
     "fill-extrusion-pattern": new CrossFadedProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern"]),
     "fill-extrusion-height": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height"]),
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
-};
+});
 
 module.exports = { paint };

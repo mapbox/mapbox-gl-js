@@ -5,6 +5,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -13,7 +14,7 @@ const {
 
 import type Color from '../../style-spec/util/color';
 
-export type LayoutProperties = {|
+export type LayoutProps = {|
     "symbol-placement": DataConstantProperty<"point" | "line">,
     "symbol-spacing": DataConstantProperty<number>,
     "symbol-avoid-edges": DataConstantProperty<boolean>,
@@ -52,7 +53,7 @@ export type LayoutProperties = {|
     "text-optional": DataConstantProperty<boolean>,
 |};
 
-const layout: LayoutProperties = {
+const layout: Properties<LayoutProps> = new Properties({
     "symbol-placement": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-placement"]),
     "symbol-spacing": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-spacing"]),
     "symbol-avoid-edges": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-avoid-edges"]),
@@ -89,9 +90,9 @@ const layout: LayoutProperties = {
     "text-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["text-allow-overlap"]),
     "text-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["text-ignore-placement"]),
     "text-optional": new DataConstantProperty(styleSpec["layout_symbol"]["text-optional"]),
-};
+});
 
-export type PaintProperties = {|
+export type PaintProps = {|
     "icon-opacity": DataDrivenProperty<number>,
     "icon-color": DataDrivenProperty<Color>,
     "icon-halo-color": DataDrivenProperty<Color>,
@@ -108,7 +109,7 @@ export type PaintProperties = {|
     "text-translate-anchor": DataConstantProperty<"map" | "viewport">,
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
     "icon-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-opacity"]),
     "icon-color": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-color"]),
     "icon-halo-color": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-color"]),
@@ -123,6 +124,6 @@ const paint: PaintProperties = {
     "text-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["text-halo-blur"]),
     "text-translate": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate"]),
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
-};
+});
 
 module.exports = { paint, layout };

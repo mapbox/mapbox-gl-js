@@ -152,8 +152,8 @@ class TransitionablePropertyValue<T, R> {
  *
  * @private
  */
-type TransitionablePropertyValues<Properties: Object>
-    = $Exact<$ObjMap<Properties, <T, R>(p: Property<T, R>) => TransitionablePropertyValue<T, R>>>
+type TransitionablePropertyValues<Props: Object>
+    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => TransitionablePropertyValue<T, R>>>
 
 /**
  * `Transitionable` stores a map of all (property name, `TransitionablePropertyValue`) pairs for paint properties of a
@@ -162,14 +162,13 @@ type TransitionablePropertyValues<Properties: Object>
  *
  * @private
  */
-class Transitionable<Properties: Object> {
-    _values: TransitionablePropertyValues<Properties>;
+class Transitionable<Props: Object> {
+    _properties: Properties<Props>;
+    _values: TransitionablePropertyValues<Props>;
 
-    constructor(properties: Properties) {
-        const values = this._values = ({}: any);
-        for (const property in properties) {
-            values[property] = new TransitionablePropertyValue(properties[property]);
-        }
+    constructor(properties: Properties<Props>) {
+        this._properties = properties;
+        this._values = (Object.create(properties.defaultTransitionablePropertyValues): any);
     }
 
     getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
@@ -177,6 +176,11 @@ class Transitionable<Properties: Object> {
     }
 
     setValue<S: string, T>(name: S, value: PropertyValueSpecification<T> | void) {
+        if (!this._values.hasOwnProperty(name)) {
+            this._values[name] = new TransitionablePropertyValue(this._values[name].property);
+        }
+        // Note that we do not _remove_ an own property in the case where a value is being reset
+        // to the default: the transition might still be non-default.
         this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : value);
     }
 
@@ -185,12 +189,15 @@ class Transitionable<Properties: Object> {
     }
 
     setTransition<S: string>(name: S, value: TransitionSpecification | void) {
+        if (!this._values.hasOwnProperty(name)) {
+            this._values[name] = new TransitionablePropertyValue(this._values[name].property);
+        }
         this._values[name].transition = value || undefined;
     }
 
     serialize() {
         const result: any = {};
-        for (const property in this._values) {
+        for (const property of Object.keys(this._values)) {
             const value = this.getValue(property);
             if (value !== undefined) {
                 result[property] = value;
@@ -204,20 +211,20 @@ class Transitionable<Properties: Object> {
         return result;
     }
 
-    transitioned(parameters: TransitionParameters, prior: Transitioning<Properties>): Transitioning<Properties> {
-        const result: any = {};
-        for (const property in this._values) {
-            result[property] = this._values[property].transitioned(parameters, prior._values[property]);
+    transitioned(parameters: TransitionParameters, prior: Transitioning<Props>): Transitioning<Props> {
+        const result = new Transitioning(this._properties); // eslint-disable-line no-use-before-define
+        for (const property of Object.keys(this._values)) {
+            result._values[property] = this._values[property].transitioned(parameters, prior._values[property]);
         }
-        return new Transitioning(result); // eslint-disable-line no-use-before-define
+        return result;
     }
 
-    untransitioned(): Transitioning<Properties> {
-        const result: any = {};
-        for (const property in this._values) {
-            result[property] = this._values[property].untransitioned();
+    untransitioned(): Transitioning<Props> {
+        const result = new Transitioning(this._properties); // eslint-disable-line no-use-before-define
+        for (const property of Object.keys(this._values)) {
+            result._values[property] = this._values[property].untransitioned();
         }
-        return new Transitioning(result); // eslint-disable-line no-use-before-define
+        return result;
     }
 }
 
@@ -287,8 +294,8 @@ class TransitioningPropertyValue<T, R> {
  *
  * @private
  */
-type TransitioningPropertyValues<Properties: Object>
-    = $Exact<$ObjMap<Properties, <T, R>(p: Property<T, R>) => TransitioningPropertyValue<T, R>>>
+type TransitioningPropertyValues<Props: Object>
+    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => TransitioningPropertyValue<T, R>>>
 
 /**
  * `Transitioning` stores a map of all (property name, `TransitioningPropertyValue`) pairs for paint properties of a
@@ -297,23 +304,25 @@ type TransitioningPropertyValues<Properties: Object>
  *
  * @private
  */
-class Transitioning<Properties: Object> {
-    _values: TransitioningPropertyValues<Properties>;
+class Transitioning<Props: Object> {
+    _properties: Properties<Props>;
+    _values: TransitioningPropertyValues<Props>;
 
-    constructor(values: TransitioningPropertyValues<Properties>) {
-        this._values = values;
+    constructor(properties: Properties<Props>) {
+        this._properties = properties;
+        this._values = (Object.create(properties.defaultTransitioningPropertyValues): any);
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters): PossiblyEvaluated<Properties> {
-        const result: any = {};
-        for (const property in this._values) {
-            result[property] = this._values[property].possiblyEvaluate(parameters);
+    possiblyEvaluate(parameters: EvaluationParameters): PossiblyEvaluated<Props> {
+        const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
+        for (const property of Object.keys(this._values)) {
+            result._values[property] = this._values[property].possiblyEvaluate(parameters);
         }
-        return new PossiblyEvaluated(result); // eslint-disable-line no-use-before-define
+        return result;
     }
 
     hasTransition() {
-        for (const property in this._values) {
+        for (const property of Object.keys(this._values)) {
             if (this._values[property].prior) {
                 return true;
             }
@@ -330,8 +339,8 @@ class Transitioning<Properties: Object> {
  *
  * @private
  */
-type LayoutPropertyValues<Properties: Object>
-    = $Exact<$ObjMap<Properties, <T, R>(p: Property<T, R>) => PropertyValue<T, R>>>
+type PropertyValues<Props: Object>
+    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => PropertyValue<T, R>>>
 
 /**
  * Because layout properties are not transitionable, they have a simpler representation and evaluation chain than
@@ -344,14 +353,13 @@ type LayoutPropertyValues<Properties: Object>
  *
  * @private
  */
-class Layout<Properties: Object> {
-    _values: LayoutPropertyValues<Properties>;
+class Layout<Props: Object> {
+    _properties: Properties<Props>;
+    _values: PropertyValues<Props>;
 
-    constructor(properties: Properties) {
-        const values = this._values = ({}: any);
-        for (const property in properties) {
-            values[property] = new PropertyValue(properties[property], undefined);
-        }
+    constructor(properties: Properties<Props>) {
+        this._properties = properties;
+        this._values = (Object.create(properties.defaultPropertyValues): any);
     }
 
     getValue<S: string>(name: S) {
@@ -364,7 +372,7 @@ class Layout<Properties: Object> {
 
     serialize() {
         const result: any = {};
-        for (const property in this._values) {
+        for (const property of Object.keys(this._values)) {
             const value = this.getValue(property);
             if (value !== undefined) {
                 result[property] = value;
@@ -373,12 +381,12 @@ class Layout<Properties: Object> {
         return result;
     }
 
-    possiblyEvaluate(parameters: EvaluationParameters): PossiblyEvaluated<Properties> {
-        const result: any = {};
-        for (const property in this._values) {
-            result[property] = this._values[property].possiblyEvaluate(parameters);
+    possiblyEvaluate(parameters: EvaluationParameters): PossiblyEvaluated<Props> {
+        const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
+        for (const property of Object.keys(this._values)) {
+            result._values[property] = this._values[property].possiblyEvaluate(parameters);
         }
-        return new PossiblyEvaluated(result); // eslint-disable-line no-use-before-define
+        return result;
     }
 }
 
@@ -463,21 +471,23 @@ class PossiblyEvaluatedPropertyValue<T> {
  *
  * @private
  */
-type PossiblyEvaluatedPropertyValues<Properties: Object>
-    = $Exact<$ObjMap<Properties, <T, R>(p: Property<T, R>) => R>>
+type PossiblyEvaluatedPropertyValues<Props: Object>
+    = $Exact<$ObjMap<Props, <T, R>(p: Property<T, R>) => R>>
 
 /**
  * `PossiblyEvaluated` stores a map of all (property name, `R`) pairs for paint or layout properties of a
  * given layer type.
  */
-class PossiblyEvaluated<Properties: Object> {
-    _values: PossiblyEvaluatedPropertyValues<Properties>;
+class PossiblyEvaluated<Props: Object> {
+    _properties: Properties<Props>;
+    _values: PossiblyEvaluatedPropertyValues<Props>;
 
-    constructor(values: PossiblyEvaluatedPropertyValues<Properties>) {
-        this._values = values;
+    constructor(properties: Properties<Props>) {
+        this._properties = properties;
+        this._values = (Object.create(properties.defaultPossiblyEvaluatedValues): any);
     }
 
-    get<S: string>(name: S): $ElementType<PossiblyEvaluatedPropertyValues<Properties>, S> {
+    get<S: string>(name: S): $ElementType<PossiblyEvaluatedPropertyValues<Props>, S> {
         return this._values[name];
     }
 }
@@ -631,6 +641,45 @@ class HeatmapColorProperty implements Property<Color, void> {
     interpolate() {}
 }
 
+/**
+ * `Properties` holds objects containing default values for the layout or paint property set of a given
+ * layer type. These objects are immutable, and they are used as the prototypes for the `_values` members of
+ * `Transitionable`, `Transitioning`, `Layout`, and `PossiblyEvaluated`. This allows these classes to avoid
+ * doing work in the common case where a property has no explicit value set and should be considered to take
+ * on the default value: using `for (const property of Object.keys(this._values))`, they can iterate over
+ * only the _own_ properties of `_values`, skipping repeated calculation of transitions and possible/final
+ * evaluations for defaults, the result of which will always be the same.
+ *
+ * @private
+ */
+class Properties<Props: Object> {
+    properties: Props;
+    defaultPropertyValues: PropertyValues<Props>;
+    defaultTransitionablePropertyValues: TransitionablePropertyValues<Props>;
+    defaultTransitioningPropertyValues: TransitioningPropertyValues<Props>;
+    defaultPossiblyEvaluatedValues: PossiblyEvaluatedPropertyValues<Props>;
+
+    constructor(properties: Props) {
+        this.properties = properties;
+        this.defaultPropertyValues = ({}: any);
+        this.defaultTransitionablePropertyValues = ({}: any);
+        this.defaultTransitioningPropertyValues = ({}: any);
+        this.defaultPossiblyEvaluatedValues = ({}: any);
+
+        for (const property in properties) {
+            const prop = properties[property];
+            const defaultPropertyValue = this.defaultPropertyValues[property] =
+                new PropertyValue(prop, undefined);
+            const defaultTransitionablePropertyValue = this.defaultTransitionablePropertyValues[property] =
+                new TransitionablePropertyValue(prop);
+            this.defaultTransitioningPropertyValues[property] =
+                defaultTransitionablePropertyValue.untransitioned();
+            this.defaultPossiblyEvaluatedValues[property] =
+                defaultPropertyValue.possiblyEvaluate(({}: any));
+        }
+    }
+}
+
 module.exports = {
     PropertyValue,
     Transitionable,
@@ -641,5 +690,6 @@ module.exports = {
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
+    HeatmapColorProperty,
+    Properties
 };

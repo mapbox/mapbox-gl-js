@@ -9,12 +9,12 @@ const {
     PossiblyEvaluated
 } = require('../properties');
 
-import type {PaintProperties} from './background_style_layer_properties';
+import type {PaintProps} from './background_style_layer_properties';
 
 class BackgroundStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProperties>;
-    _transitioningPaint: Transitioning<PaintProperties>;
-    paint: PossiblyEvaluated<PaintProperties>;
+    _transitionablePaint: Transitionable<PaintProps>;
+    _transitioningPaint: Transitioning<PaintProps>;
+    paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);

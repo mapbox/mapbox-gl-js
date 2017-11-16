@@ -5,6 +5,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -14,7 +15,7 @@ const {
 import type Color from '../../style-spec/util/color';
 
 
-export type PaintProperties = {|
+export type PaintProps = {|
     "fill-antialias": DataConstantProperty<boolean>,
     "fill-opacity": DataDrivenProperty<number>,
     "fill-color": DataDrivenProperty<Color>,
@@ -24,7 +25,7 @@ export type PaintProperties = {|
     "fill-pattern": CrossFadedProperty<string>,
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
     "fill-antialias": new DataConstantProperty(styleSpec["paint_fill"]["fill-antialias"]),
     "fill-opacity": new DataDrivenProperty(styleSpec["paint_fill"]["fill-opacity"]),
     "fill-color": new DataDrivenProperty(styleSpec["paint_fill"]["fill-color"]),
@@ -32,6 +33,6 @@ const paint: PaintProperties = {
     "fill-translate": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate"]),
     "fill-translate-anchor": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate-anchor"]),
     "fill-pattern": new CrossFadedProperty(styleSpec["paint_fill"]["fill-pattern"]),
-};
+});
 
 module.exports = { paint };

@@ -5,6 +5,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -13,21 +14,21 @@ const {
 
 import type Color from '../../style-spec/util/color';
 
-export type LayoutProperties = {|
+export type LayoutProps = {|
     "line-cap": DataConstantProperty<"butt" | "round" | "square">,
     "line-join": DataDrivenProperty<"bevel" | "round" | "miter">,
     "line-miter-limit": DataConstantProperty<number>,
     "line-round-limit": DataConstantProperty<number>,
 |};
 
-const layout: LayoutProperties = {
+const layout: Properties<LayoutProps> = new Properties({
     "line-cap": new DataConstantProperty(styleSpec["layout_line"]["line-cap"]),
     "line-join": new DataDrivenProperty(styleSpec["layout_line"]["line-join"]),
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
-};
+});
 
-export type PaintProperties = {|
+export type PaintProps = {|
     "line-opacity": DataDrivenProperty<number>,
     "line-color": DataDrivenProperty<Color>,
     "line-translate": DataConstantProperty<[number, number]>,
@@ -40,7 +41,7 @@ export type PaintProperties = {|
     "line-pattern": CrossFadedProperty<string>,
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
     "line-opacity": new DataDrivenProperty(styleSpec["paint_line"]["line-opacity"]),
     "line-color": new DataDrivenProperty(styleSpec["paint_line"]["line-color"]),
     "line-translate": new DataConstantProperty(styleSpec["paint_line"]["line-translate"]),
@@ -51,6 +52,6 @@ const paint: PaintProperties = {
     "line-blur": new DataDrivenProperty(styleSpec["paint_line"]["line-blur"]),
     "line-dasharray": new CrossFadedProperty(styleSpec["paint_line"]["line-dasharray"]),
     "line-pattern": new CrossFadedProperty(styleSpec["paint_line"]["line-pattern"]),
-};
+});
 
 module.exports = { paint, layout };

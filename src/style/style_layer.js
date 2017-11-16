@@ -9,7 +9,8 @@ const Evented = require('../util/evented');
 const {
     Layout,
     Transitionable,
-    Transitioning
+    Transitioning,
+    Properties
 } = require('./properties');
 
 import type {Bucket, BucketParameters} from '../data/bucket';
@@ -52,7 +53,7 @@ class StyleLayer extends Evented {
                               bearing: number,
                               pixelsToTileUnits: number) => boolean;
 
-    constructor(layer: LayerSpecification, properties: {layout?: any, paint: any}) {
+    constructor(layer: LayerSpecification, properties: {layout?: Properties<*>, paint: Properties<*>}) {
         super();
 
         this.id = layer.id;

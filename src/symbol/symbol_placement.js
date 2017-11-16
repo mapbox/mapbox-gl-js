@@ -153,7 +153,8 @@ function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionI
         }
     }
 
-    const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, collisionIndex.transform.zoom, symbolLayoutProperties['text-size']);
+    const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, collisionIndex.transform.zoom,
+        symbolLayoutProperties.properties['text-size']);
     const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
 
     for (const symbolInstance of bucket.symbolInstances) {

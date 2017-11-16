@@ -14,12 +14,12 @@ const {
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
-import type {PaintProperties} from './circle_style_layer_properties';
+import type {PaintProps} from './circle_style_layer_properties';
 
 class CircleStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProperties>;
-    _transitioningPaint: Transitioning<PaintProperties>;
-    paint: PossiblyEvaluated<PaintProperties>;
+    _transitionablePaint: Transitionable<PaintProps>;
+    _transitioningPaint: Transitioning<PaintProps>;
+    paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
