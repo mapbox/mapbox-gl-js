@@ -1045,7 +1045,6 @@ class Map extends Camera {
      * sprite to add this image.
      *
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
-     * @see [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      * @param id The ID of the image.
      * @param data The image as an `HTMLImageElement`, `ImageData`, or object with `width`, `height`, and `data`
      * properties with the same format as `ImageData`.
