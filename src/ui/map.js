@@ -511,7 +511,7 @@ class Map extends Camera {
      * the map will zoom to the new maximum.
      *
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
-     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 24).
+     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
      * @returns {Map} `this`
      */
     setMaxZoom(maxZoom?: ?number) {
