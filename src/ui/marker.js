@@ -13,7 +13,7 @@ import type {MapMouseEvent} from './events';
 
 /**
  * Creates a marker component
- * @param element DOM element to use as a marker (creates a div element by default)
+ * @param element DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
  * @param options
  * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @example
