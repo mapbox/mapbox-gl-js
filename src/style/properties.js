@@ -3,7 +3,6 @@
 const assert = require('assert');
 const {extend, easeCubicInOut} = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
-const {RGBAImage} = require('../util/image');
 const {normalizePropertyExpression} = require('../style-spec/expression');
 const Color = require('../style-spec/util/color');
 
@@ -616,35 +615,20 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
 }
 
 /**
- * An implementation of `Property` for `heatmap-color`, which has unique evaluation requirements.
+ * An implementation of `Property` for `heatmap-color`. Evaluation and interpolation are no-ops: the real
+ * evaluation happens in HeatmapStyleLayer.
  *
  * @private
  */
-class HeatmapColorProperty implements Property<Color, RGBAImage> {
+class HeatmapColorProperty implements Property<Color, void> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
         this.specification = specification;
     }
 
-    possiblyEvaluate(value: PropertyValue<Color, RGBAImage>, parameters: EvaluationParameters): RGBAImage {
-        const colorRampData = new Uint8Array(256 * 4);
-        const len = colorRampData.length;
-        for (let i = 4; i < len; i += 4) {
-            const pxColor = value.expression.evaluate(extend({heatmapDensity: i / len}, parameters));
-            // the colors are being unpremultiplied because Color uses
-            // premultiplied values, and the Texture class expects unpremultiplied ones
-            colorRampData[i + 0] = Math.floor(pxColor.r * 255 / pxColor.a);
-            colorRampData[i + 1] = Math.floor(pxColor.g * 255 / pxColor.a);
-            colorRampData[i + 2] = Math.floor(pxColor.b * 255 / pxColor.a);
-            colorRampData[i + 3] = Math.floor(pxColor.a * 255);
-        }
-        return RGBAImage.create({width: 256, height: 1}, colorRampData);
-    }
-
-    interpolate(a: RGBAImage): RGBAImage {
-        return a;
-    }
+    possiblyEvaluate() {}
+    interpolate() {}
 }
 
 module.exports = {
