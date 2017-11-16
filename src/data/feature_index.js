@@ -232,7 +232,11 @@ class FeatureIndex {
                 }
 
                 const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-                (geojsonFeature: any).layer = styleLayer.serialize();
+                let globals;
+                if (this.coord.z !== undefined) {
+                    globals = { zoom: this.coord.z };
+                }
+                (geojsonFeature: any).layer = styleLayer.serialize(globals);
                 let layerResult = result[layerID];
                 if (layerResult === undefined) {
                     layerResult = result[layerID] = [];

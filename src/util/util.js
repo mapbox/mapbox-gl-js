@@ -273,6 +273,15 @@ exports.mapObject = function(input: Object, iterator: Function, context?: Object
     return output;
 };
 
+exports.mapObjectWithGlobal = function(input: Object, iterator: Function, globals: Any): Object {
+    const output = {};
+    for (const key in input) {
+        output[key] = iterator.call(this, input[key], globals, key, input);
+    }
+    return output;
+};
+
+
 /**
  * Create an object by filtering out values of an existing object.
  *
