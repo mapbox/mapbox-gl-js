@@ -25,7 +25,6 @@ const Coercion = require('./coercion');
 const At = require('./at');
 const Match = require('./match');
 const Case = require('./case');
-const Curve = require('./curve');
 const Step = require('./step');
 const Interpolate = require('./interpolate');
 const Coalesce = require('./coalesce');
@@ -48,7 +47,6 @@ const expressions: { [string]: Class<Expression> } = {
     'case': Case,
     'match': Match,
     'coalesce': Coalesce,
-    'curve': Curve,
     'step': Step,
     'interpolate': Interpolate
 };
