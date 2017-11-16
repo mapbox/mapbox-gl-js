@@ -11,8 +11,10 @@ coverage
 flow-coverage
 .DS_Store
 .nyc_output
-*_generated.js
-*-generated.js
+bench/benchmarks_generated.js
+bench/benchmarks_view_generated.js
+debug/access_token_generated.js
+debug/style_property_editor_generated.js
 test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json
