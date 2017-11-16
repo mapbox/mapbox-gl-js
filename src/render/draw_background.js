@@ -30,12 +30,12 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     painter.setDepthSublayer(0);
 
-    const properties = new PossiblyEvaluated({
-        'background-color': new PossiblyEvaluatedPropertyValue(
-            fillLayerPaintProperties['fill-color'], {kind: 'constant', value: color}, globals),
-        'background-opacity': new PossiblyEvaluatedPropertyValue(
-            fillLayerPaintProperties['fill-opacity'], {kind: 'constant', value: opacity}, globals)
-    });
+    const properties = new PossiblyEvaluated(fillLayerPaintProperties);
+
+    (properties._values: any)['background-color'] = new PossiblyEvaluatedPropertyValue(
+        fillLayerPaintProperties.properties['fill-color'], {kind: 'constant', value: color}, globals);
+    (properties._values: any)['background-opacity'] = new PossiblyEvaluatedPropertyValue(
+        fillLayerPaintProperties.properties['fill-opacity'], {kind: 'constant', value: opacity}, globals);
 
     let program;
     if (image) {

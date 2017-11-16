@@ -5,6 +5,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -14,7 +15,7 @@ const {
 import type Color from '../../style-spec/util/color';
 
 
-export type PaintProperties = {|
+export type PaintProps = {|
     "raster-opacity": DataConstantProperty<number>,
     "raster-hue-rotate": DataConstantProperty<number>,
     "raster-brightness-min": DataConstantProperty<number>,
@@ -24,7 +25,7 @@ export type PaintProperties = {|
     "raster-fade-duration": DataConstantProperty<number>,
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
     "raster-opacity": new DataConstantProperty(styleSpec["paint_raster"]["raster-opacity"]),
     "raster-hue-rotate": new DataConstantProperty(styleSpec["paint_raster"]["raster-hue-rotate"]),
     "raster-brightness-min": new DataConstantProperty(styleSpec["paint_raster"]["raster-brightness-min"]),
@@ -32,6 +33,6 @@ const paint: PaintProperties = {
     "raster-saturation": new DataConstantProperty(styleSpec["paint_raster"]["raster-saturation"]),
     "raster-contrast": new DataConstantProperty(styleSpec["paint_raster"]["raster-contrast"]),
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
-};
+});
 
 module.exports = { paint };

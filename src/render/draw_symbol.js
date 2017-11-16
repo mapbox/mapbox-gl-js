@@ -152,7 +152,7 @@ function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pit
 
     gl.uniform1f(program.uniforms.u_camera_to_center_distance, tr.cameraToCenterDistance);
 
-    const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, symbolLayoutProperties[isText ? 'text-size' : 'icon-size']);
+    const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
     if (size.uSizeT !== undefined) gl.uniform1f(program.uniforms.u_size_t, size.uSizeT);
     if (size.uSize !== undefined) gl.uniform1f(program.uniforms.u_size, size.uSize);
 

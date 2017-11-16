@@ -12,7 +12,7 @@ const {
 } = require('../properties');
 
 import type Texture from '../../render/texture';
-import type {PaintProperties} from './heatmap_style_layer_properties';
+import type {PaintProps} from './heatmap_style_layer_properties';
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -21,9 +21,9 @@ class HeatmapStyleLayer extends StyleLayer {
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
 
-    _transitionablePaint: Transitionable<PaintProperties>;
-    _transitioningPaint: Transitioning<PaintProperties>;
-    paint: PossiblyEvaluated<PaintProperties>;
+    _transitionablePaint: Transitionable<PaintProps>;
+    _transitioningPaint: Transitioning<PaintProps>;
+    paint: PossiblyEvaluated<PaintProps>;
 
     createBucket(options: any) {
         return new HeatmapBucket(options);

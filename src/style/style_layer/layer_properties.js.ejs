@@ -10,6 +10,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -19,29 +20,29 @@ const {
 import type Color from '../../style-spec/util/color';
 
 <% if (layoutProperties.length) { -%>
-export type LayoutProperties = {|
+export type LayoutProps = {|
 <% for (const property of layoutProperties) { -%>
     "<%= property.name %>": <%- propertyType(property) %>,
 <% } -%>
 |};
 
-const layout: LayoutProperties = {
+const layout: Properties<LayoutProps> = new Properties({
 <% for (const property of layoutProperties) { -%>
     "<%= property.name %>": <%- propertyValue(property, 'layout') %>,
 <% } -%>
-};
+});
 <% } -%>
 
-export type PaintProperties = {|
+export type PaintProps = {|
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyType(property) %>,
 <% } -%>
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyValue(property, 'paint') %>,
 <% } -%>
-};
+});
 
 module.exports = { paint<% if (layoutProperties.length) { %>, layout<% } %> };

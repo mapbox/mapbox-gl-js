@@ -5,6 +5,7 @@
 const styleSpec = require('../../style-spec/reference/latest');
 
 const {
+    Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
@@ -14,7 +15,7 @@ const {
 import type Color from '../../style-spec/util/color';
 
 
-export type PaintProperties = {|
+export type PaintProps = {|
     "circle-radius": DataDrivenProperty<number>,
     "circle-color": DataDrivenProperty<Color>,
     "circle-blur": DataDrivenProperty<number>,
@@ -28,7 +29,7 @@ export type PaintProperties = {|
     "circle-stroke-opacity": DataDrivenProperty<number>,
 |};
 
-const paint: PaintProperties = {
+const paint: Properties<PaintProps> = new Properties({
     "circle-radius": new DataDrivenProperty(styleSpec["paint_circle"]["circle-radius"]),
     "circle-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-color"]),
     "circle-blur": new DataDrivenProperty(styleSpec["paint_circle"]["circle-blur"]),
@@ -40,6 +41,6 @@ const paint: PaintProperties = {
     "circle-stroke-width": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-width"]),
     "circle-stroke-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-color"]),
     "circle-stroke-opacity": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-opacity"]),
-};
+});
 
 module.exports = { paint };

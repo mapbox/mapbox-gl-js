@@ -147,7 +147,8 @@ function updateLineLabels(bucket: SymbolBucket,
                           keepUpright: boolean) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom, symbolLayoutProperties[isText ? 'text-size' : 'icon-size']);
+    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom,
+        symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
 
     const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 

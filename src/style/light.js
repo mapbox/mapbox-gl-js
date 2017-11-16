@@ -11,6 +11,7 @@ const Color = require('../style-spec/util/color');
 const interpolate = require('../style-spec/util/interpolate');
 
 const {
+    Properties,
     Transitionable,
     Transitioning,
     PossiblyEvaluated,
@@ -45,19 +46,19 @@ class LightPositionProperty implements Property<[number, number, number], LightP
     }
 }
 
-type Properties = {|
+type Props = {|
     "anchor": DataConstantProperty<"map" | "viewport">,
     "position": LightPositionProperty,
     "color": DataConstantProperty<Color>,
     "intensity": DataConstantProperty<number>,
 |};
 
-const properties: Properties = {
+const properties: Properties<Props> = new Properties({
     "anchor": new DataConstantProperty(styleSpec.light.anchor),
     "position": new LightPositionProperty(),
     "color": new DataConstantProperty(styleSpec.light.color),
     "intensity": new DataConstantProperty(styleSpec.light.intensity),
-};
+});
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -65,9 +66,9 @@ const TRANSITION_SUFFIX = '-transition';
  * Represents the light used to light extruded features.
  */
 class Light extends Evented {
-    _transitionable: Transitionable<Properties>;
-    _transitioning: Transitioning<Properties>;
-    properties: PossiblyEvaluated<Properties>;
+    _transitionable: Transitionable<Props>;
+    _transitioning: Transitioning<Props>;
+    properties: PossiblyEvaluated<Props>;
 
     constructor(lightOptions?: LightSpecification) {
         super();

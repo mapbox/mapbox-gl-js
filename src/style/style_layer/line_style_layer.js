@@ -17,18 +17,18 @@ const {
 } = require('../properties');
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
-import type {LayoutProperties, PaintProperties} from './line_style_layer_properties';
+import type {LayoutProps, PaintProps} from './line_style_layer_properties';
 import type {EvaluationParameters} from '../properties';
 
-const lineFloorwidthProperty = new DataDrivenProperty(properties.paint['line-width'].specification, true);
+const lineFloorwidthProperty = new DataDrivenProperty(properties.paint.properties['line-width'].specification, true);
 
 class LineStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProperties>;
-    layout: PossiblyEvaluated<LayoutProperties>;
+    _unevaluatedLayout: Layout<LayoutProps>;
+    layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProperties>;
-    _transitioningPaint: Transitioning<PaintProperties>;
-    paint: PossiblyEvaluated<PaintProperties>;
+    _transitionablePaint: Transitionable<PaintProps>;
+    _transitioningPaint: Transitioning<PaintProps>;
+    paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);

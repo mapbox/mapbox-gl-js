@@ -15,17 +15,17 @@ const {
 } = require('../properties');
 
 import type {BucketParameters} from '../../data/bucket';
-import type {LayoutProperties, PaintProperties} from './symbol_style_layer_properties';
+import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
 import type {Feature} from '../../style-spec/expression';
 import type {EvaluationParameters} from '../properties';
 
 class SymbolStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProperties>;
-    layout: PossiblyEvaluated<LayoutProperties>;
+    _unevaluatedLayout: Layout<LayoutProps>;
+    layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProperties>;
-    _transitioningPaint: Transitioning<PaintProperties>;
-    paint: PossiblyEvaluated<PaintProperties>;
+    _transitionablePaint: Transitionable<PaintProps>;
+    _transitioningPaint: Transitioning<PaintProps>;
+    paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
