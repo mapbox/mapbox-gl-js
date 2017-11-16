@@ -11,7 +11,7 @@ export type TileParameters = {
 };
 
 export type WorkerTileParameters = TileParameters & {
-    coord: { z: number, x: number, y: number, w: number },
+    tileID: { overscaledZ: number, wrap: number, canonical: { z: number, x: number, y: number } },
     request: RequestParameters,
     zoom: number,
     maxZoom: number,

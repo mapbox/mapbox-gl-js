@@ -11,7 +11,7 @@ test('abortTile', (t) => {
         source.loadTile({
             source: 'source',
             uid: 0,
-            coord: {x: 0, y: 0, z: 0, w: 0},
+            tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
             request: { url: 'http://localhost:2900/abort' }
         }, (err, res) => {
             t.false(err);

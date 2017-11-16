@@ -2,7 +2,7 @@
 
 const util = require('../util/util');
 const window = require('../util/window');
-const TileCoord = require('./tile_coord');
+const CanonicalTileID = require('./tile_id').CanonicalTileID;
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
 const Evented = require('../util/evented');
@@ -75,7 +75,7 @@ class ImageSource extends Evented implements Source {
     textureLoaded: boolean;
     image: ImageData;
     centerCoord: Coordinate;
-    coord: TileCoord;
+    tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
     boundsVAO: VertexArrayObject;
@@ -155,7 +155,7 @@ class ImageSource extends Evented implements Source {
         // represent integer tile coordinates
         centerCoord.column = Math.floor(centerCoord.column);
         centerCoord.row = Math.floor(centerCoord.row);
-        this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this.tileID = new CanonicalTileID(centerCoord.zoom, centerCoord.column, centerCoord.row);
 
         // Constrain min/max zoom to our tile's zoom level in order to force
         // SourceCache to request this tile (no matter what the map's zoom
@@ -222,14 +222,14 @@ class ImageSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        // We have a single tile -- whoose coordinates are this.coord -- that
+        // We have a single tile -- whoose coordinates are this.tileID -- that
         // covers the image we want to render.  If that's the one being
         // requested, set it up with the image; otherwise, mark the tile as
         // `errored` to indicate that we have no data for it.
         // If the world wraps, we may have multiple "wrapped" copies of the
         // single tile.
-        if (this.coord && this.coord.toString() === tile.coord.toString()) {
-            this.tiles[String(tile.coord.w)] = tile;
+        if (this.tileID && this.tileID.equals(tile.tileID.canonical)) {
+            this.tiles[String(tile.tileID.wrap)] = tile;
             tile.buckets = {};
             callback(null);
         } else {

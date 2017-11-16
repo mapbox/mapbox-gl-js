@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Tile = require('../../../src/source/tile');
 const GeoJSONWrapper = require('../../../src/source/geojson_wrapper');
-const TileCoord = require('../../../src/source/tile_coord');
+const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 const fs = require('fs');
 const path = require('path');
 const vtpbf = require('vt-pbf');
@@ -24,7 +24,7 @@ test('querySourceFeatures', (t) => {
 
 
     t.test('geojson tile', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         let result;
 
         result = [];
@@ -52,7 +52,7 @@ test('querySourceFeatures', (t) => {
     });
 
     t.test('empty geojson tile', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         let result;
 
         result = [];
@@ -69,7 +69,7 @@ test('querySourceFeatures', (t) => {
     });
 
     t.test('vector tile', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         let result;
 
         result = [];
@@ -100,7 +100,7 @@ test('querySourceFeatures', (t) => {
     });
 
     t.test('loadVectorData unloads existing data before overwriting it', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.state = 'loaded';
         t.stub(tile, 'unloadVectorData');
         const painter = {};
@@ -112,7 +112,7 @@ test('querySourceFeatures', (t) => {
     });
 
     t.test('loadVectorData preserves the most recent rawTileData', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.state = 'loaded';
 
         tile.loadVectorData(
@@ -139,18 +139,34 @@ test('Tile#setMask', (t) => {
     t.test('simple mask', (t)=>{
         const tile = new Tile(0, 0, 0);
         const context = new Context(require('gl')(10, 10));
-        tile.setMask([new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id], context);
-        t.deepEqual(tile.mask, [new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id]);
+        const a = new OverscaledTileID(1, 0, 1, 0, 0);
+        const b = new OverscaledTileID(1, 0, 1, 1, 1);
+        const mask = {};
+        mask[a.id] = a;
+        mask[b.id] = b;
+        tile.setMask(mask, context);
+        t.deepEqual(tile.mask, mask);
         t.end();
     });
 
     t.test('complex mask', (t) => {
         const tile = new Tile(0, 0, 0);
         const context = new Context(require('gl')(10, 10));
-        tile.setMask([new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
-            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id], context);
-        t.deepEqual(tile.mask, [new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
-            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id]);
+        const a = new OverscaledTileID(1, 0, 1, 0, 1);
+        const b = new OverscaledTileID(1, 0, 1, 1, 0);
+        const c = new OverscaledTileID(2, 0, 2, 2, 3);
+        const d = new OverscaledTileID(2, 0, 2, 3, 2);
+        const e = new OverscaledTileID(3, 0, 3, 6, 7);
+        const f = new OverscaledTileID(3, 0, 3, 7, 6);
+        const mask = {};
+        mask[a.id] = a;
+        mask[b.id] = b;
+        mask[c.id] = c;
+        mask[d.id] = d;
+        mask[e.id] = e;
+        mask[f.id] = f;
+        tile.setMask(mask, context);
+        t.deepEqual(tile.mask, mask);
         t.end();
 
     });
@@ -161,43 +177,43 @@ test('Tile#setMask', (t) => {
 test('Tile#isLessThan', (t)=>{
     t.test('correctly sorts tiles', (t)=>{
         const tiles = [
-            new TileCoord(9, 146, 195, 0),
-            new TileCoord(9, 147, 195, 0),
-            new TileCoord(9, 148, 195, 0),
-            new TileCoord(9, 149, 195, 0),
-            new TileCoord(9, 144, 196, 1),
-            new TileCoord(9, 145, 196, 0),
-            new TileCoord(9, 146, 196, 0),
-            new TileCoord(9, 147, 196, 1),
-            new TileCoord(9, 145, 194, 0),
-            new TileCoord(9, 149, 196, 0),
-            new TileCoord(10, 293, 391, 0),
-            new TileCoord(10, 291, 390, 0),
-            new TileCoord(10, 293, 390, 1),
-            new TileCoord(10, 294, 390, 0),
-            new TileCoord(10, 295, 390, 0),
-            new TileCoord(10, 291, 391, 0),
+            new OverscaledTileID(9, 0, 9, 146, 195),
+            new OverscaledTileID(9, 0, 9, 147, 195),
+            new OverscaledTileID(9, 0, 9, 148, 195),
+            new OverscaledTileID(9, 0, 9, 149, 195),
+            new OverscaledTileID(9, 1, 9, 144, 196),
+            new OverscaledTileID(9, 0, 9, 145, 196),
+            new OverscaledTileID(9, 0, 9, 146, 196),
+            new OverscaledTileID(9, 1, 9, 147, 196),
+            new OverscaledTileID(9, 0, 9, 145, 194),
+            new OverscaledTileID(9, 0, 9, 149, 196),
+            new OverscaledTileID(10, 0, 10, 293, 391),
+            new OverscaledTileID(10, 0, 10, 291, 390),
+            new OverscaledTileID(10, 1, 10, 293, 390),
+            new OverscaledTileID(10, 0, 10, 294, 390),
+            new OverscaledTileID(10, 0, 10, 295, 390),
+            new OverscaledTileID(10, 0, 10, 291, 391),
         ];
 
         const sortedTiles = tiles.sort((a, b) => { return a.isLessThan(b) ? -1 : b.isLessThan(a) ? 1 : 0; });
 
         t.deepEqual(sortedTiles, [
-            new TileCoord(9, 145, 194, 0),
-            new TileCoord(9, 145, 196, 0),
-            new TileCoord(9, 146, 195, 0),
-            new TileCoord(9, 146, 196, 0),
-            new TileCoord(9, 147, 195, 0),
-            new TileCoord(9, 148, 195, 0),
-            new TileCoord(9, 149, 195, 0),
-            new TileCoord(9, 149, 196, 0),
-            new TileCoord(10, 291, 390, 0),
-            new TileCoord(10, 291, 391, 0),
-            new TileCoord(10, 293, 391, 0),
-            new TileCoord(10, 294, 390, 0),
-            new TileCoord(10, 295, 390, 0),
-            new TileCoord(9, 144, 196, 1),
-            new TileCoord(9, 147, 196, 1),
-            new TileCoord(10, 293, 390, 1)
+            new OverscaledTileID(9, 0, 9, 145, 194),
+            new OverscaledTileID(9, 0, 9, 145, 196),
+            new OverscaledTileID(9, 0, 9, 146, 195),
+            new OverscaledTileID(9, 0, 9, 146, 196),
+            new OverscaledTileID(9, 0, 9, 147, 195),
+            new OverscaledTileID(9, 0, 9, 148, 195),
+            new OverscaledTileID(9, 0, 9, 149, 195),
+            new OverscaledTileID(9, 0, 9, 149, 196),
+            new OverscaledTileID(10, 0, 10, 291, 390),
+            new OverscaledTileID(10, 0, 10, 291, 391),
+            new OverscaledTileID(10, 0, 10, 293, 391),
+            new OverscaledTileID(10, 0, 10, 294, 390),
+            new OverscaledTileID(10, 0, 10, 295, 390),
+            new OverscaledTileID(9, 1, 9, 144, 196),
+            new OverscaledTileID(9, 1, 9, 147, 196),
+            new OverscaledTileID(10, 1, 10, 293, 390),
         ]);
         t.end();
     });
@@ -206,7 +222,7 @@ test('Tile#isLessThan', (t)=>{
 
 test('Tile#placeLayer', (t) => {
     test('placeLayer on an empty tile', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.loadVectorData(null, createPainter());
 
         t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
@@ -214,13 +230,13 @@ test('Tile#placeLayer', (t) => {
     });
 
     test('placeLayer on a loading tile', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.end();
     });
 
     test('placeLayer on a reloading tile', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.loadVectorData(createVectorData(), createPainter());
 
         tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'});
@@ -232,7 +248,7 @@ test('Tile#placeLayer', (t) => {
 
 test('expiring tiles', (t) => {
     t.test('regular tiles do not expire', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.state = 'loaded';
         tile.timeAdded = Date.now();
 
@@ -243,7 +259,7 @@ test('expiring tiles', (t) => {
     });
 
     t.test('set, get expiry', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.state = 'loaded';
         tile.timeAdded = Date.now();
 
@@ -273,7 +289,7 @@ test('expiring tiles', (t) => {
     });
 
     t.test('exponential backoff handling', (t) => {
-        const tile = new Tile(new TileCoord(1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
         tile.state = 'loaded';
         tile.timeAdded = Date.now();
 
@@ -323,7 +339,7 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: serialize(collisionBoxArray),
-        featureIndex: serialize(new FeatureIndex(new TileCoord(1, 1, 1))),
+        featureIndex: serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1))),
         buckets: []
     }, options);
 }

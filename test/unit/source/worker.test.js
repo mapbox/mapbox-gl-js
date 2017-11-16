@@ -16,7 +16,7 @@ test('load tile', (t) => {
             type: 'vector',
             source: 'source',
             uid: 0,
-            coord: {x: 0, y: 0, z: 0, w: 0},
+            tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
             request: { url: '/error' }// Sinon fake server gives 404 responses by default
         }, (err) => {
             t.ok(err);

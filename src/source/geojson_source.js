@@ -192,13 +192,13 @@ class GeoJSONSource extends Evented implements Source {
         const params = {
             type: this.type,
             uid: tile.uid,
-            coord: tile.coord,
-            zoom: tile.coord.z,
+            tileID: tile.tileID,
+            zoom: tile.tileID.overscaledZ,
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
-            overscaling: tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1,
+            overscaling: tile.tileID.overscaleFactor(),
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 

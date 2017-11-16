@@ -11,7 +11,7 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;
-const TileCoord = require('../source/tile_coord');
+const OverscaledTileID = require('../source/tile_id').OverscaledTileID;
 const {register} = require('../util/web_worker_transfer');
 
 import type CollisionIndex from '../symbol/collision_index';
@@ -39,13 +39,12 @@ type QueryParameters = {
         filter: FilterSpecification,
         layers: Array<string>,
     },
-    tileSourceMaxZoom: number,
     collisionBoxArray: any,
     sourceID: string
 }
 
 class FeatureIndex {
-    coord: TileCoord;
+    tileID: OverscaledTileID;
     overscaling: number;
     x: number;
     y: number;
@@ -61,15 +60,15 @@ class FeatureIndex {
 
     collisionIndex: CollisionIndex;
 
-    constructor(coord: TileCoord,
+    constructor(tileID: OverscaledTileID,
                 overscaling: number,
                 grid?: Grid,
                 featureIndexArray?: FeatureIndexArray) {
-        this.coord = coord;
+        this.tileID = tileID;
         this.overscaling = overscaling;
-        this.x = coord.x;
-        this.y = coord.y;
-        this.z = coord.z - Math.log(overscaling) / Math.LN2;
+        this.x = tileID.canonical.x;
+        this.y = tileID.canonical.y;
+        this.z = tileID.canonical.z;
         this.grid = grid || new Grid(EXTENT, 16, 0);
         this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
     }
@@ -134,7 +133,7 @@ class FeatureIndex {
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         const matchingSymbols = this.collisionIndex ?
-            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.coord, args.tileSourceMaxZoom, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
+            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
@@ -170,7 +169,7 @@ class FeatureIndex {
             const sourceLayer = this.vtLayers[sourceLayerName];
             const feature = sourceLayer.feature(match.featureIndex);
 
-            if (!filter({zoom: this.coord.z}, feature)) continue;
+            if (!filter({zoom: this.tileID.overscaledZ}, feature)) continue;
 
             let geometry = null;
 

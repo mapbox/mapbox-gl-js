@@ -33,7 +33,7 @@ const draw = {
 
 import type Transform from '../geo/transform';
 import type Tile from '../source/tile';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
@@ -243,7 +243,7 @@ class Painter {
         context.depthTest.set(true);
     }
 
-    _renderTileClippingMasks(coords: Array<TileCoord>) {
+    _renderTileClippingMasks(tileIDs: Array<OverscaledTileID>) {
         const context = this.context;
         const gl = context.gl;
         context.colorMask.set([false, false, false, false]);
@@ -259,13 +259,13 @@ class Painter {
         this._tileClippingMaskIDs = {};
         const programConfiguration = ProgramConfiguration.forTileClippingMask();
 
-        for (const coord of coords) {
-            const id = this._tileClippingMaskIDs[coord.id] = idNext++;
+        for (const tileID of tileIDs) {
+            const id = this._tileClippingMaskIDs[tileID.key] = idNext++;
 
             context.stencilFunc.set({ func: gl.ALWAYS, ref: id, mask: 0xFF });
 
             const program = this.useProgram('fill', programConfiguration);
-            gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
+            gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
 
             // Draw the clipping mask
             this.tileExtentVAO.bind(this.context, program, this.tileExtentBuffer);
@@ -278,10 +278,10 @@ class Painter {
         context.depthTest.set(true);
     }
 
-    enableTileClippingMask(coord: TileCoord) {
+    enableTileClippingMask(tileID: OverscaledTileID) {
         const context = this.context;
         const gl = context.gl;
-        context.stencilFunc.set({ func: gl.EQUAL, ref: this._tileClippingMaskIDs[coord.id], mask: 0xFF });
+        context.stencilFunc.set({ func: gl.EQUAL, ref: this._tileClippingMaskIDs[tileID.key], mask: 0xFF });
     }
 
     render(style: Style, options: PainterOptions) {
@@ -492,7 +492,7 @@ class Painter {
         this.depthRboAttached = true;
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
+    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && !coords.length) return;
         this.id = layer.id;

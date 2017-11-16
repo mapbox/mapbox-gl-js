@@ -9,7 +9,7 @@ const ResourceType = require('../util/ajax').ResourceType;
 const browser = require('../util/browser');
 
 import type {Source} from './source';
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
@@ -75,8 +75,8 @@ class VectorTileSource extends Evented implements Source {
         });
     }
 
-    hasTile(coord: TileCoord) {
-        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
+    hasTile(tileID: OverscaledTileID) {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     onAdd(map: Map) {
@@ -89,13 +89,13 @@ class VectorTileSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
-        const url = normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url);
+        const overscaling = tile.tileID.overscaleFactor();
+        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url);
         const params = {
             request: this.map._transformRequest(url, ResourceType.Tile),
             uid: tile.uid,
-            coord: tile.coord,
-            zoom: tile.coord.z,
+            tileID: tile.tileID,
+            zoom: tile.tileID.overscaledZ,
             tileSize: this.tileSize * overscaling,
             type: this.type,
             source: this.id,
