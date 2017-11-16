@@ -233,7 +233,7 @@ class StyleLayer extends Evented {
         }
     }
 
-    serialize() {
+    serialize(globals?: GlobalProperties) {
         const output : any = {
             'id': this.id,
             'type': this.type,
@@ -243,8 +243,8 @@ class StyleLayer extends Evented {
             'minzoom': this.minzoom,
             'maxzoom': this.maxzoom,
             'filter': this.filter,
-            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue),
-            'paint': util.mapObject(this._paintDeclarations, getDeclarationValue)
+            'layout': util.mapObjectWithGlobal(this._layoutDeclarations, getDeclarationValue, globals),
+            'paint': util.mapObjectWithGlobal(this._paintDeclarations, getDeclarationValue, globals)
         };
 
         return util.filterObject(output, (value, key) => {
@@ -341,6 +341,11 @@ StyleLayer.create = function(layer: LayerSpecification) {
     return new subclasses[layer.type](layer);
 };
 
-function getDeclarationValue(declaration) {
+function getDeclarationValue(declaration, globals) {
+    if (globals !== undefined)
+    {
+        return declaration.calculate(globals);
+    }
+        
     return declaration.value;
 }
