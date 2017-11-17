@@ -47,6 +47,10 @@ class Coalesce implements Expression {
     eachChild(fn: (Expression) => void) {
         this.args.forEach(fn);
     }
+
+    possibleOutputs() {
+        return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
+    }
 }
 
 module.exports = Coalesce;

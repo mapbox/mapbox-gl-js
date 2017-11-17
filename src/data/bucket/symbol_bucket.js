@@ -486,10 +486,12 @@ class SymbolBucket implements Bucket {
         const layer = this.layers[0];
         const layout = layer.layout;
 
-        const textFont = layout.get('text-font').join(',');
+        const textFont = layout.get('text-font');
         const textField = layout.get('text-field');
         const iconImage = layout.get('icon-image');
-        const hasText = textField.value.kind !== 'constant' || textField.value.value.length > 0 && textFont.length > 0;
+        const hasText =
+            (textField.value.kind !== 'constant' || textField.value.value.length > 0) &&
+            (textFont.value.kind !== 'constant' || textFont.value.value.length > 0);
         const hasIcon = iconImage.value.kind !== 'constant' || iconImage.value.value && iconImage.value.value.length > 0;
 
         this.features = [];
@@ -500,7 +502,6 @@ class SymbolBucket implements Bucket {
 
         const icons = options.iconDependencies;
         const stacks = options.glyphDependencies;
-        const stack = stacks[textFont] = stacks[textFont] || {};
         const globalProperties =  {zoom: this.zoom};
 
         for (const {feature, index, sourceLayerIndex} of features) {
@@ -542,6 +543,8 @@ class SymbolBucket implements Bucket {
             }
 
             if (text) {
+                const fontStack = textFont.evaluate(feature).join(',');
+                const stack = stacks[fontStack] = stacks[fontStack] || {};
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
                 const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
                 for (let i = 0; i < text.length; i++) {

@@ -57,6 +57,10 @@ class Let implements Expression {
 
         return new Let(bindings, result);
     }
+
+    possibleOutputs() {
+        return this.result.possibleOutputs();
+    }
 }
 
 module.exports = Let;

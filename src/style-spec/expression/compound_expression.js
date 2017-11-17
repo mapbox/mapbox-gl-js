@@ -38,6 +38,10 @@ class CompoundExpression implements Expression {
         this.args.forEach(fn);
     }
 
+    possibleOutputs() {
+        return [undefined];
+    }
+
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
         const op: string = (args[0]: any);
         const definition = CompoundExpression.definitions[op];

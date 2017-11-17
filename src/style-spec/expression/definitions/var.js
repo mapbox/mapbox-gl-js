@@ -31,6 +31,10 @@ class Var implements Expression {
     }
 
     eachChild() {}
+
+    possibleOutputs() {
+        return [undefined];
+    }
 }
 
 module.exports = Var;
