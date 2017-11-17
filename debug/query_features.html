@@ -38,7 +38,7 @@ map.on('style.load', function() {
         "source": "queried",
         "paint": {
             "line-color": "#8D8DEC",
-            "line-width": {base: 1.5, stops: [[5, 0.75], [18, 32]]}
+            "line-width": {base: 1.5, stops: [[5, 0.75], [18, 24]]}
         }
     }, 'country-label-sm');
 
@@ -79,7 +79,7 @@ map.on('click', function(e) {
         var results = map.queryRenderedFeatures(box, {});
         map.getSource('queried').setData({
             type: 'FeatureCollection',
-            features: results
+            features: [ results[0] ]
         });
 
         map.getSource('boxsource').setData({
@@ -93,6 +93,8 @@ map.on('click', function(e) {
                 }
             }]
         });
+
+        map.fitFeature(results[0]);
     }
 });
 

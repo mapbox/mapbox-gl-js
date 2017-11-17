@@ -342,6 +342,65 @@ class Camera extends Evented {
         return this;
     }
 
+    /**
+     * Pans and zooms the map to contain its visible area within the geographical bounds of the feature geometry.
+     * This function will also reset the map's bearing to 0 if bearing is nonzero.
+     *
+     * @memberof Map#
+     * @param feature Center the bounds of the feature's geometry in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits it in the viewport.
+     * @param options
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {boolean} [options.linear=false] If `true`, the map transitions using
+     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+     *     those functions and {@link AnimationOptions} for information about options available.
+     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+	 * @example
+     * var results = map.getRenderedFeatures(pt, {});
+     * map.fitFeature(results[0], {
+     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     * });
+     */
+    fitFeature(feature: Object, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+        if (!feature || !feature._geometry) {
+            return;
+        }
+        const se = new Point(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+        const nw = new Point(Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY);
+        const tr = this.transform;
+
+        function boundsForArray(arr) {
+            arr.forEach((coords) => {
+                const pt = tr.project(LngLat.convert(coords));
+                se.x = Math.max(se.x, pt.x);
+                se.y = Math.min(se.y, pt.y);
+                nw.x = Math.min(nw.x, pt.x);
+                nw.y = Math.max(nw.y, pt.y);
+            });
+
+        }
+
+        const coordinates = feature._geometry.coordinates;
+        if (feature._geometry.type === "LineString") {
+            boundsForArray(coordinates);
+        } else if (feature._geometry.type === "Point") {
+            boundsForArray([ coordinates ]);
+        } else if (feature._geometry.type === "MultiPolygon") {
+            coordinates.forEach((arr) => {
+                arr.forEach(boundsForArray);
+            });
+        } else {
+            coordinates.forEach(boundsForArray);
+        }
+
+        return this.fitBounds([ this.transform.unproject(nw), this.transform.unproject(se)], options, eventData);
+    }
 
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
