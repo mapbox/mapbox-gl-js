@@ -336,10 +336,6 @@ class Style extends Evented {
             }
         }
 
-        // if (this.placement.hasTransition()) {
-        //     return true;
-        // }
-
         return false;
     }
 
