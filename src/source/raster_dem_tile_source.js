@@ -12,6 +12,8 @@ const RasterTileSource = require('./raster_tile_source');
 import type {Source} from './source';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type {Callback} from '../types/callback';
+
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
     _options: RasterSourceSpecification;

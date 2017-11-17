@@ -5,7 +5,7 @@ const RenderTexture = require('./render_texture');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type StyleLayer from '../style/style_layer';
+import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
 
 
 const EXTENT = require('../data/extent');
@@ -13,7 +13,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 
 module.exports = drawHillshade;
 
-function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<TileCoord>) {
+function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: HillshadeStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'hillshadeprepare' && painter.renderPass !== 'translucent') return;
 
     const gl = painter.gl;
@@ -37,13 +37,13 @@ function setLight(program, painter) {
     const gl = painter.gl;
     const light = painter.style.light;
 
-    const lightPositionRadians = (light.getLightProperty('position'): any).map(el => el * Math.PI / 180);
+    const lightPositionRadians = light.getLight().position.map(el => el * Math.PI / 180);
 
     // modify azimuthal angle by map rotation if light is anchored at the viewport
-    if (light.calculated.anchor === 'viewport')  lightPositionRadians[1] -= painter.transform.angle;
+    if (light.properties.get('anchor') === 'viewport')  lightPositionRadians[1] -= painter.transform.angle;
 
     // we don't use the radial coordinate when rendering hillshade, so we replace that value with the intensity variable
-    lightPositionRadians[0] = light.calculated.intensity;
+    lightPositionRadians[0] = light.properties.get('intensity');
     gl.uniform3fv(program.uniforms.u_light, lightPositionRadians);
 
 }
@@ -58,7 +58,6 @@ function renderHillshade(painter, tile, layer) {
     const gl = painter.gl;
     const program = painter.useProgram('hillshade');
     const posMatrix = painter.transform.calculatePosMatrix(tile.coord);
-    const zoom = painter.transform.zoom;
     setLight(program, painter);
     // for scaling the magnitude of a points slope by its latitude
     const latRange = getTileLatRange(painter, tile.coord);
@@ -70,11 +69,11 @@ function renderHillshade(painter, tile, layer) {
     gl.uniform1i(program.uniforms.u_image, 0);
     gl.uniform1i(program.uniforms.u_mode, 1);
 
-    const shadowColor = layer.getPaintValue("hillshade-shadow-color", {zoom: zoom});
+    const shadowColor = layer.paint.get("hillshade-shadow-color");
     gl.uniform4f(program.uniforms.u_shadow, shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a);
-    const highlightColor = layer.getPaintValue("hillshade-highlight-color", {zoom: zoom});
+    const highlightColor = layer.paint.get("hillshade-highlight-color");
     gl.uniform4f(program.uniforms.u_highlight, highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a);
-    const accentColor = layer.getPaintValue("hillshade-accent-color", {zoom: zoom});
+    const accentColor = layer.paint.get("hillshade-accent-color");
     gl.uniform4f(program.uniforms.u_accent, accentColor.r, accentColor.g, accentColor.b, accentColor.a);
 
     // this is to prevent purple/yellow seams from flashing when the dem tiles haven't been totally

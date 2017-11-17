@@ -3779,7 +3779,6 @@
         "doc": "The shading color of areas that face away from the light source.",
         "function": "interpolated",
         "zoom-function": true,
-        "property-function": true,
         "transition": true
       },
       "hillshade-highlight-color": {
@@ -3788,7 +3787,6 @@
         "doc": "The shading color of areas that faces towards the light source.",
         "function": "interpolated",
         "zoom-function": true,
-        "property-function": true,
         "transition": true
       },
       "hillshade-accent-color": {
@@ -3797,7 +3795,6 @@
         "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
         "function": "interpolated",
         "zoom-function": true,
-        "property-function": true,
         "transition": true
       }
   },
