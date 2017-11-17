@@ -1,0 +1,37 @@
+{
+  "expression": [
+    "rgba",
+    0,
+    0,
+    ["number", ["get", "b"]],
+    ["number", ["get", "a"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"b": -1, "a": 1}}],
+    [{}, {"properties": {"b": 256, "a": 1}}],
+    [{}, {"properties": {"b": 255, "a": -0.5}}],
+    [{}, {"properties": {"b": 256, "a": 1.5}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      {
+        "error": "Invalid rgba value [0, 0, -1, 1]: 'r', 'g', and 'b' must be between 0 and 255."
+      },
+      {
+        "error": "Invalid rgba value [0, 0, 256, 1]: 'r', 'g', and 'b' must be between 0 and 255."
+      },
+      {
+        "error": "Invalid rgba value [0, 0, 255, -0.5]: 'a' must be between 0 and 1."
+      },
+      {
+        "error": "Invalid rgba value [0, 0, 256, 1.5]: 'r', 'g', and 'b' must be between 0 and 255."
+      }
+    ]
+  }
+}

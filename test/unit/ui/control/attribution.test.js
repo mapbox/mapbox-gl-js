@@ -3,19 +3,25 @@
 const test = require('mapbox-gl-js-test').test;
 const window = require('../../../../src/util/window');
 const Map = require('../../../../src/ui/map');
+const config = require('../../../../src/util/config');
 const AttributionControl = require('../../../../src/ui/control/attribution_control');
 
 function createMap() {
     const container = window.document.createElement('div');
+    config.ACCESS_TOKEN = 'pk.123';
     return new Map({
         container: container,
         attributionControl: false,
         style: {
             version: 8,
             sources: {},
-            layers: []
-        }
+            layers: [],
+            owner: 'mapbox',
+            id: 'streets-v10',
+        },
+        hash: true
     });
+
 }
 
 test('AttributionControl appears in bottom-right by default', (t) => {
@@ -45,7 +51,7 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
 
     const container = map.getContainer();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.compact').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.mapboxgl-compact').length, 1);
     map.removeControl(attributionControl);
 
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 600, configurable: true});
@@ -54,7 +60,7 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
     });
 
     map.addControl(attributionControl);
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.compact)').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.mapboxgl-compact)').length, 1);
     t.end();
 });
 
@@ -65,12 +71,12 @@ test('AttributionControl appears in compact mode if container is less then 640 p
 
     const container = map.getContainer();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.compact)').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.mapboxgl-compact)').length, 1);
 
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 600, configurable: true});
     map.resize();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.compact').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.mapboxgl-compact').length, 1);
     t.end();
 });
 
@@ -103,14 +109,13 @@ test('AttributionControl has the correct edit map link', (t) => {
     const map = createMap();
     const attribution = new AttributionControl();
     map.addControl(attribution);
-
     map.on('load', () => {
-        map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a>'});
+        map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/feedback/" target="_blank">Improve this map</a>'});
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/1', 'edit link contains map location data');
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
                 map.setZoom(2);
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/3', 'edit link updates on mapmove');
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2', 'edit link updates on mapmove');
                 t.end();
             }
         });

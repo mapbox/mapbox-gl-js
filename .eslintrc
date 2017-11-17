@@ -1,8 +1,11 @@
 {
-  "extends": "mourner",
+  "extends": [
+    "mourner",
+    "plugin:flowtype/recommended"
+  ],
   "parser": "babel-eslint",
   "parserOptions": {
-    "sourceType": "script",
+    "sourceType": "script"
   },
   "plugins": [
     "flowtype"
@@ -11,20 +14,45 @@
     "array-bracket-spacing": "off",
     "block-scoped-var": "error",
     "consistent-return": "off",
+    "flowtype/define-flow-type": 1,
+    "flowtype/require-valid-file-annotation": [
+      2,
+      "always", {
+        "annotationStyle": "line"
+      }
+    ],
     "global-require": "off",
     "key-spacing": "off",
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
+    "no-restricted-properties": [2, {
+        "object": "Object",
+        "property": "assign"
+    }],
+    "no-unused-vars": ["error", {"argsIgnorePattern": "^_$"}],
     "no-var": "error",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
     "prefer-arrow-callback": "error",
-    "prefer-const": "error",
+    "prefer-const": ["error", {"destructuring": "all"}],
     "prefer-template": "error",
     "quotes": "off",
     "space-before-function-paren": "off",
-    "template-curly-spacing": "error"
+    "template-curly-spacing": "error",
+    "no-useless-escape": "off",
+    "indent": ["error", 4, {
+      "flatTernaryExpressions": true,
+      "CallExpression": {
+        "arguments": "off"
+      },
+      "FunctionDeclaration": {
+        "parameters": "off"
+      },
+      "FunctionExpression": {
+        "parameters": "off"
+      }
+    }]
   },
   "env": {
     "es6": true,

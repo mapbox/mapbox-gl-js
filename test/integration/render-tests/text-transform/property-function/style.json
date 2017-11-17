@@ -16,7 +16,7 @@
         "features": [
           {
             "type": "Feature",
-            "properties": { "x": 0 },
+            "properties": { "x": "uppercase" },
             "geometry": {
               "type": "Point",
               "coordinates": [ 0, -10 ]
@@ -24,7 +24,7 @@
           },
           {
             "type": "Feature",
-            "properties": { "x": 1 },
+            "properties": { "x": "lowercase" },
             "geometry": {
               "type": "Point",
               "coordinates": [ 0, 10 ]
@@ -43,12 +43,8 @@
       "layout": {
         "text-field": "hello",
         "text-transform": {
-          "type": "categorical",
-          "property": "x",
-          "stops": [
-            [0, "uppercase"],
-            [1, "lowercase"]
-          ]
+          "type": "identity",
+          "property": "x"
         },
         "text-font": [
           "Open Sans Semibold",

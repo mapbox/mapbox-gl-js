@@ -1,0 +1,13 @@
+{
+  "expression": ["number", ["get", "x", ["object", ["get", "a"]]]],
+  "inputs": [[{}, {"properties": {"a": {"x": 1}}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [1]
+  }
+}

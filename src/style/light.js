@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 const styleSpec = require('../style-spec/reference/latest');
 const util = require('../util/util');
@@ -7,17 +7,24 @@ const validateStyle = require('./validate_style');
 const StyleDeclaration = require('./style_declaration');
 const StyleTransition = require('./style_transition');
 
+import type AnimationLoop from './animation_loop';
+import type {GlobalProperties} from '../style-spec/expression';
+
 const TRANSITION_SUFFIX = '-transition';
+const properties = ['anchor', 'color', 'position', 'intensity'];
+const specifications = styleSpec.light;
 
 /*
  * Represents the light used to light extruded features.
  */
 class Light extends Evented {
+    _declarations: {[string]: StyleDeclaration};
+    _transitions: {[string]: StyleTransition};
+    _transitionOptions: {[string]: TransitionSpecification};
+    calculated: {[string]: any};
 
-    constructor(lightOptions) {
+    constructor(lightOptions?: LightSpecification) {
         super();
-        this.properties = ['anchor', 'color', 'position', 'intensity'];
-        this._specifications = styleSpec.light;
         this.set(lightOptions);
     }
 
@@ -29,14 +36,14 @@ class Light extends Evented {
         this.calculated = {};
 
         lightOpts = util.extend({
-            anchor: this._specifications.anchor.default,
-            color: this._specifications.color.default,
-            position: this._specifications.position.default,
-            intensity: this._specifications.intensity.default
+            anchor: specifications.anchor.default,
+            color: specifications.color.default,
+            position: specifications.position.default,
+            intensity: specifications.intensity.default
         }, lightOpts);
 
-        for (const prop of this.properties) {
-            this._declarations[prop] = new StyleDeclaration(this._specifications[prop], lightOpts[prop]);
+        for (const prop of properties) {
+            this._declarations[prop] = new StyleDeclaration(specifications[prop], lightOpts[prop], prop);
         }
 
         return this;
@@ -51,7 +58,7 @@ class Light extends Evented {
         };
     }
 
-    getLightProperty(property) {
+    getLightProperty(property: string) {
         if (util.endsWith(property, TRANSITION_SUFFIX)) {
             return (
                 this._transitionOptions[property]
@@ -64,9 +71,9 @@ class Light extends Evented {
         }
     }
 
-    getLightValue(property, globalProperties) {
+    getLightValue(property: string, globalProperties: GlobalProperties) {
         if (property === 'position') {
-            const calculated = this._transitions[property].calculate(globalProperties),
+            const calculated: any = this._transitions[property].calculate(globalProperties),
                 cartesian = util.sphericalToCartesian(calculated);
             return {
                 x: cartesian[0],
@@ -78,7 +85,7 @@ class Light extends Evented {
         return this._transitions[property].calculate(globalProperties);
     }
 
-    setLight(options) {
+    setLight(options?: LightSpecification) {
         if (this._validate(validateStyle.light, options)) return;
 
         for (const key in options) {
@@ -89,23 +96,23 @@ class Light extends Evented {
             } else if (value === null || value === undefined) {
                 delete this._declarations[key];
             } else {
-                this._declarations[key] = new StyleDeclaration(this._specifications[key], value);
+                this._declarations[key] = new StyleDeclaration(specifications[key], value, key);
             }
         }
     }
 
-    recalculate(zoom) {
+    recalculate(zoom: number) {
         for (const property in this._declarations) {
             this.calculated[property] = this.getLightValue(property, {zoom: zoom});
         }
     }
 
-    _applyLightDeclaration(property, declaration, options, globalOptions, animationLoop) {
+    _applyLightDeclaration(property: string, declaration: StyleDeclaration, options: {}, globalOptions: {}, animationLoop: AnimationLoop) {
         const oldTransition = options.transition ? this._transitions[property] : undefined;
-        const spec = this._specifications[property];
+        const spec = specifications[property];
 
         if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default);
+            declaration = new StyleDeclaration(spec, spec.default, property);
         }
 
         if (oldTransition && oldTransition.declaration.json === declaration.json) return;
@@ -125,7 +132,7 @@ class Light extends Evented {
         }
     }
 
-    updateLightTransitions(options, globalOptions, animationLoop) {
+    updateLightTransitions(options: {}, globalOptions: {}, animationLoop: AnimationLoop) {
         let property;
         for (property in this._declarations) {
             this._applyLightDeclaration(property, this._declarations[property], options, globalOptions, animationLoop);

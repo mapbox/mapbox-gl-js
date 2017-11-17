@@ -1,0 +1,18 @@
+{
+  "expression": ["any", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
+  "inputs": [
+    [{}, {"properties": {"x": true, "y": true}}],
+    [{}, {"properties": {"x": true, "y": false}}],
+    [{}, {"properties": {"x": false, "y": true}}],
+    [{}, {"properties": {"x": false, "y": false}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, true, true, false]
+  }
+}

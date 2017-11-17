@@ -1,0 +1,74 @@
+version: 2
+
+workflows:
+  version: 2
+  default:
+    jobs:
+      - build:
+          filters:
+            tags:
+              ignore: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
+      - build-and-release:
+          filters:
+            tags:
+              only: /v[0-9]+.[0-9]+.[0-9]+(-dev)?/
+            branches:
+              ignore: /.*/
+
+
+jobs:
+  build:
+    docker:
+      - image: mbgl/ci:r4-linux-gl-js
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-mapbox-gl-js-cache
+      - run:
+          name: install dependencies
+          command: yarn
+      - save_cache:
+          key: v1-mapbox-gl-js-cache
+          paths:
+            - '~/.yarn'
+            - '.eslintcache'
+            - 'node_modules'
+      - run:
+          name: run tests
+          command: |
+            bash ./.circleci/test.sh
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/query-tests/index.html"
+  build-and-release:
+    docker:
+      - image: mbgl/ci:r4-linux-gl-js
+    working_directory: ~/mapbox-gl-js
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-mapbox-gl-js-cache
+      - run:
+          name: install dependencies
+          command: yarn
+      - save_cache:
+          key: v1-mapbox-gl-js-cache
+          paths:
+            - '~/.yarn'
+            - '.eslintcache'
+            - 'node_modules'
+      - run:
+          name: run tests
+          command: |
+            bash ./.circleci/test.sh
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+      - store_artifacts:
+          path: "test/integration/query-tests/index.html"
+      - run:
+          name: deploy
+          when: on_success
+          command: bash ./.circleci/deploy.sh
+

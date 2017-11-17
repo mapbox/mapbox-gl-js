@@ -1,8 +1,10 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+
+import type Map from '../map';
 
 /**
  * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
@@ -14,6 +16,13 @@ const window = require('../../util/window');
  */
 
 class FullscreenControl {
+    _map: Map;
+    _mapContainer: HTMLElement;
+    _container: HTMLElement;
+    _fullscreen: boolean;
+    _fullscreenchange: string;
+    _fullscreenButton: HTMLElement;
+    _className: string;
 
     constructor() {
         this._fullscreen = false;
@@ -30,58 +39,82 @@ class FullscreenControl {
         } else if ('onmsfullscreenchange' in window.document) {
             this._fullscreenchange = 'MSFullscreenChange';
         }
+        this._className = 'mapboxgl-ctrl';
     }
 
-    onAdd(map) {
-        const className = 'mapboxgl-ctrl';
-        const container = this._container = DOM.create('div', `${className} mapboxgl-ctrl-group`);
-        const button = this._fullscreenButton = DOM.create('button', (`${className}-icon ${className}-fullscreen`), this._container);
-        button.setAttribute("aria-label", "Toggle fullscreen");
-        button.type = 'button';
-        this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
-        this._mapContainer = map.getContainer();
-        window.document.addEventListener(this._fullscreenchange, this._changeIcon);
-        return container;
+    onAdd(map: Map) {
+        this._map = map;
+        this._mapContainer = this._map.getContainer();
+        this._container = DOM.create('div', `${this._className} mapboxgl-ctrl-group`);
+        if (this._checkFullscreenSupport()) {
+            this._setupUI();
+        } else {
+            this._container.style.display = 'none';
+            util.warnOnce('This device does not support fullscreen mode.');
+        }
+        return this._container;
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = null;
+        DOM.remove(this._container);
+        this._map = (null: any);
         window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
+    }
+
+    _checkFullscreenSupport() {
+        return !!(
+            window.document.fullscreenEnabled ||
+            (window.document: any).mozFullScreenEnabled ||
+            (window.document: any).msFullscreenEnabled ||
+            (window.document: any).webkitFullscreenEnabled
+        );
+    }
+
+    _setupUI() {
+        const button = this._fullscreenButton = DOM.create('button', (`${this._className}-icon ${this._className}-fullscreen`), this._container);
+        button.setAttribute("aria-label", "Toggle fullscreen");
+        button.type = 'button';
+        this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
+        window.document.addEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _isFullscreen() {
         return this._fullscreen;
     }
 
-    _changeIcon(e) {
-        if (e.target === this._mapContainer) {
+    _changeIcon() {
+        const fullscreenElement =
+            window.document.fullscreenElement ||
+            (window.document: any).mozFullScreenElement ||
+            (window.document: any).webkitFullscreenElement ||
+            (window.document: any).msFullscreenElement;
+
+        if ((fullscreenElement === this._mapContainer) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
-            const className = 'mapboxgl-ctrl';
-            this._fullscreenButton.classList.toggle(`${className}-shrink`);
-            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);
+            this._fullscreenButton.classList.toggle(`${this._className}-shrink`);
+            this._fullscreenButton.classList.toggle(`${this._className}-fullscreen`);
         }
     }
 
     _onClickFullscreen() {
         if (this._isFullscreen()) {
             if (window.document.exitFullscreen) {
-                window.document.exitFullscreen();
+                (window.document: any).exitFullscreen();
             } else if (window.document.mozCancelFullScreen) {
-                window.document.mozCancelFullScreen();
+                (window.document: any).mozCancelFullScreen();
             } else if (window.document.msExitFullscreen) {
-                window.document.msExitFullscreen();
+                (window.document: any).msExitFullscreen();
             } else if (window.document.webkitCancelFullScreen) {
-                window.document.webkitCancelFullScreen();
+                (window.document: any).webkitCancelFullScreen();
             }
         } else if (this._mapContainer.requestFullscreen) {
             this._mapContainer.requestFullscreen();
         } else if (this._mapContainer.mozRequestFullScreen) {
-            this._mapContainer.mozRequestFullScreen();
+            (this._mapContainer: any).mozRequestFullScreen();
         } else if (this._mapContainer.msRequestFullscreen) {
-            this._mapContainer.msRequestFullscreen();
+            (this._mapContainer: any).msRequestFullscreen();
         } else if (this._mapContainer.webkitRequestFullscreen) {
-            this._mapContainer.webkitRequestFullscreen();
+            (this._mapContainer: any).webkitRequestFullscreen();
         }
     }
 }

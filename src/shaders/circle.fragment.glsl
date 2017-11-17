@@ -1,25 +1,27 @@
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp vec4 stroke_color
+#pragma mapbox: define highp vec4 stroke_color
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
 
-varying vec2 v_extrude;
-varying lowp float v_antialiasblur;
+varying vec3 v_data;
 
 void main() {
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump float radius
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp vec4 stroke_color
+    #pragma mapbox: initialize highp vec4 stroke_color
     #pragma mapbox: initialize mediump float stroke_width
     #pragma mapbox: initialize lowp float stroke_opacity
 
-    float extrude_length = length(v_extrude);
-    float antialiased_blur = -max(blur, v_antialiasblur);
+    vec2 extrude = v_data.xy;
+    float extrude_length = length(extrude);
+
+    lowp float antialiasblur = v_data.z;
+    float antialiased_blur = -max(blur, antialiasblur);
 
     float opacity_t = smoothstep(0.0, antialiased_blur, extrude_length - 1.0);
 

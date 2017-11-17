@@ -4,7 +4,7 @@ User Interface Plugins:
     description: enables users to show/hide disputed borders
   mapbox-gl-compare:
     website: https://github.com/mapbox/mapbox-gl-compare
-    description: enables users to compare two maps by swpiping left and right
+    description: enables users to compare two maps by swiping left and right
     example: mapbox-gl-compare
   mapbox-gl-draw:
     website: https://github.com/mapbox/mapbox-gl-draw
@@ -20,9 +20,13 @@ User Interface Plugins:
     example: mapbox-gl-directions
 
 Map Rendering Plugins:
+  mapbox-gl-language:
+    website: https://github.com/mapbox/mapbox-gl-language/
+    description: automatically localizes the map into the user’s language
   mapbox-gl-rtl-text:
     website: https://github.com/mapbox/mapbox-gl-rtl-text
     description: adds right-to-left text support to Mapbox GL JS
+    example: mapbox-gl-rtl-text
   deck.gl:
     website: https://github.com/uber/deck.gl
     description: adds advanced WebGL visualization layers to Mapbox GL JS
@@ -63,3 +67,9 @@ Development Tools:
   mapbox-gl-js-mock:
     website: https://github.com/mapbox/mapbox-gl-js-mock
     description: is a [mock](https://en.wikipedia.org/wiki/Mock_object) of Mapbox GL JS
+  mapbox-gl-inspect:
+    website: https://github.com/lukasmartinelli/mapbox-gl-inspect
+    description: adds an inspect control to view vector source features and properties
+  mapbox-gl-fps:
+    website: https://github.com/MazeMap/mapbox-gl-fps
+    description: A frames-per-seconds GUI control and measurer with statistic report output.

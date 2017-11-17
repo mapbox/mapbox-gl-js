@@ -1,0 +1,27 @@
+{
+  "expression": ["string", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": "1"}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      "1",
+      {
+        "error": "Expected value to be of type string, but found number instead."
+      },
+      {
+        "error": "Expected value to be of type string, but found boolean instead."
+      },
+      {"error": "Expected value to be of type string, but found null instead."}
+    ]
+  }
+}

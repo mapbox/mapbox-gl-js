@@ -1,23 +1,25 @@
-'use strict';
+// @flow
 
 const jsdom = require('jsdom');
 const gl = require('gl');
 const sinon = require('sinon');
 const util = require('./util');
 
-function restore() {
-
+function restore(): Window {
     // Remove previous window from module.exports
     const previousWindow = module.exports;
     if (previousWindow.close) previousWindow.close();
-    for (const key in previousWindow) if (previousWindow.hasOwnProperty(key)) delete previousWindow[key];
+    for (const key in previousWindow) {
+        if (previousWindow.hasOwnProperty(key)) {
+            delete previousWindow[key];
+        }
+    }
 
     // Create new window and inject into module.exports
-    const window = jsdom.jsdom(undefined, {
+    const { window } = new jsdom.JSDOM('', {
         // Send jsdom console output to the node console object.
-        virtualConsole: jsdom.createVirtualConsole().sendTo(console)
-    }).defaultView;
-    util.extend(module.exports, window);
+        virtualConsole: new jsdom.VirtualConsole().sendTo(console)
+    });
 
     window.devicePixelRatio = 1;
 
@@ -40,20 +42,22 @@ function restore() {
     };
 
     window.useFakeHTMLCanvasGetContext = function() {
-        window.HTMLCanvasElement.prototype.getContext = sinon.stub().returns('2d');
+        this.HTMLCanvasElement.prototype.getContext = function() { return '2d'; };
     };
 
     window.useFakeXMLHttpRequest = function() {
         sinon.xhr.supportsCORS = true;
-        window.server = sinon.fakeServer.create();
-        window.XMLHttpRequest = window.server.xhr;
+        this.server = sinon.fakeServer.create();
+        this.XMLHttpRequest = this.server.xhr;
     };
 
     window.URL.revokeObjectURL = function () {};
 
     window.restore = restore;
 
-    window.ImageData = window.ImageData || sinon.stub().returns(false);
+    window.ImageData = window.ImageData || function() { return false; };
+    window.ImageBitmap = window.ImageBitmap || function() { return false; };
+    util.extend(module.exports, window);
 
     return window;
 }

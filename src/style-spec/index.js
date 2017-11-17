@@ -1,4 +1,3 @@
-'use strict';
 
 exports.v6 = require('./reference/v6.json');
 exports.v7 = require('./reference/v7.json');
@@ -11,7 +10,7 @@ exports.composite = require('./composite');
 exports.diff = require('./diff');
 exports.ValidationError = require('./error/validation_error');
 exports.ParsingError = require('./error/parsing_error');
-exports.function = require('./function');
+exports.expression = require('./expression');
 exports.featureFilter = require('./feature_filter');
 
 exports.validate = require('./validate_style');

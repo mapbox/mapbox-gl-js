@@ -1,6 +1,9 @@
-'use strict';
+// @flow
 
 class AnimationLoop {
+    n: number;
+    times: Array<{ id: number, time: number }>;
+
     constructor() {
         this.n = 0;
         this.times = [];
@@ -16,13 +19,13 @@ class AnimationLoop {
 
     // Add a new animation that will run t milliseconds
     // Returns an id that can be used to cancel it layer
-    set(t) {
+    set(t: number) {
         this.times.push({ id: this.n, time: t + (new Date()).getTime() });
         return this.n++;
     }
 
     // Cancel an animation
-    cancel(n) {
+    cancel(n: number) {
         this.times = this.times.filter((t) => {
             return t.id !== n;
         });

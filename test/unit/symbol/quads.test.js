@@ -4,7 +4,6 @@ const test = require('mapbox-gl-js-test').test;
 
 const getIconQuads = require('../../../src/symbol/quads').getIconQuads;
 const Anchor = require('../../../src/symbol/anchor');
-const Point = require('point-geometry');
 
 function createLayer(layer) {
     return {
@@ -23,7 +22,7 @@ function createShapedIcon() {
         right: 8,
         image: {
             pixelRatio: 1,
-            rect: { w: 15, h: 11}
+            textureRect: { x: 1, y: 1, w: 15, h: 11}
         }
     };
 }
@@ -35,19 +34,15 @@ test('getIconQuads', (t) => {
         const layer = createLayer({
             layout: {'icon-rotate': 0}
         });
-        t.deepEqual(getIconQuads(anchor, createShapedIcon(), 2, [], layer, false), [
+        t.deepEqual(getIconQuads(anchor, createShapedIcon(), layer, false), [
             {
-                anchorPoint: { x: 2, y: 3 },
                 tl: { x: -8, y: -6 },
-                tr: { x: 7, y: -6 },
-                bl: { x: -8, y: 5 },
-                br: { x: 7, y: 5 },
-                tex: { w: 15, h: 11 },
-                anchorAngle: 0,
-                glyphAngle: 0,
-                minScale: 0.5,
-                maxScale: Infinity,
-                writingMode: null
+                tr: { x: 9, y: -6 },
+                bl: { x: -8, y: 7 },
+                br: { x: 9, y: 7 },
+                tex: {  x: 0, y: 0, w: 17, h: 13 },
+                writingMode: null,
+                glyphOffset: [0, 0]
             }]);
         t.end();
     });
@@ -57,19 +52,15 @@ test('getIconQuads', (t) => {
         const layer = createLayer({
             layout: {'icon-rotate': 0}
         });
-        t.deepEqual(getIconQuads(anchor, createShapedIcon(), 2, [new Point(0, 0), new Point(8, 9)], layer, false), [
+        t.deepEqual(getIconQuads(anchor, createShapedIcon(), layer, false), [
             {
-                anchorPoint: { x: 2, y: 3},
                 tl: { x: -8, y: -6 },
-                tr: { x: 7, y: -6 },
-                bl: { x: -8, y: 5 },
-                br: { x: 7, y: 5 },
-                tex: { w: 15, h: 11 },
-                anchorAngle: 0,
-                glyphAngle: 0,
-                minScale: 0.5,
-                maxScale: Infinity,
-                writingMode: null
+                tr: { x: 9, y: -6 },
+                bl: { x: -8, y: 7 },
+                br: { x: 9, y: 7 },
+                tex: { x: 0, y: 0, w: 17, h: 13 },
+                writingMode: null,
+                glyphOffset: [0, 0]
             }]);
         t.end();
     });
@@ -86,7 +77,7 @@ test('getIconQuads text-fit', (t) => {
             right: 10,
             image: {
                 pixelRatio: 1,
-                rect: { w: 20, h: 20 }
+                textureRect: {  x: 1, y: 1, w: 20, h: 20 }
             }
         };
     }
@@ -101,17 +92,17 @@ test('getIconQuads text-fit', (t) => {
     }
 
     t.test('icon-text-fit: none', (t) => {
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'icon-text-fit': 'none'
             }
         }), false, createshapedText());
         t.deepEqual(quads[0].tl, { x: -11, y: -11 });
-        t.deepEqual(quads[0].tr, { x: 9, y: -11 });
-        t.deepEqual(quads[0].bl, { x: -11, y: 9 });
-        t.deepEqual(quads[0].br, { x: 9, y: 9 });
+        t.deepEqual(quads[0].tr, { x: 11, y: -11 });
+        t.deepEqual(quads[0].bl, { x: -11, y: 11 });
+        t.deepEqual(quads[0].br, { x: 11, y: 11 });
 
-        t.deepEqual(quads, getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        t.deepEqual(quads, getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'icon-text-fit': 'none',
                 'icon-text-fit-padding': [10, 10]
@@ -124,34 +115,34 @@ test('getIconQuads text-fit', (t) => {
     t.test('icon-text-fit: width', (t) => {
         // - Uses text width
         // - Preserves icon height, centers vertically
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 24,
                 'icon-text-fit': 'width',
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -60, y: 0 });
-        t.deepEqual(quads[0].tr, { x: 20, y: 0 });
-        t.deepEqual(quads[0].bl, { x: -60, y: 20 });
-        t.deepEqual(quads[0].br, { x: 20, y: 20 });
+        t.deepEqual(quads[0].tl, { x: -60, y: -1 });
+        t.deepEqual(quads[0].tr, { x: 20, y: -1 });
+        t.deepEqual(quads[0].bl, { x: -60, y: 21 });
+        t.deepEqual(quads[0].br, { x: 20, y: 21 });
         t.end();
     });
 
     t.test('icon-text-fit: width, x textSize', (t) => {
         // - Uses text width (adjusted for textSize)
         // - Preserves icon height, centers vertically
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'width',
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -30, y: -5 });
-        t.deepEqual(quads[0].tr, { x: 10, y: -5 });
-        t.deepEqual(quads[0].bl, { x: -30, y: 15 });
-        t.deepEqual(quads[0].br, { x: 10, y: 15 });
+        t.deepEqual(quads[0].tl, { x: -30, y: -6 });
+        t.deepEqual(quads[0].tr, { x: 10, y: -6 });
+        t.deepEqual(quads[0].bl, { x: -30, y: 16 });
+        t.deepEqual(quads[0].br, { x: 10, y: 16 });
         t.end();
     });
 
@@ -159,51 +150,51 @@ test('getIconQuads text-fit', (t) => {
         // - Uses text width (adjusted for textSize)
         // - Preserves icon height, centers vertically
         // - Applies padding x, padding y
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'width',
                 'icon-text-fit-padding': [ 5, 10, 5, 10 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -40, y: -10 });
-        t.deepEqual(quads[0].tr, { x: 20, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -40, y: 20 });
-        t.deepEqual(quads[0].br, { x: 20, y: 20 });
+        t.deepEqual(quads[0].tl, { x: -40, y: -11 });
+        t.deepEqual(quads[0].tr, { x: 20, y: -11 });
+        t.deepEqual(quads[0].bl, { x: -40, y: 21 });
+        t.deepEqual(quads[0].br, { x: 20, y: 21 });
         t.end();
     });
 
     t.test('icon-text-fit: height', (t) => {
         // - Uses text height
         // - Preserves icon width, centers horizontally
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 24,
                 'icon-text-fit': 'height',
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -30, y: -10 });
-        t.deepEqual(quads[0].tr, { x: -10, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -30, y: 30 });
-        t.deepEqual(quads[0].br, { x: -10, y: 30 });
+        t.deepEqual(quads[0].tl, { x: -31, y: -10 });
+        t.deepEqual(quads[0].tr, { x: -9, y: -10 });
+        t.deepEqual(quads[0].bl, { x: -31, y: 30 });
+        t.deepEqual(quads[0].br, { x: -9, y: 30 });
         t.end();
     });
 
     t.test('icon-text-fit: height, x textSize', (t) => {
         // - Uses text height (adjusted for textSize)
         // - Preserves icon width, centers horizontally
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'height',
                 'icon-text-fit-padding': [ 0, 0, 0, 0 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -20, y: -5 });
-        t.deepEqual(quads[0].tr, { x: 0, y: -5 });
-        t.deepEqual(quads[0].bl, { x: -20, y: 15 });
-        t.deepEqual(quads[0].br, { x: 0, y: 15 });
+        t.deepEqual(quads[0].tl, { x: -21, y: -5 });
+        t.deepEqual(quads[0].tr, { x: 1, y: -5 });
+        t.deepEqual(quads[0].bl, { x: -21, y: 15 });
+        t.deepEqual(quads[0].br, { x: 1, y: 15 });
         t.end();
     });
 
@@ -211,23 +202,23 @@ test('getIconQuads text-fit', (t) => {
         // - Uses text height (adjusted for textSize)
         // - Preserves icon width, centers horizontally
         // - Applies padding x, padding y
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'height',
                 'icon-text-fit-padding': [ 5, 10, 5, 10 ]
             }
         }), false, createshapedText());
-        t.deepEqual(quads[0].tl, { x: -30, y: -10 });
-        t.deepEqual(quads[0].tr, { x: 10, y: -10 });
-        t.deepEqual(quads[0].bl, { x: -30, y: 20 });
-        t.deepEqual(quads[0].br, { x: 10, y: 20 });
+        t.deepEqual(quads[0].tl, { x: -31, y: -10 });
+        t.deepEqual(quads[0].tr, { x: 11, y: -10 });
+        t.deepEqual(quads[0].bl, { x: -31, y: 20 });
+        t.deepEqual(quads[0].br, { x: 11, y: 20 });
         t.end();
     });
 
     t.test('icon-text-fit: both', (t) => {
         // - Uses text width + height
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 24,
                 'icon-text-fit': 'both',
@@ -243,7 +234,7 @@ test('getIconQuads text-fit', (t) => {
 
     t.test('icon-text-fit: both, x textSize', (t) => {
         // - Uses text width + height (adjusted for textSize)
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'both',
@@ -260,7 +251,7 @@ test('getIconQuads text-fit', (t) => {
     t.test('icon-text-fit: both, x textSize, + padding', (t) => {
         // - Uses text width + height (adjusted for textSize)
         // - Applies padding x, padding y
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'both',
@@ -277,7 +268,7 @@ test('getIconQuads text-fit', (t) => {
     t.test('icon-text-fit: both, padding t/r/b/l', (t) => {
         // - Uses text width + height (adjusted for textSize)
         // - Applies padding t/r/b/l
-        const quads = getIconQuads(anchor, createShapedIcon(), 2, [], createLayer({
+        const quads = getIconQuads(anchor, createShapedIcon(), createLayer({
             layout: {
                 'text-size': 12,
                 'icon-text-fit': 'both',

@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 const ajax = require('../util/ajax');
 const Evented = require('../util/evented');
@@ -9,29 +9,44 @@ let pluginBlobURL = null;
 
 module.exports.evented = new Evented();
 
-module.exports.registerForPluginAvailability = function(callback) {
+type ErrorCallback = (error: Error) => void;
+
+module.exports.registerForPluginAvailability = function(
+    callback: (args: {pluginBlobURL: string, errorCallback: ErrorCallback}) => void
+) {
     if (pluginBlobURL) {
-        callback(pluginBlobURL, module.exports.errorCallback);
+        callback({ pluginBlobURL: pluginBlobURL, errorCallback: module.exports.errorCallback});
     } else {
         module.exports.evented.once('pluginAvailable', callback);
     }
     return callback;
 };
 
-module.exports.setRTLTextPlugin = function(pluginURL, callback) {
+// Exposed so it can be stubbed out by tests
+module.exports.createBlobURL = function(response: Object) {
+    return window.URL.createObjectURL(new window.Blob([response.data], {type: "text/javascript"}));
+};
+// Only exposed for tests
+module.exports.clearRTLTextPlugin = function() {
+    pluginRequested = false;
+    pluginBlobURL = null;
+};
+
+module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCallback) {
     if (pluginRequested) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
     pluginRequested = true;
     module.exports.errorCallback = callback;
-    ajax.getArrayBuffer(pluginURL, (err, response) => {
+    ajax.getArrayBuffer({ url: pluginURL }, (err, response) => {
         if (err) {
             callback(err);
-        } else {
-            pluginBlobURL =
-                window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
-
+        } else if (response) {
+            pluginBlobURL = module.exports.createBlobURL(response);
             module.exports.evented.fire('pluginAvailable', { pluginBlobURL: pluginBlobURL, errorCallback: callback });
         }
     });
 };
+
+module.exports.applyArabicShaping = (null: ?Function);
+module.exports.processBidirectionalText = (null: ?(string, Array<number>) => Array<string>);

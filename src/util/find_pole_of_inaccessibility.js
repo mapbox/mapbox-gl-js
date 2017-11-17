@@ -1,24 +1,22 @@
-'use strict';
+// @flow
+
 const Queue = require('tinyqueue');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const distToSegmentSquared = require('./intersection_tests').distToSegmentSquared;
 
 /**
  * Finds an approximation of a polygon's Pole Of Inaccessibiliy https://en.wikipedia.org/wiki/Pole_of_inaccessibility
  * This is a copy of http://github.com/mapbox/polylabel adapted to use Points
  *
- * @param {Array<Array<Point>>} List of polygon rings first item in array is the outer ring followed optionally by the list of holes, should be an element of the result of util/classify_rings
- * @param {number} [precision=1] Specified in input coordinate units. If 0 returns after first run, if > 0 repeatedly narrows the search space until the radius of the area searched for the best pole is less than precision
- * @param {bool} [debug=false] Print some statistics to the console during execution
- *
- * @returns {Point} Pole of Inaccessibiliy.
+ * @param polygonRings first item in array is the outer ring followed optionally by the list of holes, should be an element of the result of util/classify_rings
+ * @param precision Specified in input coordinate units. If 0 returns after first run, if > 0 repeatedly narrows the search space until the radius of the area searched for the best pole is less than precision
+ * @param debug Print some statistics to the console during execution
+ * @returns Pole of Inaccessibiliy.
  * @private
  */
-module.exports = function (polygonRings, precision, debug) {
-    precision = precision || 1.0;
-
+module.exports = function (polygonRings: Array<Array<Point>>, precision?: number = 1, debug?: boolean = false): Point {
     // find the bounding box of the outer ring
-    let minX, minY, maxX, maxY;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     const outerRing = polygonRings[0];
     for (let i = 0; i < outerRing.length; i++) {
         const p = outerRing[i];
@@ -36,7 +34,7 @@ module.exports = function (polygonRings, precision, debug) {
     // a priority queue of cells in order of their "potential" (max distance to polygon)
     const cellQueue = new Queue(null, compareMax);
 
-    if (cellSize === 0) return [minX, minY];
+    if (cellSize === 0) return new Point(minX, minY);
 
     // cover polygon with initial cells
     for (let x = minX; x < maxX; x += cellSize) {

@@ -1,0 +1,22 @@
+{
+  "expression": ["boolean", ["get", "x"], false],
+  "inputs": [
+    [{}, {}],
+    [{}, {"properties": {"x": true}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": ""}}],
+    [{}, {"properties": {"x": "false"}}],
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false, true, false, false, false, false, false, false]
+  }
+}

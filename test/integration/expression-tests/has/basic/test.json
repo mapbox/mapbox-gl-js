@@ -1,0 +1,19 @@
+{
+  "expression": ["has", "x"],
+  "inputs": [
+    [{}, {}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false, true, true, true, true]
+  }
+}

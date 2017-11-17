@@ -1,0 +1,19 @@
+{
+  "expression": [
+    "let",
+    "a",
+    1,
+    ["+", ["+", ["var", "a"], ["var", "b"]], ["var", "a"]]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[3][1][2][1]",
+          "error": "Unknown variable \"b\". Make sure \"b\" has been bound in an enclosing \"let\" expression before using it."
+        }
+      ]
+    }
+  }
+}

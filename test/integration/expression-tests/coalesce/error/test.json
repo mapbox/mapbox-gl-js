@@ -1,0 +1,30 @@
+{
+  "expression": [
+    "coalesce",
+    ["number", ["get", "x"]],
+    ["number", ["get", "y"]],
+    ["number", ["get", "z"]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 1, "y": 2, "z": 3}}],
+    [{}, {"properties": {"y": 2}}],
+    [{}, {"properties": {"z": 3}}],
+    [{}, {}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      1,
+      1,
+      {"error": "Expected value to be of type number, but found null instead."},
+      {"error": "Expected value to be of type number, but found null instead."},
+      {"error": "Expected value to be of type number, but found null instead."}
+    ]
+  }
+}

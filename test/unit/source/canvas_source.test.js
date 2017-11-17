@@ -3,6 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const CanvasSource = require('../../../src/source/canvas_source');
 const Transform = require('../../../src/geo/transform');
+const AnimationLoop = require('../../../src/style/animation_loop');
 const Evented = require('../../../src/util/evented');
 const util = require('../../../src/util/util');
 const window = require('../../../src/util/window');
@@ -16,7 +17,7 @@ function createSource(options) {
 
     options = util.extend({
         canvas: 'id',
-        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
+        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
 
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
@@ -29,7 +30,7 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-        this.style = { animationLoop: { set: function() {} } };
+        this.style = { animationLoop: new AnimationLoop() };
     }
 
     _rerender() {
@@ -91,6 +92,44 @@ test('CanvasSource', (t) => {
         });
 
         source.onAdd(map);
+    });
+
+    t.test('onRemove stops animation', (t) => {
+        const source = createSource();
+        const map = new StubMap();
+
+        source.onAdd(map);
+
+        t.equal(map.style.animationLoop.stopped(), false, 'should animate initally');
+
+        source.onRemove();
+
+        t.equal(map.style.animationLoop.stopped(), true, 'should stop animating');
+
+        source.onAdd(map);
+
+        t.equal(map.style.animationLoop.stopped(), false, 'should animate when added again');
+
+        t.end();
+    });
+
+    t.test('play and pause animation', (t) => {
+        const source = createSource();
+        const map = new StubMap();
+
+        source.onAdd(map);
+
+        t.equal(map.style.animationLoop.stopped(), false, 'initially animating');
+
+        source.pause();
+
+        t.equal(map.style.animationLoop.stopped(), true, 'can be paused');
+
+        source.play();
+
+        t.equal(map.style.animationLoop.stopped(), false, 'can be played');
+
+        t.end();
     });
 
     t.end();

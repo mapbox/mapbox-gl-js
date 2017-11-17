@@ -1,0 +1,15 @@
+{
+  "expression": ["geometry-type"],
+  "inputs": [
+    [{}, {"geometry": {"type": "LineString", "coordinates": [[0, 0], [10, 0]]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["LineString"]
+  }
+}

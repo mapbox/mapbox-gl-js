@@ -1,16 +1,24 @@
-'use strict';
+// @flow
 
-const isCounterClockwise = require('./util').isCounterClockwise;
+const {isCounterClockwise} = require('./util');
+
+import type Point from '@mapbox/point-geometry';
 
 module.exports = {
-    multiPolygonIntersectsBufferedMultiPoint: multiPolygonIntersectsBufferedMultiPoint,
-    multiPolygonIntersectsMultiPolygon: multiPolygonIntersectsMultiPolygon,
-    multiPolygonIntersectsBufferedMultiLine: multiPolygonIntersectsBufferedMultiLine,
-    polygonIntersectsPolygon: polygonIntersectsPolygon,
-    distToSegmentSquared: distToSegmentSquared
+    multiPolygonIntersectsBufferedMultiPoint,
+    multiPolygonIntersectsMultiPolygon,
+    multiPolygonIntersectsBufferedMultiLine,
+    polygonIntersectsPolygon,
+    distToSegmentSquared
 };
 
-function polygonIntersectsPolygon(polygonA, polygonB) {
+type Line = Array<Point>;
+type MultiLine = Array<Line>;
+type Ring = Array<Point>;
+type Polygon = Array<Point>;
+type MultiPolygon = Array<Polygon>;
+
+function polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon) {
     for (let i = 0; i < polygonA.length; i++) {
         if (polygonContainsPoint(polygonB, polygonA[i])) return true;
     }
@@ -24,7 +32,7 @@ function polygonIntersectsPolygon(polygonA, polygonB) {
     return false;
 }
 
-function multiPolygonIntersectsBufferedMultiPoint(multiPolygon, rings, radius) {
+function multiPolygonIntersectsBufferedMultiPoint(multiPolygon: MultiPolygon, rings: Array<Ring>, radius: number) {
     for (let j = 0; j < multiPolygon.length; j++) {
         const polygon = multiPolygon[j];
         for (let i = 0; i < rings.length; i++) {
@@ -39,7 +47,7 @@ function multiPolygonIntersectsBufferedMultiPoint(multiPolygon, rings, radius) {
     return false;
 }
 
-function multiPolygonIntersectsMultiPolygon(multiPolygonA, multiPolygonB) {
+function multiPolygonIntersectsMultiPolygon(multiPolygonA: MultiPolygon, multiPolygonB: MultiPolygon) {
 
     if (multiPolygonA.length === 1 && multiPolygonA[0].length === 1) {
         return multiPolygonContainsPoint(multiPolygonB, multiPolygonA[0][0]);
@@ -66,7 +74,7 @@ function multiPolygonIntersectsMultiPolygon(multiPolygonA, multiPolygonB) {
     return false;
 }
 
-function multiPolygonIntersectsBufferedMultiLine(multiPolygon, multiLine, radius) {
+function multiPolygonIntersectsBufferedMultiLine(multiPolygon: MultiPolygon, multiLine: MultiLine, radius: number) {
     for (let i = 0; i < multiLine.length; i++) {
         const line = multiLine[i];
 
@@ -85,7 +93,7 @@ function multiPolygonIntersectsBufferedMultiLine(multiPolygon, multiLine, radius
     return false;
 }
 
-function lineIntersectsBufferedLine(lineA, lineB, radius) {
+function lineIntersectsBufferedLine(lineA: Line, lineB: Line, radius: number) {
 
     if (lineA.length > 1) {
         if (lineIntersectsLine(lineA, lineB)) return true;
@@ -103,7 +111,7 @@ function lineIntersectsBufferedLine(lineA, lineB, radius) {
     return false;
 }
 
-function lineIntersectsLine(lineA, lineB) {
+function lineIntersectsLine(lineA: Line, lineB: Line) {
     if (lineA.length === 0 || lineB.length === 0) return false;
     for (let i = 0; i < lineA.length - 1; i++) {
         const a0 = lineA[i];
@@ -117,12 +125,12 @@ function lineIntersectsLine(lineA, lineB) {
     return false;
 }
 
-function lineSegmentIntersectsLineSegment(a0, a1, b0, b1) {
+function lineSegmentIntersectsLineSegment(a0: Point, a1: Point, b0: Point, b1: Point) {
     return isCounterClockwise(a0, b0, b1) !== isCounterClockwise(a1, b0, b1) &&
         isCounterClockwise(a0, a1, b0) !== isCounterClockwise(a0, a1, b1);
 }
 
-function pointIntersectsBufferedLine(p, line, radius) {
+function pointIntersectsBufferedLine(p: Point, line: Line, radius: number) {
     const radiusSquared = radius * radius;
 
     if (line.length === 1) return p.distSqr(line[0]) < radiusSquared;
@@ -137,7 +145,7 @@ function pointIntersectsBufferedLine(p, line, radius) {
 }
 
 // Code from http://stackoverflow.com/a/1501725/331379.
-function distToSegmentSquared(p, v, w) {
+function distToSegmentSquared(p: Point, v: Point, w: Point) {
     const l2 = v.distSqr(w);
     if (l2 === 0) return p.distSqr(v);
     const t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
@@ -147,7 +155,7 @@ function distToSegmentSquared(p, v, w) {
 }
 
 // point in polygon ray casting algorithm
-function multiPolygonContainsPoint(rings, p) {
+function multiPolygonContainsPoint(rings: Array<Ring>, p: Point) {
     let c = false,
         ring, p1, p2;
 
@@ -164,7 +172,7 @@ function multiPolygonContainsPoint(rings, p) {
     return c;
 }
 
-function polygonContainsPoint(ring, p) {
+function polygonContainsPoint(ring: Ring, p: Point) {
     let c = false;
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
         const p1 = ring[i];

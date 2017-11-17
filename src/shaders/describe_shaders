@@ -51,7 +51,7 @@ function addProgramInfo(layer, programInterface, shaderDefinition) {
     const styleLayer = new StyleLayer(layer);
     styleLayer.updatePaintTransitions([], {}, { zoom: zoom }, new AnimationLoop(), {});
     const configuration = ProgramConfiguration.createDynamic(
-        programInterface.paintAttributes, styleLayer, zoom);
+        programInterface, styleLayer, zoom);
     const key = `${layer.type}${configuration.cacheKey || ''}`;
     const program = programs[key] = programs[key] || { layers: [] };
     program.layers.push(layer);

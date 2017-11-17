@@ -1,0 +1,25 @@
+{
+  "expression": ["array", "string", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": ["a", "b"]}}],
+    [{}, {"properties": {"x": [1, 2]}}],
+    [{}, {"properties": {"x": [1, "b"]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<string>"
+    },
+    "outputs": [
+      ["a", "b"],
+      {
+        "error": "Expected value to be of type array<string>, but found array<number, 2> instead."
+      },
+      {
+        "error": "Expected value to be of type array<string>, but found array<value, 2> instead."
+      }
+    ]
+  }
+}

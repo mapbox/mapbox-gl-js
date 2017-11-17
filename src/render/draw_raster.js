@@ -1,85 +1,100 @@
-'use strict';
+// @flow
 
 const util = require('../util/util');
+const ImageSource = require('../source/image_source');
+
+import type Painter from './painter';
+import type SourceCache from '../source/source_cache';
+import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
+import type TileCoord from '../source/tile_coord';
 
 module.exports = drawRaster;
 
-function drawRaster(painter, sourceCache, layer, coords) {
-    if (painter.isOpaquePass) return;
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<TileCoord>) {
+    if (painter.renderPass !== 'translucent') return;
+    if (layer.isOpacityZero(painter.transform.zoom)) return;
 
     const gl = painter.gl;
+    const source = sourceCache.getSource();
+    const program = painter.useProgram('raster');
 
-    gl.enable(gl.DEPTH_TEST);
-    painter.depthMask(true);
-
-    // Change depth function to prevent double drawing in areas where tiles overlap.
-    gl.depthFunc(gl.LESS);
-
-    const minTileZ = coords.length && coords[0].z;
-
-    for (let i = 0; i < coords.length; i++) {
-        const coord = coords[i];
-        // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
-        painter.setDepthSublayer(coord.z - minTileZ);
-        drawRasterTile(painter, sourceCache, layer, coord);
-    }
-
-    gl.depthFunc(gl.LEQUAL);
-}
-
-function drawRasterTile(painter, sourceCache, layer, coord) {
-
-    const gl = painter.gl;
+    gl.disable(gl.DEPTH_TEST);
+    painter.depthMask(false);
 
     gl.disable(gl.STENCIL_TEST);
 
-    const tile = sourceCache.getTile(coord);
-    const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
+    // Constant parameters.
+    gl.uniform1f(program.uniforms.u_brightness_low, layer.paint['raster-brightness-min']);
+    gl.uniform1f(program.uniforms.u_brightness_high, layer.paint['raster-brightness-max']);
+    gl.uniform1f(program.uniforms.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
+    gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
+    gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
+    gl.uniform1f(program.uniforms.u_buffer_scale, 1);
+    gl.uniform1i(program.uniforms.u_image0, 0);
+    gl.uniform1i(program.uniforms.u_image1, 1);
 
-    tile.registerFadeDuration(painter.style.animationLoop, layer.paint['raster-fade-duration']);
+    const minTileZ = coords.length && coords[0].z;
 
-    const program = painter.useProgram('raster');
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    for (const coord of coords) {
+        // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
+        painter.setDepthSublayer(coord.z - minTileZ);
 
-    // color parameters
-    gl.uniform1f(program.u_brightness_low, layer.paint['raster-brightness-min']);
-    gl.uniform1f(program.u_brightness_high, layer.paint['raster-brightness-max']);
-    gl.uniform1f(program.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
-    gl.uniform1f(program.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
-    gl.uniform3fv(program.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
+        const tile = sourceCache.getTile(coord);
+        const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
-    const parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
-        fade = getFadeValues(tile, parentTile, layer, painter.transform);
+        tile.registerFadeDuration(painter.style.animationLoop, layer.paint['raster-fade-duration']);
 
-    let parentScaleBy, parentTL;
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+        const parentTile = sourceCache.findLoadedParent(coord, 0, {}),
+            fade = getFadeValues(tile, parentTile, sourceCache, layer, painter.transform);
 
-    gl.activeTexture(gl.TEXTURE1);
+        let parentScaleBy, parentTL;
 
-    if (parentTile) {
-        gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
-        parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
-        parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
+        gl.activeTexture(gl.TEXTURE0);
+        tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
-    } else {
-        gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+        gl.activeTexture(gl.TEXTURE1);
+
+        if (parentTile) {
+            parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+            parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
+            parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
+
+        } else {
+            tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
+        }
+
+        // cross-fade parameters
+        gl.uniform2fv(program.uniforms.u_tl_parent, parentTL || [0, 0]);
+        gl.uniform1f(program.uniforms.u_scale_parent, parentScaleBy || 1);
+        gl.uniform1f(program.uniforms.u_fade_t, fade.mix);
+        gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint['raster-opacity']);
+
+
+        if (source instanceof ImageSource) {
+            const buffer = source.boundsBuffer;
+            const vao = source.boundsVAO;
+            vao.bind(gl, program, buffer);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+        } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
+            program.draw(
+                gl,
+                gl.TRIANGLES,
+                layer.id,
+                tile.maskedBoundsBuffer,
+                tile.maskedIndexBuffer,
+                tile.segments
+            );
+        } else {
+            const buffer = painter.rasterBoundsBuffer;
+            const vao = painter.rasterBoundsVAO;
+            vao.bind(gl, program, buffer);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+        }
     }
 
-    // cross-fade parameters
-    gl.uniform2fv(program.u_tl_parent, parentTL || [0, 0]);
-    gl.uniform1f(program.u_scale_parent, parentScaleBy || 1);
-    gl.uniform1f(program.u_buffer_scale, 1);
-    gl.uniform1f(program.u_fade_t, fade.mix);
-    gl.uniform1f(program.u_opacity, fade.opacity * layer.paint['raster-opacity']);
-    gl.uniform1i(program.u_image0, 0);
-    gl.uniform1i(program.u_image1, 1);
-
-    const buffer = tile.boundsBuffer || painter.rasterBoundsBuffer;
-    const vao = tile.boundsVAO || painter.rasterBoundsVAO;
-    vao.bind(gl, program, buffer);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    gl.depthFunc(gl.LEQUAL);
 }
 
 function spinWeights(angle) {
@@ -105,15 +120,15 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-function getFadeValues(tile, parentTile, layer, transform) {
+function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
     const fadeDuration = layer.paint['raster-fade-duration'];
 
-    if (tile.sourceCache && fadeDuration > 0) {
+    if (fadeDuration > 0) {
         const now = Date.now();
         const sinceTile = (now - tile.timeAdded) / fadeDuration;
         const sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-        const source = tile.sourceCache.getSource();
+        const source = sourceCache.getSource();
         const idealZ = transform.coveringZoomLevel({
             tileSize: source.tileSize,
             roundZoom: source.roundZoom

@@ -1,16 +1,23 @@
-'use strict';
+// @flow
 
 const assert = require('assert');
 const WhooTS = require('@mapbox/whoots-js');
 const Coordinate = require('../geo/coordinate');
 
 class TileCoord {
-    constructor(z, x, y, w) {
+    z: number;
+    x: number;
+    y: number;
+    w: number;
+    id: number;
+    posMatrix: Float32Array;
+
+    constructor(z: number, x: number, y: number, w: number | void) {
         assert(!isNaN(z) && z >= 0 && z % 1 === 0);
         assert(!isNaN(x) && x >= 0 && x % 1 === 0);
         assert(!isNaN(y) && y >= 0 && y % 1 === 0);
 
-        if (isNaN(w)) w = 0;
+        if (w === undefined || isNaN(w)) w = 0;
 
         this.z = +z;
         this.x = +x;
@@ -24,14 +31,14 @@ class TileCoord {
         this.id = ((dim * dim * w + dim * this.y + this.x) * 32) + this.z;
 
         // for caching pos matrix calculation when rendering
-        this.posMatrix = null;
+        (this: any).posMatrix = null;
     }
 
     toString() {
         return `${this.z}/${this.x}/${this.y}`;
     }
 
-    toCoordinate(sourceMaxZoom) {
+    toCoordinate(sourceMaxZoom: number | void) {
         const zoom = Math.min(this.z, sourceMaxZoom === undefined ? this.z : sourceMaxZoom);
         const tileScale = Math.pow(2, zoom);
         const row = this.y;
@@ -40,21 +47,21 @@ class TileCoord {
     }
 
     // given a list of urls, choose a url template and return a tile URL
-    url(urls, sourceMaxZoom, scheme) {
+    url(urls: Array<string>, sourceMaxZoom: ?number, scheme: ?string) {
         const bbox = WhooTS.getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
         return urls[(this.x + this.y) % urls.length]
             .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
-            .replace('{z}', Math.min(this.z, sourceMaxZoom || this.z))
-            .replace('{x}', this.x)
-            .replace('{y}', scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y)
+            .replace('{z}', String(Math.min(this.z, sourceMaxZoom || this.z)))
+            .replace('{x}', String(this.x))
+            .replace('{y}', String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
             .replace('{quadkey}', quadkey)
             .replace('{bbox-epsg-3857}', bbox);
     }
 
     // Return the coordinate of the parent tile
-    parent(sourceMaxZoom) {
+    parent(sourceMaxZoom: number) {
         if (this.z === 0) return null;
 
         // the id represents an overscaled tile, return the same coordinates with a lower z
@@ -69,8 +76,22 @@ class TileCoord {
         return new TileCoord(this.z, this.x, this.y, 0);
     }
 
+    isLessThan(rhs: TileCoord) {
+        if (this.w < rhs.w) return true;
+        if (this.w > rhs.w) return false;
+
+        if (this.z < rhs.z) return true;
+        if (this.z > rhs.z) return false;
+
+        if (this.x < rhs.x) return true;
+        if (this.x > rhs.x) return false;
+
+        if (this.y < rhs.y) return true;
+        return false;
+    }
+
     // Return the coordinates of the tile's children
-    children(sourceMaxZoom) {
+    children(sourceMaxZoom: number) {
 
         if (this.z >= sourceMaxZoom) {
             // return a single tile coord representing a an overscaled tile
@@ -87,12 +108,82 @@ class TileCoord {
             new TileCoord(z, x + 1, y + 1, this.w)
         ];
     }
+
+    scaledTo(targetZ: number, sourceMaxZoom: number) {
+        // the id represents an overscaled tile, return the same coordinates with a lower z
+        if (this.z > sourceMaxZoom) {
+            return new TileCoord(targetZ, this.x, this.y, this.w);
+        }
+
+        if (targetZ <= this.z) {
+            return new TileCoord(targetZ, this.x >> (this.z - targetZ), this.y >> (this.z - targetZ), this.w); // parent or same
+        } else {
+            return new TileCoord(targetZ, this.x << (targetZ - this.z), this.y << (targetZ - this.z), this.w); // child
+        }
+    }
+
+    /**
+     *
+     * @memberof Map
+     * @param {TileCoord} child TileCoord to check whether it is a child of the root tile
+     * @returns {boolean} result boolean describing whether or not `child` is a child tile of the root
+     * @private
+     */
+    isChildOf(parent: any) {
+        // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
+        return parent.z === 0 || (parent.z < this.z && parent.x === (this.x >> (this.z - parent.z)) && parent.y === (this.y >> (this.z - parent.z)));
+    }
+
+    static cover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
+                 actualZ: number, renderWorldCopies: boolean | void) {
+        if (renderWorldCopies === undefined) {
+            renderWorldCopies = true;
+        }
+        const tiles = 1 << z;
+        const t = {};
+
+        function scanLine(x0, x1, y) {
+            let x, w, wx, coord;
+            if (y >= 0 && y <= tiles) {
+                for (x = x0; x < x1; x++) {
+                    w = Math.floor(x / tiles);
+                    wx = (x % tiles + tiles) % tiles;
+                    if (w === 0 || renderWorldCopies === true) {
+                        coord = new TileCoord(actualZ, wx, y, w);
+                        t[coord.id] = coord;
+                    }
+                }
+            }
+        }
+
+        // Divide the screen up in two triangles and scan each of them:
+        // +---/
+        // | / |
+        // /---+
+        scanTriangle(bounds[0], bounds[1], bounds[2], 0, tiles, scanLine);
+        scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
+
+        return Object.keys(t).map((id) => {
+            return t[id];
+        });
+    }
+
+    // Parse a packed integer id into a TileCoord object
+    static fromID(id: number) {
+        const z = id % 32, dim = 1 << z;
+        const xy = ((id - z) / 32);
+        const x = xy % dim, y = ((xy - x) / dim) % dim;
+        let w = Math.floor(xy / (dim * dim));
+        if (w % 2 !== 0) w = w * -1 - 1;
+        w /= 2;
+        return new TileCoord(z, x, y, w);
+    }
 }
 
 // Taken from polymaps src/Layer.js
 // https://github.com/simplegeo/polymaps/blob/master/src/Layer.js#L333-L383
 
-function edge(a, b) {
+function edge(a: Coordinate, b: Coordinate) {
     if (a.row > b.row) { const t = a; a = b; b = t; }
     return {
         x0: a.column,
@@ -110,8 +201,8 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
 
     // sort edges by x-coordinate
     if ((e0.x0 === e1.x0 && e0.y0 === e1.y0) ?
-            (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
-            (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
+        (e0.x0 + e1.dy / e0.dy * e0.dx < e1.x1) :
+        (e0.x1 - e1.dy / e0.dy * e0.dx < e1.x0)) {
         const t = e0; e0 = e1; e1 = t;
     }
 
@@ -127,7 +218,7 @@ function scanSpans(e0, e1, ymin, ymax, scanLine) {
     }
 }
 
-function scanTriangle(a, b, c, ymin, ymax, scanLine) {
+function scanTriangle(a: Coordinate, b: Coordinate, c: Coordinate, ymin, ymax, scanLine) {
     let ab = edge(a, b),
         bc = edge(b, c),
         ca = edge(c, a);
@@ -143,50 +234,6 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (ab.dy) scanSpans(ca, ab, ymin, ymax, scanLine);
     if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
 }
-
-TileCoord.cover = function(z, bounds, actualZ, renderWorldCopies) {
-    if (renderWorldCopies === undefined) {
-        renderWorldCopies = true;
-    }
-    const tiles = 1 << z;
-    const t = {};
-
-    function scanLine(x0, x1, y) {
-        let x, w, wx, coord;
-        if (y >= 0 && y <= tiles) {
-            for (x = x0; x < x1; x++) {
-                w = Math.floor(x / tiles);
-                wx = (x % tiles + tiles) % tiles;
-                if (w === 0 || renderWorldCopies === true) {
-                    coord = new TileCoord(actualZ, wx, y, w);
-                    t[coord.id] = coord;
-                }
-            }
-        }
-    }
-
-    // Divide the screen up in two triangles and scan each of them:
-    // +---/
-    // | / |
-    // /---+
-    scanTriangle(bounds[0], bounds[1], bounds[2], 0, tiles, scanLine);
-    scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
-
-    return Object.keys(t).map((id) => {
-        return t[id];
-    });
-};
-
-// Parse a packed integer id into a TileCoord object
-TileCoord.fromID = function(id) {
-    const z = id % 32, dim = 1 << z;
-    const xy = ((id - z) / 32);
-    const x = xy % dim, y = ((xy - x) / dim) % dim;
-    let w = Math.floor(xy / (dim * dim));
-    if (w % 2 !== 0) w = w * -1 - 1;
-    w /= 2;
-    return new TileCoord(z, x, y, w);
-};
 
 function getQuadkey(z, x, y) {
     let quadkey = '', mask;

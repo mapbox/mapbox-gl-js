@@ -1,0 +1,13 @@
+{
+  "expression": ["literal", {"x": 1}],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "object"
+    },
+    "outputs": [{"x": 1}]
+  }
+}

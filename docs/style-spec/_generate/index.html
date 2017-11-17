@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: wrapper
 title: Mapbox Style Specification
 class: fill-light
 options: full
@@ -49,6 +49,7 @@ navigation:
     - title: Raster
     - title: Circle
     - title: Fill-Extrusion
+    - title: Heatmap
   - title: Types
     subnav:
     - title: Color
@@ -58,6 +59,7 @@ navigation:
     - title: Number
     - title: Array
     - title: Function
+    - title: Expression
     - title: Filter
 ---
 <link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'>
@@ -617,6 +619,20 @@ navigation:
 {% endhighlight %}
         </div>
         <% } %>
+        This URL template should include two tokens:
+        <ul>
+            <li><code>{fontstack}</code>
+                When requesting glyphs, this token is replaced with a comma separated list of fonts from a font
+                stack specified in the <a href="#layout-symbol-text-font"><code>text-font</code></a> property of
+                a symbol layer.
+            </li>
+            <li><code>{range}</code>
+                When requesting glyphs, this token is replaced with a range of 256 Unicode code points. For example,
+                to load glyphs for the <a href="https://en.wikipedia.org/wiki/Unicode_block">Unicode Basic Latin and
+                    Basic Latin-1 Supplement blocks</a>, the range would be <code>0-255</code>. The actual ranges that
+                are loaded are determined at runtime based on what text needs to be displayed.
+            </li>
+        </ul>
       </p>
     </div>
 
@@ -642,7 +658,7 @@ navigation:
     </div>
 
 
-    <% var layer_types = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion']; %>
+    <% var layer_types = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap']; %>
 
     <div class='pad2 prose'>
       <a id='layers' class='anchor'></a>
@@ -679,18 +695,17 @@ navigation:
         <code>paint</code> properties.
       </p>
       <p>
-        <em>Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the rendering process and
-        define how data for that layer is passed to the GPU. For efficiency, a layer can share layout properties with
-        another layer via the <code>"ref"</code> layer property, and should do so where possible. This will decrease
-        processing time and allow the two layers will share GPU memory and other resources associated with the layer.
+        <em>Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the
+          rendering process and define how data for that layer is passed to the GPU. Changes to a layout property
+          require an asynchronous "layout" step.
       </p>
       <p>
-        <em>Paint properties</em> are applied later in the rendering process. A layer that shares layout properties with another
-        layer can have independent paint properties. Paint properties appear in the layer's <code>"paint"</code> object.
+        <em>Paint properties</em> are applied later in the rendering process. Paint properties appear in the layer's
+          <code>"paint"</code> object. Changes to a paint property are cheap and happen synchronously.
       </p>
       <p class='space-bottom4 quiet small'>Key:
-        <a class='icon smooth-ramp quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
-        <a class='icon step-ramp quiet micro space-right inline' href='#function' title='Supports piecewise constant functions'>supports piecewise constant functions</a>
+        <a class='icon smooth-ramp quiet micro space-right inline' href='#types-expression-curve' title='Supports all interpolation types'>supports all interpolation types</a>
+        <a class='icon step-ramp quiet micro space-right inline' href='#types-expression-curve' title='Supports step interpolation only'>supports "step" interpolation only</a>
         <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
       </p>
 
@@ -811,7 +826,6 @@ navigation:
           <h3 class='space-bottom1'><a href='#types-function' title='link to function'>Function</a></h3>
 
           <p>The value for any layout or paint property may be specified as a <em>function</em>. Functions allow you to make the appearance of a map feature change with the current zoom level and/or the feature's properties.</p>
-
           <div class='col12 pad1x'>
             <div class="col12 clearfix pad0y pad2x space-bottom2">
               <div><span class='code'><a id="function-stops" href="#function-stops">stops</a></span></div>
@@ -835,9 +849,16 @@ navigation:
                 <dt><var>identity</var></dt>
                 <dd>functions return their input as their output.</dd>
                 <dt><var>exponential</var></dt>
-                <dd>functions generate an output by interpolating between stops just less than and just greater than the function input. The domain must be numeric. This is the default for properties marked with <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span>, the "exponential" symbol.</dd>
+                <dd>functions generate an output by interpolating between stops just less than and just greater than the
+                    function input. The domain (input value) must be numeric, and the style property must support
+                    interpolation. Style properties that support interpolation are marked marked with <span
+                        class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span>, the
+                    "exponential" symbol, and <var>exponential</var> is the default function type for these properties.</dd>
                 <dt><var>interval</var></dt>
-                <dd>functions return the output value of the stop just less than the function input. The domain must be numeric. This is the default for properties marked with <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span>, the "interval" symbol.</dd>
+                <dd>functions return the output value of the stop just less than the function input. The domain (input
+                    value) must be numeric. Any style property may use interval functions. For properties marked with
+                    <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span>, the "interval"
+                    symbol, this is the default function type.</dd>
                 <dt><var>categorical</var></dt>
                 <dd>functions return the output value of the stop equal to the function input.</dd>
               </dl>
@@ -889,51 +910,51 @@ navigation:
             <tr>
               <td><code>property</code></td>
               <td class='center'>&gt;= 0.18.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>type</code></td>
               <td class='center'>&gt;= 0.18.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>exponential</code> type</td>
               <td class='center'>&gt;= 0.18.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>interval</code> type</td>
               <td class='center'>&gt;= 0.18.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>categorical</code> type</td>
               <td class='center'>&gt;= 0.18.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>identity</code> type</td>
               <td class='center'>&gt;= 0.26.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>default</code></td>
               <td class='center'>&gt;= 0.33.0</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
-              <td class='center'>Not yet supported</td>
+              <td class='center'>&gt;= 5.0.0</td>
+              <td class='center'>&gt;= 3.5.0</td>
+              <td class='center'>&gt;= 0.4.0</td>
             </tr>
             <tr>
               <td><code>colorSpace</code></td>
@@ -990,7 +1011,7 @@ navigation:
               {% endhighlight %}
           </div>
 
-          <p><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
+          <p><a id='types-function-zoom-property' class='anchor'></a><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
 
           <div class='col12 space-bottom'>
               {% highlight js %}
@@ -1017,12 +1038,142 @@ navigation:
               {% endhighlight %}
           </div>
 
+        <div class='pad2 keyline-bottom'>
+          <a id='types-expression' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-expression' title='link to expression'>Expression</a></h3>
+
+          <p>The value for any <a href="#layer-layout">layout property</a>, <a
+              href="#layer-paint">paint property</a>, or <a
+              href="#layer-filter">filter</a> may be specified as an
+            <em>expression</em>. Expressions define how one or more feature
+            property values and/or the current zoom level are combined using
+            logical, mathematical, string, or color operations to produce the
+            appropriate style property value or filter decision.</p>
+
+          <table class="micro space-bottom">
+            <thead>
+            <tr class='fill-light'>
+              <th>SDK Support</th>
+              <td class='center'>Mapbox GL JS</td>
+              <td class='center'>Android SDK</td>
+              <td class='center'>iOS SDK</td>
+              <td class='center'>macOS SDK</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><code>layout and paint properties</code></td>
+              <td class='center'>&gt;= 0.41.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
+              <td><code>filter</code></td>
+              <td class='center'>&gt;= 0.41.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            </tbody>
+          </table>
+
+          <p>A <a id="property-expression" class="anchor"></a><strong>property expression</strong> is any expression defined using an expression that includes a reference to feature property data. Property expressions allow the appearance of a feature to change with its properties. They can be used to visually differentate types of features within the same layer or create data visualizations. Note that support for property expressions is not available across all properties and platforms at this time.</p>
+
+          <h4>Example: a property expression</h4>
+          <div class='col12 space-bottom'>
+              {% highlight js %}
+          {
+            "circle-color": [
+              'rgb',
+              // red is higher when feature.properties.temperature is higher
+              ["get", "temperature"],
+              0,
+              // blue is higher when feature.properties.temperature is lower
+              ["-", 100, ["get", "temperature"]]
+            ]
+          }
+          {% endhighlight %}
+          </div>
+
+          <p>A <a id="zoom-expression" class="anchor"></a><strong>zoom expression</strong> is any expression defined using an expression that includes <code>["zoom"]</code>.  Such expressions allow the the appearance of a layer to change with the map’s zoom level. Zoom expressions can be used to create the illusion of depth and control data density.</p>
+
+          <p>Any zoom expression used in a layout or paint property must be of the following form (see <a href="#types-expression-curve">curves</a> for more details):</p>
+
+          <div class='col12 space-bottom'>
+          {% highlight js %}
+          [ "curve", interpolation, ["zoom"], ... ]
+          {% endhighlight %}
+          </div>
+
+          <p>Or:</p>
+
+          <div class='col12 space-bottom'>
+          {% highlight js %}
+          [
+            "let",
+            ... variable bindings...,
+            [ "curve", interpolation, ["zoom"], ... ]
+          ]
+          {% endhighlight %}
+          </div>
+
+          <p>That is, in layout or paint properties, <code>["zoom"]</code> may only appear as the input to an outer <a href="#types-expression-curve">curve</a>, and may not appear anywhere else in the expression.</p>
+
+          <h4>Example: a zoom-only expression</h4>
+          <div class='col12 space-bottom'>
+          {% highlight js %}
+          {
+            "circle-radius": {
+              "expression": [
+                "curve", "linear", ["zoom"],
+                // zoom is 5 (or less) -> circle radius will be 1px
+                // zoom is 10 (or greater) -> circle radius will be 2px
+                5, 1, 10, 2
+              ]
+            }
+          }
+          {% endhighlight %}
+          </div>
+
+          <h4>Example: a zoom-and-property expression</h4>
+          <p>Combining zoom and property expressions allows a layer's or appearance to change with both the zoom level <em>and</em> each feature's properties.</p>
+
+          <div class='col12 space-bottom'>
+          {% highlight js %}
+          {
+            "circle-radius": [
+              "curve", "linear", ["zoom"],
+
+              // zoom is 0 and "rating" is 0 -> circle radius will be 0px
+              // zoom is 0 and "rating" is 5 -> circle radius will be 5px
+              0, ["number", [ "get", "rating" ],
+              // zoom is 20 and "rating" is 0 -> circle radius will be 4 * 0 = 0px
+              // zoom is 20 and "rating" is 5 -> circle radius will be 4 * 5 = 20px
+              10, [ "*", 4, [ "number", [ "get", ["properties"] ] ] ]
+            ]
+          }
+          {% endhighlight %}
+          </div>
+
+          <p>There is an important difference between the way that zoom functions render for <em>layout</em> and <em>paint</em> properties. Paint properties are continuously re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the function will be re-evaluated according to the function, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom function, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
+
+        </div>
+
+        <h4 style="font-size: 100%"><a id="types-expression-reference" href="#types-expression-reference">Expression Reference</a></h4>
+
+          <% for (var group of groupedExpressions) { %>
+            <h5 style='font-size: 100%' class="pad2x"><a id='types-expression-group-<%= group.name %>' href='#types-expression-group-<%= group.name %>'><%= group.name %></a></h5>
+            <% for (var expression of group.expressions) { %>
+              <%= renderExpression(expression) %>
+            <% } %>
+          <% } %>
         </div>
 
         <div class='pad2'>
           <a id='types-filter' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-filter' title='link to filter'>Filter</a></h3>
-          <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
+          <p>A filter selects specific features from a layer. A filter is defined using any boolean <a href="#types-expression">expression</a>. In previous versions of the style specification, filters were defined using the deprecated syntax documented below:</p>
 
           <div class='col12 clearfix space-bottom2'>
 
@@ -1164,7 +1315,7 @@ navigation:
             <tbody>
             <tr>
               <td>basic functionality</td>
-              <td class='center'>&gt;= 0.10.0</td>
+              <td class='center'>&gt;= 0.10.0<br>deprecated &gt;= 0.41.0</td>
               <td class='center'>&gt;= 2.0.1</td>
               <td class='center'>&gt;= 2.0.0</td>
               <td class='center'>&gt;= 0.1.0</td>

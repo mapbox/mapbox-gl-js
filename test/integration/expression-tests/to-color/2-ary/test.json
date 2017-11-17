@@ -1,0 +1,29 @@
+{
+  "expression": ["to-color", ["get", "x"], ["get", "y"]],
+  "inputs": [
+    [{}, {"properties": {"x": "red", "y": "#000000"}}],
+    [{}, {"properties": {"x": "invalid", "y": "#000000"}}],
+    [{}, {"properties": {"x": "rgba(0, 255, 0, 1)", "y": "#000000"}}],
+    [{}, {"properties": {"x": [0, 255, 0, 1], "y": "#000000"}}],
+    [{}, {"properties": {"x": [0, 255, 0], "y": "#000000"}}],
+    [{}, {"properties": {"x": [0, 255], "y": "#000000"}}],
+    [{}, {"properties": {"x": [0, 255], "y": "invalid"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "color"
+    },
+    "outputs": [
+      [1, 0, 0, 1],
+      [0, 0, 0, 1],
+      [0, 1, 0, 1],
+      [0, 1, 0, 1],
+      [0, 1, 0, 1],
+      [0, 0, 0, 1],
+      {"error": "Could not parse color from value 'invalid'"}
+    ]
+  }
+}

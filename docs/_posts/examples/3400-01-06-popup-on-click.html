@@ -23,7 +23,6 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-
     // Add a layer showing the places.
     map.addLayer({
         "id": "places",
@@ -130,32 +129,24 @@ map.on('load', function () {
             "icon-allow-overlap": true
         }
     });
-});
 
+    // When a click event occurs on a feature in the places layer, open a popup at the
+    // location of the feature, with description HTML from its properties.
+    map.on('click', 'places', function (e) {
+        new mapboxgl.Popup()
+            .setLngLat(e.features[0].geometry.coordinates)
+            .setHTML(e.features[0].properties.description)
+            .addTo(map);
+    });
 
-// When a click event occurs near a place, open a popup at the location of
-// the feature, with description HTML from its properties.
-map.on('click', function (e) {
-    var features = map.queryRenderedFeatures(e.point, { layers: ['places'] });
+    // Change the cursor to a pointer when the mouse is over the places layer.
+    map.on('mouseenter', 'places', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
 
-    if (!features.length) {
-        return;
-    }
-
-    var feature = features[0];
-
-    // Populate the popup and set its coordinates
-    // based on the feature found.
-    var popup = new mapboxgl.Popup()
-        .setLngLat(feature.geometry.coordinates)
-        .setHTML(feature.properties.description)
-        .addTo(map);
-});
-
-// Use the same approach as above to indicate that the symbols are clickable
-// by changing the cursor style to 'pointer'.
-map.on('mousemove', function (e) {
-    var features = map.queryRenderedFeatures(e.point, { layers: ['places'] });
-    map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    // Change it back to a pointer when it leaves.
+    map.on('mouseleave', 'places', function () {
+        map.getCanvas().style.cursor = '';
+    });
 });
 </script>

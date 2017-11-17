@@ -1,7 +1,9 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
+
+import type Map from '../map';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -13,14 +15,22 @@ const util = require('../../util/util');
 **/
 
 class LogoControl {
+    _map: Map;
+    _container: HTMLElement;
 
     constructor() {
         util.bindAll(['_updateLogo'], this);
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
+        const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
+        anchor.target = "_blank";
+        anchor.href = "https://www.mapbox.com/";
+        anchor.setAttribute("aria-label", "Mapbox logo");
+        this._container.appendChild(anchor);
+        this._container.style.display = 'none';
 
         this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
@@ -28,7 +38,7 @@ class LogoControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        DOM.remove(this._container);
         this._map.off('sourcedata', this._updateLogo);
     }
 
@@ -36,18 +46,9 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo(e) {
-        if (e && e.sourceDataType === 'metadata') {
-            if (!this._container.childNodes.length && this._logoRequired()) {
-                const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
-                anchor.target = "_blank";
-                anchor.href = "https://www.mapbox.com/";
-                anchor.setAttribute("aria-label", "Mapbox logo");
-                this._container.appendChild(anchor);
-                this._map.off('data', this._updateLogo);
-            } else if (this._container.childNodes.length && !this._logoRequired()) {
-                this.onRemove();
-            }
+    _updateLogo(e: any) {
+        if (!e || e.sourceDataType === 'metadata') {
+            this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }
     }
 

@@ -3,17 +3,18 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "width": 500,
-      "height": 500,
+      "debug": true,
+      "width": 1000,
+      "height": 1000,
       "queryGeometry": [
-          [
-              0,
-              0
-          ],
-          [
-              500,
-              500
-          ]
+        [
+          100,
+          85
+        ],
+        [
+          850,
+          400
+        ]
       ]
     }
   },
@@ -30,6 +31,7 @@
       "data": "local://data/121points.geojson"
     }
   },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sprite": "local://sprites/sprite",
   "layers": [
     {
@@ -38,7 +40,13 @@
       "source": "geojson",
       "layout": {
         "symbol-placement": "point",
-        "icon-image": "bicycle-12"
+        "icon-image": "bicycle-12",
+        "text-field": "A lot of test text so that the collision box is big",
+        "text-max-width": 10,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
       },
       "interactive": true
     }

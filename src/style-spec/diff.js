@@ -1,4 +1,3 @@
-'use strict';
 
 const isEqual = require('lodash.isequal');
 
@@ -43,6 +42,11 @@ const operations = {
      * { command: 'removeSource', args: ['sourceId'] }
      */
     removeSource: 'removeSource',
+
+    /*
+     * { command: 'setGeoJSONSourceData', args: ['sourceId', data] }
+     */
+    setGeoJSONSourceData: 'setGeoJSONSourceData',
 
     /*
      * { command: 'setLayerZoomRange', args: ['layerId', 0, 22] }
@@ -118,10 +122,15 @@ function diffSources(before, after, commands, sourcesRemoved) {
         if (!before.hasOwnProperty(sourceId)) {
             commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
         } else if (!isEqual(before[sourceId], after[sourceId])) {
-            // no update command, must remove then add
-            commands.push({ command: operations.removeSource, args: [sourceId] });
-            commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
-            sourcesRemoved[sourceId] = true;
+            if (before[sourceId].type === 'geojson' && after[sourceId].type === 'geojson') {
+                // geojson sources use setGeoJSONSourceData command to update
+                commands.push({ command: operations.setGeoJSONSourceData, args: [sourceId, after[sourceId].data] });
+            } else {
+                // no update command, must remove then add
+                commands.push({ command: operations.removeSource, args: [sourceId] });
+                commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
+                sourcesRemoved[sourceId] = true;
+            }
         }
     }
 }

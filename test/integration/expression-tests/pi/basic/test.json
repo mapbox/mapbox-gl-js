@@ -1,0 +1,13 @@
+{
+  "expression": ["pi"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [3.141592653589793]
+  }
+}

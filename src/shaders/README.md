@@ -13,10 +13,10 @@ Some variables change type depending on their context:
 We abstract over this functionality using pragmas.
 
 ```glsl
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define highp vec4 color
 
 main() {
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize highp vec4 color
     ...
     gl_FragColor = color;
 }

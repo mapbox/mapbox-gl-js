@@ -1,0 +1,13 @@
+{
+  "expression": ["^", 4, ["number", ["get", "x"]]],
+  "inputs": [[{}, {"properties": {"x": 2}}], [{}, {"properties": {"x": 0.5}}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [16, 2]
+  }
+}

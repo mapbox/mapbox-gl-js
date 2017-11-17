@@ -1,0 +1,28 @@
+{
+  "propertySpec": {"type": "string"},
+  "expression": ["case", ["get", "x"], "x", ["get", "y"], "y", "otherwise"],
+  "inputs": [
+    [{}, {"properties": {"x": true, "y": true}}],
+    [{}, {"properties": {"x": true, "y": false}}],
+    [{}, {"properties": {"x": false, "y": true}}],
+    [{}, {"properties": {"x": false, "y": false}}],
+    [{}, {"properties": {"x": "false", "y": false}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      "x",
+      "x",
+      "y",
+      "otherwise",
+      {
+        "error": "Expected value to be of type boolean, but found string instead."
+      }
+    ]
+  }
+}

@@ -1,9 +1,13 @@
-'use strict';
 // @flow
 
 const UnitBezier = require('@mapbox/unitbezier');
 const Coordinate = require('../geo/coordinate');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
+
+/**
+ * @module util
+ * @private
+ */
 
 /**
  * Given a value `t` that varies between 0 and 1, return
@@ -83,7 +87,11 @@ exports.wrap = function (n: number, min: number, max: number): number {
  * called with an array, containing the results of each async call.
  * @private
  */
-exports.asyncAll = function (array: Array<any>, fn: Function, callback: Function) {
+exports.asyncAll = function<Item, Result> (
+    array: Array<Item>,
+    fn: (item: Item, fnCallback: Callback<Result>) => void,
+    callback: Callback<Array<Result>>
+) {
     if (!array.length) { return callback(null, []); }
     let remaining = array.length;
     const results = new Array(array.length);
@@ -91,7 +99,7 @@ exports.asyncAll = function (array: Array<any>, fn: Function, callback: Function
     array.forEach((item, i) => {
         fn(item, (err, result) => {
             if (err) error = err;
-            results[i] = result;
+            results[i] = ((result: any): Result); // https://github.com/facebook/flow/issues/2123
             if (--remaining === 0) callback(error, results);
         });
     });
@@ -103,7 +111,7 @@ exports.asyncAll = function (array: Array<any>, fn: Function, callback: Function
  *
  * @private
  */
-exports.values = function (obj: Object): Array<string> {
+exports.values = function<T>(obj: {[key: string]: T}): Array<T> {
     const result = [];
     for (const k in obj) {
         result.push(obj[k]);
@@ -118,7 +126,7 @@ exports.values = function (obj: Object): Array<string> {
  * @returns keys difference
  * @private
  */
-exports.keysDifference = function (obj: Object, other: Object): Array<string> {
+exports.keysDifference = function<S, T>(obj: {[key: string]: S}, other: {[key: string]: T}): Array<string> {
     const difference = [];
     for (const i in obj) {
         if (!(i in other)) {
@@ -135,13 +143,11 @@ exports.keysDifference = function (obj: Object, other: Object): Array<string> {
  * source objects.
  *
  * @param dest destination object
- * @param {...Object} sources sources from which properties are pulled
+ * @param sources sources from which properties are pulled
  * @private
  */
-// eslint-disable-next-line no-unused-vars
-exports.extend = function (dest: Object, source0: Object, source1?: Object, source2?: Object): Object {
-    for (let i = 1; i < arguments.length; i++) {
-        const src = arguments[i];
+exports.extend = function (dest: Object, ...sources: Array<?Object>): Object {
+    for (const src of sources) {
         for (const k in src) {
             dest[k] = src[k];
         }
@@ -237,8 +243,9 @@ exports.getCoordinatesCenter = function(coords: Array<Coordinate>): Coordinate {
     const dx = maxX - minX;
     const dy = maxY - minY;
     const dMax = Math.max(dx, dy);
+    const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
-        .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
+        .zoomTo(zoom);
 };
 
 /**
@@ -324,7 +331,7 @@ exports.clone = function<T>(input: T): T {
  *
  * @private
  */
-exports.arraysIntersect = function(a: Array<any>, b: Array<any>): boolean {
+exports.arraysIntersect = function<T>(a: Array<T>, b: Array<T>): boolean {
     for (let l = 0; l < a.length; l++) {
         if (b.indexOf(a[l]) >= 0) return true;
     }
@@ -337,7 +344,7 @@ exports.arraysIntersect = function(a: Array<any>, b: Array<any>): boolean {
  *
  * @private
  */
-const warnOnceHistory = {};
+const warnOnceHistory: {[key: string]: boolean} = {};
 exports.warnOnce = function(message: string): void {
     if (!warnOnceHistory[message]) {
         // console isn't defined in some WebWorkers, see #2558

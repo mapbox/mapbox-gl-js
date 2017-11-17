@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "operations": [
+        [
+          "addImage",
+          "marker",
+          "./image/marker.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "fill",
+            "type": "fill",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+              "fill-pattern": "marker"
+            }
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "removeImage",
+          "marker"
+        ],
+        [
+          "removeLayer",
+          "fill"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "road",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+              "line-width": 20,
+              "line-pattern": "generic_icon"
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 17,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    }
+  ]
+}

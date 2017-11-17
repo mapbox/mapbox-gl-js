@@ -8,10 +8,12 @@ node_modules
 npm-debug.log
 *.sublime-*
 coverage
+flow-coverage
 .DS_Store
 .nyc_output
 *_generated.js
 *-generated.js
-test/integration/**/index.html
+test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/diff.png
+.eslintcache

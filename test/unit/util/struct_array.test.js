@@ -27,7 +27,6 @@ test('StructArray', (t) => {
                 type: 'Int16',
                 offset: 4
             }],
-            bytesPerElement: 8,
             alignment: 4
         });
 
@@ -61,6 +60,19 @@ test('StructArray', (t) => {
         t.equal(e1.box0, 2);
         t.equal(e1.box1, 5);
 
+        t.end();
+    });
+
+    t.test('emplaceBack gracefully accepts extra arguments', (t) => {
+        // emplaceBack is typically used in fairly hot code paths, where
+        // conditionally varying the number of arguments can be expensive.
+        const array = new TestArray();
+        t.equal(array.emplaceBack(3, 1, 4, 1, 5, 9), 0);
+        t.equal(array.length, 1);
+        const e0 = array.get(0);
+        t.equal(e0.map, 3);
+        t.equal(e0.box0, 1);
+        t.equal(e0.box1, 4);
         t.end();
     });
 

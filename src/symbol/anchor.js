@@ -1,10 +1,12 @@
-'use strict';
+// @flow
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 class Anchor extends Point {
+    angle: any;
+    segment: number | void;
 
-    constructor(x, y, angle, segment) {
+    constructor(x: number, y: number, angle: number, segment?: number) {
         super(x, y);
         this.angle = angle;
         if (segment !== undefined) {
