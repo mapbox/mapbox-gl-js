@@ -1115,60 +1115,41 @@ export default class extends React.Component {
                             <h2><a href='#expressions' title='link to expressions'>Expressions</a></h2>
 
                             <p>The value for any <a href="#layout-property">layout property</a>, <a
-                                href="#paint-property">paint property</a>, or <a
-                                href="#layer-filter">filter</a> may be specified as an <em>expression</em>.
-                                Expressions define how one or more feature
-                                property values and/or the current zoom level are combined using
-                                logical, mathematical, string, or color operations to produce the
-                                appropriate style property value or filter decision.</p>
+                                href="#paint-property">paint property</a>, or <a href="#layer-filter">filter</a> may be
+                                specified as an <em>expression</em>. An expression defines a formula for computing the
+                                value of the property using the <em>operators</em> described below. The set of expression
+                                operators provided by Mapbox GL includes:
+                            </p>
 
-                            <table className="micro space-bottom">
-                                <thead>
-                                    <tr className='fill-light'>
-                                        <th>SDK Support</th>
-                                        <td className='center'>Mapbox GL JS</td>
-                                        <td className='center'>Android SDK</td>
-                                        <td className='center'>iOS SDK</td>
-                                        <td className='center'>macOS SDK</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Layout and paint property expressions</td>
-                                        <td className='center'>&gt;= 0.41.0</td>
-                                        <td className='center'>Not yet supported</td>
-                                        <td className='center'>Not yet supported</td>
-                                        <td className='center'>Not yet supported</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Filter expressions</td>
-                                        <td className='center'>&gt;= 0.41.0</td>
-                                        <td className='center'>Not yet supported</td>
-                                        <td className='center'>Not yet supported</td>
-                                        <td className='center'>Not yet supported</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <ul>
+                                <li>Mathematical operators for performing arithmetic and other operations on numeric values</li>
+                                <li>Logical operators for manipulating boolean values and making conditional decisions</li>
+                                <li>String operators for manipulating strings</li>
+                                <li>Data operators, providing access to the properties of source features</li>
+                                <li>Camera operators, providing access to the parameters defining the current map view</li>
+                            </ul>
 
-                            <h3>Syntax</h3>
-                            <p>Mapbox GL JS expressions uses a Lisp-like syntax, represented using JSON arrays. Expressions follow this format:</p>
+                            <p>Expressions are represented as JSON arrays. The first element of an expression array is a
+                                string naming the expression operator, e.g. <a href="#expressions-*"><code>"*"</code></a>
+                                or <a href="#expressions-case"><code>"case"</code></a>. Subsequent elements (if any)
+                                are the <em>arguments</em> to the expression. Each argument is either a literal value
+                                (a string, number, boolean, or <code>null</code>), or another expression array.</p>
+
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`[expression_name, argument_0, argument_1, ...]`)}
                             </div>
-                            <p>The <code>expression_name</code> is the name of a specific expression, e.g. <a
-                                href="#expressions-*"><code>'*'</code></a> or <a
-                                href="#expressions-case"><code>'case'</code></a>. Each <code>argument_i</code> is either
-                                a literal value (a string, number, boolean, or <code>null</code>), or else another
-                                expression in the array form above.</p>
 
-                            <h3>Property expressions</h3>
-                            <p>A <a id="property-expression" className="anchor"></a><strong>property expression</strong> is
-                                any expression defined using an expression that includes a reference to feature property
-                                data. Property expressions allow the appearance of a feature to change with its
-                                properties. They can be used to visually differentate types of features within the same
-                                layer or create data visualizations.</p>
+                            <h3>Data expressions</h3>
+                            <p>A <em>data expression</em> is any expression that access feature data -- that is, any
+                                expression that uses one of the data operators:
+                                <a href="#expressions-get"><code>get</code></a>,
+                                <a href="#expressions-has"><code>has</code></a>,
+                                <a href="#expressions-id"><code>id</code></a>,
+                                <a href="#expressions-geometry-type"><code>geometry-type</code></a>, or
+                                <a href="#expressions-properties"><code>properties</code></a>. Data expressions allow a
+                                feature's properties to determine its appearance. They can be used to differentiate
+                                features within the same layer and to create data visualizations.</p>
 
-                            <h4>Example: a property expression</h4>
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`
                                     {
@@ -1176,6 +1157,7 @@ export default class extends React.Component {
                                             "rgb",
                                             // red is higher when feature.properties.temperature is higher
                                             ["get", "temperature"],
+                                            // green is always zero
                                             0,
                                             // blue is higher when feature.properties.temperature is lower
                                             ["-", 100, ["get", "temperature"]]
@@ -1183,20 +1165,25 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <p>In this example <code>["get", "temperature"]</code> uses <a
-                                href="#expressions-get"><code>'get'</code></a> to look up
-                                the <code>"temperature"</code> property of each feature. That value is then used in the <a
-                                href="#expressions-rgb"><code>'rgb'</code></a> expression to define a color in terms
-                                of its red, green, and blue components.</p>
+                            <p>This example uses the  <a href="#expressions-get"><code>get</code></a> operator to obtain
+                                the <code>temperature</code> value of each feature. That value is used to compute
+                                arguments to the <a href="#expressions-rgb"><code>rgb</code></a> operator, defining a
+                                color in terms of its red, green, and blue components.</p>
 
-                            <h3>Zoom expressions</h3>
-                            <p>A <a id="zoom-expression" className="anchor"></a><strong>zoom expression</strong> is any
-                                expression defined using an expression that includes <code>["zoom"]</code>. Such
-                                expressions allow the the appearance of a layer to change with the map’s zoom level.
-                                Zoom expressions can be used to create the illusion of depth and control data density.
+                            <p>Data expressions are allowed as the value of the
+                                <a href="#layer-filter"><code>filter</code></a> property, and as values for most paint
+                                and layout properties. However, some paint and layout properties do not yet support data
+                                expressions. The level of support is indicated by the "data-driven styling" row of the
+                                "SDK Support" table for each property.</p>
+
+                            <h3>Camera expressions</h3>
+                            <p>A <a id="camera-expression" className="anchor"></a><em>camera expression</em> is any
+                                expression that uses the <a href="#expressions-zoom"><code>zoom</code></a> operator. Such
+                                expressions allow the the appearance of a layer to change with the map's zoom level.
+                                Camera expressions can be used to create the appearance of depth and to control data
+                                density.
                             </p>
 
-                            <h4>Example: a zoom-only expression</h4>
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`
                                     {
@@ -1204,20 +1191,22 @@ export default class extends React.Component {
                                             "interpolate", ["linear"], ["zoom"],
                                             // zoom is 5 (or less) -> circle radius will be 1px
                                             5, 1,
-                                            // zoom is 10 (or greater) -> circle radius will be 2px
-                                            10, 2
+                                            // zoom is 10 (or greater) -> circle radius will be 5px
+                                            10, 5
                                         ]
                                     }`)}
                             </div>
 
-                            <p>This example uses an <a href="#expressions-interpolate"><code>interpolate</code></a> expression to
-                                define a linear relationship between zoom level and circle size using a set of
-                                input-output pairs. In this case, the expression indicates that the circle radius should
-                                be 1 pixel when the zoom level is 5, and 2 pixels when the zoom is 10. (See <a
-                                    href="#expressions-interpolate">the <code>interpolate</code> documentation</a> for more
-                                details.)</p>
+                            <p>This example uses the <a
+                                href="#expressions-interpolate"><code>interpolate</code></a>
+                                operator to define a linear relationship between zoom level and circle size using a set
+                                of input-output pairs. In this case, the expression indicates that the circle radius should
+                                be 1 pixel when the zoom level is 5 or below, and 5 pixels when the zoom is 10 or above.
+                                In between, the radius will be linearly interpolated between 1 and 5 pixels</p>
 
-                            <p>Note that any zoom expression used in a layout or paint property must be of the following forms:</p>
+                            <p>Camera expressions are allowed anywhere an expression may be used. However, when a camera
+                                expression used as the value of a layout or paint property, it must be in one of the
+                                following forms:</p>
 
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`[ "interpolate", interpolation, ["zoom"], ... ]`)}
@@ -1252,13 +1241,24 @@ export default class extends React.Component {
                             </div>
 
                             <p>That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
-                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or
-                                <a href="#expressions-step"><code>step</code></a> expression, or such an expression within a
-                                <a href="#expressions-let"><code>let</code></a> expression.</p>
+                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or <a
+                                    href="#expressions-step"><code>step</code></a> expression, or such an expression within
+                                a <a href="#expressions-let"><code>let</code></a> expression.</p>
 
-                            <h4>Example: a zoom-and-property expression</h4>
-                            <p>Combining zoom and property expressions allows a layer's appearance to change with
-                                both the zoom level <em>and</em> each feature's properties.</p>
+                            <p>There is an important difference between layout and paint properties in
+                                the timing of camera expression evaluation. Paint property camera expressions are
+                                re-evaluated whenever the zoom level changes, even fractionally. For example, a paint
+                                property camera expression will be re-evaluated continuously as the map moves between
+                                zoom levels 4.1 and 4.6. On the other hand, a layout property camera expression is
+                                evaluated only at integer zoom levels. It will <em>not</em> be re-evaluated as the zoom
+                                changes from 4.1 to 4.6 -- only if it goes above 5 or below 4.
+                            </p>
+
+                            <h3>Composition</h3>
+                            <p>A single expression may use a mix of data operators, camera operators, and other
+                                operators. Such composite expressions allows a layer's appearance to be determined by a
+                                combination of the zoom level <em>and</em> individual feature properties.
+                            </p>
 
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`
@@ -1273,18 +1273,94 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <p>There is an important difference between <em>layout</em> and <em>paint</em> properties in
-                                the way that expressions are evaluated. Paint properties are re-evaluated whenever the
-                                zoom level changes, even fractionally. The rendered value of a paint property will
-                                change, for example, as the map moves between zoom levels <code>4.1</code> and
-                                <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each
-                                integer zoom level. To continue the prior example: the rendering of a layout property
-                                will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no
-                                matter what stops are specified; but at zoom level <code>5</code>, the expression will
-                                be re-evaluated, and the property's rendered value will change. (You can include
-                                fractional zoom levels in a layout property zoom expression, and it will affect the
-                                generated values; but, still, the rendering will only change at integer zoom levels.)
+                            <p>An expression that uses both data and camera operators is considered both a data expression
+                                and a camera expression, and must adhere to the restrictions described above for both.</p>
+
+                            <h3>Type system</h3>
+                            <p>The input arguments to expressions, and their result values, use the same set of <a
+                                href="#types">types</a> as the rest of the style specification: boolean, string,
+                                number, color, and arrays of these types. Furthermore, expressions are <em>type safe</em>:
+                                each use of an expression has a known result type and required argument types, and the
+                                SDKs verify that the result type of an expression is appropriate for the context in
+                                which it is used. For example, the result type of an expression in the <a
+                                href="#layer-filter"><code>filter</code></a> property must be <a
+                                href="#types-boolean">boolean</a>, and the arguments to the <a
+                                href="#expressions-+"><code>+</code></a> operator must be <a
+                                href="#types-number">numbers</a>.
                             </p>
+
+                            <p>When working with feature data, the type of a feature property value is typically not known
+                                ahead of time by the SDK. In order to preserve type safety, when evaluating a data
+                                expression, the SDK will check that the property value is appropriate for the context.
+                                For example, if you use the expression <code>["get", "feature-color"]</code> for the <a
+                                    href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
+                                will verify that the <code>feature-color</code> value of each feature is a string
+                                identifying a valid <a href="#types-color">color</a>. If this check fails, an error will
+                                be indicated in an SDK-specific way (typically a log message), and the default value for
+                                the property will be used instead.
+                            </p>
+
+                            <p>In most cases, this verification will occur automatically wherever it is needed. However,
+                                in certain situations, the SDK may be unable to automatically determine the expected
+                                result type of a data expression from surrounding context. For example, it is not clear
+                                whether the expression <code>["&lt;", ["get", "a"], ["get", "b"]]</code> is attempting
+                                to compare strings or numbers. In situations like this, you can use one of
+                                the <em>type assertion</em> expression operators to indicate the expected type of a
+                                data expression: <code>["&lt;", ["number", ["get", "a"]], ["number", ["get", "b"]]]</code>.
+                                A type assertion checks that the feature data actually matches the expected type of the
+                                data expression. If this check fails, it produces an error and causes the whole
+                                expression to fall back to the default value for the property being defined. The
+                                assertion operators are <a
+                                    href="#expressions-types-array"><code>array</code></a>, <a
+                                    href="#expressions-types-boolean"><code>boolean</code></a>, <a
+                                    href="#expressions-types-number"><code>number</code></a>, and <a
+                                    href="#expressions-types-string"><code>string</code></a>.
+                            </p>
+
+                            <p>Expressions perform only one kind of implicit type conversion: a data expression used in
+                                a context where a <a href="#types-color">color</a> is expected will convert a string
+                                representation of a color to a color value. In all other cases, if you want to convert
+                                between types, you must use one of the <em>type conversion</em> expression operators: <a
+                                    href="#expressions-types-to-boolean"><code>to-boolean</code></a>, <a
+                                    href="#expressions-types-to-number"><code>to-number</code></a>, <a
+                                    href="#expressions-types-to-string"><code>to-string</code></a>, or <a
+                                    href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
+                                have a feature property that stores numeric values in string format, and you want to use
+                                those values as numbers rather than strings, you can use an expression such
+                                as <code>["to-number", ["get", "property-name"]]</code>.
+                            </p>
+
+                            <h3>SDK Support</h3>
+                            <p>Support for expressions was introduced to Mapbox GL JS in version 0.41.0. Support in other SDKs
+                                is forthcoming.</p>
+
+                            <table className="micro space-bottom">
+                                <thead>
+                                    <tr className='fill-light'>
+                                        <th>SDK Support</th>
+                                        <td className='center'>Mapbox GL JS</td>
+                                        <td className='center'>Android SDK</td>
+                                        <td className='center'>iOS SDK</td>
+                                        <td className='center'>macOS SDK</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Layout and paint property expressions</td>
+                                        <td className='center'>&gt;= 0.41.0</td>
+                                        <td className='center'>Not yet supported</td>
+                                        <td className='center'>Not yet supported</td>
+                                        <td className='center'>Not yet supported</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Filter expressions</td>
+                                        <td className='center'>&gt;= 0.41.0</td>
+                                        <td className='center'>Not yet supported</td>
+                                        <td className='center'>Not yet supported</td>
+                                        <td className='center'>Not yet supported</td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
                             <h3>Expression reference</h3>
 
