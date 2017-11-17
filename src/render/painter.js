@@ -217,9 +217,40 @@ class Painter {
      */
     clearStencil() {
         const gl = this.gl;
-        gl.clearStencil(0x0);
+
+        // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
+        // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
+        // effectively clearing the stencil buffer: restore this code for native
+        // performance and readability once an upstream patch lands.
+
+        // gl.clearStencil(0x0);
+        // gl.stencilMask(0xFF);
+        // gl.clear(gl.STENCIL_BUFFER_BIT);
+
+        gl.colorMask(false, false, false, false);
+        this.depthMask(false);
+        gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.STENCIL_TEST);
+
         gl.stencilMask(0xFF);
-        gl.clear(gl.STENCIL_BUFFER_BIT);
+        gl.stencilOp(gl.ZERO, gl.ZERO, gl.ZERO);
+
+        gl.stencilFunc(gl.ALWAYS, 0x0, 0xFF);
+
+        const matrix = mat4.create();
+        mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
+        mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
+
+        const program = this.useProgram('fill', this.basicFillProgramConfiguration);
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
+
+        this.viewportVAO.bind(gl, program, this.viewportBuffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        gl.stencilMask(0x00);
+        gl.colorMask(true, true, true, true);
+        this.depthMask(true);
+        gl.enable(gl.DEPTH_TEST);
     }
 
     clearDepth() {
