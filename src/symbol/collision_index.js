@@ -267,13 +267,18 @@ class CollisionIndex {
             const blocking = collisionBoxArray.get(thisTileFeatures[i]);
             const sourceLayer = blocking.sourceLayerIndex;
             const featureIndex = blocking.featureIndex;
+            const bucketIndex = blocking.bucketIndex;
 
             // Skip already seen features.
             if (sourceLayerFeatures[sourceLayer] === undefined) {
                 sourceLayerFeatures[sourceLayer] = {};
             }
-            if (sourceLayerFeatures[sourceLayer][featureIndex]) continue;
-
+            if (sourceLayerFeatures[sourceLayer][featureIndex] === undefined) {
+                sourceLayerFeatures[sourceLayer][featureIndex] = {};
+            }
+            if (sourceLayerFeatures[sourceLayer][featureIndex][bucketIndex]) {
+                continue;
+            }
 
             // Check if query intersects with the feature box
             // "Collision Circles" for line labels are treated as boxes here
@@ -292,9 +297,11 @@ class CollisionIndex {
                 new Point(x2, y2),
                 new Point(x1, y2)
             ];
-            if (!intersectionTests.polygonIntersectsPolygon(query, bbox)) continue;
+            if (!intersectionTests.polygonIntersectsPolygon(query, bbox)) {
+                continue;
+            }
 
-            sourceLayerFeatures[sourceLayer][featureIndex] = true;
+            sourceLayerFeatures[sourceLayer][featureIndex][bucketIndex] = true;
             result.push(thisTileFeatures[i]);
         }
 
