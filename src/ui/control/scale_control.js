@@ -10,7 +10,7 @@ import type Map from '../map';
  *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
+ * @param {number} [options.maxWidth='100'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
  * map.addControl(new mapboxgl.ScaleControl({

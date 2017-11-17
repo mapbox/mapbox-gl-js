@@ -1981,15 +1981,15 @@
         "group": "Types"
       },
       "to-string": {
-        "doc": "Coerces the input value to a string.",
+        "doc": "Converts the input value to a string.",
         "group": "Types"
       },
       "to-number": {
-        "doc": "Coerces the input value to a number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
+        "doc": "Converts the input value to a number, if possible. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
         "group": "Types"
       },
       "to-boolean": {
-        "doc": "Coerces the input value to a boolean.",
+        "doc": "Converts the input value to a boolean.",
         "group": "Types"
       },
       "to-rgba": {
@@ -1997,7 +1997,7 @@
         "group": "Color"
       },
       "to-color": {
-        "doc": "Coerces the input value to a color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
+        "doc": "Converts the input value to a color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained.",
         "group": "Types"
       },
       "rgb": {
