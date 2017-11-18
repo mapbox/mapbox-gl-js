@@ -1,26 +1,31 @@
 // @flow
 
 const pattern = require('./pattern');
+const Color = require('../style-spec/util/color');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillStyleLayer from '../style/style_layer/fill_style_layer';
 import type FillBucket from '../data/bucket/fill_bucket';
 import type TileCoord from '../source/tile_coord';
+import type {CrossFaded} from '../style/cross_faded';
 
 module.exports = drawFill;
 
 function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<TileCoord>) {
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+    const color = layer.paint.get('fill-color');
+    const opacity = layer.paint.get('fill-opacity');
+
+    if (opacity.constantOr(1) === 0) {
+        return;
+    }
 
     const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    const pass = (!layer.paint['fill-pattern'] &&
-        layer.isPaintValueFeatureConstant('fill-color') &&
-        layer.isPaintValueFeatureConstant('fill-opacity') &&
-        layer.paint['fill-color'].a === 1 &&
-        layer.paint['fill-opacity'] === 1) ? 'opaque' : 'translucent';
+    const pass = (!layer.paint.get('fill-pattern') &&
+        color.constantOr(Color.transparent).a === 1 &&
+        opacity.constantOr(0) === 1) ? 'opaque' : 'translucent';
 
     // Draw fill
     if (painter.renderPass === pass) {
@@ -32,7 +37,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     }
 
     // Draw stroke
-    if (painter.renderPass === 'translucent' && layer.paint['fill-antialias']) {
+    if (painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
         painter.lineWidth(2);
         painter.depthMask(false);
 
@@ -50,7 +55,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 }
 
 function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
-    if (pattern.isPatternMissing(layer.paint['fill-pattern'], painter)) return;
+    if (pattern.isPatternMissing(layer.paint.get('fill-pattern'), painter)) return;
 
     let firstTile = true;
     for (const coord of coords) {
@@ -68,7 +73,7 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTil
     const gl = painter.gl;
     const programConfiguration = bucket.programConfigurations.get(layer.id);
 
-    const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, programConfiguration, layer, tile, coord, firstTile);
+    const program = setFillProgram('fill', layer.paint.get('fill-pattern'), painter, programConfiguration, layer, tile, coord, firstTile);
 
     program.draw(
         gl,
@@ -83,9 +88,9 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, bucket, firstTil
 function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstTile) {
     const gl = painter.gl;
     const programConfiguration = bucket.programConfigurations.get(layer.id);
-    const usePattern = layer.paint['fill-pattern'] && !layer.getPaintProperty('fill-outline-color');
+    const pattern = layer.getPaintProperty('fill-outline-color') ? null : layer.paint.get('fill-pattern');
 
-    const program = setFillProgram('fillOutline', usePattern, painter, programConfiguration, layer, tile, coord, firstTile);
+    const program = setFillProgram('fillOutline', pattern, painter, programConfiguration, layer, tile, coord, firstTile);
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     program.draw(
@@ -98,26 +103,26 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
         programConfiguration);
 }
 
-function setFillProgram(programId, usePattern, painter, programConfiguration, layer, tile, coord, firstTile) {
+function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programConfiguration, layer, tile, coord, firstTile) {
     let program;
     const prevProgram = painter.currentProgram;
-    if (!usePattern) {
+    if (!pat) {
         program = painter.useProgram(programId, programConfiguration);
         if (firstTile || program !== prevProgram) {
-            programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.gl, program, layer.paint, {zoom: painter.transform.zoom});
         }
     } else {
         program = painter.useProgram(`${programId}Pattern`, programConfiguration);
         if (firstTile || program !== prevProgram) {
-            programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
-            pattern.prepare(layer.paint['fill-pattern'], painter, program);
+            programConfiguration.setUniforms(painter.gl, program, layer.paint, {zoom: painter.transform.zoom});
+            pattern.prepare(pat, painter, program);
         }
         pattern.setTile(tile, painter, program);
     }
     painter.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,
-        layer.paint['fill-translate'],
-        layer.paint['fill-translate-anchor']
+        layer.paint.get('fill-translate'),
+        layer.paint.get('fill-translate-anchor')
     ));
     return program;
 }

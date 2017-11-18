@@ -45,6 +45,7 @@ class CanvasSource extends ImageSource {
     canvasData: ?ImageData;
     play: () => void;
     pause: () => void;
+    _playing: boolean;
 
     constructor(id: string, options: CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
@@ -72,19 +73,13 @@ class CanvasSource extends ImageSource {
         this.height = this.canvas.height;
         if (this._hasInvalidDimensions()) return this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
 
-        let loopID;
-
         this.play = function() {
-            if (loopID === undefined) {
-                loopID = this.map.style.animationLoop.set(Infinity);
-                this.map._rerender();
-            }
+            this._playing = true;
+            this.map._rerender();
         };
 
         this.pause = function() {
-            if (loopID !== undefined) {
-                loopID = this.map.style.animationLoop.cancel(loopID);
-            }
+            this._playing = false;
         };
 
         this._finishLoading();
@@ -149,6 +144,10 @@ class CanvasSource extends ImageSource {
             canvas: this.canvas,
             coordinates: this.coordinates
         };
+    }
+
+    hasTransition() {
+        return this._playing;
     }
 
     _hasInvalidDimensions() {

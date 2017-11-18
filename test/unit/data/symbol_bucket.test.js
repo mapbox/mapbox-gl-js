@@ -48,6 +48,7 @@ function bucketSetup() {
         layout: { 'text-font': ['Test'], 'text-field': 'abcde' },
         filter: featureFilter()
     });
+    layer.recalculate({zoom: 0, zoomHistory: {}});
 
     return new SymbolBucket({
         overscaling: 1,

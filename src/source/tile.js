@@ -61,7 +61,6 @@ class Tile {
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
-    placementThrottler: any;
     timeAdded: any;
     fadeEndTime: any;
     rawTileData: ArrayBuffer;
@@ -106,13 +105,12 @@ class Tile {
         this.state = 'loading';
     }
 
-    registerFadeDuration(animationLoop: any, duration: number) {
+    registerFadeDuration(duration: number) {
         const fadeEndTime = duration + this.timeAdded;
         if (fadeEndTime < Date.now()) return;
         if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
 
         this.fadeEndTime = fadeEndTime;
-        animationLoop.set(this.fadeEndTime - Date.now());
     }
 
     wasRequested() {
@@ -213,7 +211,7 @@ class Tile {
         if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
             const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
 
-            const pitchWithMap = bucket.layers[0].layout['text-pitch-alignment'] === 'map';
+            const pitchWithMap = bucket.layers[0].layout.get('text-pitch-alignment') === 'map';
             const textPixelRatio = EXTENT / this.tileSize; // text size is not meant to be affected by scale
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
 

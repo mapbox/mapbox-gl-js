@@ -3,7 +3,6 @@
 const test = require('mapbox-gl-js-test').test;
 const CanvasSource = require('../../../src/source/canvas_source');
 const Transform = require('../../../src/geo/transform');
-const AnimationLoop = require('../../../src/style/animation_loop');
 const Evented = require('../../../src/util/evented');
 const util = require('../../../src/util/util');
 const window = require('../../../src/util/window');
@@ -30,7 +29,7 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-        this.style = { animationLoop: new AnimationLoop() };
+        this.style = {};
     }
 
     _rerender() {
@@ -100,15 +99,15 @@ test('CanvasSource', (t) => {
 
         source.onAdd(map);
 
-        t.equal(map.style.animationLoop.stopped(), false, 'should animate initally');
+        t.equal(source.hasTransition(), true, 'should animate initally');
 
         source.onRemove();
 
-        t.equal(map.style.animationLoop.stopped(), true, 'should stop animating');
+        t.equal(source.hasTransition(), false, 'should stop animating');
 
         source.onAdd(map);
 
-        t.equal(map.style.animationLoop.stopped(), false, 'should animate when added again');
+        t.equal(source.hasTransition(), true, 'should animate when added again');
 
         t.end();
     });
@@ -119,15 +118,15 @@ test('CanvasSource', (t) => {
 
         source.onAdd(map);
 
-        t.equal(map.style.animationLoop.stopped(), false, 'initially animating');
+        t.equal(source.hasTransition(), true, 'initially animating');
 
         source.pause();
 
-        t.equal(map.style.animationLoop.stopped(), true, 'can be paused');
+        t.equal(source.hasTransition(), false, 'can be paused');
 
         source.play();
 
-        t.equal(map.style.animationLoop.stopped(), false, 'can be played');
+        t.equal(source.hasTransition(), true, 'can be played');
 
         t.end();
     });

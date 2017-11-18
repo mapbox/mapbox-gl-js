@@ -8,7 +8,6 @@ const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
 const Style = require('../style/style');
-const AnimationLoop = require('../style/animation_loop');
 const Painter = require('../render/painter');
 
 const Transform = require('../geo/transform');
@@ -140,8 +139,8 @@ const defaultOptions = {
  * @extends Evented
  * @param {Object} options
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
- * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-22).
- * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-22).
+ * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+ * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -216,7 +215,6 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
-    animationLoop: AnimationLoop;
 
     _container: HTMLElement;
     _missingCSSContainer: HTMLElement;
@@ -285,8 +283,6 @@ class Map extends Camera {
         } else {
             this._container = options.container;
         }
-
-        this.animationLoop = new AnimationLoop();
 
         if (options.maxBounds) {
             this.setMaxBounds(options.maxBounds);
@@ -479,7 +475,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-22).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -1451,6 +1447,9 @@ class Map extends Camera {
             this._styleDirty = false;
             this.style.update();
             this.style._recalculate(this.transform.zoom);
+            if (this.style.hasTransitions()) {
+                this._styleDirty = true;
+            }
         }
 
         // If we are in _render for any reason other than an in-progress paint
@@ -1479,15 +1478,7 @@ class Map extends Camera {
             this.fire('load');
         }
 
-        // We should set _styleDirty for ongoing animations before firing 'render',
-        // but the test suite currently assumes that it can read still images while animations are
-        // still ongoing. See https://github.com/mapbox/mapbox-gl-js/issues/3966
-        if (!this.animationLoop.stopped()) {
-            this._styleDirty = true;
-        }
-
         this._frameId = null;
-
 
         // Schedule another render frame if it's needed.
         //
@@ -1579,6 +1570,9 @@ class Map extends Camera {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
             this.style._generateCollisionBoxes();
+        } else {
+            // Otherwise, call an update to remove collision boxes
+            this._update();
         }
     }
 

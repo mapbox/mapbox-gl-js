@@ -332,7 +332,7 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(id)) {
                 retain[id] = true;
-                return this._cache.getWithoutRemoving(id);
+                return this._cache.get(id);
             }
         }
     }
@@ -536,7 +536,7 @@ class SourceCache extends Evented {
             return tile;
 
 
-        tile = this._cache.get((tileCoord.id: any));
+        tile = this._cache.getAndRemove((tileCoord.id: any));
         if (tile) {
             this._updatePlacement();
             if (this.map)
@@ -706,6 +706,23 @@ class SourceCache extends Evented {
             coord.posMatrix = this.transform.calculatePosMatrix(coord, this._source.maxzoom);
         }
         return coords;
+    }
+
+    hasTransition() {
+        if (this._source.hasTransition()) {
+            return true;
+        }
+
+        if (isRasterType(this._source.type)) {
+            for (const id in this._tiles) {
+                const tile = this._tiles[id];
+                if (tile.fadeEndTime !== undefined && tile.fadeEndTime >= Date.now()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
 

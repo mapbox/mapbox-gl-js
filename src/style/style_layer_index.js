@@ -30,7 +30,6 @@ class StyleLayerIndex {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
             const layer = this._layers[layerConfig.id] = StyleLayer.create(layerConfig);
-            layer.updatePaintTransitions({transition: false});
             layer._featureFilter = featureFilter(layer.filter);
         }
         for (const id of removedIds) {
@@ -46,7 +45,7 @@ class StyleLayerIndex {
             const layers = layerConfigs.map((layerConfig) => this._layers[layerConfig.id]);
 
             const layer = layers[0];
-            if (layer.layout && layer.layout.visibility === 'none') {
+            if (layer.visibility === 'none') {
                 continue;
             }
 

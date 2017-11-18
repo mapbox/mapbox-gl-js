@@ -1,19 +1,23 @@
 // @flow
 
+
 const util = require('../util/util');
-const StyleTransition = require('./style_transition');
-const StyleDeclaration = require('./style_declaration');
 const styleSpec = require('../style-spec/reference/latest');
 const validateStyle = require('./validate_style');
-const Color = require('./../style-spec/util/color');
 const Evented = require('../util/evented');
+
+const {
+    Layout,
+    Transitionable,
+    Transitioning,
+    Properties
+} = require('./properties');
 
 import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
-import type {Feature, GlobalProperties} from '../style-spec/expression';
 import type RenderTexture from '../render/render_texture';
-import type AnimationLoop from './animation_loop';
 import type {FeatureFilter} from '../style-spec/feature_filter';
+import type {EvaluationParameters} from './properties';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -28,19 +32,17 @@ class StyleLayer extends Evented {
     minzoom: ?number;
     maxzoom: ?number;
     filter: mixed;
-    paint: { [string]: any };
-    layout: { [string]: any };
+    visibility: 'visible' | 'none';
+
+    _unevaluatedLayout: Layout<any>;
+    +layout: mixed;
+
+    _transitionablePaint: Transitionable<any>;
+    _transitioningPaint: Transitioning<any>;
+    +paint: mixed;
 
     viewportFrame: ?RenderTexture;
     _featureFilter: FeatureFilter;
-
-    _paintSpecifications: any;
-    _layoutSpecifications: any;
-    _paintTransitions: {[string]: StyleTransition};
-    _paintTransitionOptions: {[string]: TransitionSpecification};
-    _paintDeclarations: {[string]: StyleDeclaration};
-    _layoutDeclarations: {[string]: StyleDeclaration};
-    _layoutFunctions: {[string]: boolean};
 
     +createBucket: (parameters: BucketParameters) => Bucket;
     +queryRadius: (bucket: Bucket) => number;
@@ -51,7 +53,7 @@ class StyleLayer extends Evented {
                               bearing: number,
                               pixelsToTileUnits: number) => boolean;
 
-    constructor(layer: LayerSpecification) {
+    constructor(layer: LayerSpecification, properties: {layout?: Properties<*>, paint: Properties<*>}) {
         super();
 
         this.id = layer.id;
@@ -59,6 +61,7 @@ class StyleLayer extends Evented {
         this.type = layer.type;
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
+        this.visibility = 'visible';
 
         if (layer.type !== 'background') {
             this.source = layer.source;
@@ -66,171 +69,98 @@ class StyleLayer extends Evented {
             this.filter = layer.filter;
         }
 
-        this.paint = {};
-        this.layout = {};
-
         this._featureFilter = () => true;
 
-        this._paintSpecifications = styleSpec[`paint_${this.type}`];
-        this._layoutSpecifications = styleSpec[`layout_${this.type}`];
-
-        this._paintTransitions = {}; // {[propertyName]: StyleTransition}
-        this._paintTransitionOptions = {}; // {[propertyName]: { duration:Number, delay:Number }}
-        this._paintDeclarations = {}; // {[propertyName]: StyleDeclaration}
-        this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
-        this._layoutFunctions = {}; // {[propertyName]: Boolean}
-
-        let paintName, layoutName;
-        const options = {validate: false};
-
-        // Resolve paint declarations
-        for (paintName in layer.paint) {
-            this.setPaintProperty(paintName, layer.paint[paintName], options);
+        if (properties.layout) {
+            this._unevaluatedLayout = new Layout(properties.layout);
         }
 
-        // Resolve layout declarations
-        for (layoutName in layer.layout) {
-            this.setLayoutProperty(layoutName, layer.layout[layoutName], options);
+        this._transitionablePaint = new Transitionable(properties.paint);
+
+        for (const property in layer.paint) {
+            this.setPaintProperty(property, layer.paint[property], {validate: false});
+        }
+        for (const property in layer.layout) {
+            this.setLayoutProperty(property, layer.layout[property], {validate: false});
         }
 
-        // set initial layout/paint values
-        for (paintName in this._paintSpecifications) {
-            this.paint[paintName] = this.getPaintValue(paintName, {zoom: 0});
-        }
-        for (layoutName in this._layoutSpecifications) {
-            this._updateLayoutValue(layoutName);
-        }
-    }
-
-    setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
-        if (value == null) {
-            delete this._layoutDeclarations[name];
-        } else {
-            const key = `layers.${this.id}.layout.${name}`;
-            if (this._validate(validateStyle.layoutProperty, key, name, value, options)) return;
-            this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
-        }
-        this._updateLayoutValue(name);
+        this._transitioningPaint = this._transitionablePaint.untransitioned();
     }
 
     getLayoutProperty(name: string) {
-        return (
-            this._layoutDeclarations[name] &&
-            this._layoutDeclarations[name].value
-        );
-    }
-
-    getLayoutValue(name: string, globals: GlobalProperties, feature?: Feature): any {
-        const specification = this._layoutSpecifications[name];
-        const declaration = this._layoutDeclarations[name];
-
-        // Avoid attempting to calculate a value for data-driven properties if `feature` is undefined.
-        if (declaration && (declaration.isFeatureConstant() || feature)) {
-            return declaration.calculate(globals, feature);
-        } else {
-            return specification.default;
+        if (name === 'visibility') {
+            return this.visibility;
         }
+
+        return this._unevaluatedLayout.getValue(name);
     }
 
-    setPaintProperty(name: string, value: any, options: any) {
-        const validateStyleKey = `layers.${this.id}.paint.${name}`;
-
-        if (util.endsWith(name, TRANSITION_SUFFIX)) {
-            if (value === null || value === undefined) {
-                delete this._paintTransitionOptions[name];
-            } else {
-                if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
-                this._paintTransitionOptions[name] = value;
+    setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
+        if (value !== null && value !== undefined) {
+            const key = `layers.${this.id}.layout.${name}`;
+            if (this._validate(validateStyle.layoutProperty, key, name, value, options)) {
+                return;
             }
-        } else if (value === null || value === undefined) {
-            delete this._paintDeclarations[name];
-        } else {
-            if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
-            this._paintDeclarations[name] = new StyleDeclaration(this._paintSpecifications[name], value);
         }
+
+        if (name === 'visibility') {
+            this.visibility = value === 'none' ? value : 'visible';
+            return;
+        }
+
+        this._unevaluatedLayout.setValue(name, value);
     }
 
     getPaintProperty(name: string) {
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
-            return (
-                this._paintTransitionOptions[name]
-            );
+            return this._transitionablePaint.getTransition(name.slice(0, -TRANSITION_SUFFIX.length));
         } else {
-            return (
-                this._paintDeclarations[name] &&
-                this._paintDeclarations[name].value
-            );
+            return this._transitionablePaint.getValue(name);
         }
     }
 
-    getPaintValue(name: string, globals: GlobalProperties, feature?: Feature): any {
-        const specification = this._paintSpecifications[name];
-        const transition = this._paintTransitions[name];
-
-        // Avoid attempting to calculate a value for data-driven properties if `feature` is undefined.
-        if (transition && (transition.declaration.isFeatureConstant() || feature)) {
-            return transition.calculate(globals, feature);
-        } else if (specification.type === 'color' && specification.default) {
-            return Color.parse(specification.default);
-        } else {
-            return specification.default;
+    setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
+        if (value !== null && value !== undefined) {
+            const key = `layers.${this.id}.paint.${name}`;
+            if (this._validate(validateStyle.paintProperty, key, name, value, options)) {
+                return;
+            }
         }
-    }
 
-    getPaintInterpolationFactor(name: string, input: number, lower: number, upper: number) {
-        const declaration = this._paintDeclarations[name];
-        return declaration ? declaration.interpolationFactor(input, lower, upper) : 0;
-    }
-
-    isPaintValueFeatureConstant(name: string) {
-        const declaration = this._paintDeclarations[name];
-        return !declaration || declaration.isFeatureConstant();
-    }
-
-    isPaintValueZoomConstant(name: string) {
-        const declaration = this._paintDeclarations[name];
-        return !declaration || declaration.isZoomConstant();
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+            this._transitionablePaint.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), (value: any) || undefined);
+        } else {
+            this._transitionablePaint.setValue(name, value);
+        }
     }
 
     isHidden(zoom: number) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
-        if (this.layout['visibility'] === 'none') return true;
-
-        return false;
+        return this.visibility === 'none';
     }
 
-    updatePaintTransitions(options: {transition?: boolean},
-                           globalOptions?: TransitionSpecification,
-                           animationLoop?: AnimationLoop,
-                           zoomHistory?: any) {
-        let name;
-        for (name in this._paintDeclarations) { // apply new declarations
-            this._applyPaintDeclaration(name, this._paintDeclarations[name], options, globalOptions, animationLoop, zoomHistory);
-        }
-        for (name in this._paintTransitions) {
-            if (!(name in this._paintDeclarations)) // apply removed declarations
-                this._applyPaintDeclaration(name, null, options, globalOptions, animationLoop, zoomHistory);
+    updatePaintTransitions(options: {transition?: boolean}, transition: TransitionSpecification) {
+        if (options.transition === false) {
+            this._transitioningPaint = this._transitionablePaint.untransitioned();
+        } else {
+            this._transitioningPaint = this._transitionablePaint.transitioned({
+                now: Date.now(),
+                transition
+            }, this._transitioningPaint);
         }
     }
 
-    updatePaintTransition(name: string,
-                          options: {transition?: boolean},
-                          globalOptions: TransitionSpecification,
-                          animationLoop: AnimationLoop,
-                          zoomHistory: any) {
-        const declaration = this._paintDeclarations[name];
-        this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory);
+    hasTransition() {
+        return this._transitioningPaint.hasTransition();
     }
 
-    // update all zoom-dependent layout/paint values
-    recalculate(zoom: number) {
-        for (const paintName in this._paintTransitions) {
-            this.paint[paintName] = this.getPaintValue(paintName, {zoom: zoom});
+    recalculate(parameters: EvaluationParameters) {
+        if (this._unevaluatedLayout) {
+            (this: any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters);
         }
-        for (const layoutName in this._layoutFunctions) {
-            this.layout[layoutName] = this.getLayoutValue(layoutName, {zoom: zoom});
-        }
+
+        (this: any).paint = this._transitioningPaint.possiblyEvaluate(parameters);
     }
 
     serialize() {
@@ -243,61 +173,20 @@ class StyleLayer extends Evented {
             'minzoom': this.minzoom,
             'maxzoom': this.maxzoom,
             'filter': this.filter,
-            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue),
-            'paint': util.mapObject(this._paintDeclarations, getDeclarationValue)
+            'layout': this._unevaluatedLayout && this._unevaluatedLayout.serialize(),
+            'paint': this._transitionablePaint && this._transitionablePaint.serialize()
         };
+
+        if (this.visibility === 'none') {
+            output.layout = output.layout || {};
+            output.layout.visibility = 'none';
+        }
 
         return util.filterObject(output, (value, key) => {
             return value !== undefined &&
                 !(key === 'layout' && !Object.keys(value).length) &&
                 !(key === 'paint' && !Object.keys(value).length);
         });
-    }
-
-    // set paint transition based on a given paint declaration
-    _applyPaintDeclaration(name: string,
-                           declaration: StyleDeclaration | null | void,
-                           options: {transition?: boolean},
-                           globalOptions?: TransitionSpecification,
-                           animationLoop?: AnimationLoop,
-                           zoomHistory?: any) {
-        const oldTransition = options.transition ? this._paintTransitions[name] : undefined;
-        const spec = this._paintSpecifications[name];
-
-        if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default);
-        }
-
-        if (oldTransition && oldTransition.declaration.json === declaration.json) return;
-
-        const transitionOptions = util.extend({
-            duration: 300,
-            delay: 0
-        }, globalOptions, this.getPaintProperty(name + TRANSITION_SUFFIX));
-
-        const newTransition = this._paintTransitions[name] =
-            new StyleTransition(spec, declaration, oldTransition, transitionOptions, zoomHistory);
-
-        if (!animationLoop) {
-            return;
-        }
-        if (!newTransition.instant()) {
-            newTransition.loopID = animationLoop.set(newTransition.endTime - Date.now());
-        }
-        if (oldTransition) {
-            animationLoop.cancel(oldTransition.loopID);
-        }
-    }
-
-    // update layout value if it's constant, or mark it as zoom-dependent
-    _updateLayoutValue(name: string) {
-        const declaration = this._layoutDeclarations[name];
-        if (!declaration || (declaration.isZoomConstant() && declaration.isFeatureConstant())) {
-            delete this._layoutFunctions[name];
-            this.layout[name] = this.getLayoutValue(name, {zoom: 0});
-        } else {
-            this._layoutFunctions[name] = true;
-        }
     }
 
     _validate(validate: Function, key: string, name: string, value: mixed, options: {validate: boolean}) {
@@ -340,7 +229,3 @@ const subclasses = {
 StyleLayer.create = function(layer: LayerSpecification) {
     return new subclasses[layer.type](layer);
 };
-
-function getDeclarationValue(declaration) {
-    return declaration.value;
-}

@@ -103,24 +103,24 @@ function createExpression(expression: mixed,
     return success({ evaluate, parsed });
 }
 
-type ConstantExpression = {
+export type ConstantExpression = {
     kind: 'constant',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any
 };
 
-type SourceExpression = {
+export type SourceExpression = {
     kind: 'source',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
 };
 
-type CameraExpression = {
+export type CameraExpression = {
     kind: 'camera',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };
 
-type CompositeExpression = {
+export type CompositeExpression = {
     kind: 'composite',
     evaluate: (globals: GlobalProperties, feature?: Feature) => any,
     interpolationFactor: (input: number, lower: number, upper: number) => number,
@@ -178,10 +178,38 @@ function createPropertyExpression(expression: mixed,
         { kind: 'composite', parsed, evaluate, interpolationFactor, zoomStops });
 }
 
+const {isFunction, createFunction} = require('../function');
+const {Color} = require('./values');
+
+function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification): StylePropertyExpression {
+    if (isFunction(value)) {
+        return createFunction(value, specification);
+
+    } else if (isExpression(value)) {
+        const expression = createPropertyExpression(value, specification);
+        if (expression.result === 'error') {
+            // this should have been caught in validation
+            throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        }
+        return expression.value;
+
+    } else {
+        let constant: any = value;
+        if (typeof value === 'string' && specification.type === 'color') {
+            constant = Color.parse(value);
+        }
+        return {
+            kind: 'constant',
+            evaluate: () => constant
+        };
+    }
+}
+
 module.exports = {
     isExpression,
     createExpression,
-    createPropertyExpression
+    createPropertyExpression,
+    normalizePropertyExpression
 };
 
 // Zoom-dependent expressions may only use ["zoom"] as the input to a top-level "step" or "interpolate"
@@ -249,9 +277,6 @@ function getExpectedType(spec: StylePropertySpecification): Type | null {
 
     return types[spec.type] || null;
 }
-
-const {isFunction} = require('../function');
-const {Color} = require('./values');
 
 function getDefaultValue(spec: StylePropertySpecification): Value {
     if (spec.type === 'color' && isFunction(spec.default)) {

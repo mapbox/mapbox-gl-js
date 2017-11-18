@@ -15,7 +15,9 @@ import type TileCoord from '../source/tile_coord';
 module.exports = draw;
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<TileCoord>) {
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+    if (layer.paint.get('fill-extrusion-opacity') === 0) {
+        return;
+    }
 
     if (painter.renderPass === '3d') {
         const gl = painter.gl;
@@ -47,7 +49,7 @@ function drawExtrusionTexture(painter, layer) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, renderedTexture.texture);
 
-    gl.uniform1f(program.uniforms.u_opacity, layer.paint['fill-extrusion-opacity']);
+    gl.uniform1f(program.uniforms.u_opacity, layer.paint.get('fill-extrusion-opacity'));
     gl.uniform1i(program.uniforms.u_image, 0);
 
     const matrix = mat4.create();
@@ -67,11 +69,11 @@ function drawExtrusion(painter, source, layer, coord) {
 
     const gl = painter.gl;
 
-    const image = layer.paint['fill-extrusion-pattern'];
+    const image = layer.paint.get('fill-extrusion-pattern');
 
     const programConfiguration = bucket.programConfigurations.get(layer.id);
     const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
-    programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
+    programConfiguration.setUniforms(gl, program, layer.paint, {zoom: painter.transform.zoom});
 
     if (image) {
         if (pattern.isPatternMissing(image, painter)) return;
@@ -83,8 +85,8 @@ function drawExtrusion(painter, source, layer, coord) {
     painter.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
-        layer.paint['fill-extrusion-translate'],
-        layer.paint['fill-extrusion-translate-anchor']
+        layer.paint.get('fill-extrusion-translate'),
+        layer.paint.get('fill-extrusion-translate-anchor')
     ));
 
     setLight(program, painter);
@@ -103,13 +105,18 @@ function setLight(program, painter) {
     const gl = painter.gl;
     const light = painter.style.light;
 
-    const _lp = light.calculated.position,
-        lightPos = [_lp.x, _lp.y, _lp.z];
+    const _lp = light.properties.get('position');
+    const lightPos = [_lp.x, _lp.y, _lp.z];
+
     const lightMat = mat3.create();
-    if (light.calculated.anchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
+    if (light.properties.get('anchor') === 'viewport') {
+        mat3.fromRotation(lightMat, -painter.transform.angle);
+    }
     vec3.transformMat3(lightPos, lightPos, lightMat);
 
+    const color = light.properties.get('color');
+
     gl.uniform3fv(program.uniforms.u_lightpos, lightPos);
-    gl.uniform1f(program.uniforms.u_lightintensity, light.calculated.intensity);
-    gl.uniform3f(program.uniforms.u_lightcolor, light.calculated.color.r, light.calculated.color.g, light.calculated.color.b);
+    gl.uniform1f(program.uniforms.u_lightintensity, light.properties.get('intensity'));
+    gl.uniform3f(program.uniforms.u_lightcolor, color.r, color.g, color.b);
 }

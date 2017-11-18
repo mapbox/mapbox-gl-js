@@ -2,6 +2,7 @@
 
 const util = require('../util/util');
 const window = require('../util/window');
+const throttle = require('../util/throttle');
 
 import type Map from './map';
 
@@ -13,12 +14,16 @@ import type Map from './map';
  */
 class Hash {
     _map: Map;
+    _updateHash: () => number;
 
     constructor() {
         util.bindAll([
             '_onHashChange',
             '_updateHash'
         ], this);
+
+        // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
+        this._updateHash = throttle(this._updateHashUnthrottled.bind(this), 30 * 1000 / 100);
     }
 
     /*
@@ -82,7 +87,7 @@ class Hash {
         return false;
     }
 
-    _updateHash() {
+    _updateHashUnthrottled() {
         const hash = this.getHashString();
         window.history.replaceState('', '', hash);
     }

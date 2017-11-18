@@ -4,9 +4,9 @@ const Point = require('@mapbox/point-geometry');
 const {mat4, vec4} = require('@mapbox/gl-matrix');
 const symbolSize = require('./symbol_size');
 const {addDynamicAttributes} = require('../data/bucket/symbol_bucket');
+const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
 
 import type Painter from '../render/painter';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type Transform from '../geo/transform';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 const WritingMode = require('../symbol/shaping').WritingMode;
@@ -144,12 +144,11 @@ function updateLineLabels(bucket: SymbolBucket,
                           labelPlaneMatrix: mat4,
                           glCoordMatrix: mat4,
                           pitchWithMap: boolean,
-                          keepUpright: boolean,
-                          pixelsToTileUnits: number,
-                          layer: SymbolStyleLayer) {
+                          keepUpright: boolean) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
+    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom,
+        symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
 
     const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 
