@@ -1,3 +1,17 @@
+# 0.42.1 (November 17, 2017)
+
+# 🐛 Bug fixes
+
+- Workaround for map flashing bug on Chrome 62+ with Intel Iris Graphics 6100 cards [#5704](https://github.com/mapbox/mapbox-gl-js/pull/5704)
+- Rerender map when `map.showCollisionBoxes` is set to `false` [#5673](https://github.com/mapbox/mapbox-gl-js/pull/5673)
+- Fix transitions from property default values [#5682](https://github.com/mapbox/mapbox-gl-js/pull/5682)
+- Fix runtime updating of `heatmap-color` [#5682](https://github.com/mapbox/mapbox-gl-js/pull/5682)
+- Fix mobile Safari `history.replaceState` error [#5613](https://github.com/mapbox/mapbox-gl-js/pull/5613)
+
+# ✨ Features and improvements
+
+- Provide default element for Marker class [#5661](https://github.com/mapbox/mapbox-gl-js/pull/5661)
+
 # 0.42.0 (November 10, 2017)
 
 # ⚠️ Breaking changes
