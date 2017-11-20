@@ -16,7 +16,6 @@ const shaders = require('../shaders');
 const Program = require('./program');
 const RenderTexture = require('./render_texture');
 const updateTileMasks = require('./tile_mask');
-const Color = require('../style-spec/util/color');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -242,7 +241,7 @@ class Painter {
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
         mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
 
-        const program = this.useProgram('fill', ProgramConfiguration.forBackgroundColor(new Color(0, 0, 0, 1), 1));
+        const program = this.useProgram('fill', ProgramConfiguration.forTileClippingMask());
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
         this.viewportVAO.bind(gl, program, this.viewportBuffer);
@@ -274,13 +273,14 @@ class Painter {
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
+        const programConfiguration = ProgramConfiguration.forTileClippingMask();
 
         for (const coord of coords) {
             const id = this._tileClippingMaskIDs[coord.id] = idNext++;
 
             gl.stencilFunc(gl.ALWAYS, id, 0xFF);
 
-            const program = this.useProgram('fill', this.emptyProgramConfiguration);
+            const program = this.useProgram('fill', programConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
             // Draw the clipping mask
