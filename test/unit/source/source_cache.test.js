@@ -735,8 +735,15 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
             sourceCache._tiles[t.id].state = 'loaded';
         }
 
-        const retained = sourceCache._updateRetainedTiles([idealTile]);
-        t.deepEqual(Object.keys(retained), [idealTile].concat(loadedChildren).map(t=> t.id));
+        const retained = sourceCache._updateRetainedTiles([idealTile], 3);
+        t.deepEqual(Object.keys(retained), [
+            // parents are requested because ideal ideal tile is not completely covered by
+            // loaded child tiles
+            new TileCoord(0, 0, 0),
+            new TileCoord(1, 0, 0),
+            new TileCoord(2, 0, 1),
+            idealTile
+        ].concat(loadedChildren).map(t=> t.id));
 
         t.end();
     });
@@ -865,6 +872,30 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
         t.end();
     });
 
+    t.test('don\'t load parent if all immediate children are loaded', (t)=>{
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'loading';
+                callback();
+            }
+        });
+
+        const idealTile = new TileCoord(2, 1, 1);
+        const loadedTiles = [new TileCoord(3, 2, 2), new TileCoord(3, 3, 2), new TileCoord(3, 2, 3), new TileCoord(3, 3, 3)];
+        loadedTiles.forEach((t)=>{
+            sourceCache._tiles[t.id] = new Tile(t);
+            sourceCache._tiles[t.id].state = 'loaded';
+        });
+
+        const getTileSpy = t.spy(sourceCache, 'getTile');
+        const retained = sourceCache._updateRetainedTiles([idealTile], 2);
+        // parent tile isn't requested because all covering children are loaded
+        t.deepEqual(getTileSpy.getCalls(), []);
+        t.deepEqual(Object.keys(retained), [idealTile.id].concat(loadedTiles.map(t=>t.id)));
+        t.end();
+
+    });
+
     t.test('prefer loaded child tiles to parent tiles', (t)=>{
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
@@ -879,7 +910,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
             sourceCache._tiles[t.id].state = 'loaded';
         });
 
-        const addTileSpy = t.spy(sourceCache, '_addTile');
         const getTileSpy = t.spy(sourceCache, 'getTile');
         let retained = sourceCache._updateRetainedTiles([idealTile], 1);
         t.deepEqual(getTileSpy.getCalls().map((c)=>{ return c.args[0]; }), [
@@ -897,7 +927,6 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
             '2': true
         }, 'retains children and parent when ideal tile is partially covered by a loaded child tile');
 
-        addTileSpy.restore();
         getTileSpy.restore();
         // remove child tile and check that it only uses parent tile
         delete sourceCache._tiles['2'];
