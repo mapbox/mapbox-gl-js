@@ -709,7 +709,7 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
-    setFilter(layerId: string, filter: FilterSpecification) {
+    setFilter(layerId: string, filter: ?FilterSpecification) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -723,11 +723,21 @@ class Style extends Evented {
             return;
         }
 
-        if (filter !== null && filter !== undefined && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return;
+        if (util.deepEqual(layer.filter, filter)) {
+            return;
+        }
 
-        if (util.deepEqual(layer.filter, filter)) return;
+        if (filter === null || filter === undefined) {
+            layer.filter = undefined;
+            this._updateLayer(layer);
+            return;
+        }
+
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) {
+            return;
+        }
+
         layer.filter = util.clone(filter);
-
         this._updateLayer(layer);
     }
 
