@@ -320,7 +320,7 @@ class Style extends Evented {
     }
 
     hasTransitions() {
-        if (this.light.hasTransition()) {
+        if (this.light && this.light.hasTransition()) {
             return true;
         }
 
