@@ -65,10 +65,13 @@ test('LRUCache - remove', (t) => {
 test('LRUCache - overflow', (t) => {
     const cache = new LRUCache(1, (removed) => {
         t.equal(removed, 'b');
-        t.end();
     });
     cache.add('a', 'b');
     cache.add('c', 'd');
+
+    t.ok(cache.has('c'));
+    t.notOk(cache.has('a'));
+    t.end();
 });
 
 test('LRUCache#reset', (t) => {
