@@ -769,9 +769,9 @@ export default class extends React.Component {
                                             <tr>
                                                 <td>basic functionality</td>
                                                 <td className='center'>&gt;= 0.10.0</td>
-                                                <td className='center'><a href="https://github.com/mapbox/mapbox-gl-native/issues/1350">Not yet supported</a></td>
-                                                <td className='center'><a href="https://github.com/mapbox/mapbox-gl-native/issues/1350">Not yet supported</a></td>
-                                                <td className='center'><a href="https://github.com/mapbox/mapbox-gl-native/issues/1350">Not yet supported</a></td>
+                                                <td className='center'>&gt;= 5.2.0</td>
+                                                <td className='center'>&gt;= 3.7.0</td>
+                                                <td className='center'>&gt;= 0.6.0</td>
                                             </tr>
                                         </tbody>
                                     </table>
