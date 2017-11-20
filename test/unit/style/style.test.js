@@ -1740,3 +1740,54 @@ test('Style#addSourceType', (t) => {
 
     t.end();
 });
+
+test('Style#hasTransitions', (t) => {
+    t.test('returns false when the style is loading', (t) => {
+        const style = new Style(new StubMap());
+        t.equal(style.hasTransitions(), false);
+        t.end();
+    });
+
+    t.test('returns true when a property is transitioning', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setPaintProperty("background", "background-color", "blue");
+            style.update();
+            t.equal(style.hasTransitions(), true);
+            t.end();
+        });
+    });
+
+    t.test('returns false when a property is not transitioning', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "transition": {
+                "duration": 0
+            },
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setPaintProperty("background", "background-color", "blue");
+            style.update();
+            t.equal(style.hasTransitions(), false);
+            t.end();
+        });
+    });
+
+    t.end();
+});
