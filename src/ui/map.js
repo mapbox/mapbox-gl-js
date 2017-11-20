@@ -1447,9 +1447,6 @@ class Map extends Camera {
             this._styleDirty = false;
             this.style.update();
             this.style._recalculate(this.transform.zoom);
-            if (this.style.hasTransitions()) {
-                this._styleDirty = true;
-            }
         }
 
         // If we are in _render for any reason other than an in-progress paint
@@ -1479,6 +1476,10 @@ class Map extends Camera {
         }
 
         this._frameId = null;
+
+        if (this.style && this.style.hasTransitions()) {
+            this._styleDirty = true;
+        }
 
         // Schedule another render frame if it's needed.
         //
