@@ -3,6 +3,8 @@
 // Note: all "sizes" are measured in bytes
 
 const assert = require('assert');
+const {register} = require('./web_worker_transfer');
+const Point = require('@mapbox/point-geometry');
 
 import type {Transferable} from '../types/transferable';
 
@@ -66,11 +68,6 @@ export type StructArrayMember = {
     offset: number
 };
 
-export type SerializedStructArray = {
-    length: number,
-    arrayBuffer: ArrayBuffer
-};
-
 export type StructArrayTypeParameters = {
     members: $ReadOnlyArray<{
         name: string,
@@ -79,6 +76,15 @@ export type StructArrayTypeParameters = {
     }>,
     alignment?: number
 };
+
+export type SerializedStructArray = {
+    length: number,
+    arrayBuffer: ArrayBuffer,
+    type: StructArrayTypeParameters,
+    cacheKey?: string
+};
+
+const structArrayTypeCache: {[key: string]: Class<StructArray>} = {}; // eslint-disable-line no-use-before-define
 
 /**
  * The StructArray class is inherited by the custom StructArrayType classes created with
@@ -107,6 +113,8 @@ class StructArray {
     _usedTypes: Array<ViewType>;
     emplaceBack: Function;
 
+    _cacheKey: string;
+
     constructor(serialized?: SerializedStructArray) {
         this.isTransferred = false;
 
@@ -124,32 +132,41 @@ class StructArray {
         }
     }
 
-    /**
-     * Serialize the StructArray type. This serializes the *type* not an instance of the type.
-     */
-    static serialize(): StructArrayTypeParameters {
-        return {
-            members: this.prototype.members,
-            alignment: this.prototype.StructType.prototype.alignment
-        };
+    serialize(transferables?: Array<Transferable>): SerializedStructArray {
+        return StructArray.serialize(this, transferables);
     }
 
     /**
-     * Serialize this StructArray instance
+     * Serialize a StructArray instance.  Serializes both the raw data and the
+     * metadata needed to reconstruct the StructArray base class during
+     * deserialization.
      */
-    serialize(transferables?: Array<Transferable>): SerializedStructArray {
-        assert(!this.isTransferred);
+    static serialize(array: StructArray, transferables?: Array<Transferable>): SerializedStructArray {
+        assert(!array.isTransferred);
 
-        this._trim();
+        array._trim();
 
         if (transferables) {
-            this.isTransferred = true;
-            transferables.push(this.arrayBuffer);
+            array.isTransferred = true;
+            transferables.push(array.arrayBuffer);
         }
+
         return {
-            length: this.length,
-            arrayBuffer: this.arrayBuffer
+            length: array.length,
+            arrayBuffer: array.arrayBuffer,
+            type: {
+                members: array.constructor.prototype.members,
+                alignment: array.constructor.prototype.StructType.prototype.alignment
+            },
+            cacheKey: array.constructor.prototype._cacheKey
         };
+    }
+
+    static deserialize(input: SerializedStructArray): StructArray {
+        const Klass = input.cacheKey && input.cacheKey in structArrayTypeCache ?
+            structArrayTypeCache[input.cacheKey] :
+            createStructArrayType(input.type);
+        return new Klass(input);
     }
 
     /**
@@ -228,9 +245,12 @@ class StructArray {
     }
 }
 
-export type { StructArray as StructArray };
+register(StructArray);
 
-const structArrayTypeCache: {[key: string]: Class<StructArray>} = {};
+class StructArrayType extends StructArray {}
+register(StructArrayType);
+
+export type { StructArray as StructArray };
 
 /**
  * `createStructArrayType` is used to create new `StructArray` types.
@@ -281,11 +301,14 @@ function createStructArrayType(options: StructArrayTypeParameters): Class<Struct
     let maxSize = 0;
     const usedTypes = ['Uint8'];
 
+    let hasAnchorPoint = false;
+
     const members = options.members.map((member) => {
         assert(member.name.length);
         assert(member.type in viewTypes);
 
         if (usedTypes.indexOf(member.type) < 0) usedTypes.push(member.type);
+        if (member.name === 'anchorPointX') hasAnchorPoint = true;
 
         const typeSize = sizeOf(member.type);
         const memberOffset = offset = align(offset, Math.max(alignment, typeSize));
@@ -326,6 +349,14 @@ function createStructArrayType(options: StructArrayTypeParameters): Class<Struct
         }
     }
 
+    // Special case used for the CollisionBoxArray type
+    if (hasAnchorPoint) {
+        // https://github.com/facebook/flow/issues/285
+        (Object.defineProperty: any)(StructType.prototype, 'anchorPoint', {
+            get() { return new Point(this.anchorPointX, this.anchorPointY); }
+        });
+    }
+
     class StructArrayType extends StructArray {}
 
     StructArrayType.prototype.members = members;
@@ -333,6 +364,8 @@ function createStructArrayType(options: StructArrayTypeParameters): Class<Struct
     StructArrayType.prototype.bytesPerElement = size;
     StructArrayType.prototype.emplaceBack = createEmplaceBack(members, size);
     StructArrayType.prototype._usedTypes = usedTypes;
+
+    StructArrayType.prototype._cacheKey = key;
 
     structArrayTypeCache[key] = StructArrayType;
 

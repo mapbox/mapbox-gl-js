@@ -1,7 +1,6 @@
 // @flow
 
 const createStructArrayType = require('../util/struct_array');
-const Point = require('@mapbox/point-geometry');
 
 export type CollisionBox = {
     anchorPoint: Point,
@@ -61,11 +60,6 @@ const CollisionBoxArray = createStructArrayType({
         { type: 'Int16', name: 'signedDistanceFromAnchor' }
 
     ]
-});
-
-// https://github.com/facebook/flow/issues/285
-(Object.defineProperty: any)(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
-    get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
 
 module.exports = CollisionBoxArray;

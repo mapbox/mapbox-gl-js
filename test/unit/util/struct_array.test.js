@@ -14,8 +14,7 @@ test('StructArray', (t) => {
     });
 
     t.test('type defined', (t) => {
-
-        t.deepEqual(TestArray.serialize(), {
+        t.deepEqual(TestArray.serialize(new TestArray()).type, {
             members: [{
                 name: 'map',
                 components: 1,

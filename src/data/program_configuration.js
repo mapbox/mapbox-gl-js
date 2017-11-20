@@ -6,9 +6,11 @@ const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const VertexBuffer = require('../gl/vertex_buffer');
 const Color = require('../style-spec/util/color');
+const {serialize, deserialize} = require('../util/web_worker_transfer');
 
 import type StyleLayer from '../style/style_layer';
-import type {ViewType, StructArray, SerializedStructArray, StructArrayTypeParameters} from '../util/struct_array';
+import type {Serialized} from '../util/web_worker_transfer';
+import type {ViewType, StructArray} from '../util/struct_array';
 import type Program from '../render/program';
 import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
@@ -234,8 +236,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 }
 
 export type SerializedProgramConfiguration = {
-    array: SerializedStructArray,
-    type: StructArrayTypeParameters,
+    array: Serialized,
     statistics: PaintPropertyStatistics
 };
 
@@ -382,8 +383,7 @@ class ProgramConfiguration {
         }
 
         return {
-            array: this.paintVertexArray.serialize(transferables),
-            type: this.paintVertexArray.constructor.serialize(),
+            array: serialize(this.paintVertexArray, transferables),
             statistics
         };
     }
@@ -391,8 +391,8 @@ class ProgramConfiguration {
     static deserialize(programInterface: ProgramInterface, layer: StyleLayer, zoom: number, serialized: ?SerializedProgramConfiguration) {
         const self = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
         if (serialized) {
-            self.PaintVertexArray = createVertexArrayType(serialized.type.members);
-            self.paintVertexArray = new self.PaintVertexArray(serialized.array);
+            self.paintVertexArray = (deserialize(serialized.array): any);
+            self.PaintVertexArray = self.paintVertexArray.constructor;
             self.paintPropertyStatistics = serialized.statistics;
         }
         return self;
