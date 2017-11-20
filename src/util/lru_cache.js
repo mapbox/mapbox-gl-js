@@ -61,7 +61,7 @@ class LRUCache<T> {
             this.order.push(key);
 
             if (this.order.length > this.max) {
-                const removedData = this.get(this.order[0]);
+                const removedData = this.getAndRemove(this.order[0]);
                 if (removedData) this.onRemove(removedData);
             }
         }
