@@ -48,7 +48,7 @@ class NavigationControl {
         this._map = map;
         this._map.on('rotate', this._rotateCompassArrow);
         this._rotateCompassArrow();
-        this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass, pitchWithRotate: false});
+        this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
         this._handler.enable();
         return this._container;
     }
