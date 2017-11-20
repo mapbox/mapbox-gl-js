@@ -675,7 +675,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.40.0"
+          "js": "0.40.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         }
       }
     },
@@ -1165,10 +1168,16 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.40.0"
+          "js": "0.40.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         },
         "data-driven styling": {
-          "js": "0.40.0"
+          "js": "0.40.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         }
       }
     },
@@ -1194,7 +1203,10 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.39.0"
+          "js": "0.39.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         },
         "data-driven styling": {}
       }
@@ -1361,7 +1373,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-            "js": "0.40.0"
+          "js": "0.40.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         }
       }
     },
@@ -1404,7 +1419,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-            "js": "0.40.0"
+          "js": "0.40.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         }
       }
     },
@@ -1437,7 +1455,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-            "js": "0.39.0"
+          "js": "0.39.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         }
       }
     },
@@ -1488,7 +1509,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-            "js": "0.39.0"
+          "js": "0.39.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         }
       }
     },
@@ -3016,7 +3040,10 @@
       "doc": "Orientation of circle when map is pitched.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.39.0"
+          "js": "0.39.0",
+          "android": "5.2.0",
+          "ios": "3.7.0",
+          "macos": "0.6.0"
         },
         "data-driven styling": {}
       }
