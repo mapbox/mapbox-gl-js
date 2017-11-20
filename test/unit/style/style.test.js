@@ -1349,6 +1349,15 @@ test('Style#setFilter', (t) => {
         });
     });
 
+    t.test('unsets filter', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            style.setFilter('symbol', null);
+            t.equal(style.getLayer('symbol').serialize().filter, undefined);
+            t.end();
+        });
+    });
+
     t.test('emits if invalid', (t) => {
         const style = createStyle();
         style.on('style.load', () => {

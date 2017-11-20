@@ -31,7 +31,7 @@ class StyleLayer extends Evented {
     sourceLayer: ?string;
     minzoom: ?number;
     maxzoom: ?number;
-    filter: mixed;
+    filter: FilterSpecification | void;
     visibility: 'visible' | 'none';
 
     _unevaluatedLayout: Layout<any>;

@@ -1157,7 +1157,7 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: FilterSpecification) {
+    setFilter(layer: string, filter: ?FilterSpecification) {
         this.style.setFilter(layer, filter);
         this._update(true);
         return this;
