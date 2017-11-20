@@ -223,6 +223,7 @@ a.mapboxgl-ctrl-logo {
     border-color: #333;
     padding: 0 5px;
     color: #333;
+    box-sizing: border-box;
 }
 
 .mapboxgl-popup {
