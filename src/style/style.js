@@ -568,7 +568,7 @@ class Style extends Evented {
 
         const index = before ? this._order.indexOf(before) : this._order.length;
         if (before && index === -1) {
-            this.fire('error', { message: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            this.fire('error', { error: new Error(`Layer with id "${before}" does not exist on this map.`)});
             return;
         }
 
@@ -624,7 +624,7 @@ class Style extends Evented {
 
         const newIndex = before ? this._order.indexOf(before) : this._order.length;
         if (before && newIndex === -1) {
-            this.fire('error', { message: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            this.fire('error', { error: new Error(`Layer with id "${before}" does not exist on this map.`)});
             return;
         }
         this._order.splice(newIndex, 0, id);
