@@ -314,12 +314,7 @@ test('Style#loadJSON', (t) => {
             sources: {
                 '-source-id-': { type: "vector", tiles: [] }
             },
-            layers: [{
-                'id': '-layer-id-',
-                'type': 'circle',
-                'source': '-source-id-',
-                'source-layer': '-source-layer-'
-            }]
+            layers: []
         }));
 
         style.on('style.load', () => {
@@ -328,6 +323,12 @@ test('Style#loadJSON', (t) => {
             const source = createSource();
             source['vector_layers'] = [{ id: 'green' }];
             style.addSource('-source-id-', source);
+            style.addLayer({
+                'id': '-layer-id-',
+                'type': 'circle',
+                'source': '-source-id-',
+                'source-layer': '-source-layer-'
+            });
             style.update();
         });
 
@@ -689,6 +690,49 @@ test('Style#removeSource', (t) => {
             t.throws(() => {
                 style.removeSource('source-id');
             }, /There is no source with this ID/);
+            t.end();
+        });
+    });
+
+    function createStyle(callback) {
+        const style = new Style(new StubMap());
+        style.loadJSON(createStyleJSON({
+            'sources': {
+                'mapbox-source': createGeoJSONSource()
+            },
+            'layers': [{
+                'id': 'mapbox-layer',
+                'type': 'circle',
+                'source': 'mapbox-source',
+                'source-layer': 'whatever'
+            }]
+        }));
+        style.on('style.load', () => {
+            style.update();
+            style._recalculate(1);
+            callback(style);
+        });
+        return style;
+    }
+
+    t.test('throws if source is in use', (t) => {
+        createStyle((style) => {
+            style.on('error', (event) => {
+                t.ok(event.error.message.includes('"mapbox-source"'));
+                t.ok(event.error.message.includes('"mapbox-layer"'));
+                t.end();
+            });
+            style.removeSource('mapbox-source');
+        });
+    });
+
+    t.test('does not throw if source is not in use', (t) => {
+        createStyle((style) => {
+            style.on('error', () => {
+                t.fail();
+            });
+            style.removeLayer('mapbox-layer');
+            style.removeSource('mapbox-source');
             t.end();
         });
     });

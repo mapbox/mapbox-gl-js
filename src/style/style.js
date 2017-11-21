@@ -516,6 +516,12 @@ class Style extends Evented {
         if (this.sourceCaches[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
+        for (const layerId in this._layers) {
+            if (this._layers[layerId].source === id) {
+                return this.fire('error', {error: new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`)});
+            }
+        }
+
         const sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
         delete this._updatedSources[id];
