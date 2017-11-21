@@ -6,7 +6,7 @@ const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const VertexBuffer = require('../gl/vertex_buffer');
 const Color = require('../style-spec/util/color');
-const {serialize, deserialize} = require('../util/web_worker_transfer');
+const {deserialize, serialize, register} = require('../util/web_worker_transfer');
 
 import type StyleLayer from '../style/style_layer';
 import type {Serialized} from '../util/web_worker_transfer';
@@ -263,12 +263,10 @@ export type SerializedProgramConfiguration = {
 class ProgramConfiguration {
     binders: { [string]: Binder<any> };
     cacheKey: string;
-    interface: ?ProgramInterface;
+    layoutAttributes: ?Array<LayoutAttribute>;
     PaintVertexArray: Class<StructArray>;
 
-    layer: StyleLayer;
     paintVertexArray: StructArray;
-    paintPropertyStatistics: PaintPropertyStatistics;
     paintVertexBuffer: ?VertexBuffer;
 
     constructor() {
@@ -310,8 +308,7 @@ class ProgramConfiguration {
         }
 
         self.PaintVertexArray = createVertexArrayType(attributes);
-        self.interface = programInterface;
-        self.layer = layer;
+        self.layoutAttributes = programInterface.layoutAttributes;
 
         return self;
     }
@@ -372,32 +369,6 @@ class ProgramConfiguration {
         }
     }
 
-    serialize(transferables?: Array<Transferable>): ?SerializedProgramConfiguration {
-        if (this.paintVertexArray.length === 0) {
-            return null;
-        }
-
-        const statistics: PaintPropertyStatistics = {};
-        for (const name in this.binders) {
-            statistics[this.binders[name].property] = this.binders[name].statistics;
-        }
-
-        return {
-            array: serialize(this.paintVertexArray, transferables),
-            statistics
-        };
-    }
-
-    static deserialize(programInterface: ProgramInterface, layer: StyleLayer, zoom: number, serialized: ?SerializedProgramConfiguration) {
-        const self = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-        if (serialized) {
-            self.paintVertexArray = (deserialize(serialized.array): any);
-            self.PaintVertexArray = self.paintVertexArray.constructor;
-            self.paintPropertyStatistics = serialized.statistics;
-        }
-        return self;
-    }
-
     upload(gl: WebGLRenderingContext) {
         if (this.paintVertexArray) {
             this.paintVertexBuffer = new VertexBuffer(gl, this.paintVertexArray);
@@ -414,13 +385,12 @@ class ProgramConfiguration {
 class ProgramConfigurationSet {
     programConfigurations: {[string]: ProgramConfiguration};
 
-    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<StyleLayer>, zoom: number, arrays?: {+[string]: ?SerializedProgramConfiguration}) {
-        this.programConfigurations = {};
+    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<StyleLayer>, zoom: number, arrays?: Serialized) {
         if (arrays) {
-            for (const layer of layers) {
-                this.programConfigurations[layer.id] = ProgramConfiguration.deserialize(programInterface, layer, zoom, arrays[layer.id]);
-            }
+            // remove this path once Bucket classes no longer use it.
+            this.programConfigurations = (deserialize(arrays): any).programConfigurations;
         } else {
+            this.programConfigurations = {};
             for (const layer of layers) {
                 const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
                 programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
@@ -435,14 +405,9 @@ class ProgramConfigurationSet {
         }
     }
 
+    // remove once Bucket no longer needs this
     serialize(transferables?: Array<Transferable>) {
-        const result = {};
-        for (const layerId in this.programConfigurations) {
-            const serialized = this.programConfigurations[layerId].serialize(transferables);
-            if (!serialized) continue;
-            result[layerId] = serialized;
-        }
-        return result;
+        return serialize(this, transferables);
     }
 
     get(layerId: string) {
@@ -461,6 +426,12 @@ class ProgramConfigurationSet {
         }
     }
 }
+
+register(ConstantBinder);
+register(SourceExpressionBinder);
+register(CompositeExpressionBinder);
+register(ProgramConfiguration, {omit: ['PaintVertexArray']});
+register(ProgramConfigurationSet);
 
 module.exports = {
     ProgramConfiguration,

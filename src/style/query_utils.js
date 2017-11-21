@@ -1,5 +1,6 @@
 // @flow
 
+const assert = require('assert');
 const Point = require('@mapbox/point-geometry');
 
 import type {PossiblyEvaluatedPropertyValue} from "./properties";
@@ -11,8 +12,15 @@ function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: Bucke
     if (value.kind === 'constant') {
         return value.value;
     } else {
-        return (bucket: any).programConfigurations.get(layer.id)
-            .paintPropertyStatistics[property].max;
+        const binders = (bucket: any).programConfigurations.get(layer.id).binders;
+        for (const name in binders) {
+            const binder = binders[name];
+            if (binder.property === property) {
+                return binder.statistics.max;
+            }
+        }
+        assert(false, `Missing binder for data-driven property ${property}.`);
+        return -Infinity;
     }
 }
 
