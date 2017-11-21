@@ -1022,7 +1022,7 @@ test('Style#addLayer', (t) => {
 
         style.on('style.load', () => {
             style.on('error', (error)=>{
-                t.match(error.message, /does not exist on this map/);
+                t.match(error.error, /does not exist on this map/);
                 t.end();
             });
             style.addLayer(layer, 'z');
