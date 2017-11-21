@@ -3,7 +3,7 @@
 const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
-const {HTMLImageElement} = require('../util/window');
+const {HTMLImageElement, HTMLElement} = require('../util/window');
 const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
@@ -280,8 +280,10 @@ class Map extends Camera {
             } else {
                 this._container = container;
             }
-        } else {
+        } else if (options.container instanceof HTMLElement) {
             this._container = options.container;
+        } else {
+            throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
         }
 
         if (options.maxBounds) {
