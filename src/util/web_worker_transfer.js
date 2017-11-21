@@ -1,7 +1,17 @@
 // @flow
 
 const assert = require('assert');
+
 const Color = require('../style-spec/util/color');
+const {
+    StylePropertyFunction,
+    StyleExpression,
+    StyleExpressionWithErrorHandling,
+    ZoomDependentExpression,
+    ZoomConstantExpression
+} = require('../style-spec/expression');
+const {CompoundExpression} = require('../style-spec/expression/compound_expression');
+const expressions = require('../style-spec/expression/definitions');
 
 import type {Transferable} from '../types/transferable';
 
@@ -59,6 +69,19 @@ function register<T: any>(klass: Class<T>, options: RegisterOptions<T> = {}) {
 
 register(Object);
 register(Color);
+
+register(StylePropertyFunction);
+register(StyleExpression, {omit: ['_evaluator']});
+register(StyleExpressionWithErrorHandling, {omit: ['_evaluator']});
+register(ZoomDependentExpression);
+register(ZoomConstantExpression);
+register(CompoundExpression, {omit: ['_evaluate']});
+for (const name in expressions) {
+    const Expression = expressions[name];
+    if (registry[Expression.name]) continue;
+    register(expressions[name]);
+}
+
 /**
  * Serialize the given object for transfer to or from a web worker.
  *

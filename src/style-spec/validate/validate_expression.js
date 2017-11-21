@@ -13,7 +13,7 @@ module.exports = function validateExpression(options: any) {
     }
 
     if (options.expressionContext === 'property' && options.propertyKey === 'text-font' &&
-        (expression.value: any).parsed.possibleOutputs().indexOf(undefined) !== -1) {
+        (expression.value: any)._styleExpression.expression.possibleOutputs().indexOf(undefined) !== -1) {
         return [new ValidationError(options.key, options.value, 'Invalid data expression for "text-font". Output values must be contained as literals within the expression.')];
     }
 
