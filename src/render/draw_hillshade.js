@@ -33,18 +33,12 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 
 }
 
-function setLight(program, painter) {
-    const gl = painter.gl;
-    const light = painter.style.light;
-
-    const lightPositionRadians = light.getLight().position.map(el => el * Math.PI / 180);
-
+function setLight(program, painter, layer) {
+    let azimuthal = layer.paint.get('hillshade-illumination-direction') * (Math.PI / 180);
+    const zenith = 30 * (Math.PI / 180);
     // modify azimuthal angle by map rotation if light is anchored at the viewport
-    if (light.properties.get('anchor') === 'viewport')  lightPositionRadians[1] -= painter.transform.angle;
-
-    // we don't use the radial coordinate when rendering hillshade, so we replace that value with the intensity variable
-    lightPositionRadians[0] = light.properties.get('intensity');
-    gl.uniform3fv(program.uniforms.u_light, lightPositionRadians);
+    if (layer.paint.get('hillshade-illumination-anchor') === 'viewport')  azimuthal -= painter.transform.angle;
+    painter.gl.uniform3f(program.uniforms.u_light, layer.paint.get('hillshade-exaggeration'), azimuthal, zenith);
 
 }
 
@@ -58,7 +52,7 @@ function renderHillshade(painter, tile, layer) {
     const gl = painter.gl;
     const program = painter.useProgram('hillshade');
     const posMatrix = painter.transform.calculatePosMatrix(tile.coord);
-    setLight(program, painter);
+    setLight(program, painter, layer);
     // for scaling the magnitude of a points slope by its latitude
     const latRange = getTileLatRange(painter, tile.coord);
 
@@ -122,7 +116,6 @@ function prepareHillshade(painter, tile) {
         // is always 0
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (false: any));
 
-
         tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
         if (tile.demTexture) {
             const demTexture = tile.demTexture;
@@ -143,8 +136,6 @@ function prepareHillshade(painter, tile) {
         }
 
         gl.viewport(0, 0, tileSize, tileSize);
-
-
 
         const matrix = mat4.create();
         // Flip rendering at y axis.

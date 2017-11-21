@@ -3773,6 +3773,41 @@
     }
   },
   "paint_hillshade": {
+      "hillshade-illumination-direction": {
+        "type": "number",
+        "default": 335,
+        "minimum": 0,
+        "maximum": 359,
+        "doc": "The direction of the light source used to generate the hillshading with 0 as the top of the viewport if `hillshade-illumination-anchor` is set to `viewport` and due north if `hillshade-illumination-anchor` is set to `map`.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-illumination-anchor": {
+        "type": "enum",
+        "function": "piecewise-constant",
+        "zoom-function": true,
+        "values": {
+          "map": {
+              "doc": "The hillshade illumination is relative to the north direction."
+          },
+          "viewport": {
+              "doc": "The hillshade illumination is relative to the top of the viewport."
+          }
+        },
+        "default": "viewport",
+        "doc": "Direction of light source when map is rotated."
+      },
+      "hillshade-exaggeration": {
+        "type": "number",
+        "doc": "Intensity of the hillshade",
+        "default": 0.5,
+        "minimum": 0,
+        "maximum": 1,
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
       "hillshade-shadow-color": {
         "type": "color",
         "default": "#000000",
