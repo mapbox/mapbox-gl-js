@@ -3,7 +3,7 @@
 const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
-const {HTMLImageElement} = require('../util/window');
+const {HTMLImageElement, HTMLElement} = require('../util/window');
 const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
