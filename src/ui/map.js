@@ -1420,14 +1420,12 @@ class Map extends Camera {
      * @private
      */
     _update(updateStyle?: boolean) {
-        if (!this.style) return this;
+        if (!this.style) return;
 
         this._styleDirty = this._styleDirty || updateStyle;
         this._sourcesDirty = true;
 
         this._rerender();
-
-        return this;
     }
 
     /**
@@ -1441,6 +1439,10 @@ class Map extends Camera {
      * @private
      */
     _render() {
+        if (this.isEasing()) {
+            this._updateEase();
+        }
+
         // If the style has changed, the map is being zoomed, or a transition
         // is in progress:
         //  - Apply style changes (in a batch)
@@ -1488,7 +1490,7 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
+        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty || this.isEasing()) {
             this._rerender();
         }
 

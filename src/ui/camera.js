@@ -72,9 +72,12 @@ class Camera extends Evented {
 
     _bearingSnap: number;
     _onEaseEnd: number;
-    _abortFn: any;
-    _finishFn: any;
+    _easeStart: number;
+    _easeOptions: {duration: number, easing: (number) => number};
+    _easeFn: (number) => void;
+    _finishFn: () => void;
     _prevEase: any;
+    +_update: () => void;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
@@ -561,7 +564,7 @@ class Camera extends Evented {
 
         clearTimeout(this._onEaseEnd);
 
-        this._ease(function (k) {
+        this._ease((k) => {
             if (this.zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
@@ -815,7 +818,7 @@ class Camera extends Evented {
 
         this._prepareEase(eventData, false);
 
-        this._ease(function (k) {
+        this._ease((k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
             const scale = 1 / w(s);
@@ -839,7 +842,7 @@ class Camera extends Evented {
     }
 
     isEasing() {
-        return !!this._abortFn;
+        return !!this._easeFn;
     }
 
     /**
@@ -858,9 +861,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns {Map} `this`
      */
-    stop(): * {
-        if (this._abortFn) {
-            this._abortFn();
+    stop(): this {
+        if (this._easeFn) {
             this._finishEase();
         }
         return this;
@@ -869,17 +871,28 @@ class Camera extends Evented {
     _ease(frame: (number) => void,
           finish: () => void,
           options: {animate: boolean, duration: number, easing: (number) => number}) {
-        this._finishFn = finish;
-        this._abortFn = browser.timed(function (t) {
-            frame.call(this, options.easing(t));
-            if (t === 1) {
-                this._finishEase();
-            }
-        }, options.animate === false ? 0 : options.duration, this);
+        if (options.animate === false || options.duration === 0) {
+            frame(1);
+            finish();
+        } else {
+            this._easeStart = browser.now();
+            this._easeFn = frame;
+            this._finishFn = finish;
+            this._easeOptions = options;
+            this._update();
+        }
+    }
+
+    _updateEase() {
+        const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
+        this._easeFn(this._easeOptions.easing(t));
+        if (t === 1) {
+            this._finishEase();
+        }
     }
 
     _finishEase() {
-        delete this._abortFn;
+        delete this._easeFn;
         // The finish function might emit events which trigger new eases, which
         // set a new _finishFn. Ensure we don't delete it unintentionally.
         const finish = this._finishFn;
