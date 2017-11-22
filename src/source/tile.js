@@ -81,6 +81,7 @@ class Tile {
     texture: any;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
+    justReloaded: boolean;
 
     /**
      * @param {TileCoord} coord
@@ -169,6 +170,10 @@ class Tile {
      * @private
      */
     unloadVectorData() {
+        if (this.state === 'reloading') {
+            this.justReloaded = true;
+        }
+
         for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
@@ -225,7 +230,7 @@ class Tile {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket instanceof SymbolBucket) {
-                updateOpacities(bucket, collisionFadeTimes);
+                updateOpacities(bucket, collisionFadeTimes, this.justReloaded);
                 bucket.sortFeatures(angle);
             }
         }
@@ -235,6 +240,8 @@ class Tile {
         if (this.featureIndex) {
             this.featureIndex.setCollisionIndex(collisionIndex);
         }
+
+        this.justReloaded = false;
     }
 
     getBucket(layer: StyleLayer) {

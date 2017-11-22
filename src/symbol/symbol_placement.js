@@ -15,7 +15,7 @@ module.exports = {
     performSymbolPlacement: performSymbolPlacement
 };
 
-function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any) {
+function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityState, targetOpacity: number, opacityUpdateTime: number, collisionFadeTimes: any, instant: boolean) {
     if (symbolInstance.isDuplicate) {
         opacityState.opacity = 0;
         opacityState.targetOpacity = 0;
@@ -24,7 +24,9 @@ function updateOpacity(symbolInstance: SymbolInstance, opacityState: OpacityStat
             collisionFadeTimes.latestStart = opacityUpdateTime;
         }
         const increment = collisionFadeTimes.duration ? ((opacityUpdateTime - opacityState.time) / collisionFadeTimes.duration) : 1;
-        opacityState.opacity = Math.max(0, Math.min(1, opacityState.opacity + (opacityState.targetOpacity === 1 ? increment : -increment)));
+        opacityState.opacity = instant ?
+            targetOpacity :
+            Math.max(0, Math.min(1, opacityState.opacity + (opacityState.targetOpacity === 1 ? increment : -increment)));
         opacityState.targetOpacity = targetOpacity;
         opacityState.time = opacityUpdateTime;
     }
@@ -56,7 +58,7 @@ function packOpacity(opacityState: OpacityState): number {
         opacityBits * shift1 + targetBit;
 }
 
-function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
+function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any, instant: boolean) {
     const glyphOpacityArray = bucket.text && bucket.text.opacityVertexArray;
     const iconOpacityArray = bucket.icon && bucket.icon.opacityVertexArray;
     if (glyphOpacityArray) glyphOpacityArray.clear();
@@ -75,7 +77,7 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
             const targetOpacity = symbolInstance.placedText ? 1.0 : 0.0;
             const opacityState = symbolInstance.textOpacityState;
             const initialHidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
-            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes, instant);
             const nowHidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
             if (initialHidden !== nowHidden) {
                 for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
@@ -98,7 +100,7 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
         if (hasIcon) {
             const targetOpacity = symbolInstance.placedIcon ? 1.0 : 0.0;
             const opacityState = symbolInstance.iconOpacityState;
-            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes);
+            updateOpacity(symbolInstance, opacityState, targetOpacity, bucket.fadeStartTime, collisionFadeTimes, instant);
             const opacityEntryCount = symbolInstance.numIconVertices / 4;
             const packedOpacity = packOpacity(opacityState);
             for (let i = 0; i < opacityEntryCount; i++) {
