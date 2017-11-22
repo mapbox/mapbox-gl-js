@@ -562,6 +562,8 @@ class Camera extends Evented {
         clearTimeout(this._onEaseEnd);
 
         this._ease(function (k) {
+            this._fireMoveEvents(eventData);
+
             if (this.zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
@@ -583,8 +585,6 @@ class Camera extends Evented {
                 const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
-
-            this._fireMoveEvents(eventData);
 
         }, () => {
             if (options.delayEndEvents) {
@@ -816,6 +816,8 @@ class Camera extends Evented {
         this._prepareEase(eventData, false);
 
         this._ease(function (k) {
+            this._fireMoveEvents(eventData);
+
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
             const scale = 1 / w(s);
@@ -830,8 +832,6 @@ class Camera extends Evented {
 
             const newCenter = tr.unproject(from.add(delta.mult(u(s))).mult(scale));
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
-
-            this._fireMoveEvents(eventData);
 
         }, () => this._easeToEnd(eventData), options);
 
