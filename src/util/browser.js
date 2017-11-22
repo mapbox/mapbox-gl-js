@@ -34,31 +34,6 @@ module.exports = {
         return cancel(id);
     },
 
-    timed(fn: (n: number) => mixed, dur: number, ctx: mixed) {
-        if (!dur) {
-            fn.call(ctx, 1);
-            return null;
-        }
-
-        let abort = false;
-        const start = now();
-
-        function tick() {
-            if (abort) return;
-            const end = now();
-            if (end >= start + dur) {
-                fn.call(ctx, 1);
-            } else {
-                fn.call(ctx, (end - start) / dur);
-                frame(tick);
-            }
-        }
-
-        frame(tick);
-
-        return function() { abort = true; };
-    },
-
     getImageData(img: CanvasImageSource): ImageData {
         const canvas = window.document.createElement('canvas');
         const context = canvas.getContext('2d');
