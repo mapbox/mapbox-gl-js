@@ -2,6 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const {createFunction} = require('../../../src/style-spec/function');
+const Color = require('../../../src/style-spec/util/color');
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
@@ -176,9 +177,9 @@ test('exponential function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 5}), [0.6, 0, 0.4, 1]);
-        t.deepEqual(f({zoom: 11}), [0, 0, 1, 1]);
+        t.deepEqual(f({zoom: 0}), new Color(1, 0, 0, 1));
+        t.deepEqual(f({zoom: 5}), new Color(0.6, 0, 0.4, 1));
+        t.deepEqual(f({zoom: 11}), new Color(0, 0, 1, 1));
 
         t.end();
     });
@@ -192,10 +193,10 @@ test('exponential function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}), [0, 0, 0, 1]);
+        t.deepEqual(f({zoom: 0}), new Color(0, 0, 0, 1));
         t.deepEqual(f({zoom: 5}).map((n) => {
             return parseFloat(n.toFixed(3));
-        }), [0, 0.444, 0.444, 1]);
+        }), new Color(0, 0.444, 0.444, 1));
 
         t.end();
     });
@@ -211,7 +212,7 @@ test('exponential function', (t) => {
 
         t.deepEqual(f({zoom: 5}).map((n) => {
             return parseFloat(n.toFixed(3));
-        }), [0.5, 0.5, 0.5, 1]);
+        }), new Color(0.5, 0.5, 0.5, 1));
 
         t.end();
     });
@@ -554,9 +555,9 @@ test('interval function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 0}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 11}), [0, 0, 1, 1]);
+        t.deepEqual(f({zoom: 0}), new Color(1, 0, 0, 1));
+        t.deepEqual(f({zoom: 0}), new Color(1, 0, 0, 1));
+        t.deepEqual(f({zoom: 11}), new Color(0, 0, 1, 1));
 
         t.end();
     });
@@ -747,8 +748,8 @@ test('categorical function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {foo: 0}}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 1}, {properties: {foo: 1}}), [0, 0, 1, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 0}}), new Color(1, 0, 0, 1));
+        t.deepEqual(f({zoom: 1}, {properties: {foo: 1}}), new Color(0, 0, 1, 1));
 
         t.end();
     });
@@ -763,8 +764,8 @@ test('categorical function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {}}), [0, 1, 0, 1]);
-        t.deepEqual(f({zoom: 0}, {properties: {foo: 3}}), [0, 1, 0, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {}}), new Color(0, 1, 0, 1));
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 3}}), new Color(0, 1, 0, 1));
 
         t.end();
     });
@@ -779,8 +780,8 @@ test('categorical function', (t) => {
             default: 'lime'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {}}), [0, 1, 0, 1]);
-        t.deepEqual(f({zoom: 0}, {properties: {foo: 3}}), [0, 1, 0, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {}}), new Color(0, 1, 0, 1));
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 3}}), new Color(0, 1, 0, 1));
 
         t.end();
     });
@@ -853,8 +854,8 @@ test('identity function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {foo: 'red'}}), [1, 0, 0, 1]);
-        t.deepEqual(f({zoom: 1}, {properties: {foo: 'blue'}}), [0, 0, 1, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 'red'}}), new Color(1, 0, 0, 1));
+        t.deepEqual(f({zoom: 1}, {properties: {foo: 'blue'}}), new Color(0, 0, 1, 1));
 
         t.end();
     });
@@ -868,7 +869,7 @@ test('identity function', (t) => {
             type: 'color'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {}}), [1, 0, 0, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {}}), new Color(1, 0, 0, 1));
 
         t.end();
     });
@@ -882,7 +883,7 @@ test('identity function', (t) => {
             default: 'red'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {}}), [1, 0, 0, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {}}), new Color(1, 0, 0, 1));
 
         t.end();
     });
@@ -896,7 +897,7 @@ test('identity function', (t) => {
             default: 'red'
         }).evaluate;
 
-        t.deepEqual(f({zoom: 0}, {properties: {foo: 'invalid'}}), [1, 0, 0, 1]);
+        t.deepEqual(f({zoom: 0}, {properties: {foo: 'invalid'}}), new Color(1, 0, 0, 1));
 
         t.end();
     });
@@ -992,21 +993,19 @@ test('unknown function', (t) => {
     t.end();
 });
 
-test('isConstant', (t) => {
-    t.test('zoom', (t) => {
+test('kind', (t) => {
+    t.test('camera', (t) => {
         const f = createFunction({
             stops: [[1, 1]]
         }, {
             type: 'number'
         });
 
-        t.notOk(f.isZoomConstant);
-        t.ok(f.isFeatureConstant);
-
+        t.equal(f.kind, 'camera');
         t.end();
     });
 
-    t.test('property', (t) => {
+    t.test('source', (t) => {
         const f = createFunction({
             stops: [[1, 1]],
             property: 'mapbox'
@@ -1014,13 +1013,11 @@ test('isConstant', (t) => {
             type: 'number'
         });
 
-        t.ok(f.isZoomConstant);
-        t.notOk(f.isFeatureConstant);
-
+        t.equal(f.kind, 'source');
         t.end();
     });
 
-    t.test('zoom + property', (t) => {
+    t.test('composite', (t) => {
         const f = createFunction({
             stops: [[{ zoom: 1, value: 1 }, 1]],
             property: 'mapbox'
@@ -1028,9 +1025,7 @@ test('isConstant', (t) => {
             type: 'number'
         });
 
-        t.notOk(f.isZoomConstant);
-        t.notOk(f.isFeatureConstant);
-
+        t.equal(f.kind, 'composite');
         t.end();
     });
 

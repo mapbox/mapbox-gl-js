@@ -13,6 +13,7 @@ import type TileCoord from './tile_coord';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type {Callback} from '../types/callback';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -23,7 +24,7 @@ class VectorTileSource extends Evented implements Source {
     scheme: string;
     tileSize: number;
 
-    _options: TileSourceSpecification;
+    _options: VectorSourceSpecification;
     dispatcher: Dispatcher;
     map: Map;
     bounds: ?[number, number, number, number];
@@ -32,7 +33,7 @@ class VectorTileSource extends Evented implements Source {
     reparseOverscaled: boolean;
     isTileClipped: boolean;
 
-    constructor(id: string, options: TileSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -100,10 +101,6 @@ class VectorTileSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             overscaling: overscaling,
-            angle: this.map.transform.angle,
-            pitch: this.map.transform.pitch,
-            cameraToCenterDistance: this.map.transform.cameraToCenterDistance,
-            cameraToTileDistance: this.map.transform.cameraToTileDistance(tile),
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
@@ -118,7 +115,7 @@ class VectorTileSource extends Evented implements Source {
 
         function done(err, data) {
             if (tile.aborted)
-                return;
+                return callback(null);
 
             if (err) {
                 return callback(err);
@@ -126,11 +123,6 @@ class VectorTileSource extends Evented implements Source {
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
-
-            if (tile.redoWhenDone) {
-                tile.redoWhenDone = false;
-                tile.redoPlacement(this);
-            }
 
             callback(null);
 
@@ -148,6 +140,10 @@ class VectorTileSource extends Evented implements Source {
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
         this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, undefined, tile.workerID);
+    }
+
+    hasTransition() {
+        return false;
     }
 }
 

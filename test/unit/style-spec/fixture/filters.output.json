@@ -44,11 +44,15 @@
     "line": 103
   },
   {
-    "message": "layers[12].filter: Expected arguments of type (string) | (string, object), but found (string, string) instead.",
+    "message": "layers[12].filter[2]: Expected object but found string instead.",
     "line": 131
   },
   {
     "message": "layers[13].filter[1]: Bare objects invalid. Use [\"literal\", {...}] instead.",
     "line": 142
+  },
+  {
+    "message": "layers[14].filter[2][1]: string expected, array found",
+    "line": 152
   }
 ]

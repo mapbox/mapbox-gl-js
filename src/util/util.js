@@ -4,6 +4,8 @@ const UnitBezier = require('@mapbox/unitbezier');
 const Coordinate = require('../geo/coordinate');
 const Point = require('@mapbox/point-geometry');
 
+import type {Callback} from '../types/callback';
+
 /**
  * @module util
  * @private
@@ -411,10 +413,7 @@ exports.isClosedPolygon = function(points: Array<Point>): boolean {
  * @return cartesian coordinates in [x, y, z]
  */
 
-exports.sphericalToCartesian = function(spherical: Array<number>): Array<number> {
-    const r = spherical[0];
-    let azimuthal = spherical[1],
-        polar = spherical[2];
+exports.sphericalToCartesian = function([r, azimuthal, polar]: [number, number, number]): {x: number, y: number, z: number} {
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here
     azimuthal += 90;
@@ -423,12 +422,11 @@ exports.sphericalToCartesian = function(spherical: Array<number>): Array<number>
     azimuthal *= Math.PI / 180;
     polar *= Math.PI / 180;
 
-    // spherical to cartesian (x, y, z)
-    return [
-        r * Math.cos(azimuthal) * Math.sin(polar),
-        r * Math.sin(azimuthal) * Math.sin(polar),
-        r * Math.cos(polar)
-    ];
+    return {
+        x: r * Math.cos(azimuthal) * Math.sin(polar),
+        y: r * Math.sin(azimuthal) * Math.sin(polar),
+        z: r * Math.cos(polar)
+    };
 };
 
 /**

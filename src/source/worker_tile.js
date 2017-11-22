@@ -1,7 +1,7 @@
 // @flow
 
 const FeatureIndex = require('../data/feature_index');
-const CollisionTile = require('../symbol/collision_tile');
+const {performSymbolLayout} = require('../symbol/symbol_layout');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
 const SymbolBucket = require('../data/bucket/symbol_bucket');
@@ -13,6 +13,7 @@ const {makeGlyphAtlas} = require('../render/glyph_atlas');
 import type TileCoord from './tile_coord';
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
+import type StyleLayer from '../style/style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {StyleImage} from '../style/style_image';
 import type {StyleGlyph} from '../style/style_glyph';
@@ -29,16 +30,11 @@ class WorkerTile {
     tileSize: number;
     source: string;
     overscaling: number;
-    angle: number;
-    pitch: number;
-    cameraToCenterDistance: number;
-    cameraToTileDistance: number;
     showCollisionBoxes: boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
     collisionBoxArray: CollisionBoxArray;
-    symbolBuckets: Array<SymbolBucket>;
 
     abort: ?() => void;
     reloadCallback: WorkerTileCallback;
@@ -52,10 +48,6 @@ class WorkerTile {
         this.tileSize = params.tileSize;
         this.source = params.source;
         this.overscaling = params.overscaling;
-        this.angle = params.angle;
-        this.pitch = params.pitch;
-        this.cameraToCenterDistance = params.cameraToCenterDistance;
-        this.cameraToTileDistance = params.cameraToTileDistance;
         this.showCollisionBoxes = params.showCollisionBoxes;
     }
 
@@ -102,11 +94,9 @@ class WorkerTile {
                 assert(layer.source === this.source);
                 if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
-                if (layer.layout && layer.layout.visibility === 'none') continue;
+                if (layer.visibility === 'none') continue;
 
-                for (const layer of family) {
-                    layer.recalculate(this.zoom);
-                }
+                recalculateLayers(family, this.zoom);
 
                 const bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
@@ -119,16 +109,6 @@ class WorkerTile {
 
                 bucket.populate(features, options);
                 featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
-            }
-        }
-
-        // Symbol buckets must be placed in reverse order.
-        this.symbolBuckets = [];
-        for (let i = layerIndex.symbolOrder.length - 1; i >= 0; i--) {
-            const bucket = buckets[layerIndex.symbolOrder[i]];
-            if (bucket) {
-                assert(bucket instanceof SymbolBucket);
-                this.symbolBuckets.push(((bucket: any): SymbolBucket));
             }
         }
 
@@ -168,23 +148,15 @@ class WorkerTile {
             if (error) {
                 return callback(error);
             } else if (glyphMap && imageMap) {
-                const collisionTile = new CollisionTile(
-                    this.angle,
-                    this.pitch,
-                    this.cameraToCenterDistance,
-                    this.cameraToTileDistance,
-                    this.collisionBoxArray);
-
                 const glyphAtlas = makeGlyphAtlas(glyphMap);
                 const imageAtlas = makeImageAtlas(imageMap);
 
-                for (const bucket of this.symbolBuckets) {
-                    recalculateLayers(bucket, this.zoom);
-
-                    bucket.prepare(glyphMap, glyphAtlas.positions,
-                                   imageMap, imageAtlas.positions);
-
-                    bucket.place(collisionTile, this.showCollisionBoxes);
+                for (const key in buckets) {
+                    const bucket = buckets[key];
+                    if (bucket instanceof SymbolBucket) {
+                        recalculateLayers(bucket.layers, this.zoom);
+                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
+                    }
                 }
 
                 this.status = 'done';
@@ -197,7 +169,6 @@ class WorkerTile {
                 callback(null, {
                     buckets: serializeBuckets(util.values(buckets), transferables),
                     featureIndex: featureIndex.serialize(transferables),
-                    collisionTile: collisionTile.serialize(transferables),
                     collisionBoxArray: this.collisionBoxArray.serialize(),
                     glyphAtlasImage: glyphAtlas.image,
                     iconAtlasImage: imageAtlas.image
@@ -205,45 +176,21 @@ class WorkerTile {
             }
         }
     }
-
-    redoPlacement(angle: number, pitch: number, cameraToCenterDistance: number, cameraToTileDistance: number, showCollisionBoxes: boolean) {
-        this.angle = angle;
-        this.pitch = pitch;
-        this.cameraToCenterDistance = cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
-
-        if (this.status !== 'done') {
-            return {};
-        }
-
-        const collisionTile = new CollisionTile(
-            this.angle,
-            this.pitch,
-            this.cameraToCenterDistance,
-            this.cameraToTileDistance,
-            this.collisionBoxArray);
-
-        for (const bucket of this.symbolBuckets) {
-            recalculateLayers(bucket, this.zoom);
-
-            bucket.place(collisionTile, showCollisionBoxes);
-        }
-
-        const transferables = [];
-        return {
-            result: {
-                buckets: serializeBuckets(this.symbolBuckets, transferables),
-                collisionTile: collisionTile.serialize(transferables)
-            },
-            transferables: transferables
-        };
-    }
 }
 
-function recalculateLayers(bucket: SymbolBucket, zoom: number) {
+function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
-    for (const layer of bucket.layers) {
-        layer.recalculate(zoom);
+    for (const layer of layers) {
+        layer.recalculate({
+            zoom,
+            now: Number.MAX_VALUE,
+            defaultFadeDuration: 0,
+            zoomHistory: {
+                lastIntegerZoom: 0,
+                lastIntegerZoomTime: 0,
+                lastZoom: 0
+            }
+        });
     }
 }
 

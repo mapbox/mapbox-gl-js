@@ -1,0 +1,15 @@
+{
+  "expression": ["+", 0.5, ["interpolate", ["linear"], ["zoom"], 0, 0, 1, 1]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "\"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression."
+        }
+      ]
+    }
+  }
+}

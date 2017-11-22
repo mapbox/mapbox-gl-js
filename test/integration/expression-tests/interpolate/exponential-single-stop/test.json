@@ -1,0 +1,20 @@
+{
+  "expression": [
+    "number",
+    ["interpolate", ["exponential", 2], ["number", ["get", "x"]], 1, 2]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 2}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [2, 2, 2]
+  }
+}

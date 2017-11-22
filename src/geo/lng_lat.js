@@ -107,7 +107,7 @@ class LngLat {
         if (input instanceof LngLat) {
             return input;
         }
-        if (Array.isArray(input) && input.length === 2) {
+        if (Array.isArray(input) && (input.length === 2 || input.length === 3)) {
             return new LngLat(Number(input[0]), Number(input[1]));
         }
         if (!Array.isArray(input) && typeof input === 'object' && input !== null) {

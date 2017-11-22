@@ -40,7 +40,7 @@
       "layout": {
         "text-field": "Test",
         "text-font": [
-          "curve", ["step"], ["zoom"],
+          "step", ["zoom"],
           [ "literal", [ "Open Sans Semibold", "Arial Unicode MS Bold" ]],
           1,
           ["literal", [ "Open Sans Semibold", "Arial Unicode MS Bold" ]]

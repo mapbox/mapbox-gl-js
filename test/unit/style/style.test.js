@@ -1349,6 +1349,15 @@ test('Style#setFilter', (t) => {
         });
     });
 
+    t.test('unsets filter', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            style.setFilter('symbol', null);
+            t.equal(style.getLayer('symbol').serialize().filter, undefined);
+            t.end();
+        });
+    });
+
     t.test('emits if invalid', (t) => {
         const style = createStyle();
         style.on('style.load', () => {
@@ -1440,20 +1449,20 @@ test('Style#queryRenderedFeatures', (t) => {
                 const features = {
                     'land': [{
                         type: 'Feature',
-                        layer: style._layers.land,
+                        layer: style._layers.land.serialize(),
                         geometry: {
                             type: 'Polygon'
                         }
                     }, {
                         type: 'Feature',
-                        layer: style._layers.land,
+                        layer: style._layers.land.serialize(),
                         geometry: {
                             type: 'Point'
                         }
                     }],
                     'landref': [{
                         type: 'Feature',
-                        layer: style._layers.landref,
+                        layer: style._layers.landref.serialize(),
                         geometry: {
                             type: 'Line'
                         }
@@ -1558,7 +1567,7 @@ test('Style#queryRenderedFeatures', (t) => {
 
         t.test('includes paint properties', (t) => {
             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-            t.deepEqual(results[2].layer.paint['line-color'], [1, 0, 0, 1]);
+            t.deepEqual(results[2].layer.paint['line-color'], 'red');
             t.end();
         });
 
@@ -1734,6 +1743,57 @@ test('Style#addSourceType', (t) => {
         const style = new Style(new StubMap());
         style.addSourceType('existing', () => {}, (err) => {
             t.ok(err);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#hasTransitions', (t) => {
+    t.test('returns false when the style is loading', (t) => {
+        const style = new Style(new StubMap());
+        t.equal(style.hasTransitions(), false);
+        t.end();
+    });
+
+    t.test('returns true when a property is transitioning', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setPaintProperty("background", "background-color", "blue");
+            style.update();
+            t.equal(style.hasTransitions(), true);
+            t.end();
+        });
+    });
+
+    t.test('returns false when a property is not transitioning', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "transition": {
+                "duration": 0
+            },
+            "layers": [{
+                "id": "background",
+                "type": "background"
+            }]
+        });
+
+        style.on('style.load', () => {
+            style.setPaintProperty("background", "background-color", "blue");
+            style.update();
+            t.equal(style.hasTransitions(), false);
             t.end();
         });
     });

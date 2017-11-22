@@ -10,13 +10,12 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters,
-    RedoPlacementParameters,
-    RedoPlacementCallback,
+    TileParameters
 } from '../source/worker_source';
 
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
+import type {Callback} from '../types/callback';
 
 export type LoadVectorTileResult = {
     vectorTile: VectorTile;
@@ -52,7 +51,10 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
             });
         }
     });
-    return () => { xhr.abort(); };
+    return () => {
+        xhr.abort();
+        callback();
+    };
 }
 
 /**
@@ -134,6 +136,7 @@ class VectorTileWorkerSource implements WorkerSource {
             vtSource = this;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
+            workerTile.showCollisionBoxes = params.showCollisionBoxes;
 
             if (workerTile.status === 'parsing') {
                 workerTile.reloadCallback = callback;
@@ -161,13 +164,14 @@ class VectorTileWorkerSource implements WorkerSource {
      * @param params.source The id of the source for which we're loading this tile.
      * @param params.uid The UID for this tile.
      */
-    abortTile(params: TileParameters) {
+    abortTile(params: TileParameters, callback: WorkerTileCallback) {
         const loading = this.loading[params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
             delete loading[uid];
         }
+        callback();
     }
 
     /**
@@ -177,30 +181,13 @@ class VectorTileWorkerSource implements WorkerSource {
      * @param params.source The id of the source for which we're loading this tile.
      * @param params.uid The UID for this tile.
      */
-    removeTile(params: TileParameters) {
+    removeTile(params: TileParameters, callback: WorkerTileCallback) {
         const loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
         }
-    }
-
-    redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback) {
-        const loaded = this.loaded[params.source],
-            loading = this.loading[params.source],
-            uid = params.uid;
-
-        if (loaded && loaded[uid]) {
-            const workerTile = loaded[uid];
-            const result = workerTile.redoPlacement(params.angle, params.pitch, params.cameraToCenterDistance, params.cameraToTileDistance, params.showCollisionBoxes);
-
-            if (result.result) {
-                callback(null, result.result, result.transferables);
-            }
-
-        } else if (loading && loading[uid]) {
-            loading[uid].angle = params.angle;
-        }
+        callback();
     }
 }
 

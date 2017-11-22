@@ -1,0 +1,48 @@
+{
+  "expression": [
+    "number",
+    [
+      "interpolate",
+      ["cubic-bezier", 0.42, 0, 0.58, 1],
+      ["number", ["get", "x"]],
+      0,
+      0,
+      100,
+      100
+    ]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 10}}],
+    [{}, {"properties": {"x": 20}}],
+    [{}, {"properties": {"x": 30}}],
+    [{}, {"properties": {"x": 40}}],
+    [{}, {"properties": {"x": 50}}],
+    [{}, {"properties": {"x": 60}}],
+    [{}, {"properties": {"x": 70}}],
+    [{}, {"properties": {"x": 80}}],
+    [{}, {"properties": {"x": 90}}],
+    [{}, {"properties": {"x": 100}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      0,
+      1.972244726385564,
+      8.165982204916352,
+      18.739589115790917,
+      33.18838697203919,
+      50,
+      66.81161302796082,
+      81.26041088420908,
+      91.83401779508367,
+      98.02775527361445,
+      100
+    ]
+  }
+}

@@ -8,10 +8,10 @@ const fs = require('fs');
 const path = require('path');
 const vtpbf = require('vt-pbf');
 const FeatureIndex = require('../../../src/data/feature_index');
-const CollisionTile = require('../../../src/symbol/collision_tile');
+const CollisionIndex = require('../../../src/symbol/collision_index');
+const Transform = require('../../../src/geo/transform');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
-const Evented = require('../../../src/util/evented');
 
 test('querySourceFeatures', (t) => {
     const features = [{
@@ -202,100 +202,26 @@ test('Tile#isLessThan', (t)=>{
     t.end();
 });
 
-test('Tile#redoPlacement', (t) => {
-
-    test('redoPlacement on an empty tile', (t) => {
+test('Tile#placeLayer', (t) => {
+    test('placeLayer on an empty tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(null, createPainter());
 
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
-        t.notOk(tile.redoWhenDone);
+        t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.end();
     });
 
-    test('redoPlacement on a loading tile', (t) => {
+    test('placeLayer on a loading tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
-        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
-        t.ok(tile.redoWhenDone);
+        t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
         t.end();
     });
 
-    test('redoPlacement on a reloading tile', (t) => {
+    test('placeLayer on a reloading tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.loadVectorData(createVectorData(), createPainter());
 
-        const options = {
-            type: 'vector',
-            dispatcher: {
-                send: () => {}
-            },
-            map: {
-                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } }
-            }
-        };
-
-        tile.redoPlacement(options);
-        tile.redoPlacement(options);
-
-        t.ok(tile.redoWhenDone);
-        t.end();
-    });
-
-    test('reloaded tile fires a data event on completion', (t)=>{
-        const tile = new Tile(new TileCoord(1, 1, 1));
-        tile.loadVectorData(createVectorData(), createPainter());
-        t.stub(tile, 'reloadSymbolData').returns(null);
-        const source = util.extend(new Evented(), {
-            type: 'vector',
-            dispatcher: {
-                send: (name, data, cb) => {
-                    if (name === 'redoPlacement') setTimeout(cb, 300);
-                }
-            },
-            map: {
-                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } },
-                painter: { tileExtentVAO: {vao: 0}}
-            }
-        });
-
-        tile.redoPlacement(source);
-        tile.placementSource.on('data', ()=>{
-            if (tile.state === 'loaded') t.end();
-        });
-    });
-
-    test('changing cameraToCenterDistance does not trigger placement for low pitch', (t)=>{
-        const tile = new Tile(new TileCoord(1, 1, 1));
-        tile.loadVectorData(createVectorData(), createPainter());
-        t.stub(tile, 'reloadSymbolData').returns(null);
-        const source1 = util.extend(new Evented(), {
-            type: 'vector',
-            dispatcher: {
-                send: (name, data, cb) => {
-                    cb();
-                }
-            },
-            map: {
-                transform: { cameraToCenterDistance: 1, pitch: 10, cameraToTileDistance: () => { return 1; } },
-                painter: { tileExtentVAO: {vao: 0}}
-            }
-        });
-
-        const source2 = util.extend(new Evented(), {
-            type: 'vector',
-            dispatcher: {
-                send: () => {}
-            },
-            map: {
-                transform: { cameraToCenterDistance: 2, pitch: 10, cameraToTileDistance: () => { return 1; } },
-                painter: { tileExtentVAO: {vao: 0}}
-            }
-        });
-
-        tile.redoPlacement(source1);
-        tile.redoPlacement(source2);
-
-        t.ok(tile.state === 'loaded');
+        tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'});
         t.end();
     });
 
@@ -395,7 +321,6 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: collisionBoxArray.serialize(),
-        collisionTile: (new CollisionTile(0, 0, 1, 1, collisionBoxArray)).serialize(),
         featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
         buckets: []
     }, options);

@@ -6,21 +6,14 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 import type Painter from './painter';
 import type Program from './program';
 import type TileCoord from '../source/tile_coord';
-
-type CrossFaded<T> = {
-    from: T,
-    to: T,
-    fromScale: number,
-    toScale: number,
-    t: number
-};
+import type {CrossFaded} from '../style/cross_faded';
 
 /**
  * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
  *
  * @returns true if a needed image is missing and rendering needs to be skipped.
  */
-exports.isPatternMissing = function(image: CrossFaded<string>, painter: Painter): boolean {
+exports.isPatternMissing = function(image: ?CrossFaded<string>, painter: Painter): boolean {
     if (!image) return false;
     const imagePosA = painter.imageManager.getPattern(image.from);
     const imagePosB = painter.imageManager.getPattern(image.to);

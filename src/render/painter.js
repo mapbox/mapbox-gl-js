@@ -2,7 +2,6 @@
 
 const browser = require('../util/browser');
 const mat4 = require('@mapbox/gl-matrix').mat4;
-const FrameHistory = require('./frame_history');
 const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -12,6 +11,7 @@ const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const {ProgramConfiguration} = require('../data/program_configuration');
+const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('../shaders');
 const Program = require('./program');
 const RenderTexture = require('./render_texture');
@@ -45,7 +45,8 @@ type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
     rotating: boolean,
-    zooming: boolean
+    zooming: boolean,
+    collisionFadeDuration: number
 }
 
 /**
@@ -58,11 +59,9 @@ class Painter {
     gl: WebGLRenderingContext;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
-    frameHistory: FrameHistory;
     numSublayers: number;
     depthEpsilon: number;
     lineWidthRange: [number, number];
-    basicFillProgramConfiguration: ProgramConfiguration;
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
@@ -94,13 +93,12 @@ class Painter {
     _showOverdrawInspector: boolean;
     cache: { [string]: Program };
     currentProgram: Program;
+    crossTileSymbolIndex: CrossTileSymbolIndex;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.gl = gl;
         this.transform = transform;
         this._tileTextures = {};
-
-        this.frameHistory = new FrameHistory();
 
         this.setup();
 
@@ -111,8 +109,9 @@ class Painter {
 
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
-        this.basicFillProgramConfiguration = ProgramConfiguration.createBasicFill();
         this.emptyProgramConfiguration = new ProgramConfiguration();
+
+        this.crossTileSymbolIndex = new CrossTileSymbolIndex();
     }
 
     /*
@@ -218,9 +217,40 @@ class Painter {
      */
     clearStencil() {
         const gl = this.gl;
-        gl.clearStencil(0x0);
+
+        // As a temporary workaround for https://github.com/mapbox/mapbox-gl-js/issues/5490,
+        // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
+        // effectively clearing the stencil buffer: restore this code for native
+        // performance and readability once an upstream patch lands.
+
+        // gl.clearStencil(0x0);
+        // gl.stencilMask(0xFF);
+        // gl.clear(gl.STENCIL_BUFFER_BIT);
+
+        gl.colorMask(false, false, false, false);
+        this.depthMask(false);
+        gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.STENCIL_TEST);
+
         gl.stencilMask(0xFF);
-        gl.clear(gl.STENCIL_BUFFER_BIT);
+        gl.stencilOp(gl.ZERO, gl.ZERO, gl.ZERO);
+
+        gl.stencilFunc(gl.ALWAYS, 0x0, 0xFF);
+
+        const matrix = mat4.create();
+        mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
+        mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
+
+        const program = this.useProgram('fill', ProgramConfiguration.forTileClippingMask());
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
+
+        this.viewportVAO.bind(gl, program, this.viewportBuffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        gl.stencilMask(0x00);
+        gl.colorMask(true, true, true, true);
+        this.depthMask(true);
+        gl.enable(gl.DEPTH_TEST);
     }
 
     clearDepth() {
@@ -243,13 +273,14 @@ class Painter {
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
+        const programConfiguration = ProgramConfiguration.forTileClippingMask();
 
         for (const coord of coords) {
             const id = this._tileClippingMaskIDs[coord.id] = idNext++;
 
             gl.stencilFunc(gl.ALWAYS, id, 0xFF);
 
-            const program = this.useProgram('fill', this.basicFillProgramConfiguration);
+            const program = this.useProgram('fill', programConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
             // Draw the clipping mask
@@ -276,9 +307,7 @@ class Painter {
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
 
-        this.frameHistory.record(Date.now(), this.transform.zoom, style.getTransition().duration);
-
-        for (const id in this.style.sourceCaches) {
+        for (const id in style.sourceCaches) {
             const sourceCache = this.style.sourceCaches[id];
             if (sourceCache.used) {
                 sourceCache.prepare(this.gl);
@@ -468,12 +497,7 @@ class Painter {
 
     /**
      * Transform a matrix to incorporate the *-translate and *-translate-anchor properties into it.
-     * @param {Float32Array} matrix
-     * @param {Tile} tile
-     * @param {Array<number>} translate
-     * @param {string} anchor
-     * @param {boolean} inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
-     *
+     * @param inViewportPixelUnitsUnits True when the units accepted by the matrix are in viewport pixels instead of tile units.
      * @returns {Float32Array} matrix
      */
     translatePosMatrix(matrix: Float32Array, tile: Tile, translate: [number, number], translateAnchor: 'map' | 'viewport', inViewportPixelUnitsUnits?: boolean) {

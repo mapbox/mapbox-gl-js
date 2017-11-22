@@ -7,7 +7,7 @@ const {
     NumberType,
 } = require('../types');
 
-const { Color, validateRGBA, unwrap } = require('../values');
+const { Color, validateRGBA } = require('../values');
 const RuntimeError = require('../runtime_error');
 
 import type { Expression } from '../expression';
@@ -28,12 +28,10 @@ const types = {
  * @private
  */
 class Coercion implements Expression {
-    key: string;
     type: Type;
     args: Array<Expression>;
 
-    constructor(key: string, type: Type, args: Array<Expression>) {
-        this.key = key;
+    constructor(type: Type, args: Array<Expression>) {
         this.type = type;
         this.args = args;
     }
@@ -54,7 +52,7 @@ class Coercion implements Expression {
             parsed.push(input);
         }
 
-        return new Coercion(context.key, type, parsed);
+        return new Coercion(type, parsed);
     }
 
     evaluate(ctx: EvaluationContext) {
@@ -88,7 +86,7 @@ class Coercion implements Expression {
                 if (isNaN(num)) continue;
                 return num;
             }
-            throw new RuntimeError(`Could not convert ${JSON.stringify(unwrap(value))} to number.`);
+            throw new RuntimeError(`Could not convert ${JSON.stringify(value)} to number.`);
         }
     }
 

@@ -172,7 +172,7 @@
     "line": 907
   },
   {
-    "message": "layers[49].paint.fill-opacity: \"zoom\" expression may only be used as input to a top-level \"curve\" expression.",
+    "message": "layers[49].paint.fill-opacity: \"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression.",
     "line": 916
   },
   {
@@ -184,7 +184,15 @@
     "line": 934
   },
   {
-    "message": "layers[52].paint.line-dasharray: interpolation type must be \"step\" for this property",
+    "message": "layers[52].paint.line-dasharray: Type array<number> is not interpolatable.",
     "line": 943
+  },
+  {
+    "message": "layers[53].paint.heatmap-color: zoom expressions not supported",
+    "line": 952
+  },
+  {
+    "message": "layers[54].paint.heatmap-color: zoom functions not supported",
+    "line": 960
   }
 ]

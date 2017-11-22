@@ -11,6 +11,7 @@ import type {Source} from './source';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type {Callback} from '../types/callback';
 
 /**
  * A source containing GeoJSON.
@@ -208,29 +209,21 @@ class GeoJSONSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             overscaling: tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1,
-            angle: this.map.transform.angle,
-            pitch: this.map.transform.pitch,
-            cameraToCenterDistance: this.map.transform.cameraToCenterDistance,
-            cameraToTileDistance: this.map.transform.cameraToTileDistance(tile),
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
         tile.workerID = this.dispatcher.send(message, params, (err, data) => {
             tile.unloadVectorData();
 
-            if (tile.aborted)
-                return;
+            if (tile.aborted) {
+                return callback(null);
+            }
 
             if (err) {
                 return callback(err);
             }
 
             tile.loadVectorData(data, this.map.painter);
-
-            if (tile.redoWhenDone) {
-                tile.redoWhenDone = false;
-                tile.redoPlacement(this);
-            }
 
             return callback(null);
         }, this.workerID);
@@ -242,11 +235,11 @@ class GeoJSONSource extends Evented implements Source {
 
     unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
+        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
 
     onRemove() {
-        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id }, () => {});
+        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id });
     }
 
     serialize() {
@@ -254,6 +247,10 @@ class GeoJSONSource extends Evented implements Source {
             type: this.type,
             data: this._data
         });
+    }
+
+    hasTransition() {
+        return false;
     }
 }
 

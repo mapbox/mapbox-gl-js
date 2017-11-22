@@ -8,23 +8,28 @@ const extend = require('../util/extend');
 const {isExpressionFilter} = require('../feature_filter');
 
 module.exports = function validateFilter(options) {
+    if (isExpressionFilter(unbundle.deep(options.value))) {
+        return validateExpression(extend({}, options, {
+            expressionContext: 'filter',
+            valueSpec: { value: 'boolean' }
+        }));
+    } else {
+        return validateNonExpressionFilter(options);
+    }
+};
+
+function validateNonExpressionFilter(options) {
     const value = options.value;
     const key = options.key;
-    const styleSpec = options.styleSpec;
-    let type;
-
-    let errors = [];
 
     if (getType(value) !== 'array') {
         return [new ValidationError(key, value, 'array expected, %s found', getType(value))];
     }
 
-    if (isExpressionFilter(unbundle.deep(value))) {
-        return validateExpression(extend({}, options, {
-            expressionContext: 'filter',
-            valueSpec: { value: 'boolean' }
-        }));
-    }
+    const styleSpec = options.styleSpec;
+    let type;
+
+    let errors = [];
 
     if (value.length < 1) {
         return [new ValidationError(key, value, 'filter array must have at least 1 element')];
@@ -81,7 +86,7 @@ module.exports = function validateFilter(options) {
     case 'all':
     case 'none':
         for (let i = 1; i < value.length; i++) {
-            errors = errors.concat(validateFilter({
+            errors = errors.concat(validateNonExpressionFilter({
                 key: `${key}[${i}]`,
                 value: value[i],
                 style: options.style,
@@ -103,4 +108,4 @@ module.exports = function validateFilter(options) {
     }
 
     return errors;
-};
+}

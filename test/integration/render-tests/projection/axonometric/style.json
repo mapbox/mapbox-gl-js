@@ -1,0 +1,154 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "axonometric": true
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0003,
+                    -0.0003
+                  ],
+                  [
+                    -0.0004,
+                    -0.0003
+                  ],
+                  [
+                    -0.0004,
+                    -0.0004
+                  ],
+                  [
+                    -0.0003,
+                    -0.0004
+                  ],
+                  [
+                    -0.0003,
+                    -0.0003
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0003,
+                    0.0003
+                  ],
+                  [
+                    0.0004,
+                    0.0003
+                  ],
+                  [
+                    0.0004,
+                    0.0004
+                  ],
+                  [
+                    0.0003,
+                    0.0004
+                  ],
+                  [
+                    0.0003,
+                    0.0003
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.0003,
+                    -0.0003
+                  ],
+                  [
+                    0.0004,
+                    -0.0003
+                  ],
+                  [
+                    0.0004,
+                    -0.0004
+                  ],
+                  [
+                    0.0003,
+                    -0.0004
+                  ],
+                  [
+                    0.0003,
+                    -0.0003
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0003,
+                    0.0003
+                  ],
+                  [
+                    -0.0004,
+                    0.0003
+                  ],
+                  [
+                    -0.0004,
+                    0.0004
+                  ],
+                  [
+                    -0.0003,
+                    0.0004
+                  ],
+                  [
+                    -0.0003,
+                    0.0003
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 100,
+        "fill-extrusion-color": "red"
+      }
+    }
+  ]
+}

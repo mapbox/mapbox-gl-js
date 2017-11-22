@@ -1,4 +1,4 @@
-[<img width="400" alt="Mapbox" src="docs/assets/logo.png">](https://www.mapbox.com/)
+[<img width="400" alt="Mapbox" src="docs/pages/assets/logo.png">](https://www.mapbox.com/)
 
 **Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
 [Mapbox Style Specification](https://github.com/mapbox/mapbox-gl-js/style-spec/), applies them to vector tiles that
@@ -7,8 +7,8 @@ WebGL.
 
 Mapbox GL JS is part of the [cross-platform Mapbox GL ecosystem](https://www.mapbox.com/maps/), which also includes
 compatible native SDKs for applications on [Android](https://www.mapbox.com/android-sdk/),
-[iOS](https://www.mapbox.com/ios-sdk/), [macOS](http://mapbox.github.io/mapbox-gl-native/macos), and
-[Qt](https://github.com/mapbox/mapbox-gl-native/tree/master/platform/qt). Mapbox provides building blocks to add location features like maps, search, and navigation into any experience you
+[iOS](https://www.mapbox.com/ios-sdk/), [macOS](http://mapbox.github.io/mapbox-gl-native/macos),
+[Qt](https://github.com/mapbox/mapbox-gl-native/tree/master/platform/qt), and [React Native](https://github.com/mapbox/react-native-mapbox-gl/). Mapbox provides building blocks to add location features like maps, search, and navigation into any experience you
 create. To get started with GL JS or any of our other building blocks,
 [sign up for a Mapbox account](https://www.mapbox.com/signup/).
 
@@ -24,7 +24,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Roadmap](https://www.mapbox.com/mapbox-gl-js/roadmap/)
 - [Contributor documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
 
-[<img width="981" alt="Mapbox GL gallery" src="docs/assets/gallery.png">](https://www.mapbox.com/gallery/)
+[<img width="981" alt="Mapbox GL gallery" src="docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
 
 ## License
 

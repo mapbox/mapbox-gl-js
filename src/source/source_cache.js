@@ -16,6 +16,8 @@ import type Style from '../style/style';
 import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
+import type CollisionIndex from '../symbol/collision_index';
+import type {Callback} from '../types/callback';
 
 /**
  * `SourceCache` is responsible for
@@ -44,6 +46,7 @@ class SourceCache extends Evented {
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
+    _needsFullPlacement: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
     _isIdRenderable: (id: number) => boolean;
@@ -86,6 +89,8 @@ class SourceCache extends Evented {
         this._maxTileCacheSize = null;
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
+
+        this._coveredTiles = {};
     }
 
     onAdd(map: Map) {
@@ -125,6 +130,10 @@ class SourceCache extends Evented {
         this._paused = true;
     }
 
+    getNeedsFullPlacement() {
+        return this._needsFullPlacement;
+    }
+
     resume() {
         if (!this._paused) return;
         const shouldReload = this._shouldReloadOnResume;
@@ -140,12 +149,12 @@ class SourceCache extends Evented {
 
     _unloadTile(tile: Tile) {
         if (this._source.unloadTile)
-            return this._source.unloadTile(tile);
+            return this._source.unloadTile(tile, () => {});
     }
 
     _abortTile(tile: Tile) {
         if (this._source.abortTile)
-            return this._source.abortTile(tile);
+            return this._source.abortTile(tile, () => {});
     }
 
     serialize() {
@@ -166,6 +175,15 @@ class SourceCache extends Evented {
      * Return all tile ids ordered with z-order, and cast to numbers
      */
     getIds(): Array<number> {
+
+        const compareKeyZoom = (a_, b_) => {
+            const a = TileCoord.fromID(a_);
+            const b = TileCoord.fromID(b_);
+            const rotatedA = (new Point(a.x, a.y)).rotate(this.transform.angle);
+            const rotatedB = (new Point(b.x, b.y)).rotate(this.transform.angle);
+            return a.z - b.z || rotatedB.y - rotatedA.y || rotatedB.x - rotatedA.x;
+        };
+
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     }
 
@@ -232,6 +250,10 @@ class SourceCache extends Evented {
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
+
+        this._updatePlacement();
+        if (this.map)
+            tile.added(this.map.painter.crossTileSymbolIndex);
     }
 
     /**
@@ -310,7 +332,7 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(id)) {
                 retain[id] = true;
-                return this._cache.getWithoutRemoving(id);
+                return this._cache.get(id);
             }
         }
     }
@@ -324,8 +346,8 @@ class SourceCache extends Evented {
      * the map is more important.
      */
     updateCacheSize(transform: Transform) {
-        const widthInTiles = Math.ceil(transform.width / transform.tileSize) + 1;
-        const heightInTiles = Math.ceil(transform.height / transform.tileSize) + 1;
+        const widthInTiles = Math.ceil(transform.width / this._source.tileSize) + 1;
+        const heightInTiles = Math.ceil(transform.height / this._source.tileSize) + 1;
         const approxTilesInView = widthInTiles * heightInTiles;
         const commonZoomRange = 5;
 
@@ -344,7 +366,6 @@ class SourceCache extends Evented {
         if (!this._sourceLoaded || this._paused) { return; }
 
         this.updateCacheSize(transform);
-
         // Covered is a list of retained tiles who's areas are fully covered by other,
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
@@ -514,9 +535,12 @@ class SourceCache extends Evented {
         if (tile)
             return tile;
 
-        tile = this._cache.get((tileCoord.id: any));
+
+        tile = this._cache.getAndRemove((tileCoord.id: any));
         if (tile) {
-            tile.redoPlacement(this._source);
+            this._updatePlacement();
+            if (this.map)
+                tile.added(this.map.painter.crossTileSymbolIndex);
             if (this._cacheTimers[tileCoord.id]) {
                 clearTimeout(this._cacheTimers[tileCoord.id]);
                 delete this._cacheTimers[tileCoord.id];
@@ -581,10 +605,13 @@ class SourceCache extends Evented {
         if (tile.uses > 0)
             return;
 
-        tile.stopPlacementThrottler();
+        this._updatePlacement();
+        if (this.map)
+            tile.removed(this.map.painter.crossTileSymbolIndex);
 
         if (tile.hasData()) {
-            const wrappedId = tile.coord.wrapped().id;
+            tile.coord = tile.coord.wrapped();
+            const wrappedId = tile.coord.id;
             this._cache.add((wrappedId: any), tile);
             this._setCacheInvalidationTimer(wrappedId, tile);
         } else {
@@ -592,6 +619,10 @@ class SourceCache extends Evented {
             this._abortTile(tile);
             this._unloadTile(tile);
         }
+    }
+
+    _updatePlacement() {
+        this._needsFullPlacement = true;
     }
 
     /**
@@ -660,11 +691,12 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    redoPlacement() {
+    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any) {
+        this._needsFullPlacement = false;
         const ids = this.getIds();
         for (let i = 0; i < ids.length; i++) {
             const tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this._source);
+            tile.commitPlacement(collisionIndex, collisionFadeTimes, this.transform.angle);
         }
     }
 
@@ -674,6 +706,23 @@ class SourceCache extends Evented {
             coord.posMatrix = this.transform.calculatePosMatrix(coord, this._source.maxzoom);
         }
         return coords;
+    }
+
+    hasTransition() {
+        if (this._source.hasTransition()) {
+            return true;
+        }
+
+        if (isRasterType(this._source.type)) {
+            for (const id in this._tiles) {
+                const tile = this._tiles[id];
+                if (tile.fadeEndTime !== undefined && tile.fadeEndTime >= Date.now()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
 
@@ -690,10 +739,6 @@ function coordinateToTilePoint(tileCoord: TileCoord, sourceMaxZoom: number, coor
         (zoomedCoord.column - (tileCoord.x + tileCoord.w * Math.pow(2, tileCoord.z))) * EXTENT,
         (zoomedCoord.row - tileCoord.y) * EXTENT
     );
-}
-
-function compareKeyZoom(a, b) {
-    return (a % 32) - (b % 32);
 }
 
 function isRasterType(type) {

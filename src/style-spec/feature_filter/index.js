@@ -50,7 +50,8 @@ const filterSpec = {
     'type': 'boolean',
     'default': false,
     'function': true,
-    'property-function': true
+    'property-function': true,
+    'zoom-function': true
 };
 
 /**
@@ -71,11 +72,11 @@ function createFilter(filter: any): FeatureFilter {
         return (new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`): any);
     }
 
-    const compiled = createExpression(filter, filterSpec, 'filter');
-    if (compiled.result === 'success') {
-        return compiled.evaluate;
+    const compiled = createExpression(filter, filterSpec);
+    if (compiled.result === 'error') {
+        throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        throw new Error(compiled.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+        return compiled.value.evaluate;
     }
 }
 

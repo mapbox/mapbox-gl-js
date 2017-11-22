@@ -12,7 +12,14 @@ module.exports = drawCircles;
 
 function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+
+    const opacity = layer.paint.get('circle-opacity');
+    const strokeWidth = layer.paint.get('circle-stroke-width');
+    const strokeOpacity = layer.paint.get('circle-stroke-opacity');
+
+    if (opacity.constantOr(1) === 0 && (strokeWidth.constantOr(1) === 0 || strokeOpacity.constantOr(1) === 0)) {
+        return;
+    }
 
     const gl = painter.gl;
 
@@ -32,11 +39,11 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('circle', programConfiguration);
-        programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
+        programConfiguration.setUniforms(gl, program, layer.paint, {zoom: painter.transform.zoom});
 
         gl.uniform1f(program.uniforms.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
-        gl.uniform1i(program.uniforms.u_scale_with_map, layer.paint['circle-pitch-scale'] === 'map' ? 1 : 0);
-        if (layer.paint['circle-pitch-alignment'] === 'map') {
+        gl.uniform1i(program.uniforms.u_scale_with_map, layer.paint.get('circle-pitch-scale') === 'map' ? 1 : 0);
+        if (layer.paint.get('circle-pitch-alignment') === 'map') {
             gl.uniform1i(program.uniforms.u_pitch_with_map, 1);
             const pixelRatio = pixelsToTileUnits(tile, 1, painter.transform.zoom);
             gl.uniform2f(program.uniforms.u_extrude_scale, pixelRatio, pixelRatio);
@@ -48,8 +55,8 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
             coord.posMatrix,
             tile,
-            layer.paint['circle-translate'],
-            layer.paint['circle-translate-anchor']
+            layer.paint.get('circle-translate'),
+            layer.paint.get('circle-translate-anchor')
         ));
 
         program.draw(

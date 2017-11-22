@@ -2,7 +2,6 @@
 
 const test = require('mapbox-gl-js-test').test;
 const SourceCache = require('../../../src/source/source_cache');
-const AnimationLoop = require('../../../src/style/animation_loop');
 const Source = require('../../../src/source/source');
 const Tile = require('../../../src/source/tile');
 const TileCoord = require('../../../src/source/tile_coord');
@@ -423,10 +422,10 @@ test('SourceCache#update', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(1, 0, 0).id,
-                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id,
                     new TileCoord(1, 0, 1).id,
-                    new TileCoord(1, 1, 1).id
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 0).id
                 ]);
                 t.end();
             }
@@ -459,10 +458,10 @@ test('SourceCache#update', (t) => {
 
                 t.deepEqual(sourceCache.getIds(), [
                     new TileCoord(0, 0, 0).id,
-                    new TileCoord(1, 0, 0).id,
-                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id,
                     new TileCoord(1, 0, 1).id,
-                    new TileCoord(1, 1, 1).id
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 0).id
                 ]);
                 t.end();
             }
@@ -493,10 +492,10 @@ test('SourceCache#update', (t) => {
 
                 t.deepEqual(sourceCache.getIds(), [
                     new TileCoord(0, 0, 0, 1).id,
-                    new TileCoord(1, 0, 0, 1).id,
-                    new TileCoord(1, 1, 0, 1).id,
+                    new TileCoord(1, 1, 1, 1).id,
                     new TileCoord(1, 0, 1, 1).id,
-                    new TileCoord(1, 1, 1, 1).id
+                    new TileCoord(1, 1, 0, 1).id,
+                    new TileCoord(1, 0, 0, 1).id
                 ]);
                 t.end();
             }
@@ -508,13 +507,12 @@ test('SourceCache#update', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 2;
-        const animationLoop = new AnimationLoop();
 
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.registerFadeDuration(animationLoop, 100);
+                tile.registerFadeDuration(100);
                 callback();
             }
         });
@@ -525,10 +523,10 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(2, 1, 1).id,
-                    new TileCoord(2, 2, 1).id,
+                    new TileCoord(2, 2, 2).id,
                     new TileCoord(2, 1, 2).id,
-                    new TileCoord(2, 2, 2).id
+                    new TileCoord(2, 2, 1).id,
+                    new TileCoord(2, 1, 1).id
                 ]);
 
                 transform.zoom = 0;
@@ -546,13 +544,11 @@ test('SourceCache#update', (t) => {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        const animationLoop = new AnimationLoop();
-
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.registerFadeDuration(animationLoop, 100);
+                tile.registerFadeDuration(100);
                 callback();
             }
         });
@@ -664,20 +660,20 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getRenderableIds(), [
-                    new TileCoord(16, 8191, 8191, 0).id,
-                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8192, 8192, 0).id,
                     new TileCoord(16, 8191, 8192, 0).id,
-                    new TileCoord(16, 8192, 8192, 0).id
+                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8191, 8191, 0).id
                 ]);
 
                 transform.zoom = 15;
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getRenderableIds(), [
-                    new TileCoord(16, 8191, 8191, 0).id,
-                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8192, 8192, 0).id,
                     new TileCoord(16, 8191, 8192, 0).id,
-                    new TileCoord(16, 8192, 8192, 0).id
+                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8191, 8191, 0).id
                 ]);
                 t.end();
             }
@@ -1121,10 +1117,10 @@ test('SourceCache#tilesIn', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(1, 0, 0).id,
-                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id,
                     new TileCoord(1, 0, 1).id,
-                    new TileCoord(1, 1, 1).id
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 0).id
                 ]);
 
                 const tiles = sourceCache.tilesIn([
@@ -1168,10 +1164,10 @@ test('SourceCache#tilesIn', (t) => {
                 sourceCache.update(transform);
 
                 t.deepEqual(sourceCache.getIds(), [
-                    new TileCoord(2, 0, 0).id,
-                    new TileCoord(2, 1, 0).id,
+                    new TileCoord(2, 1, 1).id,
                     new TileCoord(2, 0, 1).id,
-                    new TileCoord(2, 1, 1).id
+                    new TileCoord(2, 1, 0).id,
+                    new TileCoord(2, 0, 0).id
                 ]);
 
                 const tiles = sourceCache.tilesIn([
@@ -1272,6 +1268,7 @@ test('SourceCache#getIds (ascending order by zoom level)', (t) => {
     ];
 
     const sourceCache = createSourceCache({});
+    sourceCache.transform = new Transform();
     for (let i = 0; i < ids.length; i++) {
         sourceCache._tiles[ids[i].id] = {};
     }
@@ -1368,6 +1365,40 @@ test('SourceCache reloads expiring tiles', (t) => {
         };
 
         sourceCache._addTile(coord);
+    });
+
+    t.end();
+});
+
+test('SourceCache sets max cache size correctly', (t) => {
+    t.test('sets cache size based on 512 tiles', (t) => {
+        const sourceCache = createSourceCache({
+            tileSize: 256
+        });
+
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
+
+        // Expect max size to be ((512 / tileSize + 1) ^ 2) * 5 => 3 * 3 * 5
+        t.equal(sourceCache._cache.max, 45);
+        t.end();
+    });
+
+    t.test('sets cache size based on 256 tiles', (t) => {
+        const sourceCache = createSourceCache({
+            tileSize: 512
+        });
+
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
+
+        // Expect max size to be ((512 / tileSize + 1) ^ 2) * 5 => 2 * 2 * 5
+        t.equal(sourceCache._cache.max, 20);
+        t.end();
     });
 
     t.end();

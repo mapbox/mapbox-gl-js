@@ -87,11 +87,11 @@ function flowLayer(key) {
     delete layer['paint.*'];
 
     layer.paint.type = () => {
-        return flowObject(spec[`layout_${key}`], '    ', '|');
+        return flowObject(spec[`paint_${key}`], '    ', '|');
     };
 
     layer.layout.type = () => {
-        return flowObject(spec[`paint_${key}`], '    ', '|');
+        return flowObject(spec[`layout_${key}`], '    ', '|');
     };
 
     if (key === 'background') {
@@ -144,21 +144,19 @@ declare type CompositeFunctionSpecification<T> =
     | {| type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T |}
     | {| type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T |};
 
-declare type ExpressionFunctionSpecification = {|
-    expression: mixed
-|}
+declare type ExpressionSpecification = Array<mixed>;
 
 declare type PropertyValueSpecification<T> =
     | T
     | CameraFunctionSpecification<T>
-    | ExpressionFunctionSpecification;
+    | ExpressionSpecification;
 
 declare type DataDrivenPropertyValueSpecification<T> =
     | T
     | CameraFunctionSpecification<T>
     | SourceFunctionSpecification<T>
     | CompositeFunctionSpecification<T>
-    | ExpressionFunctionSpecification;
+    | ExpressionSpecification;
 
 ${flowObjectDeclaration('StyleSpecification', spec.$root)}
 

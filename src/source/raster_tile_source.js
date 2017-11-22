@@ -13,6 +13,7 @@ import type TileCoord from './tile_coord';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
+import type {Callback} from '../types/callback';
 
 class RasterTileSource extends Evented implements Source {
     type: 'raster';
@@ -31,9 +32,9 @@ class RasterTileSource extends Evented implements Source {
     tiles: Array<string>;
 
     _loaded: boolean;
-    _options: TileSourceSpecification;
+    _options: RasterSourceSpecification;
 
-    constructor(id: string, options: TileSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: RasterSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -120,15 +121,21 @@ class RasterTileSource extends Evented implements Source {
         });
     }
 
-    abortTile(tile: Tile) {
+    abortTile(tile: Tile, callback: Callback<void>) {
         if (tile.request) {
             tile.request.abort();
             delete tile.request;
         }
+        callback();
     }
 
-    unloadTile(tile: Tile) {
+    unloadTile(tile: Tile, callback: Callback<void>) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
+        callback();
+    }
+
+    hasTransition() {
+        return false;
     }
 }
 

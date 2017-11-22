@@ -1,9 +1,10 @@
 
 const colorSpaces = require('../util/color_spaces');
-const parseColor = require('../util/parse_color');
+const Color = require('../util/color');
 const extend = require('../util/extend');
 const getType = require('../util/get_type');
 const interpolate = require('../util/interpolate');
+const Interpolate = require('../expression/definitions/interpolate');
 
 function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -13,7 +14,7 @@ function identityFunction(x) {
     return x;
 }
 
-function createFunction(parameters, propertySpec, name) {
+function createFunction(parameters, propertySpec) {
     const isColor = propertySpec.type === 'color';
     const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
@@ -25,14 +26,14 @@ function createFunction(parameters, propertySpec, name) {
 
         if (parameters.stops) {
             parameters.stops = parameters.stops.map((stop) => {
-                return [stop[0], parseColor(stop[1])];
+                return [stop[0], Color.parse(stop[1])];
             });
         }
 
         if (parameters.default) {
-            parameters.default = parseColor(parameters.default);
+            parameters.default = Color.parse(parameters.default);
         } else {
-            parameters.default = parseColor(propertySpec.default);
+            parameters.default = Color.parse(propertySpec.default);
         }
     }
 
@@ -111,8 +112,8 @@ function createFunction(parameters, propertySpec, name) {
         }
 
         return {
-            isFeatureConstant: false,
-            interpolation: {name: 'linear'},
+            kind: 'composite',
+            interpolationFactor: Interpolate.interpolationFactor.bind(undefined, {name: 'linear'}),
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
                 return outputFunction(evaluateExponentialFunction({
@@ -122,25 +123,17 @@ function createFunction(parameters, propertySpec, name) {
             }
         };
     } else if (zoomDependent) {
-        let evaluate;
-        if (name === 'heatmap-color') {
-            evaluate = ({heatmapDensity}) => outputFunction(innerFun(parameters, propertySpec, heatmapDensity, hashedStops, categoricalKeyType));
-        } else {
-            evaluate = ({zoom}) => outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType));
-        }
         return {
-            isFeatureConstant: true,
-            isZoomConstant: false,
-            interpolation: type === 'exponential' ?
-                {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1} :
-                {name: 'step'},
+            kind: 'camera',
+            interpolationFactor: type === 'exponential' ?
+                Interpolate.interpolationFactor.bind(undefined, {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1}) :
+                () => 0,
             zoomStops: parameters.stops.map(s => s[0]),
-            evaluate
+            evaluate: ({zoom}) => outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType))
         };
     } else {
         return {
-            isFeatureConstant: false,
-            isZoomConstant: true,
+            kind: 'source',
             evaluate(_, feature) {
                 const value = feature && feature.properties ? feature.properties[parameters.property] : undefined;
                 if (value === undefined) {
@@ -215,7 +208,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
 function evaluateIdentityFunction(parameters, propertySpec, input) {
     if (propertySpec.type === 'color') {
-        input = parseColor(input);
+        input = Color.parse(input);
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }

@@ -23,7 +23,7 @@ module.exports = function validateSource(options) {
         errors = errors.concat(validateObject({
             key: key,
             value: value,
-            valueSpec: styleSpec.source_tile,
+            valueSpec: styleSpec[`source_${type}`],
             style: options.style,
             styleSpec: styleSpec
         }));

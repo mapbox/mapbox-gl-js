@@ -3,12 +3,11 @@
 const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
-const {HTMLImageElement} = require('../util/window');
+const {HTMLImageElement, HTMLElement} = require('../util/window');
 const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
 const Style = require('../style/style');
-const AnimationLoop = require('../style/animation_loop');
 const Painter = require('../render/painter');
 
 const Transform = require('../geo/transform');
@@ -124,7 +123,8 @@ const defaultOptions = {
 
     maxTileCacheSize: null,
 
-    transformRequest: null
+    transformRequest: null,
+    collisionFadeDuration: 300
 };
 
 /**
@@ -139,8 +139,8 @@ const defaultOptions = {
  * @extends Evented
  * @param {Object} options
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
- * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-22).
- * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-22).
+ * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+ * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -215,15 +215,12 @@ const defaultOptions = {
 class Map extends Camera {
     style: Style;
     painter: Painter;
-    animationLoop: AnimationLoop;
 
-    _classes: Array<string>;
     _container: HTMLElement;
     _missingCSSContainer: HTMLElement;
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
     _controlPositions: {[string]: HTMLElement};
-    _classOptions: ?{transition?: boolean};
     _interactive: ?boolean;
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
@@ -236,6 +233,7 @@ class Map extends Camera {
     _frameId: any;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
+    _placementDirty: ?boolean;
     _loaded: boolean;
     _trackResize: boolean;
     _preserveDrawingBuffer: boolean;
@@ -243,6 +241,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
+    _collisionFadeDuration: number;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -269,6 +268,7 @@ class Map extends Camera {
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
+        this._collisionFadeDuration = options.collisionFadeDuration;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -280,11 +280,11 @@ class Map extends Camera {
             } else {
                 this._container = container;
             }
-        } else {
+        } else if (options.container instanceof HTMLElement) {
             this._container = options.container;
+        } else {
+            throw new Error(`Invalid type: 'container' must be a String or HTMLElement.`);
         }
-
-        this.animationLoop = new AnimationLoop();
 
         if (options.maxBounds) {
             this.setMaxBounds(options.maxBounds);
@@ -306,8 +306,7 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('moveend', () => {
-            this.animationLoop.set(300); // text fading
+        this.on('move', () => {
             this._rerender();
         });
 
@@ -478,7 +477,7 @@ class Map extends Camera {
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
+     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-24).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -510,7 +509,7 @@ class Map extends Camera {
      * the map will zoom to the new maximum.
      *
      * @param {number | null | undefined} maxZoom The maximum zoom level to set.
-     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
+     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 22).
      * @returns {Map} `this`
      */
     setMaxZoom(maxZoom?: ?number) {
@@ -698,12 +697,12 @@ class Map extends Camera {
      * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
      * either a single point or southwest and northeast points describing a bounding box.
      * Omitting this parameter (i.e. calling {@link Map#queryRenderedFeatures} with zero arguments,
-     * or with only a `parameters` argument) is equivalent to passing a bounding box encompassing the entire
+     * or with only a `options` argument) is equivalent to passing a bounding box encompassing the entire
      * map viewport.
-     * @param {Object} [parameters]
-     * @param {Array<string>} [parameters.layers] An array of style layer IDs for the query to inspect.
+     * @param {Object} [options]
+     * @param {Array<string>} [options.layers] An array of style layer IDs for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
-     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
+     * @param {Array} [options.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
@@ -764,17 +763,27 @@ class Map extends Camera {
      * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
-    queryRenderedFeatures(...args: [PointLike | [PointLike, PointLike], Object] | [PointLike | [PointLike, PointLike]] | [Object]) {
-        let params = {};
-        let geometry;
-
-        if (args.length === 2) {
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Object) {
+        // The first parameter can be omitted entirely, making this effectively an overloaded method
+        // with two signatures:
+        //
+        //     queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: Object)
+        //     queryRenderedFeatures(options?: Object)
+        //
+        // There no way to express that in a way that's compatible with both flow and documentation.js.
+        // Related: https://github.com/facebook/flow/issues/1556
+        if (arguments.length === 2) {
             geometry = arguments[0];
-            params = arguments[1];
-        } else if (args.length === 1 && isPointLike(args[0])) {
-            geometry = args[0];
-        } else if (args.length === 1) {
-            params = args[0];
+            options = arguments[1];
+        } else if (arguments.length === 1 && isPointLike(arguments[0])) {
+            geometry = arguments[0];
+            options = {};
+        } else if (arguments.length === 1) {
+            geometry = undefined;
+            options = arguments[0];
+        } else {
+            geometry = undefined;
+            options = {};
         }
 
         if (!this.style) {
@@ -783,7 +792,7 @@ class Map extends Camera {
 
         return this.style.queryRenderedFeatures(
             this._makeQueryGeometry(geometry),
-            params,
+            options,
             this.transform.zoom,
             this.transform.angle
         );
@@ -893,9 +902,6 @@ class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.off('rotate', this.style._redoPlacement);
-            this.off('pitch', this.style._redoPlacement);
-            this.off('move', this.style._redoPlacement);
         }
 
         if (!style) {
@@ -912,10 +918,6 @@ class Map extends Camera {
         } else {
             this.style.loadJSON(style);
         }
-
-        this.on('rotate', this.style._redoPlacement);
-        this.on('pitch', this.style._redoPlacement);
-        this.on('move', this.style._redoPlacement);
 
         return this;
     }
@@ -947,7 +949,6 @@ class Map extends Camera {
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
      * @param {Object} source The source object, conforming to the
      * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
-     * @param {string} source.type The source type, which must be either one of the core Mapbox GL source types defined in the style specification or a custom type that has been added to the map with {@link Map#addSourceType}.
      * @fires source.add
      * @returns {Map} `this`
      * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
@@ -1158,7 +1159,7 @@ class Map extends Camera {
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
-    setFilter(layer: string, filter: FilterSpecification) {
+    setFilter(layer: string, filter: ?FilterSpecification) {
         this.style.setFilter(layer, filter);
         this._update(true);
         return this;
@@ -1168,8 +1169,8 @@ class Map extends Camera {
      * Sets the zoom extent for the specified style layer.
      *
      * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom to set (0-20).
-     * @param {number} maxzoom The maximum zoom to set (0-20).
+     * @param {number} minzoom The minimum zoom to set (0-24).
+     * @param {number} maxzoom The maximum zoom to set (0-24).
      * @returns {Map} `this`
      * @example
      * map.setLayerZoomRange('my-layer', 2, 5);
@@ -1403,7 +1404,7 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the map is fully loaded.
      */
     loaded() {
-        if (this._styleDirty || this._sourcesDirty)
+        if (this._styleDirty || this._sourcesDirty || this._placementDirty)
             return false;
         if (!this.style || !this.style.loaded())
             return false;
@@ -1458,12 +1459,15 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
+        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._collisionFadeDuration);
+
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.rotating,
-            zooming: this.zooming
+            zooming: this.zooming,
+            collisionFadeDuration: this._collisionFadeDuration
         });
 
         this.fire('render');
@@ -1475,8 +1479,7 @@ class Map extends Camera {
 
         this._frameId = null;
 
-        // Flag an ongoing transition
-        if (!this.animationLoop.stopped()) {
+        if (this.style && this.style.hasTransitions()) {
             this._styleDirty = true;
         }
 
@@ -1485,7 +1488,7 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty) {
+        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this._rerender();
         }
 
@@ -1566,7 +1569,14 @@ class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this.style._redoPlacement();
+        if (value) {
+            // When we turn collision boxes on we have to generate them for existing tiles
+            // When we turn them off, there's no cost to leaving existing boxes in place
+            this.style._generateCollisionBoxes();
+        } else {
+            // Otherwise, call an update to remove collision boxes
+            this._update();
+        }
     }
 
     /*

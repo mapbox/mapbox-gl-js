@@ -8,12 +8,10 @@ import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 
 class Literal implements Expression {
-    key: string;
     type: Type;
     value: Value;
 
-    constructor(key: *, type: Type, value: Value) {
-        this.key = key;
+    constructor(type: Type, value: Value) {
         this.type = type;
         this.value = value;
     }
@@ -40,7 +38,7 @@ class Literal implements Expression {
             type = expected;
         }
 
-        return new Literal(context.key, type, value);
+        return new Literal(type, value);
     }
 
     evaluate() {

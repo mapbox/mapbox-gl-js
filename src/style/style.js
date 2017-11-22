@@ -13,7 +13,6 @@ const ajax = require('../util/ajax');
 const mapbox = require('../util/mapbox');
 const browser = require('../util/browser');
 const Dispatcher = require('../util/dispatcher');
-const AnimationLoop = require('./animation_loop');
 const validateStyle = require('./validate_style');
 const getSourceType = require('../source/source').getType;
 const setSourceType = require('../source/source').setType;
@@ -25,12 +24,15 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
+const Placement = require('./placement');
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
 import type {Source} from '../source/source';
 import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
+import type CollisionIndex from '../symbol/collision_index';
+import type {Callback} from '../types/callback';
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -72,7 +74,6 @@ export type ZoomHistory = {
 class Style extends Evented {
     map: Map;
     stylesheet: StyleSpecification;
-    animationLoop: AnimationLoop;
     dispatcher: Dispatcher;
     imageManager: ImageManager;
     glyphManager: GlyphManager;
@@ -91,14 +92,16 @@ class Style extends Evented {
     _removedLayers: {[string]: StyleLayer};
     _updatedPaintProps: {[layer: string]: {[class: string]: true}};
     _updatedAllPaintProps: boolean;
-    _updatedSymbolOrder: boolean;
+    _layerOrderChanged: boolean;
+
+    collisionIndex: CollisionIndex;
+    placement: Placement;
     z: number;
 
     constructor(map: Map, options: StyleOptions = {}) {
         super();
 
         this.map = map;
-        this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.imageManager = new ImageManager();
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
@@ -109,8 +112,6 @@ class Style extends Evented {
         this.sourceCaches = {};
         this.zoomHistory = {};
         this._loaded = false;
-
-        util.bindAll(['_redoPlacement'], this);
 
         this._resetUpdates();
 
@@ -277,24 +278,19 @@ class Style extends Evented {
         if (!this._loaded) return;
 
         options = options || {transition: true};
-        const transition = this.stylesheet.transition || {};
+
+        const transition = util.extend({
+            duration: 300,
+            delay: 0
+        }, this.stylesheet.transition);
 
         const layers = this._updatedAllPaintProps ? this._layers : this._updatedPaintProps;
 
         for (const id in layers) {
-            const layer = this._layers[id];
-            const props = this._updatedPaintProps[id];
-
-            if (this._updatedAllPaintProps || props.all) {
-                layer.updatePaintTransitions(options, transition, this.animationLoop, this.zoomHistory);
-            } else {
-                for (const paintName in props) {
-                    this._layers[id].updatePaintTransition(paintName, options, transition, this.animationLoop, this.zoomHistory);
-                }
-            }
+            this._layers[id].updatePaintTransitions(options, transition);
         }
 
-        this.light.updateLightTransitions(options, transition, this.animationLoop);
+        this.light.updateTransitions(options, transition);
     }
 
     _recalculate(z: number) {
@@ -303,25 +299,44 @@ class Style extends Evented {
         for (const sourceId in this.sourceCaches)
             this.sourceCaches[sourceId].used = false;
 
-        this._updateZoomHistory(z);
+        const parameters = {
+            zoom: z,
+            now: Date.now(),
+            defaultFadeDuration: 300,
+            zoomHistory: this._updateZoomHistory(z)
+        };
 
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(z);
+            layer.recalculate(parameters);
             if (!layer.isHidden(z) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
         }
 
-        this.light.recalculate(z);
+        this.light.recalculate(parameters);
+        this.z = z;
+    }
 
-        const maxZoomTransitionDuration = 300;
-        if (Math.floor(this.z) !== Math.floor(z)) {
-            this.animationLoop.set(maxZoomTransitionDuration);
+    hasTransitions() {
+        if (this.light && this.light.hasTransition()) {
+            return true;
         }
 
-        this.z = z;
+        for (const id in this.sourceCaches) {
+            if (this.sourceCaches[id].hasTransition()) {
+                return true;
+            }
+        }
+
+        for (const id in this._layers) {
+            if (this._layers[id].hasTransition()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     _updateZoomHistory(z: number) {
@@ -347,6 +362,7 @@ class Style extends Evented {
         }
 
         zh.lastZoom = z;
+        return zh;
     }
 
     _checkLoaded() {
@@ -364,7 +380,7 @@ class Style extends Evented {
         const updatedIds = Object.keys(this._updatedLayers);
         const removedIds = Object.keys(this._removedLayers);
 
-        if (updatedIds.length || removedIds.length || this._updatedSymbolOrder) {
+        if (updatedIds.length || removedIds.length) {
             this._updateWorkerLayers(updatedIds, removedIds);
         }
         for (const id in this._updatedSources) {
@@ -384,12 +400,9 @@ class Style extends Evented {
     }
 
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
-        const symbolOrder = this._updatedSymbolOrder ? this._order.filter((id) => this._layers[id].type === 'symbol') : null;
-
         this.dispatcher.broadcast('updateLayers', {
             layers: this._serializeLayers(updatedIds),
-            removedIds: removedIds,
-            symbolOrder: symbolOrder
+            removedIds: removedIds
         });
     }
 
@@ -398,7 +411,6 @@ class Style extends Evented {
 
         this._updatedLayers = {};
         this._removedLayers = {};
-        this._updatedSymbolOrder = false;
 
         this._updatedSources = {};
 
@@ -543,7 +555,6 @@ class Style extends Evented {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
      */
     addLayer(layerObject: LayerSpecification, before?: string, options?: {validate?: boolean}) {
@@ -574,6 +585,7 @@ class Style extends Evented {
         }
 
         this._order.splice(index, 0, id);
+        this._layerOrderChanged = true;
 
         this._layers[id] = layer;
 
@@ -595,18 +607,12 @@ class Style extends Evented {
             }
         }
         this._updateLayer(layer);
-
-        if (layer.type === 'symbol') {
-            this._updatedSymbolOrder = true;
-        }
-
         this.updatePaintProperties(id);
     }
 
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
      */
     moveLayer(id: string, before?: string) {
@@ -630,13 +636,7 @@ class Style extends Evented {
         const newIndex = before ? this._order.indexOf(before) : this._order.length;
         this._order.splice(newIndex, 0, id);
 
-        if (layer.type === 'symbol') {
-            this._updatedSymbolOrder = true;
-            if (layer.source && !this._updatedSources[layer.source]) {
-                this._updatedSources[layer.source] = 'reload';
-                this.sourceCaches[layer.source].pause();
-            }
-        }
+        this._layerOrderChanged = true;
     }
 
     /**
@@ -666,10 +666,7 @@ class Style extends Evented {
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
 
-        if (layer.type === 'symbol') {
-            this._updatedSymbolOrder = true;
-        }
-
+        this._layerOrderChanged = true;
         this._changed = true;
         this._removedLayers[id] = layer;
         delete this._layers[id];
@@ -712,7 +709,7 @@ class Style extends Evented {
         this._updateLayer(layer);
     }
 
-    setFilter(layerId: string, filter: FilterSpecification) {
+    setFilter(layerId: string, filter: ?FilterSpecification) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -726,11 +723,21 @@ class Style extends Evented {
             return;
         }
 
-        if (filter !== null && filter !== undefined && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return;
+        if (util.deepEqual(layer.filter, filter)) {
+            return;
+        }
 
-        if (util.deepEqual(layer.filter, filter)) return;
+        if (filter === null || filter === undefined) {
+            layer.filter = undefined;
+            this._updateLayer(layer);
+            return;
+        }
+
+        if (this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) {
+            return;
+        }
+
         layer.filter = util.clone(filter);
-
         this._updateLayer(layer);
     }
 
@@ -789,11 +796,11 @@ class Style extends Evented {
 
         if (util.deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
+        const wasDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
         layer.setPaintProperty(name, value);
-        const isFeatureConstant = layer.isPaintValueFeatureConstant(name);
+        const isDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
 
-        if (!isFeatureConstant || !wasFeatureConstant) {
+        if (isDataDriven || wasDataDriven) {
             this._updateLayer(layer);
         }
 
@@ -924,7 +931,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification, transitionOptions?: {}) {
+    setLight(lightOptions: LightSpecification, options: ?{transition?: boolean}) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -937,10 +944,15 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const transition = this.stylesheet.transition || {};
+        options = options || {transition: true};
+
+        const transition = util.extend({
+            duration: 300,
+            delay: 0
+        }, this.stylesheet.transition);
 
         this.light.setLight(lightOptions);
-        this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
+        this.light.updateTransitions(options, transition);
     }
 
     _validate(validate: ({}) => void, key: string, value: any, props: any, options?: {validate?: boolean}) {
@@ -978,10 +990,45 @@ class Style extends Evented {
         }
     }
 
-    _redoPlacement() {
-        for (const id in this.sourceCaches) {
-            this.sourceCaches[id].redoPlacement();
+    getNeedsFullPlacement() {
+        // Anything that changes our "in progress" layer and tile indices requires us
+        // to start over. When we start over, we do a full placement instead of incremental
+        // to prevent starvation.
+        if (this._layerOrderChanged) {
+            // We need to restart placement to keep layer indices in sync.
+            return true;
         }
+        for (const id in this.sourceCaches) {
+            if (this.sourceCaches[id].getNeedsFullPlacement()) {
+                // A tile has been added or removed, we need to do a full placement
+                // New tiles can't be rendered until they've finished their first placement
+                return true;
+            }
+        }
+        return false;
+    }
+
+    _generateCollisionBoxes() {
+        for (const id in this.sourceCaches) {
+            this._reloadSource(id);
+        }
+    }
+
+    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number) {
+        const forceFullPlacement = this.getNeedsFullPlacement();
+
+        if (forceFullPlacement || !this.placement || this.placement.isDone()) {
+            this.placement = new Placement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, this.placement);
+            this._layerOrderChanged = false;
+        }
+
+        this.placement.continuePlacement(this._order, this._layers, this.sourceCaches);
+
+        if (this.placement.isDone()) this.collisionIndex = this.placement.collisionIndex;
+
+        // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
+        const needsRerender = !this.placement.isDone() || this.placement.stillFading();
+        return needsRerender;
     }
 
     // Callbacks from web workers

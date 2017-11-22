@@ -36,7 +36,7 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/streets-v10',
     hash: true
 });
 
@@ -67,6 +67,21 @@ map.on('load', function() {
             "line-width": {"base": 1.5, "stops": [[5, 0.75], [18, 32]]}
         }
     }, 'country-label-lg');
+
+    map.addSource("points", {
+        "type": "geojson",
+        "data": '/debug/cross_source_points.geojson'
+    });
+
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": "points",
+        "layout": {
+            "text-field": "{name}",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+        }
+    });
 });
 
 map.on('click', function(e) {

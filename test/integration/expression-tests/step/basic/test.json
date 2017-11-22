@@ -1,0 +1,23 @@
+{
+  "expression": [
+    "number",
+    ["step", ["number", ["get", "x"]], 11, 0, 111, 1, 1111]
+  ],
+  "inputs": [
+    [{}, {"properties": {"x": -1.5}}],
+    [{}, {"properties": {"x": -0.5}}],
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 0.5}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": 1.5}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [11, 11, 111, 111, 1111, 1111]
+  }
+}

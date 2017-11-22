@@ -1,0 +1,30 @@
+{
+  "propertySpec": {"type": "number"},
+  "expression": ["interpolate", ["linear"], ["get", "x"], 0, 100, 10, 200],
+  "inputs": [
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {"x": 5}}],
+    [{}, {"properties": {"x": 10}}],
+    [{}, {"properties": {"x": -1234}}],
+    [{}, {"properties": {"x": 1234}}],
+    [{}, {"properties": {"x": "abcd"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      100,
+      150,
+      200,
+      100,
+      200,
+      {
+        "error": "Expected value to be of type number, but found string instead."
+      }
+    ]
+  }
+}

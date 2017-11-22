@@ -12,23 +12,25 @@ module.exports = drawRaster;
 
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+    if (layer.paint.get('raster-opacity') === 0) return;
 
     const gl = painter.gl;
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    gl.disable(gl.DEPTH_TEST);
-    painter.depthMask(false);
+    gl.enable(gl.DEPTH_TEST);
+    painter.depthMask(layer.paint.get('raster-opacity') === 1);
+    // Change depth function to prevent double drawing in areas where tiles overlap.
+    gl.depthFunc(gl.LESS);
 
     gl.disable(gl.STENCIL_TEST);
 
     // Constant parameters.
-    gl.uniform1f(program.uniforms.u_brightness_low, layer.paint['raster-brightness-min']);
-    gl.uniform1f(program.uniforms.u_brightness_high, layer.paint['raster-brightness-max']);
-    gl.uniform1f(program.uniforms.u_saturation_factor, saturationFactor(layer.paint['raster-saturation']));
-    gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
-    gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
+    gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));
+    gl.uniform1f(program.uniforms.u_brightness_high, layer.paint.get('raster-brightness-max'));
+    gl.uniform1f(program.uniforms.u_saturation_factor, saturationFactor(layer.paint.get('raster-saturation')));
+    gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint.get('raster-contrast')));
+    gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint.get('raster-hue-rotate')));
     gl.uniform1f(program.uniforms.u_buffer_scale, 1);
     gl.uniform1i(program.uniforms.u_image0, 0);
     gl.uniform1i(program.uniforms.u_image1, 1);
@@ -42,7 +44,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const tile = sourceCache.getTile(coord);
         const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
-        tile.registerFadeDuration(painter.style.animationLoop, layer.paint['raster-fade-duration']);
+        tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
@@ -69,7 +71,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         gl.uniform2fv(program.uniforms.u_tl_parent, parentTL || [0, 0]);
         gl.uniform1f(program.uniforms.u_scale_parent, parentScaleBy || 1);
         gl.uniform1f(program.uniforms.u_fade_t, fade.mix);
-        gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint['raster-opacity']);
+        gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint.get('raster-opacity'));
 
 
         if (source instanceof ImageSource) {
@@ -121,7 +123,7 @@ function saturationFactor(saturation) {
 }
 
 function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
-    const fadeDuration = layer.paint['raster-fade-duration'];
+    const fadeDuration = layer.paint.get('raster-fade-duration');
 
     if (fadeDuration > 0) {
         const now = Date.now();

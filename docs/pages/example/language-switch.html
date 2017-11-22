@@ -1,0 +1,45 @@
+<style>
+    #buttons {
+        width: 90%;
+        margin: 0 auto;
+    }
+    .button {
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+        width: 20%;
+        padding: 8px;
+        border-radius: 3px;
+        margin-top: 10px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #ee8a65;
+        font-family: sans-serif;
+        font-weight: bold;
+    }
+</style>
+<div id='map'></div>
+<ul id="buttons">
+    <li id='button-fr' class='button'>French</li>
+    <li id='button-ru' class='button'>Russian</li>
+    <li id='button-de' class='button'>German</li>
+    <li id='button-es' class='button'>Spanish</li>
+</ul>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [16.05, 48],
+    zoom: 2.9
+});
+
+document.getElementById('buttons').addEventListener('click', function(event) {
+    var language = event.target.id.substr('button-'.length);
+    // Use setLayoutProperty to set the value of a layout property in a style layer.
+    // The three arguments are the id of the layer, the name of the layout property,
+    // and the new property value.
+    map.setLayoutProperty('country-label-lg', 'text-field', '{name_' + language + '}');
+});
+
+</script>

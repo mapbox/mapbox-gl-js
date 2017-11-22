@@ -1,11 +1,8 @@
 // @flow
 
 import type TileCoord from './tile_coord';
-import type Actor from '../util/actor';
-import type StyleLayerIndex from '../style/style_layer_index';
 import type {SerializedBucket} from '../data/bucket';
 import type {SerializedFeatureIndex} from '../data/feature_index';
-import type {SerializedCollisionTile} from '../symbol/collision_tile';
 import type {SerializedStructArray} from '../util/struct_array';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
@@ -13,14 +10,6 @@ import type {RGBAImage, AlphaImage} from '../util/image';
 export type TileParameters = {
     source: string,
     uid: string,
-};
-
-export type PlacementConfig = {
-    angle: number,
-    pitch: number,
-    cameraToCenterDistance: number,
-    cameraToTileDistance: number,
-    showCollisionBoxes: boolean,
 };
 
 export type WorkerTileParameters = TileParameters & {
@@ -31,28 +20,19 @@ export type WorkerTileParameters = TileParameters & {
     tileSize: number,
     pixelRatio: number,
     overscaling: number,
-} & PlacementConfig;
+    showCollisionBoxes: boolean
+};
 
 export type WorkerTileResult = {
     buckets: Array<SerializedBucket>,
     iconAtlasImage: RGBAImage,
     glyphAtlasImage: AlphaImage,
     featureIndex: SerializedFeatureIndex,
-    collisionTile: SerializedCollisionTile,
     collisionBoxArray: SerializedStructArray,
     rawTileData?: ArrayBuffer,
 };
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
-
-export type RedoPlacementParameters = TileParameters & PlacementConfig;
-
-export type RedoPlacementResult = {
-    buckets: Array<SerializedBucket>,
-    collisionTile: SerializedCollisionTile
-};
-
-export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult, transferables: ?Array<Transferable>) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -69,12 +49,13 @@ export type RedoPlacementCallback = (error: ?Error, result: ?RedoPlacementResult
  * @param layerIndex
  */
 export interface WorkerSource {
-    constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
+    // Disabled due to https://github.com/facebook/flow/issues/5208
+    // constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
      * back to the main thread for rendering.  Should call the callback with:
-     * `{ buckets, featureIndex, collisionTile, rawTileData}`.
+     * `{ buckets, featureIndex, collisionIndex, rawTileData}`.
      */
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
 
@@ -87,13 +68,12 @@ export interface WorkerSource {
     /**
      * Aborts loading a tile that is in progress.
      */
-    abortTile(params: TileParameters): void;
+    abortTile(params: TileParameters, callback: WorkerTileCallback): void;
 
     /**
      * Removes this tile from any local caches.
      */
-    removeTile(params: TileParameters): void;
+    removeTile(params: TileParameters, callback: WorkerTileCallback): void;
 
-    redoPlacement(params: RedoPlacementParameters, callback: RedoPlacementCallback): void;
-    removeSource?: (params: {source: string}) => void;
+    removeSource?: (params: {source: string}, callback: WorkerTileCallback) => void;
 }

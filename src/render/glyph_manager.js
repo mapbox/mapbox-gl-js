@@ -8,6 +8,7 @@ const {AlphaImage} = require('../util/image');
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestTransformFunction} from '../ui/map';
+import type {Callback} from '../types/callback';
 
 type Entry = {
     // null means we've requested the range, but the glyph wasn't included in the result.

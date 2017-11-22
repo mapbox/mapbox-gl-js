@@ -19,6 +19,7 @@ import type StyleLayerIndex from '../style/style_layer_index';
 
 import type {LoadVectorDataCallback} from './vector_tile_worker_source';
 import type {RequestParameters} from '../util/ajax';
+import type { Callback } from '../types/callback';
 
 export type GeoJSON = Object;
 
@@ -206,10 +207,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         }
     }
 
-    removeSource(params: {source: string}) {
+    removeSource(params: {source: string}, callback: Callback<mixed>) {
         if (this._geoJSONIndexes[params.source]) {
             delete this._geoJSONIndexes[params.source];
         }
+        callback();
     }
 }
 

@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "sources": {
     "missing-type": {
     },
@@ -18,18 +18,18 @@
     },
     "video-valid": {
       "type": "video",
-      "url": [],
+      "urls": [],
       "coordinates": [
         [1, 2], [3, 4], [5, 6], [7, 8]
       ]
     },
     "video-missing-coordinates": {
       "type": "video",
-      "url": []
+      "urls": []
     },
     "video-wrong-coordinates": {
       "type": "video",
-      "url": [],
+      "urls": [],
       "coordinates": [
         1, "2", [3, "4"], []
       ]

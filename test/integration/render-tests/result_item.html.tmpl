@@ -1,5 +1,5 @@
 
-<tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status)) ? 'hide' : '' %>">
+<tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
     <td><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.actual %>" data-alt-src="data:image/png;base64,<%- r.expected %>"></td>
     <td><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.diff %>"></td>
     <td>

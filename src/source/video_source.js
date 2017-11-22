@@ -63,17 +63,10 @@ class VideoSource extends ImageSource {
                 this.video = video;
                 this.video.loop = true;
 
-                let loopID;
-
-                // start repainting when video starts playing
+                // Start repainting when video starts playing. hasTransition() will then return
+                // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
-                    loopID = this.map.style.animationLoop.set(Infinity);
                     this.map._rerender();
-                });
-
-                // stop repainting when video stops
-                this.video.addEventListener('pause', () => {
-                    this.map.style.animationLoop.cancel(loopID);
                 });
 
                 if (this.map) {
@@ -108,6 +101,8 @@ class VideoSource extends ImageSource {
      * Sets the video's coordinates and re-renders the map.
      *
      * @method setCoordinates
+     * @instance
+     * @memberof VideoSource
      * @param {Array<Array<number>>} coordinates Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
      *   The coordinates start at the top left corner of the video and proceed in clockwise order.
@@ -127,6 +122,10 @@ class VideoSource extends ImageSource {
             urls: this.urls,
             coordinates: this.coordinates
         };
+    }
+
+    hasTransition() {
+        return this.video && !this.video.paused;
     }
 }
 

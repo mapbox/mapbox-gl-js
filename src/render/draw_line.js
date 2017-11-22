@@ -11,19 +11,19 @@ import type TileCoord from '../source/tile_coord';
 
 module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
-    if (layer.isOpacityZero(painter.transform.zoom)) return;
+
+    const opacity = layer.paint.get('line-opacity');
+    if (opacity.constantOr(1) === 0) return;
+
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
     const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    // don't draw zero-width lines
-    if (layer.paint['line-width'] <= 0) return;
-
     const programId =
-        layer.paint['line-dasharray'] ? 'lineSDF' :
-        layer.paint['line-pattern'] ? 'linePattern' : 'line';
+        layer.paint.get('line-dasharray') ? 'lineSDF' :
+        layer.paint.get('line-pattern') ? 'linePattern' : 'line';
 
     let prevTileZoom;
     let firstTile = true;
@@ -40,7 +40,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
         const tileRatioChanged = prevTileZoom !== tile.coord.z;
 
         if (programChanged) {
-            programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.gl, program, layer.paint, {zoom: painter.transform.zoom});
         }
         drawLineTile(program, painter, tile, bucket, layer, coord, programConfiguration, programChanged, tileRatioChanged);
         prevTileZoom = tile.coord.z;
@@ -50,8 +50,8 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
 function drawLineTile(program, painter, tile, bucket, layer, coord, programConfiguration, programChanged, tileRatioChanged) {
     const gl = painter.gl;
-    const dasharray = layer.paint['line-dasharray'];
-    const image = layer.paint['line-pattern'];
+    const dasharray = layer.paint.get('line-dasharray');
+    const image = layer.paint.get('line-pattern');
 
     let posA, posB, imagePosA, imagePosB;
 
@@ -59,8 +59,8 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         const tileRatio = 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom);
 
         if (dasharray) {
-            posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
-            posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
+            posA = painter.lineAtlas.getDash(dasharray.from, layer.layout.get('line-cap') === 'round');
+            posB = painter.lineAtlas.getDash(dasharray.to, layer.layout.get('line-cap') === 'round');
 
             const widthA = posA.width * dasharray.fromScale;
             const widthB = posB.width * dasharray.toScale;
@@ -110,7 +110,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
     painter.enableTileClippingMask(coord);
 
-    const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+    const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
     gl.uniform1f(program.uniforms.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));

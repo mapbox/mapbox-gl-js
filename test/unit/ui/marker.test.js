@@ -21,6 +21,12 @@ test('Marker', (t) => {
         t.end();
     });
 
+    t.test('default marker', (t) => {
+        const marker = new Marker();
+        t.ok(marker.getElement(), 'default marker is created');
+        t.end();
+    });
+
     t.test('marker is added to map', (t) => {
         const map = createMap();
         const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]);

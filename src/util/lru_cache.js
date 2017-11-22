@@ -61,7 +61,7 @@ class LRUCache<T> {
             this.order.push(key);
 
             if (this.order.length > this.max) {
-                const removedData = this.get(this.order[0]);
+                const removedData = this.getAndRemove(this.order[0]);
                 if (removedData) this.onRemove(removedData);
             }
         }
@@ -91,14 +91,14 @@ class LRUCache<T> {
     }
 
     /**
-     * Get the value attached to a specific key. If the key is not found,
-     * returns `null`
+     * Get the value attached to a specific key and remove data from cache.
+     * If the key is not found, returns `null`
      *
      * @param {string} key the key to look up
      * @returns {*} the data, or null if it isn't found
      * @private
      */
-    get(key: string): ?T {
+    getAndRemove(key: string): ?T {
         if (!this.has(key)) { return null; }
 
         const data = this.data[key];
@@ -117,7 +117,7 @@ class LRUCache<T> {
      * @returns {*} the data, or null if it isn't found
      * @private
      */
-    getWithoutRemoving(key: string): ?T {
+    get(key: string): ?T {
         if (!this.has(key)) { return null; }
 
         const data = this.data[key];
@@ -153,7 +153,7 @@ class LRUCache<T> {
         this.max = max;
 
         while (this.order.length > this.max) {
-            const removedData = this.get(this.order[0]);
+            const removedData = this.getAndRemove(this.order[0]);
             if (removedData) this.onRemove(removedData);
         }
 

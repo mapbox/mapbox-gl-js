@@ -8,9 +8,8 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
-const CollisionTile = require('../symbol/collision_tile');
+const CollisionIndex = require('../symbol/collision_index');
 const CollisionBoxArray = require('../symbol/collision_box');
-const Throttler = require('../util/throttler');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const TileCoord = require('./tile_coord');
 const EXTENT = require('../data/extent');
@@ -20,6 +19,9 @@ const IndexBuffer = require('../gl/index_buffer');
 const Texture = require('../render/texture');
 const {SegmentVector} = require('../data/segment');
 const {TriangleIndexArray} = require('../data/index_array_type');
+const projection = require('../symbol/projection');
+const {performSymbolPlacement, updateOpacities} = require('../symbol/symbol_placement');
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -28,6 +30,8 @@ import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
+import type CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
+
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
     | 'loaded'    // Tile data has been loaded. Tile can be rendered.
@@ -57,18 +61,13 @@ class Tile {
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
-    placementThrottler: any;
     timeAdded: any;
     fadeEndTime: any;
     rawTileData: ArrayBuffer;
     collisionBoxArray: ?CollisionBoxArray;
-    collisionTile: ?CollisionTile;
+    collisionIndex: ?CollisionIndex;
     featureIndex: ?FeatureIndex;
     redoWhenDone: boolean;
-    angle: number;
-    pitch: number;
-    cameraToCenterDistance: number;
-    cameraToTileDistance: number;
     showCollisionBoxes: boolean;
     placementSource: any;
     workerID: number | void;
@@ -104,17 +103,14 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
-
-        this.placementThrottler = new Throttler(300, this._immediateRedoPlacement.bind(this));
     }
 
-    registerFadeDuration(animationLoop: any, duration: number) {
+    registerFadeDuration(duration: number) {
         const fadeEndTime = duration + this.timeAdded;
         if (fadeEndTime < Date.now()) return;
         if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
 
         this.fadeEndTime = fadeEndTime;
-        animationLoop.set(this.fadeEndTime - Date.now());
     }
 
     wasRequested() {
@@ -139,18 +135,17 @@ class Tile {
         this.state = 'loaded';
 
         // empty GeoJSON tile
-        if (!data) return;
-
-        // If we are redoing placement for the same tile, we will not recieve
-        // a new "rawTileData" object. If we are loading a new tile, we will
-        // recieve a new "rawTileData" object.
-        if (data.rawTileData) {
-            this.rawTileData = data.rawTileData;
+        if (!data) {
+            this.collisionBoxArray = new CollisionBoxArray();
+            return;
         }
 
+        if (data.rawTileData) {
+            // Only vector tiles have rawTileData
+            this.rawTileData = data.rawTileData;
+        }
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
-        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
-        this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData, this.collisionTile);
+        this.featureIndex = FeatureIndex.deserialize(data.featureIndex, this.rawTileData);
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
         if (data.iconAtlasImage) {
@@ -159,34 +154,6 @@ class Tile {
         if (data.glyphAtlasImage) {
             this.glyphAtlasImage = data.glyphAtlasImage;
         }
-    }
-
-    /**
-     * Replace this tile's symbol buckets with fresh data.
-     * @param {Object} data
-     * @param {Style} style
-     * @returns {undefined}
-     * @private
-     */
-    reloadSymbolData(data: WorkerTileResult, style: any) {
-        if (this.state === 'unloaded') return;
-
-        this.collisionTile = CollisionTile.deserialize(data.collisionTile, this.collisionBoxArray);
-
-        if (this.featureIndex) {
-            this.featureIndex.setCollisionTile(this.collisionTile);
-        }
-
-        for (const id in this.buckets) {
-            const bucket = this.buckets[id];
-            if (bucket instanceof SymbolBucket) {
-                bucket.destroy();
-                delete this.buckets[id];
-            }
-        }
-
-        // Add new symbol buckets
-        util.extend(this.buckets, deserializeBucket(data.buckets, style));
 
         if (data.iconAtlasImage) {
             this.iconAtlasImage = data.iconAtlasImage;
@@ -215,78 +182,59 @@ class Tile {
         }
 
         this.collisionBoxArray = null;
-        this.collisionTile = null;
         this.featureIndex = null;
         this.state = 'unloaded';
     }
 
-    redoPlacement(source: any) {
-        if (source.type !== 'vector' && source.type !== 'geojson') {
-            return;
-        }
-        if (this.state !== 'loaded') {
-            this.redoWhenDone = true;
-            return;
-        }
-        if (!this.collisionTile) { // empty tile
-            return;
-        }
-
-        const cameraToTileDistance = source.map.transform.cameraToTileDistance(this);
-        if (this.angle === source.map.transform.angle &&
-            this.pitch === source.map.transform.pitch &&
-            this.showCollisionBoxes === source.map.showCollisionBoxes) {
-            if (this.cameraToTileDistance === cameraToTileDistance &&
-                this.cameraToCenterDistance === source.map.transform.cameraToCenterDistance) {
-                return;
-            } else if (this.pitch < 25) {
-                // At low pitch tile distance doesn't affect placement very
-                // much, so we skip the cost of redoPlacement
-                // However, we might as well store the latest value of
-                // cameraToTileDistance and cameraToCenterDistance in case a redoPlacement request
-                // is already queued.
-                this.cameraToTileDistance = cameraToTileDistance;
-                this.cameraToCenterDistance = source.map.transform.cameraToCenterDistance;
-                return;
+    added(crossTileSymbolIndex: CrossTileSymbolIndex) {
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                crossTileSymbolIndex.addTileLayer(id, this.coord, this.sourceMaxZoom, bucket.symbolInstances);
             }
         }
-
-        this.angle = source.map.transform.angle;
-        this.pitch = source.map.transform.pitch;
-        this.cameraToCenterDistance = source.map.transform.cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
-        this.showCollisionBoxes = source.map.showCollisionBoxes;
-        this.placementSource = source;
-
-        this.state = 'reloading';
-        this.placementThrottler.invoke();
     }
 
-    _immediateRedoPlacement() {
-        this.placementSource.dispatcher.send('redoPlacement', {
-            type: this.placementSource.type,
-            uid: this.uid,
-            source: this.placementSource.id,
-            angle: this.angle,
-            pitch: this.pitch,
-            cameraToCenterDistance: this.cameraToCenterDistance,
-            cameraToTileDistance: this.cameraToTileDistance,
-            showCollisionBoxes: this.showCollisionBoxes
-        }, (_, data) => {
-            if (this.state !== 'reloading') return;
-
-            this.state = 'loaded';
-            this.reloadSymbolData(data, this.placementSource.map.style);
-            this.placementSource.fire('data', {tile: this, coord: this.coord, dataType: 'source'});
-            // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
-            if (this.placementSource.map) this.placementSource.map.painter.tileExtentVAO.vao = null;
-
-            if (this.redoWhenDone) {
-                this.state = 'reloading';
-                this.redoWhenDone = false;
-                this._immediateRedoPlacement();
+    removed(crossTileSymbolIndex: CrossTileSymbolIndex) {
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                crossTileSymbolIndex.removeTileLayer(id, this.coord, this.sourceMaxZoom);
             }
-        }, this.workerID);
+        }
+    }
+
+    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, sourceID: string) {
+        const bucket = this.getBucket(layer);
+        const collisionBoxArray = this.collisionBoxArray;
+
+        if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
+            const posMatrix = collisionIndex.transform.calculatePosMatrix(this.coord, this.sourceMaxZoom);
+
+            const pitchWithMap = bucket.layers[0].layout.get('text-pitch-alignment') === 'map';
+            const textPixelRatio = EXTENT / this.tileSize; // text size is not meant to be affected by scale
+            const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
+
+            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
+            performSymbolPlacement(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.coord.id, sourceID, collisionBoxArray);
+        }
+    }
+
+    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any, angle: number) {
+        // Start all collision animations at the same time
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                updateOpacities(bucket, collisionFadeTimes);
+                bucket.sortFeatures(angle);
+            }
+        }
+
+        // Don't update the collision index used for queryRenderedFeatures
+        // until all layers have been updated to the same state
+        if (this.featureIndex) {
+            this.featureIndex.setCollisionIndex(collisionIndex);
+        }
     }
 
     getBucket(layer: StyleLayer) {
@@ -317,7 +265,8 @@ class Tile {
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
-                          bearing: number): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          bearing: number,
+                          sourceID: string): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.featureIndex)
             return {};
 
@@ -331,12 +280,15 @@ class Tile {
         }
 
         return this.featureIndex.query({
-            queryGeometry,
-            bearing,
-            params,
-            scale,
-            additionalRadius,
+            queryGeometry: queryGeometry,
+            scale: scale,
             tileSize: this.tileSize,
+            bearing: bearing,
+            params: params,
+            additionalRadius: additionalRadius,
+            tileSourceMaxZoom: this.sourceMaxZoom,
+            collisionBoxArray: this.collisionBoxArray,
+            sourceID: sourceID
         }, layers);
     }
 
@@ -490,13 +442,6 @@ class Tile {
                 // Max value for `setTimeout` implementations is a 32 bit integer; cap this accordingly
                 return Math.min(this.expirationTime - new Date().getTime(), Math.pow(2, 31) - 1);
             }
-        }
-    }
-
-    stopPlacementThrottler() {
-        this.placementThrottler.stop();
-        if (this.state === 'reloading') {
-            this.state = 'loaded';
         }
     }
 }

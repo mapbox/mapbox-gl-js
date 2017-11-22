@@ -13,12 +13,11 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters,
-    RedoPlacementParameters,
-    RedoPlacementCallback
+    TileParameters
 } from '../source/worker_source';
 
 import type {WorkerGlobalScopeInterface} from '../util/web_worker';
+import type {Callback} from '../types/callback';
 
 /**
  * @private
@@ -60,12 +59,14 @@ class Worker {
         };
     }
 
-    setLayers(mapId: string, layers: Array<LayerSpecification>) {
+    setLayers(mapId: string, layers: Array<LayerSpecification>, callback: WorkerTileCallback) {
         this.getLayerIndex(mapId).replace(layers);
+        callback();
     }
 
-    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>, symbolOrder: ?Array<string>}) {
-        this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
+    updateLayers(mapId: string, params: {layers: Array<LayerSpecification>, removedIds: Array<string>}, callback: WorkerTileCallback) {
+        this.getLayerIndex(mapId).update(params.layers, params.removedIds);
+        callback();
     }
 
     loadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
@@ -78,27 +79,24 @@ class Worker {
         this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
     }
 
-    abortTile(mapId: string, params: TileParameters & {type: string}) {
+    abortTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type).abortTile(params);
+        this.getWorkerSource(mapId, params.type).abortTile(params, callback);
     }
 
-    removeTile(mapId: string, params: TileParameters & {type: string}) {
+    removeTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
-        this.getWorkerSource(mapId, params.type).removeTile(params);
+        this.getWorkerSource(mapId, params.type).removeTile(params, callback);
     }
 
-    removeSource(mapId: string, params: {source: string} & {type: string}) {
+    removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         const worker = this.getWorkerSource(mapId, params.type);
         if (worker.removeSource !== undefined) {
-            worker.removeSource(params);
+            worker.removeSource(params, callback);
+        } else {
+            callback();
         }
-    }
-
-    redoPlacement(mapId: string, params: RedoPlacementParameters & {type: string}, callback: RedoPlacementCallback) {
-        assert(params.type);
-        this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     }
 
     /**
@@ -149,7 +147,7 @@ class Worker {
                 }
             };
 
-            this.workerSources[mapId][type] = new this.workerSourceTypes[type]((actor: any), this.getLayerIndex(mapId));
+            this.workerSources[mapId][type] = new (this.workerSourceTypes[type]: any)((actor: any), this.getLayerIndex(mapId));
         }
 
         return this.workerSources[mapId][type];

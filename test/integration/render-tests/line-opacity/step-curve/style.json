@@ -69,7 +69,7 @@
       "paint": {
         "line-width": 10,
         "line-opacity": [
-          "curve", ["step"], ["zoom"],
+          "step", ["zoom"],
           ["match", ["string", ["get", "class"]],
             "motorway", 1,
             "trunk", 0.25,

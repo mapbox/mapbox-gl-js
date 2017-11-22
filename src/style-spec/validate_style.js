@@ -20,7 +20,7 @@ const jsonlint = require('jsonlint-lines-primitives');
  */
 
 module.exports = function validateStyle(style, styleSpec) {
-    const index = require('./');
+    const index = require('./style-spec');
 
     if (style instanceof String || typeof style === 'string' || style instanceof Buffer) {
         try {
@@ -30,7 +30,7 @@ module.exports = function validateStyle(style, styleSpec) {
         }
     }
 
-    styleSpec = styleSpec || index[`v${style.version}`];
+    styleSpec = styleSpec || index.v8;
 
     return validateStyleMin(style, styleSpec);
 };

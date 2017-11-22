@@ -5,20 +5,18 @@ const accessToken = require('../lib/access_token');
 const spec = require('../../src/style-spec/reference/latest');
 const convertFunction = require('../../src/style-spec/function/convert');
 const {isFunction, createFunction} = require('../../src/style-spec/function');
-const {createExpression} = require('../../src/style-spec/expression');
+const {createPropertyExpression} = require('../../src/style-spec/expression');
 
-import type {
-    StyleExpression,
-    StylePropertySpecification
-} from '../../src/style-spec/expression';
+import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
+import type {StylePropertyExpression} from '../../src/style-spec/expression';
 
 class ExpressionBenchmark extends Benchmark {
     data: Array<{
         propertySpec: StylePropertySpecification,
         rawValue: mixed,
         rawExpression: mixed,
-        compiledFunction: StyleExpression,
-        compiledExpression: StyleExpression
+        compiledFunction: StylePropertyExpression,
+        compiledExpression: StylePropertyExpression
     }>;
 
     setup() {
@@ -35,16 +33,16 @@ class ExpressionBenchmark extends Benchmark {
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
                         const compiledFunction = createFunction(rawValue, propertySpec);
-                        const compiledExpression = createExpression(rawExpression, propertySpec, 'property');
-                        if (compiledExpression.result !== 'success') {
-                            throw new Error(compiledExpression.errors.map(err => `${err.key}: ${err.message}`).join(', '));
+                        const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
+                        if (compiledExpression.result === 'error') {
+                            throw new Error(compiledExpression.value.map(err => `${err.key}: ${err.message}`).join(', '));
                         }
                         return {
                             propertySpec,
                             rawValue,
                             rawExpression,
                             compiledFunction,
-                            compiledExpression
+                            compiledExpression: compiledExpression.value
                         };
                     };
 
@@ -91,7 +89,7 @@ class FunctionConvert extends ExpressionBenchmark {
 class ExpressionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawExpression, propertySpec} of this.data) {
-            createExpression(rawExpression, propertySpec, 'property');
+            createPropertyExpression(rawExpression, propertySpec);
         }
     }
 }

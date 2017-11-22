@@ -82,7 +82,7 @@ test('GeoJSONSource#onRemove', (t) => {
     t.test('broadcasts "removeSource" event', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, {
             broadcast: function (type, data, callback) {
-                callback();
+                t.false(callback);
                 t.equal(type, 'removeSource');
                 t.deepEqual(data, { type: 'geojson', source: 'id' });
                 t.end();
@@ -196,7 +196,7 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.map = {
-            transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } }
+            transform: {}
         };
 
         source.on('data', (e) => {
