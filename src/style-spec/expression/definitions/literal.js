@@ -46,6 +46,10 @@ class Literal implements Expression {
     }
 
     eachChild() {}
+
+    possibleOutputs() {
+        return [this.value];
+    }
 }
 
 module.exports = Literal;

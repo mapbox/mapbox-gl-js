@@ -103,6 +103,12 @@ class Match implements Expression {
         this.outputs.forEach(fn);
         fn(this.otherwise);
     }
+
+    possibleOutputs() {
+        return []
+            .concat(...this.outputs.map((out) => out.possibleOutputs()))
+            .concat(this.otherwise.possibleOutputs());
+    }
 }
 
 module.exports = Match;

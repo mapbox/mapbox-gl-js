@@ -79,6 +79,10 @@ class ArrayAssertion implements Expression {
     eachChild(fn: (Expression) => void) {
         fn(this.input);
     }
+
+    possibleOutputs() {
+        return this.input.possibleOutputs();
+    }
 }
 
 module.exports = ArrayAssertion;

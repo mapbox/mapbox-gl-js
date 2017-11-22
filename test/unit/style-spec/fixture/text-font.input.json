@@ -17,6 +17,119 @@
         "text-font": ["Helvetica"],
         "text-field": "{foo}"
       }
+    },
+    {
+      "id": "valid expression - case",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["case", ["==", "a", ["string", ["get", "text-font"]]], ["literal", ["Arial"]], ["literal", ["Helvetica"]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "valid expression - match",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["match", ["get", "text-font"], "a", ["literal", ["Arial"]], ["literal", ["Helvetica"]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "valid expression - step",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["array", "string", ["step", ["get", "text-font"], ["literal", ["Arial"]], 0, ["literal", ["Helvetica"]]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - get",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["array", "string", ["get", "text-font"]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - case",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["case", ["==", "a", ["string", ["get", "text-font"]]], ["array", "string", ["get", "text-font-a"]], ["literal", ["Helvetica"]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - match",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["match", ["get", "text-font"], "a", ["array", "string", ["get", "text-font-a"]], ["literal", ["Helvetica"]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - at",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["array", "string", ["at", 0, ["array", ["get", "text-font"]]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - coalesce",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["array", "string", ["coalesce", ["get", "text-font"]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - step",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["step", ["zoom"], ["array", "string", ["get", "text-font-0"]], 0, ["array", "string", ["get", "text-font-1"]]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - let/var",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": ["let", "p", ["array", "string", ["get", "text-font"]], ["var", "p"]],
+        "text-field": "{foo}"
+      }
+    },
+    {
+      "id": "invalid expression - identity function",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": {
+          "type": "identity",
+          "property": "text-font"
+        },
+        "text-field": "{foo}"
+      }
     }
   ]
 }

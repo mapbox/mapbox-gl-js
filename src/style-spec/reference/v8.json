@@ -1311,6 +1311,7 @@
       "value": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "doc": "Font stack to use for displaying text.",
       "requires": [

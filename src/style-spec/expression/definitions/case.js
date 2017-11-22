@@ -69,6 +69,12 @@ class Case implements Expression {
         }
         fn(this.otherwise);
     }
+
+    possibleOutputs() {
+        return []
+            .concat(...this.branches.map(([_, out]) => out.possibleOutputs()))
+            .concat(this.otherwise.possibleOutputs());
+    }
 }
 
 module.exports = Case;

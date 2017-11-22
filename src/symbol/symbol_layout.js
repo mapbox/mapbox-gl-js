@@ -46,14 +46,14 @@ function performSymbolLayout(bucket: SymbolBucket,
 
     const oneEm = 24;
     const lineHeight = layout.get('text-line-height') * oneEm;
-    const fontstack = layout.get('text-font').join(',');
     const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
     const keepUpright = layout.get('text-keep-upright');
 
-    const glyphs = glyphMap[fontstack] || {};
-    const glyphPositionMap = glyphPositions[fontstack] || {};
 
     for (const feature of bucket.features) {
+        const fontstack = layout.get('text-font').evaluate(feature).join(',');
+        const glyphs = glyphMap[fontstack] || {};
+        const glyphPositionMap = glyphPositions[fontstack] || {};
 
         const shapedTextOrientations = {};
         const text = feature.text;
