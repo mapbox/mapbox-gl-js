@@ -3,6 +3,7 @@
 const assert = require('assert');
 const WhooTS = require('@mapbox/whoots-js');
 const Coordinate = require('../geo/coordinate');
+const {register} = require('../util/web_worker_transfer');
 
 /**
  * @module TileCoord
@@ -249,5 +250,7 @@ function getQuadkey(z, x, y) {
     }
     return quadkey;
 }
+
+register(TileCoord, {omit: ['posMatrix']});
 
 module.exports = TileCoord;

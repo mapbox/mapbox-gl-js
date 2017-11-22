@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 
+const Grid = require('grid-index');
 const Color = require('../style-spec/util/color');
 const {
     StylePropertyFunction,
@@ -68,6 +69,20 @@ function register<T: any>(klass: Class<T>, options: RegisterOptions<T> = {}) {
 }
 
 register(Object);
+
+Grid.serialize = function serializeGrid(grid: Grid, transferables?: Array<Transferable>): Serialized {
+    const ab = grid.toArrayBuffer();
+    if (transferables) {
+        transferables.push(ab);
+    }
+    return ab;
+};
+
+Grid.deserialize = function deserializeGrid(serialized: ArrayBuffer): Grid {
+    return new Grid(serialized);
+};
+register(Grid);
+
 register(Color);
 
 register(StylePropertyFunction);

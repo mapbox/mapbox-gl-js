@@ -12,12 +12,11 @@ const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;
 const TileCoord = require('../source/tile_coord');
+const {register} = require('../util/web_worker_transfer');
 
 import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
-import type {SerializedStructArray} from '../util/struct_array';
 import type {FeatureFilter} from '../style-spec/feature_filter';
-import type {Transferable} from '../types/transferable';
 
 const FeatureIndexArray = createStructArrayType({
     members: [
@@ -45,14 +44,6 @@ type QueryParameters = {
     sourceID: string
 }
 
-export type SerializedFeatureIndex = {
-    coord: TileCoord,
-    overscaling: number,
-    grid: ArrayBuffer,
-    featureIndexArray: SerializedStructArray,
-    bucketLayerIDs: Array<Array<string>>
-}
-
 class FeatureIndex {
     coord: TileCoord;
     overscaling: number;
@@ -69,21 +60,6 @@ class FeatureIndex {
     sourceLayerCoder: DictionaryCoder;
 
     collisionIndex: CollisionIndex;
-
-    static deserialize(serialized: SerializedFeatureIndex,
-                       rawTileData: ArrayBuffer) {
-        const coord = serialized.coord;
-        const self = new FeatureIndex(
-            new TileCoord(coord.z, coord.x, coord.y, coord.w),
-            serialized.overscaling,
-            new Grid(serialized.grid),
-            new FeatureIndexArray(serialized.featureIndexArray));
-
-        self.rawTileData = rawTileData;
-        self.bucketLayerIDs = serialized.bucketLayerIDs;
-
-        return self;
-    }
 
     constructor(coord: TileCoord,
                 overscaling: number,
@@ -120,20 +96,6 @@ class FeatureIndex {
 
     setCollisionIndex(collisionIndex: CollisionIndex) {
         this.collisionIndex = collisionIndex;
-    }
-
-    serialize(transferables?: Array<Transferable>): SerializedFeatureIndex {
-        const grid = this.grid.toArrayBuffer();
-        if (transferables) {
-            transferables.push(grid);
-        }
-        return {
-            coord: this.coord,
-            overscaling: this.overscaling,
-            grid: grid,
-            featureIndexArray: this.featureIndexArray.serialize(transferables),
-            bucketLayerIDs: this.bucketLayerIDs
-        };
     }
 
     // Finds features in this tile at a particular position.
@@ -253,6 +215,8 @@ class FeatureIndex {
         return false;
     }
 }
+
+register(FeatureIndex, { omit: ['rawTileData', 'sourceLayerCoder', 'collisionIndex'] });
 
 module.exports = FeatureIndex;
 

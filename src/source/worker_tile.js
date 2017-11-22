@@ -10,8 +10,8 @@ const assert = require('assert');
 const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
 const {serialize} = require('../util/web_worker_transfer');
+const TileCoord = require('./tile_coord');
 
-import type TileCoord from './tile_coord';
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
 import type StyleLayer from '../style/style_layer';
@@ -43,7 +43,7 @@ class WorkerTile {
     vectorTile: VectorTile;
 
     constructor(params: WorkerTileParameters) {
-        this.coord = params.coord;
+        this.coord = new TileCoord(params.coord.z, params.coord.x, params.coord.y, params.coord.w);
         this.uid = params.uid;
         this.zoom = params.zoom;
         this.pixelRatio = params.pixelRatio;
@@ -170,7 +170,7 @@ class WorkerTile {
 
                 callback(null, {
                     buckets: serializeBuckets(util.values(buckets), transferables),
-                    featureIndex: featureIndex.serialize(transferables),
+                    featureIndex: serialize(featureIndex, transferables),
                     collisionBoxArray: this.collisionBoxArray.serialize(),
                     glyphAtlasImage: glyphAtlas.image,
                     iconAtlasImage: imageAtlas.image

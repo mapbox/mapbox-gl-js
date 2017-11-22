@@ -12,6 +12,7 @@ const CollisionIndex = require('../../../src/symbol/collision_index');
 const Transform = require('../../../src/geo/transform');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
+const {serialize} = require('../../../src/util/web_worker_transfer');
 
 test('querySourceFeatures', (t) => {
     const features = [{
@@ -321,7 +322,7 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: collisionBoxArray.serialize(),
-        featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
+        featureIndex: serialize(new FeatureIndex(new TileCoord(1, 1, 1))),
         buckets: []
     }, options);
 }
