@@ -1,7 +1,6 @@
 // @flow
 
 import type {Serialized} from '../util/web_worker_transfer';
-import type {SerializedStructArray} from '../util/struct_array';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type {Transferable} from '../types/transferable';
@@ -27,7 +26,7 @@ export type WorkerTileResult = {
     iconAtlasImage: RGBAImage,
     glyphAtlasImage: AlphaImage,
     featureIndex: Serialized,
-    collisionBoxArray: SerializedStructArray,
+    collisionBoxArray: Serialized,
     rawTileData?: ArrayBuffer,
 };
 

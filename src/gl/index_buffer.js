@@ -1,8 +1,8 @@
 // @flow
 const assert = require('assert');
 
+import type {StructArray} from '../util/struct_array';
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
-import type {SerializedStructArray} from '../util/struct_array';
 
 
 class IndexBuffer {
@@ -41,7 +41,7 @@ class IndexBuffer {
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffer);
     }
 
-    updateData(array: SerializedStructArray) {
+    updateData(array: StructArray) {
         assert(this.dynamicDraw);
         // The right VAO will get this buffer re-bound later in VertexArrayObject#bind
         // See https://github.com/mapbox/mapbox-gl-js/issues/5620

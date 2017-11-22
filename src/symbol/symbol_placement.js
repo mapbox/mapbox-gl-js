@@ -109,10 +109,10 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any) {
     }
 
     if (glyphOpacityArray && bucket.text.opacityVertexBuffer) {
-        bucket.text.opacityVertexBuffer.updateData(glyphOpacityArray.serialize());
+        bucket.text.opacityVertexBuffer.updateData(glyphOpacityArray);
     }
     if (iconOpacityArray && bucket.icon.opacityVertexBuffer) {
-        bucket.icon.opacityVertexBuffer.updateData(iconOpacityArray.serialize());
+        bucket.icon.opacityVertexBuffer.updateData(iconOpacityArray);
     }
 }
 
@@ -261,7 +261,7 @@ function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionI
 
     // If the buffer hasn't been uploaded for the first time yet, we don't need to call updateData since it will happen at upload time
     if (collisionDebugBoxArray && bucket.collisionBox.collisionVertexBuffer)
-        bucket.collisionBox.collisionVertexBuffer.updateData(collisionDebugBoxArray.serialize());
+        bucket.collisionBox.collisionVertexBuffer.updateData(collisionDebugBoxArray);
     if (collisionDebugCircleArray && bucket.collisionCircle.collisionVertexBuffer)
-        bucket.collisionCircle.collisionVertexBuffer.updateData(collisionDebugCircleArray.serialize());
+        bucket.collisionCircle.collisionVertexBuffer.updateData(collisionDebugCircleArray);
 }

@@ -211,9 +211,9 @@ function updateLineLabels(bucket: SymbolBucket,
     }
 
     if (isText) {
-        bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
+        bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
     } else {
-        bucket.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
+        bucket.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
     }
 }
 

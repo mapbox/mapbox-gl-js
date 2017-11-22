@@ -2,8 +2,7 @@
 
 import type {
     StructArray,
-    StructArrayMember,
-    SerializedStructArray
+    StructArrayMember
 } from '../util/struct_array';
 
 import type Program from '../render/program';
@@ -59,7 +58,7 @@ class VertexBuffer {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
     }
 
-    updateData(array: SerializedStructArray) {
+    updateData(array: StructArray) {
         this.bind();
         this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, array.arrayBuffer);
     }

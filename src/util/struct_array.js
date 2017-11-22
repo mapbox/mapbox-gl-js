@@ -77,7 +77,7 @@ export type StructArrayTypeParameters = {
     alignment?: number
 };
 
-export type SerializedStructArray = {
+type SerializedStructArray = {
     length: number,
     arrayBuffer: ArrayBuffer,
     type: StructArrayTypeParameters,
@@ -115,25 +115,10 @@ class StructArray {
 
     _cacheKey: string;
 
-    constructor(serialized?: SerializedStructArray) {
+    constructor() {
         this.isTransferred = false;
-
-        if (serialized !== undefined) {
-        // Create from an serialized StructArray
-            this.arrayBuffer = serialized.arrayBuffer;
-            this.length = serialized.length;
-            this.capacity = this.arrayBuffer.byteLength / this.bytesPerElement;
-            this._refreshViews();
-
-        // Create a new StructArray
-        } else {
-            this.capacity = -1;
-            this.resize(0);
-        }
-    }
-
-    serialize(transferables?: Array<Transferable>): SerializedStructArray {
-        return StructArray.serialize(this, transferables);
+        this.capacity = -1;
+        this.resize(0);
     }
 
     /**
@@ -166,7 +151,12 @@ class StructArray {
         const Klass = input.cacheKey && input.cacheKey in structArrayTypeCache ?
             structArrayTypeCache[input.cacheKey] :
             createStructArrayType(input.type);
-        return new Klass(input);
+        const structArray = Object.create(Klass.prototype);
+        structArray.arrayBuffer = input.arrayBuffer;
+        structArray.length = input.length;
+        structArray.capacity = structArray.arrayBuffer.byteLength / structArray.bytesPerElement;
+        structArray._refreshViews();
+        return structArray;
     }
 
     /**

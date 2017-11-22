@@ -321,7 +321,7 @@ function createRawTileData() {
 function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
-        collisionBoxArray: collisionBoxArray.serialize(),
+        collisionBoxArray: serialize(collisionBoxArray),
         featureIndex: serialize(new FeatureIndex(new TileCoord(1, 1, 1))),
         buckets: []
     }, options);

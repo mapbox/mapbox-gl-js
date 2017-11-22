@@ -791,8 +791,8 @@ class SymbolBucket implements Bucket {
             }
         }
 
-        if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray.serialize());
-        if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray.serialize());
+        if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);
+        if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray);
     }
 }
 

@@ -171,7 +171,7 @@ class WorkerTile {
                 callback(null, {
                     buckets: serializeBuckets(util.values(buckets), transferables),
                     featureIndex: serialize(featureIndex, transferables),
-                    collisionBoxArray: this.collisionBoxArray.serialize(),
+                    collisionBoxArray: serialize(this.collisionBoxArray),
                     glyphAtlasImage: glyphAtlas.image,
                     iconAtlasImage: imageAtlas.image
                 }, transferables);

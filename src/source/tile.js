@@ -145,7 +145,7 @@ class Tile {
             // Only vector tiles have rawTileData
             this.rawTileData = data.rawTileData;
         }
-        this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
+        this.collisionBoxArray = (deserialize(data.collisionBoxArray): any);
         this.featureIndex = (deserialize(data.featureIndex): any);
         this.featureIndex.rawTileData = this.rawTileData;
         this.buckets = deserializeBucket(data.buckets, painter.style);
