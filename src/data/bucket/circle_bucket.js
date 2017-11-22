@@ -8,13 +8,18 @@ const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray} = require('../index_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
+const {register} = require('../../util/web_worker_transfer');
 
-import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
+import type {
+    Bucket,
+    BucketParameters,
+    IndexedFeature,
+    PopulateParameters
+} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type {StructArray} from '../../util/struct_array';
 import type Point from '@mapbox/point-geometry';
-import type {Transferable} from '../../types/transferable';
 
 const circleInterface = {
     layoutAttributes: [
@@ -54,6 +59,7 @@ class CircleBucket implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
+    layerIds: Array<string>;
     layers: Array<StyleLayer>;
 
     layoutVertexArray: StructArray;
@@ -66,17 +72,18 @@ class CircleBucket implements Bucket {
     segments: SegmentVector;
     uploaded: boolean;
 
-    constructor(options: any) {
+    constructor(options: BucketParameters) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 
-        this.layoutVertexArray = new LayoutVertexArrayType(options.layoutVertexArray);
-        this.indexArray = new TriangleIndexArray(options.indexArray);
-        this.segments = new SegmentVector(options.segments);
+        this.layoutVertexArray = new LayoutVertexArrayType();
+        this.indexArray = new TriangleIndexArray();
+        this.segments = new SegmentVector();
         this.programConfigurations = new ProgramConfigurationSet(
-            this.constructor.programInterface, options.layers, options.zoom, options.programConfigurations);
+            this.constructor.programInterface, options.layers, options.zoom);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -91,17 +98,6 @@ class CircleBucket implements Bucket {
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
-    }
-
-    serialize(transferables?: Array<Transferable>): SerializedBucket {
-        return {
-            zoom: this.zoom,
-            layerIds: this.layers.map((l) => l.id),
-            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
-            indexArray: this.indexArray.serialize(transferables),
-            programConfigurations: this.programConfigurations.serialize(transferables),
-            segments: this.segments.get(),
-        };
     }
 
     upload(gl: WebGLRenderingContext) {
@@ -155,6 +151,8 @@ class CircleBucket implements Bucket {
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
     }
 }
+
+register(CircleBucket, {omit: ['layers']});
 
 CircleBucket.programInterface = circleInterface;
 

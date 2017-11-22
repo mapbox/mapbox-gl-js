@@ -16,7 +16,7 @@ import type {Feature, SourceExpression, CompositeExpression} from '../style-spec
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {Transferable} from '../types/transferable';
 
-type LayoutAttribute = {
+export type LayoutAttribute = {
     name: string,
     type: ViewType,
     components?: number

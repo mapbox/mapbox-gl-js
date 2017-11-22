@@ -5,6 +5,7 @@ const {extend, easeCubicInOut} = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
 const {normalizePropertyExpression} = require('../style-spec/expression');
 const Color = require('../style-spec/util/color');
+const {register} = require('../util/web_worker_transfer');
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
@@ -679,6 +680,12 @@ class Properties<Props: Object> {
         }
     }
 }
+
+register(PossiblyEvaluatedPropertyValue);
+register(DataDrivenProperty);
+register(DataConstantProperty);
+register(CrossFadedProperty);
+register(HeatmapColorProperty);
 
 module.exports = {
     PropertyValue,

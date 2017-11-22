@@ -1,12 +1,12 @@
 // @flow
 
-const util = require('../util/util');
+const {deserialize} = require('../util/web_worker_transfer');
 
 import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type FeatureIndex from './feature_index';
-import type {Transferable} from '../types/transferable';
+import type {Serialized} from '../util/web_worker_transfer';
 
 export type BucketParameters = {
     index: number,
@@ -21,11 +21,6 @@ export type PopulateParameters = {
     featureIndex: FeatureIndex,
     iconDependencies: {},
     glyphDependencies: {}
-}
-
-export type SerializedBucket = {
-    zoom: number,
-    layerIds: Array<string>
 }
 
 export type IndexedFeature = {
@@ -58,9 +53,10 @@ export type IndexedFeature = {
  * @private
  */
 export interface Bucket {
+    layerIds: Array<string>;
+
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
     isEmpty(): boolean;
-    serialize(transferables?: Array<Transferable>): SerializedBucket;
 
     upload(gl: WebGLRenderingContext): void;
     uploaded: boolean;
@@ -76,7 +72,7 @@ export interface Bucket {
 }
 
 module.exports = {
-    deserialize(input: Array<SerializedBucket>, style: Style): {[string]: Bucket} {
+    deserialize(input: Array<Serialized>, style: Style): {[string]: Bucket} {
         const output = {};
 
         // Guard against the case where the map's style has been set to null while
@@ -84,7 +80,9 @@ module.exports = {
         if (!style) return output;
 
         for (const serialized of input) {
-            const layers = serialized.layerIds
+            const bucket: Bucket = (deserialize(serialized): any);
+
+            const layers = bucket.layerIds
                 .map((id) => style.getLayer(id))
                 .filter(Boolean);
 
@@ -92,7 +90,10 @@ module.exports = {
                 continue;
             }
 
-            const bucket = layers[0].createBucket(util.extend({layers}, serialized));
+            // look up StyleLayer objects from layer ids (since we don't
+            // want to waste time serializing/copying them from the worker)
+            (bucket: any).layers = layers;
+
             for (const layer of layers) {
                 output[layer.id] = bucket;
             }

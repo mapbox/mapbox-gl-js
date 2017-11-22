@@ -12,13 +12,18 @@ const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
+const {register} = require('../../util/web_worker_transfer');
 
-import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
+import type {
+    Bucket,
+    BucketParameters,
+    IndexedFeature,
+    PopulateParameters
+} from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
 import type StyleLayer from '../../style/style_layer';
 import type {StructArray} from '../../util/struct_array';
 import type Point from '@mapbox/point-geometry';
-import type {Transferable} from '../../types/transferable';
 
 const fillExtrusionInterface = {
     layoutAttributes: [
@@ -61,6 +66,7 @@ class FillExtrusionBucket implements Bucket {
     zoom: number;
     overscaling: number;
     layers: Array<StyleLayer>;
+    layerIds: Array<string>;
 
     layoutVertexArray: StructArray;
     layoutVertexBuffer: VertexBuffer;
@@ -72,16 +78,17 @@ class FillExtrusionBucket implements Bucket {
     segments: SegmentVector;
     uploaded: boolean;
 
-    constructor(options: any) {
+    constructor(options: BucketParameters) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 
-        this.layoutVertexArray = new LayoutVertexArrayType(options.layoutVertexArray);
-        this.indexArray = new TriangleIndexArray(options.indexArray);
-        this.programConfigurations = new ProgramConfigurationSet(fillExtrusionInterface, options.layers, options.zoom, options.programConfigurations);
-        this.segments = new SegmentVector(options.segments);
+        this.layoutVertexArray = new LayoutVertexArrayType();
+        this.indexArray = new TriangleIndexArray();
+        this.programConfigurations = new ProgramConfigurationSet(fillExtrusionInterface, options.layers, options.zoom);
+        this.segments = new SegmentVector();
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -96,17 +103,6 @@ class FillExtrusionBucket implements Bucket {
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
-    }
-
-    serialize(transferables?: Array<Transferable>): SerializedBucket {
-        return {
-            zoom: this.zoom,
-            layerIds: this.layers.map((l) => l.id),
-            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
-            indexArray: this.indexArray.serialize(transferables),
-            programConfigurations: this.programConfigurations.serialize(transferables),
-            segments: this.segments.get(),
-        };
     }
 
     upload(gl: WebGLRenderingContext) {
@@ -216,6 +212,8 @@ class FillExtrusionBucket implements Bucket {
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
     }
 }
+
+register(FillExtrusionBucket, {omit: ['layers']});
 
 FillExtrusionBucket.programInterface = fillExtrusionInterface;
 

@@ -9,6 +9,7 @@ const util = require('../util/util');
 const assert = require('assert');
 const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
+const {serialize} = require('../util/web_worker_transfer');
 
 import type TileCoord from './tile_coord';
 import type {Bucket} from '../data/bucket';
@@ -198,7 +199,7 @@ function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
 function serializeBuckets(buckets: $ReadOnlyArray<Bucket>, transferables: Array<Transferable>) {
     return buckets
         .filter((b) => !b.isEmpty())
-        .map((b) => b.serialize(transferables));
+        .map((b) => serialize(b, transferables));
 }
 
 module.exports = WorkerTile;
