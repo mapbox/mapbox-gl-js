@@ -4,6 +4,9 @@ const Scope = require('./scope');
 const {checkSubtype} = require('./types');
 const ParsingError = require('./parsing_error');
 const Literal = require('./definitions/literal');
+const Assertion = require('./definitions/assertion');
+const ArrayAssertion = require('./definitions/array');
+const Coercion = require('./definitions/coercion');
 
 import type {Expression} from './expression';
 import type {Type} from './types';
@@ -77,10 +80,10 @@ class ParsingContext {
                         expected.kind === 'boolean';
 
                     if (canAssert && actual.kind === 'value') {
-                        const Assertion = require('./definitions/assertion');
                         parsed = new Assertion(expected, [parsed]);
+                    } else if (expected.kind === 'array' && actual.kind === 'value') {
+                        parsed = new ArrayAssertion(expected, parsed);
                     } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
-                        const Coercion = require('./definitions/coercion');
                         parsed = new Coercion(expected, [parsed]);
                     }
 
