@@ -117,6 +117,19 @@
         "text-font": ["let", "p", ["array", "string", ["get", "text-font"]], ["var", "p"]],
         "text-field": "{foo}"
       }
+    },
+    {
+      "id": "invalid expression - identity function",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "layer",
+      "layout": {
+        "text-font": {
+          "type": "identity",
+          "property": "text-font"
+        },
+        "text-field": "{foo}"
+      }
     }
   ]
 }

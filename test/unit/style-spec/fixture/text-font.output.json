@@ -26,5 +26,9 @@
   {
     "message": "layers[10].layout.text-font: Invalid data expression for \"text-font\". Output values must be contained as literals within the expression.",
     "line": 117
+  },
+  {
+    "message": "layers[11].layout.text-font: \"text-font\" does not support identity functions",
+    "line": 127
   }
 ]
