@@ -19,8 +19,6 @@ type BlendFuncConstant =
 
 export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant];
 
-export type ColorType = [number, number, number, number];
-
 export type ColorMaskType = [boolean, boolean, boolean, boolean];
 
 export type DepthRangeType = [number, number];

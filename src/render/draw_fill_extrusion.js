@@ -2,6 +2,7 @@
 
 const glMatrix = require('@mapbox/gl-matrix');
 const pattern = require('./pattern');
+const Color = require('../style-spec/util/color');
 const mat3 = glMatrix.mat3;
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
@@ -25,7 +26,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         context.stencilTest.set(false);
         context.depthTest.set(true);
 
-        context.clear({ color: [0, 0, 0, 0] });
+        context.clear({ color: Color.transparent });
         context.depthMask.set(true);
 
         for (let i = 0; i < coords.length; i++) {

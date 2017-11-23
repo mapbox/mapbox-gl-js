@@ -16,6 +16,7 @@ const Program = require('./program');
 const Context = require('../gl/context');
 const RenderTexture = require('./render_texture');
 const updateTileMasks = require('./tile_mask');
+const Color = require('../style-spec/util/color');
 
 const draw = {
     symbol: require('./draw_symbol'),
@@ -364,7 +365,7 @@ class Painter {
         }
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        context.clear({ color: [0, 0, 0, 0], depth: 1 });
+        context.clear({ color: Color.transparent, depth: 1 });
 
         this.showOverdrawInspector(options.showOverdrawInspector);
 
@@ -533,8 +534,8 @@ class Painter {
             context.blendFunc.set([gl.CONSTANT_COLOR, gl.ONE]);
             const numOverdrawSteps = 8;
             const a = 1 / numOverdrawSteps;
-            context.blendColor.set([a, a, a, 0]);
-            context.clear({ color: [0, 0, 0, 1] });
+            context.blendColor.set(new Color(a, a, a, 0));
+            context.clear({ color: Color.black });
         } else {
             context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
         }

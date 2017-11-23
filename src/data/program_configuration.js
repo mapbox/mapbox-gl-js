@@ -6,8 +6,8 @@ const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const Color = require('../style-spec/util/color');
 const {deserialize, serialize, register} = require('../util/web_worker_transfer');
-const Context = require('../gl/context');
 
+import type Context from '../gl/context';
 import type StyleLayer from '../style/style_layer';
 import type {Serialized} from '../util/web_worker_transfer';
 import type {ViewType, StructArray} from '../util/struct_array';

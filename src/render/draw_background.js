@@ -43,7 +43,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         if (pattern.isPatternMissing(image, painter)) return;
         const configuration = ProgramConfiguration.forBackgroundPattern(opacity);
         program = painter.useProgram('fillPattern', configuration);
-        configuration.setUniforms(gl, program, properties, globals);
+        configuration.setUniforms(context, program, properties, globals);
         pattern.prepare(image, painter, program);
         painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer);
     } else {

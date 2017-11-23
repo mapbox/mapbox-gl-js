@@ -37,7 +37,6 @@ import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type'
 import type {StructArray} from '../util/struct_array';
 import type {
     BlendFuncType,
-    ColorType,
     ColorMaskType,
     DepthRangeType,
     StencilFuncType,
@@ -46,9 +45,10 @@ import type {
     TextureUnitType,
     ViewportType,
 } from './types';
+import type Color from '../style-spec/util/color';
 
 type ClearArgs = {
-    color?: ColorType,
+    color?: Color,
     depth?: number,
     stencil?: number
     // TODO previously painter had `clearDepth`, `clearColor`, `clearStencil`
@@ -63,7 +63,7 @@ class Context {
     extVertexArrayObject: any;
     currentNumAttributes: ?number;
 
-    clearColor: State<ColorType>;
+    clearColor: State<Color>;
     clearDepth: State<number>;
     clearStencil: State<number>;
     colorMask: State<ColorMaskType>;
@@ -77,7 +77,7 @@ class Context {
     depthFunc: State<DepthFuncType>;
     blend: State<boolean>;
     blendFunc: State<BlendFuncType>;
-    blendColor: State<ColorType>;
+    blendColor: State<Color>;
     program: State<?WebGLProgram>;
     lineWidth: State<number>;
     activeTexture: State<TextureUnitType>;

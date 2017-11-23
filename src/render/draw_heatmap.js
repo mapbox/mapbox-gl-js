@@ -3,6 +3,7 @@
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const Texture = require('./texture');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const Color = require('../style-spec/util/color');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -30,7 +31,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
     renderToTexture(context, painter, layer);
 
-    context.clear({ color: [0, 0, 0, 0] });
+    context.clear({ color: Color.transparent });
 
     // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
     context.blendFunc.set([gl.ONE, gl.ONE]);

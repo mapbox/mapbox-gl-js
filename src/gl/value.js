@@ -3,7 +3,6 @@
 import type Context from './context';
 import type {
     BlendFuncType,
-    ColorType,
     ColorMaskType,
     DepthRangeType,
     StencilFuncType,
@@ -12,6 +11,7 @@ import type {
     TextureUnitType,
     ViewportType,
 } from './types';
+const Color = require('../style-spec/util/color');
 
 export interface Value<T> {
     context: Context;
@@ -27,11 +27,11 @@ class ContextValue {
     }
 }
 
-class ClearColor extends ContextValue implements Value<ColorType> {
-    static default() { return [0, 0, 0, 0]; }
+class ClearColor extends ContextValue implements Value<Color> {
+    static default() { return Color.transparent; }
 
-    set(v: ColorType): void {
-        this.context.gl.clearColor(v[0], v[1], v[2], v[3]);
+    set(v: Color): void {
+        this.context.gl.clearColor(v.r, v.g, v.b, v.a);
     }
 }
 
@@ -168,11 +168,11 @@ class BlendFunc extends ContextValue implements Value<BlendFuncType> {
     }
 }
 
-class BlendColor extends ContextValue implements Value<ColorType> {
-    static default() { return [0, 0, 0, 0]; }
+class BlendColor extends ContextValue implements Value<Color> {
+    static default() { return Color.transparent; }
 
-    set(v: ColorType): void {
-        this.context.gl.blendColor(v[0], v[1], v[2], v[3]);
+    set(v: Color): void {
+        this.context.gl.blendColor(v.r, v.g, v.b, v.a);
     }
 }
 
