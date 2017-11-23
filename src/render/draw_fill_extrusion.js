@@ -48,8 +48,8 @@ function drawExtrusionTexture(painter, layer) {
     context.stencilTest.set(false);
     context.depthTest.set(false);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, renderedTexture.texture);
+    context.activeTexture.set(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, renderedTexture.colorAttachment.get());
 
     gl.uniform1f(program.uniforms.u_opacity, layer.paint.get('fill-extrusion-opacity'));
     gl.uniform1i(program.uniforms.u_image, 0);

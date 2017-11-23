@@ -14,7 +14,7 @@ const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('../shaders');
 const Program = require('./program');
 const Context = require('../gl/context');
-const RenderTexture = require('./render_texture');
+const Texture = require('./texture');
 const updateTileMasks = require('./tile_mask');
 const Color = require('../style-spec/util/color');
 
@@ -37,7 +37,6 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type LineAtlas from './line_atlas';
-import type Texture from './texture';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -69,7 +68,6 @@ class Painter {
     width: number;
     height: number;
     depthRbo: WebGLRenderbuffer;
-    depthRboAttached: boolean;
     tileExtentBuffer: VertexBuffer;
     tileExtentVAO: VertexArrayObject;
     tileExtentPatternVAO: VertexArrayObject;
@@ -292,7 +290,7 @@ class Painter {
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
 
-        const context = this.context;
+        const gl = this.context.gl;
 
         for (const id in style.sourceCaches) {
             const sourceCache = this.style.sourceCaches[id];
@@ -351,19 +349,28 @@ class Painter {
 
                 this._setup3DRenderbuffer();
 
-                const renderTarget = layer.viewportFrame || new RenderTexture(this);
-                layer.viewportFrame = renderTarget;
-                renderTarget.bindWithDepth(this.depthRbo);
+                let renderTarget = layer.viewportFrame;
+                if (!renderTarget) {
+                    const texture = new Texture(this.context, {width: this.width, height: this.height, data: null}, gl.RGBA);
+                    texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+                    renderTarget = this.context.createFramebuffer();
+                    renderTarget.colorAttachment.set(texture.texture);
+                    layer.viewportFrame = renderTarget;
+                }
+
+                this.context.bindFramebuffer.set(renderTarget.framebuffer);
+                renderTarget.depthAttachment.set(this.depthRbo);
 
                 if (first) {
-                    context.clear({ depth: 1 });
+                    this.context.clear({ depth: 1 });
                     first = false;
                 }
 
                 this.renderLayer(this, (sourceCache: any), layer, coords);
-
-                renderTarget.unbind();
             }
+
+            this.context.bindFramebuffer.set(null);
         }
 
 
@@ -397,7 +404,7 @@ class Painter {
 
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        context.clear({ color: Color.transparent, depth: 1 });
+        this.context.clear({ color: Color.transparent, depth: 1 });
 
         this.showOverdrawInspector(options.showOverdrawInspector);
 
@@ -477,19 +484,12 @@ class Painter {
         }
     }
 
-    _setup3DRenderbuffer() {
+    _setup3DRenderbuffer(): void {
         const context = this.context;
         // All of the 3D textures will use the same depth renderbuffer.
         if (!this.depthRbo) {
-            const gl = this.context.gl;
-            this.depthRbo = gl.createRenderbuffer();
-
-            context.bindRenderbuffer.set(this.depthRbo);
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
-            context.bindRenderbuffer.set(null);
+            this.depthRbo = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, this.width, this.height);
         }
-
-        this.depthRboAttached = true;
     }
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {

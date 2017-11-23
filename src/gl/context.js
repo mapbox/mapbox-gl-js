@@ -1,6 +1,7 @@
 // @flow
 const IndexBuffer = require('./index_buffer');
 const VertexBuffer = require('./vertex_buffer');
+const Framebuffer = require('./framebuffer');
 const State = require('./state');
 const {
     ClearColor,
@@ -126,6 +127,21 @@ class Context {
 
     createVertexBuffer(array: StructArray, dynamicDraw?: boolean) {
         return new VertexBuffer(this, array, dynamicDraw);
+    }
+
+    createRenderbuffer(storageFormat: number, width: number, height: number) {
+        const gl = this.gl;
+
+        const rbo = gl.createRenderbuffer();
+        this.bindRenderbuffer.set(rbo);
+        gl.renderbufferStorage(gl.RENDERBUFFER, storageFormat, width, height);
+        this.bindRenderbuffer.set(null);
+
+        return rbo;
+    }
+
+    createFramebuffer() {
+        return new Framebuffer(this);
     }
 
     clear({color, depth}: ClearArgs) {

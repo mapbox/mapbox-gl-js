@@ -1,7 +1,9 @@
 // @flow
+const assert = require('assert');
 
 const Color = require('../style-spec/util/color');
 const util = require('../util/util');
+const window = require('../util/window');
 
 import type Context from './context';
 import type {
@@ -15,7 +17,6 @@ import type {
     ViewportType,
 } from './types';
 
-
 export interface Value<T> {
     context: Context;
     static default(context?: Context): T;
@@ -25,9 +26,13 @@ export interface Value<T> {
 
 class ContextValue {
     context: Context;
+    parent: ?any;
 
-    constructor(context: Context) {
+    constructor(context: Context, parent: ?any) {
         this.context = context;
+        if (parent) {
+            this.parent = parent;
+        }
     }
 
     static equal(a, b): boolean {
@@ -324,6 +329,46 @@ class PixelStoreUnpackPremultiplyAlpha extends ContextValue implements Value<boo
     }
 }
 
+/**
+ * Framebuffer values
+ */
+
+class ColorAttachment extends ContextValue implements Value<?WebGLTexture> {
+    static default() { return null; }
+
+    set(v: ?WebGLTexture): void {
+        assert(this.parent && this.parent instanceof window.WebGLFramebuffer);
+
+        const gl = this.context.gl;
+        this.context.bindFramebuffer.set(this.parent);
+        // note: it's possible to attach a renderbuffer to the color
+        // attachment point, but thus far MBGL only uses textures for color
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+    }
+
+    static equal(a, b): boolean {
+        return a === b;
+    }
+}
+
+class DepthAttachment extends ContextValue implements Value<?WebGLRenderbuffer> {
+    static default() { return null; }
+
+    set(v: ?WebGLRenderbuffer): void {
+        assert(this.parent && this.parent instanceof window.WebGLFramebuffer);
+
+        const gl = this.context.gl;
+        this.context.bindFramebuffer.set(this.parent);
+        // note: it's possible to attach a texture to the depth attachment
+        // point, but thus far MBGL only uses renderbuffers for depth
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
+    }
+
+    static equal(a, b): boolean {
+        return a === b;
+    }
+}
+
 module.exports = {
     ClearColor,
     ClearDepth,
@@ -352,4 +397,7 @@ module.exports = {
     BindVertexArrayOES,
     PixelStoreUnpack,
     PixelStoreUnpackPremultiplyAlpha,
+
+    ColorAttachment,
+    DepthAttachment,
 };

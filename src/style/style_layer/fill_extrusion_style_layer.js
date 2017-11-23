@@ -52,9 +52,9 @@ class FillExtrusionStyleLayer extends StyleLayer {
 
     resize(gl: WebGLRenderingContext) {
         if (this.viewportFrame) {
-            const {texture, fbo} = this.viewportFrame;
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(fbo);
+            const {colorAttachment, framebuffer} = this.viewportFrame;
+            gl.deleteTexture(colorAttachment.get());
+            gl.deleteFramebuffer(framebuffer);
             this.viewportFrame = null;
         }
     }

@@ -12,12 +12,13 @@ const {
 } = require('../properties');
 
 import type Texture from '../../render/texture';
+import type Framebuffer from '../../gl/framebuffer';
 import type {PaintProps} from './heatmap_style_layer_properties';
 
 class HeatmapStyleLayer extends StyleLayer {
 
     heatmapTexture: ?WebGLTexture;
-    heatmapFbo: ?WebGLFramebuffer;
+    heatmapFbo: ?Framebuffer;
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
 
@@ -66,7 +67,7 @@ class HeatmapStyleLayer extends StyleLayer {
             this.heatmapTexture = null;
         }
         if (this.heatmapFbo) {
-            gl.deleteFramebuffer(this.heatmapFbo);
+            gl.deleteFramebuffer(this.heatmapFbo.framebuffer);
             this.heatmapFbo = null;
         }
     }

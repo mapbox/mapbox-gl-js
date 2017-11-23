@@ -1,7 +1,6 @@
 // @flow
 const Coordinate = require('../geo/coordinate');
 const Texture = require('./texture');
-const RenderTexture = require('./render_texture');
 const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 
@@ -30,6 +29,8 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
         }
     }
 
+    context.viewport.set([0, 0, painter.width, painter.height]);
+    context.bindFramebuffer.set(null);
 }
 
 function setLight(program, painter, layer) {
@@ -57,7 +58,8 @@ function renderHillshade(painter, tile, layer) {
     // for scaling the magnitude of a points slope by its latitude
     const latRange = getTileLatRange(painter, tile.tileID);
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tile.texture.texture);
+
+    gl.bindTexture(gl.TEXTURE_2D, tile.texture.colorAttachment.get());
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
@@ -125,10 +127,14 @@ function prepareHillshade(painter, tile) {
 
         context.activeTexture.set(gl.TEXTURE0);
         if (!tile.texture) {
-            tile.texture = new RenderTexture(painter, tileSize, tileSize);
-        } else {
-            tile.texture.bindFbo();
+            const _texture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+            _texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+            tile.texture = context.createFramebuffer();
+            tile.texture.colorAttachment.set(_texture.texture);
         }
+
+        context.bindFramebuffer.set(tile.texture.framebuffer);
         context.viewport.set([0, 0, tileSize, tileSize]);
 
         const matrix = mat4.create();
@@ -149,8 +155,6 @@ function prepareHillshade(painter, tile) {
         vao.bind(context, program, buffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
-        tile.texture.unbind();
-        context.viewport.set([0, 0, painter.width, painter.height]);
         tile.needsHillshadePrepare = false;
     }
 }
