@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Add a vector tile source</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='./dist/mapbox-gl-dev.js'></script>
+    <link href='./dist/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamFtaW4td3lzcyIsImEiOiJVcm5FdEw4In0.S8HRIEq8NqdtFVz2-BwQog';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    zoom: 11,
+    center: [-122.411,37.771]
+});
+
+map.on('load', function () {
+
+    // map.addLayer({
+    //     "id": "terrain-data",
+    //     "type": "line",
+    //     "source": {
+    //         type: 'vector',
+
+    //         url: 'mapbox://mapbox.mapbox-terrain-v2'
+    //     },
+    //     "source-layer": "contour",
+    //     "layout": {
+    //         "line-join": "round",
+    //         "line-cap": "round"
+    //     },
+    //     "paint": {
+    //         "line-color": "#ff69b4",
+    //         "line-width": 1
+    //     }
+    // });
+
+    map.addSource('vectorDataSource', {
+        "type": "vector",
+        "tiles": [ "https://dataspace.demo.socrata.com/tiles/r6t9-rak2/point/{z}/{x}/{y}.pbf?$limit=65536" ]
+    });
+    map.addLayer({
+        'id': 'pointLayer',
+        'type': 'circle',
+        'source': 'vectorDataSource',
+        'source-layer': 'main',
+        'paint': {
+            'circle-radius': 2,
+            'circle-color': '#288dc1',
+            "circle-opacity": 0.5
+        }
+    });
+});
+</script>
+
+</body>
+</html>
