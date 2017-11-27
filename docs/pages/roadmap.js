@@ -10,7 +10,7 @@ const meta = {
 };
 
 const roadmap = {
-    "updated_at": "August 1, 2017",
+    "updated_at": "November 25, 2017",
     "roadmap_items": [
         {
             "term": "Active",
@@ -21,25 +21,6 @@ const roadmap = {
                     "issues": [
                         "3730",
                         "4701"
-                    ]
-                },
-                {
-                    "name": "Arbitrary expressions for property functions",
-                    "issues": [
-                        "4715"
-                    ]
-                },
-                {
-                    "name": "Viewport label placement",
-                    "issues": [
-                        "4704",
-                        "#4972"
-                    ]
-                },
-                {
-                    "name": "Heatmaps",
-                    "issues": [
-                        "4756"
                     ]
                 }
             ]
