@@ -46,13 +46,15 @@ map.on('load', function () {
 
     map.addSource('vectorDataSource', {
         "type": "vector",
-        "tiles": [ "https://dataspace.demo.socrata.com/tiles/r6t9-rak2/point/{z}/{x}/{y}.pbf?$limit=65536" ]
+        "tiles": [ "https://dataspace.demo.socrata.com/tiles/r6t9-rak2/point/{z}/{x}/{y}.json?$limit=1000" ]
+        // "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$limit=1000&$where=point is not null" ]
     });
+
     map.addLayer({
         'id': 'pointLayer',
         'type': 'circle',
         'source': 'vectorDataSource',
-        'source-layer': 'main',
+        'source-layer': '_geojsonTileLayer',
         'paint': {
             'circle-radius': 2,
             'circle-color': '#288dc1',

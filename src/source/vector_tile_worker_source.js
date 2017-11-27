@@ -5,6 +5,12 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
+const geojsonvt = require('geojson-vt');
+const rewind = require('geojson-rewind');
+const EXTENT = require('../data/extent');
+const supercluster = require('supercluster');
+const GeoJSONWrapper = require('./geojson_wrapper');
+const vtpbf = require('vt-pbf');
 
 import type {
     WorkerSource,
@@ -39,6 +45,58 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+
+    if ((params.request.url + '').indexOf('tiles.mapbox.com') >= 0) {
+        return loadVectorTileOriginal(params, callback);
+    }
+    const xhr = ajax.getJSON(params.request, (err, data) => {
+        if (err || !data) {
+            return callback(err);
+        } else if (typeof data !== 'object') {
+            return callback(new Error("Input data is not a valid GeoJSON object."));
+        } else {
+            rewind(data, true);
+
+            const superclusterOptions = {
+                minZoom: 5,
+                maxZoom: 20,
+                extent: EXTENT,
+                radius: 50 * (EXTENT/512),
+            };
+            try {
+                const index = supercluster(superclusterOptions).load(data.features);
+                const geoJSONTile = index.getTile(params.zoom, params.coord.x, params.coord.y);
+                if (!geoJSONTile) {
+                    return; // callback(null);
+                } else {
+                    console.log('geoJSONTile yaaaay', params.zoom, params.coord.x, params.coord.y,  geoJSONTile);
+                }
+                const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+                console.log('geojsonWrapper', geojsonWrapper);
+                let pbf = vtpbf(geojsonWrapper);
+                // if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
+                //     // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
+                //     pbf = new Uint8Array(pbf);
+                // }
+                callback(null, {
+                    vectorTile: geojsonWrapper,
+                    rawData: pbf.buffer,
+                    cacheControl: 'max-age=90000',
+                    expires: undefined
+                });
+            } catch (err) {
+                return callback(err);
+            }
+        }
+    });
+
+    return () => {
+        xhr.abort();
+        callback();
+    };
+}
+
+function loadVectorTileOriginal(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
