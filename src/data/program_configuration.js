@@ -286,10 +286,10 @@ class ProgramConfiguration {
             const useIntegerZoom = value.property.useIntegerZoom;
 
             if (value.value.kind === 'constant') {
-                self.binders[name] = new ConstantBinder(value.value, name, type, property);
+                self.binders[property] = new ConstantBinder(value.value, name, type, property);
                 self.cacheKey += `/u_${name}`;
             } else if (value.value.kind === 'source') {
-                self.binders[name] = new SourceExpressionBinder(value.value, name, type, property);
+                self.binders[property] = new SourceExpressionBinder(value.value, name, type, property);
                 self.cacheKey += `/a_${name}`;
                 attributes.push({
                     name: `a_${name}`,
@@ -297,7 +297,7 @@ class ProgramConfiguration {
                     components: type === 'color' ? 2 : 1
                 });
             } else {
-                self.binders[name] = new CompositeExpressionBinder(value.value, name, type, property, useIntegerZoom, zoom);
+                self.binders[property] = new CompositeExpressionBinder(value.value, name, type, property, useIntegerZoom, zoom);
                 self.cacheKey += `/z_${name}`;
                 attributes.push({
                     name: `a_${name}`,
@@ -316,10 +316,10 @@ class ProgramConfiguration {
     static forBackgroundColor(color: Color, opacity: number) {
         const self = new ProgramConfiguration();
 
-        self.binders.color = new ConstantBinder(color, 'color', 'color', 'background-color');
+        self.binders['background-color'] = new ConstantBinder(color, 'color', 'color', 'background-color');
         self.cacheKey += `/u_color`;
 
-        self.binders.opacity = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
+        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
         self.cacheKey += `/u_opacity`;
 
         return self;
@@ -328,7 +328,7 @@ class ProgramConfiguration {
     static forBackgroundPattern(opacity: number) {
         const self = new ProgramConfiguration();
 
-        self.binders.opacity = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
+        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
         self.cacheKey += `/u_opacity`;
 
         return self;
@@ -346,8 +346,8 @@ class ProgramConfiguration {
         const start = paintArray.length;
         paintArray.resize(length);
 
-        for (const name in this.binders) {
-            this.binders[name].populatePaintArray(
+        for (const property in this.binders) {
+            this.binders[property].populatePaintArray(
                 paintArray,
                 start, length,
                 feature);
@@ -356,15 +356,15 @@ class ProgramConfiguration {
 
     defines(): Array<string> {
         const result = [];
-        for (const name in this.binders) {
-            result.push.apply(result, this.binders[name].defines());
+        for (const property in this.binders) {
+            result.push.apply(result, this.binders[property].defines());
         }
         return result;
     }
 
     setUniforms<Properties: Object>(gl: WebGLRenderingContext, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
-        for (const name in this.binders) {
-            const binder = this.binders[name];
+        for (const property in this.binders) {
+            const binder = this.binders[property];
             binder.setUniforms(gl, program, globals, properties.get(binder.property));
         }
     }

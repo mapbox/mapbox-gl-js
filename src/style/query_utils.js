@@ -1,26 +1,19 @@
 // @flow
 
-const assert = require('assert');
 const Point = require('@mapbox/point-geometry');
 
 import type {PossiblyEvaluatedPropertyValue} from "./properties";
 import type StyleLayer from '../style/style_layer';
-import type {Bucket} from '../data/bucket';
+import type CircleBucket from '../data/bucket/circle_bucket';
+import type LineBucket from '../data/bucket/line_bucket';
 
-function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: Bucket): number {
+function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket | LineBucket): number {
     const value = ((layer.paint: any).get(property): PossiblyEvaluatedPropertyValue<any>).value;
     if (value.kind === 'constant') {
         return value.value;
     } else {
-        const binders = (bucket: any).programConfigurations.get(layer.id).binders;
-        for (const name in binders) {
-            const binder = binders[name];
-            if (binder.property === property) {
-                return binder.statistics.max;
-            }
-        }
-        assert(false, `Missing binder for data-driven property ${property}.`);
-        return -Infinity;
+        const binders = bucket.programConfigurations.get(layer.id).binders;
+        return binders[property].statistics.max;
     }
 }
 
