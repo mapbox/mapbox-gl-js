@@ -140,15 +140,11 @@ class StyleLayer extends Evented {
         return this.visibility === 'none';
     }
 
-    updatePaintTransitions(options: {transition?: boolean}, transition: TransitionSpecification) {
-        if (options.transition === false) {
-            this._transitioningPaint = this._transitionablePaint.untransitioned();
-        } else {
-            this._transitioningPaint = this._transitionablePaint.transitioned({
-                now: Date.now(),
-                transition
-            }, this._transitioningPaint);
-        }
+    updatePaintTransitions(transition: TransitionSpecification) {
+        this._transitioningPaint = this._transitionablePaint.transitioned({
+            now: Date.now(),
+            transition
+        }, this._transitioningPaint);
     }
 
     hasTransition() {

@@ -271,10 +271,8 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _applyPaintPropertyUpdates(options: ?{transition?: boolean}) {
+    _applyPaintPropertyUpdates() {
         if (!this._loaded) return;
-
-        options = options || {transition: true};
 
         const transition = util.extend({
             duration: 300,
@@ -282,10 +280,10 @@ class Style extends Evented {
         }, this.stylesheet.transition);
 
         for (const id in this._updatedPaintProps) {
-            this._layers[id].updatePaintTransitions(options, transition);
+            this._layers[id].updatePaintTransitions(transition);
         }
 
-        this.light.updateTransitions(options, transition);
+        this.light.updateTransitions(transition);
     }
 
     _recalculate(z: number) {
@@ -369,7 +367,7 @@ class Style extends Evented {
     /**
      * Apply queued style updates in a batch
      */
-    update(options: ?{transition?: boolean}) {
+    update() {
         if (!this._changed) return;
 
         const updatedIds = Object.keys(this._updatedLayers);
@@ -388,7 +386,7 @@ class Style extends Evented {
             }
         }
 
-        this._applyPaintPropertyUpdates(options);
+        this._applyPaintPropertyUpdates();
         this._resetUpdates();
 
         this.fire('data', {dataType: 'style'});
@@ -919,7 +917,7 @@ class Style extends Evented {
         return this.light.getLight();
     }
 
-    setLight(lightOptions: LightSpecification, options: ?{transition?: boolean}) {
+    setLight(lightOptions: LightSpecification) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -932,15 +930,13 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        options = options || {transition: true};
-
         const transition = util.extend({
             duration: 300,
             delay: 0
         }, this.stylesheet.transition);
 
         this.light.setLight(lightOptions);
-        this.light.updateTransitions(options, transition);
+        this.light.updateTransitions(transition);
     }
 
     _validate(validate: ({}) => void, key: string, value: any, props: any, options?: {validate?: boolean}) {
