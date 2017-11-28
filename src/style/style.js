@@ -186,8 +186,6 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
-        this.updatePaintProperties();
-
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
         }
@@ -613,7 +611,6 @@ class Style extends Evented {
             }
         }
         this._updateLayer(layer);
-        this.updatePaintProperties(id);
     }
 
     /**

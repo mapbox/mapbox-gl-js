@@ -339,7 +339,6 @@ class Map extends Camera {
             if (this.transform.unmodified) {
                 this.jumpTo(this.style.stylesheet);
             }
-            this.style.update({transition: false});
         });
 
         this.on('data', this._onData);
