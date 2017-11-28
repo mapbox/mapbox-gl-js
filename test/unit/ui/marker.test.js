@@ -81,5 +81,16 @@ test('Marker', (t) => {
         t.end();
     });
 
+    t.test('marker\'s offset can be changed', (t) => {
+        const map = createMap();
+        const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
+        const offset = marker.getOffset();
+        t.ok(offset.x === 0 && offset.y === 0, 'default offset');
+        t.ok(marker.setOffset([50, -75]) instanceof Marker, 'marker.setOffset() returns Marker instance');
+        const newOffset = marker.getOffset();
+        t.ok(newOffset.x === 50 &&  newOffset.y === -75, 'marker\'s offset can be updated');
+        t.end();
+    });
+
     t.end();
 });

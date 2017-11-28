@@ -279,6 +279,25 @@ class Marker {
 
         DOM.setTransform(this._element, `translate(-50%, -50%) translate(${this._pos.x}px, ${this._pos.y}px)`);
     }
+
+    /**
+     * Get the marker's offset.
+     * @returns {Point}
+     */
+    getOffset() {
+        return this._offset;
+    }
+
+    /**
+     * Sets the offset of the marker
+     * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @returns {Marker} `this`
+     */
+    setOffset(offset: PointLike) {
+        this._offset = Point.convert(offset);
+        this._update();
+        return this;
+    }
 }
 
 module.exports = Marker;
