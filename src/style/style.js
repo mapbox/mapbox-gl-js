@@ -271,21 +271,6 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _applyPaintPropertyUpdates() {
-        if (!this._loaded) return;
-
-        const transition = util.extend({
-            duration: 300,
-            delay: 0
-        }, this.stylesheet.transition);
-
-        for (const id in this._updatedPaintProps) {
-            this._layers[id].updatePaintTransitions(transition);
-        }
-
-        this.light.updateTransitions(transition);
-    }
-
     _recalculate(z: number) {
         if (!this._loaded) return;
 
@@ -368,7 +353,7 @@ class Style extends Evented {
      * Apply queued style updates in a batch
      */
     update() {
-        if (!this._changed) return;
+        if (!this._changed || !this._loaded) return;
 
         const updatedIds = Object.keys(this._updatedLayers);
         const removedIds = Object.keys(this._removedLayers);
@@ -386,7 +371,17 @@ class Style extends Evented {
             }
         }
 
-        this._applyPaintPropertyUpdates();
+        const transition = util.extend({
+            duration: 300,
+            delay: 0
+        }, this.stylesheet.transition);
+
+        for (const id in this._updatedPaintProps) {
+            this._layers[id].updatePaintTransitions(transition);
+        }
+
+        this.light.updateTransitions(transition);
+
         this._resetUpdates();
 
         this.fire('data', {dataType: 'style'});
