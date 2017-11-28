@@ -1478,8 +1478,6 @@ class Map extends Camera {
             this.fire('load');
         }
 
-        this._frameId = null;
-
         if (this.style && this.style.hasTransitions()) {
             this._styleDirty = true;
         }
@@ -1525,7 +1523,10 @@ class Map extends Camera {
 
     _rerender() {
         if (this.style && !this._frameId) {
-            this._frameId = browser.frame(this._render);
+            this._frameId = browser.frame(() => {
+                this._frameId = null;
+                this._render();
+            });
         }
     }
 
