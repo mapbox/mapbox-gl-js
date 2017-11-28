@@ -279,7 +279,7 @@ class Style extends Evented {
 
         const parameters = {
             zoom: z,
-            now: Date.now(),
+            now: browser.now(),
             defaultFadeDuration: 300,
             zoomHistory: this._updateZoomHistory(z)
         };
@@ -332,11 +332,11 @@ class Style extends Evented {
         // and if yes, record it with the time. Used for transitioning patterns.
         if (Math.floor(zh.lastZoom) < Math.floor(z)) {
             zh.lastIntegerZoom = Math.floor(z);
-            zh.lastIntegerZoomTime = Date.now();
+            zh.lastIntegerZoomTime = browser.now();
 
         } else if (Math.floor(zh.lastZoom) > Math.floor(z)) {
             zh.lastIntegerZoom = Math.floor(z + 1);
-            zh.lastIntegerZoomTime = Date.now();
+            zh.lastIntegerZoomTime = browser.now();
         }
 
         zh.lastZoom = z;
@@ -372,7 +372,7 @@ class Style extends Evented {
         }
 
         const parameters = {
-            now: Date.now(),
+            now: browser.now(),
             transition: util.extend({ duration: 300, delay: 0 }, this.stylesheet.transition)
         };
 
