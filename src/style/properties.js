@@ -139,7 +139,7 @@ class TransitionablePropertyValue<T, R> {
     transitioned(parameters: TransitionParameters,
                  prior: TransitioningPropertyValue<T, R>): TransitioningPropertyValue<T, R> {
         return new TransitioningPropertyValue(this.property, this.value, prior, // eslint-disable-line no-use-before-define
-            extend({}, this.transition, parameters.transition), parameters.now);
+            extend({}, parameters.transition, this.transition), parameters.now);
     }
 
     untransitioned(): TransitioningPropertyValue<T, R> {
