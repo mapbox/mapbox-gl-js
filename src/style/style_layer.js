@@ -17,7 +17,10 @@ import type {Bucket, BucketParameters} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type RenderTexture from '../render/render_texture';
 import type {FeatureFilter} from '../style-spec/feature_filter';
-import type {EvaluationParameters} from './properties';
+import type {
+    TransitionParameters,
+    EvaluationParameters
+} from './properties';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -140,11 +143,8 @@ class StyleLayer extends Evented {
         return this.visibility === 'none';
     }
 
-    updatePaintTransitions(transition: TransitionSpecification) {
-        this._transitioningPaint = this._transitionablePaint.transitioned({
-            now: Date.now(),
-            transition
-        }, this._transitioningPaint);
+    updateTransitions(parameters: TransitionParameters) {
+        this._transitioningPaint = this._transitionablePaint.transitioned(parameters, this._transitioningPaint);
     }
 
     hasTransition() {

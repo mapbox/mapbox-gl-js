@@ -371,16 +371,16 @@ class Style extends Evented {
             }
         }
 
-        const transition = util.extend({
-            duration: 300,
-            delay: 0
-        }, this.stylesheet.transition);
+        const parameters = {
+            now: Date.now(),
+            transition: util.extend({ duration: 300, delay: 0 }, this.stylesheet.transition)
+        };
 
         for (const id in this._updatedPaintProps) {
-            this._layers[id].updatePaintTransitions(transition);
+            this._layers[id].updateTransitions(parameters);
         }
 
-        this.light.updateTransitions(transition);
+        this.light.updateTransitions(parameters);
 
         this._resetUpdates();
 

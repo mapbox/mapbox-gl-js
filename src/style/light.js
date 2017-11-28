@@ -18,7 +18,12 @@ const {
     DataConstantProperty
 } = require('./properties');
 
-import type {Property, PropertyValue, EvaluationParameters} from './properties';
+import type {
+    Property,
+    PropertyValue,
+    TransitionParameters,
+    EvaluationParameters
+} from './properties';
 
 type LightPosition = {
     x: number,
@@ -96,11 +101,8 @@ class Light extends Evented {
         }
     }
 
-    updateTransitions(transition: TransitionSpecification) {
-        this._transitioning = this._transitionable.transitioned({
-            now: Date.now(),
-            transition
-        }, this._transitioning);
+    updateTransitions(parameters: TransitionParameters) {
+        this._transitioning = this._transitionable.transitioned(parameters, this._transitioning);
     }
 
     hasTransition() {
