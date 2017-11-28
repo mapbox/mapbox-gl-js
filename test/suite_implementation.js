@@ -44,6 +44,11 @@ module.exports = function(style, options, _callback) {
     // Configure the map to never stop the render loop
     map.repaint = true;
 
+    let now = 0;
+    browser.now = function() {
+        return now;
+    };
+
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
 
@@ -95,39 +100,46 @@ module.exports = function(style, options, _callback) {
 
         });
     });
-};
 
-function applyOperations(map, operations, callback) {
-    const operation = operations && operations[0];
-    if (!operations || operations.length === 0) {
-        callback();
+    function applyOperations(map, operations, callback) {
+        const operation = operations && operations[0];
+        if (!operations || operations.length === 0) {
+            callback();
 
-    } else if (operation[0] === 'wait') {
-        const wait = function() {
-            if (map.loaded()) {
+        } else if (operation[0] === 'wait') {
+            if (operation.length > 1) {
+                now += operation[1];
+                map._render();
                 applyOperations(map, operations.slice(1), callback);
+
             } else {
-                map.once('render', wait);
+                const wait = function() {
+                    if (map.loaded()) {
+                        applyOperations(map, operations.slice(1), callback);
+                    } else {
+                        map.once('render', wait);
+                    }
+                };
+                wait();
             }
-        };
-        wait();
 
-    } else if (operation[0] === 'sleep') {
-        // Prefer "wait", which renders until the map is loaded
-        // Use "sleep" when you need to test something that sidesteps the "loaded" logic
-        setTimeout(() => {
+        } else if (operation[0] === 'sleep') {
+            // Prefer "wait", which renders until the map is loaded
+            // Use "sleep" when you need to test something that sidesteps the "loaded" logic
+            setTimeout(() => {
+                applyOperations(map, operations.slice(1), callback);
+            }, operation[1]);
+        } else if (operation[0] === 'addImage') {
+            const {data, width, height} = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
+            map.addImage(operation[1], {width, height, data: new Uint8Array(data)}, operation[3] || {});
             applyOperations(map, operations.slice(1), callback);
-        }, operation[1]);
-    } else if (operation[0] === 'addImage') {
-        const {data, width, height} = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
-        map.addImage(operation[1], {width, height, data: new Uint8Array(data)}, operation[3] || {});
-        applyOperations(map, operations.slice(1), callback);
 
-    } else {
-        map[operation[0]].apply(map, operation.slice(1));
-        applyOperations(map, operations.slice(1), callback);
+        } else {
+            map[operation[0]].apply(map, operation.slice(1));
+            applyOperations(map, operations.slice(1), callback);
+        }
     }
-}
+};
 
 const cache = {};
 

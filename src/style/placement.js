@@ -64,7 +64,7 @@ class Placement {
         this._sourceCacheTileIDs = {};
         this._done = false;
 
-        if (forceFullPlacement || !previousPlacement) {
+        if (forceFullPlacement || !previousPlacement || fadeDuration === 0) {
             this._delayUntil = browser.now();
         } else {
             this._delayUntil = previousPlacement._delayUntil + 300;
