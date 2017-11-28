@@ -51,10 +51,6 @@ type ClearArgs = {
     color?: Color,
     depth?: number,
     stencil?: number
-    // TODO previously painter had `clearDepth`, `clearColor`, `clearStencil`
-    // methods so that callers wouldn't need to know appropriate/default values
-    // for clearing...should we still provide some such help or no? painter now
-    // calls context.clear in several places and has to know appropriate values
 };
 
 
@@ -94,7 +90,6 @@ class Context {
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
-        // TODO is there any reason to wait to try to initialize this?
 
         this.clearColor = new State(new ClearColor(this));
         this.clearDepth = new State(new ClearDepth(this));
@@ -133,7 +128,7 @@ class Context {
         return new VertexBuffer(this, array, dynamicDraw);
     }
 
-    clear({color, depth, stencil}: ClearArgs) {
+    clear({color, depth}: ClearArgs) {
         const gl = this.gl;
         let mask = 0;
 

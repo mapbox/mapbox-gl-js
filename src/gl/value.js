@@ -1,5 +1,8 @@
 // @flow
 
+const Color = require('../style-spec/util/color');
+const util = require('../util/util');
+
 import type Context from './context';
 import type {
     BlendFuncType,
@@ -11,12 +14,13 @@ import type {
     TextureUnitType,
     ViewportType,
 } from './types';
-const Color = require('../style-spec/util/color');
+
 
 export interface Value<T> {
     context: Context;
     static default(context?: Context): T;
     set(value: T): void;
+    static equal(a: T, b: T): boolean;
 }
 
 class ContextValue {
@@ -24,6 +28,10 @@ class ContextValue {
 
     constructor(context: Context) {
         this.context = context;
+    }
+
+    static equal(a, b): boolean {
+        return util.deepEqual(a, b);
     }
 }
 
@@ -182,6 +190,10 @@ class Program extends ContextValue implements Value<?WebGLProgram> {
     set(v: ?WebGLProgram): void {
         this.context.gl.useProgram(v);
     }
+
+    static equal(a: ?WebGLProgram, b: ?WebGLProgram): boolean {
+        return a === b;
+    }
 }
 
 class LineWidth extends ContextValue implements Value<number> {
@@ -220,6 +232,10 @@ class BindFramebuffer extends ContextValue implements Value<?WebGLFramebuffer> {
         const gl = this.context.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, v);
     }
+
+    static equal(a: ?WebGLFramebuffer, b: ?WebGLFramebuffer): boolean {
+        return a === b;
+    }
 }
 
 class BindRenderbuffer extends ContextValue implements Value<?WebGLRenderbuffer> {
@@ -228,6 +244,10 @@ class BindRenderbuffer extends ContextValue implements Value<?WebGLRenderbuffer>
     set(v: ?WebGLRenderbuffer): void {
         const gl = this.context.gl;
         gl.bindRenderbuffer(gl.RENDERBUFFER, v);
+    }
+
+    static equal(a: ?WebGLRenderbuffer, b: ?WebGLRenderbuffer): boolean {
+        return a === b;
     }
 }
 
@@ -238,6 +258,10 @@ class BindTexture extends ContextValue implements Value<?WebGLTexture> {
         const gl = this.context.gl;
         gl.bindTexture(gl.TEXTURE_2D, v);
     }
+
+    static equal(a: ?WebGLTexture, b: ?WebGLTexture): boolean {
+        return a === b;
+    }
 }
 
 class BindVertexBuffer extends ContextValue implements Value<?WebGLBuffer> {
@@ -247,6 +271,10 @@ class BindVertexBuffer extends ContextValue implements Value<?WebGLBuffer> {
         const gl = this.context.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, v);
     }
+
+    static equal(a: ?WebGLBuffer, b: ?WebGLBuffer): boolean {
+        return a === b;
+    }
 }
 
 class BindElementBuffer extends ContextValue implements Value<?WebGLBuffer> {
@@ -255,6 +283,11 @@ class BindElementBuffer extends ContextValue implements Value<?WebGLBuffer> {
     set(v: ?WebGLBuffer): void {
         const gl = this.context.gl;
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v);
+    }
+
+    static equal(): boolean {
+        // Always rebind:
+        return false;
     }
 }
 
@@ -266,6 +299,10 @@ class BindVertexArrayOES extends ContextValue implements Value<any> {
         if (context.extVertexArrayObject) {
             context.extVertexArrayObject.bindVertexArrayOES(v);
         }
+    }
+
+    static equal(a, b): boolean {
+        return a === b;
     }
 }
 

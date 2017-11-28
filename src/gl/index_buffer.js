@@ -38,12 +38,7 @@ class IndexBuffer {
     }
 
     bind() {
-        const gl = this.context.gl;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
-        // this.context.bindElementBuffer.set(this.buffer);
-        // TODO not sure why this doesn't work, but using bindElementBuffer throws:
-        // [.Offscreen-For-WebGL-0x7fbaf382a800]GL ERROR :GL_INVALID_OPERATION :
-        //  glDrawElements: bound to target 0x8893 : no buffer
+        this.context.bindElementBuffer.set(this.buffer);
     }
 
     updateData(array: StructArray) {
