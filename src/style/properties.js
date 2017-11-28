@@ -109,7 +109,7 @@ class PropertyValue<T, R> {
 
 // ------- Transitionable -------
 
-type TransitionParameters = {
+export type TransitionParameters = {
     now: TimePoint,
     transition: TransitionSpecification
 };
