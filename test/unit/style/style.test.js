@@ -1352,7 +1352,7 @@ test('Style#setFilter', (t) => {
 
             style.setFilter('symbol', ['==', 'id', 1]);
             t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
-            style.update({}, {}); // trigger dispatcher broadcast
+            style.update(); // trigger dispatcher broadcast
         });
     });
 
@@ -1379,7 +1379,7 @@ test('Style#setFilter', (t) => {
         style.on('style.load', () => {
             const filter = ['==', 'id', 1];
             style.setFilter('symbol', filter);
-            style.update({}, {}); // flush pending operations
+            style.update(); // flush pending operations
 
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'updateLayers');
@@ -1389,7 +1389,7 @@ test('Style#setFilter', (t) => {
             };
             filter[2] = 2;
             style.setFilter('symbol', filter);
-            style.update({}, {}); // trigger dispatcher broadcast
+            style.update(); // trigger dispatcher broadcast
         });
     });
 

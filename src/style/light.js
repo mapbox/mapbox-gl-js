@@ -96,15 +96,11 @@ class Light extends Evented {
         }
     }
 
-    updateTransitions(options: {transition?: boolean}, transition: TransitionSpecification) {
-        if (options.transition === false) {
-            this._transitioning = this._transitionable.untransitioned();
-        } else {
-            this._transitioning = this._transitionable.transitioned({
-                now: Date.now(),
-                transition
-            }, this._transitioning);
-        }
+    updateTransitions(transition: TransitionSpecification) {
+        this._transitioning = this._transitionable.transitioned({
+            now: Date.now(),
+            transition
+        }, this._transitioning);
     }
 
     hasTransition() {
