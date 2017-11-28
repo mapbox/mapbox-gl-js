@@ -3,7 +3,6 @@ const assert = require('assert');
 
 import type {StructArray} from '../util/struct_array';
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
-import type {SerializedStructArray} from '../util/struct_array';
 import type Context from '../gl/context';
 
 
