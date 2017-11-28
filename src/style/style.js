@@ -90,8 +90,7 @@ class Style extends Evented {
     _updatedSources: {[string]: 'clear' | 'reload'};
     _updatedLayers: {[string]: true};
     _removedLayers: {[string]: StyleLayer};
-    _updatedPaintProps: {[layer: string]: {[class: string]: true}};
-    _updatedAllPaintProps: boolean;
+    _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
 
     collisionIndex: CollisionIndex;
@@ -282,9 +281,7 @@ class Style extends Evented {
             delay: 0
         }, this.stylesheet.transition);
 
-        const layers = this._updatedAllPaintProps ? this._layers : this._updatedPaintProps;
-
-        for (const id in layers) {
+        for (const id in this._updatedPaintProps) {
             this._layers[id].updatePaintTransitions(options, transition);
         }
 
@@ -411,9 +408,7 @@ class Style extends Evented {
         this._removedLayers = {};
 
         this._updatedSources = {};
-
         this._updatedPaintProps = {};
-        this._updatedAllPaintProps = false;
     }
 
     /**
@@ -807,7 +802,8 @@ class Style extends Evented {
             this._updateLayer(layer);
         }
 
-        this.updatePaintProperties(layerId, name);
+        this._changed = true;
+        this._updatedPaintProps[layerId] = true;
     }
 
     getPaintProperty(layer: string, name: string) {
@@ -817,17 +813,6 @@ class Style extends Evented {
     getTransition() {
         return util.extend({ duration: 300, delay: 0 },
             this.stylesheet && this.stylesheet.transition);
-    }
-
-    updatePaintProperties(layerId?: string, paintName?: string) {
-        this._changed = true;
-        if (!layerId) {
-            this._updatedAllPaintProps = true;
-        } else {
-            const props = this._updatedPaintProps;
-            if (!props[layerId]) props[layerId] = {};
-            props[layerId][paintName || 'all'] = true;
-        }
     }
 
     serialize() {
