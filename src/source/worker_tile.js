@@ -2,7 +2,7 @@
 
 const FeatureIndex = require('../data/feature_index');
 const {performSymbolLayout} = require('../symbol/symbol_layout');
-const CollisionBoxArray = require('../symbol/collision_box');
+const {CollisionBoxArray} = require('../data/array_types');
 const DictionaryCoder = require('../util/dictionary_coder');
 const SymbolBucket = require('../data/bucket/symbol_bucket');
 const util = require('../util/util');

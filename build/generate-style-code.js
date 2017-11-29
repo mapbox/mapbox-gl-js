@@ -128,3 +128,4 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 for (const layer of layers) {
     fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, propertiesJs(layer))
 }
+

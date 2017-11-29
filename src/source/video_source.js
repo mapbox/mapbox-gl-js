@@ -2,6 +2,7 @@
 
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');
+const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
 
@@ -122,7 +123,7 @@ class VideoSource extends ImageSource {
         const gl = context.gl;
 
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
         }
 
         if (!this.boundsVAO) {

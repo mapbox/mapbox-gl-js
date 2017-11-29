@@ -1,8 +1,9 @@
 // @flow
 
+const {CircleLayoutArray} = require('../array_types');
+const layoutAttributes = require('./circle_attributes').members;
 const {SegmentVector} = require('../segment');
 const {ProgramConfigurationSet} = require('../program_configuration');
-const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray} = require('../index_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
@@ -14,31 +15,12 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
-import type {ProgramInterface} from '../program_configuration';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer';
-import type {StructArray} from '../../util/struct_array';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
-
-const circleInterface = {
-    layoutAttributes: [
-        {name: 'a_pos', components: 2, type: 'Int16'}
-    ],
-    indexArrayType: TriangleIndexArray,
-
-    paintAttributes: [
-        {property: 'circle-color'},
-        {property: 'circle-radius'},
-        {property: 'circle-blur'},
-        {property: 'circle-opacity'},
-        {property: 'circle-stroke-color'},
-        {property: 'circle-stroke-width'},
-        {property: 'circle-stroke-opacity'}
-    ]
-};
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
@@ -46,7 +28,6 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
         (y * 2) + ((extrudeY + 1) / 2));
 }
 
-const LayoutVertexArrayType = createVertexArrayType(circleInterface.layoutAttributes);
 
 /**
  * Circles are represented by two triangles.
@@ -56,17 +37,16 @@ const LayoutVertexArrayType = createVertexArrayType(circleInterface.layoutAttrib
  * @private
  */
 class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
-    static programInterface: ProgramInterface;
     index: number;
     zoom: number;
     overscaling: number;
     layerIds: Array<string>;
     layers: Array<Layer>;
 
-    layoutVertexArray: StructArray;
+    layoutVertexArray: CircleLayoutArray;
     layoutVertexBuffer: VertexBuffer;
 
-    indexArray: StructArray;
+    indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet<Layer>;
@@ -80,11 +60,10 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 
-        this.layoutVertexArray = new LayoutVertexArrayType();
+        this.layoutVertexArray = new CircleLayoutArray();
         this.indexArray = new TriangleIndexArray();
         this.segments = new SegmentVector();
-        this.programConfigurations = new ProgramConfigurationSet(
-            this.constructor.programInterface, options.layers, options.zoom);
+        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -102,7 +81,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray);
+        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
         this.indexBuffer = context.createIndexBuffer(this.indexArray);
         this.programConfigurations.upload(context);
     }
@@ -154,7 +133,5 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
 }
 
 register('CircleBucket', CircleBucket, {omit: ['layers']});
-
-CircleBucket.programInterface = circleInterface;
 
 module.exports = CircleBucket;

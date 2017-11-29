@@ -8,8 +8,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
 import type OpacityState from './opacity_state';
 import type CollisionIndex from './collision_index';
-import type CollisionBoxArray from './collision_box';
-import type {StructArray} from '../util/struct_array';
+import type {CollisionBoxArray, CollisionVertexArray} from '../data/array_types';
 
 module.exports = {
     updateOpacities: updateOpacities,
@@ -120,14 +119,14 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any, instant:
 }
 
 
-function updateCollisionBox(collisionVertexArray: StructArray, placed: boolean) {
+function updateCollisionBox(collisionVertexArray: CollisionVertexArray, placed: boolean) {
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
     collisionVertexArray.emplaceBack(placed ? 1 : 0, 0);
 }
 
-function updateCollisionCircles(collisionVertexArray: StructArray, collisionCircles: Array<any>, placed: boolean, isDuplicate: boolean) {
+function updateCollisionCircles(collisionVertexArray: CollisionVertexArray, collisionCircles: Array<any>, placed: boolean, isDuplicate: boolean) {
     for (let k = 0; k < collisionCircles.length; k += 5) {
         const notUsed = isDuplicate || (collisionCircles[k + 4] === 0);
         collisionVertexArray.emplaceBack(placed ? 1 : 0, notUsed ? 1 : 0);

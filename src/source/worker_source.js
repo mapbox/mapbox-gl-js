@@ -5,7 +5,7 @@ import type {RGBAImage, AlphaImage} from '../util/image';
 import type {OverscaledTileID} from './tile_id';
 import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
-import type CollisionBoxArray from '../symbol/collision_box';
+import type {CollisionBoxArray} from '../data/array_types';
 import type {DEMData} from '../data/dem_data';
 
 export type TileParameters = {

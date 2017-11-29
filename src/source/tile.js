@@ -9,8 +9,11 @@ const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
 const CollisionIndex = require('../symbol/collision_index');
-const CollisionBoxArray = require('../symbol/collision_box');
-const RasterBoundsArray = require('../data/raster_bounds_array');
+const {
+    RasterBoundsArray,
+    CollisionBoxArray
+} = require('../data/array_types');
+const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
 const Texture = require('../render/texture');
@@ -283,7 +286,7 @@ class Tile {
                           params: { filter: FilterSpecification, layers: Array<string> },
                           bearing: number,
                           sourceID: string): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
-        if (!this.featureIndex)
+        if (!this.featureIndex || !this.collisionBoxArray)
             return {};
 
         // Determine the additional radius needed factoring in property functions
@@ -392,7 +395,7 @@ class Tile {
             segment.primitiveLength += 2;
         }
 
-        this.maskedBoundsBuffer = context.createVertexBuffer(maskedBoundsArray);
+        this.maskedBoundsBuffer = context.createVertexBuffer(maskedBoundsArray, rasterBoundsAttributes.members);
         this.maskedIndexBuffer = context.createIndexBuffer(indexArray);
     }
 

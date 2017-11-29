@@ -101,12 +101,13 @@ class Program {
 
         for (const segment of segments.get()) {
             const vaos = segment.vaos || (segment.vaos = {});
-            const vao = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
+            const vao: VertexArrayObject = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
 
             vao.bind(
                 context,
                 this,
-                [layoutVertexBuffer].concat(configuration ? configuration.getPaintVertexBuffers() : []),
+                layoutVertexBuffer,
+                configuration ? configuration.getPaintVertexBuffers() : [],
                 indexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer,

@@ -1,6 +1,6 @@
 // @flow
 
-import type CollisionBoxArray from '../symbol/collision_box';
+import type {CollisionBoxArray} from './array_types';
 import type Style from '../style/style';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';

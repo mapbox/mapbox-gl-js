@@ -1,8 +1,9 @@
 // @flow
 
+const {LineLayoutArray} = require('../array_types');
+const layoutAttributes = require('./line_attributes').members;
 const {SegmentVector} = require('../segment');
 const {ProgramConfigurationSet} = require('../program_configuration');
-const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray} = require('../index_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
@@ -15,14 +16,12 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
-import type {ProgramInterface} from '../program_configuration';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type Point from '@mapbox/point-geometry';
 import type {Segment} from '../segment';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import type {StructArray} from '../../util/struct_array';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -57,23 +56,6 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
-const lineInterface = {
-    layoutAttributes: [
-        {name: 'a_pos_normal', components: 4, type: 'Int16'},
-        {name: 'a_data', components: 4, type: 'Uint8'}
-    ],
-    paintAttributes: [
-        {property: 'line-color'},
-        {property: 'line-blur'},
-        {property: 'line-opacity'},
-        {property: 'line-gap-width', name: 'gapwidth'},
-        {property: 'line-offset'},
-        {property: 'line-width'},
-        {property: 'line-floorwidth'},
-    ],
-    indexArrayType: TriangleIndexArray
-};
-
 function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: boolean, up: boolean, dir: number, linesofar: number) {
     layoutVertexBuffer.emplaceBack(
         // a_pos_normal
@@ -94,14 +76,11 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
         (linesofar * LINE_DISTANCE_SCALE) >> 6);
 }
 
-const LayoutVertexArrayType = createVertexArrayType(lineInterface.layoutAttributes);
 
 /**
  * @private
  */
 class LineBucket implements Bucket {
-    static programInterface: ProgramInterface;
-
     distance: number;
     e1: number;
     e2: number;
@@ -113,10 +92,10 @@ class LineBucket implements Bucket {
     layers: Array<LineStyleLayer>;
     layerIds: Array<string>;
 
-    layoutVertexArray: StructArray;
+    layoutVertexArray: LineLayoutArray;
     layoutVertexBuffer: VertexBuffer;
 
-    indexArray: StructArray;
+    indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
@@ -130,9 +109,9 @@ class LineBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 
-        this.layoutVertexArray = new LayoutVertexArrayType();
+        this.layoutVertexArray = new LineLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(lineInterface, options.layers, options.zoom);
+        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
     }
 
@@ -151,7 +130,7 @@ class LineBucket implements Bucket {
     }
 
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray);
+        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
         this.indexBuffer = context.createIndexBuffer(this.indexArray);
         this.programConfigurations.upload(context);
     }
@@ -530,7 +509,5 @@ class LineBucket implements Bucket {
 }
 
 register('LineBucket', LineBucket, {omit: ['layers']});
-
-LineBucket.programInterface = lineInterface;
 
 module.exports = LineBucket;

@@ -1,8 +1,9 @@
 // @flow
 
+const {FillExtrusionLayoutArray} = require('../array_types');
+const layoutAttributes = require('./fill_extrusion_attributes').members;
 const {SegmentVector, MAX_VERTEX_ARRAY_LENGTH} = require('../segment');
 const {ProgramConfigurationSet} = require('../program_configuration');
-const createVertexArrayType = require('../vertex_array_type');
 const {TriangleIndexArray} = require('../index_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
@@ -18,28 +19,11 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
-import type {ProgramInterface} from '../program_configuration';
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
-import type {StructArray} from '../../util/struct_array';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
-
-const fillExtrusionInterface = {
-    layoutAttributes: [
-        {name: 'a_pos',          components: 2, type: 'Int16'},
-        {name: 'a_normal',       components: 3, type: 'Int16'},
-        {name: 'a_edgedistance', components: 1, type: 'Int16'}
-    ],
-    indexArrayType: TriangleIndexArray,
-
-    paintAttributes: [
-        {property: 'fill-extrusion-base'},
-        {property: 'fill-extrusion-height'},
-        {property: 'fill-extrusion-color'}
-    ]
-};
 
 const FACTOR = Math.pow(2, 13);
 
@@ -58,21 +42,18 @@ function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
     );
 }
 
-const LayoutVertexArrayType = createVertexArrayType(fillExtrusionInterface.layoutAttributes);
 
 class FillExtrusionBucket implements Bucket {
-    static programInterface: ProgramInterface;
-
     index: number;
     zoom: number;
     overscaling: number;
     layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
 
-    layoutVertexArray: StructArray;
+    layoutVertexArray: FillExtrusionLayoutArray;
     layoutVertexBuffer: VertexBuffer;
 
-    indexArray: StructArray;
+    indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
@@ -86,9 +67,9 @@ class FillExtrusionBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 
-        this.layoutVertexArray = new LayoutVertexArrayType();
+        this.layoutVertexArray = new FillExtrusionLayoutArray();
         this.indexArray = new TriangleIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(fillExtrusionInterface, options.layers, options.zoom);
+        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
     }
 
@@ -107,7 +88,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray);
+        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
         this.indexBuffer = context.createIndexBuffer(this.indexArray);
         this.programConfigurations.upload(context);
     }
@@ -215,8 +196,6 @@ class FillExtrusionBucket implements Bucket {
 }
 
 register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers']});
-
-FillExtrusionBucket.programInterface = fillExtrusionInterface;
 
 module.exports = FillExtrusionBucket;
 
