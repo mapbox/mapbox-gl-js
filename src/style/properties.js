@@ -23,7 +23,7 @@ type TimePoint = number;
 
 export type EvaluationParameters = GlobalProperties & {
     now?: TimePoint,
-    defaultFadeDuration?: number,
+    fadeDuration?: number,
     zoomHistory?: ZoomHistory
 };
 
@@ -613,7 +613,7 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
     _calculate(min: T, mid: T, max: T, parameters: any): ?CrossFaded<T> {
         const z = parameters.zoom;
         const fraction = z - Math.floor(z);
-        const d = parameters.defaultFadeDuration;
+        const d = parameters.fadeDuration;
         const t = d !== 0 ? Math.min((parameters.now - parameters.zoomHistory.lastIntegerZoomTime) / d, 1) : 1;
         return z > parameters.zoomHistory.lastIntegerZoom ?
             { from: min, to: mid, fromScale: 2, toScale: 1, t: fraction + (1 - fraction) * t } :

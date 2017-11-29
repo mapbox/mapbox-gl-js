@@ -46,7 +46,7 @@ type PainterOptions = {
     showTileBoundaries: boolean,
     rotating: boolean,
     zooming: boolean,
-    collisionFadeDuration: number
+    fadeDuration: number
 }
 
 /**
