@@ -127,7 +127,7 @@ function renderTextureToMap(context, painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
+    context.blendFunc.set(painter._showOverdrawInspector ? [gl.CONSTANT_COLOR, gl.ONE] : [gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
     const program = painter.useProgram('heatmapTexture');
 

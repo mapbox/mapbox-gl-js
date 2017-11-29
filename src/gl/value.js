@@ -340,7 +340,6 @@ module.exports = {
     Blend,
     BlendFunc,
     BlendColor,
-
     Program,
     LineWidth,
     ActiveTextureUnit,
@@ -351,7 +350,6 @@ module.exports = {
     BindVertexBuffer,
     BindElementBuffer,
     BindVertexArrayOES,
-    // VertexAttribute,
     PixelStoreUnpack,
     PixelStoreUnpackPremultiplyAlpha,
 };

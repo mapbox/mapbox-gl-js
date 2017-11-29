@@ -52,7 +52,7 @@ module.exports = function(style, options, _callback) {
     if (options.debug) map.showTileBoundaries = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
 
-    const gl = map.painter.gl;
+    const gl = map.painter.context.gl;
 
     map.once('load', () => {
         if (options.collisionDebug) {
@@ -90,7 +90,7 @@ module.exports = function(style, options, _callback) {
 
             map.remove();
             gl.getExtension('STACKGL_destroy_context').destroy();
-            delete map.painter.gl;
+            delete map.painter.context.gl;
 
             callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();

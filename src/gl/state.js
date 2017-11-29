@@ -22,14 +22,6 @@ class State<T> {
             this.value.set(t);
         }
     }
-
-    setDirty(): void {
-        this.dirty = true;
-    }
-
-    isDirty(): boolean {
-        return this.dirty;
-    }
 }
 
 module.exports = State;
