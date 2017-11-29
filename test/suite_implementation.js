@@ -38,7 +38,7 @@ module.exports = function(style, options, _callback) {
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
-        collisionFadeDuration: 0
+        fadeDuration: 0
     });
 
     // Configure the map to never stop the render loop

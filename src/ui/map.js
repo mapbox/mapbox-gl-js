@@ -124,7 +124,7 @@ const defaultOptions = {
     maxTileCacheSize: null,
 
     transformRequest: null,
-    collisionFadeDuration: 300
+    fadeDuration: 300
 };
 
 /**
@@ -241,7 +241,7 @@ class Map extends Camera {
     _refreshExpiredTiles: boolean;
     _hash: Hash;
     _delegatedListeners: any;
-    _collisionFadeDuration: number;
+    _fadeDuration: number;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -268,7 +268,7 @@ class Map extends Camera {
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
-        this._collisionFadeDuration = options.collisionFadeDuration;
+        this._fadeDuration = options.fadeDuration;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -1449,7 +1449,7 @@ class Map extends Camera {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
             this.style.update();
-            this.style._recalculate(this.transform.zoom);
+            this.style._recalculate(this.transform.zoom, this._fadeDuration);
         }
 
         // If we are in _render for any reason other than an in-progress paint
@@ -1460,7 +1460,7 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
-        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._collisionFadeDuration);
+        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration);
 
         // Actually draw
         this.painter.render(this.style, {
@@ -1468,7 +1468,7 @@ class Map extends Camera {
             showOverdrawInspector: this._showOverdrawInspector,
             rotating: this.rotating,
             zooming: this.zooming,
-            collisionFadeDuration: this._collisionFadeDuration
+            fadeDuration: this._fadeDuration
         });
 
         this.fire('render');

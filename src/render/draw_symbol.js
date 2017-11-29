@@ -126,7 +126,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.uniforms.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.uniforms.u_fade_change, painter.options.collisionFadeDuration ? ((Date.now() - bucket.fadeStartTime) / painter.options.collisionFadeDuration) : 1);
+        gl.uniform1f(program.uniforms.u_fade_change, painter.options.fadeDuration ? ((Date.now() - bucket.fadeStartTime) / painter.options.fadeDuration) : 1);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }

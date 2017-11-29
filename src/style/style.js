@@ -271,7 +271,7 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _recalculate(z: number) {
+    _recalculate(z: number, fadeDuration: number) {
         if (!this._loaded) return;
 
         for (const sourceId in this.sourceCaches)
@@ -280,7 +280,7 @@ class Style extends Evented {
         const parameters = {
             zoom: z,
             now: browser.now(),
-            defaultFadeDuration: 300,
+            fadeDuration,
             zoomHistory: this._updateZoomHistory(z)
         };
 
