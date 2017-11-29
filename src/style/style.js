@@ -511,7 +511,6 @@ class Style extends Evented {
         const sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
         delete this._updatedSources[id];
-        sourceCache.fire('data', {sourceDataType: 'metadata', dataType:'source', sourceId: id});
         sourceCache.setEventedParent(null);
         sourceCache.clearTiles();
 

@@ -32,6 +32,7 @@ class LogoControl {
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
+        this._map.on('styledata', this._updateLogo);
         this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
         return this._container;
@@ -46,10 +47,8 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo(e: any) {
-        if (!e || e.sourceDataType === 'metadata') {
-            this._container.style.display = this._logoRequired() ? 'block' : 'none';
-        }
+    _updateLogo() {
+        this._container.style.display = this._logoRequired() ? 'block' : 'none';
     }
 
     _logoRequired() {
@@ -65,8 +64,6 @@ class LogoControl {
 
         return false;
     }
-
 }
-
 
 module.exports = LogoControl;
