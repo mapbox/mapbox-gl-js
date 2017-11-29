@@ -153,7 +153,7 @@ class DepthFunc extends ContextValue implements Value<DepthFuncType> {
 }
 
 class Blend extends ContextValue implements Value<boolean> {
-    static default() { return true; }
+    static default() { return false; }
 
     set(v: boolean): void {
         const gl = this.context.gl;

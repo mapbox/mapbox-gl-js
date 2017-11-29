@@ -145,7 +145,7 @@ class Painter {
         // We are blending the new pixels *behind* the existing pixels. That way we can
         // draw front-to-back and use then stencil buffer to cull opaque pixels early.
         context.blend.set(true);
-        context.blendFunc.set([gl.LINES, gl.ONE_MINUS_SRC_ALPHA]);
+        context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
         context.stencilTest.set(true);
 
