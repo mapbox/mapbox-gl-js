@@ -47,12 +47,12 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         program = painter.useProgram('fillPattern', configuration);
         configuration.setUniforms(context, program, properties, globals);
         pattern.prepare(image, painter, program);
-        painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer);
+        painter.tileExtentPatternVAO.bind(context, program, [painter.tileExtentBuffer]);
     } else {
         const configuration = ProgramConfiguration.forBackgroundColor(color, opacity);
         program = painter.useProgram('fill', configuration);
         configuration.setUniforms(context, program, properties, globals);
-        painter.tileExtentVAO.bind(context, program, painter.tileExtentBuffer);
+        painter.tileExtentVAO.bind(context, program, [painter.tileExtentBuffer]);
     }
 
     const tileIDs = transform.coveringTiles({tileSize});

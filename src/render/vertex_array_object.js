@@ -10,8 +10,7 @@ import type Context from '../gl/context';
 class VertexArrayObject {
     context: Context;
     boundProgram: ?Program;
-    boundVertexBuffer: ?VertexBuffer;
-    boundVertexBuffer2: ?VertexBuffer;
+    boundVertexBuffers: Array<VertexBuffer>;
     boundIndexBuffer: ?IndexBuffer;
     boundVertexOffset: ?number;
     boundDynamicVertexBuffer: ?VertexBuffer;
@@ -20,8 +19,7 @@ class VertexArrayObject {
 
     constructor() {
         this.boundProgram = null;
-        this.boundVertexBuffer = null;
-        this.boundVertexBuffer2 = null;
+        this.boundVertexBuffers = [];
         this.boundIndexBuffer = null;
         this.boundVertexOffset = null;
         this.boundDynamicVertexBuffer = null;
@@ -30,20 +28,25 @@ class VertexArrayObject {
 
     bind(context: Context,
          program: Program,
-         layoutVertexBuffer: VertexBuffer,
+         vertexBuffers: Array<VertexBuffer>,
          indexBuffer: ?IndexBuffer,
-         vertexBuffer2: ?VertexBuffer,
          vertexOffset: ?number,
          dynamicVertexBuffer: ?VertexBuffer,
          dynamicVertexBuffer2: ?VertexBuffer) {
 
         this.context = context;
 
+        let vertexBuffersDiffer = this.boundVertexBuffers.length !== vertexBuffers.length;
+        for (let i = 0; !vertexBuffersDiffer && i < vertexBuffers.length; i++) {
+            if (this.boundVertexBuffers[i] !== vertexBuffers[i]) {
+                vertexBuffersDiffer = false;
+            }
+        }
+
         const isFreshBindRequired = (
             !this.vao ||
             this.boundProgram !== program ||
-            this.boundVertexBuffer !== layoutVertexBuffer ||
-            this.boundVertexBuffer2 !== vertexBuffer2 ||
+            vertexBuffersDiffer ||
             this.boundIndexBuffer !== indexBuffer ||
             this.boundVertexOffset !== vertexOffset ||
             this.boundDynamicVertexBuffer !== dynamicVertexBuffer ||
@@ -51,7 +54,7 @@ class VertexArrayObject {
         );
 
         if (!context.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(program, layoutVertexBuffer, indexBuffer, vertexBuffer2, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2);
+            this.freshBind(program, vertexBuffers, indexBuffer, vertexOffset, dynamicVertexBuffer, dynamicVertexBuffer2);
         } else {
             context.bindVertexArrayOES.set(this.vao);
 
@@ -71,9 +74,8 @@ class VertexArrayObject {
     }
 
     freshBind(program: Program,
-              layoutVertexBuffer: VertexBuffer,
+              vertexBuffers: Array<VertexBuffer>,
               indexBuffer: ?IndexBuffer,
-              vertexBuffer2: ?VertexBuffer,
               vertexOffset: ?number,
               dynamicVertexBuffer: ?VertexBuffer,
               dynamicVertexBuffer2: ?VertexBuffer) {
@@ -91,8 +93,7 @@ class VertexArrayObject {
 
             // store the arguments so that we can verify them when the vao is bound again
             this.boundProgram = program;
-            this.boundVertexBuffer = layoutVertexBuffer;
-            this.boundVertexBuffer2 = vertexBuffer2;
+            this.boundVertexBuffers = vertexBuffers;
             this.boundIndexBuffer = indexBuffer;
             this.boundVertexOffset = vertexOffset;
             this.boundDynamicVertexBuffer = dynamicVertexBuffer;
@@ -111,9 +112,8 @@ class VertexArrayObject {
             }
         }
 
-        layoutVertexBuffer.enableAttributes(gl, program);
-        if (vertexBuffer2) {
-            vertexBuffer2.enableAttributes(gl, program);
+        for (const vertexBuffer of vertexBuffers) {
+            vertexBuffer.enableAttributes(gl, program);
         }
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.enableAttributes(gl, program);
@@ -122,11 +122,9 @@ class VertexArrayObject {
             dynamicVertexBuffer2.enableAttributes(gl, program);
         }
 
-        layoutVertexBuffer.bind();
-        layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
-        if (vertexBuffer2) {
-            vertexBuffer2.bind();
-            vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
+        for (const vertexBuffer of vertexBuffers) {
+            vertexBuffer.bind();
+            vertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (dynamicVertexBuffer) {
             dynamicVertexBuffer.bind();
