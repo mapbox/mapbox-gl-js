@@ -261,7 +261,7 @@ class Painter {
         for (const coord of coords) {
             const id = this._tileClippingMaskIDs[coord.id] = idNext++;
 
-            gl.stencilFunc(gl.ALWAYS, id, 0xFF);
+            context.stencilFunc.set({ func: gl.ALWAYS, ref: id, mask: 0xFF });
 
             const program = this.useProgram('fill', programConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
@@ -278,8 +278,9 @@ class Painter {
     }
 
     enableTileClippingMask(coord: TileCoord) {
-        const gl = this.context.gl;
-        gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
+        const context = this.context;
+        const gl = context.gl;
+        context.stencilFunc.set({ func: gl.EQUAL, ref: this._tileClippingMaskIDs[coord.id], mask: 0xFF });
     }
 
     render(style: Style, options: PainterOptions) {

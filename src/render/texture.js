@@ -48,7 +48,7 @@ class Texture {
 
         const {context} = this;
         const {gl} = context;
-        context.bindTexture.set(this.texture);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
         context.pixelStoreUnpack.set(1);
 
         if (this.format === gl.RGBA) {
@@ -65,7 +65,7 @@ class Texture {
     bind(filter: TextureFilter, wrap: TextureWrap, minFilter: ?TextureFilter) {
         const {context} = this;
         const {gl} = context;
-        context.bindTexture.set(this.texture);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);

@@ -84,7 +84,7 @@ function renderToTexture(context, painter, layer) {
 
     if (!texture) {
         texture = layer.heatmapTexture = gl.createTexture();
-        context.bindTexture.set(texture);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -95,7 +95,7 @@ function renderToTexture(context, painter, layer) {
         bindTextureFramebuffer(context, painter, texture, fbo);
 
     } else {
-        context.bindTexture.set(texture);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
         context.bindFramebuffer.set(fbo);
     }
 }
@@ -134,7 +134,7 @@ function renderTextureToMap(context, painter, layer) {
     context.viewport.set([0, 0, painter.width, painter.height]);
 
     context.activeTexture.set(gl.TEXTURE0);
-    context.bindTexture.set(layer.heatmapTexture);
+    gl.bindTexture(gl.TEXTURE_2D, layer.heatmapTexture);
 
     const opacity = layer.paint.get('heatmap-opacity');
     gl.uniform1f(program.uniforms.u_opacity, opacity);
