@@ -16,7 +16,7 @@ const SymbolBucket = require('../data/bucket/symbol_bucket');
 const EvaluationParameters = require('../style/evaluation_parameters');
 
 import type {Shaping, PositionedIcon} from './shaping';
-import type CollisionBoxArray from './collision_box';
+import type {CollisionBoxArray} from '../data/array_types';
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 import type {StyleImage} from '../style/style_image';
 import type {StyleGlyph} from '../style/style_glyph';
@@ -260,7 +260,7 @@ function addTextVertices(bucket: SymbolBucket,
                          globalProperties: Object,
                          feature: SymbolFeature,
                          textOffset: [number, number],
-                         lineArray: any,
+                         lineArray: {lineStartIndex: number, lineLength: number},
                          writingMode: number,
                          placedTextSymbolIndices: Array<number>,
                          glyphPositionMap: {[number]: GlyphPosition},

@@ -7,8 +7,9 @@ const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const util = require('../util/util');
 const VertexArrayObject = require('./vertex_array_object');
-const RasterBoundsArray = require('../data/raster_bounds_array');
-const PosArray = require('../data/pos_array');
+const {RasterBoundsArray, PosArray} = require('../data/array_types');
+const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
+const posAttributes = require('../data/pos_attributes');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('../shaders');
@@ -146,7 +147,7 @@ class Painter {
         tileExtentArray.emplaceBack(EXTENT, 0);
         tileExtentArray.emplaceBack(0, EXTENT);
         tileExtentArray.emplaceBack(EXTENT, EXTENT);
-        this.tileExtentBuffer = context.createVertexBuffer(tileExtentArray);
+        this.tileExtentBuffer = context.createVertexBuffer(tileExtentArray, posAttributes.members);
         this.tileExtentVAO = new VertexArrayObject();
         this.tileExtentPatternVAO = new VertexArrayObject();
 
@@ -156,7 +157,7 @@ class Painter {
         debugArray.emplaceBack(EXTENT, EXTENT);
         debugArray.emplaceBack(0, EXTENT);
         debugArray.emplaceBack(0, 0);
-        this.debugBuffer = context.createVertexBuffer(debugArray);
+        this.debugBuffer = context.createVertexBuffer(debugArray, posAttributes.members);
         this.debugVAO = new VertexArrayObject();
 
         const rasterBoundsArray = new RasterBoundsArray();
@@ -164,7 +165,7 @@ class Painter {
         rasterBoundsArray.emplaceBack(EXTENT, 0, EXTENT, 0);
         rasterBoundsArray.emplaceBack(0, EXTENT, 0, EXTENT);
         rasterBoundsArray.emplaceBack(EXTENT, EXTENT, EXTENT, EXTENT);
-        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray);
+        this.rasterBoundsBuffer = context.createVertexBuffer(rasterBoundsArray, rasterBoundsAttributes.members);
         this.rasterBoundsVAO = new VertexArrayObject();
 
         const viewportArray = new PosArray();
@@ -172,7 +173,7 @@ class Painter {
         viewportArray.emplaceBack(1, 0);
         viewportArray.emplaceBack(0, 1);
         viewportArray.emplaceBack(1, 1);
-        this.viewportBuffer = context.createVertexBuffer(viewportArray);
+        this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportVAO = new VertexArrayObject();
     }
 
@@ -200,7 +201,7 @@ class Painter {
         const program = this.useProgram('fill', ProgramConfiguration.forTileClippingMask());
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
-        this.viewportVAO.bind(context, program, [this.viewportBuffer]);
+        this.viewportVAO.bind(context, program, this.viewportBuffer, []);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
@@ -225,7 +226,7 @@ class Painter {
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
 
             // Draw the clipping mask
-            this.tileExtentVAO.bind(this.context, program, [this.tileExtentBuffer]);
+            this.tileExtentVAO.bind(this.context, program, this.tileExtentBuffer, []);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
         }
     }

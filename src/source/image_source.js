@@ -8,7 +8,8 @@ const Evented = require('../util/evented');
 const ajax = require('../util/ajax');
 const browser = require('../util/browser');
 const EXTENT = require('../data/extent');
-const RasterBoundsArray = require('../data/raster_bounds_array');
+const {RasterBoundsArray} = require('../data/array_types');
+const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
 
@@ -185,7 +186,7 @@ class ImageSource extends Evented implements Source {
         const gl = context.gl;
 
         if (!this.boundsBuffer) {
-            this.boundsBuffer = context.createVertexBuffer(this._boundsArray);
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
         }
 
         if (!this.boundsVAO) {

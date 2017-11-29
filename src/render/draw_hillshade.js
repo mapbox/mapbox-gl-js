@@ -88,7 +88,7 @@ function renderHillshade(painter, tile, layer) {
     } else {
         const buffer = painter.rasterBoundsBuffer;
         const vao = painter.rasterBoundsVAO;
-        vao.bind(context, program, buffer);
+        vao.bind(context, program, buffer, []);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
     }
 }
@@ -159,7 +159,7 @@ function prepareHillshade(painter, tile) {
         const buffer = painter.rasterBoundsBuffer;
         const vao = painter.rasterBoundsVAO;
 
-        vao.bind(context, program, buffer);
+        vao.bind(context, program, buffer, []);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
         tile.needsHillshadePrepare = false;

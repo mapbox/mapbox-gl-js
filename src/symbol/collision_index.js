@@ -13,6 +13,11 @@ const projection = require('../symbol/projection');
 import type Transform from '../geo/transform';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {SingleCollisionBox} from '../data/bucket/symbol_bucket';
+import type {
+    CollisionBoxArray,
+    GlyphOffsetArray,
+    SymbolLineVertexArray
+} from '../data/array_types';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -95,8 +100,8 @@ class CollisionIndex {
                           textPixelRatio: number,
                           key: string,
                           symbol: any,
-                          lineVertexArray: any,
-                          glyphOffsetArray: any,
+                          lineVertexArray: SymbolLineVertexArray,
+                          glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
                           posMatrix: mat4,
                           labelPlaneMatrix: mat4,
@@ -220,7 +225,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(queryGeometry: any, tileCoord: OverscaledTileID, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
+    queryRenderedSymbols(queryGeometry: any, tileCoord: OverscaledTileID, textPixelRatio: number, collisionBoxArray: CollisionBoxArray, sourceID: string) {
         const sourceLayerFeatures = {};
         const result = [];
 
