@@ -256,7 +256,7 @@ class TransitioningPropertyValue<T, R> {
         this.value = value;
         this.begin = now + transition.delay || 0;
         this.end = this.begin + transition.duration || 0;
-        if (transition.delay || transition.duration) {
+        if (property.specification.transition && (transition.delay || transition.duration)) {
             this.prior = prior;
         }
     }
