@@ -35,7 +35,7 @@ function drawDebugTile(painter, sourceCache, coord) {
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform4f(program.uniforms.u_color, 1, 0, 0, 1);
-    painter.debugVAO.bind(context, program, painter.debugBuffer);
+    painter.debugVAO.bind(context, program, [painter.debugBuffer]);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
 
     const vertices = createTextVerticies(coord.toString(), 50, 200, 5);
@@ -45,7 +45,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     }
     const debugTextBuffer = context.createVertexBuffer(debugTextArray);
     const debugTextVAO = new VertexArrayObject();
-    debugTextVAO.bind(context, program, debugTextBuffer);
+    debugTextVAO.bind(context, program, [debugTextBuffer]);
     gl.uniform4f(program.uniforms.u_color, 1, 1, 1, 1);
 
     // Draw the halo with multiple 1px lines instead of one wider line because

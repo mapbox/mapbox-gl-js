@@ -200,7 +200,7 @@ class Painter {
         const program = this.useProgram('fill', ProgramConfiguration.forTileClippingMask());
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
-        this.viewportVAO.bind(context, program, this.viewportBuffer);
+        this.viewportVAO.bind(context, program, [this.viewportBuffer]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
@@ -225,7 +225,7 @@ class Painter {
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
 
             // Draw the clipping mask
-            this.tileExtentVAO.bind(this.context, program, this.tileExtentBuffer);
+            this.tileExtentVAO.bind(this.context, program, [this.tileExtentBuffer]);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
         }
     }

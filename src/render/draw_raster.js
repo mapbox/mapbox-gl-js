@@ -79,7 +79,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         if (source instanceof ImageSource) {
             const buffer = source.boundsBuffer;
             const vao = source.boundsVAO;
-            vao.bind(context, program, buffer);
+            vao.bind(context, program, [buffer]);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
             program.draw(
@@ -93,7 +93,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         } else {
             const buffer = painter.rasterBoundsBuffer;
             const vao = painter.rasterBoundsVAO;
-            vao.bind(context, program, buffer);
+            vao.bind(context, program, [buffer]);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         }
     }

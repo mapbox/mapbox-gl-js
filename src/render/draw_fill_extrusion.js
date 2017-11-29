@@ -91,7 +91,7 @@ function drawExtrusionTexture(painter, layer) {
 
     gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-    painter.viewportVAO.bind(context, program, painter.viewportBuffer);
+    painter.viewportVAO.bind(context, program, [painter.viewportBuffer]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 

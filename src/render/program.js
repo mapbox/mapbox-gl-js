@@ -106,9 +106,8 @@ class Program {
             vao.bind(
                 context,
                 this,
-                layoutVertexBuffer,
+                [layoutVertexBuffer].concat(configuration ? configuration.getPaintVertexBuffers() : []),
                 indexBuffer,
-                configuration && configuration.paintVertexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer,
                 dynamicLayoutBuffer2
