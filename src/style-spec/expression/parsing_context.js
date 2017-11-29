@@ -43,7 +43,20 @@ class ParsingContext {
         this.expectedType = expectedType;
     }
 
-    parse(expr: mixed, index?: number, expectedType?: ?Type, bindings?: Array<[string, Expression]>): ?Expression {
+    /**
+     * @param expr the JSON expression to parse
+     * @param index the optional argument index if this expression is an argument of a parent expression that's being parsed
+     * @param options
+     * @param options.omitTypeAnnotations set true to omit inferred type annotations.  Caller beware: with this option set, the parsed expression's type will NOT satisfy `expectedType` if it would normally be wrapped in an inferred annotation.
+     * @private
+     */
+    parse(
+        expr: mixed,
+        index?: number,
+        expectedType?: ?Type,
+        bindings?: Array<[string, Expression]>,
+        options: {omitTypeAnnotations?: boolean} = {}
+    ): ?Expression {
         let context = this;
         if (index) {
             context = context.concat(index, expectedType, bindings);
@@ -68,9 +81,11 @@ class ParsingContext {
             if (Expr) {
                 let parsed = Expr.parse(expr, context);
                 if (!parsed) return null;
-                const expected = context.expectedType;
-                const actual = parsed.type;
-                if (expected) {
+
+                if (context.expectedType) {
+                    const expected = context.expectedType;
+                    const actual = parsed.type;
+
                     // When we expect a number, string, or boolean but have a
                     // Value, wrap it in a refining assertion, and when we expect
                     // a Color but have a String or Value, wrap it in "to-color"
@@ -78,16 +93,21 @@ class ParsingContext {
                     const canAssert = expected.kind === 'string' ||
                         expected.kind === 'number' ||
                         expected.kind === 'boolean';
+                    const canAnnotate =
+                        (actual.kind === 'value' && (canAssert || expected.kind === 'array')) ||
+                        expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string');
 
-                    if (canAssert && actual.kind === 'value') {
-                        parsed = new Assertion(expected, [parsed]);
-                    } else if (expected.kind === 'array' && actual.kind === 'value') {
-                        parsed = new ArrayAssertion(expected, parsed);
-                    } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
-                        parsed = new Coercion(expected, [parsed]);
+                    if (canAnnotate && !options.omitTypeAnnotations) {
+                        if (canAssert) {
+                            parsed = new Assertion(expected, [parsed]);
+                        } else if (expected.kind === 'array') {
+                            parsed = new ArrayAssertion(expected, parsed);
+                        } else if (expected.kind === 'color') {
+                            parsed = new Coercion(expected, [parsed]);
+                        }
                     }
 
-                    if (context.checkSubtype(expected, parsed.type)) {
+                    if (!canAnnotate && context.checkSubtype(context.expectedType, parsed.type)) {
                         return null;
                     }
                 }
