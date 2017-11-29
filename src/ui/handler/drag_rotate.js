@@ -3,6 +3,7 @@
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const browser = require('../../util/browser');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -124,7 +125,7 @@ class DragRotateHandler {
         window.addEventListener('blur', this._onUp);
 
         this._active = false;
-        this._inertia = [[Date.now(), this._map.getBearing()]];
+        this._inertia = [[browser.now(), this._map.getBearing()]];
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
@@ -155,7 +156,7 @@ class DragRotateHandler {
             last = inertia[inertia.length - 1];
 
         this._drainInertiaBuffer();
-        inertia.push([Date.now(), map._normalizeBearing(bearing, last[1])]);
+        inertia.push([browser.now(), map._normalizeBearing(bearing, last[1])]);
 
         map.transform.bearing = bearing;
         if (this._pitchWithRotate) {
@@ -241,7 +242,7 @@ class DragRotateHandler {
 
     _drainInertiaBuffer() {
         const inertia = this._inertia,
-            now = Date.now(),
+            now = browser.now(),
             cutoff = 160;   //msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff)

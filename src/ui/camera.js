@@ -927,7 +927,7 @@ class Camera extends Evented {
 
         if (this._prevEase) {
             const ease = this._prevEase,
-                t = (Date.now() - ease.start) / ease.duration,
+                t = (browser.now() - ease.start) / ease.duration,
                 speed = ease.easing(t + 0.01) - ease.easing(t),
 
                 // Quick hack to make new bezier that is continuous with last

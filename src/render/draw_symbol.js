@@ -7,6 +7,7 @@ const symbolSize = require('../symbol/symbol_size');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const identityMat4 = mat4.identity(new Float32Array(16));
 const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
+const browser = require('../util/browser');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -126,7 +127,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniformMatrix4fv(program.uniforms.u_label_plane_matrix, false, labelPlaneMatrix);
         }
 
-        gl.uniform1f(program.uniforms.u_fade_change, painter.options.fadeDuration ? ((Date.now() - bucket.fadeStartTime) / painter.options.fadeDuration) : 1);
+        gl.uniform1f(program.uniforms.u_fade_change, painter.options.fadeDuration ? ((browser.now() - bucket.fadeStartTime) / painter.options.fadeDuration) : 1);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }

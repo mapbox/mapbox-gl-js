@@ -3,6 +3,7 @@
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const browser = require('../../util/browser');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -163,7 +164,7 @@ class TouchZoomRotateHandler {
 
             map.stop();
             this._drainInertiaBuffer();
-            this._inertia.push([Date.now(), scale, p]);
+            this._inertia.push([browser.now(), scale, p]);
 
             map.easeTo(param, { originalEvent: e });
         }
@@ -225,7 +226,7 @@ class TouchZoomRotateHandler {
 
     _drainInertiaBuffer() {
         const inertia = this._inertia,
-            now = Date.now(),
+            now = browser.now(),
             cutoff = 160; // msec
 
         while (inertia.length > 2 && now - inertia[0][0] > cutoff) inertia.shift();

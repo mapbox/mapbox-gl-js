@@ -3,6 +3,7 @@
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const browser = require('../../util/browser');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -102,7 +103,7 @@ class DragPanHandler {
 
         this._active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
-        this._inertia = [[Date.now(), this._pos]];
+        this._inertia = [[browser.now(), this._pos]];
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
@@ -120,7 +121,7 @@ class DragPanHandler {
 
         map.stop();
         this._drainInertiaBuffer();
-        this._inertia.push([Date.now(), pos]);
+        this._inertia.push([browser.now(), pos]);
 
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
 
@@ -213,7 +214,7 @@ class DragPanHandler {
 
     _drainInertiaBuffer() {
         const inertia = this._inertia,
-            now = Date.now(),
+            now = browser.now(),
             cutoff = 160;   // msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff) inertia.shift();
