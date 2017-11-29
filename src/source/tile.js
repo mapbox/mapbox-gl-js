@@ -23,6 +23,7 @@ const projection = require('../symbol/projection');
 const {performSymbolPlacement, updateOpacities} = require('../symbol/symbol_placement');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const {deserialize} = require('../util/web_worker_transfer');
+const browser = require('../util/browser');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -109,7 +110,7 @@ class Tile {
 
     registerFadeDuration(duration: number) {
         const fadeEndTime = duration + this.timeAdded;
-        if (fadeEndTime < Date.now()) return;
+        if (fadeEndTime < browser.now()) return;
         if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
 
         this.fadeEndTime = fadeEndTime;

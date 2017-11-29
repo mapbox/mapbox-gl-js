@@ -2,13 +2,14 @@
 
 const symbolSize = require('./symbol_size');
 const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
+const browser = require('../util/browser');
+const mat4 = require('@mapbox/gl-matrix').mat4;
 
 import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
 import type OpacityState from './opacity_state';
 import type CollisionIndex from './collision_index';
 import type CollisionBoxArray from './collision_box';
 import type {StructArray} from '../util/struct_array';
-const mat4 = require('@mapbox/gl-matrix').mat4;
 
 module.exports = {
     updateOpacities: updateOpacities,
@@ -64,7 +65,7 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any, instant:
     if (glyphOpacityArray) glyphOpacityArray.clear();
     if (iconOpacityArray) iconOpacityArray.clear();
 
-    bucket.fadeStartTime = Date.now();
+    bucket.fadeStartTime = browser.now();
 
     for (const symbolInstance of bucket.symbolInstances) {
 

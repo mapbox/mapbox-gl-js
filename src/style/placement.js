@@ -130,7 +130,7 @@ class Placement {
     }
 
     stillFading() {
-        return Date.now() < this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration;
+        return browser.now() < this._collisionFadeTimes.latestStart + this._collisionFadeTimes.duration;
     }
 
 }

@@ -2,6 +2,7 @@
 
 const util = require('../util/util');
 const ImageSource = require('../source/image_source');
+const browser = require('../util/browser');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -126,7 +127,7 @@ function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
     const fadeDuration = layer.paint.get('raster-fade-duration');
 
     if (fadeDuration > 0) {
-        const now = Date.now();
+        const now = browser.now();
         const sinceTile = (now - tile.timeAdded) / fadeDuration;
         const sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 

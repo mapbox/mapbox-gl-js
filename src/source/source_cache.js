@@ -9,6 +9,7 @@ const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
+const browser = require('../util/browser');
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -413,7 +414,7 @@ class SourceCache extends Evented {
                 // tile.fadeEndTime may be unset.  In that case, or if
                 // fadeEndTime is in the future, then this tile is still
                 // fading in. Find tiles to cross-fade with it.
-                if (typeof tile.fadeEndTime === 'undefined' || tile.fadeEndTime >= Date.now()) {
+                if (typeof tile.fadeEndTime === 'undefined' || tile.fadeEndTime >= browser.now()) {
                     if (this._findLoadedChildren(coord, maxCoveringZoom, retain)) {
                         retain[id] = true;
                     }
@@ -714,7 +715,7 @@ class SourceCache extends Evented {
         if (isRasterType(this._source.type)) {
             for (const id in this._tiles) {
                 const tile = this._tiles[id];
-                if (tile.fadeEndTime !== undefined && tile.fadeEndTime >= Date.now()) {
+                if (tile.fadeEndTime !== undefined && tile.fadeEndTime >= browser.now()) {
                     return true;
                 }
             }
