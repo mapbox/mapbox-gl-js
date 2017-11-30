@@ -19,9 +19,9 @@
   ],
   "expected": {
     "outputs": [
-      [1, 0, 0, 1],
-      [0.6, 0, 0.4, 1],
-      [0, 0, 1, 1],
+      [255, 0, 0, 1],
+      [153, 0, 102, 1],
+      [0, 0, 255, 1],
       {"error": "Could not parse color from value 'oops blue'"}
     ],
     "compiled": {
