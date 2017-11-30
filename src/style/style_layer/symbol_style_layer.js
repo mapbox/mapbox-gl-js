@@ -17,7 +17,7 @@ const {
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
 import type {Feature} from '../../style-spec/expression';
-import type {EvaluationParameters} from '../properties';
+import type EvaluationParameters from '../evaluation_parameters';
 
 class SymbolStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;

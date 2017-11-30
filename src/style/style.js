@@ -34,11 +34,7 @@ import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type CollisionIndex from '../symbol/collision_index';
 import type {Callback} from '../types/callback';
-import type {
-    TransitionParameters,
-    EvaluationParameters
-} from './properties';
-
+import type EvaluationParameters from './evaluation_parameters';
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -300,7 +296,7 @@ class Style extends Evented {
     /**
      * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
      */
-    update(parameters: TransitionParameters & EvaluationParameters) {
+    update(parameters: EvaluationParameters) {
         if (!this._loaded) {
             return;
         }

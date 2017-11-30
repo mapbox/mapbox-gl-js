@@ -11,7 +11,7 @@ const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
 const {serialize} = require('../util/web_worker_transfer');
 const TileCoord = require('./tile_coord');
-const ZoomHistory = require('../style/zoom_history');
+const EvaluationParameters = require('../style/evaluation_parameters');
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -183,13 +183,9 @@ class WorkerTile {
 
 function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
+    const parameters = new EvaluationParameters(zoom);
     for (const layer of layers) {
-        layer.recalculate({
-            zoom,
-            now: Number.MAX_VALUE,
-            fadeDuration: 0,
-            zoomHistory: new ZoomHistory()
-        });
+        layer.recalculate(parameters);
     }
 }
 
