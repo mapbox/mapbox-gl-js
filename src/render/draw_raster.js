@@ -56,23 +56,17 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         let parentScaleBy, parentTL;
 
         context.activeTexture.set(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, tile.texture);
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-        gl.bindTexture(gl.TEXTURE_2D, tile.texture);
 
         context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
-            gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
             parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-            gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
             parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
             parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
 
         } else {
-            gl.bindTexture(gl.TEXTURE_2D, tile.texture);
             tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-            gl.bindTexture(gl.TEXTURE_2D, tile.texture);
         }
 
         // cross-fade parameters

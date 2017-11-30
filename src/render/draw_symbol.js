@@ -70,11 +70,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthOn = pitchWithMap;
 
-    if (depthOn) {
-        context.depthTest.set(true);
-    } else {
-        context.depthTest.set(false);
-    }
+    context.depthTest.set(depthOn);
 
     let program;
 
