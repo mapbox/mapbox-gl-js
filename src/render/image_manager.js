@@ -7,6 +7,7 @@ const Texture = require('./texture');
 const assert = require('assert');
 
 import type {StyleImage} from '../style/style_image';
+import type Context from '../gl/context';
 import type {ImagePosition} from './image_atlas';
 import type {Bin} from '@mapbox/shelf-pack';
 import type {Callback} from '../types/callback';
@@ -179,9 +180,10 @@ class ImageManager {
         return position;
     }
 
-    bind(gl: WebGLRenderingContext) {
+    bind(context: Context) {
+        const gl = context.gl;
         if (!this.atlasTexture) {
-            this.atlasTexture = new Texture(gl, this.atlasImage, gl.RGBA);
+            this.atlasTexture = new Texture(context, this.atlasImage, gl.RGBA);
         } else if (this.dirty) {
             this.atlasTexture.update(this.atlasImage);
             this.dirty = false;

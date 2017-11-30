@@ -7,6 +7,7 @@ import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
 import type FeatureIndex from './feature_index';
 import type {Serialized} from '../util/web_worker_transfer';
+import type Context from '../gl/context';
 
 export type BucketParameters = {
     index: number,
@@ -58,7 +59,7 @@ export interface Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
     isEmpty(): boolean;
 
-    upload(gl: WebGLRenderingContext): void;
+    upload(context: Context): void;
     uploaded: boolean;
 
     /**

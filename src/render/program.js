@@ -5,6 +5,7 @@ const shaders = require('../shaders');
 const assert = require('assert');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const VertexArrayObject = require('./vertex_array_object');
+const Context = require('../gl/context');
 
 import type {SegmentVector} from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -15,17 +16,16 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>;
 
 class Program {
-    gl: WebGLRenderingContext;
     program: WebGLProgram;
     uniforms: {[string]: WebGLUniformLocation};
     attributes: {[string]: number};
     numAttributes: number;
 
-    constructor(gl: WebGLRenderingContext,
+    constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
                 showOverdrawInspector: boolean) {
-        this.gl = gl;
+        const gl = context.gl;
         this.program = gl.createProgram();
 
         const defines = configuration.defines().concat(
@@ -82,7 +82,7 @@ class Program {
         }
     }
 
-    draw(gl: WebGLRenderingContext,
+    draw(context: Context,
          drawMode: DrawMode,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
@@ -91,6 +91,8 @@ class Program {
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer,
          dynamicLayoutBuffer2: ?VertexBuffer) {
+
+        const gl = context.gl;
 
         const primitiveSize = {
             [gl.LINES]: 2,
@@ -102,7 +104,7 @@ class Program {
             const vao = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
 
             vao.bind(
-                gl,
+                context,
                 this,
                 layoutVertexBuffer,
                 indexBuffer,

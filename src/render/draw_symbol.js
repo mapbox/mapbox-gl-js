@@ -20,13 +20,13 @@ module.exports = drawSymbols;
 function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<TileCoord>) {
     if (painter.renderPass !== 'translucent') return;
 
-    const gl = painter.gl;
+    const context = painter.context;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
-    gl.disable(gl.STENCIL_TEST);
+    context.stencilTest.set(false);
 
     painter.setDepthSublayer(0);
-    painter.depthMask(false);
+    context.depthMask.set(false);
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
@@ -56,7 +56,8 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
     rotationAlignment, pitchAlignment, keepUpright) {
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const tr = painter.transform;
 
     const rotateWithMap = rotationAlignment === 'map';
@@ -69,11 +70,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthOn = pitchWithMap;
 
-    if (depthOn) {
-        gl.enable(gl.DEPTH_TEST);
-    } else {
-        gl.disable(gl.DEPTH_TEST);
-    }
+    context.depthTest.set(depthOn);
 
     let program;
 
@@ -91,12 +88,12 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         if (!program) {
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
-            programConfiguration.setUniforms(gl, program, layer.paint, {zoom: painter.transform.zoom});
+            programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
 
             setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData);
         }
 
-        gl.activeTexture(gl.TEXTURE0);
+        context.activeTexture.set(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.u_texture, 0);
 
         if (isText) {
@@ -132,12 +129,12 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }
 
-    if (!depthOn) gl.enable(gl.DEPTH_TEST);
+    if (!depthOn) context.depthTest.set(true);
 }
 
 function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData) {
 
-    const gl = painter.gl;
+    const gl = painter.context.gl;
     const tr = painter.transform;
 
     gl.uniform1i(program.uniforms.u_pitch_with_map, pitchWithMap ? 1 : 0);
@@ -163,7 +160,8 @@ function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pit
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const tr = painter.transform;
 
     if (isSDF) {
@@ -173,19 +171,19 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
 
         if (hasHalo) { // Draw halo underneath the text.
             gl.uniform1f(program.uniforms.u_is_halo, 1);
-            drawSymbolElements(buffers, layer, gl, program);
+            drawSymbolElements(buffers, layer, context, program);
         }
 
         gl.uniform1f(program.uniforms.u_is_halo, 0);
     }
 
-    drawSymbolElements(buffers, layer, gl, program);
+    drawSymbolElements(buffers, layer, context, program);
 }
 
-function drawSymbolElements(buffers, layer, gl, program) {
+function drawSymbolElements(buffers, layer, context, program) {
     program.draw(
-        gl,
-        gl.TRIANGLES,
+        context,
+        context.gl.TRIANGLES,
         layer.id,
         buffers.layoutVertexBuffer,
         buffers.indexBuffer,

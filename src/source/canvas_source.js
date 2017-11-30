@@ -135,7 +135,7 @@ class CanvasSource extends ImageSource {
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
 
-        this._prepareImage(this.map.painter.gl, this.canvas, resize);
+        this._prepareImage(this.map.painter.context, this.canvas, resize);
     }
 
     serialize(): Object {

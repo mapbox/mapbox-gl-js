@@ -12,6 +12,7 @@ const CollisionIndex = require('../../../src/symbol/collision_index');
 const Transform = require('../../../src/geo/transform');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
 const util = require('../../../src/util/util');
+const Context = require('../../../src/gl/context');
 const {serialize} = require('../../../src/util/web_worker_transfer');
 
 test('querySourceFeatures', (t) => {
@@ -137,17 +138,17 @@ test('Tile#setMask', (t) => {
 
     t.test('simple mask', (t)=>{
         const tile = new Tile(0, 0, 0);
-        const gl = require('gl')(10, 10);
-        tile.setMask([new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id], gl);
+        const context = new Context(require('gl')(10, 10));
+        tile.setMask([new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id], context);
         t.deepEqual(tile.mask, [new TileCoord(1, 0, 0).id, new TileCoord(1, 1, 1).id]);
         t.end();
     });
 
     t.test('complex mask', (t) => {
         const tile = new Tile(0, 0, 0);
-        const gl = require('gl')(10, 10);
+        const context = new Context(require('gl')(10, 10));
         tile.setMask([new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
-            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id], gl);
+            new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id], context);
         t.deepEqual(tile.mask, [new TileCoord(1, 0, 1).id, new TileCoord(1, 1, 0).id, new TileCoord(2, 2, 3).id,
             new TileCoord(2, 3, 2).id, new TileCoord(3, 6, 7).id, new TileCoord(3, 7, 6).id]);
         t.end();

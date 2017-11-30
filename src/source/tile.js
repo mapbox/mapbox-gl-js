@@ -14,8 +14,6 @@ const RasterBoundsArray = require('../data/raster_bounds_array');
 const TileCoord = require('./tile_coord');
 const EXTENT = require('../data/extent');
 const Point = require('@mapbox/point-geometry');
-const VertexBuffer = require('../gl/vertex_buffer');
-const IndexBuffer = require('../gl/index_buffer');
 const Texture = require('../render/texture');
 const {SegmentVector} = require('../data/segment');
 const {TriangleIndexArray} = require('../data/index_array_type');
@@ -33,6 +31,9 @@ import type {WorkerTileResult} from './worker_source';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
 import type CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
+import type Context from '../gl/context';
+import type IndexBuffer from '../gl/index_buffer';
+import type VertexBuffer from '../gl/vertex_buffer';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -251,22 +252,24 @@ class Tile {
         return this.buckets[layer.id];
     }
 
-    upload(gl: WebGLRenderingContext) {
+    upload(context: Context) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (!bucket.uploaded) {
-                bucket.upload(gl);
+                bucket.upload(context);
                 bucket.uploaded = true;
             }
         }
 
+        const gl = context.gl;
+
         if (this.iconAtlasImage) {
-            this.iconAtlasTexture = new Texture(gl, this.iconAtlasImage, gl.RGBA);
+            this.iconAtlasTexture = new Texture(context, this.iconAtlasImage, gl.RGBA);
             this.iconAtlasImage = null;
         }
 
         if (this.glyphAtlasImage) {
-            this.glyphAtlasTexture = new Texture(gl, this.glyphAtlasImage, gl.ALPHA);
+            this.glyphAtlasTexture = new Texture(context, this.glyphAtlasImage, gl.ALPHA);
             this.glyphAtlasImage = null;
         }
     }
@@ -342,7 +345,7 @@ class Tile {
         }
     }
 
-    setMask(mask: Mask, gl: WebGLRenderingContext) {
+    setMask(mask: Mask, context: Context) {
 
         // don't redo buffer work if the mask is the same;
         if (util.deepEqual(this.mask, mask)) return;
@@ -387,8 +390,8 @@ class Tile {
             segment.primitiveLength += 2;
         }
 
-        this.maskedBoundsBuffer = new VertexBuffer(gl, maskedBoundsArray);
-        this.maskedIndexBuffer = new IndexBuffer(gl, indexArray);
+        this.maskedBoundsBuffer = context.createVertexBuffer(maskedBoundsArray);
+        this.maskedIndexBuffer = context.createIndexBuffer(indexArray);
     }
 
     hasData() {

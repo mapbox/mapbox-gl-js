@@ -8,6 +8,7 @@ const Cache = require('../util/lru_cache');
 const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
 const EXTENT = require('../data/extent');
+const Context = require('../gl/context');
 const Point = require('@mapbox/point-geometry');
 const browser = require('../util/browser');
 
@@ -162,13 +163,13 @@ class SourceCache extends Evented {
         return this._source.serialize();
     }
 
-    prepare(gl: WebGLRenderingContext) {
+    prepare(context: Context) {
         if  (this._source.prepare) {
             this._source.prepare();
         }
 
         for (const i in this._tiles) {
-            this._tiles[i].upload(gl);
+            this._tiles[i].upload(context);
         }
     }
 
