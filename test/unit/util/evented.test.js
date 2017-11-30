@@ -73,6 +73,18 @@ test('Evented', (t) => {
         t.end();
     });
 
+    t.test('once listener is removed prior to call', (t) => {
+        const evented = new Evented();
+        const listener = t.spy();
+        evented.once('a', () => {
+            listener();
+            evented.fire('a');
+        });
+        evented.fire('a');
+        t.ok(listener.calledOnce);
+        t.end();
+    });
+
     t.test('reports if an event has listeners with "listens"', (t) => {
         const evented = new Evented();
         evented.on('a', () => {});
