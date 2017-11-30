@@ -86,28 +86,24 @@ class ParsingContext {
                     const expected = context.expectedType;
                     const actual = parsed.type;
 
-                    // When we expect a number, string, or boolean but have a
-                    // Value, wrap it in a refining assertion, and when we expect
-                    // a Color but have a String or Value, wrap it in "to-color"
-                    // coercion.
-                    const canAssert = expected.kind === 'string' ||
-                        expected.kind === 'number' ||
-                        expected.kind === 'boolean';
-                    const canAnnotate =
-                        (actual.kind === 'value' && (canAssert || expected.kind === 'array')) ||
-                        expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string');
-
-                    if (canAnnotate && !options.omitTypeAnnotations) {
-                        if (canAssert) {
+                    // When we expect a number, string, boolean, or array but
+                    // have a Value, we can wrap it in a refining assertion.
+                    // When we expect a Color but have a String or Value, we
+                    // can wrap it in "to-color" coercion.
+                    // Otherwise, we do static type-checking.
+                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean') && actual.kind === 'value') {
+                        if (!options.omitTypeAnnotations) {
                             parsed = new Assertion(expected, [parsed]);
-                        } else if (expected.kind === 'array') {
+                        }
+                    } else if (expected.kind === 'array' && actual.kind === 'value') {
+                        if (!options.omitTypeAnnotations) {
                             parsed = new ArrayAssertion(expected, parsed);
-                        } else if (expected.kind === 'color') {
+                        }
+                    } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
+                        if (!options.omitTypeAnnotations) {
                             parsed = new Coercion(expected, [parsed]);
                         }
-                    }
-
-                    if (!canAnnotate && context.checkSubtype(context.expectedType, parsed.type)) {
+                    } else if (context.checkSubtype(context.expectedType, parsed.type)) {
                         return null;
                     }
                 }
