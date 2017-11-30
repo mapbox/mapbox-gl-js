@@ -24,7 +24,7 @@ class RenderTexture {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, painter.width, painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width || painter.width, height || painter.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
         gl.bindTexture(gl.TEXTURE_2D, null);
 
@@ -34,10 +34,11 @@ class RenderTexture {
     }
 
     bindFbo() {
-        const gl = this.gl;
+        const context = this.context;
+        const gl = context.gl;
 
         gl.bindTexture(gl.TEXTURE_2D, null);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+        context.bindFramebuffer.set(this.fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
 
     }
