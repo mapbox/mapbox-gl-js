@@ -244,7 +244,7 @@ class SourceCache extends Evented {
             return;
         }
 
-        tile.timeAdded = new Date().getTime();
+        tile.timeAdded = browser.now();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
