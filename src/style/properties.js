@@ -9,7 +9,7 @@ const {register} = require('../util/web_worker_transfer');
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
-import type ZoomHistory from './zoom_history';
+import type EvaluationParameters from './evaluation_parameters';
 
 import type {
     Feature,
@@ -20,12 +20,6 @@ import type {
 } from '../style-spec/expression';
 
 type TimePoint = number;
-
-export type EvaluationParameters = GlobalProperties & {
-    now?: TimePoint,
-    fadeDuration?: number,
-    zoomHistory?: ZoomHistory
-};
 
 /**
  * Implements a number of classes that define state and behavior for paint and layout properties, most
@@ -610,7 +604,7 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
         }
     }
 
-    _calculate(min: T, mid: T, max: T, parameters: any): ?CrossFaded<T> {
+    _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
         const z = parameters.zoom;
         const fraction = z - Math.floor(z);
         const d = parameters.fadeDuration;

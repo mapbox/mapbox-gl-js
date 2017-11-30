@@ -8,6 +8,7 @@ const DOM = require('../util/dom');
 const ajax = require('../util/ajax');
 
 const Style = require('../style/style');
+const EvaluationParameters = require('../style/evaluation_parameters');
 const Painter = require('../render/painter');
 
 const Transform = require('../geo/transform');
@@ -1458,22 +1459,24 @@ class Map extends Camera {
             this._updateEase();
         }
 
-        // If the style has changed, the map is being zoomed, or a transition
-        // is in progress:
+        // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
         //  - Apply style changes (in a batch)
-        //  - Recalculate zoom-dependent paint properties.
+        //  - Recalculate paint properties.
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
+
             const zoom = this.transform.zoom;
             const now = browser.now();
             this.style.zoomHistory.update(zoom, now);
-            this.style.update({
-                zoom,
+
+            const parameters = new EvaluationParameters(zoom, {
                 now,
                 fadeDuration: this._fadeDuration,
                 zoomHistory: this.style.zoomHistory,
                 transition: util.extend({ duration: 300, delay: 0 }, this.style.stylesheet.transition)
             });
+
+            this.style.update(parameters);
         }
 
         // If we are in _render for any reason other than an in-progress paint

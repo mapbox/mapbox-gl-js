@@ -1,7 +1,5 @@
 // @flow
 
-import type {StylePropertySpecification} from "../style-spec/style-spec";
-
 const styleSpec = require('../style-spec/reference/latest');
 const util = require('../util/util');
 const Evented = require('../util/evented');
@@ -9,6 +7,9 @@ const validateStyle = require('./validate_style');
 const {sphericalToCartesian} = require('../util/util');
 const Color = require('../style-spec/util/color');
 const interpolate = require('../style-spec/util/interpolate');
+
+import type {StylePropertySpecification} from '../style-spec/style-spec';
+import type EvaluationParameters from './evaluation_parameters';
 
 const {
     Properties,
@@ -21,8 +22,7 @@ const {
 import type {
     Property,
     PropertyValue,
-    TransitionParameters,
-    EvaluationParameters
+    TransitionParameters
 } from './properties';
 
 type LightPosition = {

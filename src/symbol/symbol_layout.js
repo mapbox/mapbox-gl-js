@@ -13,6 +13,7 @@ const findPoleOfInaccessibility = require('../util/find_pole_of_inaccessibility'
 const classifyRings = require('../util/classify_rings');
 const EXTENT = require('../data/extent');
 const SymbolBucket = require('../data/bucket/symbol_bucket');
+const EvaluationParameters = require('../style/evaluation_parameters');
 
 import type {Shaping, PositionedIcon} from './shaping';
 import type CollisionBoxArray from './collision_box';
@@ -74,22 +75,22 @@ function performSymbolLayout(bucket: SymbolBucket,
     if (bucket.textSizeData.functionType === 'composite') {
         const {min, max} = bucket.textSizeData.zoomRange;
         sizes.compositeTextSizes = [
-            unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: min}),
-            unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: max})
+            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(min)),
+            unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(max))
         ];
     }
 
     if (bucket.iconSizeData.functionType === 'composite') {
         const {min, max} = bucket.iconSizeData.zoomRange;
         sizes.compositeIconSizes = [
-            unevaluatedLayoutValues['icon-size'].possiblyEvaluate({zoom: min}),
-            unevaluatedLayoutValues['icon-size'].possiblyEvaluate({zoom: max})
+            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(min)),
+            unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(max))
         ];
     }
 
-    sizes.layoutTextSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: bucket.zoom + 1});
-    sizes.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate({zoom: bucket.zoom + 1});
-    sizes.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: 18});
+    sizes.layoutTextSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(bucket.zoom + 1));
+    sizes.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate(new EvaluationParameters(bucket.zoom + 1));
+    sizes.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate(new EvaluationParameters(18));
 
     const oneEm = 24;
     const lineHeight = layout.get('text-line-height') * oneEm;
