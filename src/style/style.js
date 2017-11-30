@@ -547,7 +547,7 @@ class Style extends Evented {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {string=} before  ID of an existing layer to insert before
+     * @param {string} before  ID of an existing layer to insert before
      */
     addLayer(layerObject: LayerSpecification, before?: string, options?: {validate?: boolean}) {
         this._checkLoaded();
@@ -572,7 +572,7 @@ class Style extends Evented {
 
         const index = before ? this._order.indexOf(before) : this._order.length;
         if (before && index === -1) {
-            this.fire('error', { message: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            this.fire('error', { error: new Error(`Layer with id "${before}" does not exist on this map.`)});
             return;
         }
 
@@ -602,9 +602,10 @@ class Style extends Evented {
     }
 
     /**
-     * Add a layer to the map style. The layer will be inserted before the layer with
+     * Moves a layer to a different z-position. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
-     * @param {string=} before  ID of an existing layer to insert before
+     * @param {string} id  ID of the layer to move
+     * @param {string} before  ID of an existing layer to insert before
      */
     moveLayer(id: string, before?: string) {
         this._checkLoaded();
@@ -625,6 +626,10 @@ class Style extends Evented {
         this._order.splice(index, 1);
 
         const newIndex = before ? this._order.indexOf(before) : this._order.length;
+        if (before && newIndex === -1) {
+            this.fire('error', { error: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            return;
+        }
         this._order.splice(newIndex, 0, id);
 
         this._layerOrderChanged = true;
