@@ -93,6 +93,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         const nxw = x + 1 === dim ? w + 1 : w;
 
         const neighboringTiles = {};
+        // add adjacent tiles
         neighboringTiles[TileCoord.idFromCoord(z, px, y, pxw)] = {backfilled: false};
         neighboringTiles[TileCoord.idFromCoord(z, nx, y, nxw)] = {backfilled: false};
 

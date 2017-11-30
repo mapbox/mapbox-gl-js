@@ -46,16 +46,12 @@ class Texture {
         const {width, height} = image;
         this.size = [width, height];
 
-        if (premultiply === undefined) {
-            premultiply = true;
-        }
-
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         context.pixelStoreUnpack.set(1);
 
-        if (this.format === gl.RGBA && premultiply) {
+        if (this.format === gl.RGBA && premultiply !== false) {
             context.pixelStoreUnpackPremultiplyAlpha.set(true);
         }
 

@@ -45,8 +45,6 @@ void main() {
     float h = getElevation(v_pos + vec2(0, epsilon.y), 0.0);
     float i = getElevation(v_pos + vec2(epsilon.x, epsilon.y), 0.0);
 
-
-
     // here we divide the x and y slopes by 8 * pixel size
     // where pixel size (aka meters/pixel) is:
     // circumference of the world / (pixels per tile * number of tiles)
@@ -58,14 +56,13 @@ void main() {
     // maxzoom of the tile source. here we use a=0.3 which works out to the
     // expression below. see nickidlugash's awesome breakdown for more info
     // https://github.com/mapbox/mapbox-gl-js/pull/5286#discussion_r148419556
-    float exaggeration = u_zoom < 4.5 ? 0.35 : 0.3;
+    float exaggeration = u_zoom < 2.0 ? 0.4 : u_zoom < 4.5 ? 0.35 : 0.3;
 
     vec2 deriv = vec2(
         (c + f + f + i) - (a + d + d + g),
         (g + h + h + i) - (a + b + b + c)
     ) /  pow(2.0, (u_zoom - 14.0) * exaggeration + 19.2562 - u_zoom);
 
-// (u_zoom > 11.0 ? pow(2.0, 13.5 - u_zoom * 0.5) : pow(2.0, 14.5 - u_zoom * 0.5))
     gl_FragColor = clamp(vec4(
         deriv.x / 2.0 + 0.5,
         deriv.y / 2.0 + 0.5,

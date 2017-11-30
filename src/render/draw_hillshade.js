@@ -2,14 +2,12 @@
 const TileCoord = require('../source/tile_coord');
 const Texture = require('./texture');
 const RenderTexture = require('./render_texture');
+const EXTENT = require('../data/extent');
+const mat4 = require('@mapbox/gl-matrix').mat4;
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
-
-
-const EXTENT = require('../data/extent');
-const mat4 = require('@mapbox/gl-matrix').mat4;
 
 module.exports = drawHillshade;
 
@@ -61,7 +59,6 @@ function renderHillshade(painter, tile, layer) {
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
-    gl.uniform1i(program.uniforms.u_mode, 1);
 
     const shadowColor = layer.paint.get("hillshade-shadow-color");
     gl.uniform4f(program.uniforms.u_shadow, shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a);
@@ -70,8 +67,6 @@ function renderHillshade(painter, tile, layer) {
     const accentColor = layer.paint.get("hillshade-accent-color");
     gl.uniform4f(program.uniforms.u_accent, accentColor.r, accentColor.g, accentColor.b, accentColor.a);
 
-    // this is to prevent purple/yellow seams from flashing when the dem tiles haven't been totally
-    // backfilled from their neighboring tiles.
     if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
         program.draw(
             gl,
@@ -92,7 +87,6 @@ function renderHillshade(painter, tile, layer) {
 
 // hillshade rendering is done in two steps. the prepare step first calculates the slope of the terrain in the x and y
 // directions for each pixel, and saves those values to a framebuffer texture in the r and g channels.
-
 function prepareHillshade(painter, tile) {
     const gl = painter.gl;
     // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
@@ -128,11 +122,10 @@ function prepareHillshade(painter, tile) {
 
 
         gl.activeTexture(gl.TEXTURE0);
-
         if (!tile.texture) {
             tile.texture = new RenderTexture(painter, tileSize, tileSize);
         } else {
-            tile.texture.clear(tileSize, tileSize);
+            tile.texture.bindFbo();
         }
 
         gl.viewport(0, 0, tileSize, tileSize);

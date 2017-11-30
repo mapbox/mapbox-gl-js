@@ -21,7 +21,6 @@ class RasterDEMTileWorkerSource {
         this.loaded = {};
     }
 
-
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const source = params.source,
             uid = params.uid;

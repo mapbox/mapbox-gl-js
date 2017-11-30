@@ -66,6 +66,7 @@ class DEMData {
 
     loadFromImage(data: RGBAImage) {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
+
         // Build level 0
         const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
