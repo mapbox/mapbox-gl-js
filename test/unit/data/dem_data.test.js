@@ -3,6 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const {DEMData, Level} = require('../../../src/data/dem_data');
 const {RGBAImage} = require('../../../src/util/image');
+const {serialize, deserialize} = require('../../../src/util/web_worker_transfer');
 
 function createMockImage(height, width) {
     const pixels = new Uint8Array(height * width * 4);
@@ -175,36 +176,47 @@ test('DEMData#backfillBorder', (t) => {
         t.end();
     });
 
-    t.test('DEMData#serialize', (t)=>{
+    t.test('DEMData is correctly serialized', (t)=>{
         const imageData0 = createMockImage(4, 4);
         const dem0 = new DEMData(0);
 
         dem0.loadFromImage(imageData0);
 
-        const serialized = dem0.serialize();
+        const serialized = serialize(dem0);
+
         t.deepEqual(serialized, {
-            uid: 0,
-            scale: 1,
-            dim: 4,
-            level: new ArrayBuffer()
+            name: 'DEMData',
+            properties: {
+                uid: 0,
+                scale: 1,
+                level: {
+                    name: 'Level',
+                    properties: {
+                        dim: 4,
+                        border: 2,
+                        stride: 8,
+                        data: dem0.level.data,
+                    }
+                },
+                loaded: true
+            }
         }, 'serializes DEM');
 
-
         const transferrables = [];
-        dem0.serialize(transferrables);
+        serialize(dem0, transferrables);
         t.deepEqual(new Uint32Array(transferrables[0]), dem0.level.data, 'populates transferrables with correct data');
 
         t.end();
     });
 
-    t.test('DEMData#deserialize', (t)=>{
+    t.test('DEMData is correctly deserialized', (t)=>{
         const imageData0 = createMockImage(4, 4);
         const dem0 = new DEMData(0);
 
         dem0.loadFromImage(imageData0);
-        const serialized = dem0.serialize();
+        const serialized = serialize(dem0);
 
-        const deserialized = DEMData.deserialize(serialized);
+        const deserialized = deserialize(serialized);
         t.deepEqual(deserialized, dem0, 'deserializes serialized DEMData instance');
 
         t.end();

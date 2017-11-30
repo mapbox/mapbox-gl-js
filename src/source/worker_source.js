@@ -1,7 +1,6 @@
 // @flow
 
 import type {Serialized} from '../util/web_worker_transfer';
-import type {SerializedDEMData} from '../data/dem_data';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type {Transferable} from '../types/transferable';
@@ -23,7 +22,7 @@ export type WorkerTileParameters = TileParameters & {
 };
 
 export type WorkerDEMTileParameters = TileParameters & {
-    coord: TileCoord,
+    coord: { z: number, x: number, y: number, w: number },
     rawImageData: RGBAImage
 };
 
@@ -37,7 +36,7 @@ export type WorkerTileResult = {
 };
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
-export type WorkerDEMTileCallback = (err: ?Error, result: ?SerializedDEMData, transferrables: ?Array<Transferable>) => void;
+export type WorkerDEMTileCallback = (err: ?Error, result: ?Serialized, transferrables: ?Array<Transferable>) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

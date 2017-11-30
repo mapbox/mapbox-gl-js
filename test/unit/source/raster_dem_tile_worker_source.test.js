@@ -16,7 +16,7 @@ test('loadTile', (t) => {
         }, (err, data)=>{
             if (err) t.fail();
             t.deepEqual(source.loading, { source: {} });
-            t.deepEqual(Object.keys(data), ['uid', 'scale', 'dim', 'level'], 'returns serialized DEM data');
+            t.deepEqual(Object.keys(data.properties), ['uid', 'scale', 'level', 'loaded' ], 'returns serialized DEM data');
 
             t.end();
         });

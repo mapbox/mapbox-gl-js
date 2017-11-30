@@ -5,9 +5,9 @@ const util = require('../util/util');
 const Evented = require('../util/evented');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const browser = require('../util/browser');
-const DEMData = require('../data/dem_data').DEMData;
 const TileCoord = require('./tile_coord');
 const RasterTileSource = require('./raster_tile_source');
+const {deserialize} = require('../util/web_worker_transfer');
 
 import type {Source} from './source';
 import type Dispatcher from '../util/dispatcher';
@@ -67,20 +67,21 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             }
         }
 
-        function done(err, data) {
+        function done(err, serialized) {
             if (err) {
                 tile.state = 'errored';
                 callback(err);
             }
 
-            if (data) {
-                tile.dem = DEMData.deserialize(data);
+            if (serialized) {
+                tile.dem = (deserialize(serialized): any);
                 tile.needsHillshadePrepare = true;
                 tile.state = 'loaded';
                 callback(null);
             }
         }
     }
+
 
     _getNeighboringTiles(tileId: number) {
         const {z, x, y, w} = TileCoord.fromID(tileId);

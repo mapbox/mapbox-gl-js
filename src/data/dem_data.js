@@ -1,6 +1,7 @@
 // @flow
 const {RGBAImage} = require('../util/image');
 const util = require('../util/util');
+const {register} = require('../util/web_worker_transfer');
 
 export type SerializedDEMData = {
     uid: string,
@@ -37,6 +38,8 @@ class Level {
     }
 }
 
+register(Level);
+
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
 // loaded from a image tile, we decode the pixel values using the mapbox terrain-rgb tileset decoding formula, but we store the
@@ -52,12 +55,6 @@ class DEMData {
     scale: number;
     level: Level;
     loaded: boolean;
-
-    static deserialize(serializedData: SerializedDEMData) {
-        const structdata = new Int32Array(serializedData.level);
-        const data = new Level(serializedData.dim, serializedData.dim / 2, structdata);
-        return new DEMData(serializedData.uid, serializedData.scale, data);
-    }
 
     constructor(uid: string, scale: ?number, data: ?Level) {
         this.uid = uid;
@@ -108,19 +105,6 @@ class DEMData {
         return RGBAImage.create({width: this.level.dim + 2 * this.level.border, height: this.level.dim + 2 * this.level.border}, new Uint8Array(this.level.data.buffer));
     }
 
-    serialize(transferables?: Array<Transferable>) {
-        const references = {
-            uid: this.uid,
-            scale: this.scale,
-            dim: this.level.dim,
-            level: this.level.data.buffer
-        };
-
-
-        if (transferables) transferables.push(this.level.data.buffer);
-        return references;
-    }
-
     backfillBorder(borderTile: DEMData, dx: number, dy: number) {
         const t = this.level;
         const o = borderTile.level;
@@ -165,6 +149,6 @@ class DEMData {
     }
 }
 
-
+register(DEMData);
 module.exports = {DEMData, Level};
 

@@ -1,6 +1,8 @@
 // @flow
 
 const {DEMData} = require('../data/dem_data');
+const {serialize} = require('../util/web_worker_transfer');
+
 import type Actor from '../util/actor';
 import type {
     WorkerDEMTileParameters,
@@ -35,7 +37,7 @@ class RasterDEMTileWorkerSource {
 
         this.loaded[source] = this.loaded[source] || {};
         this.loaded[source][uid] = dem;
-        callback(null, dem.serialize(transferrables), transferrables);
+        callback(null, serialize(dem, transferrables), transferrables);
     }
 
     removeTile(params: TileParameters) {
