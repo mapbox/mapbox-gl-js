@@ -607,8 +607,7 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
     _calculate(min: T, mid: T, max: T, parameters: EvaluationParameters): ?CrossFaded<T> {
         const z = parameters.zoom;
         const fraction = z - Math.floor(z);
-        const d = parameters.fadeDuration;
-        const t = d !== 0 ? Math.min((parameters.now - parameters.zoomHistory.lastIntegerZoomTime) / d, 1) : 1;
+        const t = parameters.crossFadingFactor();
         return z > parameters.zoomHistory.lastIntegerZoom ?
             { from: min, to: mid, fromScale: 2, toScale: 1, t: fraction + (1 - fraction) * t } :
             { from: max, to: mid, fromScale: 0.5, toScale: 1, t: 1 - (1 - t) * fraction };
