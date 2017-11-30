@@ -19,7 +19,14 @@ class LayerBenchmark extends Benchmark {
             width: 1024,
             height: 768,
             center: [-77.032194, 38.912753],
-            style: this.layerStyle
+            style: this.layerStyle,
+            transformRequest: (url, resourceType) =>{
+                if (resourceType === 'Tile' && url.search('terrain')) {
+                    return {
+                        url: url.replace('@2x', '').replace(/(\.webp)|(\.png)/, '.pngraw')
+                    };
+                }
+            }
         }).then(map => {
             this.map = map;
         });
@@ -140,6 +147,26 @@ class LayerHeatmap extends LayerBenchmark {
     }
 }
 
+class LayerHillshade extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            sources: {
+                'terrain-rgb': {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.terrain-rgb'
+                }
+            },
+            layers: generateLayers({
+                'id': 'layer',
+                'type': 'hillshade',
+                'source': 'terrain-rgb',
+            })
+        });
+    }
+}
+
 class LayerLine extends LayerBenchmark {
     constructor() {
         super();
@@ -202,6 +229,7 @@ module.exports = [
     LayerFill,
     LayerFillExtrusion,
     LayerHeatmap,
+    LayerHillshade,
     LayerLine,
     LayerRaster,
     LayerSymbol
