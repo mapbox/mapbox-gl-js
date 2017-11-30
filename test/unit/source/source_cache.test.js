@@ -10,6 +10,7 @@ const LngLat = require('../../../src/geo/lng_lat');
 const Coordinate = require('../../../src/geo/coordinate');
 const Evented = require('../../../src/util/evented');
 const util = require('../../../src/util/util');
+const browser = require('../../../src/util/browser');
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
@@ -609,11 +610,17 @@ test('SourceCache#update', (t) => {
         transform.resize(511, 511);
         transform.zoom = 1;
 
+        const fadeTime = 100;
+
+        const start = Date.now();
+        let time = start;
+        t.stub(browser, 'now').callsFake(() => time);
+
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
-                tile.timeAdded = Date.now();
+                tile.timeAdded = browser.now();
                 tile.state = 'loaded';
-                tile.fadeEndTime = Date.now() + 100;
+                tile.fadeEndTime = browser.now() + fadeTime;
                 callback();
             }
         });
@@ -622,19 +629,25 @@ test('SourceCache#update', (t) => {
 
         sourceCache.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
+                // load children
                 sourceCache.update(transform);
 
                 transform.zoom = 0;
                 sourceCache.update(transform);
 
                 t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
-                setTimeout(() => {
-                    sourceCache.update(transform);
-                    t.equal(sourceCache.getRenderableIds().length, 1, 'drops children after fading is complete');
-                    t.end();
-                }, 100);
+
+                time = start + 98;
+                sourceCache.update(transform);
+                t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
+
+                time = start + fadeTime + 1;
+                sourceCache.update(transform);
+                t.equal(sourceCache.getRenderableIds().length, 1, 'drops children after fading is complete');
+                t.end();
             }
         });
+
         sourceCache.onAdd();
     });
 
