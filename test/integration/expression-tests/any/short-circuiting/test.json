@@ -1,15 +1,13 @@
 {
   "expression": ["any", true, ["error", "unreachable"]],
-  "inputs": [
-    [{}, {}]
-  ],
+  "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [true],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "boolean"
-    },
-    "outputs": [true]
+    }
   }
 }

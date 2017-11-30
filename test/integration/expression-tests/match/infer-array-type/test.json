@@ -1,5 +1,10 @@
 {
-  "propertySpec": {"type": "array", "value": "string"},
+  "propertySpec": {
+    "type": "array",
+    "value": "string",
+    "function": true,
+    "property-function": true
+  },
   "expression": [
     "match",
     ["number", ["get", "x"]],
@@ -11,12 +16,12 @@
   ],
   "inputs": [],
   "expected": {
+    "outputs": [],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "array<string>"
-    },
-    "outputs": []
+    }
   }
 }

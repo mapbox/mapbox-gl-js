@@ -2,12 +2,12 @@
   "expression": ["id"],
   "inputs": [[{}, {}], [{}, {"id": 1}], [{}, {"id": "one"}]],
   "expected": {
+    "outputs": [null, 1, "one"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "value"
-    },
-    "outputs": [null, 1, "one"]
+    }
   }
 }

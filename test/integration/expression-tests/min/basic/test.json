@@ -2,12 +2,12 @@
   "expression": ["min", 0, -1, 10],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [-1],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [-1]
+    }
   }
 }

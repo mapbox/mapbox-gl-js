@@ -10,12 +10,6 @@
     [{}, {"properties": {"x": [0, 255], "y": "invalid"}}]
   ],
   "expected": {
-    "compiled": {
-      "result": "success",
-      "isFeatureConstant": false,
-      "isZoomConstant": true,
-      "type": "color"
-    },
     "outputs": [
       [1, 0, 0, 1],
       [0, 0, 0, 1],
@@ -24,6 +18,12 @@
       [0, 1, 0, 1],
       [0, 0, 0, 1],
       {"error": "Could not parse color from value 'invalid'"}
-    ]
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "color"
+    }
   }
 }

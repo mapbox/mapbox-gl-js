@@ -7,12 +7,12 @@
     [{}, {"properties": {"x": false, "y": false}}]
   ],
   "expected": {
+    "outputs": [true, true, true, false],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "boolean"
-    },
-    "outputs": [true, true, true, false]
+    }
   }
 }

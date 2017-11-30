@@ -2,12 +2,12 @@
   "expression": "ahoy!",
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": ["ahoy!"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "string"
-    },
-    "outputs": ["ahoy!"]
+    }
   }
 }

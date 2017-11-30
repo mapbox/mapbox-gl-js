@@ -2,12 +2,12 @@
   "expression": ["length", ["array", ["get", "x"]]],
   "inputs": [[{}, {"properties": {"x": [1, 2, 3, 4, 5]}}]],
   "expected": {
+    "outputs": [5],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "number"
-    },
-    "outputs": [5]
+    }
   }
 }

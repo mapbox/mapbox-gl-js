@@ -2,12 +2,12 @@
   "expression": ["literal", ["1", "2"]],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [["1", "2"]],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "array<string, 2>"
-    },
-    "outputs": [["1", "2"]]
+    }
   }
 }

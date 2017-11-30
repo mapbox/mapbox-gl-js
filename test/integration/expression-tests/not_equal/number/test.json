@@ -5,12 +5,12 @@
     [{}, {"properties": {"x": 1, "y": 2}}]
   ],
   "expected": {
+    "outputs": [false, true],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "boolean"
-    },
-    "outputs": [false, true]
+    }
   }
 }

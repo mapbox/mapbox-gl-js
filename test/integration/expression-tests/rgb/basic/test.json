@@ -2,12 +2,12 @@
   "expression": ["rgb", 0, 0, 255],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [[0, 0, 1, 1]],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "color"
-    },
-    "outputs": [[0, 0, 1, 1]]
+    }
   }
 }

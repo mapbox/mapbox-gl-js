@@ -8,18 +8,18 @@
     [{}, {"properties": {"x": null}}]
   ],
   "expected": {
-    "compiled": {
-      "result": "success",
-      "isFeatureConstant": false,
-      "isZoomConstant": true,
-      "type": "object"
-    },
     "outputs": [
       {"inner": "object"},
       {"default": "value"},
       {"default": "value"},
       {"default": "value"},
       {"default": "value"}
-    ]
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "object"
+    }
   }
 }

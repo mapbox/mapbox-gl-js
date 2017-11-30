@@ -19,12 +19,12 @@
     [{}, {"properties": {"x": "c"}}]
   ],
   "expected": {
+    "outputs": ["Apple", "Apple", "Banana", "Banana", "Kumquat"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "string"
-    },
-    "outputs": ["Apple", "Apple", "Banana", "Banana", "Kumquat"]
+    }
   }
 }

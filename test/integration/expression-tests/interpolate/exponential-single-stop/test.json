@@ -9,12 +9,12 @@
     [{}, {"properties": {"x": 2}}]
   ],
   "expected": {
+    "outputs": [2, 2, 2],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "number"
-    },
-    "outputs": [2, 2, 2]
+    }
   }
 }

@@ -2,12 +2,12 @@
   "expression": ["let", "a", ["get", "x"], ["+", 1, ["number", ["var", "a"]]]],
   "inputs": [[{}, {"properties": {"x": 5}}]],
   "expected": {
+    "outputs": [6],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "number"
-    },
-    "outputs": [6]
+    }
   }
 }

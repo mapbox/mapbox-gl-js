@@ -2,12 +2,12 @@
   "expression": ["log2", 1024],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [10],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [10]
+    }
   }
 }

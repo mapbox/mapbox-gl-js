@@ -17,12 +17,12 @@
   ],
   "inputs": [[{"zoom": 10}, {}]],
   "expected": {
+    "outputs": [20],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": false,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [20]
+    }
   }
 }

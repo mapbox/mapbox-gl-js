@@ -2,12 +2,12 @@
   "expression": ["to-string", ["rgba", 85, 255, 0, 0.5]],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": ["rgba(85,255,0,0.5)"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "string"
-    },
-    "outputs": ["rgba(85,255,0,0.5)"]
+    }
   }
 }

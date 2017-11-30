@@ -1,5 +1,9 @@
 {
-  "propertySpec": {"type": "string"},
+  "propertySpec": {
+    "type": "string",
+    "function": true,
+    "property-function": true
+  },
   "expression": ["at", 1, ["literal", [1, 2, 3]]],
   "inputs": [],
   "expected": {

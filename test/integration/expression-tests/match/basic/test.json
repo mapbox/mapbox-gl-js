@@ -7,12 +7,6 @@
     [{}, {"properties": {"x": 0}}]
   ],
   "expected": {
-    "compiled": {
-      "result": "success",
-      "isFeatureConstant": false,
-      "isZoomConstant": true,
-      "type": "string"
-    },
     "outputs": [
       "Apple",
       "Banana",
@@ -20,6 +14,12 @@
       {
         "error": "Expected value to be of type string, but found number instead."
       }
-    ]
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "string"
+    }
   }
 }

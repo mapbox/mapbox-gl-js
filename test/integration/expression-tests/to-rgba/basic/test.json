@@ -4,20 +4,15 @@
     [{}, {"properties": {"x": "red"}}],
     [{}, {"properties": {"x": "rgba(0, 255, 0, 1)"}}],
     [{}, {"properties": {"x": [0, 255, 0, 1]}}],
-    [{}, {"properties": {"x": [0, 255, 0]}}]
+    [{}, {"properties": {"x": [0, 0, 255]}}]
   ],
   "expected": {
+    "outputs": [[255, 0, 0, 1], [0, 255, 0, 1], [0, 255, 0, 1], [0, 0, 255, 1]],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "array<number, 4>"
-    },
-    "outputs": [
-      [255, 0, 0, 1],
-      [0, 255, 0, 1],
-      [0, 255, 0, 1],
-      [0, 255, 0, 1]
-    ]
+    }
   }
 }

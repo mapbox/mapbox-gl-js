@@ -2,7 +2,9 @@
   "propertySpec": {
     "type": "array",
     "value": "number",
-    "length": 3
+    "length": 3,
+    "function": true,
+    "property-function": true
   },
   "expression": ["array", "number", ["get", "x"]],
   "inputs": [],

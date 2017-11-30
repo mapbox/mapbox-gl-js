@@ -2,12 +2,12 @@
   "expression": "ah\u2028\u2029oy!",
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": ["ah\u2028\u2029oy!"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "string"
-    },
-    "outputs": ["ah\u2028\u2029oy!"]
+    }
   }
 }

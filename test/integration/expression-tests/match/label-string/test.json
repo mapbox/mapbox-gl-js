@@ -9,12 +9,6 @@
     [{}, {"properties": {}}]
   ],
   "expected": {
-    "compiled": {
-      "result": "success",
-      "isFeatureConstant": false,
-      "isZoomConstant": true,
-      "type": "string"
-    },
     "outputs": [
       "match",
       "otherwise",
@@ -26,6 +20,12 @@
       },
       {"error": "Expected value to be of type string, but found null instead."},
       {"error": "Expected value to be of type string, but found null instead."}
-    ]
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "string"
+    }
   }
 }
