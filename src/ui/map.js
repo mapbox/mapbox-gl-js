@@ -243,6 +243,7 @@ class Map extends Camera {
     _hash: Hash;
     _delegatedListeners: any;
     _fadeDuration: number;
+    _crossFadingFactor: number;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -270,6 +271,7 @@ class Map extends Camera {
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
+        this._crossFadingFactor = 1;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -1459,6 +1461,8 @@ class Map extends Camera {
             this._updateEase();
         }
 
+        let crossFading = false;
+
         // If the style has changed, the map is being zoomed, or a transition or fade is in progress:
         //  - Apply style changes (in a batch)
         //  - Recalculate paint properties.
@@ -1475,6 +1479,12 @@ class Map extends Camera {
                 zoomHistory: this.style.zoomHistory,
                 transition: util.extend({ duration: 300, delay: 0 }, this.style.stylesheet.transition)
             });
+
+            const factor = parameters.crossFadingFactor();
+            if (factor !== 1 || factor !== this._crossFadingFactor) {
+                crossFading = true;
+                this._crossFadingFactor = factor;
+            }
 
             this.style.update(parameters);
         }
@@ -1505,7 +1515,7 @@ class Map extends Camera {
             this.fire('load');
         }
 
-        if (this.style && this.style.hasTransitions()) {
+        if (this.style && (this.style.hasTransitions() || crossFading)) {
             this._styleDirty = true;
         }
 
