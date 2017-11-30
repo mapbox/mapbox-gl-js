@@ -1420,7 +1420,7 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the map is fully loaded.
      */
     loaded() {
-        if (this._styleDirty || this._sourcesDirty || this._placementDirty)
+        if (this._styleDirty || this._sourcesDirty)
             return false;
         if (!this.style || !this.style.loaded())
             return false;
