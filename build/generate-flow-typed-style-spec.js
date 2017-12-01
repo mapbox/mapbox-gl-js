@@ -44,6 +44,8 @@ function flowType(property) {
         return `DataDrivenPropertyValueSpecification<${baseType}>`;
     } else if (property['zoom-function']) {
         return `PropertyValueSpecification<${baseType}>`;
+    } else if (property.function) {
+        return `ExpressionSpecification`;
     } else {
         return baseType;
     }

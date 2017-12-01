@@ -215,7 +215,7 @@ declare type SymbolLayerSpecification = {|
         "text-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "text-rotation-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "text-field"?: DataDrivenPropertyValueSpecification<string>,
-        "text-font"?: PropertyValueSpecification<Array<string>>,
+        "text-font"?: DataDrivenPropertyValueSpecification<Array<string>>,
         "text-size"?: DataDrivenPropertyValueSpecification<number>,
         "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
         "text-line-height"?: PropertyValueSpecification<number>,
@@ -294,7 +294,7 @@ declare type HeatmapLayerSpecification = {|
         "heatmap-radius"?: PropertyValueSpecification<number>,
         "heatmap-weight"?: DataDrivenPropertyValueSpecification<number>,
         "heatmap-intensity"?: PropertyValueSpecification<number>,
-        "heatmap-color"?: PropertyValueSpecification<ColorSpecification>,
+        "heatmap-color"?: ExpressionSpecification,
         "heatmap-opacity"?: PropertyValueSpecification<number>
     |}
 |}
