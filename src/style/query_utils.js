@@ -7,7 +7,7 @@ import type StyleLayer from '../style/style_layer';
 import type CircleBucket from '../data/bucket/circle_bucket';
 import type LineBucket from '../data/bucket/line_bucket';
 
-function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket | LineBucket): number {
+function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket<*> | LineBucket): number {
     const value = ((layer.paint: any).get(property): PossiblyEvaluatedPropertyValue<any>).value;
     if (value.kind === 'constant') {
         return value.value;

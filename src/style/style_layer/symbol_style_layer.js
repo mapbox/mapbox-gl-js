@@ -69,10 +69,8 @@ class SymbolStyleLayer extends StyleLayer {
         return value;
     }
 
-    createBucket(parameters: BucketParameters) {
-        // Eventually we need to make SymbolBucket conform to the Bucket interface.
-        // Hack around it with casts for now.
-        return (new SymbolBucket((parameters: any)): any);
+    createBucket(parameters: BucketParameters<*>) {
+        return new SymbolBucket(parameters);
     }
 
     queryRadius(): number {

@@ -19,7 +19,7 @@ import type {
     PopulateParameters
 } from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
-import type StyleLayer from '../../style/style_layer';
+import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 import type {StructArray} from '../../util/struct_array';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
@@ -66,7 +66,7 @@ class FillExtrusionBucket implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
-    layers: Array<StyleLayer>;
+    layers: Array<FillExtrusionStyleLayer>;
     layerIds: Array<string>;
 
     layoutVertexArray: StructArray;
@@ -75,11 +75,11 @@ class FillExtrusionBucket implements Bucket {
     indexArray: StructArray;
     indexBuffer: IndexBuffer;
 
-    programConfigurations: ProgramConfigurationSet;
+    programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
 
-    constructor(options: BucketParameters) {
+    constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;

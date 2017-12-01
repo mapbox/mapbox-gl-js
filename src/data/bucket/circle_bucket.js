@@ -15,7 +15,8 @@ import type {
     PopulateParameters
 } from '../bucket';
 import type {ProgramInterface} from '../program_configuration';
-import type StyleLayer from '../../style/style_layer';
+import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
+import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer';
 import type {StructArray} from '../../util/struct_array';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
@@ -54,14 +55,13 @@ const LayoutVertexArrayType = createVertexArrayType(circleInterface.layoutAttrib
  * vector that is where it points.
  * @private
  */
-class CircleBucket implements Bucket {
+class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
     static programInterface: ProgramInterface;
-
     index: number;
     zoom: number;
     overscaling: number;
     layerIds: Array<string>;
-    layers: Array<StyleLayer>;
+    layers: Array<Layer>;
 
     layoutVertexArray: StructArray;
     layoutVertexBuffer: VertexBuffer;
@@ -69,11 +69,11 @@ class CircleBucket implements Bucket {
     indexArray: StructArray;
     indexBuffer: IndexBuffer;
 
-    programConfigurations: ProgramConfigurationSet;
+    programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
     uploaded: boolean;
 
-    constructor(options: BucketParameters) {
+    constructor(options: BucketParameters<Layer>) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;

@@ -34,7 +34,7 @@ class FillStyleLayer extends StyleLayer {
         }
     }
 
-    createBucket(parameters: BucketParameters) {
+    createBucket(parameters: BucketParameters<*>) {
         return new FillBucket(parameters);
     }
 

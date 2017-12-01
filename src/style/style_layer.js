@@ -13,7 +13,7 @@ const {
     Properties
 } = require('./properties');
 
-import type {Bucket, BucketParameters} from '../data/bucket';
+import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type RenderTexture from '../render/render_texture';
 import type {FeatureFilter} from '../style-spec/feature_filter';
@@ -47,7 +47,6 @@ class StyleLayer extends Evented {
     viewportFrame: ?RenderTexture;
     _featureFilter: FeatureFilter;
 
-    +createBucket: (parameters: BucketParameters) => Bucket;
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
                               feature: VectorTileFeature,

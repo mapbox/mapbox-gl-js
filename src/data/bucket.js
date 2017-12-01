@@ -4,14 +4,14 @@ const {deserialize} = require('../util/web_worker_transfer');
 
 import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type {Serialized} from '../util/web_worker_transfer';
 import type Context from '../gl/context';
 
-export type BucketParameters = {
+export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
-    layers: Array<StyleLayer>,
+    layers: Array<Layer>,
     zoom: number,
     pixelRatio: number,
     overscaling: number,
