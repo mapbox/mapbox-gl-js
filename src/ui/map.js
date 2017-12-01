@@ -1063,11 +1063,11 @@ class Map extends Camera {
     }
 
     /**
-     * Get an image from the style (such as one used by `icon-image` or `background-pattern`).
+     * Define wether the image has been added or not
      *
      * @param id The ID of the image.
      */
-    getImage(id: string): ?StyleImage {
+    hasImage(id: string): boolean {
         if (!id) {
             this.fire('error', {
                 error: new Error('Missing required image id')
@@ -1075,7 +1075,7 @@ class Map extends Camera {
             return;
         }
 
-        return this.style.getImage(id);
+        return !!this.style.getImage(id);
     }
 
     /**
