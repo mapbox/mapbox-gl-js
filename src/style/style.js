@@ -449,15 +449,19 @@ class Style extends Evented {
     }
 
     addImage(id: string, image: StyleImage) {
-        if (this.imageManager.getImage(id)) {
+        if (this.getImage(id)) {
             return this.fire('error', {error: new Error('An image with this name already exists.')});
         }
         this.imageManager.addImage(id, image);
         this.fire('data', {dataType: 'style'});
     }
 
+    getImage(id: string): ?StyleImage {
+        return this.imageManager.getImage(id);
+    }
+
     removeImage(id: string) {
-        if (!this.imageManager.getImage(id)) {
+        if (!this.getImage(id)) {
             return this.fire('error', {error: new Error('No image with this name exists.')});
         }
         this.imageManager.removeImage(id);
