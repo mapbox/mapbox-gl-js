@@ -11,6 +11,7 @@ const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
 const {serialize} = require('../util/web_worker_transfer');
 const TileCoord = require('./tile_coord');
+const ZoomHistory = require('../style/zoom_history');
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -186,12 +187,8 @@ function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
         layer.recalculate({
             zoom,
             now: Number.MAX_VALUE,
-            defaultFadeDuration: 0,
-            zoomHistory: {
-                lastIntegerZoom: 0,
-                lastIntegerZoomTime: 0,
-                lastZoom: 0
-            }
+            fadeDuration: 0,
+            zoomHistory: new ZoomHistory()
         });
     }
 }
