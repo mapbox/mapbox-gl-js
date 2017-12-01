@@ -708,8 +708,7 @@ test('Style#removeSource', (t) => {
             }]
         }));
         style.on('style.load', () => {
-            style.update();
-            style._recalculate(1);
+            style.update(1, 0);
             callback(style);
         });
         return style;
@@ -1281,8 +1280,7 @@ test('Style#setPaintProperty', (t) => {
         tr.resize(512, 512);
 
         style.once('style.load', () => {
-            style.update();
-            style._recalculate(tr.zoom);
+            style.update(tr.zoom, 0);
             const sourceCache = style.sourceCaches['geojson'];
             const source = style.getSource('geojson');
 
@@ -1577,8 +1575,7 @@ test('Style#queryRenderedFeatures', (t) => {
     });
 
     style.on('style.load', () => {
-        style.update();
-        style._recalculate(0);
+        style.update(0, 0);
 
         t.test('returns feature type', (t) => {
             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
