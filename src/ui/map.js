@@ -1072,7 +1072,7 @@ class Map extends Camera {
             this.fire('error', {
                 error: new Error('Missing required image id')
             });
-            return;
+            return false;
         }
 
         return !!this.style.getImage(id);
