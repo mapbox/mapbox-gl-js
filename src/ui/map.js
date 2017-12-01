@@ -1464,8 +1464,7 @@ class Map extends Camera {
         //  - Recalculate zoom-dependent paint properties.
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
-            this.style.update();
-            this.style._recalculate(this.transform.zoom, this._fadeDuration);
+            this.style.update(this.transform.zoom, this._fadeDuration);
         }
 
         // If we are in _render for any reason other than an in-progress paint

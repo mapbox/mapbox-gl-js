@@ -271,32 +271,6 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _recalculate(z: number, fadeDuration: number) {
-        if (!this._loaded) return;
-
-        for (const sourceId in this.sourceCaches)
-            this.sourceCaches[sourceId].used = false;
-
-        const parameters = {
-            zoom: z,
-            now: browser.now(),
-            fadeDuration,
-            zoomHistory: this._updateZoomHistory(z)
-        };
-
-        for (const layerId of this._order) {
-            const layer = this._layers[layerId];
-
-            layer.recalculate(parameters);
-            if (!layer.isHidden(z) && layer.source) {
-                this.sourceCaches[layer.source].used = true;
-            }
-        }
-
-        this.light.recalculate(parameters);
-        this.z = z;
-    }
-
     hasTransitions() {
         if (this.light && this.light.hasTransition()) {
             return true;
@@ -350,41 +324,68 @@ class Style extends Evented {
     }
 
     /**
-     * Apply queued style updates in a batch
+     * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
      */
-    update() {
-        if (!this._changed || !this._loaded) return;
-
-        const updatedIds = Object.keys(this._updatedLayers);
-        const removedIds = Object.keys(this._removedLayers);
-
-        if (updatedIds.length || removedIds.length) {
-            this._updateWorkerLayers(updatedIds, removedIds);
+    update(z: number, fadeDuration: number) {
+        if (!this._loaded) {
+            return;
         }
-        for (const id in this._updatedSources) {
-            const action = this._updatedSources[id];
-            assert(action === 'reload' || action === 'clear');
-            if (action === 'reload') {
-                this._reloadSource(id);
-            } else if (action === 'clear') {
-                this._clearSource(id);
+
+        if (this._changed) {
+            const updatedIds = Object.keys(this._updatedLayers);
+            const removedIds = Object.keys(this._removedLayers);
+
+            if (updatedIds.length || removedIds.length) {
+                this._updateWorkerLayers(updatedIds, removedIds);
             }
+            for (const id in this._updatedSources) {
+                const action = this._updatedSources[id];
+                assert(action === 'reload' || action === 'clear');
+                if (action === 'reload') {
+                    this._reloadSource(id);
+                } else if (action === 'clear') {
+                    this._clearSource(id);
+                }
+            }
+
+            const parameters = {
+                now: browser.now(),
+                transition: util.extend({ duration: 300, delay: 0 }, this.stylesheet.transition)
+            };
+
+            for (const id in this._updatedPaintProps) {
+                this._layers[id].updateTransitions(parameters);
+            }
+
+            this.light.updateTransitions(parameters);
+
+            this._resetUpdates();
+
+            this.fire('data', {dataType: 'style'});
+        }
+
+        for (const sourceId in this.sourceCaches) {
+            this.sourceCaches[sourceId].used = false;
         }
 
         const parameters = {
+            zoom: z,
             now: browser.now(),
-            transition: util.extend({ duration: 300, delay: 0 }, this.stylesheet.transition)
+            fadeDuration,
+            zoomHistory: this._updateZoomHistory(z)
         };
 
-        for (const id in this._updatedPaintProps) {
-            this._layers[id].updateTransitions(parameters);
+        for (const layerId of this._order) {
+            const layer = this._layers[layerId];
+
+            layer.recalculate(parameters);
+            if (!layer.isHidden(z) && layer.source) {
+                this.sourceCaches[layer.source].used = true;
+            }
         }
 
-        this.light.updateTransitions(parameters);
-
-        this._resetUpdates();
-
-        this.fire('data', {dataType: 'style'});
+        this.light.recalculate(parameters);
+        this.z = z;
     }
 
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
