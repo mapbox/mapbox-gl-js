@@ -919,7 +919,7 @@ test('Map', (t) => {
                 };
 
                 map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
-                map.style.update();
+                map.style.update({});
                 t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
                 t.end();
             });

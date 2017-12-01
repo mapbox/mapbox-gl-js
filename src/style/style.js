@@ -33,6 +33,11 @@ import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type CollisionIndex from '../symbol/collision_index';
 import type {Callback} from '../types/callback';
+import type {
+    TransitionParameters,
+    EvaluationParameters
+} from './properties';
+
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -326,7 +331,7 @@ class Style extends Evented {
     /**
      * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
      */
-    update(z: number, fadeDuration: number) {
+    update(parameters: TransitionParameters & EvaluationParameters) {
         if (!this._loaded) {
             return;
         }
@@ -348,11 +353,6 @@ class Style extends Evented {
                 }
             }
 
-            const parameters = {
-                now: browser.now(),
-                transition: util.extend({ duration: 300, delay: 0 }, this.stylesheet.transition)
-            };
-
             for (const id in this._updatedPaintProps) {
                 this._layers[id].updateTransitions(parameters);
             }
@@ -368,24 +368,17 @@ class Style extends Evented {
             this.sourceCaches[sourceId].used = false;
         }
 
-        const parameters = {
-            zoom: z,
-            now: browser.now(),
-            fadeDuration,
-            zoomHistory: this._updateZoomHistory(z)
-        };
-
         for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
             layer.recalculate(parameters);
-            if (!layer.isHidden(z) && layer.source) {
+            if (!layer.isHidden(parameters.zoom) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
         }
 
         this.light.recalculate(parameters);
-        this.z = z;
+        this.z = parameters.zoom;
     }
 
     _updateWorkerLayers(updatedIds: Array<string>, removedIds: Array<string>) {
