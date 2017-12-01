@@ -19,14 +19,7 @@ class LayerBenchmark extends Benchmark {
             width: 1024,
             height: 768,
             center: [-77.032194, 38.912753],
-            style: this.layerStyle,
-            transformRequest: (url, resourceType) =>{
-                if (resourceType === 'Tile' && url.search('terrain')) {
-                    return {
-                        url: url.replace('@2x', '').replace(/(\.webp)|(\.png)/, '.pngraw')
-                    };
-                }
-            }
+            style: this.layerStyle
         }).then(map => {
             this.map = map;
         });

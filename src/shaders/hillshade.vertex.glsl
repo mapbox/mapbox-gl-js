@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision highp float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 uniform mat4 u_matrix;
 
 attribute vec2 a_pos;

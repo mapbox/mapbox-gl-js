@@ -21,7 +21,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     constructor(id: string, options: RasterSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
-        this.maxzoom = 15;
+        this.maxzoom = 22;
         this._options = util.extend({}, options);
     }
 

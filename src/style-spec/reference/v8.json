@@ -455,7 +455,7 @@
           "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles",
           "sdk-support": {
             "basic functionality": {
-              "js": "next"
+              "js": "0.43.0"
             }
           }
         },
@@ -1812,10 +1812,7 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.10.0",
-          "android": "2.0.1",
-          "ios": "2.0.0",
-          "macos": "0.1.0"
+          "js": "0.43.0"
         },
         "data-driven styling": {}
       }

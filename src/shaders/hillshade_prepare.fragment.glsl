@@ -1,9 +1,5 @@
 #ifdef GL_ES
 precision highp float;
-#else
-#define lowp
-#define mediump
-#define highp
 #endif
 
 uniform sampler2D u_image;

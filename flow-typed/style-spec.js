@@ -358,6 +358,9 @@ declare type HillshadeLayerSpecification = {|
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
+        "hillshade-illumination-direction"?: PropertyValueSpecification<number>,
+        "hillshade-illumination-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "hillshade-exaggeration"?: PropertyValueSpecification<number>,
         "hillshade-shadow-color"?: PropertyValueSpecification<ColorSpecification>,
         "hillshade-highlight-color"?: PropertyValueSpecification<ColorSpecification>,
         "hillshade-accent-color"?: PropertyValueSpecification<ColorSpecification>
