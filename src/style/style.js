@@ -25,6 +25,7 @@ const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 const Placement = require('./placement');
+const ZoomHistory = require('./zoom_history');
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
@@ -67,12 +68,6 @@ export type StyleOptions = {
     localIdeographFontFamily?: string
 };
 
-export type ZoomHistory = {
-    lastIntegerZoom: number,
-    lastIntegerZoomTime: number,
-    lastZoom: number
-};
-
 /**
  * @private
  */
@@ -88,7 +83,7 @@ class Style extends Evented {
     _layers: {[string]: StyleLayer};
     _order: Array<string>;
     sourceCaches: {[string]: SourceCache};
-    zoomHistory: ZoomHistory | {};
+    zoomHistory: ZoomHistory;
     _loaded: boolean;
     _rtlTextPluginCallback: Function;
     _changed: boolean;
@@ -114,7 +109,7 @@ class Style extends Evented {
         this._layers = {};
         this._order  = [];
         this.sourceCaches = {};
-        this.zoomHistory = {};
+        this.zoomHistory = new ZoomHistory();
         this._loaded = false;
 
         this._resetUpdates();
@@ -294,32 +289,6 @@ class Style extends Evented {
         }
 
         return false;
-    }
-
-    _updateZoomHistory(z: number) {
-
-        const zh: ZoomHistory = (this.zoomHistory: any);
-
-        if (zh.lastIntegerZoom === undefined) {
-            // first time
-            zh.lastIntegerZoom = Math.floor(z);
-            zh.lastIntegerZoomTime = 0;
-            zh.lastZoom = z;
-        }
-
-        // check whether an integer zoom level as passed since the last frame
-        // and if yes, record it with the time. Used for transitioning patterns.
-        if (Math.floor(zh.lastZoom) < Math.floor(z)) {
-            zh.lastIntegerZoom = Math.floor(z);
-            zh.lastIntegerZoomTime = browser.now();
-
-        } else if (Math.floor(zh.lastZoom) > Math.floor(z)) {
-            zh.lastIntegerZoom = Math.floor(z + 1);
-            zh.lastIntegerZoomTime = browser.now();
-        }
-
-        zh.lastZoom = z;
-        return zh;
     }
 
     _checkLoaded() {

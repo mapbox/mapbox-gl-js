@@ -9,7 +9,7 @@ const {register} = require('../util/web_worker_transfer');
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
-import type {ZoomHistory} from './style';
+import type ZoomHistory from './zoom_history';
 
 import type {
     Feature,

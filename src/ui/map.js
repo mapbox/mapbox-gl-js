@@ -1464,11 +1464,14 @@ class Map extends Camera {
         //  - Recalculate zoom-dependent paint properties.
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
+            const zoom = this.transform.zoom;
+            const now = browser.now();
+            this.style.zoomHistory.update(zoom, now);
             this.style.update({
-                zoom: this.transform.zoom,
-                now: browser.now(),
+                zoom,
+                now,
                 fadeDuration: this._fadeDuration,
-                zoomHistory: this.style._updateZoomHistory(this.transform.zoom),
+                zoomHistory: this.style.zoomHistory,
                 transition: util.extend({ duration: 300, delay: 0 }, this.style.stylesheet.transition)
             });
         }
