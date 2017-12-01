@@ -33,7 +33,6 @@ import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
-import type {PossiblyEvaluatedPropertyValue} from '../../style/properties';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -359,27 +358,8 @@ class SymbolBucket implements Bucket {
     sdfIcons: boolean;
     iconsNeedLinear: boolean;
 
-    // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
-    // `icon-size` at up to three:
-    //
-    //   1. `text-size` at the zoom level of the bucket. Used to calculate a per-feature size for source `text-size`
-    //       expressions, and to calculate the box dimensions for icon-text-fit.
-    //   2. `icon-size` at the zoom level of the bucket. Used to calculate a per-feature size for source `icon-size`
-    //       expressions.
-    //   3. `text-size` and `icon-size` at the zoom level of the bucket, plus one. Used to calculate collision boxes.
-    //   4. `text-size` at zoom level 18. Used for something line-symbol-placement-related.
-    //   5.  For composite `*-size` expressions: two zoom levels of curve stops that "cover" the zoom level of the
-    //       bucket. These go into a vertex buffer and are used by the shader to interpolate the size at render time.
-    //
-    // (1) and (2) are stored in `this.layers[0].layout`. The remainder are below.
-    //
     textSizeData: SizeData;
     iconSizeData: SizeData;
-    layoutTextSize: PossiblyEvaluatedPropertyValue<number>; // (3)
-    layoutIconSize: PossiblyEvaluatedPropertyValue<number>; // (3)
-    textMaxSize: PossiblyEvaluatedPropertyValue<number>;    // (4)
-    compositeTextSizes: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>]; // (5)
-    compositeIconSizes: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>]; // (5)
 
     placedGlyphArray: StructArray;
     placedIconArray: StructArray;
@@ -413,26 +393,7 @@ class SymbolBucket implements Bucket {
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
 
         this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size']);
-        if (this.textSizeData.functionType === 'composite') {
-            const {min, max} = this.textSizeData.zoomRange;
-            this.compositeTextSizes = [
-                unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: min}),
-                unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: max})
-            ];
-        }
-
         this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size']);
-        if (this.iconSizeData.functionType === 'composite') {
-            const {min, max} = this.iconSizeData.zoomRange;
-            this.compositeIconSizes = [
-                unevaluatedLayoutValues['icon-size'].possiblyEvaluate({zoom: min}),
-                unevaluatedLayoutValues['icon-size'].possiblyEvaluate({zoom: max})
-            ];
-        }
-
-        this.layoutTextSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: this.zoom + 1});
-        this.layoutIconSize = unevaluatedLayoutValues['icon-size'].possiblyEvaluate({zoom: this.zoom + 1});
-        this.textMaxSize = unevaluatedLayoutValues['text-size'].possiblyEvaluate({zoom: 18});
 
         const layout = this.layers[0].layout;
         this.sortFeaturesByY = layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
