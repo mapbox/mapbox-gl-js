@@ -29,10 +29,6 @@ type PaintAttribute = {
     useIntegerZoom?: boolean
 }
 
-export type PaintPropertyStatistics = {
-    [property: string]: { max: number }
-}
-
 export type ProgramInterface = {
     layoutAttributes: Array<LayoutAttribute>,
     indexArrayType: Class<StructArray>,
@@ -75,7 +71,6 @@ function packColor(color: Color): [number, number] {
  * @private
  */
 interface Binder<T> {
-    property: string;
     statistics: { max: number };
 
     populatePaintArray(paintArray: StructArray,
@@ -95,14 +90,12 @@ class ConstantBinder<T> implements Binder<T> {
     value: T;
     name: string;
     type: string;
-    property: string;
     statistics: { max: number };
 
-    constructor(value: T, name: string, type: string, property: string) {
+    constructor(value: T, name: string, type: string) {
         this.value = value;
         this.name = name;
         this.type = type;
-        this.property = property;
         this.statistics = { max: -Infinity };
     }
 
@@ -130,14 +123,12 @@ class SourceExpressionBinder<T> implements Binder<T> {
     expression: SourceExpression;
     name: string;
     type: string;
-    property: string;
     statistics: { max: number };
 
-    constructor(expression: SourceExpression, name: string, type: string, property: string) {
+    constructor(expression: SourceExpression, name: string, type: string) {
         this.expression = expression;
         this.name = name;
         this.type = type;
-        this.property = property;
         this.statistics = { max: -Infinity };
     }
 
@@ -177,16 +168,14 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     expression: CompositeExpression;
     name: string;
     type: string;
-    property: string;
     useIntegerZoom: boolean;
     zoom: number;
     statistics: { max: number };
 
-    constructor(expression: CompositeExpression, name: string, type: string, property: string, useIntegerZoom: boolean, zoom: number) {
+    constructor(expression: CompositeExpression, name: string, type: string, useIntegerZoom: boolean, zoom: number) {
         this.expression = expression;
         this.name = name;
         this.type = type;
-        this.property = property;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.statistics = { max: -Infinity };
@@ -237,11 +226,6 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     }
 }
 
-export type SerializedProgramConfiguration = {
-    array: Serialized,
-    statistics: PaintPropertyStatistics
-};
-
 /**
  * ProgramConfiguration contains the logic for binding style layer properties and tile
  * layer feature data into GL program uniforms and vertex attributes.
@@ -288,10 +272,10 @@ class ProgramConfiguration {
             const useIntegerZoom = value.property.useIntegerZoom;
 
             if (value.value.kind === 'constant') {
-                self.binders[property] = new ConstantBinder(value.value, name, type, property);
+                self.binders[property] = new ConstantBinder(value.value, name, type);
                 self.cacheKey += `/u_${name}`;
             } else if (value.value.kind === 'source') {
-                self.binders[property] = new SourceExpressionBinder(value.value, name, type, property);
+                self.binders[property] = new SourceExpressionBinder(value.value, name, type);
                 self.cacheKey += `/a_${name}`;
                 attributes.push({
                     name: `a_${name}`,
@@ -299,7 +283,7 @@ class ProgramConfiguration {
                     components: type === 'color' ? 2 : 1
                 });
             } else {
-                self.binders[property] = new CompositeExpressionBinder(value.value, name, type, property, useIntegerZoom, zoom);
+                self.binders[property] = new CompositeExpressionBinder(value.value, name, type, useIntegerZoom, zoom);
                 self.cacheKey += `/z_${name}`;
                 attributes.push({
                     name: `a_${name}`,
@@ -318,10 +302,10 @@ class ProgramConfiguration {
     static forBackgroundColor(color: Color, opacity: number) {
         const self = new ProgramConfiguration();
 
-        self.binders['background-color'] = new ConstantBinder(color, 'color', 'color', 'background-color');
+        self.binders['background-color'] = new ConstantBinder(color, 'color', 'color');
         self.cacheKey += `/u_color`;
 
-        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
+        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number');
         self.cacheKey += `/u_opacity`;
 
         return self;
@@ -330,7 +314,7 @@ class ProgramConfiguration {
     static forBackgroundPattern(opacity: number) {
         const self = new ProgramConfiguration();
 
-        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number', 'background-opacity');
+        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number');
         self.cacheKey += `/u_opacity`;
 
         return self;
@@ -367,7 +351,7 @@ class ProgramConfiguration {
     setUniforms<Properties: Object>(context: Context, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         for (const property in this.binders) {
             const binder = this.binders[property];
-            binder.setUniforms(context, program, globals, properties.get(binder.property));
+            binder.setUniforms(context, program, globals, properties.get(property));
         }
     }
 
