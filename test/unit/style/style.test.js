@@ -329,7 +329,7 @@ test('Style#loadJSON', (t) => {
                 'source': '-source-id-',
                 'source-layer': '-source-layer-'
             });
-            style.update();
+            style.update({});
         });
 
         style.on('error', (event) => {
@@ -431,7 +431,7 @@ test('Style#update', (t) => {
             t.end();
         };
 
-        style.update();
+        style.update({});
     });
 });
 
@@ -581,7 +581,7 @@ test('Style#addSource', (t) => {
         style.once('data', t.end);
         style.on('style.load', () => {
             style.addSource('source-id', source);
-            style.update();
+            style.update({});
         });
     });
 
@@ -664,7 +664,7 @@ test('Style#removeSource', (t) => {
         style.on('style.load', () => {
             style.addSource('source-id', source);
             style.removeSource('source-id');
-            style.update();
+            style.update({});
         });
     });
 
@@ -900,7 +900,7 @@ test('Style#addLayer', (t) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
                 style.sourceCaches['mapbox'].reload = t.end;
                 style.addLayer(layer);
-                style.update();
+                style.update({});
             }
         });
     });
@@ -936,7 +936,7 @@ test('Style#addLayer', (t) => {
                 style.sourceCaches['mapbox'].clearTiles = t.fail;
                 style.removeLayer('my-layer');
                 style.addLayer(layer);
-                style.update();
+                style.update({});
             }
         });
 
@@ -972,7 +972,7 @@ test('Style#addLayer', (t) => {
                 style.sourceCaches['mapbox'].clearTiles = t.end;
                 style.removeLayer('my-layer');
                 style.addLayer(layer);
-                style.update();
+                style.update({});
             }
         });
 
@@ -987,7 +987,7 @@ test('Style#addLayer', (t) => {
 
         style.on('style.load', () => {
             style.addLayer(layer);
-            style.update();
+            style.update({});
         });
     });
 
@@ -1119,7 +1119,7 @@ test('Style#removeLayer', (t) => {
         style.on('style.load', () => {
             style.addLayer(layer);
             style.removeLayer('background');
-            style.update();
+            style.update({});
         });
     });
 
@@ -1220,7 +1220,7 @@ test('Style#moveLayer', (t) => {
         style.on('style.load', () => {
             style.addLayer(layer);
             style.moveLayer('background');
-            style.update();
+            style.update({});
         });
     });
 
@@ -1306,7 +1306,7 @@ test('Style#setPaintProperty', (t) => {
                     // after the next Style#update()
                     setTimeout(() => {
                         styleUpdateCalled = true;
-                        style.update();
+                        style.update({});
                     }, 50);
                 }
             }));
@@ -1350,7 +1350,7 @@ test('Style#setFilter', (t) => {
 
             style.setFilter('symbol', ['==', 'id', 1]);
             t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
-            style.update(); // trigger dispatcher broadcast
+            style.update({}); // trigger dispatcher broadcast
         });
     });
 
@@ -1377,7 +1377,7 @@ test('Style#setFilter', (t) => {
         style.on('style.load', () => {
             const filter = ['==', 'id', 1];
             style.setFilter('symbol', filter);
-            style.update(); // flush pending operations
+            style.update({}); // flush pending operations
 
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'updateLayers');
@@ -1387,7 +1387,7 @@ test('Style#setFilter', (t) => {
             };
             filter[2] = 2;
             style.setFilter('symbol', filter);
-            style.update(); // trigger dispatcher broadcast
+            style.update({}); // trigger dispatcher broadcast
         });
     });
 
@@ -1658,7 +1658,7 @@ test('Style defers expensive methods', (t) => {
     }));
 
     style.on('style.load', () => {
-        style.update();
+        style.update({});
 
         // spies to track defered methods
         t.spy(style, 'fire');
@@ -1676,7 +1676,7 @@ test('Style defers expensive methods', (t) => {
         t.notOk(style._reloadSource.called, '_reloadSource is deferred');
         t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
 
-        style.update();
+        style.update({});
 
         t.ok(style.fire.calledWith('data'), 'a data event was fired');
 
@@ -1811,7 +1811,7 @@ test('Style#hasTransitions', (t) => {
 
         style.on('style.load', () => {
             style.setPaintProperty("background", "background-color", "blue");
-            style.update();
+            style.update({transition: { duration: 300, delay: 0 }});
             t.equal(style.hasTransitions(), true);
             t.end();
         });
@@ -1822,9 +1822,6 @@ test('Style#hasTransitions', (t) => {
         style.loadJSON({
             "version": 8,
             "sources": {},
-            "transition": {
-                "duration": 0
-            },
             "layers": [{
                 "id": "background",
                 "type": "background"
@@ -1833,7 +1830,7 @@ test('Style#hasTransitions', (t) => {
 
         style.on('style.load', () => {
             style.setPaintProperty("background", "background-color", "blue");
-            style.update();
+            style.update({transition: { duration: 0, delay: 0 }});
             t.equal(style.hasTransitions(), false);
             t.end();
         });
