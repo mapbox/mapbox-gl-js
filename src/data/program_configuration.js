@@ -8,7 +8,7 @@ const Color = require('../style-spec/util/color');
 const {deserialize, serialize, register} = require('../util/web_worker_transfer');
 
 import type Context from '../gl/context';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {Serialized} from '../util/web_worker_transfer';
 import type {ViewType, StructArray} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -276,14 +276,14 @@ class ProgramConfiguration {
         this.cacheKey = '';
     }
 
-    static createDynamic(programInterface: ProgramInterface, layer: StyleLayer, zoom: number) {
+    static createDynamic<Layer: TypedStyleLayer>(programInterface: ProgramInterface, layer: Layer, zoom: number) {
         const self = new ProgramConfiguration();
         const attributes = [];
 
         for (const attribute of programInterface.paintAttributes || []) {
             const property = attribute.property;
             const name = attribute.name || property.replace(`${layer.type}-`, '').replace(/-/g, '_');
-            const value: PossiblyEvaluatedPropertyValue<any> = (layer.paint: any).get(property);
+            const value: PossiblyEvaluatedPropertyValue<any> = layer.paint.get(property);
             const type = value.property.specification.type;
             const useIntegerZoom = value.property.useIntegerZoom;
 
@@ -384,10 +384,10 @@ class ProgramConfiguration {
     }
 }
 
-class ProgramConfigurationSet {
+class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[string]: ProgramConfiguration};
 
-    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<StyleLayer>, zoom: number, arrays?: Serialized) {
+    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<Layer>, zoom: number, arrays?: Serialized) {
         if (arrays) {
             // remove this path once Bucket classes no longer use it.
             this.programConfigurations = (deserialize(arrays): any).programConfigurations;

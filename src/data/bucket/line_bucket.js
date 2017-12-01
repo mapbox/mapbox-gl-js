@@ -119,14 +119,14 @@ class LineBucket implements Bucket {
     indexArray: StructArray;
     indexBuffer: IndexBuffer;
 
-    programConfigurations: ProgramConfigurationSet;
+    programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
 
-    constructor(options: BucketParameters) {
+    constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
-        this.layers = (options.layers: any);
+        this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 

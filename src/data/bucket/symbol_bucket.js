@@ -225,7 +225,7 @@ class SymbolBuffers {
     indexArray: StructArray;
     indexBuffer: IndexBuffer;
 
-    programConfigurations: ProgramConfigurationSet;
+    programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>;
     segments: SegmentVector;
 
     dynamicLayoutVertexArray: StructArray;
@@ -400,16 +400,16 @@ class SymbolBucket implements Bucket {
     uploaded: boolean;
     collisionCircle: SymbolBuffers;
 
-    constructor(options: BucketParameters) {
+    constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
-        this.layers = (options.layers: any);
+        this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.pixelRatio = options.pixelRatio;
 
-        const layer: SymbolStyleLayer = this.layers[0];
+        const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
 
         this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size']);

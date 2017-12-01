@@ -41,7 +41,7 @@ class LineStyleLayer extends StyleLayer {
             lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
-    createBucket(parameters: BucketParameters) {
+    createBucket(parameters: BucketParameters<*>) {
         return new LineBucket(parameters);
     }
 
