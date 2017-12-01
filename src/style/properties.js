@@ -681,7 +681,6 @@ class Properties<Props: Object> {
     }
 }
 
-register(PossiblyEvaluatedPropertyValue);
 register(DataDrivenProperty);
 register(DataConstantProperty);
 register(CrossFadedProperty);
