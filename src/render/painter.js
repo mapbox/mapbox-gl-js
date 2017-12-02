@@ -25,6 +25,7 @@ const draw = {
     line: require('./draw_line'),
     fill: require('./draw_fill'),
     'fill-extrusion': require('./draw_fill_extrusion'),
+    hillshade: require('./draw_hillshade'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
     debug: require('./draw_debug')
@@ -41,7 +42,7 @@ import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
 
-export type RenderPass = '3d' | 'opaque' | 'translucent';
+export type RenderPass = '3d' | 'hillshadeprepare' | 'opaque' | 'translucent';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -302,7 +303,7 @@ class Painter {
 
         const layerIds = this.style._order;
 
-        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc._source.type === 'raster'; });
+        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc.getSource().type === 'raster' || sc.getSource().type === 'raster-dem'; });
         for (const key in rasterSources) {
             const sourceCache = rasterSources[key];
             const coords = sourceCache.getVisibleCoordinates();
@@ -364,6 +365,36 @@ class Painter {
                 renderTarget.unbind();
             }
         }
+
+
+
+        this.renderPass = 'hillshadeprepare';
+
+        {
+            let sourceCache;
+            let coords = [];
+
+            for (let i = 0; i < layerIds.length; i++) {
+                const layer = this.style._layers[layerIds[i]];
+
+                if (layer.type !== 'hillshade' || layer.isHidden(this.transform.zoom)) continue;
+
+                if (layer.source !== (sourceCache && sourceCache.id)) {
+                    sourceCache = this.style.sourceCaches[layer.source];
+                    coords = [];
+
+                    if (sourceCache) {
+                        this.clearStencil();
+                        coords = sourceCache.getVisibleCoordinates();
+                    }
+
+                    coords.reverse();
+                }
+
+                this.renderLayer(this, (sourceCache: any), layer, coords);
+            }
+        }
+
 
         // Clear buffers in preparation for drawing to the main framebuffer
         context.clear({ color: Color.transparent, depth: 1 });

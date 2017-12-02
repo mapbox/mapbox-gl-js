@@ -83,7 +83,7 @@ declare type VectorSourceSpecification = {
 }
 
 declare type RasterSourceSpecification = {
-    "type": "raster",
+    "type": "raster" | "raster-dem",
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
@@ -345,6 +345,28 @@ declare type RasterLayerSpecification = {|
     |}
 |}
 
+declare type HillshadeLayerSpecification = {|
+    "id": string,
+    "type": "hillshade",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "visibility"?: "visible" | "none"
+    |},
+    "paint"?: {|
+        "hillshade-illumination-direction"?: PropertyValueSpecification<number>,
+        "hillshade-illumination-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "hillshade-exaggeration"?: PropertyValueSpecification<number>,
+        "hillshade-shadow-color"?: PropertyValueSpecification<ColorSpecification>,
+        "hillshade-highlight-color"?: PropertyValueSpecification<ColorSpecification>,
+        "hillshade-accent-color"?: PropertyValueSpecification<ColorSpecification>
+    |}
+|}
+
 declare type BackgroundLayerSpecification = {|
     "id": string,
     "type": "background",
@@ -369,5 +391,6 @@ declare type LayerSpecification =
     | HeatmapLayerSpecification
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
+    | HillshadeLayerSpecification
     | BackgroundLayerSpecification;
 

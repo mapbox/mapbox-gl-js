@@ -31,7 +31,7 @@ class Texture {
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
 
-    constructor(context: Context, image: TextureImage, format: TextureFormat) {
+    constructor(context: Context, image: TextureImage, format: TextureFormat, premultiply: ?boolean) {
         this.context = context;
 
         const {width, height} = image;
@@ -39,10 +39,10 @@ class Texture {
         this.format = format;
 
         this.texture = context.gl.createTexture();
-        this.update(image);
+        this.update(image, premultiply);
     }
 
-    update(image: TextureImage) {
+    update(image: TextureImage, premultiply: ?boolean) {
         const {width, height} = image;
         this.size = [width, height];
 
@@ -51,7 +51,7 @@ class Texture {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         context.pixelStoreUnpack.set(1);
 
-        if (this.format === gl.RGBA) {
+        if (this.format === gl.RGBA && premultiply !== false) {
             context.pixelStoreUnpackPremultiplyAlpha.set(true);
         }
 

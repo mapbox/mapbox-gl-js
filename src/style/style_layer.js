@@ -213,6 +213,7 @@ module.exports = StyleLayer;
 const subclasses = {
     'circle': require('./style_layer/circle_style_layer'),
     'heatmap': require('./style_layer/heatmap_style_layer'),
+    'hillshade': require('./style_layer/hillshade_style_layer'),
     'fill': require('./style_layer/fill_style_layer'),
     'fill-extrusion': require('./style_layer/fill_extrusion_style_layer'),
     'line': require('./style_layer/line_style_layer'),

@@ -248,6 +248,7 @@ class SourceCache extends Evented {
         tile.timeAdded = browser.now();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
+        if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -258,6 +259,46 @@ class SourceCache extends Evented {
             tile.added(this.map.painter.crossTileSymbolIndex);
     }
 
+    /**
+    * For raster terrain source, backfill DEM to eliminate visible tile boundaries
+    * @private
+    */
+    _backfillDEM(tile: Tile) {
+        const renderables = this.getRenderableIds();
+        for (let i = 0; i < renderables.length; i++) {
+            const borderId = renderables[i];
+            if (tile.neighboringTiles && tile.neighboringTiles[borderId]) {
+                const borderTile = this.getTileByID(borderId);
+                fillBorder(tile, borderTile);
+                fillBorder(borderTile, tile);
+            }
+        }
+
+        function fillBorder(tile, borderTile) {
+            tile.needsHillshadePrepare = true;
+            let dx = borderTile.coord.x - tile.coord.x;
+            const dy = borderTile.coord.y - tile.coord.y;
+            const dim = Math.pow(2, tile.coord.z);
+            const borderId = borderTile.coord.id;
+            if (dx === 0 && dy === 0) return;
+
+            if (Math.abs(dy) > 1) {
+                return;
+            }
+            if (Math.abs(dx) > 1) {
+                // Adjust the delta coordinate for world wraparound.
+                if (Math.abs(dx + dim) === 1) {
+                    dx += dim;
+                } else if (Math.abs(dx - dim) === 1) {
+                    dx -= dim;
+                }
+            }
+            if (!borderTile.dem || !tile.dem) return;
+            tile.dem.backfillBorder(borderTile.dem, dx, dy);
+            if (tile.neighboringTiles && tile.neighboringTiles[borderId])
+                tile.neighboringTiles[borderId].backfilled = true;
+        }
+    }
     /**
      * Get a specific tile by TileCoordinate
      */

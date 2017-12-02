@@ -165,7 +165,10 @@
       "type": "enum",
       "values": {
         "raster": {
-          "doc": "A raster tile source."
+            "doc": "A raster tile source."
+        },
+        "raster-dem": {
+            "doc": "A raster DEM source using Mapbox Terrain RGB"
         }
       },
       "doc": "The type of the source."
@@ -448,6 +451,14 @@
             }
           }
         },
+        "hillshade": {
+          "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.43.0"
+            }
+          }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -507,6 +518,7 @@
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
+    "layout_hillshade",
     "layout_background"
   ],
   "layout_background": {
@@ -1785,6 +1797,27 @@
       }
     }
   },
+  "layout_hillshade": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.43.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
   "filter": {
     "type": "array",
     "value": "*",
@@ -2279,6 +2312,7 @@
     "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
+    "paint_hillshade",
     "paint_background"
   ],
   "paint_fill": {
@@ -3734,6 +3768,67 @@
         "data-driven styling": {}
       }
     }
+  },
+  "paint_hillshade": {
+      "hillshade-illumination-direction": {
+        "type": "number",
+        "default": 335,
+        "minimum": 0,
+        "maximum": 359,
+        "doc": "The direction of the light source used to generate the hillshading with 0 as the top of the viewport if `hillshade-illumination-anchor` is set to `viewport` and due north if `hillshade-illumination-anchor` is set to `map`.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-illumination-anchor": {
+        "type": "enum",
+        "function": "piecewise-constant",
+        "zoom-function": true,
+        "values": {
+          "map": {
+              "doc": "The hillshade illumination is relative to the north direction."
+          },
+          "viewport": {
+              "doc": "The hillshade illumination is relative to the top of the viewport."
+          }
+        },
+        "default": "viewport",
+        "doc": "Direction of light source when map is rotated."
+      },
+      "hillshade-exaggeration": {
+        "type": "number",
+        "doc": "Intensity of the hillshade",
+        "default": 0.5,
+        "minimum": 0,
+        "maximum": 1,
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-shadow-color": {
+        "type": "color",
+        "default": "#000000",
+        "doc": "The shading color of areas that face away from the light source.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-highlight-color": {
+        "type": "color",
+        "default": "#FFFFFF",
+        "doc": "The shading color of areas that faces towards the light source.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-accent-color": {
+        "type": "color",
+        "default": "#000000",
+        "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      }
   },
   "paint_background": {
     "background-color": {

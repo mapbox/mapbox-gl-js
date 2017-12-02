@@ -28,6 +28,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
+import type {DEMData} from '../data/dem_data';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
 import type CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
@@ -76,12 +77,17 @@ class Tile {
     workerID: number | void;
     vtLayers: {[string]: VectorTileLayer};
     mask: Mask;
+
+    neighboringTiles: ?Object;
+    dem: ?DEMData;
     aborted: ?boolean;
     maskedBoundsBuffer: ?VertexBuffer;
     maskedIndexBuffer: ?IndexBuffer;
     segments: ?SegmentVector;
+    needsHillshadePrepare: ?boolean
     request: any;
     texture: any;
+    demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     justReloaded: boolean;
@@ -192,6 +198,12 @@ class Tile {
 
         this.collisionBoxArray = null;
         this.featureIndex = null;
+        this.state = 'unloaded';
+    }
+
+    unloadDEMData() {
+        this.dem = null;
+        this.neighboringTiles = null;
         this.state = 'unloaded';
     }
 

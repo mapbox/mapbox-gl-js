@@ -36,6 +36,23 @@ module.exports = function validateSource(options) {
         }
         return errors;
 
+    case 'raster-dem':
+        errors = errors.concat(validateObject({
+            key: key,
+            value: value,
+            valueSpec: styleSpec[`source_raster`],
+            style: options.style,
+            styleSpec: styleSpec
+        }));
+        if ('url' in value) {
+            for (const prop in value) {
+                if (['type', 'url', 'tileSize'].indexOf(prop) < 0) {
+                    errors.push(new ValidationError(`${key}.${prop}`, value[prop], 'a source with a "url" property may not include a "%s" property', prop));
+                }
+            }
+        }
+        return errors;
+
     case 'geojson':
         return validateObject({
             key: key,
@@ -76,7 +93,7 @@ module.exports = function validateSource(options) {
         return validateEnum({
             key: `${key}.type`,
             value: value.type,
-            valueSpec: {values: ['vector', 'raster', 'geojson', 'video', 'image', 'canvas']},
+            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image', 'canvas']},
             style: style,
             styleSpec: styleSpec
         });

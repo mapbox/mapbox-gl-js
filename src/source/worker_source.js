@@ -21,6 +21,11 @@ export type WorkerTileParameters = TileParameters & {
     showCollisionBoxes: boolean
 };
 
+export type WorkerDEMTileParameters = TileParameters & {
+    coord: { z: number, x: number, y: number, w: number },
+    rawImageData: RGBAImage
+};
+
 export type WorkerTileResult = {
     buckets: Array<Serialized>,
     iconAtlasImage: RGBAImage,
@@ -31,6 +36,7 @@ export type WorkerTileResult = {
 };
 
 export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
+export type WorkerDEMTileCallback = (err: ?Error, result: ?Serialized, transferrables: ?Array<Transferable>) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
