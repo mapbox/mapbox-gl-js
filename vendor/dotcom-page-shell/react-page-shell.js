@@ -2336,7 +2336,7 @@ var MetaTagger = function (_React$PureComponent) {
 
       var metaItems = [{ name: 'description', content: preppedDescription }];
 
-      metaItems.push({ name: 'twitter:title', content: props.title }, { name: 'og:title', content: props.title }, { name: 'twitter:description', content: preppedDescription }, { name: 'og:description', content: preppedDescription }, { name: 'og:url', content: prodUrl }, { name: 'og:type', content: 'website' }, {
+      metaItems.push({ name: 'twitter:title', content: props.title }, { property: 'og:title', content: props.title }, { name: 'twitter:description', content: preppedDescription }, { property: 'og:description', content: preppedDescription }, { property: 'og:url', content: prodUrl }, { property: 'og:type', content: 'website' }, {
         class: 'swiftype',
         name: 'title',
         'data-type': 'string',
@@ -2346,7 +2346,7 @@ var MetaTagger = function (_React$PureComponent) {
         name: 'excerpt',
         'data-type': 'string',
         content: props.description
-      }, { name: 'twitter:image:alt', content: props.imageAlt }, { name: 'og:image', content: props.imageUrl }, {
+      }, { name: 'twitter:image:alt', content: props.imageAlt }, { property: 'og:image', content: props.imageUrl }, {
         class: 'swiftype',
         name: 'image',
         'data-type': 'enum',
