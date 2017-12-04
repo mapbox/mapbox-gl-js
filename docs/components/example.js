@@ -6,7 +6,7 @@ import PageShell from './page_shell';
 import LeftNav from './left_nav';
 import TopNav from './top_nav';
 import {highlightMarkup} from './prism_highlight';
-import supported from 'mapbox-gl-supported';
+import supported from '@mapbox/mapbox-gl-supported';
 import {copy} from 'execcommand-copy';
 import examples from '@mapbox/batfish/data/examples';
 import entries from 'object.entries';

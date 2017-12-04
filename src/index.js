@@ -1,6 +1,6 @@
 // @flow
 
-const supported = require('mapbox-gl-supported');
+const supported = require('@mapbox/mapbox-gl-supported');
 const browser = require('./util/browser');
 const version: string = require('../package.json').version;
 const Map = require('./ui/map');
