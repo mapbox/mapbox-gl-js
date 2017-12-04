@@ -2448,14 +2448,6 @@ concat-stream@~1.5.0, concat-stream@~1.5.1:
     readable-stream "~2.0.0"
     typedarray "~0.0.5"
 
-concat-stream@~1.5.0, concat-stream@~1.5.1:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-1.5.2.tgz#708978624d856af41a5a741defdd261da752c266"
-  dependencies:
-    inherits "~2.0.1"
-    readable-stream "~2.0.0"
-    typedarray "~0.0.5"
-
 concat-with-sourcemaps@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/concat-with-sourcemaps/-/concat-with-sourcemaps-1.0.4.tgz#f55b3be2aeb47601b10a2d5259ccfb70fd2f1dd6"
@@ -4273,9 +4265,9 @@ geojson-rewind@^0.3.0:
     concat-stream "~1.6.0"
     minimist "1.2.0"
 
-geojson-vt@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/geojson-vt/-/geojson-vt-2.4.0.tgz#3c1cf44493f35eb4d2c70c95da6550de66072c05"
+geojson-vt@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/geojson-vt/-/geojson-vt-3.0.0.tgz#a24cae5488ab4897e86ca0e4bf0d9760d628ae0a"
 
 get-caller-file@^1.0.1:
   version "1.0.2"
