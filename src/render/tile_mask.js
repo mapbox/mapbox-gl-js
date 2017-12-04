@@ -1,7 +1,6 @@
 // @flow
 
-const OverscaledTileID = require('../source/tile_id').OverscaledTileID;
-const CanonicalTileID = require('../source/tile_id').CanonicalTileID;
+const {OverscaledTileID, CanonicalTileID} = require('../source/tile_id');
 
 import type Tile from './../source/tile';
 import type Context from '../gl/context';

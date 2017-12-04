@@ -2,7 +2,7 @@
 
 const util = require('../util/util');
 const window = require('../util/window');
-const CanonicalTileID = require('./tile_id').CanonicalTileID;
+const {CanonicalTileID} = require('./tile_id');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
 const Evented = require('../util/evented');

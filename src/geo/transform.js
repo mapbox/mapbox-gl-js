@@ -6,8 +6,7 @@ const LngLat = require('./lng_lat'),
     util = require('../util/util'),
     interp = require('../style-spec/util/interpolate').number,
     tileCover = require('../util/tile_cover'),
-    UnwrappedTileID = require('../source/tile_id').UnwrappedTileID,
-    CanonicalTileID = require('../source/tile_id').CanonicalTileID,
+    {CanonicalTileID, UnwrappedTileID} = require('../source/tile_id'),
     EXTENT = require('../data/extent'),
     glmatrix = require('@mapbox/gl-matrix');
 

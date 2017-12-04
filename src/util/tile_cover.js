@@ -1,7 +1,7 @@
 // @flow
 
 const Coordinate = require('../geo/coordinate');
-const OverscaledTileID = require('../source/tile_id').OverscaledTileID;
+const {OverscaledTileID} = require('../source/tile_id');
 
 module.exports = tileCover;
 

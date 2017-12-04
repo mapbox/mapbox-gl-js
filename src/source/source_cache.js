@@ -10,7 +10,7 @@ const EXTENT = require('../data/extent');
 const Context = require('../gl/context');
 const Point = require('@mapbox/point-geometry');
 const browser = require('../util/browser');
-const OverscaledTileID = require('./tile_id').OverscaledTileID;
+const {OverscaledTileID} = require('./tile_id');
 const assert = require('assert');
 
 import type {Source} from './source';

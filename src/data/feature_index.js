@@ -11,7 +11,7 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const arraysIntersect = require('../util/util').arraysIntersect;
-const OverscaledTileID = require('../source/tile_id').OverscaledTileID;
+const {OverscaledTileID} = require('../source/tile_id');
 const {register} = require('../util/web_worker_transfer');
 
 import type CollisionIndex from '../symbol/collision_index';
