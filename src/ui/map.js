@@ -22,7 +22,7 @@ const LngLatBounds = require('../geo/lng_lat_bounds');
 const Point = require('@mapbox/point-geometry');
 const AttributionControl = require('./control/attribution_control');
 const LogoControl = require('./control/logo_control');
-const isSupported = require('mapbox-gl-supported');
+const isSupported = require('@mapbox/mapbox-gl-supported');
 const {RGBAImage} = require('../util/image');
 
 require('./events'); // Pull in for documentation.js
