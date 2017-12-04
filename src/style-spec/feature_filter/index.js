@@ -1,8 +1,58 @@
-'use strict';
+// @flow
+
+const {createExpression} = require('../expression');
+
+import type {GlobalProperties} from '../expression';
+export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
 
 module.exports = createFilter;
+module.exports.isExpressionFilter = isExpressionFilter;
+
+function isExpressionFilter(filter) {
+    if (!Array.isArray(filter) || filter.length === 0) {
+        return false;
+    }
+    switch (filter[0]) {
+    case 'has':
+        return filter.length >= 2 && filter[1] !== '$id' && filter[1] !== '$type';
+
+    case 'in':
+    case '!in':
+    case '!has':
+    case 'none':
+        return false;
+
+    case '==':
+    case '!=':
+    case '>':
+    case '>=':
+    case '<':
+    case '<=':
+        return filter.length === 3 && (Array.isArray(filter[1]) || Array.isArray(filter[2]));
+
+    case 'any':
+    case 'all':
+        for (const f of filter.slice(1)) {
+            if (!isExpressionFilter(f) && typeof f !== 'boolean') {
+                return false;
+            }
+        }
+        return true;
+
+    default:
+        return true;
+    }
+}
 
 const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
+
+const filterSpec = {
+    'type': 'boolean',
+    'default': false,
+    'function': true,
+    'property-function': true,
+    'zoom-function': true
+};
 
 /**
  * Given a filter expressed as nested arrays, return a new function
@@ -13,8 +63,21 @@ const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter) {
-    return new Function('f', `var p = (f && f.properties || {}); return ${compile(filter)}`);
+function createFilter(filter: any): FeatureFilter {
+    if (!filter) {
+        return () => true;
+    }
+
+    if (!isExpressionFilter(filter)) {
+        return (new Function('g', 'f', `var p = (f && f.properties || {}); return ${compile(filter)}`): any);
+    }
+
+    const compiled = createExpression(filter, filterSpec);
+    if (compiled.result === 'error') {
+        throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
+    } else {
+        return (globalProperties: GlobalProperties, feature: VectorTileFeature) => compiled.value.evaluate(globalProperties, feature);
+    }
 }
 
 function compile(filter) {
@@ -40,9 +103,10 @@ function compile(filter) {
 }
 
 function compilePropertyReference(property) {
-    return property === '$type' ? 'f.type' :
-        property === '$id' ? 'f.id' :
-        `p[${JSON.stringify(property)}]`;
+    const ref =
+        property === '$type' ? 'f.type' :
+        property === '$id' ? 'f.id' : `p[${JSON.stringify(property)}]`;
+    return ref;
 }
 
 function compileComparisonOp(property, value, op, checkType) {

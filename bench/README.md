@@ -7,12 +7,14 @@ Benchmarks help us catch performance regressions and improve performance.
 Start the benchmark server
 
 ```bash
-MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} npm run start-bench
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} yarn start
 ```
 
 To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench`](http://localhost:9966/bench).
 
-To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/#buffer`](http://localhost:9966/bench/#buffer).
+To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/#Layout`](http://localhost:9966/bench/#Layout).
+
+In either case, if you want to run only benchmarks from your local branch, without also running the current master branch build, then include a `no-master` query parameter, i.e. [localhost:9966/bench?no-master](http://localhost:9966/bench?no-master) or [localhost:9966/bench?no-master#Layout](http://localhost:9966/bench?no-master#Layout).
 
 ## Writing a Benchmark
 
@@ -20,74 +22,36 @@ Good benchmarks
 
  - are precise (i.e. running it multiple times returns roughly the same result)
  - operate in a way that mimics real-world usage
- - use a large quantity of diverse real-world data
+ - use a significant quantity of real-world data
  - are conceptually simple
 
-Benchmarks are implemented as a function that returns an instance of `Evented`.
+Benchmarks are implemented by extending the `Benchmark` class and implementing at least the `bench` method.
+If the benchmark needs to do setup or teardown work that should not be included in the measured time, you
+can implement the `setup` or `teardown` methods. All three of these methods may return a `Promise` if they
+need to do asynchronous work (or they can act synchronously and return `undefined`).
 
-```js
-createBenchmark(options: {
-    accessToken: string;
-    createMap: (options: {
-        width: number;
-        height: number;
-        ... // supports all options for the Map constructor
-    }):Map
-}): Evented
-```
+See the JSDoc comments on the `Benchmark` class for more details, and the existing benchmarks for examples.
 
-The instance of `Evented` may fire any number of `log` and `error` events. The
-instance of `Evented` must fire exactly one `end` event.
+## Interpreting benchmark results
 
-### `log`
+The benchmark harness runs each benchmark's `bench` method a lot of times -- until it thinks it has enough
+samples to do an analysis -- and records how long each call takes. From these samples, it creates summary
+statistics and plots that help in determining whether a given change increased or decreased performance.
 
-Fire the `log` event to report benchmark progress to the user.
+* **Mean**, **Minimum**, and **Deviation** are the standard summary statistics.
+* **R? Slope / Correlation** are measures derived from comparing increasingly large groups of samples (1 sample,
+2 samples, 3 samples, ...) to the sum of those samples' execution time. Ideally, the number of samples is
+perfectly linearly correlated to the sum of execution times. If it is, then the slope of the line is equivalent
+the average execution time. But usually, the correlation is not perfect due to natural variance and outliers.
+The R? correlation indicates how good the linear approximation is. Values greater than 0.99 are good. Less
+than 0.99 is iffy (??), and less than 0.90 means something is confounding the results, and they should be
+regarded as unreliable (??).
+* The top plot shows the distribution of samples, both by plotting each individual sample (on the right),
+and by plotting a kernel density estimate. On the right, you can also see (from left to right) the mean,
+minimum and maximum sample, and sample values at the first quartile, second quartile (median), and third quartile.
+* The bottom plot shows the R? analysis and resulting linear approximation.
 
-```js
-{
-    message: string;
-    color: string = 'blue'; // name of a Mapbox base color https://mapbox.com/base/styling/color
-}
-```
+## Posting benchmark results to PRs
 
-If your benchmark has a notion of running multiple "samples", you might emit
-one `log` event per sample.
-
-```js
-benchmark.fire('log', {
-    message: 'Finished sample ' + i + ' in ' + formatNumber(time) + ' ms'
-});
-```
-
-These events have no machine-semantic meaning.
-
-### `end`
-
-Fire the `end` event to indicate the benchmark has finished running and report
-its results.
-
-These events have both human-readable results (`message`) and machine-readable results (`score`). Smaller `score`s are "better."
-
-```js
-{
-    message: string;
-    score: number;
-}
-```
-
-```js
-benchmark.fire('end', {
-    message: 'Average time is ' + formatNumber(averageTime)) + 'ms',
-    score: averageTime
-});
-```
-
-### `error`
-
-Fire the `error` event to indicate the benchmark has encountered an error.
-
-```js
-{
-    error: Error;
-}
-```
+We recommend installing a browser extension that can take full-page snapshots, e.g.
+[FireShot](https://chrome.google.com/webstore/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg).

@@ -1,4 +1,3 @@
-'use strict';
 
 const validateProperty = require('./validate_property');
 

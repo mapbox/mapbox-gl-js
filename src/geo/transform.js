@@ -1,11 +1,10 @@
-'use strict';
 // @flow
 
 const LngLat = require('./lng_lat'),
-    Point = require('point-geometry'),
+    Point = require('@mapbox/point-geometry'),
     Coordinate = require('./coordinate'),
     util = require('../util/util'),
-    interp = require('../style-spec/util/interpolate'),
+    interp = require('../style-spec/util/interpolate').number,
     TileCoord = require('../source/tile_coord'),
     EXTENT = require('../data/extent'),
     glmatrix = require('@mapbox/gl-matrix');
@@ -30,7 +29,7 @@ class Transform {
     angle: number;
     rotationMatrix: Float64Array;
     zoomFraction: number;
-    pixelsToGLUnits: [number, number];
+    pixelsToGLUnits: Array<number>;
     cameraToCenterDistance: number;
     projMatrix: Float64Array;
     pixelMatrix: Float64Array;
@@ -44,6 +43,8 @@ class Transform {
     _maxZoom: number;
     _center: LngLat;
     _constraining: boolean;
+    _posMatrixCache: {[string]: Float32Array};
+
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
 
@@ -61,6 +62,23 @@ class Transform {
         this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
+        this._posMatrixCache = {};
+    }
+
+    clone(): Transform {
+        const clone = new Transform(this._minZoom, this._maxZoom, this._renderWorldCopies);
+        clone.tileSize = this.tileSize;
+        clone.latRange = this.latRange;
+        clone.width = this.width;
+        clone.height = this.height;
+        clone._center = this._center;
+        clone.zoom = this.zoom;
+        clone.angle = this.angle;
+        clone._fov = this._fov;
+        clone._pitch = this._pitch;
+        clone._unmodified = this._unmodified;
+        clone._calcMatrices();
+        return clone;
     }
 
     get minZoom(): number { return this._minZoom; }
@@ -159,7 +177,7 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @returns {number} zoom level
      */
-    coveringZoomLevel(options: {roundZoom: boolean, tileSize: number}) {
+    coveringZoomLevel(options: {roundZoom?: boolean, tileSize: number}) {
         return (options.roundZoom ? Math.round : Math.floor)(
             this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
         );
@@ -197,20 +215,20 @@ class Transform {
      * @returns {Array<Tile>} tiles
      */
     coveringTiles(
-      options: {
-        tileSize: number,
-        minzoom: number,
-        maxzoom: number,
-        roundZoom: boolean,
-        reparseOverscaled: boolean,
-        renderWorldCopies: boolean
-      }
+        options: {
+            tileSize: number,
+            minzoom?: number,
+            maxzoom?: number,
+            roundZoom?: boolean,
+            reparseOverscaled?: boolean,
+            renderWorldCopies?: boolean
+        }
     ) {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
-        if (z < options.minzoom) return [];
-        if (z > options.maxzoom) z = options.maxzoom;
+        if (options.minzoom !== undefined && z < options.minzoom) return [];
+        if (options.maxzoom !== undefined && z > options.maxzoom) z = options.maxzoom;
 
         const centerCoord = this.pointCoordinate(this.centerPoint, z);
         const centerPoint = new Point(centerCoord.column - 0.5, centerCoord.row - 0.5);
@@ -257,7 +275,6 @@ class Transform {
 
     /**
      * latitude to absolute x coord
-     * @param {number} lon
      * @returns {number} pixel coordinate
      */
     lngX(lng: number) {
@@ -265,7 +282,6 @@ class Transform {
     }
     /**
      * latitude to absolute y coord
-     * @param {number} lat
      * @returns {number} pixel coordinate
      */
     latY(lat: number) {
@@ -380,7 +396,14 @@ class Transform {
      * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom: number) {
+    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number): Float32Array {
+        let posMatrixKey = tileCoord.id.toString();
+        if (maxZoom) {
+            posMatrixKey += maxZoom.toString();
+        }
+        if (this._posMatrixCache[posMatrixKey]) {
+            return this._posMatrixCache[posMatrixKey];
+        }
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         const coord = tileCoord.toCoordinate(maxZoom);
@@ -391,22 +414,8 @@ class Transform {
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 
-        return new Float32Array(posMatrix);
-    }
-
-    /**
-     * Calculate the distance from the center of a tile to the camera
-     * These distances are in view-space dimensions derived from the size of the
-     * viewport, similar to this.cameraToCenterDistance
-     * If the tile is dead-center in the viewport, then cameraToTileDistance == cameraToCenterDistance
-     *
-     * @param {Tile} tile
-     */
-    cameraToTileDistance(tile: Object) {
-        const posMatrix = this.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
-        const tileCenter = [tile.tileSize / 2, tile.tileSize / 2, 0, 1];
-        vec4.transformMat4(tileCenter, tileCenter, posMatrix);
-        return tileCenter[3];
+        this._posMatrixCache[posMatrixKey] = new Float32Array(posMatrix);
+        return this._posMatrixCache[posMatrixKey];
     }
 
     _constrain() {
@@ -522,6 +531,7 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
+        this._posMatrixCache = {};
     }
 }
 

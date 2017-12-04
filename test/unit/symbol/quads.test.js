@@ -4,14 +4,12 @@ const test = require('mapbox-gl-js-test').test;
 
 const getIconQuads = require('../../../src/symbol/quads').getIconQuads;
 const Anchor = require('../../../src/symbol/anchor');
+const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
 
 function createLayer(layer) {
-    return {
-        layout: layer.layout,
-        getLayoutValue: function(key) {
-            return layer.layout[key];
-        }
-    };
+    const result = new SymbolStyleLayer(layer);
+    result.recalculate({zoom: 0, zoomHistory: {}});
+    return result;
 }
 
 function createShapedIcon() {

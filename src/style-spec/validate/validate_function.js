@@ -1,4 +1,3 @@
-'use strict';
 
 const ValidationError = require('../error/validation_error');
 const getType = require('../util/get_type');
@@ -50,7 +49,7 @@ module.exports = function validateFunction(options) {
     if (options.styleSpec.$version >= 8) {
         if (isPropertyFunction && !options.valueSpec['property-function']) {
             errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
-        } else if (isZoomFunction && !options.valueSpec['zoom-function']) {
+        } else if (isZoomFunction && !options.valueSpec['zoom-function'] && options.objectKey !== 'heatmap-color') {
             errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
         }
     }
@@ -131,7 +130,7 @@ module.exports = function validateFunction(options) {
                 valueSpec: {},
                 style: options.style,
                 styleSpec: options.styleSpec
-            }));
+            }, value));
         }
 
         return errors.concat(validate({
@@ -143,18 +142,20 @@ module.exports = function validateFunction(options) {
         }));
     }
 
-    function validateStopDomainValue(options) {
+    function validateStopDomainValue(options, stop) {
         const type = getType(options.value);
         const value = unbundle(options.value);
+
+        const reportValue = options.value !== null ? options.value : stop;
 
         if (!stopKeyType) {
             stopKeyType = type;
         } else if (type !== stopKeyType) {
-            return [new ValidationError(options.key, options.value, '%s stop domain type must match previous stop domain type %s', type, stopKeyType)];
+            return [new ValidationError(options.key, reportValue, '%s stop domain type must match previous stop domain type %s', type, stopKeyType)];
         }
 
         if (type !== 'number' && type !== 'string' && type !== 'boolean') {
-            return [new ValidationError(options.key, options.value, 'stop domain value must be a number, string, or boolean')];
+            return [new ValidationError(options.key, reportValue, 'stop domain value must be a number, string, or boolean')];
         }
 
         if (type !== 'number' && functionType !== 'categorical') {
@@ -162,21 +163,21 @@ module.exports = function validateFunction(options) {
             if (functionValueSpec['property-function'] && functionType === undefined) {
                 message += '\nIf you intended to use a categorical function, specify `"type": "categorical"`.';
             }
-            return [new ValidationError(options.key, options.value, message, type)];
+            return [new ValidationError(options.key, reportValue, message, type)];
         }
 
         if (functionType === 'categorical' && type === 'number' && (!isFinite(value) || Math.floor(value) !== value)) {
-            return [new ValidationError(options.key, options.value, 'integer expected, found %s', value)];
+            return [new ValidationError(options.key, reportValue, 'integer expected, found %s', value)];
         }
 
-        if (type === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {
-            return [new ValidationError(options.key, options.value, 'stop domain values must appear in ascending order')];
+        if (functionType !== 'categorical' && type === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {
+            return [new ValidationError(options.key, reportValue, 'stop domain values must appear in ascending order')];
         } else {
             previousStopDomainValue = value;
         }
 
         if (functionType === 'categorical' && value in stopDomainValues) {
-            return [new ValidationError(options.key, options.value, 'stop domain values must be unique')];
+            return [new ValidationError(options.key, reportValue, 'stop domain values must be unique')];
         } else {
             stopDomainValues[value] = true;
         }

@@ -1,0 +1,13 @@
+{
+  "expression": ["array", ["literal", [1, 2, 3]]],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": [[1, 2, 3]],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "array"
+    }
+  }
+}

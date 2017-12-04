@@ -1,9 +1,17 @@
-'use strict';
+// @flow
 
 const Evented = require('../util/evented');
 const util = require('../util/util');
 const window = require('../util/window');
 const EXTENT = require('../data/extent');
+const ResourceType = require('../util/ajax').ResourceType;
+const browser = require('../util/browser');
+
+import type {Source} from './source';
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
+import type Tile from './tile';
+import type {Callback} from '../types/callback';
 
 /**
  * A source containing GeoJSON.
@@ -52,11 +60,26 @@ const EXTENT = require('../data/extent');
  * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
  * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
  */
-class GeoJSONSource extends Evented {
+class GeoJSONSource extends Evented implements Source {
+    type: 'geojson';
+    id: string;
+    minzoom: number;
+    maxzoom: number;
+    tileSize: number;
 
-    constructor(id, options, dispatcher, eventedParent) {
+    isTileClipped: boolean;
+    reparseOverscaled: boolean;
+    _data: GeoJSON | string;
+    _options: any;
+    workerOptions: any;
+    dispatcher: Dispatcher;
+    map: Map;
+    workerID: number;
+    _loaded: boolean;
+
+    constructor(id: string, options: GeojsonSourceSpecification & { workerOptions?: any }, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
-        options = options || {};
+
         this.id = id;
 
         // `type` is a property rather than a constant to make it easy for 3rd
@@ -72,7 +95,8 @@ class GeoJSONSource extends Evented {
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
 
-        this._data = options.data;
+        this._data = (options.data: any);
+        this._options = util.extend({}, options);
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
@@ -93,7 +117,9 @@ class GeoJSONSource extends Evented {
                 maxZoom: this.maxzoom
             },
             superclusterOptions: {
-                maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
+                maxZoom: options.clusterMaxZoom !== undefined ?
+                    Math.min(options.clusterMaxZoom, this.maxzoom - 1) :
+                    (this.maxzoom - 1),
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
                 log: false
@@ -114,9 +140,9 @@ class GeoJSONSource extends Evented {
         });
     }
 
-    onAdd(map) {
-        this.load();
+    onAdd(map: Map) {
         this.map = map;
+        this.load();
     }
 
     /**
@@ -125,7 +151,7 @@ class GeoJSONSource extends Evented {
      * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
      * @returns {GeoJSONSource} this
      */
-    setData(data) {
+    setData(data: GeoJSON | string) {
         this._data = data;
         this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData((err) => {
@@ -143,11 +169,11 @@ class GeoJSONSource extends Evented {
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _updateWorkerData(callback) {
+    _updateWorkerData(callback: Function) {
         const options = util.extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
-            options.url = resolveURL(data);
+            options.request = this.map._transformRequest(resolveURL(data), ResourceType.Source);
         } else {
             options.data = JSON.stringify(data);
         }
@@ -158,12 +184,11 @@ class GeoJSONSource extends Evented {
         this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err) => {
             this._loaded = true;
             callback(err);
-
-        });
+        }, this.workerID);
     }
 
-    loadTile(tile, callback) {
-        const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
+    loadTile(tile: Tile, callback: Callback<void>) {
+        const message = tile.workerID === undefined || tile.state === 'expired' ? 'loadTile' : 'reloadTile';
         const params = {
             type: this.type,
             uid: tile.uid,
@@ -172,26 +197,17 @@ class GeoJSONSource extends Evented {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
-            overscaling: overscaling,
-            angle: this.map.transform.angle,
-            pitch: this.map.transform.pitch,
-            cameraToCenterDistance: this.map.transform.cameraToCenterDistance,
-            cameraToTileDistance: this.map.transform.cameraToTileDistance(tile),
+            pixelRatio: browser.devicePixelRatio,
+            overscaling: tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1,
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        if (!tile.workerID || tile.state === 'expired') {
-            tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this), this.workerID);
-        } else {
-            tile.workerID = this.dispatcher.send('reloadTile', params, done.bind(this), this.workerID);
-        }
-
-        function done(err, data) {
-
+        tile.workerID = this.dispatcher.send(message, params, (err, data) => {
             tile.unloadVectorData();
 
-            if (tile.aborted)
-                return;
+            if (tile.aborted) {
+                return callback(null);
+            }
 
             if (err) {
                 return callback(err);
@@ -199,33 +215,32 @@ class GeoJSONSource extends Evented {
 
             tile.loadVectorData(data, this.map.painter);
 
-            if (tile.redoWhenDone) {
-                tile.redoWhenDone = false;
-                tile.redoPlacement(this);
-            }
-
             return callback(null);
-        }
+        }, this.workerID);
     }
 
-    abortTile(tile) {
+    abortTile(tile: Tile) {
         tile.aborted = true;
     }
 
-    unloadTile(tile) {
+    unloadTile(tile: Tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
+        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
 
     onRemove() {
-        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id }, () => {});
+        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id });
     }
 
     serialize() {
-        return {
+        return util.extend({}, this._options, {
             type: this.type,
             data: this._data
-        };
+        });
+    }
+
+    hasTransition() {
+        return false;
     }
 }
 

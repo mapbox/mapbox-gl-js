@@ -1,30 +1,39 @@
-'use strict';
+// @flow
+
 const TileCoord = require('./tile_coord');
 
-exports.rendered = function(sourceCache, styleLayers, queryGeometry, params, zoom, bearing) {
+import type SourceCache from './source_cache';
+import type StyleLayer from '../style/style_layer';
+import type Coordinate from '../geo/coordinate';
+
+exports.rendered = function(sourceCache: SourceCache,
+                            styleLayers: {[string]: StyleLayer},
+                            queryGeometry: Array<Coordinate>,
+                            params: { filter: FilterSpecification, layers: Array<string> },
+                            zoom: number,
+                            bearing: number) {
     const tilesIn = sourceCache.tilesIn(queryGeometry);
 
     tilesIn.sort(sortTilesIn);
 
     const renderedFeatureLayers = [];
-    for (let r = 0; r < tilesIn.length; r++) {
-        const tileIn = tilesIn[r];
-        if (!tileIn.tile.featureIndex) continue;
-
+    for (const tileIn of tilesIn) {
         renderedFeatureLayers.push({
             wrappedTileID: tileIn.coord.wrapped().id,
-            queryResults: tileIn.tile.featureIndex.query({
-                queryGeometry: tileIn.queryGeometry,
-                scale: tileIn.scale,
-                tileSize: tileIn.tile.tileSize,
-                bearing: bearing,
-                params: params
-            }, styleLayers)});
+            queryResults: tileIn.tile.queryRenderedFeatures(
+                styleLayers,
+                tileIn.queryGeometry,
+                tileIn.scale,
+                params,
+                bearing,
+                sourceCache.id)
+        });
     }
+
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
-exports.source = function(sourceCache, params) {
+exports.source = function(sourceCache: SourceCache, params: any) {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });

@@ -1,10 +1,13 @@
-'use strict';
+// @flow
 
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
+const {register} = require('../util/web_worker_transfer');
 
 class Anchor extends Point {
+    angle: any;
+    segment: number | void;
 
-    constructor(x, y, angle, segment) {
+    constructor(x: number, y: number, angle: number, segment?: number) {
         super(x, y);
         this.angle = angle;
         if (segment !== undefined) {
@@ -16,5 +19,7 @@ class Anchor extends Point {
         return new Anchor(this.x, this.y, this.angle, this.segment);
     }
 }
+
+register(Anchor);
 
 module.exports = Anchor;

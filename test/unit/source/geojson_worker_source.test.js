@@ -38,7 +38,10 @@ test('removeSource', (t) => {
         addData(() => {
             loadTile((vectorTile) => {
                 t.notEqual(vectorTile, null);
-                source.removeSource({ source: 'source' });
+                source.removeSource({ source: 'source' }, (err, res) => {
+                    t.false(err);
+                    t.false(res);
+                });
                 loadTile((vectorTile) => {
                     t.equal(vectorTile, null);
                     t.end();

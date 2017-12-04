@@ -1,0 +1,13 @@
+{
+  "expression": ["concat", "a", "b", "c"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": ["abc"],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "string"
+    }
+  }
+}

@@ -3,10 +3,7 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64,
-      "ignored": {
-        "native": "behavior needs reconciliation with gl-js"
-      }
+      "height": 64
     }
   },
   "sources": {

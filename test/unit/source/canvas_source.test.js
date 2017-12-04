@@ -16,7 +16,7 @@ function createSource(options) {
 
     options = util.extend({
         canvas: 'id',
-        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
+        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
 
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
@@ -29,7 +29,7 @@ class StubMap extends Evented {
     constructor() {
         super();
         this.transform = new Transform();
-        this.style = { animationLoop: { set: function() {} } };
+        this.style = {};
     }
 
     _rerender() {
@@ -91,6 +91,44 @@ test('CanvasSource', (t) => {
         });
 
         source.onAdd(map);
+    });
+
+    t.test('onRemove stops animation', (t) => {
+        const source = createSource();
+        const map = new StubMap();
+
+        source.onAdd(map);
+
+        t.equal(source.hasTransition(), true, 'should animate initally');
+
+        source.onRemove();
+
+        t.equal(source.hasTransition(), false, 'should stop animating');
+
+        source.onAdd(map);
+
+        t.equal(source.hasTransition(), true, 'should animate when added again');
+
+        t.end();
+    });
+
+    t.test('play and pause animation', (t) => {
+        const source = createSource();
+        const map = new StubMap();
+
+        source.onAdd(map);
+
+        t.equal(source.hasTransition(), true, 'initially animating');
+
+        source.pause();
+
+        t.equal(source.hasTransition(), false, 'can be paused');
+
+        source.play();
+
+        t.equal(source.hasTransition(), true, 'can be played');
+
+        t.end();
     });
 
     t.end();

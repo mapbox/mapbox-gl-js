@@ -11,12 +11,19 @@ test('abortTile', (t) => {
         source.loadTile({
             source: 'source',
             uid: 0,
-            url: 'http://localhost:2900/abort'
-        }, t.fail);
+            coord: {x: 0, y: 0, z: 0, w: 0},
+            request: { url: 'http://localhost:2900/abort' }
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
+        });
 
         source.abortTile({
             source: 'source',
             uid: 0
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
         });
 
         t.deepEqual(source.loading, { source: {} });
@@ -39,60 +46,12 @@ test('removeTile', (t) => {
         source.removeTile({
             source: 'source',
             uid: 0
+        }, (err, res) => {
+            t.false(err);
+            t.false(res);
         });
 
         t.deepEqual(source.loaded, { source: {} });
-        t.end();
-    });
-
-    t.end();
-});
-
-test('redoPlacement', (t) => {
-
-    t.test('on loaded tile', (t) => {
-        const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
-        const tile = {
-            redoPlacement: function(angle, pitch, cameraToCenterDistance, cameraToTileDistance, showCollisionBoxes) {
-                t.equal(angle, 60);
-                t.equal(pitch, 30);
-                t.equal(showCollisionBoxes, false);
-                return {
-                    result: {isResult: true},
-                    transferables: {isTransferrables: true}
-                };
-            }
-        };
-        source.loaded = {mapbox: {3: tile}};
-
-        source.redoPlacement({
-            uid: 3,
-            source: 'mapbox',
-            angle: 60,
-            pitch: 30,
-            cameraToCenterDistance: 1,
-            cameraToTileDistance: 1,
-            showCollisionBoxes: false
-        }, (err, result, transferables) => {
-            t.error(err);
-            t.ok(result.isResult);
-            t.ok(transferables.isTransferrables);
-            t.end();
-        });
-    });
-
-    t.test('on loading tile', (t) => {
-        const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
-        const tile = {};
-        source.loading = {mapbox: {3: tile}};
-
-        source.redoPlacement({
-            uid: 3,
-            source: 'mapbox',
-            angle: 60
-        });
-
-        t.equal(source.loading.mapbox[3].angle, 60);
         t.end();
     });
 

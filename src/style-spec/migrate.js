@@ -1,4 +1,3 @@
-'use strict';
 
 /**
  * Migrate a Mapbox GL Style to the latest version.
@@ -15,11 +14,6 @@
  */
 module.exports = function(style) {
     let migrated = false;
-
-    if (style.version === 6) {
-        style = require('./migrate/v7')(style);
-        migrated = true;
-    }
 
     if (style.version === 7 || style.version === 8) {
         style = require('./migrate/v8')(style);

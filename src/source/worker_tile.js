@@ -1,33 +1,59 @@
-'use strict';
+// @flow
 
 const FeatureIndex = require('../data/feature_index');
-const CollisionTile = require('../symbol/collision_tile');
+const {performSymbolLayout} = require('../symbol/symbol_layout');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
+const SymbolBucket = require('../data/bucket/symbol_bucket');
 const util = require('../util/util');
 const assert = require('assert');
+const {makeImageAtlas} = require('../render/image_atlas');
+const {makeGlyphAtlas} = require('../render/glyph_atlas');
+const {serialize} = require('../util/web_worker_transfer');
+const TileCoord = require('./tile_coord');
+
+import type {Bucket} from '../data/bucket';
+import type Actor from '../util/actor';
+import type StyleLayer from '../style/style_layer';
+import type StyleLayerIndex from '../style/style_layer_index';
+import type {StyleImage} from '../style/style_image';
+import type {StyleGlyph} from '../style/style_glyph';
+import type {
+    WorkerTileParameters,
+    WorkerTileCallback,
+} from '../source/worker_source';
+import type {Transferable} from '../types/transferable';
 
 class WorkerTile {
-    constructor(params) {
-        this.coord = params.coord;
+    coord: TileCoord;
+    uid: string;
+    zoom: number;
+    pixelRatio: number;
+    tileSize: number;
+    source: string;
+    overscaling: number;
+    showCollisionBoxes: boolean;
+
+    status: 'parsing' | 'done';
+    data: VectorTile;
+    collisionBoxArray: CollisionBoxArray;
+
+    abort: ?() => void;
+    reloadCallback: WorkerTileCallback;
+    vectorTile: VectorTile;
+
+    constructor(params: WorkerTileParameters) {
+        this.coord = new TileCoord(params.coord.z, params.coord.x, params.coord.y, params.coord.w);
         this.uid = params.uid;
         this.zoom = params.zoom;
+        this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
         this.overscaling = params.overscaling;
-        this.angle = params.angle;
-        this.pitch = params.pitch;
-        this.cameraToCenterDistance = params.cameraToCenterDistance;
-        this.cameraToTileDistance = params.cameraToTileDistance;
         this.showCollisionBoxes = params.showCollisionBoxes;
     }
 
-    parse(data, layerIndex, actor, callback) {
-        // Normalize GeoJSON data.
-        if (!data.layers) {
-            data = { layers: { '_geojsonTileLayer': data } };
-        }
-
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
         this.status = 'parsing';
         this.data = data;
 
@@ -35,10 +61,9 @@ class WorkerTile {
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
         const featureIndex = new FeatureIndex(this.coord, this.overscaling);
-        featureIndex.bucketLayerIDs = {};
+        featureIndex.bucketLayerIDs = [];
 
-        const buckets = {};
-        let bucketIndex = 0;
+        const buckets: {[string]: Bucket} = {};
 
         const options = {
             featureIndex: featureIndex,
@@ -54,171 +79,127 @@ class WorkerTile {
             }
 
             if (sourceLayer.version === 1) {
-                util.warnOnce(
-                    `Vector tile source "${this.source}" layer "${
-                    sourceLayerId}" does not use vector tile spec v2 ` +
-                    `and therefore may have some rendering errors.`
-                );
+                util.warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
+                    `does not use vector tile spec v2 and therefore may have some rendering errors.`);
             }
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
-            for (let i = 0; i < sourceLayer.length; i++) {
-                const feature = sourceLayer.feature(i);
-                feature.index = i;
-                feature.sourceLayerIndex = sourceLayerIndex;
-                features.push(feature);
+            for (let index = 0; index < sourceLayer.length; index++) {
+                const feature = sourceLayer.feature(index);
+                features.push({ feature, index, sourceLayerIndex });
             }
 
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
 
                 assert(layer.source === this.source);
-
-                if (layer.minzoom && this.zoom < layer.minzoom) continue;
+                if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
-                if (layer.layout && layer.layout.visibility === 'none') continue;
+                if (layer.visibility === 'none') continue;
 
-                for (const layer of family) {
-                    layer.recalculate(this.zoom);
-                }
+                recalculateLayers(family, this.zoom);
 
                 const bucket = buckets[layer.id] = layer.createBucket({
-                    index: bucketIndex,
+                    index: featureIndex.bucketLayerIDs.length,
                     layers: family,
                     zoom: this.zoom,
+                    pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray
                 });
 
                 bucket.populate(features, options);
-                featureIndex.bucketLayerIDs[bucketIndex] = family.map((l) => l.id);
-
-                bucketIndex++;
+                featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
             }
         }
 
+        let error: ?Error;
+        let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
+        let imageMap: ?{[string]: StyleImage};
 
-        const done = (collisionTile) => {
-            this.status = 'done';
-
-            // collect data-driven paint property statistics from each bucket
-            featureIndex.paintPropertyStatistics = {};
-            for (const id in buckets) {
-                util.extend(featureIndex.paintPropertyStatistics, buckets[id].getPaintPropertyStatistics());
-            }
-
-            const transferables = [];
-
-            callback(null, {
-                buckets: serializeBuckets(util.values(buckets), transferables),
-                featureIndex: featureIndex.serialize(transferables),
-                collisionTile: collisionTile.serialize(transferables),
-                collisionBoxArray: this.collisionBoxArray.serialize()
-            }, transferables);
-        };
-
-        // Symbol buckets must be placed in reverse order.
-        this.symbolBuckets = [];
-        for (let i = layerIndex.symbolOrder.length - 1; i >= 0; i--) {
-            const bucket = buckets[layerIndex.symbolOrder[i]];
-            if (bucket) {
-                this.symbolBuckets.push(bucket);
-            }
+        const stacks = util.mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
+        if (Object.keys(stacks).length) {
+            actor.send('getGlyphs', {uid: this.uid, stacks}, (err, result) => {
+                if (!error) {
+                    error = err;
+                    glyphMap = result;
+                    maybePrepare.call(this);
+                }
+            });
+        } else {
+            glyphMap = {};
         }
 
-        if (this.symbolBuckets.length === 0) {
-            return done(new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.collisionBoxArray));
+        const icons = Object.keys(options.iconDependencies);
+        if (icons.length) {
+            actor.send('getImages', {icons}, (err, result) => {
+                if (!error) {
+                    error = err;
+                    imageMap = result;
+                    maybePrepare.call(this);
+                }
+            });
+        } else {
+            imageMap = {};
         }
 
-        let deps = 0;
-        let icons = Object.keys(options.iconDependencies);
-        let stacks = util.mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
+        maybePrepare.call(this);
 
-        const gotDependency = (err) => {
-            if (err) return callback(err);
-            deps++;
-            if (deps === 2) {
-                const collisionTile = new CollisionTile(this.angle,
-                                                        this.pitch,
-                                                        this.cameraToCenterDistance,
-                                                        this.cameraToTileDistance,
-                                                        this.collisionBoxArray);
+        function maybePrepare() {
+            if (error) {
+                return callback(error);
+            } else if (glyphMap && imageMap) {
+                const glyphAtlas = makeGlyphAtlas(glyphMap);
+                const imageAtlas = makeImageAtlas(imageMap);
 
-                for (const bucket of this.symbolBuckets) {
-                    recalculateLayers(bucket, this.zoom);
-
-                    bucket.prepare(stacks, icons);
-                    bucket.place(collisionTile, this.showCollisionBoxes);
+                for (const key in buckets) {
+                    const bucket = buckets[key];
+                    if (bucket instanceof SymbolBucket) {
+                        recalculateLayers(bucket.layers, this.zoom);
+                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, imageMap, imageAtlas.positions, this.showCollisionBoxes);
+                    }
                 }
 
-                done(collisionTile);
+                this.status = 'done';
+
+                const transferables = [
+                    glyphAtlas.image.data.buffer,
+                    imageAtlas.image.data.buffer
+                ];
+
+                callback(null, {
+                    buckets: serializeBuckets(util.values(buckets), transferables),
+                    featureIndex: serialize(featureIndex, transferables),
+                    collisionBoxArray: serialize(this.collisionBoxArray),
+                    glyphAtlasImage: glyphAtlas.image,
+                    iconAtlasImage: imageAtlas.image
+                }, transferables);
             }
-        };
-
-        if (Object.keys(stacks).length) {
-            actor.send('getGlyphs', {uid: this.uid, stacks: stacks}, (err, newStacks) => {
-                stacks = newStacks;
-                gotDependency(err);
-            });
-        } else {
-            gotDependency();
         }
-
-        if (icons.length) {
-            actor.send('getIcons', {icons: icons}, (err, newIcons) => {
-                icons = newIcons;
-                gotDependency(err);
-            });
-        } else {
-            gotDependency();
-        }
-    }
-
-    redoPlacement(angle, pitch, cameraToCenterDistance, cameraToTileDistance, showCollisionBoxes) {
-        this.angle = angle;
-        this.pitch = pitch;
-        this.cameraToCenterDistance = cameraToCenterDistance;
-        this.cameraToTileDistance = cameraToTileDistance;
-
-        if (this.status !== 'done') {
-            return {};
-        }
-
-        const collisionTile = new CollisionTile(this.angle,
-                                                this.pitch,
-                                                this.cameraToCenterDistance,
-                                                this.cameraToTileDistance,
-                                                this.collisionBoxArray);
-
-        for (const bucket of this.symbolBuckets) {
-            recalculateLayers(bucket, this.zoom);
-
-            bucket.place(collisionTile, showCollisionBoxes);
-        }
-
-        const transferables = [];
-        return {
-            result: {
-                buckets: serializeBuckets(this.symbolBuckets, transferables),
-                collisionTile: collisionTile.serialize(transferables)
-            },
-            transferables: transferables
-        };
     }
 }
 
-function recalculateLayers(bucket, zoom) {
+function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
-    for (const layer of bucket.layers) {
-        layer.recalculate(zoom);
+    for (const layer of layers) {
+        layer.recalculate({
+            zoom,
+            now: Number.MAX_VALUE,
+            defaultFadeDuration: 0,
+            zoomHistory: {
+                lastIntegerZoom: 0,
+                lastIntegerZoomTime: 0,
+                lastZoom: 0
+            }
+        });
     }
 }
 
-function serializeBuckets(buckets, transferables) {
+function serializeBuckets(buckets: $ReadOnlyArray<Bucket>, transferables: Array<Transferable>) {
     return buckets
         .filter((b) => !b.isEmpty())
-        .map((b) => b.serialize(transferables));
+        .map((b) => serialize(b, transferables));
 }
 
 module.exports = WorkerTile;

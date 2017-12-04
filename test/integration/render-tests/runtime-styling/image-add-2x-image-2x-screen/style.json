@@ -10,7 +10,9 @@
           "addImage",
           "marker",
           "./sprites/2x.png",
-          2
+          {
+            "pixelRatio": 2
+          }
         ],
         [
           "addLayer",

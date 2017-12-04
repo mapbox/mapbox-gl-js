@@ -2,7 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const mergeLines = require('../../../src/symbol/mergelines');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 function makeFeatures(lines) {
     const features = [];

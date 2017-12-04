@@ -1,0 +1,18 @@
+{
+  "expression": ["to-rgba", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": "red"}}],
+    [{}, {"properties": {"x": "rgba(0, 255, 0, 1)"}}],
+    [{}, {"properties": {"x": [0, 255, 0, 1]}}],
+    [{}, {"properties": {"x": [0, 0, 255]}}]
+  ],
+  "expected": {
+    "outputs": [[255, 0, 0, 1], [0, 255, 0, 1], [0, 255, 0, 1], [0, 0, 255, 1]],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "array<number, 4>"
+    }
+  }
+}

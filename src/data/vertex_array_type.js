@@ -1,6 +1,8 @@
-'use strict';
+// @flow
 
 const createStructArrayType = require('../util/struct_array');
+
+import type {ViewType} from '../util/struct_array';
 
 module.exports = createVertexArrayType;
 
@@ -9,7 +11,11 @@ module.exports = createVertexArrayType;
  * boundaries for best performance in WebGL.
  * @private
  */
-function createVertexArrayType(members) {
+function createVertexArrayType(members: $ReadOnlyArray<{
+    name: string,
+    type: ViewType,
+    +components?: number,
+}>) {
     return createStructArrayType({
         members: members,
         alignment: 4

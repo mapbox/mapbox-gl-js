@@ -1,0 +1,18 @@
+{
+  "query-tests/regressions/mapbox-gl-js#4494": "https://github.com/mapbox/mapbox-gl-js/issues/2716",
+  "render-tests/fill-extrusion-pattern/@2x": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
+  "render-tests/fill-extrusion-pattern/function-2": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
+  "render-tests/fill-extrusion-pattern/function": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
+  "render-tests/fill-extrusion-pattern/literal": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
+  "render-tests/fill-extrusion-pattern/missing": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
+  "render-tests/fill-extrusion-pattern/opacity": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
+  "render-tests/geojson/inline-linestring-fill": "current behavior is arbitrary",
+  "render-tests/line-dasharray/zoom-history": "needs investigation",
+  "render-tests/map-mode/static": "https://github.com/mapbox/mapbox-gl-js/issues/5649",
+  "render-tests/map-mode/tile": "skip - mapbox-gl-js does not need to render tiles",
+  "render-tests/projection/axonometric": "axonometric rendering in gl-js tbd",
+  "render-tests/projection/skew": "axonometric rendering in gl-js tbd",
+  "render-tests/regressions/mapbox-gl-js#3682": "skip - true",
+  "render-tests/runtime-styling/image-update-icon": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804",
+  "render-tests/runtime-styling/image-update-pattern": "skip - https://github.com/mapbox/mapbox-gl-js/issues/4804"
+}

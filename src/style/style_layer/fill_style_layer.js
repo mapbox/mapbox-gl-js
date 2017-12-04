@@ -1,71 +1,58 @@
-'use strict';
+// @flow
 
 const StyleLayer = require('../style_layer');
 const FillBucket = require('../../data/bucket/fill_bucket');
+const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
+const {translateDistance, translate} = require('../query_utils');
+const properties = require('./fill_style_layer_properties');
+
+const {
+    Transitionable,
+    Transitioning,
+    PossiblyEvaluated
+} = require('../properties');
+
+import type {BucketParameters} from '../../data/bucket';
+import type Point from '@mapbox/point-geometry';
+import type {PaintProps} from './fill_style_layer_properties';
+import type {EvaluationParameters} from '../properties';
 
 class FillStyleLayer extends StyleLayer {
+    _transitionablePaint: Transitionable<PaintProps>;
+    _transitioningPaint: Transitioning<PaintProps>;
+    paint: PossiblyEvaluated<PaintProps>;
 
-    getPaintValue(name, globalProperties, featureProperties) {
-        if (name === 'fill-outline-color') {
-            // Special-case handling of undefined fill-outline-color values
-            if (this.getPaintProperty('fill-outline-color') === undefined) {
-                return super.getPaintValue('fill-color', globalProperties, featureProperties);
-            }
-
-            // Handle transitions from fill-outline-color: undefined
-            let transition = this._paintTransitions['fill-outline-color'];
-            while (transition) {
-                const declaredValue = (
-                    transition &&
-                    transition.declaration &&
-                    transition.declaration.value
-                );
-
-                if (!declaredValue) {
-                    return super.getPaintValue('fill-color', globalProperties, featureProperties);
-                }
-
-                transition = transition.oldTransition;
-            }
-        }
-
-        return super.getPaintValue(name, globalProperties, featureProperties);
+    constructor(layer: LayerSpecification) {
+        super(layer, properties);
     }
 
-    getPaintValueStopZoomLevels(name) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.getPaintValueStopZoomLevels('fill-color');
-        } else {
-            return super.getPaintValueStopZoomLevels(name);
+    recalculate(parameters: EvaluationParameters) {
+        this.paint = this._transitioningPaint.possiblyEvaluate(parameters);
+
+        if (this._transitionablePaint.getValue('fill-outline-color') === undefined) {
+            this.paint._values['fill-outline-color'] = this.paint._values['fill-color'];
         }
     }
 
-    getPaintInterpolationT(name, globalProperties) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.getPaintInterpolationT('fill-color', globalProperties);
-        } else {
-            return super.getPaintInterpolationT(name, globalProperties);
-        }
+    createBucket(parameters: BucketParameters<*>) {
+        return new FillBucket(parameters);
     }
 
-    isPaintValueFeatureConstant(name) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.isPaintValueFeatureConstant('fill-color');
-        } else {
-            return super.isPaintValueFeatureConstant(name);
-        }
+    queryRadius(): number {
+        return translateDistance(this.paint.get('fill-translate'));
     }
 
-    isPaintValueZoomConstant(name) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.isPaintValueZoomConstant('fill-color');
-        } else {
-            return super.isPaintValueZoomConstant(name);
-        }
-    }
-
-    createBucket(options) {
-        return new FillBucket(options);
+    queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
+                           feature: VectorTileFeature,
+                           geometry: Array<Array<Point>>,
+                           zoom: number,
+                           bearing: number,
+                           pixelsToTileUnits: number): boolean {
+        const translatedPolygon = translate(queryGeometry,
+            this.paint.get('fill-translate'),
+            this.paint.get('fill-translate-anchor'),
+            bearing, pixelsToTileUnits);
+        return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 }
 

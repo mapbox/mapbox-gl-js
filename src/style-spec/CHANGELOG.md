@@ -1,3 +1,37 @@
+## 10.1.0
+
+* Remove support for validating and migrating v6 styles [#5604](https://github.com/mapbox/mapbox-gl-js/pull/5604)
+* Remove support for validating v7 styles [#5604](https://github.com/mapbox/mapbox-gl-js/pull/5604)
+* Remove spaces after commas in `to-string` representation of colors [#5480](https://github.com/mapbox/mapbox-gl-js/pull/5480)
+* Fix bugs preventing `mapbox-gl-style-spec` package on NPM from being used externally [#5502](https://github.com/mapbox/mapbox-gl-js/pull/5502)
+* Fix flow-typed interface generator [#5478](https://github.com/mapbox/mapbox-gl-js/pull/5478)
+* Export `function` [#5584](https://github.com/mapbox/mapbox-gl-js/pull/5584)
+* Export `StylePropertySpecification` type [#5593](https://github.com/mapbox/mapbox-gl-js/pull/5593)
+* Split the `source_tile` entry in the JSON schema into `source_vector` and `source_raster` [#5604](https://github.com/mapbox/mapbox-gl-js/pull/5604)
+
+### Validation Changes
+
+* Require that `heatmap-color` use expressions instead of stop functions [#5624](https://github.com/mapbox/mapbox-gl-js/issues/5624)
+* Remove support for including `{tokens}` in expressions for `text-field` and `icon-image` [#5599](https://github.com/mapbox/mapbox-gl-js/issues/5599)
+* Disallow interpolation in expressions for `line-dasharray` [#5519](https://github.com/mapbox/mapbox-gl-js/pull/5519)
+* Validate that zoom expressions only appear at the top level of an expression [#5609](https://github.com/mapbox/mapbox-gl-js/issues/5609)
+* Validate that `step` and `interpolate` expressions don't have any duplicate stops [#5605](https://github.com/mapbox/mapbox-gl-js/issues/5605)
+* Split `curve` expression into `step` and `interpolate` expressions [#5542](https://github.com/mapbox/mapbox-gl-js/pull/5542)
+* Validate expression values for enum-typed properties [#5589](https://github.com/mapbox/mapbox-gl-js/pull/5589)
+* Improve validation to catch uses of deprecated function syntax [#5667](https://github.com/mapbox/mapbox-gl-js/pull/5667)
+
+## 10.0.1
+
+* Fix bug preventing @mapbox/mapbox-gl-style-spec package from being usable outside of mapbox-gl-js (#5502)
+
+## 10.0.0
+
+* Add expression and heatmap layer support. See Mapbox GL JS v0.40.1 changelog entry for details.
+
+## 9.0.1
+
+* Remove `fast-stable-stringify` dependency (#5152)
+
 ## 9.0.0
 
 * Fix validation error on categorical zoom-and-property functions (#4220)

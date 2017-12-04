@@ -1,8 +1,12 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const browser = require('../../util/browser');
+
+import type Map from '../map';
+import type Point from '@mapbox/point-geometry';
 
 const inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -20,10 +24,28 @@ const inertiaLinearity = 0.25,
  * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
  */
 class DragRotateHandler {
-    constructor(map, options) {
+    _map: Map;
+    _el: HTMLElement;
+    _enabled: boolean;
+    _active: boolean;
+    _button: 'right' | 'left';
+    _bearingSnap: number;
+    _pitchWithRotate: boolean;
+    _pos: Point;
+    _startPos: Point;
+    _inertia: Array<[number, number]>;
+    _center: Point;
+
+    constructor(map: Map, options: {
+        button?: 'right' | 'left',
+        element?: HTMLElement,
+        bearingSnap?: number,
+        pitchWithRotate?: boolean
+    }) {
         this._map = map;
-        this._el = map.getCanvasContainer();
-        this._bearingSnap = options.bearingSnap;
+        this._el = options.element || map.getCanvasContainer();
+        this._button = options.button || 'right';
+        this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
         util.bindAll([
@@ -31,7 +53,6 @@ class DragRotateHandler {
             '_onMove',
             '_onUp'
         ], this);
-
     }
 
     /**
@@ -76,26 +97,42 @@ class DragRotateHandler {
         this._enabled = false;
     }
 
-    _onDown(e) {
-        if (this._ignoreEvent(e)) return;
+    _onDown(e: MouseEvent) {
+        if (this._map.boxZoom && this._map.boxZoom.isActive()) return;
+        if (this._map.dragPan && this._map.dragPan.isActive()) return;
         if (this.isActive()) return;
 
-        window.document.addEventListener('mousemove', this._onMove);
+        if (this._button === 'right') {
+            const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
+            let eventButton = e.button;
+            if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
+                window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+                // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
+                // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
+                // using Control + left click
+                eventButton = 0;
+            }
+            if (eventButton !== button) return;
+        } else {
+            if (e.ctrlKey || e.button !== 0) return;
+        }
+
+        DOM.disableDrag();
+
+        window.document.addEventListener('mousemove', this._onMove, {capture: true});
         window.document.addEventListener('mouseup', this._onUp);
         /* Deactivate DragRotate when the window looses focus. Otherwise if a mouseup occurs when the window isn't in focus, DragRotate will still be active even though the mouse is no longer pressed. */
         window.addEventListener('blur', this._onUp);
 
         this._active = false;
-        this._inertia = [[Date.now(), this._map.getBearing()]];
+        this._inertia = [[browser.now(), this._map.getBearing()]];
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
     }
 
-    _onMove(e) {
-        if (this._ignoreEvent(e)) return;
-
+    _onMove(e: MouseEvent) {
         if (!this.isActive()) {
             this._active = true;
             this._map.moving = true;
@@ -119,7 +156,7 @@ class DragRotateHandler {
             last = inertia[inertia.length - 1];
 
         this._drainInertiaBuffer();
-        inertia.push([Date.now(), map._normalizeBearing(bearing, last[1])]);
+        inertia.push([browser.now(), map._normalizeBearing(bearing, last[1])]);
 
         map.transform.bearing = bearing;
         if (this._pitchWithRotate) {
@@ -133,11 +170,12 @@ class DragRotateHandler {
         this._pos = p2;
     }
 
-    _onUp(e) {
-        if (this._ignoreEvent(e)) return;
-        window.document.removeEventListener('mousemove', this._onMove);
+    _onUp(e: MouseEvent | FocusEvent) {
+        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
         window.removeEventListener('blur', this._onUp);
+
+        DOM.enableDrag();
 
         if (!this.isActive()) return;
 
@@ -198,35 +236,13 @@ class DragRotateHandler {
         }, { originalEvent: e });
     }
 
-    _fireEvent(type, e) {
+    _fireEvent(type: string, e: Event) {
         return this._map.fire(type, { originalEvent: e });
-    }
-
-    _ignoreEvent(e) {
-        const map = this._map;
-
-        if (map.boxZoom && map.boxZoom.isActive()) return true;
-        if (map.dragPan && map.dragPan.isActive()) return true;
-        if (e.touches) {
-            return (e.touches.length > 1);
-        } else {
-            const buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
-                button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
-            let eventButton = e.button;
-            if (typeof InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
-                window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-                // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
-                // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
-                // using Control + left click
-                eventButton = 0;
-            }
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : !this.isActive() && eventButton !== button);
-        }
     }
 
     _drainInertiaBuffer() {
         const inertia = this._inertia,
-            now = Date.now(),
+            now = browser.now(),
             cutoff = 160;   //msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff)
@@ -235,30 +251,3 @@ class DragRotateHandler {
 }
 
 module.exports = DragRotateHandler;
-
-/**
- * Fired when a "drag to rotate" interaction starts. See {@link DragRotateHandler}.
- *
- * @event rotatestart
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired repeatedly during a "drag to rotate" interaction. See {@link DragRotateHandler}.
- *
- * @event rotate
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired when a "drag to rotate" interaction ends. See {@link DragRotateHandler}.
- *
- * @event rotateend
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */

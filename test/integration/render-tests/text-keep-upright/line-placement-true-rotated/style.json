@@ -6,10 +6,7 @@
       "operations": [
           [ "setBearing", 180 ],
           [ "wait" ]
-        ],
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/9272"
-      }
+        ]
     }
   },
   "center": [

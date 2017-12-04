@@ -1,8 +1,8 @@
-'use strict';
+// @flow
 
 const scriptDetection = require('./script_detection');
 
-module.exports = function verticalizePunctuation(input) {
+module.exports = function verticalizePunctuation(input: string) {
     let output = '';
 
     for (let i = 0; i < input.length; i++) {

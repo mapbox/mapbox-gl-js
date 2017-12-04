@@ -1,0 +1,106 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128
+    }
+  },
+  "center": [
+    -97.5,
+    34
+  ],
+  "zoom": 4,
+  "pitch": 60,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "blue"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -101.31591796875,
+                    33.50475906922609
+                  ],
+                  [
+                    -101.31591796875,
+                    37.45741810262938
+                  ],
+                  [
+                    -96.61376953125,
+                    37.45741810262938
+                  ],
+                  [
+                    -96.61376953125,
+                    33.50475906922609
+                  ],
+                  [
+                    -101.31591796875,
+                    33.50475906922609
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "red"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -98.87695312499999,
+                    32.175612478499325
+                  ],
+                  [
+                    -98.87695312499999,
+                    35.99578538642032
+                  ],
+                  [
+                    -94.2626953125,
+                    35.99578538642032
+                  ],
+                  [
+                    -94.2626953125,
+                    32.175612478499325
+                  ],
+                  [
+                    -98.87695312499999,
+                    32.175612478499325
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-antialias": false,
+        "fill-opacity": 1,
+        "fill-color": {
+          "property": "color",
+          "type": "identity"
+        }
+      }
+    }
+  ]
+}

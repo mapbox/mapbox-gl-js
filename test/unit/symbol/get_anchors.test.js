@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const getAnchors = require('../../../src/symbol/get_anchors');
 
 const TILE_EXTENT = 4096;
@@ -37,7 +37,7 @@ test('getAnchors', (t) => {
             { x: 1, y: 8, angle: 1.5707963267948966, segment: 7 } ]);
 
         t.ok(labelLength / 2 + 1 <= anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize + 1,
-                'first label is placed as close to the beginning as possible');
+            'first label is placed as close to the beginning as possible');
 
         t.end();
     });

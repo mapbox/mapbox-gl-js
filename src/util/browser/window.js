@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 /* eslint-env browser */
-module.exports = self;
+module.exports = (self: Window);

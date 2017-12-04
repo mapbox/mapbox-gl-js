@@ -49,14 +49,57 @@ function compare(path1, path2, diffPath, callback) {
  *
  * @param {string} implementation - identify the implementation under test; used to
  * deal with implementation-specific test exclusions and fudge-factors
- * @param {Object} options
- * @param {Array<string>} [options.tests] - array of test names to run; tests not in the
- * array will be skipped. Test names can be the name of a group, or the name of a group and the name
- * of an individual test, separated by a slash.
+ * @param {Object<string>} [ignores] - map of test names to disable. A key is the relative
+ * path to a test directory, e.g. `"render-tests/background-color/default"`. A value is a string
+ * that by convention links to an issue that explains why the test is currently disabled. By default,
+ * disabled tests will be run, but not fail the test run if the result does not match the expected
+ * result. If the value begins with "skip", the test will not be run at all -- use this for tests
+ * that would crash the test harness entirely if they were run.
  * @param {renderFn} render - a function that performs the rendering
  * @returns {undefined} terminates the process when testing is complete
  */
-exports.run = function (implementation, options, render) {
+exports.run = function (implementation, ignores, render) {
+    const options = { ignores, tests:[], shuffle:false, recycleMap:false, seed:makeHash() };
+
+    // https://stackoverflow.com/a/1349426/229714
+    function makeHash() {
+        const array = [];
+        const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        for (let i = 0; i < 10; ++i)
+            array.push(possible.charAt(Math.floor(Math.random() * possible.length)));
+
+        // join array elements without commas.
+        return array.join('');
+    }
+
+    function checkParameter(param) {
+        const index = options.tests.indexOf(param);
+        if (index === -1)
+            return false;
+        options.tests.splice(index, 1);
+        return true;
+    }
+
+    function checkValueParameter(defaultValue, param) {
+        const index = options.tests.findIndex((elem) => { return String(elem).startsWith(param); });
+        if (index === -1)
+            return defaultValue;
+
+        const split = String(options.tests.splice(index, 1)).split('=');
+        if (split.length !== 2)
+            return defaultValue;
+
+        return split[1];
+    }
+
+    if (process.argv.length > 2) {
+        options.tests = process.argv.slice(2).filter((value, index, self) => { return self.indexOf(value) === index; }) || [];
+        options.shuffle = checkParameter('--shuffle');
+        options.recycleMap = checkParameter('--recycle-map');
+        options.seed = checkValueParameter(options.seed, '--seed');
+    }
+
     const directory = path.join(__dirname, '../render-tests');
     harness(directory, implementation, options, (style, params, done) => {
         render(style, params, (err, data) => {
@@ -126,6 +169,9 @@ exports.run = function (implementation, options, render) {
  * @param {number} options.width - render this wide
  * @param {number} options.height - render this high
  * @param {number} options.pixelRatio - render with this pixel ratio
+ * @param {boolean} options.shuffle - shuffle tests sequence
+ * @param {String} options.seed - Shuffle seed
+ * @param {boolean} options.recycleMap - trigger map object recycling
  * @param {renderCallback} callback - callback to call with the results of rendering
  */
 

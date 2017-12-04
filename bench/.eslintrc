@@ -1,8 +1,17 @@
 {
   "parserOptions": {
+    "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
     }
+  },
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "flowtype/require-valid-file-annotation": [0],
+    "react/jsx-uses-vars": [2],
+    "no-restricted-properties": "off"
   },
   "globals": {
     "React": false,

@@ -1,4 +1,3 @@
-'use strict';
 
 const format = require('util').format;
 

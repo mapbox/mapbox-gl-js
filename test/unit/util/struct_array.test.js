@@ -14,8 +14,7 @@ test('StructArray', (t) => {
     });
 
     t.test('type defined', (t) => {
-
-        t.deepEqual(TestArray.serialize(), {
+        t.deepEqual(TestArray.serialize(new TestArray()).type, {
             members: [{
                 name: 'map',
                 components: 1,
@@ -27,7 +26,6 @@ test('StructArray', (t) => {
                 type: 'Int16',
                 offset: 4
             }],
-            bytesPerElement: 8,
             alignment: 4
         });
 

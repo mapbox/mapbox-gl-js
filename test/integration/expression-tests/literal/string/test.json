@@ -1,0 +1,13 @@
+{
+  "expression": "ahoy!",
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": ["ahoy!"],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "string"
+    }
+  }
+}

@@ -1,8 +1,10 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const config = require('../../util/config');
+
+import type Map from '../map';
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
@@ -17,8 +19,14 @@ const config = require('../../util/config');
  *     }));
  */
 class AttributionControl {
+    options: any;
+    _map: Map;
+    _container: HTMLElement;
+    _editLink: ?HTMLAnchorElement;
+    styleId: string;
+    styleOwner: string;
 
-    constructor(options) {
+    constructor(options: any) {
         this.options = options;
 
         util.bindAll([
@@ -32,7 +40,7 @@ class AttributionControl {
         return 'bottom-right';
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         const compact = this.options && this.options.compact;
 
         this._map = map;
@@ -57,37 +65,39 @@ class AttributionControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        DOM.remove(this._container);
 
         this._map.off('sourcedata', this._updateData);
         this._map.off('moveend', this._updateEditLink);
         this._map.off('resize', this._updateCompact);
 
-        this._map = undefined;
+        this._map = (undefined: any);
     }
 
     _updateEditLink() {
-        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
+        let editLink = this._editLink;
+        if (!editLink) {
+            editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'): any);
+        }
+
         const params = [
             {key: "owner", value: this.styleOwner},
             {key: "id", value: this.styleId},
             {key: "access_token", value: config.ACCESS_TOKEN}
         ];
 
-        if (this._editLink) {
+        if (editLink) {
             const paramString = params.reduce((acc, next, i) => {
-                if (next.value !== undefined) {
+                if (next.value) {
                     acc += `${next.key}=${next.value}${i < params.length - 1 ? '&' : ''}`;
                 }
                 return acc;
             }, `?`);
-            this._editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
-
+            editLink.href = `https://www.mapbox.com/feedback/${paramString}${this._map._hash ? this._map._hash.getHashString(true) : ''}`;
         }
     }
 
-
-    _updateData(e) {
+    _updateData(e: any) {
         if (e && e.sourceDataType === 'metadata') {
             this._updateAttributions();
             this._updateEditLink();
@@ -96,10 +106,10 @@ class AttributionControl {
 
     _updateAttributions() {
         if (!this._map.style) return;
-        let attributions = [];
+        let attributions: Array<string> = [];
 
         if (this._map.style.stylesheet) {
-            const stylesheet = this._map.style.stylesheet;
+            const stylesheet: any = this._map.style.stylesheet;
             this.styleOwner = stylesheet.owner;
             this.styleId = stylesheet.id;
         }
@@ -127,9 +137,11 @@ class AttributionControl {
     }
 
     _updateCompact() {
-        const compact = this._map.getCanvasContainer().offsetWidth <= 640;
-
-        this._container.classList[compact ? 'add' : 'remove']('mapboxgl-compact');
+        if (this._map.getCanvasContainer().offsetWidth <= 640) {
+            this._container.classList.add('mapboxgl-compact');
+        } else {
+            this._container.classList.remove('mapboxgl-compact');
+        }
     }
 
 }
