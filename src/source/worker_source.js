@@ -4,6 +4,7 @@ import type {Serialized} from '../util/web_worker_transfer';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type {Transferable} from '../types/transferable';
+import type {OverscaledTileID} from './tile_id';
 
 export type TileParameters = {
     source: string,
@@ -11,7 +12,7 @@ export type TileParameters = {
 };
 
 export type WorkerTileParameters = TileParameters & {
-    tileID: { overscaledZ: number, wrap: number, canonical: { z: number, x: number, y: number } },
+    tileID: OverscaledTileID,
     request: RequestParameters,
     zoom: number,
     maxZoom: number,

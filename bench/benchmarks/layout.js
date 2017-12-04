@@ -11,7 +11,7 @@ const promisify = require('pify');
 const WorkerTile = require('../../src/source/worker_tile');
 const StyleLayerIndex = require('../../src/style/style_layer_index');
 const deref = require('../../src/style-spec/deref');
-const OverscaledTileID = require('../../src/source/tile_id').OverscaledTileID;
+const {OverscaledTileID} = require('../../src/source/tile_id');
 
 const {
     normalizeStyleURL,
@@ -109,7 +109,7 @@ module.exports = class Layout extends Benchmark {
         for (const {tileID, buffer} of this.tiles) {
             promise = promise.then(() => {
                 const workerTile = new WorkerTile({
-                    tileID: { overscaledZ: tileID.overscaledZ, wrap: tileID.wrap, canonical: { z: tileID.canonical.z, x: tileID.canonical.x, y: tileID.canonical.y } },
+                    tileID: tileID,
                     zoom: tileID.overscaledZ,
                     tileSize: 512,
                     overscaling: 1,

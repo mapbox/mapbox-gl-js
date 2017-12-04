@@ -1,7 +1,7 @@
 // @flow
 
 const Layout = require('./layout');
-const OverscaledTileID = require('../../src/source/tile_id').OverscaledTileID;
+const {OverscaledTileID} = require('../../src/source/tile_id');
 
 const LAYER_COUNT = 2;
 
