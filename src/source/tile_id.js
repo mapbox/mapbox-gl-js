@@ -3,6 +3,7 @@
 const WhooTS = require('@mapbox/whoots-js');
 const assert = require('assert');
 const {register} = require('../util/web_worker_transfer');
+const Coordinate = require('../geo/coordinate');
 
 class CanonicalTileID {
     z: number;
@@ -130,6 +131,10 @@ class OverscaledTileID {
 
     toString() {
         return `${this.overscaledZ}/${this.canonical.x}/${this.canonical.y}`;
+    }
+
+    toCoordinate() {
+        return new Coordinate(this.canonical.x + Math.pow(2, this.wrap), this.canonical.y, this.canonical.z);
     }
 }
 
