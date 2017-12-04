@@ -86,6 +86,7 @@ class Tile {
     needsHillshadePrepare: ?boolean
     request: any;
     texture: any;
+    fbo: any;
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;

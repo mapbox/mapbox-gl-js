@@ -59,7 +59,7 @@ function renderHillshade(painter, tile, layer) {
     const latRange = getTileLatRange(painter, tile.tileID);
     context.activeTexture.set(gl.TEXTURE0);
 
-    gl.bindTexture(gl.TEXTURE_2D, tile.texture.colorAttachment.get());
+    gl.bindTexture(gl.TEXTURE_2D, tile.fbo.colorAttachment.get());
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
@@ -126,15 +126,15 @@ function prepareHillshade(painter, tile) {
         }
 
         context.activeTexture.set(gl.TEXTURE0);
-        if (!tile.texture) {
-            const _texture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
-            _texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        if (!tile.fbo) {
+            const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+            renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-            tile.texture = context.createFramebuffer();
-            tile.texture.colorAttachment.set(_texture.texture);
+            tile.fbo = context.createFramebuffer();
+            tile.fbo.colorAttachment.set(renderTexture.texture);
         }
 
-        context.bindFramebuffer.set(tile.texture.framebuffer);
+        context.bindFramebuffer.set(tile.fbo.framebuffer);
         context.viewport.set([0, 0, tileSize, tileSize]);
 
         const matrix = mat4.create();
