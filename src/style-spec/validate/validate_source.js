@@ -20,27 +20,11 @@ module.exports = function validateSource(options) {
     switch (type) {
     case 'vector':
     case 'raster':
-        errors = errors.concat(validateObject({
-            key: key,
-            value: value,
-            valueSpec: styleSpec[`source_${type}`],
-            style: options.style,
-            styleSpec: styleSpec
-        }));
-        if ('url' in value) {
-            for (const prop in value) {
-                if (['type', 'url', 'tileSize'].indexOf(prop) < 0) {
-                    errors.push(new ValidationError(`${key}.${prop}`, value[prop], 'a source with a "url" property may not include a "%s" property', prop));
-                }
-            }
-        }
-        return errors;
-
     case 'raster-dem':
         errors = errors.concat(validateObject({
             key: key,
             value: value,
-            valueSpec: styleSpec[`source_raster`],
+            valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
             styleSpec: styleSpec
         }));

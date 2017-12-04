@@ -88,6 +88,9 @@ const navigation = [
                 "title": "raster"
             },
             {
+                "title": "raster-dem"
+            },
+            {
                 "title": "geojson"
             },
             {
@@ -144,6 +147,9 @@ const navigation = [
             },
             {
                 "title": "heatmap"
+            },
+            {
+                "title": "hillshade"
             }
         ]
     },
@@ -218,8 +224,8 @@ const navigation = [
     }
 ];
 
-const sourceTypes = ['vector', 'raster', 'geojson', 'image', 'video', 'canvas'];
-const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap'];
+const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video', 'canvas'];
+const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];
 
 const {expressions, expressionGroups} = require('../components/expression-metadata');
 
@@ -655,6 +661,45 @@ export default class extends React.Component {
                                                 <td className='center'>&gt;= 2.0.1</td>
                                                 <td className='center'>&gt;= 2.0.0</td>
                                                 <td className='center'>&gt;= 0.1.0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div id='sources-raster-dem' className='pad2 keyline-bottom'>
+                                    <h3 className='space-bottom1'><a href='#sources-raster-dem' title='link to raster-dem'>raster-dem</a></h3>
+                                    <p>
+                                        A raster DEM source. Currently only supports <a href="https://blog.mapbox.com/global-elevation-data-6689f1d0ba65">Mapbox Terrain RGB</a> (<code>mapbox://mapbox.terrain-rgb</code>)
+                                    </p>
+                                    <div className='space-bottom1 clearfix'>
+                                        {highlightJSON(`
+                                            "mapbox-terrain-rgb": {
+                                                "type": "raster-dem",
+                                                "url": "mapbox://mapbox.terrain-rgb"
+                                            }`)}
+                                    </div>
+                                    <div className='space-bottom1 clearfix'>
+                                        { entries(ref.source_raster).map(([name, prop], i) =>
+                                            name !== '*' && name !== 'type' &&
+                                            <Item key={i} id={`sources-raster-dem-${name}`} name={name} {...prop}/>)}
+                                    </div>
+                                    <table className="micro">
+                                        <thead>
+                                            <tr className='fill-light'>
+                                                <th>SDK Support</th>
+                                                <td className='center'>Mapbox GL JS</td>
+                                                <td className='center'>Android SDK</td>
+                                                <td className='center'>iOS SDK</td>
+                                                <td className='center'>macOS SDK</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>basic functionality</td>
+                                                <td>&gt;= 0.43.0</td>
+                                                <td>Not supported</td>
+                                                <td>Not supported</td>
+                                                <td>Not supported</td>
                                             </tr>
                                         </tbody>
                                     </table>

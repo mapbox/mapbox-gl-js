@@ -108,6 +108,7 @@
   "source": [
     "source_vector",
     "source_raster",
+    "source_raster_dem",
     "source_geojson",
     "source_video",
     "source_image",
@@ -166,9 +167,6 @@
       "values": {
         "raster": {
             "doc": "A raster tile source."
-        },
-        "raster-dem": {
-            "doc": "A raster DEM source using Mapbox Terrain RGB"
         }
       },
       "doc": "The type of the source."
@@ -221,6 +219,26 @@
     "attribution": {
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
+    },
+    "*": {
+      "type": "*",
+      "doc": "Other keys to configure the data source."
+    }
+  },
+  "source_raster_dem": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "raster-dem": {
+            "doc": "A raster DEM source using Mapbox Terrain RGB"
+        }
+      },
+      "doc": "The type of the source."
+    },
+    "url": {
+      "type": "string",
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
     },
     "*": {
       "type": "*",
