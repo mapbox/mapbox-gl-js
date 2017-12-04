@@ -413,11 +413,11 @@ class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     }
 }
 
-register(ConstantBinder);
-register(SourceExpressionBinder);
-register(CompositeExpressionBinder);
-register(ProgramConfiguration, {omit: ['PaintVertexArray']});
-register(ProgramConfigurationSet);
+register('ConstantBinder', ConstantBinder);
+register('SourceExpressionBinder', SourceExpressionBinder);
+register('CompositeExpressionBinder', CompositeExpressionBinder);
+register('ProgramConfiguration', ProgramConfiguration, {omit: ['PaintVertexArray']});
+register('ProgramConfigurationSet', ProgramConfigurationSet);
 
 module.exports = {
     ProgramConfiguration,

@@ -20,6 +20,6 @@ class Anchor extends Point {
     }
 }
 
-register(Anchor);
+register('Anchor', Anchor);
 
 module.exports = Anchor;

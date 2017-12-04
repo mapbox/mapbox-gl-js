@@ -674,10 +674,10 @@ class Properties<Props: Object> {
     }
 }
 
-register(DataDrivenProperty);
-register(DataConstantProperty);
-register(CrossFadedProperty);
-register(HeatmapColorProperty);
+register('DataDrivenProperty', DataDrivenProperty);
+register('DataConstantProperty', DataConstantProperty);
+register('CrossFadedProperty', CrossFadedProperty);
+register('HeatmapColorProperty', HeatmapColorProperty);
 
 module.exports = {
     PropertyValue,

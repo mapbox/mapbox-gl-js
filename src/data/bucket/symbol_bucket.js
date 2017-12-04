@@ -304,7 +304,7 @@ class SymbolBuffers {
     }
 }
 
-register(SymbolBuffers);
+register('SymbolBuffers', SymbolBuffers);
 
 /**
  * Unlike other buckets, which simply implement #addFeature with type-specific
@@ -758,7 +758,7 @@ class SymbolBucket implements Bucket {
     }
 }
 
-register(SymbolBucket, {
+register('SymbolBucket', SymbolBucket, {
     omit: ['layers', 'collisionBoxArray', 'features', 'compareText'],
     shallow: ['symbolInstances']
 });

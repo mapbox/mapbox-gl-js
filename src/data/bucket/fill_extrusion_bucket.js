@@ -214,7 +214,7 @@ class FillExtrusionBucket implements Bucket {
     }
 }
 
-register(FillExtrusionBucket, {omit: ['layers']});
+register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers']});
 
 FillExtrusionBucket.programInterface = fillExtrusionInterface;
 

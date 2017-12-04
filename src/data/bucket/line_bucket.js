@@ -529,7 +529,7 @@ class LineBucket implements Bucket {
     }
 }
 
-register(LineBucket, {omit: ['layers']});
+register('LineBucket', LineBucket, {omit: ['layers']});
 
 LineBucket.programInterface = lineInterface;
 

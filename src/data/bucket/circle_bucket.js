@@ -56,6 +56,7 @@ const LayoutVertexArrayType = createVertexArrayType(circleInterface.layoutAttrib
  * @private
  */
 class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
+    static classRegistryName;
     static programInterface: ProgramInterface;
     index: number;
     zoom: number;
@@ -153,7 +154,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 }
 
-register(CircleBucket, {omit: ['layers']});
+register('CircleBucket', CircleBucket, {omit: ['layers']});
 
 CircleBucket.programInterface = circleInterface;
 

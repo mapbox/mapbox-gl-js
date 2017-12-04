@@ -235,10 +235,10 @@ class StructArray {
     }
 }
 
-register(StructArray);
+register('StructArray', StructArray);
 
 class StructArrayType extends StructArray {}
-register(StructArrayType);
+register('StructArrayType', StructArrayType);
 
 export type { StructArray as StructArray };
 

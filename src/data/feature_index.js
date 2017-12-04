@@ -215,7 +215,11 @@ class FeatureIndex {
     }
 }
 
-register(FeatureIndex, { omit: ['rawTileData', 'sourceLayerCoder', 'collisionIndex'] });
+register(
+    'FeatureIndex',
+    FeatureIndex,
+    { omit: ['rawTileData', 'sourceLayerCoder', 'collisionIndex'] }
+);
 
 module.exports = FeatureIndex;
 
