@@ -23,7 +23,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     const gl = context.gl;
 
     context.stencilTest.set(false);
-    painter.lineWidth(1 * browser.devicePixelRatio);
+    context.lineWidth.set(1 * browser.devicePixelRatio);
 
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');

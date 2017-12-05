@@ -24,7 +24,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 
         if (!drawCircles) {
-            painter.lineWidth(1);
+            context.lineWidth.set(1);
         }
 
         gl.uniform1f(program.uniforms.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);

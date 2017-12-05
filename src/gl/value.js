@@ -199,7 +199,8 @@ class LineWidth extends ContextValue implements Value<number> {
     static default() { return 1; }
 
     set(v: number): void {
-        this.context.gl.lineWidth(v);
+        const range = this.context.lineWidthRange;
+        this.context.gl.lineWidth(util.clamp(v, range[0], range[1]));
     }
 }
 

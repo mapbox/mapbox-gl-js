@@ -59,6 +59,7 @@ class Context {
     gl: WebGLRenderingContext;
     extVertexArrayObject: any;
     currentNumAttributes: ?number;
+    lineWidthRange: [number, number];
 
     clearColor: State<Color>;
     clearDepth: State<number>;
@@ -95,6 +96,7 @@ class Context {
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
+        this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
         this.clearColor = new State(new ClearColor(this));
         this.clearDepth = new State(new ClearDepth(this));

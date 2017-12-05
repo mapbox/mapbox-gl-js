@@ -63,7 +63,6 @@ class Painter {
     _tileTextures: { [number]: Array<Texture> };
     numSublayers: number;
     depthEpsilon: number;
-    lineWidthRange: [number, number];
     emptyProgramConfiguration: ProgramConfiguration;
     width: number;
     height: number;
@@ -106,8 +105,6 @@ class Painter {
         this.depthEpsilon = 1 / Math.pow(2, 16);
 
         this.depthRboNeedsClear = true;
-
-        this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
         this.emptyProgramConfiguration = new ProgramConfiguration();
 
@@ -475,10 +472,6 @@ class Painter {
     getTileTexture(size: number) {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
-    }
-
-    lineWidth(width: number) {
-        this.context.lineWidth.set(util.clamp(width, this.lineWidthRange[0], this.lineWidthRange[1]));
     }
 
     showOverdrawInspector(enabled: boolean) {
