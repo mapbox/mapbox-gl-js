@@ -40,8 +40,9 @@ import type LineAtlas from './line_atlas';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
+import type Framebuffer from '../gl/framebuffer';
 
-export type RenderPass = '3d' | 'hillshadeprepare' | 'opaque' | 'translucent';
+export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
@@ -61,6 +62,7 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
+    _tileFramebuffers: { [number]: Array<Framebuffer> };
     numSublayers: number;
     depthEpsilon: number;
     lineWidthRange: [number, number];
@@ -68,6 +70,7 @@ class Painter {
     width: number;
     height: number;
     depthRbo: WebGLRenderbuffer;
+    depthRboNeedsClear: boolean;
     tileExtentBuffer: VertexBuffer;
     tileExtentVAO: VertexArrayObject;
     tileExtentPatternVAO: VertexArrayObject;
@@ -77,9 +80,6 @@ class Painter {
     rasterBoundsVAO: VertexArrayObject;
     viewportBuffer: VertexBuffer;
     viewportVAO: VertexArrayObject;
-    extTextureFilterAnisotropic: any;
-    extTextureFilterAnisotropicMax: any;
-    extTextureHalfFloat: any;
     _tileClippingMaskIDs: { [number]: number };
     style: Style;
     options: PainterOptions;
@@ -99,6 +99,7 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
+        this._tileFramebuffers = {};
 
         this.setup();
 
@@ -106,6 +107,8 @@ class Painter {
         // This is implemented using the WebGL depth buffer.
         this.numSublayers = SourceCache.maxUnderzooming + SourceCache.maxOverzooming + 1;
         this.depthEpsilon = 1 / Math.pow(2, 16);
+
+        this.depthRboNeedsClear = true;
 
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
@@ -127,7 +130,7 @@ class Painter {
 
         if (this.style) {
             for (const layerId of this.style._order) {
-                this.style._layers[layerId].resize(gl);
+                this.style._layers[layerId].resize();
             }
         }
 
@@ -186,20 +189,6 @@ class Painter {
         viewportArray.emplaceBack(1, 1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray);
         this.viewportVAO = new VertexArrayObject();
-
-        this.extTextureFilterAnisotropic = (
-            gl.getExtension('EXT_texture_filter_anisotropic') ||
-            gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
-            gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
-        );
-        if (this.extTextureFilterAnisotropic) {
-            this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-        }
-
-        this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
-        if (this.extTextureHalfFloat) {
-            gl.getExtension('OES_texture_half_float_linear');
-        }
     }
 
     /*
@@ -290,8 +279,6 @@ class Painter {
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
 
-        const gl = this.context.gl;
-
         for (const id in style.sourceCaches) {
             const sourceCache = this.style.sourceCaches[id];
             if (sourceCache.used) {
@@ -309,99 +296,40 @@ class Painter {
             updateTileMasks(visibleTiles, this.context);
         }
 
-        // 3D pass
-        // We first create a renderbuffer that we'll use to preserve depth
-        // results across 3D layers, then render each 3D layer to its own
-        // framebuffer/texture, which we'll use later in the translucent pass
-        // to render to the main framebuffer. By doing this before we render to
-        // the main framebuffer we won't have to do an expensive framebuffer
-        // restore mid-render pass.
-        // The most important distinction of the 3D pass is that we use the
-        // depth buffer in an entirely different way (to represent 3D space)
-        // than we do in the 2D pass (to preserve layer order).
-        this.renderPass = '3d';
+        // Offscreen pass
+        // We first do all rendering that requires rendering to a separate
+        // framebuffer, and then save those for rendering back to the map
+        // later: in doing this we avoid doing expensive framebuffer restores.
+        this.renderPass = 'offscreen';
         {
-            // We'll wait and only attach the depth renderbuffer if we think we're
-            // rendering something.
-            let first = true;
-
             let sourceCache;
             let coords = [];
+            this.depthRboNeedsClear = true;
 
             for (let i = 0; i < layerIds.length; i++) {
                 const layer = this.style._layers[layerIds[i]];
 
-                if (!layer.has3DPass() || layer.isHidden(this.transform.zoom)) continue;
+                if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
                 if (layer.source !== (sourceCache && sourceCache.id)) {
                     sourceCache = this.style.sourceCaches[layer.source];
                     coords = [];
 
                     if (sourceCache) {
-                        this.clearStencil();
                         coords = sourceCache.getVisibleCoordinates();
+                        coords.reverse();
                     }
-
-                    coords.reverse();
                 }
 
                 if (!coords.length) continue;
 
-                this._setup3DRenderbuffer();
-
-                let renderTarget = layer.viewportFrame;
-                if (!renderTarget) {
-                    const texture = new Texture(this.context, {width: this.width, height: this.height, data: null}, gl.RGBA);
-                    texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-
-                    renderTarget = this.context.createFramebuffer();
-                    renderTarget.colorAttachment.set(texture.texture);
-                    layer.viewportFrame = renderTarget;
-                }
-
-                this.context.bindFramebuffer.set(renderTarget.framebuffer);
-                renderTarget.depthAttachment.set(this.depthRbo);
-
-                if (first) {
-                    this.context.clear({ depth: 1 });
-                    first = false;
-                }
-
                 this.renderLayer(this, (sourceCache: any), layer, coords);
             }
 
+            // Rebind the main framebuffer now that all offscreen layers
+            // have been rendered:
             this.context.bindFramebuffer.set(null);
         }
-
-
-
-        this.renderPass = 'hillshadeprepare';
-
-        {
-            let sourceCache;
-            let coords = [];
-
-            for (let i = 0; i < layerIds.length; i++) {
-                const layer = this.style._layers[layerIds[i]];
-
-                if (layer.type !== 'hillshade' || layer.isHidden(this.transform.zoom)) continue;
-
-                if (layer.source !== (sourceCache && sourceCache.id)) {
-                    sourceCache = this.style.sourceCaches[layer.source];
-                    coords = [];
-
-                    if (sourceCache) {
-                        this.clearStencil();
-                        coords = sourceCache.getVisibleCoordinates();
-                    }
-
-                    coords.reverse();
-                }
-
-                this.renderLayer(this, (sourceCache: any), layer, coords);
-            }
-        }
-
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({ color: Color.transparent, depth: 1 });
@@ -484,7 +412,7 @@ class Painter {
         }
     }
 
-    _setup3DRenderbuffer(): void {
+    setupOffscreenDepthRenderbuffer(): void {
         const context = this.context;
         // All of the 3D textures will use the same depth renderbuffer.
         if (!this.depthRbo) {
@@ -550,6 +478,21 @@ class Painter {
     getTileTexture(size: number) {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
+    }
+
+    saveTileFramebuffer(fbo: Framebuffer) {
+        const framebuffers = this._tileFramebuffers[fbo.width];
+
+        if (!framebuffers) {
+            this._tileFramebuffers[fbo.width] = [fbo];
+        } else {
+            framebuffers.push(fbo);
+        }
+    }
+
+    getTileFramebuffer(size: number) {
+        const framebuffers = this._tileFramebuffers[size];
+        return framebuffers && framebuffers.length > 0 ? framebuffers.pop() : null;
     }
 
     lineWidth(width: number) {

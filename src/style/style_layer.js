@@ -197,11 +197,11 @@ class StyleLayer extends Evented {
         }));
     }
 
-    has3DPass() {
+    hasOffscreenPass() {
         return false;
     }
 
-    resize(gl: WebGLRenderingContext) { // eslint-disable-line
+    resize() { // eslint-disable-line
         // noop
     }
 }

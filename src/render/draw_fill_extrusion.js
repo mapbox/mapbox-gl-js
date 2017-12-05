@@ -2,6 +2,7 @@
 
 const glMatrix = require('@mapbox/gl-matrix');
 const pattern = require('./pattern');
+const Texture = require('./texture');
 const Color = require('../style-spec/util/color');
 const mat3 = glMatrix.mat3;
 const mat4 = glMatrix.mat4;
@@ -20,8 +21,10 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         return;
     }
 
-    if (painter.renderPass === '3d') {
+    if (painter.renderPass === 'offscreen') {
         const context = painter.context;
+
+        setupFramebuffer(painter, layer);
 
         context.stencilTest.set(false);
         context.depthTest.set(true);
@@ -35,6 +38,34 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     } else if (painter.renderPass === 'translucent') {
         drawExtrusionTexture(painter, layer);
     }
+}
+
+function setupFramebuffer(painter, layer) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    let renderTarget = layer.viewportFrame;
+
+    if (painter.depthRboNeedsClear) {
+        painter.setupOffscreenDepthRenderbuffer();
+    }
+
+    if (!renderTarget) {
+        const texture = new Texture(context, {width: painter.width, height: painter.height, data: null}, gl.RGBA);
+        texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+        renderTarget = layer.viewportFrame = context.createFramebuffer(painter.width, painter.height);
+        renderTarget.colorAttachment.set(texture.texture);
+    }
+
+    context.bindFramebuffer.set(renderTarget.framebuffer);
+    renderTarget.depthAttachment.set(painter.depthRbo);
+
+    if (painter.depthRboNeedsClear) {
+        context.clear({ depth: 1 });
+        painter.depthRboNeedsClear = false;
+    }
+
 }
 
 function drawExtrusionTexture(painter, layer) {

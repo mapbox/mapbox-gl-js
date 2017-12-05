@@ -1,9 +1,7 @@
 // @flow
-const assert = require('assert');
 
 const Color = require('../style-spec/util/color');
 const util = require('../util/util');
-const window = require('../util/window');
 
 import type Context from './context';
 import type {
@@ -26,13 +24,9 @@ export interface Value<T> {
 
 class ContextValue {
     context: Context;
-    parent: ?any;
 
-    constructor(context: Context, parent: ?any) {
+    constructor(context: Context) {
         this.context = context;
-        if (parent) {
-            this.parent = parent;
-        }
     }
 
     static equal(a, b): boolean {
@@ -332,13 +326,20 @@ class PixelStoreUnpackPremultiplyAlpha extends ContextValue implements Value<boo
 /**
  * Framebuffer values
  */
+class FramebufferValue extends ContextValue {
+    context: Context;
+    parent: WebGLFramebuffer;
 
-class ColorAttachment extends ContextValue implements Value<?WebGLTexture> {
+    constructor(context: Context, parent: WebGLFramebuffer) {
+        super(context);
+        this.parent = parent;
+    }
+}
+
+class ColorAttachment extends FramebufferValue implements Value<?WebGLTexture> {
     static default() { return null; }
 
     set(v: ?WebGLTexture): void {
-        assert(this.parent && this.parent instanceof window.WebGLFramebuffer);
-
         const gl = this.context.gl;
         this.context.bindFramebuffer.set(this.parent);
         // note: it's possible to attach a renderbuffer to the color
@@ -351,12 +352,10 @@ class ColorAttachment extends ContextValue implements Value<?WebGLTexture> {
     }
 }
 
-class DepthAttachment extends ContextValue implements Value<?WebGLRenderbuffer> {
+class DepthAttachment extends FramebufferValue implements Value<?WebGLRenderbuffer> {
     static default() { return null; }
 
     set(v: ?WebGLRenderbuffer): void {
-        assert(this.parent && this.parent instanceof window.WebGLFramebuffer);
-
         const gl = this.context.gl;
         this.context.bindFramebuffer.set(this.parent);
         // note: it's possible to attach a texture to the depth attachment

@@ -88,6 +88,10 @@ class Context {
     pixelStoreUnpack: State<number>;
     pixelStoreUnpackPremultiplyAlpha: State<boolean>;
 
+    extTextureFilterAnisotropic: any;
+    extTextureFilterAnisotropicMax: any;
+    extTextureHalfFloat: any;
+
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
@@ -119,6 +123,21 @@ class Context {
         this.bindVertexArrayOES = this.extVertexArrayObject && new State(new BindVertexArrayOES(this));
         this.pixelStoreUnpack = new State(new PixelStoreUnpack(this));
         this.pixelStoreUnpackPremultiplyAlpha = new State(new PixelStoreUnpackPremultiplyAlpha(this));
+
+        this.extTextureFilterAnisotropic = (
+            gl.getExtension('EXT_texture_filter_anisotropic') ||
+            gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+            gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+        );
+        if (this.extTextureFilterAnisotropic) {
+            this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        }
+
+        this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
+        if (this.extTextureHalfFloat) {
+            gl.getExtension('OES_texture_half_float_linear');
+        }
+
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
@@ -140,8 +159,8 @@ class Context {
         return rbo;
     }
 
-    createFramebuffer() {
-        return new Framebuffer(this);
+    createFramebuffer(width: number, height: number) {
+        return new Framebuffer(this, width, height);
     }
 
     clear({color, depth}: ClearArgs) {

@@ -35,6 +35,7 @@ import type Context from '../gl/context';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from './tile_id';
+import type Framebuffer from '../gl/framebuffer';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -86,14 +87,14 @@ class Tile {
     needsHillshadePrepare: ?boolean
     request: any;
     texture: any;
-    fbo: any;
+    fbo: ?Framebuffer;
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     justReloaded: boolean;
 
     /**
-     * @param {OverscaledTileID} tileID 
+     * @param {OverscaledTileID} tileID
      * @param size
      */
     constructor(tileID: OverscaledTileID, size: number) {

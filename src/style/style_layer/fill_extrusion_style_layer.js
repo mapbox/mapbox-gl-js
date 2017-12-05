@@ -46,15 +46,13 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 
-    has3DPass() {
+    hasOffscreenPass() {
         return this.paint.get('fill-extrusion-opacity') !== 0 && this.visibility !== 'none';
     }
 
-    resize(gl: WebGLRenderingContext) {
+    resize() {
         if (this.viewportFrame) {
-            const {colorAttachment, framebuffer} = this.viewportFrame;
-            gl.deleteTexture(colorAttachment.get());
-            gl.deleteFramebuffer(framebuffer);
+            this.viewportFrame.destroy();
             this.viewportFrame = null;
         }
     }
