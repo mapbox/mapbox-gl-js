@@ -5,7 +5,6 @@ const {RGBAImage} = require('../util/image');
 const {imagePosition} = require('./image_atlas');
 const Texture = require('./texture');
 const assert = require('assert');
-const {clone} = require('../util/util');
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
@@ -52,7 +51,7 @@ class ImageManager {
 
         this.shelfPack = new ShelfPack(64, 64, {autoResize: true});
         this.patterns = {};
-        this.atlasImage = RGBAImage.create({width: 64, height: 64});
+        this.atlasImage = new RGBAImage({width: 64, height: 64});
         this.dirty = true;
     }
 
@@ -122,7 +121,11 @@ class ImageManager {
             const image = this.images[id];
             if (image) {
                 // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
-                response[id] = clone(image);
+                response[id] = {
+                    data: image.data.clone(),
+                    pixelRatio: image.pixelRatio,
+                    sdf: image.sdf
+                };
             }
         }
 
@@ -157,7 +160,7 @@ class ImageManager {
             return null;
         }
 
-        RGBAImage.resize(this.atlasImage, this.getPixelSize());
+        this.atlasImage.resize(this.getPixelSize());
 
         const src = image.data;
         const dst = this.atlasImage;

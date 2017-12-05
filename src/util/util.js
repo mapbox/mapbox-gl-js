@@ -321,12 +321,6 @@ exports.deepEqual = function(a: ?mixed, b: ?mixed): boolean {
 exports.clone = function<T>(input: T): T {
     if (Array.isArray(input)) {
         return input.map(exports.clone);
-    } else if (input instanceof DataView) {
-        return (new DataView(input.buffer.slice(0), input.byteOffset, input.byteLength): any);
-    } else if (input instanceof ArrayBuffer) {
-        return input.slice(0);
-    } else if (ArrayBuffer.isView(input)) {
-        return (input: any).slice(0);
     } else if (typeof input === 'object' && input) {
         return ((exports.mapObject(input, exports.clone): any): T);
     } else {
