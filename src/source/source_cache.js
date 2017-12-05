@@ -301,10 +301,7 @@ class SourceCache extends Evented {
         }
     }
     /**
-     * Get a specific tile by TileCoordinate
-=======
-     * Get a specific tile by TileID 
->>>>>>> switch TileCoord to -native's TileID types
+     * Get a specific tile by TileID
      */
     getTile(tileID: OverscaledTileID): Tile {
         return this.getTileByID(tileID.key);

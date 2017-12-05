@@ -51,7 +51,7 @@ class SegmentVector {
     }
 }
 
-register(SegmentVector);
+register('SegmentVector', SegmentVector);
 
 module.exports = {
     SegmentVector,

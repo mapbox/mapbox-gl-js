@@ -153,7 +153,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 }
 
-register(CircleBucket, {omit: ['layers']});
+register('CircleBucket', CircleBucket, {omit: ['layers']});
 
 CircleBucket.programInterface = circleInterface;
 

@@ -169,7 +169,7 @@ class FillBucket implements Bucket {
     }
 }
 
-register(FillBucket, {omit: ['layers']});
+register('FillBucket', FillBucket, {omit: ['layers']});
 
 FillBucket.programInterface = fillInterface;
 

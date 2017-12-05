@@ -30,7 +30,7 @@ test('round trip', (t) => {
         }
     }
 
-    register(Foo, { omit: ['_cached'] });
+    register('Foo', Foo, { omit: ['_cached'] });
 
     const foo = new Foo(10);
     const transferables = [];
@@ -45,6 +45,16 @@ test('round trip', (t) => {
     t.assert(transferables[0] === foo.buffer);
     t.assert(bar._cached === undefined);
     t.assert(bar.squared() === 100);
+    t.end();
+});
+
+test('anonymous class', (t) => {
+    const Klass = (() => class {})();
+    t.assert(!Klass.name);
+    register('Anon', Klass);
+    const x = new Klass();
+    const deserialized = deserialize(serialize(x));
+    t.assert(deserialized instanceof Klass);
     t.end();
 });
 
@@ -68,7 +78,7 @@ test('custom serialization', (t) => {
         }
     }
 
-    register(Bar);
+    register('Bar', Bar);
 
     const bar = new Bar('a');
     t.assert(!bar._deserialized);

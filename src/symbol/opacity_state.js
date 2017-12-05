@@ -22,6 +22,6 @@ class OpacityState {
     }
 }
 
-register(OpacityState);
+register('OpacityState', OpacityState);
 
 module.exports = OpacityState;

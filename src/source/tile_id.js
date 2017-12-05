@@ -155,8 +155,8 @@ function getQuadkey(z, x, y) {
     return quadkey;
 }
 
-register(CanonicalTileID);
-register(OverscaledTileID, {omit: ['posMatrix']});
+register('CanonicalTileID', CanonicalTileID);
+register('OverscaledTileID', OverscaledTileID, {omit: ['posMatrix']});
 
 module.exports = {
     CanonicalTileID: CanonicalTileID,

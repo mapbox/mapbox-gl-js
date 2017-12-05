@@ -32,7 +32,6 @@ export type Serialized =
     | Array<Serialized>
     | {| name: string, properties: {+[string]: Serialized} |};
 
-
 type Registry = {
     [string]: {
         klass: Class<any>,
@@ -57,10 +56,12 @@ const registry: Registry = {};
  *
  * @private
  */
-function register<T: any>(klass: Class<T>, options: RegisterOptions<T> = {}) {
-    const name: string = klass.name;
-    assert(name);
+function register<T: any>(name: string, klass: Class<T>, options: RegisterOptions<T> = {}) {
     assert(!registry[name], `${name} is already registered.`);
+    (Object.defineProperty: any)(klass, '_classRegistryKey', {
+        value: name,
+        writeable: false
+    });
     registry[name] = {
         klass,
         omit: options.omit || [],
@@ -68,7 +69,7 @@ function register<T: any>(klass: Class<T>, options: RegisterOptions<T> = {}) {
     };
 }
 
-register(Object);
+register('Object', Object);
 
 Grid.serialize = function serializeGrid(grid: Grid, transferables?: Array<Transferable>): Serialized {
     const ab = grid.toArrayBuffer();
@@ -81,20 +82,23 @@ Grid.serialize = function serializeGrid(grid: Grid, transferables?: Array<Transf
 Grid.deserialize = function deserializeGrid(serialized: ArrayBuffer): Grid {
     return new Grid(serialized);
 };
-register(Grid);
+register('Grid', Grid);
 
-register(Color);
+register('Color', Color);
 
-register(StylePropertyFunction);
-register(StyleExpression, {omit: ['_evaluator']});
-register(StyleExpressionWithErrorHandling, {omit: ['_evaluator']});
-register(ZoomDependentExpression);
-register(ZoomConstantExpression);
-register(CompoundExpression, {omit: ['_evaluate']});
+register('StylePropertyFunction', StylePropertyFunction);
+register('StyleExpression', StyleExpression, {omit: ['_evaluator']});
+register(
+    'StyleExpressionWithErrorHandling',
+    StyleExpressionWithErrorHandling,
+    {omit: ['_evaluator']}
+);
+register('ZoomDependentExpression', ZoomDependentExpression);
+register('ZoomConstantExpression', ZoomConstantExpression);
+register('CompoundExpression', CompoundExpression, {omit: ['_evaluate']});
 for (const name in expressions) {
-    const Expression = expressions[name];
-    if (registry[Expression.name]) continue;
-    register(expressions[name]);
+    if (expressions[name]._classRegistryKey) continue;
+    register(`Expression_${name}`, expressions[name]);
 }
 
 /**
@@ -148,14 +152,11 @@ function serialize(input: mixed, transferables?: Array<Transferable>): Serialize
 
     if (typeof input === 'object') {
         const klass = (input.constructor: any);
-        const name = klass.name;
+        const name = klass._classRegistryKey;
         if (!name) {
-            throw new Error(`can't serialize object of anonymous class`);
+            throw new Error(`can't serialize object of unregistered class`);
         }
-
-        if (!registry[name]) {
-            throw new Error(`can't serialize unregistered class ${name}`);
-        }
+        assert(registry[name]);
 
         const properties: {[string]: Serialized} = {};
 
