@@ -1,7 +1,6 @@
 // @flow
 
 const assert = require('assert');
-const extend = require('../util/extend');
 const ParsingError = require('./parsing_error');
 const ParsingContext = require('./parsing_context');
 const EvaluationContext = require('./evaluation_context');
@@ -55,13 +54,15 @@ class StyleExpression {
 
 class StyleExpressionWithErrorHandling extends StyleExpression {
     _defaultValue: Value;
+    _warnings: boolean;
     _warningHistory: {[key: string]: boolean};
     _enumValues: {[string]: any};
 
     _evaluator: EvaluationContext;
 
-    constructor(expression: Expression, propertySpec: StylePropertySpecification) {
+    constructor(expression: Expression, propertySpec: StylePropertySpecification, warnings: boolean) {
         super(expression);
+        this._warnings = warnings;
         this._warningHistory = {};
         this._defaultValue = getDefaultValue(propertySpec);
         if (propertySpec.type === 'enum') {
@@ -87,7 +88,7 @@ class StyleExpressionWithErrorHandling extends StyleExpression {
             }
             return val;
         } catch (e) {
-            if (!this._warningHistory[e.message]) {
+            if (this._warnings && !this._warningHistory[e.message]) {
                 this._warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
                     console.warn(e.message);
@@ -114,7 +115,7 @@ function isExpression(expression: mixed) {
  */
 function createExpression(expression: mixed,
                           propertySpec: StylePropertySpecification,
-                          options: {handleErrors?: boolean} = {}): Result<StyleExpression, Array<ParsingError>> {
+                          options: {handleErrors?: boolean, warnings?: boolean} = {}): Result<StyleExpression, Array<ParsingError>> {
     const parser = new ParsingContext(definitions, [], getExpectedType(propertySpec));
     const parsed = parser.parse(expression);
     if (!parsed) {
@@ -125,7 +126,7 @@ function createExpression(expression: mixed,
     if (options.handleErrors === false) {
         return success(new StyleExpression(parsed));
     } else {
-        return success(new StyleExpressionWithErrorHandling(parsed, propertySpec));
+        return success(new StyleExpressionWithErrorHandling(parsed, propertySpec, options.warnings !== false));
     }
 }
 
@@ -202,7 +203,7 @@ export type StylePropertyExpression =
 
 function createPropertyExpression(expression: mixed,
                                   propertySpec: StylePropertySpecification,
-                                  options: {handleErrors?: boolean} = {}): Result<StylePropertyExpression, Array<ParsingError>> {
+                                  options: {handleErrors?: boolean, warnings?: boolean} = {}): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, options);
     if (expression.result === 'error') {
         return expression;
@@ -240,41 +241,31 @@ function createPropertyExpression(expression: mixed,
         (new ZoomDependentExpression('composite', expression.value, zoomCurve): CompositeExpression));
 }
 
-const {isFunction, createFunction} = require('../function');
+const {
+    isFunction,
+    convertFunction,
+    isTokenString,
+    convertTokenString
+} = require('./convert_function');
+
 const {Color} = require('./values');
-
-// serialization wrapper for old-style stop functions normalized to the
-// expression interface
-class StylePropertyFunction<T> {
-    _parameters: PropertyValueSpecification<T>;
-    _specification: StylePropertySpecification;
-
-    kind: 'constant' | 'source' | 'camera' | 'composite';
-    evaluate: (globals: GlobalProperties, feature?: Feature) => any;
-    interpolationFactor: ?(input: number, lower: number, upper: number) => number;
-    zoomStops: ?Array<number>;
-
-    constructor(parameters: PropertyValueSpecification<T>, specification: StylePropertySpecification) {
-        this._parameters = parameters;
-        this._specification = specification;
-        extend(this, createFunction(this._parameters, this._specification));
-    }
-
-    static deserialize(serialized: {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification}) {
-        return new StylePropertyFunction(serialized._parameters, serialized._specification);
-    }
-
-    static serialize(input: StylePropertyFunction<T>) {
-        return {
-            _parameters: input._parameters,
-            _specification: input._specification
-        };
-    }
-}
 
 function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification): StylePropertyExpression {
     if (isFunction(value)) {
-        return (new StylePropertyFunction(value, specification): any);
+        const expression = createPropertyExpression(convertFunction(value, specification), specification, {warnings: false});
+        if (expression.result === 'error') {
+            assert(false);
+            throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        }
+        return expression.value;
+
+    } else if (typeof value === 'string' && isTokenString(value, specification)) {
+        const expression = createPropertyExpression(convertTokenString(value), specification, {warnings: false});
+        if (expression.result === 'error') {
+            assert(false);
+            throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        }
+        return expression.value;
 
     } else if (isExpression(value)) {
         const expression = createPropertyExpression(value, specification);
@@ -304,8 +295,7 @@ module.exports = {
     createPropertyExpression,
     normalizePropertyExpression,
     ZoomConstantExpression,
-    ZoomDependentExpression,
-    StylePropertyFunction
+    ZoomDependentExpression
 };
 
 // Zoom-dependent expressions may only use ["zoom"] as the input to a top-level "step" or "interpolate"

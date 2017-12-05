@@ -441,13 +441,13 @@ class SymbolBucket implements Bucket {
 
             let text;
             if (hasText) {
-                text = layer.getValueAndResolveTokens('text-field', feature);
+                text = layer.layout.get('text-field').evaluate(feature);
                 text = transformText(text, layer, feature);
             }
 
             let icon;
             if (hasIcon) {
-                icon = layer.getValueAndResolveTokens('icon-image', feature);
+                icon = layer.layout.get('icon-image').evaluate(feature);
             }
 
             if (!text && !icon) {

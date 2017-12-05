@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const convertFunction = require('../../../src/style-spec/function/convert');
+const {convertFunction} = require('../../../src/style-spec/expression/convert_function');
 
 test('convertFunction', (t) => {
     t.test('feature-constant text-field with token replacement', (t) => {

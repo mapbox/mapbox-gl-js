@@ -2,8 +2,6 @@
 
 const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
-const resolveTokens = require('../../util/token');
-const {isExpression} = require('../../style-spec/expression');
 const assert = require('assert');
 const properties = require('./symbol_style_layer_properties');
 
@@ -16,7 +14,6 @@ const {
 
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
-import type {Feature} from '../../style-spec/expression';
 import type EvaluationParameters from '../evaluation_parameters';
 
 class SymbolStyleLayer extends StyleLayer {
@@ -57,16 +54,6 @@ class SymbolStyleLayer extends StyleLayer {
         if (this.layout.get('icon-pitch-alignment') === 'auto') {
             this.layout._values['icon-pitch-alignment'] = this.layout.get('icon-rotation-alignment');
         }
-    }
-
-    getValueAndResolveTokens(name: *, feature: Feature) {
-        const value = this.layout.get(name).evaluate(feature);
-        const unevaluated = this._unevaluatedLayout._values[name];
-        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value)) {
-            return resolveTokens(feature.properties, value);
-        }
-
-        return value;
     }
 
     createBucket(parameters: BucketParameters<*>) {

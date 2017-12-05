@@ -2,8 +2,9 @@
 
 const UnitBezier = require('@mapbox/unitbezier');
 const interpolate = require('../../util/interpolate');
-const { toString, NumberType } = require('../types');
-const { findStopLessThanOrEqualTo } = require("../stops");
+const { toString, NumberType, ColorType } = require('../types');
+const { findStopLessThanOrEqualTo } = require('../stops');
+const { hcl, lab } = require('../../util/color_spaces');
 
 import type { Stops } from '../stops';
 import type { Expression } from '../expression';
@@ -19,13 +20,15 @@ export type InterpolationType =
 class Interpolate implements Expression {
     type: Type;
 
+    operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab';
     interpolation: InterpolationType;
     input: Expression;
     labels: Array<number>;
     outputs: Array<Expression>;
 
-    constructor(type: Type, interpolation: InterpolationType, input: Expression, stops: Stops) {
+    constructor(type: Type, operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab', interpolation: InterpolationType, input: Expression, stops: Stops) {
         this.type = type;
+        this.operator = operator;
         this.interpolation = interpolation;
         this.input = input;
 
@@ -52,7 +55,7 @@ class Interpolate implements Expression {
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
-        let [ , interpolation, input, ...rest] = args;
+        let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {
             return context.error(`Expected an interpolation type expression.`, 1);
@@ -99,7 +102,9 @@ class Interpolate implements Expression {
         const stops: Stops = [];
 
         let outputType: Type = (null: any);
-        if (context.expectedType && context.expectedType.kind !== 'value') {
+        if (operator === 'interpolate-hcl' || operator === 'interpolate-lab') {
+            outputType = ColorType;
+        } else if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
 
@@ -135,7 +140,7 @@ class Interpolate implements Expression {
             return context.error(`Type ${toString(outputType)} is not interpolatable.`);
         }
 
-        return new Interpolate(outputType, interpolation, input, stops);
+        return new Interpolate(outputType, (operator: any), interpolation, input, stops);
     }
 
     evaluate(ctx: EvaluationContext) {
@@ -164,7 +169,13 @@ class Interpolate implements Expression {
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
-        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t);
+        if (this.operator === 'interpolate') {
+            return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t);
+        } else if (this.operator === 'interpolate-hcl') {
+            return hcl.reverse(hcl.interpolate(hcl.forward(outputLower), hcl.forward(outputUpper), t));
+        } else {
+            return lab.reverse(lab.interpolate(lab.forward(outputLower), lab.forward(outputUpper), t));
+        }
     }
 
     eachChild(fn: (Expression) => void) {
