@@ -40,7 +40,7 @@ module.exports = function(baseURL: string,
 
             for (const id in json) {
                 const {width, height, x, y, sdf, pixelRatio} = json[id];
-                const data = RGBAImage.create({width, height});
+                const data = new RGBAImage({width, height});
                 RGBAImage.copy(imageData, data, {x, y}, {x: 0, y: 0}, {width, height});
                 result[id] = {data, pixelRatio, sdf};
             }

@@ -5,7 +5,6 @@ const TinySDF = require('@mapbox/tiny-sdf');
 const isChar = require('../util/is_char_in_unicode_block');
 const {asyncAll} = require('../util/util');
 const {AlphaImage} = require('../util/image');
-const {clone} = require('../util/util');
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestTransformFunction} from '../ui/map';
@@ -102,7 +101,11 @@ class GlyphManager {
 
                 for (const {stack, id, glyph} of glyphs) {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
-                    (result[stack] || (result[stack] = {}))[id] = clone(glyph);
+                    (result[stack] || (result[stack] = {}))[id] = glyph && {
+                        id: glyph.id,
+                        bitmap: glyph.bitmap.clone(),
+                        metrics: glyph.metrics
+                    };
                 }
 
                 callback(null, result);
@@ -135,7 +138,7 @@ class GlyphManager {
 
         return {
             id,
-            bitmap: AlphaImage.create({width: 30, height: 30}, tinySDF.draw(String.fromCharCode(id))),
+            bitmap: new AlphaImage({width: 30, height: 30}, tinySDF.draw(String.fromCharCode(id))),
             metrics: {
                 width: 24,
                 height: 24,

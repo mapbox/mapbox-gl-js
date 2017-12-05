@@ -25,7 +25,7 @@ export type GlyphAtlas = {
 };
 
 function makeGlyphAtlas(stacks: {[string]: {[number]: ?StyleGlyph}}): GlyphAtlas {
-    const image = AlphaImage.create({width: 0, height: 0});
+    const image = new AlphaImage({width: 0, height: 0});
     const positions = {};
 
     const pack = new ShelfPack(0, 0, {autoResize: true});
@@ -41,7 +41,7 @@ function makeGlyphAtlas(stacks: {[string]: {[number]: ?StyleGlyph}}): GlyphAtlas
                     src.bitmap.width + 2 * padding,
                     src.bitmap.height + 2 * padding);
 
-                AlphaImage.resize(image, {
+                image.resize({
                     width: pack.w,
                     height: pack.h
                 });
@@ -62,7 +62,7 @@ function makeGlyphAtlas(stacks: {[string]: {[number]: ?StyleGlyph}}): GlyphAtlas
     }
 
     pack.shrink();
-    AlphaImage.resize(image, {
+    image.resize({
         width: pack.w,
         height: pack.h
     });

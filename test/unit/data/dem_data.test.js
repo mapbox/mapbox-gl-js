@@ -10,7 +10,7 @@ function createMockImage(height, width) {
     for (let i = 0; i < pixels.length; i++) {
         pixels[i] = (i + 1) % 4 === 0 ? 1 : Math.floor(Math.random() * 256);
     }
-    return RGBAImage.create({height: height, width: width}, pixels);
+    return new RGBAImage({height: height, width: width}, pixels);
 }
 
 test('Level', (t)=>{

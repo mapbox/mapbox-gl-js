@@ -96,7 +96,7 @@ class DEMData {
     }
 
     getPixels() {
-        return RGBAImage.create({width: this.level.dim + 2 * this.level.border, height: this.level.dim + 2 * this.level.border}, new Uint8Array(this.level.data.buffer));
+        return new RGBAImage({width: this.level.dim + 2 * this.level.border, height: this.level.dim + 2 * this.level.border}, new Uint8Array(this.level.data.buffer));
     }
 
     backfillBorder(borderTile: DEMData, dx: number, dy: number) {

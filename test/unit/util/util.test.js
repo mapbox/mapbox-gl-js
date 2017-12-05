@@ -196,34 +196,6 @@ test('util', (t) => {
             t.end();
         });
 
-        t.test('ArrayBuffer', (t) => {
-            const input = new ArrayBuffer(1);
-            const output = util.clone(input);
-            t.notEqual(input, output);
-            t.deepEqual(input, output);
-            t.ok(output instanceof ArrayBuffer);
-            t.end();
-        });
-
-        t.test('TypedArray', (t) => {
-            const input = new Int8Array(1);
-            const output = util.clone(input);
-            t.notEqual(input, output);
-            t.deepEqual(input, output);
-            t.ok(output instanceof Int8Array);
-            t.end();
-        });
-
-        t.test('DataView', (t) => {
-            const buffer = new ArrayBuffer(1);
-            const input = new DataView(buffer);
-            const output = util.clone(input);
-            t.notEqual(input, output);
-            t.deepEqual(input, output);
-            t.ok(output instanceof DataView);
-            t.end();
-        });
-
         t.test('deep object', (t) => {
             const input = {object: {a: false, b: 1, c: 'two'}};
             const output = util.clone(input);
