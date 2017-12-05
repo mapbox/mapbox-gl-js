@@ -33,9 +33,6 @@ class Framebuffer {
         if (renderbuffer) gl.deleteRenderbuffer(renderbuffer);
 
         gl.deleteFramebuffer(this.framebuffer);
-
-        // TODO we could actually preserve framebuffer on resize since it
-        // has no inherent size-dependent storage, and just destroy attachments...
     }
 }
 

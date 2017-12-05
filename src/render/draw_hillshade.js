@@ -129,6 +129,7 @@ function prepareHillshade(painter, tile) {
         context.activeTexture.set(gl.TEXTURE0);
 
         if (!tile.fbo) tile.fbo = painter.getTileFramebuffer(tile.tileSize);
+        let fbo = tile.fbo;
 
         if (!fbo) {
             const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
