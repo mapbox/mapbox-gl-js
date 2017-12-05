@@ -1313,6 +1313,150 @@ test('Style#setPaintProperty', (t) => {
         });
     });
 
+    t.test('#5802 clones the input', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            const value = {stops: [[0, 'red'], [10, 'blue']]};
+            style.setPaintProperty('background', 'background-color', value);
+            t.notEqual(style.getPaintProperty('background', 'background-color'), value);
+            t.ok(style._changed);
+
+            style.update({});
+            t.notOk(style._changed);
+
+            value.stops[0][0] = 1;
+            style.setPaintProperty('background', 'background-color', value);
+            t.ok(style._changed);
+
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#getPaintProperty', (t) => {
+    t.test('#5802 clones the output', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            style.setPaintProperty('background', 'background-color', {stops: [[0, 'red'], [10, 'blue']]});
+            style.update({});
+            t.notOk(style._changed);
+
+            const value = style.getPaintProperty('background', 'background-color');
+            value.stops[0][0] = 1;
+            style.setPaintProperty('background', 'background-color', value);
+            t.ok(style._changed);
+
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#setLayoutProperty', (t) => {
+    t.test('#5802 clones the input', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [
+                {
+                    "id": "line",
+                    "type": "line",
+                    "source": "geojson"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            const value = {stops: [[0, 'butt'], [10, 'round']]};
+            style.setLayoutProperty('line', 'line-cap', value);
+            t.notEqual(style.getLayoutProperty('line', 'line-cap'), value);
+            t.ok(style._changed);
+
+            style.update({});
+            t.notOk(style._changed);
+
+            value.stops[0][0] = 1;
+            style.setLayoutProperty('line', 'line-cap', value);
+            t.ok(style._changed);
+
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#getLayoutProperty', (t) => {
+    t.test('#5802 clones the output', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [
+                {
+                    "id": "line",
+                    "type": "line",
+                    "source": "geojson"
+                }
+            ]
+        });
+
+        style.on('style.load', () => {
+            style.setLayoutProperty('line', 'line-cap', {stops: [[0, 'butt'], [10, 'round']]});
+            style.update({});
+            t.notOk(style._changed);
+
+            const value = style.getLayoutProperty('line', 'line-cap');
+            value.stops[0][0] = 1;
+            style.setLayoutProperty('line', 'line-cap', value);
+            t.ok(style._changed);
+
+            t.end();
+        });
+    });
+
     t.end();
 });
 

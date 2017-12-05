@@ -1,7 +1,7 @@
 // @flow
 
 const assert = require('assert');
-const {extend, easeCubicInOut} = require('../util/util');
+const {clone, extend, easeCubicInOut} = require('../util/util');
 const interpolate = require('../style-spec/util/interpolate');
 const {normalizePropertyExpression} = require('../style-spec/expression');
 const Color = require('../style-spec/util/color');
@@ -167,7 +167,7 @@ class Transitionable<Props: Object> {
     }
 
     getValue<S: string, T>(name: S): PropertyValueSpecification<T> | void {
-        return this._values[name].value.value;
+        return clone(this._values[name].value.value);
     }
 
     setValue<S: string, T>(name: S, value: PropertyValueSpecification<T> | void) {
@@ -176,18 +176,18 @@ class Transitionable<Props: Object> {
         }
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
-        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : value);
+        this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
     }
 
     getTransition<S: string>(name: S): TransitionSpecification | void {
-        return this._values[name].transition;
+        return clone(this._values[name].transition);
     }
 
     setTransition<S: string>(name: S, value: TransitionSpecification | void) {
         if (!this._values.hasOwnProperty(name)) {
             this._values[name] = new TransitionablePropertyValue(this._values[name].property);
         }
-        this._values[name].transition = value || undefined;
+        this._values[name].transition = clone(value) || undefined;
     }
 
     serialize() {
@@ -358,11 +358,11 @@ class Layout<Props: Object> {
     }
 
     getValue<S: string>(name: S) {
-        return this._values[name].value;
+        return clone(this._values[name].value);
     }
 
     setValue<S: string>(name: S, value: *) {
-        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : value);
+        this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value));
     }
 
     serialize() {
