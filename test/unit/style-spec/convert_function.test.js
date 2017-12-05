@@ -15,8 +15,9 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
-            function: 'piecewise-constant'
-        }, 'text-field');
+            function: 'piecewise-constant',
+            tokens: true
+        });
         t.deepEqual(expression, [
             'step',
             ['zoom'],
@@ -55,7 +56,7 @@ test('convertFunction', (t) => {
         const expression = convertFunction(functionValue, {
             type: 'string',
             function: 'piecewise-constant'
-        }, 'text-field');
+        });
         t.deepEqual(expression, [
             'step',
             ['zoom'],
@@ -82,7 +83,7 @@ test('convertFunction', (t) => {
         const expression = convertFunction(functionValue, {
             type: 'number',
             function: 'interpolated'
-        }, 'text-size');
+        });
         t.deepEqual(expression, [
             'interpolate',
             ['exponential', 1],

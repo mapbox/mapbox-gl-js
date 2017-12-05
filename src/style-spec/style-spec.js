@@ -11,7 +11,8 @@ export type StylePropertySpecification = {
     'function': boolean,
     'property-function': boolean,
     'zoom-function': boolean,
-    default?: string
+    default?: string,
+    tokens?: boolean
 } | {
     type: 'boolean',
     'function': boolean,
