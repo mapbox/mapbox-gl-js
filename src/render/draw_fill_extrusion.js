@@ -11,11 +11,11 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
 module.exports = draw;
 
-function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<TileCoord>) {
+function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     if (layer.paint.get('fill-extrusion-opacity') === 0) {
         return;
     }
@@ -82,7 +82,7 @@ function drawExtrusion(painter, source, layer, coord) {
         if (pattern.isPatternMissing(image, painter)) return;
         pattern.prepare(image, painter, program);
         pattern.setTile(tile, painter, program);
-        gl.uniform1f(program.uniforms.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);
+        gl.uniform1f(program.uniforms.u_height_factor, -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8);
     }
 
     painter.context.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(

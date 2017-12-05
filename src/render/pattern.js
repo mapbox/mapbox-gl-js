@@ -5,7 +5,7 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 import type Painter from './painter';
 import type Program from './program';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 import type {CrossFaded} from '../style/cross_faded';
 
 /**
@@ -45,16 +45,16 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     painter.imageManager.bind(painter.context);
 };
 
-exports.setTile = function (tile: {coord: TileCoord, tileSize: number}, painter: Painter, program: Program) {
+exports.setTile = function (tile: {tileID: OverscaledTileID, tileSize: number}, painter: Painter, program: Program) {
     const gl = painter.context.gl;
 
     gl.uniform1f(program.uniforms.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
 
-    const numTiles = Math.pow(2, tile.coord.z);
+    const numTiles = Math.pow(2, tile.tileID.overscaledZ);
     const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
 
-    const pixelX = tileSizeAtNearestZoom * (tile.coord.x + tile.coord.w * numTiles);
-    const pixelY = tileSizeAtNearestZoom * tile.coord.y;
+    const pixelX = tileSizeAtNearestZoom * (tile.tileID.canonical.x + tile.tileID.wrap * numTiles);
+    const pixelY = tileSizeAtNearestZoom * tile.tileID.canonical.y;
 
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
     gl.uniform2f(program.uniforms.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);

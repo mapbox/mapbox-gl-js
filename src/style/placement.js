@@ -2,23 +2,10 @@
 
 const browser = require('../util/browser');
 const CollisionIndex = require('../symbol/collision_index');
-const TileCoord = require('../source/tile_coord');
 
 import type Transform from '../geo/transform';
 import type StyleLayer from './style_layer';
 import type SourceCache from '../source/source_cache';
-
-function compareTileCoords(a: number, b: number) {
-    const aCoord = TileCoord.fromID(a);
-    const bCoord = TileCoord.fromID(b);
-    if (aCoord.isLessThan(bCoord)) {
-        return -1;
-    } else if (bCoord.isLessThan(aCoord)) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
 
 class LayerPlacement {
     _currentTileIndex: number;
@@ -102,7 +89,17 @@ class Placement {
 
                 if (!this._inProgressLayer) {
                     if (!this._sourceCacheTileIDs[layer.source]) {
-                        this._sourceCacheTileIDs[layer.source] = sourceCache.getRenderableIds().sort(compareTileCoords);
+                        this._sourceCacheTileIDs[layer.source] = sourceCache.getRenderableIds().sort((a, b) => {
+                            const aCoord = sourceCache.getTileByID(a).tileID;
+                            const bCoord = sourceCache.getTileByID(b).tileID;
+                            if (aCoord.isLessThan(bCoord)) {
+                                return -1;
+                            } else if (bCoord.isLessThan(aCoord)) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
                     }
                     this._inProgressLayer = new LayerPlacement(this._sourceCacheTileIDs[layer.source]);
                 }
@@ -127,6 +124,7 @@ class Placement {
         }
 
         this._done = true;
+
     }
 
     stillFading() {

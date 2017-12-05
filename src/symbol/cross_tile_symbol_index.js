@@ -4,7 +4,7 @@ const EXTENT = require('../data/extent');
 const OpacityState = require('./opacity_state');
 const assert = require('assert');
 
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 import type {SymbolInstance} from '../data/bucket/symbol_bucket';
 
 /*
@@ -44,8 +44,7 @@ import type {SymbolInstance} from '../data/bucket/symbol_bucket';
 const roundingFactor = 512 / EXTENT / 2;
 
 class TileLayerIndex {
-    coord: TileCoord;
-    sourceMaxZoom: number;
+    tileID: OverscaledTileID;
     symbolInstances: {[string]: Array<{
         instance: SymbolInstance,
         coordinates: {
@@ -54,9 +53,8 @@ class TileLayerIndex {
         }
     }>};
 
-    constructor(coord: TileCoord, sourceMaxZoom: number, symbolInstances: Array<SymbolInstance>) {
-        this.coord = coord;
-        this.sourceMaxZoom = sourceMaxZoom;
+    constructor(tileID: OverscaledTileID, symbolInstances: Array<SymbolInstance>) {
+        this.tileID = tileID;
         this.symbolInstances = {};
 
         for (const symbolInstance of symbolInstances) {
@@ -68,7 +66,7 @@ class TileLayerIndex {
             // Store each one along with its coordinates
             this.symbolInstances[key].push({
                 instance: symbolInstance,
-                coordinates: this.getScaledCoordinates(symbolInstance, coord)
+                coordinates: this.getScaledCoordinates(symbolInstance, tileID)
             });
             symbolInstance.isDuplicate = false;
             // If we don't pick up an opacity from our parent or child tiles
@@ -85,23 +83,23 @@ class TileLayerIndex {
     // (2) converted to the z-scale of this TileLayerIndex
     // (3) down-sampled by "roundingFactor" from tile coordinate precision in order to be
     //     more tolerant of small differences between tiles.
-    getScaledCoordinates(symbolInstance: SymbolInstance, childTileCoord: TileCoord) {
-        const zDifference = Math.min(this.sourceMaxZoom, childTileCoord.z) - Math.min(this.sourceMaxZoom, this.coord.z);
+    getScaledCoordinates(symbolInstance: SymbolInstance, childTileID: OverscaledTileID) {
+        const zDifference = childTileID.canonical.z - this.tileID.canonical.z;
         const scale = roundingFactor / (1 << zDifference);
         const anchor = symbolInstance.anchor;
         return {
-            x: Math.floor((childTileCoord.x * EXTENT + anchor.x) * scale),
-            y: Math.floor((childTileCoord.y * EXTENT + anchor.y) * scale)
+            x: Math.floor((childTileID.canonical.x * EXTENT + anchor.x) * scale),
+            y: Math.floor((childTileID.canonical.y * EXTENT + anchor.y) * scale)
         };
     }
 
-    getMatchingSymbol(childTileSymbol: SymbolInstance, childTileCoord: TileCoord) {
+    getMatchingSymbol(childTileSymbol: SymbolInstance, childTileID: OverscaledTileID) {
         if (!this.symbolInstances[childTileSymbol.key]) {
             return;
         }
 
         const childTileSymbolCoordinates =
-            this.getScaledCoordinates(childTileSymbol, childTileCoord);
+            this.getScaledCoordinates(childTileSymbol, childTileID);
 
         for (const thisTileSymbol of this.symbolInstances[childTileSymbol.key]) {
             // Return any symbol with the same keys whose coordinates are within 1
@@ -130,7 +128,7 @@ class CrossTileSymbolLayerIndex {
         this.indexes = {};
     }
 
-    addTile(coord: TileCoord, sourceMaxZoom: number, symbolInstances: Array<SymbolInstance>) {
+    addTile(tileID: OverscaledTileID, symbolInstances: Array<SymbolInstance>) {
 
         let minZoom = 25;
         let maxZoom = 0;
@@ -139,33 +137,33 @@ class CrossTileSymbolLayerIndex {
             maxZoom = Math.max((zoom: any), maxZoom);
         }
 
-        const tileIndex = new TileLayerIndex(coord, sourceMaxZoom, symbolInstances);
+        const tileIndex = new TileLayerIndex(tileID, symbolInstances);
 
         // make all higher-res child tiles block duplicate labels in this tile
-        for (let z = maxZoom; z > coord.z; z--) {
+        for (let z = maxZoom; z > tileID.overscaledZ; z--) {
             const zoomIndexes = this.indexes[z];
             for (const id in zoomIndexes) {
                 const childIndex = zoomIndexes[(id: any)];
-                if (!childIndex.coord.isChildOf(coord, sourceMaxZoom)) continue;
+                if (!childIndex.tileID.isChildOf(tileID)) continue;
                 // Mark labels in this tile blocked, and don't copy opacity state
                 // into this tile
                 this.blockLabels(childIndex, tileIndex, false);
             }
         }
 
-        const oldTileIndex = this.indexes[coord.z] && this.indexes[coord.z][coord.id];
+        const oldTileIndex = this.indexes[tileID.overscaledZ] && this.indexes[tileID.overscaledZ][tileID.key];
         if (oldTileIndex) {
             // mark labels in the old version of the tile as blocked
             this.blockLabels(tileIndex, oldTileIndex, true);
 
             // remove old version of the tile
-            this.removeTile(coord, sourceMaxZoom);
+            this.removeTile(tileID);
         }
 
         // make this tile block duplicate labels in lower-res parent tiles
-        for (let z = coord.z - 1; z >= minZoom; z--) {
-            const parentCoord = coord.scaledTo(z, sourceMaxZoom);
-            const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
+        for (let z = tileID.overscaledZ - 1; z >= minZoom; z--) {
+            const parentCoord = tileID.scaledTo(z);
+            const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.key];
             if (parentIndex) {
                 // Mark labels in the parent tile blocked, and copy opacity state
                 // into this tile
@@ -173,27 +171,26 @@ class CrossTileSymbolLayerIndex {
             }
         }
 
-        if (this.indexes[coord.z] === undefined) {
-            this.indexes[coord.z] = {};
+        if (this.indexes[tileID.overscaledZ] === undefined) {
+            this.indexes[tileID.overscaledZ] = {};
         }
-        this.indexes[coord.z][coord.id] = tileIndex;
+        this.indexes[tileID.overscaledZ][tileID.key] = tileIndex;
     }
 
-    removeTile(coord: TileCoord, sourceMaxZoom: number) {
-        const removedIndex = this.indexes[coord.z][coord.id];
+    removeTile(tileID: OverscaledTileID) {
+        const removedIndex = this.indexes[tileID.overscaledZ][tileID.key];
 
-        delete this.indexes[coord.z][coord.id];
-        if (Object.keys(this.indexes[coord.z]).length === 0) {
-            delete this.indexes[coord.z];
+        delete this.indexes[tileID.overscaledZ][tileID.key];
+        if (Object.keys(this.indexes[tileID.overscaledZ]).length === 0) {
+            delete this.indexes[tileID.overscaledZ];
         }
 
         const minZoom = Math.min(25, ...(Object.keys(this.indexes): any));
 
-        let parentCoord = coord;
-        for (let z = coord.z - 1; z >= minZoom; z--) {
-            parentCoord = parentCoord.parent(sourceMaxZoom);
+        for (let z = tileID.canonical.z - 1; z >= minZoom; z--) {
+            const parentCoord = tileID.scaledTo(z);
             if (!parentCoord) break; // Flow doesn't know that z >= minZoom would prevent this
-            const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.id];
+            const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.key];
             if (parentIndex) this.unblockLabels(removedIndex, parentIndex);
         }
     }
@@ -203,7 +200,7 @@ class CrossTileSymbolLayerIndex {
             // only non-duplicate labels can block other labels
             if (!symbolInstance.isDuplicate) {
 
-                const parentSymbolInstance = parentIndex.getMatchingSymbol(symbolInstance, childIndex.coord);
+                const parentSymbolInstance = parentIndex.getMatchingSymbol(symbolInstance, childIndex.tileID);
                 if (parentSymbolInstance !== undefined) {
                     // if the parent label was previously non-duplicate, make it duplicate because it's now blocked
                     if (!parentSymbolInstance.isDuplicate) {
@@ -222,12 +219,12 @@ class CrossTileSymbolLayerIndex {
     }
 
     unblockLabels(childIndex: TileLayerIndex, parentIndex: TileLayerIndex) {
-        assert(childIndex.coord.z > parentIndex.coord.z);
+        assert(childIndex.tileID.overscaledZ > parentIndex.tileID.overscaledZ);
         childIndex.forEachSymbolInstance((symbolInstance) => {
             // only non-duplicate labels were blocking other labels
             if (!symbolInstance.isDuplicate) {
 
-                const parentSymbolInstance = parentIndex.getMatchingSymbol(symbolInstance, childIndex.coord);
+                const parentSymbolInstance = parentIndex.getMatchingSymbol(symbolInstance, childIndex.tileID);
                 if (parentSymbolInstance !== undefined) {
                     // this label is now unblocked, copy its opacity state
                     parentSymbolInstance.isDuplicate = false;
@@ -250,18 +247,18 @@ class CrossTileSymbolIndex {
         this.layerIndexes = {};
     }
 
-    addTileLayer(layerId: string, coord: TileCoord, sourceMaxZoom: number, symbolInstances: Array<SymbolInstance>) {
+    addTileLayer(layerId: string, tileID: OverscaledTileID, symbolInstances: Array<SymbolInstance>) {
         let layerIndex = this.layerIndexes[layerId];
         if (layerIndex === undefined) {
             layerIndex = this.layerIndexes[layerId] = new CrossTileSymbolLayerIndex();
         }
-        layerIndex.addTile(coord, sourceMaxZoom, symbolInstances);
+        layerIndex.addTile(tileID, symbolInstances);
     }
 
-    removeTileLayer(layerId: string, coord: TileCoord, sourceMaxZoom: number) {
+    removeTileLayer(layerId: string, tileID: OverscaledTileID) {
         const layerIndex = this.layerIndexes[layerId];
         if (layerIndex !== undefined) {
-            layerIndex.removeTile(coord, sourceMaxZoom);
+            layerIndex.removeTile(tileID);
         }
     }
 }

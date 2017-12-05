@@ -8,11 +8,11 @@ const PosArray = require('../data/pos_array');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
 module.exports = drawDebug;
 
-function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<TileCoord>) {
+function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
         drawDebugTile(painter, sourceCache, coords[i]);
     }
@@ -46,7 +46,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
     const tileSize = sourceCache.getTile(coord).tileSize;
-    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.z) * tileSize);
+    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize);
     const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (let i = 0; i < translations.length; i++) {
         const translation = translations[i];

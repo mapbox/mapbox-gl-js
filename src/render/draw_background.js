@@ -53,13 +53,13 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         painter.tileExtentVAO.bind(context, program, painter.tileExtentBuffer);
     }
 
-    const coords = transform.coveringTiles({tileSize});
+    const tileIDs = transform.coveringTiles({tileSize});
 
-    for (const coord of coords) {
+    for (const tileID of tileIDs) {
         if (image) {
-            pattern.setTile({coord, tileSize}, painter, program);
+            pattern.setTile({tileID, tileSize}, painter, program);
         }
-        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.transform.calculatePosMatrix(coord));
+        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.transform.calculatePosMatrix(tileID.toUnwrapped()));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
     }
 }

@@ -1,5 +1,5 @@
 // @flow
-const TileCoord = require('../source/tile_coord');
+const Coordinate = require('../geo/coordinate');
 const Texture = require('./texture');
 const RenderTexture = require('./render_texture');
 const EXTENT = require('../data/extent');
@@ -8,10 +8,11 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
+import type {OverscaledTileID} from '../source/tile_id';
 
 module.exports = drawHillshade;
 
-function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: HillshadeStyleLayer, coords: Array<TileCoord>) {
+function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: HillshadeStyleLayer, tileIDs: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'hillshadeprepare' && painter.renderPass !== 'translucent') return;
 
     const context = painter.context;
@@ -19,8 +20,8 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     painter.setDepthSublayer(0);
     context.stencilTest.set(false);
 
-    for (const coord of coords) {
-        const tile = sourceCache.getTile(coord);
+    for (const tileID of tileIDs) {
+        const tile = sourceCache.getTile(tileID);
         if (tile.needsHillshadePrepare && painter.renderPass === 'hillshadeprepare') {
             prepareHillshade(painter, tile);
             continue;
@@ -40,9 +41,9 @@ function setLight(program, painter, layer) {
 
 }
 
-function getTileLatRange(painter, coord) {
-    const coordinate0 = coord.toCoordinate();
-    const coordinate1 = new TileCoord(coord.z, coord.x, coord.y + 1, coord.w).toCoordinate();
+function getTileLatRange(painter, tileID: OverscaledTileID) {
+    const coordinate0 = tileID.toCoordinate();
+    const coordinate1 = new Coordinate(coordinate0.column, coordinate0.row + 1, coordinate0.zoom);
     return [painter.transform.coordinateLocation(coordinate0).lat, painter.transform.coordinateLocation(coordinate1).lat];
 }
 
@@ -51,10 +52,10 @@ function renderHillshade(painter, tile, layer) {
     const gl = context.gl;
 
     const program = painter.useProgram('hillshade');
-    const posMatrix = painter.transform.calculatePosMatrix(tile.coord);
+    const posMatrix = painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped());
     setLight(program, painter, layer);
     // for scaling the magnitude of a points slope by its latitude
-    const latRange = getTileLatRange(painter, tile.coord);
+    const latRange = getTileLatRange(painter, tile.tileID);
     context.activeTexture.set(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tile.texture.texture);
 
@@ -138,7 +139,7 @@ function prepareHillshade(painter, tile) {
         const program = painter.useProgram('hillshadePrepare');
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
-        gl.uniform1f(program.uniforms.u_zoom, tile.coord.z);
+        gl.uniform1f(program.uniforms.u_zoom, tile.tileID.overscaledZ);
         gl.uniform2fv(program.uniforms.u_dimension, [tileSize * 2, tileSize * 2]);
         gl.uniform1i(program.uniforms.u_image, 1);
 

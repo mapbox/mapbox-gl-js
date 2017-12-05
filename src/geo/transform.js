@@ -5,7 +5,8 @@ const LngLat = require('./lng_lat'),
     Coordinate = require('./coordinate'),
     util = require('../util/util'),
     interp = require('../style-spec/util/interpolate').number,
-    TileCoord = require('../source/tile_coord'),
+    tileCover = require('../util/tile_cover'),
+    {CanonicalTileID, UnwrappedTileID} = require('../source/tile_id'),
     EXTENT = require('../data/extent'),
     glmatrix = require('@mapbox/gl-matrix');
 
@@ -43,7 +44,7 @@ class Transform {
     _maxZoom: number;
     _center: LngLat;
     _constraining: boolean;
-    _posMatrixCache: {[string]: Float32Array};
+    _posMatrixCache: {[number]: Float32Array};
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -189,15 +190,15 @@ class Transform {
      *
      * @private
      */
-    getVisibleWrappedCoordinates(tileCoord: TileCoord) {
+    getVisibleUnwrappedCoordinates(tileID: CanonicalTileID) {
         const ul = this.pointCoordinate(new Point(0, 0), 0);
         const ur = this.pointCoordinate(new Point(this.width, 0), 0);
         const w0 = Math.floor(ul.column);
         const w1 = Math.floor(ur.column);
-        const result = [tileCoord];
+        const result = [new UnwrappedTileID(0, tileID)];
         for (let w = w0; w <= w1; w++) {
             if (w === 0) continue;
-            result.push(new TileCoord(tileCoord.z, tileCoord.x, tileCoord.y, w));
+            result.push(new UnwrappedTileID(w, tileID));
         }
         return result;
     }
@@ -238,8 +239,8 @@ class Transform {
             this.pointCoordinate(new Point(this.width, this.height), z),
             this.pointCoordinate(new Point(0, this.height), z)
         ];
-        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
-            .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
+        return tileCover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
+            .sort((a, b) => centerPoint.dist(a.canonical) - centerPoint.dist(b.canonical));
     }
 
     resize(width: number, height: number) {
@@ -393,24 +394,20 @@ class Transform {
 
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
-     * @param {TileCoord} tileCoord
-     * @param {number} maxZoom maximum source zoom to account for overscaling
+     * @param {UnwrappedTileID} unwrappedTileID;
      */
-    calculatePosMatrix(tileCoord: TileCoord, maxZoom?: number): Float32Array {
-        let posMatrixKey = tileCoord.id.toString();
-        if (maxZoom) {
-            posMatrixKey += maxZoom.toString();
-        }
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+        const posMatrixKey = unwrappedTileID.key;
         if (this._posMatrixCache[posMatrixKey]) {
             return this._posMatrixCache[posMatrixKey];
         }
-        // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-        // so calculate the matrix the maxzoom tile would use.
-        const coord = tileCoord.toCoordinate(maxZoom);
-        const scale = this.worldSize / this.zoomScale(coord.zoom);
+
+        const canonical = unwrappedTileID.canonical;
+        const scale = this.worldSize / this.zoomScale(canonical.z);
+        const unwrappedX = canonical.x + Math.pow(2, canonical.z) * unwrappedTileID.wrap;
 
         const posMatrix = mat4.identity(new Float64Array(16));
-        mat4.translate(posMatrix, posMatrix, [coord.column * scale, coord.row * scale, 0]);
+        mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 

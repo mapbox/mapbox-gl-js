@@ -11,7 +11,7 @@ const mat4 = glmatrix.mat4;
 const projection = require('../symbol/projection');
 
 import type Transform from '../geo/transform';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 import type {SingleCollisionBox} from '../data/bucket/symbol_bucket';
 
 // When a symbol crosses the edge that causes it to be included in
@@ -220,7 +220,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(queryGeometry: any, tileCoord: TileCoord, tileSourceMaxZoom: number, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
+    queryRenderedSymbols(queryGeometry: any, tileCoord: OverscaledTileID, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
         const sourceLayerFeatures = {};
         const result = [];
 
@@ -228,7 +228,7 @@ class CollisionIndex {
             return result;
         }
 
-        const posMatrix = this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom);
+        const posMatrix = this.transform.calculatePosMatrix(tileCoord.toUnwrapped());
 
         const query = [];
         let minX = Infinity;
@@ -247,7 +247,7 @@ class CollisionIndex {
             }
         }
 
-        const tileID = tileCoord.id;
+        const tileID = tileCoord.key;
 
         const thisTileFeatures = [];
         const features = this.grid.query(minX, minY, maxX, maxY);

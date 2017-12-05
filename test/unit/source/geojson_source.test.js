@@ -2,7 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Tile = require('../../../src/source/tile');
-const TileCoord = require('../../../src/source/tile_coord');
+const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 const GeoJSONSource = require('../../../src/source/geojson_source');
 const Transform = require('../../../src/geo/transform');
 const LngLat = require('../../../src/geo/lng_lat');
@@ -202,7 +202,7 @@ test('GeoJSONSource#update', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 source.setData({});
-                source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+                source.loadTile(new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512), () => {});
             }
         });
 

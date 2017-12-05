@@ -2,7 +2,7 @@
 const test = require('mapbox-gl-js-test').test;
 const RasterDEMTileSource = require('../../../src/source/raster_dem_tile_source');
 const window = require('../../../src/util/window');
-const TileCoord = require('../../../src/source/tile_coord');
+const {OverscaledTileID} = require('../../../src/source/tile_id');
 
 function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, { send: function() {} }, options.eventedParent);
@@ -63,7 +63,7 @@ test('RasterTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
                     loadVectorData: function () {},
                     setExpiryData: function() {}
@@ -90,7 +90,7 @@ test('RasterTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
                     loadVectorData: function () {},
                     setExpiryData: function() {}
@@ -98,14 +98,14 @@ test('RasterTileSource', (t) => {
                 source.loadTile(tile, () => {});
 
                 t.deepEqual(Object.keys(tile.neighboringTiles), [
-                    new TileCoord(10, 4, 4).id,
-                    new TileCoord(10, 5, 4).id,
-                    new TileCoord(10, 6, 4).id,
-                    new TileCoord(10, 4, 5).id,
-                    new TileCoord(10, 6, 5).id,
-                    new TileCoord(10, 4, 6).id,
-                    new TileCoord(10, 5, 6).id,
-                    new TileCoord(10, 6, 6).id
+                    new OverscaledTileID(10, 0, 10, 4, 4).key,
+                    new OverscaledTileID(10, 0, 10, 5, 4).key,
+                    new OverscaledTileID(10, 0, 10, 6, 4).key,
+                    new OverscaledTileID(10, 0, 10, 4, 5).key,
+                    new OverscaledTileID(10, 0, 10, 6, 5).key,
+                    new OverscaledTileID(10, 0, 10, 4, 6).key,
+                    new OverscaledTileID(10, 0, 10, 5, 6).key,
+                    new OverscaledTileID(10, 0, 10, 6, 6).key
                 ]);
 
                 t.end();
@@ -126,7 +126,7 @@ test('RasterTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(5, 31, 5, 0),
+                    tileID: new OverscaledTileID(5, 0, 5, 31, 5),
                     state: 'loading',
                     loadVectorData: function () {},
                     setExpiryData: function() {}
@@ -134,14 +134,14 @@ test('RasterTileSource', (t) => {
                 source.loadTile(tile, () => {});
 
                 t.deepEqual(Object.keys(tile.neighboringTiles), [
-                    new TileCoord(5, 30, 4, 0).id,
-                    new TileCoord(5, 31, 4, 0).id,
-                    new TileCoord(5, 30, 5, 0).id,
-                    new TileCoord(5, 30, 6, 0).id,
-                    new TileCoord(5, 31, 6, 0).id,
-                    new TileCoord(5, 0,  4, 1).id,
-                    new TileCoord(5, 0,  5, 1).id,
-                    new TileCoord(5, 0,  6, 1).id
+                    new OverscaledTileID(5, 0, 5, 30, 4).key,
+                    new OverscaledTileID(5, 0, 5, 31, 4).key,
+                    new OverscaledTileID(5, 0, 5, 30, 5).key,
+                    new OverscaledTileID(5, 0, 5, 30, 6).key,
+                    new OverscaledTileID(5, 0, 5, 31, 6).key,
+                    new OverscaledTileID(5, 1, 5, 0,  4).key,
+                    new OverscaledTileID(5, 1, 5, 0,  5).key,
+                    new OverscaledTileID(5, 1, 5, 0,  6).key
                 ]);
                 t.end();
             }
