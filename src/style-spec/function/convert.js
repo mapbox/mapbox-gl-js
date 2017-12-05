@@ -261,6 +261,8 @@ function convertTokenString(s) {
 
     if (pos < s.length) {
         result.push(s.slice(pos));
+    } else if (result.length === 2) {
+        return result[1];
     }
 
     return result;
