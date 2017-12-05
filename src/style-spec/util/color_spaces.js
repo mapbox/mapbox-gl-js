@@ -1,7 +1,7 @@
 // @flow
 
 const Color = require('./color');
-const interpolate = require('./interpolate');
+const interpolateNumber = require('./interpolate').number;
 
 type LABColor = {
     l: number,
@@ -80,10 +80,10 @@ function labToRgb(labColor: LABColor): Color {
 
 function interpolateLab(from: LABColor, to: LABColor, t: number) {
     return {
-        l: interpolate.number(from.l, to.l, t),
-        a: interpolate.number(from.a, to.a, t),
-        b: interpolate.number(from.b, to.b, t),
-        alpha: interpolate.number(from.alpha, to.alpha, t)
+        l: interpolateNumber(from.l, to.l, t),
+        a: interpolateNumber(from.a, to.a, t),
+        b: interpolateNumber(from.b, to.b, t),
+        alpha: interpolateNumber(from.alpha, to.alpha, t)
     };
 }
 
@@ -111,12 +111,17 @@ function hclToRgb(hclColor: HCLColor): Color {
     });
 }
 
+function interpolateHue(a: number, b: number, t: number) {
+    const d = b - a;
+    return a + t * (d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d);
+}
+
 function interpolateHcl(from: HCLColor, to: HCLColor, t: number) {
     return {
-        h: interpolate.number(from.h, to.h, t),
-        c: interpolate.number(from.c, to.c, t),
-        l: interpolate.number(from.l, to.l, t),
-        alpha: interpolate.number(from.alpha, to.alpha, t)
+        h: interpolateHue(from.h, to.h, t),
+        c: interpolateNumber(from.c, to.c, t),
+        l: interpolateNumber(from.l, to.l, t),
+        alpha: interpolateNumber(from.alpha, to.alpha, t)
     };
 }
 
