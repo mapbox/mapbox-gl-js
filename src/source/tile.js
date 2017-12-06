@@ -163,13 +163,6 @@ class Tile {
         if (data.glyphAtlasImage) {
             this.glyphAtlasImage = data.glyphAtlasImage;
         }
-
-        if (data.iconAtlasImage) {
-            this.iconAtlasImage = data.iconAtlasImage;
-        }
-        if (data.glyphAtlasImage) {
-            this.glyphAtlasImage = data.glyphAtlasImage;
-        }
     }
 
     /**
