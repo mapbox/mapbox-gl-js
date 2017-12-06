@@ -31,15 +31,13 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     if (painter.renderPass === pass) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
-        painter.setDepthSublayer(1);
-        context.depthMask.set(painter.renderPass === 'opaque');
+        context.setDepthMode(painter.depthModeForSublayer(1, painter.renderPass === 'opaque'));
         drawFillTiles(painter, sourceCache, layer, coords, drawFillTile);
     }
 
     // Draw stroke
     if (painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
         context.lineWidth.set(2);
-        context.depthMask.set(false);
 
         // If we defined a different color for the fill outline, we are
         // going to ignore the bits in 0x07 and just care about the global
@@ -49,7 +47,8 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // or stroke color is translucent. If we wouldn't clip to outside
         // the current shape, some pixels from the outline stroke overlapped
         // the (non-antialiased) fill.
-        painter.setDepthSublayer(layer.getPaintProperty('fill-outline-color') ? 2 : 0);
+        context.setDepthMode(painter.depthModeForSublayer(
+            layer.getPaintProperty('fill-outline-color') ? 2 : 0, false));
         drawFillTiles(painter, sourceCache, layer, coords, drawStrokeTile);
     }
 }

@@ -4,6 +4,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const Texture = require('./texture');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const Color = require('../style-spec/util/color');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -22,8 +23,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         const context = painter.context;
         const gl = context.gl;
 
-        painter.setDepthSublayer(0);
-        context.depthMask.set(false);
+        context.setDepthMode(painter.depthModeForSublayer(0, false));
 
         // Allow kernels to be drawn across boundaries, so that
         // large kernels are not clipped to tiles
@@ -140,7 +140,7 @@ function renderTextureToMap(painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    context.depthTest.set(false);
+    context.setDepthMode(DepthMode.disabled());
 
     const program = painter.useProgram('heatmapTexture');
 
@@ -158,6 +158,4 @@ function renderTextureToMap(painter, layer) {
 
     painter.viewportVAO.bind(painter.context, program, painter.viewportBuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    context.depthTest.set(true);
 }

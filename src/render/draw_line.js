@@ -17,8 +17,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
     const context = painter.context;
 
-    painter.setDepthSublayer(0);
-    context.depthMask.set(false);
+    context.setDepthMode(painter.depthModeForSublayer(0, false));
 
     context.stencilTest.set(true);
 

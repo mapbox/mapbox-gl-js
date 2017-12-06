@@ -6,6 +6,7 @@ import type StyleLayer from '../style/style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const DepthMode = require('../gl/depth_mode');
 
 module.exports = drawCollisionDebug;
 
@@ -13,6 +14,9 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
     const context = painter.context;
     const gl = context.gl;
     const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
+
+    context.setDepthMode(DepthMode.disabled());
+
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);
@@ -20,6 +24,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         if (!bucket) continue;
         const buffers = drawCircles ? bucket.collisionCircle : bucket.collisionBox;
         if (!buffers) continue;
+
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, coord.posMatrix);
 

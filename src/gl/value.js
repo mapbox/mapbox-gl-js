@@ -8,6 +8,7 @@ import type {
     BlendFuncType,
     ColorMaskType,
     DepthRangeType,
+    DepthMaskType,
     StencilFuncType,
     StencilOpType,
     DepthFuncType,
@@ -66,10 +67,10 @@ class ColorMask extends ContextValue implements Value<ColorMaskType> {
     }
 }
 
-class DepthMask extends ContextValue implements Value<boolean> {
+class DepthMask extends ContextValue implements Value<DepthMaskType> {
     static default() { return true; }
 
-    set(v: boolean): void {
+    set(v: DepthMaskType): void {
         this.context.gl.depthMask(v);
     }
 }

@@ -25,8 +25,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
     context.stencilTest.set(false);
 
-    painter.setDepthSublayer(0);
-    context.depthMask.set(false);
+    context.setDepthMode(painter.depthModeForSublayer(0, false));
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
@@ -128,8 +127,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }
-
-    if (!depthOn) context.depthTest.set(true);
 }
 
 function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData) {

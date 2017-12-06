@@ -3,6 +3,7 @@ const IndexBuffer = require('./index_buffer');
 const VertexBuffer = require('./vertex_buffer');
 const Framebuffer = require('./framebuffer');
 const State = require('./state');
+const DepthMode = require('./depth_mode');
 const {
     ClearColor,
     ClearDepth,
@@ -189,6 +190,13 @@ class Context {
         // }
 
         gl.clear(mask);
+    }
+
+    setDepthMode(depthMode: DepthMode) {
+        this.depthFunc.set(depthMode.func);
+        this.depthMask.set(depthMode.mask);
+        this.depthRange.set(depthMode.range);
+        this.depthTest.set(depthMode.test);
     }
 }
 

@@ -21,8 +21,6 @@ export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant];
 
 export type ColorMaskType = [boolean, boolean, boolean, boolean];
 
-export type DepthRangeType = [number, number];
-
 export type CompareFuncType =
     | $PropertyType<WebGLRenderingContext, 'NEVER'>
     | $PropertyType<WebGLRenderingContext, 'LESS'>
@@ -33,13 +31,17 @@ export type CompareFuncType =
     | $PropertyType<WebGLRenderingContext, 'GEQUAL'>
     | $PropertyType<WebGLRenderingContext, 'ALWAYS'>;
 
+export type DepthMaskType = boolean;
+
+export type DepthRangeType = [number, number];
+
+export type DepthFuncType = CompareFuncType;
+
 export type StencilFuncType = {
     func: CompareFuncType,
     ref: number,
     mask: number
 };
-
-export type DepthFuncType = CompareFuncType;
 
 type StencilOpConstant =
     | $PropertyType<WebGLRenderingContext, 'KEEP'>

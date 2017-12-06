@@ -14,6 +14,7 @@ const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('../shaders');
 const Program = require('./program');
 const Context = require('../gl/context');
+const DepthMode = require('../gl/depth_mode');
 const Texture = require('./texture');
 const updateTileMasks = require('./tile_mask');
 const Color = require('../style-spec/util/color');
@@ -40,6 +41,7 @@ import type LineAtlas from './line_atlas';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
+import type {DepthMaskType, DepthFuncType} from '../gl/types';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
@@ -422,10 +424,10 @@ class Painter {
         draw[layer.type](painter, sourceCache, layer, coords);
     }
 
-    setDepthSublayer(n: number) {
+    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType, test: ?boolean): DepthMode {
         const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
         const nearDepth = farDepth - 1 + this.depthRange;
-        this.context.depthRange.set([nearDepth, farDepth]);
+        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth], test);
     }
 
     /**
