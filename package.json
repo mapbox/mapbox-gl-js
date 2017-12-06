@@ -25,7 +25,7 @@
     "csscolorparser": "~1.0.2",
     "earcut": "^2.0.3",
     "geojson-rewind": "^0.3.0",
-    "geojson-vt": "^2.4.0",
+    "geojson-vt": "^3.0.0",
     "gray-matter": "^3.0.8",
     "grid-index": "^1.0.0",
     "jsonlint-lines-primitives": "~1.6.0",
