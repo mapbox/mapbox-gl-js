@@ -31,6 +31,7 @@ function drawDebugTile(painter, sourceCache, coord) {
 
     context.setDepthMode(DepthMode.disabled());
     context.setStencilMode(StencilMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform4f(program.uniforms.u_color, 1, 0, 0, 1);

@@ -30,6 +30,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     context.setStencilMode(StencilMode.disabled());
     context.setDepthMode(painter.depthModeForSublayer(0, false));
+    context.setColorMode(painter.colorModeForRenderPass());
 
     const properties = new PossiblyEvaluated(fillLayerPaintProperties);
 

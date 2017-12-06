@@ -30,6 +30,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             drawExtrusion(painter, source, layer, coords[i]);
         }
     } else if (painter.renderPass === 'translucent') {
+        painter.context.setColorMode(painter.colorModeForRenderPass());
         drawExtrusionTexture(painter, layer);
     }
 }
@@ -64,6 +65,7 @@ function drawToExtrusionFramebuffer(painter, layer) {
 
     context.setStencilMode(StencilMode.disabled());
     context.setDepthMode(new DepthMode(gl.LEQUAL, true, [0, 1]));
+    context.setColorMode(painter.colorModeForRenderPass());
 }
 
 function drawExtrusionTexture(painter, layer) {

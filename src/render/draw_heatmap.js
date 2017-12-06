@@ -6,6 +6,7 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
 const StencilMode = require('../gl/stencil_mode');
+const util = require('../util/util');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -35,7 +36,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         context.clear({ color: Color.transparent });
 
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-        context.blendFunc.set([gl.ONE, gl.ONE]);
+        context.setColorMode(util.extend(painter.colorModeForRenderPass(), {
+            blendFunction: [gl.ONE, gl.ONE]
+        }));
 
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
@@ -71,9 +74,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         }
 
         context.viewport.set([0, 0, painter.width, painter.height]);
-        context.blendFunc.set(painter._showOverdrawInspector ? [gl.CONSTANT_COLOR, gl.ONE] : [gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
     } else if (painter.renderPass === 'translucent') {
+        painter.context.setColorMode(painter.colorModeForRenderPass());
         renderTextureToMap(painter, layer);
     }
 }

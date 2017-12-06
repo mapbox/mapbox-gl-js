@@ -25,8 +25,8 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
     context.setStencilMode(StencilMode.disabled());
-
     context.setDepthMode(painter.depthModeForSublayer(0, false));
+    context.setColorMode(painter.colorModeForRenderPass());
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,

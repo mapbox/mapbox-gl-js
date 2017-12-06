@@ -22,6 +22,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const program = painter.useProgram('raster');
 
     context.setStencilMode(StencilMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     // Constant parameters.
     gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));

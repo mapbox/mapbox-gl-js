@@ -18,6 +18,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
 
     context.setDepthMode(DepthMode.disabled());
     context.setStencilMode(StencilMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];

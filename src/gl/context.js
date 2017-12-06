@@ -5,6 +5,7 @@ const Framebuffer = require('./framebuffer');
 const State = require('./state');
 const DepthMode = require('./depth_mode');
 const StencilMode = require('./stencil_mode');
+const ColorMode = require('./color_mode');
 const util = require('../util/util');
 const {
     ClearColor,
@@ -206,6 +207,18 @@ class Context {
         this.stencilOp.set([stencilMode.fail, stencilMode.depthFail, stencilMode.pass]);
         this.stencilTest.set(stencilMode.test);
         this.stencilMask.set(stencilMode.mask);
+    }
+
+    setColorMode(colorMode: ColorMode) {
+        this.blend.set(colorMode.blend);
+        if (colorMode.blend) {
+            this.blend.set(true);
+            this.blendFunc.set(colorMode.blendFunction);
+            this.colorMask.set(colorMode.mask);
+            if (colorMode.blendColor) {
+                this.blendColor.set(colorMode.blendColor);
+            }
+        }
     }
 }
 

@@ -18,6 +18,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
     const context = painter.context;
 
     context.setDepthMode(painter.depthModeForSublayer(0, false));
+    context.setColorMode(painter.colorModeForRenderPass());
 
     const programId =
         layer.paint.get('line-dasharray') ? 'lineSDF' :

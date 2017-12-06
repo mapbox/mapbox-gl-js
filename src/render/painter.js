@@ -16,6 +16,7 @@ const Program = require('./program');
 const Context = require('../gl/context');
 const DepthMode = require('../gl/depth_mode');
 const StencilMode = require('../gl/stencil_mode');
+const ColorMode = require('../gl/color_mode');
 const Texture = require('./texture');
 const updateTileMasks = require('./tile_mask');
 const Color = require('../style-spec/util/color');
@@ -139,12 +140,6 @@ class Painter {
 
     setup() {
         const context = this.context;
-        const gl = this.context.gl;
-
-        // We are blending the new pixels *behind* the existing pixels. That way we can
-        // draw front-to-back and use then stencil buffer to cull opaque pixels early.
-        context.blend.set(true);
-        context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
         const tileExtentArray = new PosArray();
         tileExtentArray.emplaceBack(0, 0);
@@ -252,6 +247,20 @@ class Painter {
         return new StencilMode(gl.EQUAL, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE, true);
     }
 
+    colorModeForRenderPass(): ColorMode {
+        const gl = this.context.gl;
+        if (this._showOverdrawInspector) {
+            const numOverdrawSteps = 8;
+            const a = 1 / numOverdrawSteps;
+
+            return new ColorMode(true, [gl.CONSTANT_COLOR, gl.ONE], new Color(a, a, a, 0), [true, true, true, true]);
+        } else if (this.renderPass === 'opaque') {
+            return ColorMode.unblended();
+        } else {
+            return ColorMode.alphaBlended();
+        }
+    }
+
     render(style: Style, options: PainterOptions) {
         this.style = style;
         this.options = options;
@@ -313,9 +322,9 @@ class Painter {
         }
 
         // Clear buffers in preparation for drawing to the main framebuffer
-        this.context.clear({ color: Color.transparent, depth: 1 });
+        this.context.clear({ color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1 });
 
-        this.showOverdrawInspector(options.showOverdrawInspector);
+        this._showOverdrawInspector = options.showOverdrawInspector;
 
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
@@ -327,10 +336,6 @@ class Painter {
             let coords = [];
 
             this.currentLayer = layerIds.length - 1;
-
-            if (!this._showOverdrawInspector) {
-                this.context.blend.set(false);
-            }
 
             for (this.currentLayer; this.currentLayer >= 0; this.currentLayer--) {
                 const layer = this.style._layers[layerIds[this.currentLayer]];
@@ -358,8 +363,6 @@ class Painter {
         {
             let sourceCache;
             let coords = [];
-
-            this.context.blend.set(true);
 
             this.currentLayer = 0;
 
@@ -459,23 +462,6 @@ class Painter {
     getTileTexture(size: number) {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
-    }
-
-    showOverdrawInspector(enabled: boolean) {
-        if (!enabled && !this._showOverdrawInspector) return;
-        this._showOverdrawInspector = enabled;
-
-        const context = this.context;
-        const gl = context.gl;
-        if (enabled) {
-            context.blendFunc.set([gl.CONSTANT_COLOR, gl.ONE]);
-            const numOverdrawSteps = 8;
-            const a = 1 / numOverdrawSteps;
-            context.blendColor.set(new Color(a, a, a, 0));
-            context.clear({ color: Color.black });
-        } else {
-            context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
-        }
     }
 
     _createProgramCached(name: string, programConfiguration: ProgramConfiguration): Program {
