@@ -463,12 +463,12 @@ export default class extends React.Component {
                                     than use <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
                                 <li>Developers using style-related features of <a
                                     href='https://www.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the <a
-                                    href='https://www.mapbox.com/android-sdk/'>Mapbox Android SDK</a></li>
+                                    href='https://www.mapbox.com/android-sdk/'>Mapbox Maps SDK for Android</a></li>
                                 <li>Authors of software that generates or processes Mapbox styles.</li>
                             </ul>
-                            <p>Developers using the <a href='https://www.mapbox.com/ios-sdk/'>Mapbox iOS SDK</a> or <a
-                                href='https://github.com/mapbox/mapbox-gl-native/tree/master/platform/macos/'>Mapbox
-                                macOS SDK</a> should consult the iOS SDK API reference for platform-appropriate
+                            <p>Developers using the <a href='https://www.mapbox.com/ios-sdk/'>Mapbox Maps SDK for iOS</a> or <a
+                                href='https://github.com/mapbox/mapbox-gl-native/tree/master/platform/macos/'>
+                                Mapbox Maps SDK for macOS</a> should consult the iOS SDK API reference for platform-appropriate
                                 documentation of style-related features.</p>
                         </div>
 
