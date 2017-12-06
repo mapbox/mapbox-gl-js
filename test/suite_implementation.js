@@ -19,7 +19,7 @@ module.exports = function(style, options, _callback) {
 
     const timeout = setTimeout(() => {
         callback(new Error('Test timed out'));
-    }, options.timeout || 1000);
+    }, options.timeout || 20000);
 
     function callback() {
         if (!wasCallbackCalled) {
