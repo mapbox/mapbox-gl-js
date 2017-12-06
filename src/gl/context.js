@@ -211,10 +211,9 @@ class Context {
 
     setColorMode(colorMode: ColorMode) {
         this.blend.set(colorMode.blend);
+        this.colorMask.set(colorMode.mask);
         if (colorMode.blend) {
-            this.blend.set(true);
             this.blendFunc.set(colorMode.blendFunction);
-            this.colorMask.set(colorMode.mask);
             if (colorMode.blendColor) {
                 this.blendColor.set(colorMode.blendColor);
             }

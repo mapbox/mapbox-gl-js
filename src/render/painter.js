@@ -189,8 +189,7 @@ class Painter {
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
 
-        context.colorMask.set([false, false, false, false]);
-
+        context.setColorMode(ColorMode.disabled());
         context.setDepthMode(DepthMode.disabled());
         context.setStencilMode(new StencilMode(gl.ALWAYS, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO, false));
 
@@ -203,21 +202,14 @@ class Painter {
 
         this.viewportVAO.bind(context, program, this.viewportBuffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-        context.colorMask.set([true, true, true, true]);
     }
 
     _renderTileClippingMasks(tileIDs: Array<OverscaledTileID>) {
         const context = this.context;
         const gl = context.gl;
-        context.colorMask.set([false, false, false, false]);
-        context.depthMask.set(false);
-        context.depthTest.set(false);
-        context.stencilTest.set(true);
 
-        context.stencilMask.set(0xFF);
-        // Tests will always pass, and ref value will be written to stencil buffer.
-        context.stencilOp.set([gl.KEEP, gl.KEEP, gl.REPLACE]);
+        context.setColorMode(ColorMode.disabled());
+        context.setDepthMode(DepthMode.disabled());
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
@@ -226,7 +218,8 @@ class Painter {
         for (const tileID of tileIDs) {
             const id = this._tileClippingMaskIDs[tileID.key] = idNext++;
 
-            context.stencilFunc.set({ func: gl.ALWAYS, ref: id, mask: 0xFF });
+            // Tests will always pass, and ref value will be written to stencil buffer.
+            context.setStencilMode(new StencilMode(gl.ALWAYS, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE, true));
 
             const program = this.useProgram('fill', programConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
@@ -235,11 +228,6 @@ class Painter {
             this.tileExtentVAO.bind(this.context, program, this.tileExtentBuffer);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
         }
-
-        context.stencilMask.set(0x00);
-        context.colorMask.set([true, true, true, true]);
-        context.depthMask.set(true);
-        context.depthTest.set(true);
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
@@ -259,6 +247,12 @@ class Painter {
         } else {
             return ColorMode.alphaBlended();
         }
+    }
+
+    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType, test: ?boolean): DepthMode {
+        const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
+        const nearDepth = farDepth - 1 + this.depthRange;
+        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth], test);
     }
 
     render(style: Style, options: PainterOptions) {
@@ -410,12 +404,6 @@ class Painter {
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);
-    }
-
-    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType, test: ?boolean): DepthMode {
-        const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
-        const nearDepth = farDepth - 1 + this.depthRange;
-        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth], test);
     }
 
     /**
