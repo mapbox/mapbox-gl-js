@@ -16,8 +16,14 @@ rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
 
 module.exports = function(style, options, _callback) {
     let wasCallbackCalled = false;
+
+    const timeout = setTimeout(() => {
+        callback(new Error('Test timed out'));
+    }, options.timeout || 1000);
+
     function callback() {
         if (!wasCallbackCalled) {
+            clearTimeout(timeout);
             wasCallbackCalled = true;
             _callback.apply(this, arguments);
         }
