@@ -3,6 +3,7 @@
 const util = require('../util/util');
 const ImageSource = require('../source/image_source');
 const browser = require('../util/browser');
+const StencilMode = require('../gl/stencil_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -20,7 +21,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    context.stencilTest.set(false);
+    context.setStencilMode(StencilMode.disabled());
 
     // Constant parameters.
     gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));

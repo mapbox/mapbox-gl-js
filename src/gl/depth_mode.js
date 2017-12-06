@@ -1,7 +1,7 @@
 // @flow
 import type { DepthFuncType, DepthMaskType, DepthRangeType } from './types';
 
-const glALWAYS = 0x0207;
+const ALWAYS = 0x0207;
 
 class DepthMode {
     func: DepthFuncType;
@@ -14,11 +14,11 @@ class DepthMode {
         this.mask = depthMask;
         this.range = depthRange;
         this.test = (typeof test !== 'undefined' && test !== null) ? test :
-            !(this.func === glALWAYS && !this.mask);
+            !(this.func === ALWAYS && !this.mask);
     }
 
     static disabled() {
-        return new DepthMode(glALWAYS, false, [0, 1]);
+        return new DepthMode(ALWAYS, false, [0, 1]);
     }
 }
 

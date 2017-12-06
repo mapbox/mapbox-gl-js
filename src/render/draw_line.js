@@ -19,8 +19,6 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
     context.setDepthMode(painter.depthModeForSublayer(0, false));
 
-    context.stencilTest.set(true);
-
     const programId =
         layer.paint.get('line-dasharray') ? 'lineSDF' :
         layer.paint.get('line-pattern') ? 'linePattern' : 'line';
@@ -109,7 +107,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         }
     }
 
-    painter.enableTileClippingMask(coord);
+    context.setStencilMode(painter.stencilModeForClipping(coord));
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);

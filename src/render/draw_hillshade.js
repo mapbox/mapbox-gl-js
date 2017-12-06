@@ -3,6 +3,7 @@ const Coordinate = require('../geo/coordinate');
 const Texture = require('./texture');
 const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
+const StencilMode = require('../gl/stencil_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -17,7 +18,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const context = painter.context;
 
     context.setDepthMode(painter.depthModeForSublayer(0, false));
-    context.stencilTest.set(false);
+    context.setStencilMode(StencilMode.disabled());
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);

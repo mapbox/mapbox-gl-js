@@ -15,6 +15,7 @@ const shaders = require('../shaders');
 const Program = require('./program');
 const Context = require('../gl/context');
 const DepthMode = require('../gl/depth_mode');
+const StencilMode = require('../gl/stencil_mode');
 const Texture = require('./texture');
 const updateTileMasks = require('./tile_mask');
 const Color = require('../style-spec/util/color');
@@ -145,13 +146,6 @@ class Painter {
         context.blend.set(true);
         context.blendFunc.set([gl.ONE, gl.ONE_MINUS_SRC_ALPHA]);
 
-        context.stencilTest.set(true);
-
-        context.depthTest.set(true);
-        context.depthFunc.set(gl.LEQUAL);
-
-        context.depthMask.set(false);
-
         const tileExtentArray = new PosArray();
         tileExtentArray.emplaceBack(0, 0);
         tileExtentArray.emplaceBack(EXTENT, 0);
@@ -201,14 +195,9 @@ class Painter {
         // this function in favor of context.clear({ stencil: 0x0 })
 
         context.colorMask.set([false, false, false, false]);
-        context.depthMask.set(false);
-        context.depthTest.set(false);
-        context.stencilTest.set(true);
 
-        context.stencilMask.set(0xFF);
-        context.stencilOp.set([gl.ZERO, gl.ZERO, gl.ZERO]);
-
-        context.stencilFunc.set({ func: gl.ALWAYS, ref: 0x0, mask: 0xFF });
+        context.setDepthMode(DepthMode.disabled());
+        context.setStencilMode(new StencilMode(gl.ALWAYS, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO, false));
 
         const matrix = mat4.create();
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
@@ -220,10 +209,7 @@ class Painter {
         this.viewportVAO.bind(context, program, this.viewportBuffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-        context.stencilMask.set(0x00);
         context.colorMask.set([true, true, true, true]);
-        context.depthMask.set(true);
-        context.depthTest.set(true);
     }
 
     _renderTileClippingMasks(tileIDs: Array<OverscaledTileID>) {
@@ -261,10 +247,9 @@ class Painter {
         context.depthTest.set(true);
     }
 
-    enableTileClippingMask(tileID: OverscaledTileID) {
-        const context = this.context;
-        const gl = context.gl;
-        context.stencilFunc.set({ func: gl.EQUAL, ref: this._tileClippingMaskIDs[tileID.key], mask: 0xFF });
+    stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
+        const gl = this.context.gl;
+        return new StencilMode(gl.EQUAL, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE, true);
     }
 
     render(style: Style, options: PainterOptions) {

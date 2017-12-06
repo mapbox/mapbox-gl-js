@@ -21,7 +21,6 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     }
 
     const context = painter.context;
-    context.stencilTest.set(true);
 
     const pass = (!layer.paint.get('fill-pattern') &&
         color.constantOr(Color.transparent).a === 1 &&
@@ -62,7 +61,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
         const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
-        painter.enableTileClippingMask(coord);
+        painter.context.setStencilMode(painter.stencilModeForClipping(coord));
         drawFn(painter, sourceCache, layer, tile, coord, bucket, firstTile);
         firstTile = false;
     }

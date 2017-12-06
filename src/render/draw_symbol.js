@@ -8,6 +8,7 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const identityMat4 = mat4.identity(new Float32Array(16));
 const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
 const browser = require('../util/browser');
+const StencilMode = require('../gl/stencil_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -23,7 +24,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const context = painter.context;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
-    context.stencilTest.set(false);
+    context.setStencilMode(StencilMode.disabled());
 
     context.setDepthMode(painter.depthModeForSublayer(0, false));
 
@@ -106,8 +107,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 gl.LINEAR : gl.NEAREST, gl.CLAMP_TO_EDGE);
             gl.uniform2fv(program.uniforms.u_texsize, tile.iconAtlasTexture.size);
         }
-
-        painter.enableTileClippingMask(coord);
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 

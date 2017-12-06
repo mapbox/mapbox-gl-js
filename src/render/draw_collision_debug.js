@@ -7,6 +7,7 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const DepthMode = require('../gl/depth_mode');
+const StencilMode = require('../gl/stencil_mode');
 
 module.exports = drawCollisionDebug;
 
@@ -16,6 +17,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
     const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
 
     context.setDepthMode(DepthMode.disabled());
+    context.setStencilMode(StencilMode.disabled());
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];

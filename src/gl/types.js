@@ -43,7 +43,7 @@ export type StencilFuncType = {
     mask: number
 };
 
-type StencilOpConstant =
+export type StencilOpConstant =
     | $PropertyType<WebGLRenderingContext, 'KEEP'>
     | $PropertyType<WebGLRenderingContext, 'ZERO'>
     | $PropertyType<WebGLRenderingContext, 'REPLACE'>

@@ -4,6 +4,8 @@ const VertexBuffer = require('./vertex_buffer');
 const Framebuffer = require('./framebuffer');
 const State = require('./state');
 const DepthMode = require('./depth_mode');
+const StencilMode = require('./stencil_mode');
+const util = require('../util/util');
 const {
     ClearColor,
     ClearDepth,
@@ -197,6 +199,13 @@ class Context {
         this.depthMask.set(depthMode.mask);
         this.depthRange.set(depthMode.range);
         this.depthTest.set(depthMode.test);
+    }
+
+    setStencilMode(stencilMode: StencilMode) {
+        this.stencilFunc.set(util.pick(stencilMode, ['func', 'ref', 'mask']));
+        this.stencilOp.set([stencilMode.fail, stencilMode.depthFail, stencilMode.pass]);
+        this.stencilTest.set(stencilMode.test);
+        this.stencilMask.set(stencilMode.mask);
     }
 }
 

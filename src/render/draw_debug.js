@@ -6,6 +6,7 @@ const EXTENT = require('../data/extent');
 const VertexArrayObject = require('./vertex_array_object');
 const PosArray = require('../data/pos_array');
 const DepthMode = require('../gl/depth_mode');
+const StencilMode = require('../gl/stencil_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -23,13 +24,13 @@ function drawDebugTile(painter, sourceCache, coord) {
     const context = painter.context;
     const gl = context.gl;
 
-    context.stencilTest.set(false);
     context.lineWidth.set(1 * browser.devicePixelRatio);
 
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');
 
     context.setDepthMode(DepthMode.disabled());
+    context.setStencilMode(StencilMode.disabled());
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform4f(program.uniforms.u_color, 1, 0, 0, 1);

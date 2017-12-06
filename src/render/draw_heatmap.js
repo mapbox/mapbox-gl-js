@@ -5,6 +5,7 @@ const Texture = require('./texture');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
+const StencilMode = require('../gl/stencil_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -27,7 +28,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         // Allow kernels to be drawn across boundaries, so that
         // large kernels are not clipped to tiles
-        context.stencilTest.set(false);
+        context.setStencilMode(StencilMode.disabled());
 
         bindFramebuffer(context, painter, layer);
 
