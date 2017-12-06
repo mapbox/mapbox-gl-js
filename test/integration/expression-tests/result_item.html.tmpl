@@ -4,7 +4,8 @@
         <pre><%- r.expression %></pre>
     </td>
     <td>
-        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json"><%- r.group %>/<%- r.test %></a></h2>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json"><%- r.group %>/<%- r.test %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
+        <% if (r.error) { %><div>error: <%- r.error.message %></div><% } %>
         <pre><%- r.difference %></pre>
     </td>
     <td>
