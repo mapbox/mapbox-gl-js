@@ -15,7 +15,6 @@ import type {
     ViewportType,
 } from './types';
 
-
 export interface Value<T> {
     context: Context;
     static default(context?: Context): T;
@@ -324,6 +323,51 @@ class PixelStoreUnpackPremultiplyAlpha extends ContextValue implements Value<boo
     }
 }
 
+/**
+ * Framebuffer values
+ */
+class FramebufferValue extends ContextValue {
+    context: Context;
+    parent: WebGLFramebuffer;
+
+    constructor(context: Context, parent: WebGLFramebuffer) {
+        super(context);
+        this.parent = parent;
+    }
+}
+
+class ColorAttachment extends FramebufferValue implements Value<?WebGLTexture> {
+    static default() { return null; }
+
+    set(v: ?WebGLTexture): void {
+        const gl = this.context.gl;
+        this.context.bindFramebuffer.set(this.parent);
+        // note: it's possible to attach a renderbuffer to the color
+        // attachment point, but thus far MBGL only uses textures for color
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+    }
+
+    static equal(a, b): boolean {
+        return a === b;
+    }
+}
+
+class DepthAttachment extends FramebufferValue implements Value<?WebGLRenderbuffer> {
+    static default() { return null; }
+
+    set(v: ?WebGLRenderbuffer): void {
+        const gl = this.context.gl;
+        this.context.bindFramebuffer.set(this.parent);
+        // note: it's possible to attach a texture to the depth attachment
+        // point, but thus far MBGL only uses renderbuffers for depth
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
+    }
+
+    static equal(a, b): boolean {
+        return a === b;
+    }
+}
+
 module.exports = {
     ClearColor,
     ClearDepth,
@@ -352,4 +396,7 @@ module.exports = {
     BindVertexArrayOES,
     PixelStoreUnpack,
     PixelStoreUnpackPremultiplyAlpha,
+
+    ColorAttachment,
+    DepthAttachment,
 };

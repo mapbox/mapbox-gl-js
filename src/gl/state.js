@@ -17,10 +17,18 @@ class State<T> {
     }
 
     set(t: T) {
-        if (!this.value.constructor.equal(this.current, t)) {
+        if (this.dirty || !this.value.constructor.equal(this.current, t)) {
             this.current = t;
             this.value.set(t);
         }
+    }
+
+    isDirty(): boolean {
+        return this.dirty;
+    }
+
+    setDirty(): void {
+        this.dirty = true;
     }
 }
 

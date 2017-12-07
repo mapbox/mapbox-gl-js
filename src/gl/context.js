@@ -1,6 +1,7 @@
 // @flow
 const IndexBuffer = require('./index_buffer');
 const VertexBuffer = require('./vertex_buffer');
+const Framebuffer = require('./framebuffer');
 const State = require('./state');
 const {
     ClearColor,
@@ -87,6 +88,10 @@ class Context {
     pixelStoreUnpack: State<number>;
     pixelStoreUnpackPremultiplyAlpha: State<boolean>;
 
+    extTextureFilterAnisotropic: any;
+    extTextureFilterAnisotropicMax: any;
+    extTextureHalfFloat: any;
+
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
@@ -118,6 +123,21 @@ class Context {
         this.bindVertexArrayOES = this.extVertexArrayObject && new State(new BindVertexArrayOES(this));
         this.pixelStoreUnpack = new State(new PixelStoreUnpack(this));
         this.pixelStoreUnpackPremultiplyAlpha = new State(new PixelStoreUnpackPremultiplyAlpha(this));
+
+        this.extTextureFilterAnisotropic = (
+            gl.getExtension('EXT_texture_filter_anisotropic') ||
+            gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+            gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+        );
+        if (this.extTextureFilterAnisotropic) {
+            this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        }
+
+        this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
+        if (this.extTextureHalfFloat) {
+            gl.getExtension('OES_texture_half_float_linear');
+        }
+
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
@@ -126,6 +146,21 @@ class Context {
 
     createVertexBuffer(array: StructArray, dynamicDraw?: boolean) {
         return new VertexBuffer(this, array, dynamicDraw);
+    }
+
+    createRenderbuffer(storageFormat: number, width: number, height: number) {
+        const gl = this.gl;
+
+        const rbo = gl.createRenderbuffer();
+        this.bindRenderbuffer.set(rbo);
+        gl.renderbufferStorage(gl.RENDERBUFFER, storageFormat, width, height);
+        this.bindRenderbuffer.set(null);
+
+        return rbo;
+    }
+
+    createFramebuffer(width: number, height: number) {
+        return new Framebuffer(this, width, height);
     }
 
     clear({color, depth}: ClearArgs) {

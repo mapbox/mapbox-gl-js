@@ -15,11 +15,13 @@ const {
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
+import type Framebuffer from '../../gl/framebuffer';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
+    viewportFrame: ?Framebuffer;
 
     constructor(layer: LayerSpecification) {
         super(layer, properties);
@@ -46,15 +48,13 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 
-    has3DPass() {
+    hasOffscreenPass() {
         return this.paint.get('fill-extrusion-opacity') !== 0 && this.visibility !== 'none';
     }
 
-    resize(gl: WebGLRenderingContext) {
+    resize() {
         if (this.viewportFrame) {
-            const {texture, fbo} = this.viewportFrame;
-            gl.deleteTexture(texture);
-            gl.deleteFramebuffer(fbo);
+            this.viewportFrame.destroy();
             this.viewportFrame = null;
         }
     }

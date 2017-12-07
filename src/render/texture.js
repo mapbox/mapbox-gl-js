@@ -18,10 +18,17 @@ export type TextureWrap =
     | $PropertyType<WebGLRenderingContext, 'CLAMP_TO_EDGE'>
     | $PropertyType<WebGLRenderingContext, 'MIRRORED_REPEAT'>;
 
+type EmptyImage = {
+    width: number,
+    height: number,
+    data: null
+}
+
 export type TextureImage =
     | RGBAImage
     | AlphaImage
-    | ImageTextureSource;
+    | ImageTextureSource
+    | EmptyImage;
 
 class Texture {
     context: Context;

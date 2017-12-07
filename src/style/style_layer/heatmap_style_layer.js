@@ -12,12 +12,12 @@ const {
 } = require('../properties');
 
 import type Texture from '../../render/texture';
+import type Framebuffer from '../../gl/framebuffer';
 import type {PaintProps} from './heatmap_style_layer_properties';
 
 class HeatmapStyleLayer extends StyleLayer {
 
-    heatmapTexture: ?WebGLTexture;
-    heatmapFbo: ?WebGLFramebuffer;
+    heatmapFbo: ?Framebuffer;
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
 
@@ -60,13 +60,9 @@ class HeatmapStyleLayer extends StyleLayer {
         this.colorRampTexture = null;
     }
 
-    resize(gl: WebGLRenderingContext) {
-        if (this.heatmapTexture) {
-            gl.deleteTexture(this.heatmapTexture);
-            this.heatmapTexture = null;
-        }
+    resize() {
         if (this.heatmapFbo) {
-            gl.deleteFramebuffer(this.heatmapFbo);
+            this.heatmapFbo.destroy();
             this.heatmapFbo = null;
         }
     }
@@ -77,6 +73,10 @@ class HeatmapStyleLayer extends StyleLayer {
 
     queryIntersectsFeature(): boolean  {
         return false;
+    }
+
+    hasOffscreenPass() {
+        return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';
     }
 }
 
