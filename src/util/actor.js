@@ -1,6 +1,7 @@
 // @flow
 
 const util = require('./util');
+const {serialize, deserialize} = require('./web_worker_transfer');
 
 import type {Transferable} from '../types/transferable';
 
@@ -38,19 +39,19 @@ class Actor {
      * a main-thread map instance.
      *
      * @param type The name of the target method to invoke or '[source-type].name' for a method on a WorkerSource.
-     * @param buffers A list of buffers to "transfer" (see https://developer.mozilla.org/en-US/docs/Web/API/Transferable)
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(type: string, data: mixed, callback: ?Function, buffers: ?Array<Transferable>, targetMapId: ?string) {
+    send(type: string, data: mixed, callback: ?Function, targetMapId: ?string) {
         const id = callback ? `${this.mapId}:${this.callbackID++}` : null;
         if (callback) this.callbacks[id] = callback;
+        const buffers: Array<Transferable> = [];
         this.target.postMessage({
             targetMapId: targetMapId,
             sourceMapId: this.mapId,
             type: type,
             id: String(id),
-            data: data
+            data: serialize(data, buffers)
         }, buffers);
     }
 
@@ -62,13 +63,14 @@ class Actor {
         if (data.targetMapId && this.mapId !== data.targetMapId)
             return;
 
-        const done = (err, data, buffers) => {
+        const done = (err, data) => {
+            const buffers: Array<Transferable> = [];
             this.target.postMessage({
                 sourceMapId: this.mapId,
                 type: '<response>',
                 id: String(id),
                 error: err ? String(err) : null,
-                data: data
+                data: serialize(data, buffers)
             }, buffers);
         };
 
@@ -78,18 +80,18 @@ class Actor {
             if (callback && data.error) {
                 callback(new Error(data.error));
             } else if (callback) {
-                callback(null, data.data);
+                callback(null, deserialize(data.data));
             }
         } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
             // data.type == 'loadTile', 'removeTile', etc.
-            this.parent[data.type](data.sourceMapId, data.data, done);
+            this.parent[data.type](data.sourceMapId, deserialize(data.data), done);
         } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
             // data.type == sourcetype.method
             const keys = data.type.split('.');
             const workerSource = (this.parent: any).getWorkerSource(data.sourceMapId, keys[0]);
-            workerSource[keys[1]](data.data, done);
+            workerSource[keys[1]](deserialize(data.data), done);
         } else {
-            this.parent[data.type](data.data);
+            this.parent[data.type](deserialize(data.data));
         }
     }
 

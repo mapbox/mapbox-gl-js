@@ -1,7 +1,6 @@
 // @flow
 
 const {DEMData} = require('../data/dem_data');
-const {serialize} = require('../util/web_worker_transfer');
 
 import type Actor from '../util/actor';
 import type {
@@ -31,12 +30,11 @@ class RasterDEMTileWorkerSource {
         const dem = new DEMData(uid);
         this.loading[source][uid] = dem;
         dem.loadFromImage(params.rawImageData);
-        const transferrables = [];
         delete this.loading[source][uid];
 
         this.loaded[source] = this.loaded[source] || {};
         this.loaded[source][uid] = dem;
-        callback(null, serialize(dem, transferrables), transferrables);
+        callback(null, dem);
     }
 
     removeTile(params: TileParameters) {

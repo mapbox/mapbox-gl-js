@@ -113,13 +113,11 @@ class VectorTileWorkerSource implements WorkerSource {
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
 
             workerTile.vectorTile = response.vectorTile;
-            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
+            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result) => {
                 if (err || !result) return callback(err);
 
-                // Not transferring rawTileData because the worker needs to retain its copy.
-                callback(null,
-                    util.extend({rawTileData}, result, cacheControl),
-                    transferrables);
+                // Transferring a copy of rawTileData because the worker needs to retain its copy.
+                callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl));
             });
 
             this.loaded[source] = this.loaded[source] || {};

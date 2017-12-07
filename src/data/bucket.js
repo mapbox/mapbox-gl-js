@@ -1,12 +1,9 @@
 // @flow
 
-const {deserialize} = require('../util/web_worker_transfer');
-
 import type CollisionBoxArray from '../symbol/collision_box';
 import type Style from '../style/style';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
-import type {Serialized} from '../util/web_worker_transfer';
 import type Context from '../gl/context';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
@@ -73,16 +70,14 @@ export interface Bucket {
 }
 
 module.exports = {
-    deserialize(input: Array<Serialized>, style: Style): {[string]: Bucket} {
+    deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
         const output = {};
 
         // Guard against the case where the map's style has been set to null while
         // this bucket has been parsing.
         if (!style) return output;
 
-        for (const serialized of input) {
-            const bucket: Bucket = (deserialize(serialized): any);
-
+        for (const bucket of input) {
             const layers = bucket.layerIds
                 .map((id) => style.getLayer(id))
                 .filter(Boolean);

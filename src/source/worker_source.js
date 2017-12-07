@@ -1,10 +1,12 @@
 // @flow
 
-import type {Serialized} from '../util/web_worker_transfer';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
-import type {Transferable} from '../types/transferable';
 import type {OverscaledTileID} from './tile_id';
+import type {Bucket} from '../data/bucket';
+import type FeatureIndex from '../data/feature_index';
+import type CollisionBoxArray from '../symbol/collision_box';
+import type {DEMData} from '../data/dem_data';
 
 export type TileParameters = {
     source: string,
@@ -28,16 +30,16 @@ export type WorkerDEMTileParameters = TileParameters & {
 };
 
 export type WorkerTileResult = {
-    buckets: Array<Serialized>,
+    buckets: Array<Bucket>,
     iconAtlasImage: RGBAImage,
     glyphAtlasImage: AlphaImage,
-    featureIndex: Serialized,
-    collisionBoxArray: Serialized,
+    featureIndex: FeatureIndex,
+    collisionBoxArray: CollisionBoxArray,
     rawTileData?: ArrayBuffer,
 };
 
-export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
-export type WorkerDEMTileCallback = (err: ?Error, result: ?Serialized, transferrables: ?Array<Transferable>) => void;
+export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult) => void;
+export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

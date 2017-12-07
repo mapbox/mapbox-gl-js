@@ -53,7 +53,7 @@ test('Actor', (t) => {
             }
         }, 'map-2');
 
-        workerActor.send('test', {}, () => {}, null, 'map-1');
+        workerActor.send('test', {}, () => {}, 'map-1');
     });
 
     t.test('#remove unbinds event listener', (t) => {

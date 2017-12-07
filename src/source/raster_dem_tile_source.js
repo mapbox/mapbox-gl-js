@@ -7,7 +7,6 @@ const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const browser = require('../util/browser');
 const {OverscaledTileID} = require('./tile_id');
 const RasterTileSource = require('./raster_tile_source');
-const {deserialize} = require('../util/web_worker_transfer');
 
 import type {Source} from './source';
 import type Dispatcher from '../util/dispatcher';
@@ -74,7 +73,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             }
 
             if (serialized) {
-                tile.dem = (deserialize(serialized): any);
+                tile.dem = serialized;
                 tile.needsHillshadePrepare = true;
                 tile.state = 'loaded';
                 callback(null);

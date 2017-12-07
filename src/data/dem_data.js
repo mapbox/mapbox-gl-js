@@ -3,13 +3,6 @@ const {RGBAImage} = require('../util/image');
 const util = require('../util/util');
 const {register} = require('../util/web_worker_transfer');
 
-export type SerializedDEMData = {
-    uid: string,
-    scale: number,
-    dim: number,
-    level: ArrayBuffer
-};
-
 class Level {
     dim: number;
     border: number;
