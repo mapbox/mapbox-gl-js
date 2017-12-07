@@ -22,15 +22,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 
     if (painter.renderPass === 'offscreen') {
-        const context = painter.context;
-
-        setupFramebuffer(painter, layer);
-
-        context.stencilTest.set(false);
-        context.depthTest.set(true);
-
-        context.clear({ color: Color.transparent });
-        context.depthMask.set(true);
+        drawToExtrusionFramebuffer(painter, layer);
 
         for (let i = 0; i < coords.length; i++) {
             drawExtrusion(painter, source, layer, coords[i]);
@@ -40,7 +32,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
-function setupFramebuffer(painter, layer) {
+function drawToExtrusionFramebuffer(painter, layer) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -66,6 +58,11 @@ function setupFramebuffer(painter, layer) {
         painter.depthRboNeedsClear = false;
     }
 
+    context.stencilTest.set(false);
+    context.depthTest.set(true);
+
+    context.clear({ color: Color.transparent });
+    context.depthMask.set(true);
 }
 
 function drawExtrusionTexture(painter, layer) {

@@ -117,8 +117,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     unloadTile(tile: Tile) {
         if (tile.demTexture) this.map.painter.saveTileTexture(tile.demTexture);
         if (tile.fbo) {
-            this.map.painter.saveTileFramebuffer(tile.fbo);
-            tile.fbo = null;
+            tile.fbo.destroy();
+            delete tile.fbo;
         }
         if (tile.dem) delete tile.dem;
         delete tile.neighboringTiles;

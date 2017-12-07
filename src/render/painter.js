@@ -40,7 +40,6 @@ import type LineAtlas from './line_atlas';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
 import type VertexBuffer from '../gl/vertex_buffer';
-import type Framebuffer from '../gl/framebuffer';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 
@@ -62,7 +61,6 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
-    _tileFramebuffers: { [number]: Array<Framebuffer> };
     numSublayers: number;
     depthEpsilon: number;
     lineWidthRange: [number, number];
@@ -99,7 +97,6 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
-        this._tileFramebuffers = {};
 
         this.setup();
 
@@ -478,21 +475,6 @@ class Painter {
     getTileTexture(size: number) {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
-    }
-
-    saveTileFramebuffer(fbo: Framebuffer) {
-        const framebuffers = this._tileFramebuffers[fbo.width];
-
-        if (!framebuffers) {
-            this._tileFramebuffers[fbo.width] = [fbo];
-        } else {
-            framebuffers.push(fbo);
-        }
-    }
-
-    getTileFramebuffer(size: number) {
-        const framebuffers = this._tileFramebuffers[size];
-        return framebuffers && framebuffers.length > 0 ? framebuffers.pop() : null;
     }
 
     lineWidth(width: number) {
