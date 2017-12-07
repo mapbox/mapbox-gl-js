@@ -2,19 +2,12 @@
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/outdoors-v9',
+    style: 'mapbox://styles/mapbox/cjaudgl840gn32rnrepcb9b9g', // the outdoors-v10 style but without Hillshade layers
     center: [-118.8291, 37.4266],
     zoom: 9
 });
 
 map.on('load', function () {
-    map.removeLayer('hillshade_shadow_extreme');
-    map.removeLayer('hillshade_shadow_dark');
-    map.removeLayer('hillshade_shadow_med');
-    map.removeLayer('hillshade_shadow_faint');
-    map.removeLayer('hillshade_highlight_med');
-    map.removeLayer('hillshade_highlight_bright');
-
     map.addSource('dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.terrain-rgb"
