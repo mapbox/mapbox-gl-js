@@ -723,28 +723,28 @@ var navigationMenuData = {
     documentation: {
       name: 'Documentation',
       links: [{
-        name: 'iOS SDK',
-        to: '/ios-sdk/',
-        hideInHeader: true
-      }, {
-        name: 'Android SDK',
-        to: '/android-docs/map-sdk/overview/',
-        hideInHeader: true
-      }, {
-        name: 'Navigation SDK',
-        to: '/navigation-sdk/',
-        hideInHeader: true
-      }, {
         name: 'GL JS',
         to: '/mapbox-gl-js/api/',
         hideInHeader: true
       }, {
-        name: 'Unity SDK',
+        name: 'Maps SDK - iOS',
+        to: '/ios-sdk/',
+        hideInHeader: true
+      }, {
+        name: 'Maps SDK - Android',
+        to: '/android-docs/map-sdk/overview/',
+        hideInHeader: true
+      }, {
+        name: 'Maps SDK - Unity',
         to: '/unity-sdk/',
         hideInHeader: true
       }, {
-        name: 'Qt SDK',
+        name: 'Maps SDK - Qt',
         to: '/qt/',
+        hideInHeader: true
+      }, {
+        name: 'Navigation SDK',
+        to: '/navigation-sdk/',
         hideInHeader: true
       }],
       highlightedLinks: [{
@@ -763,25 +763,25 @@ var navigationMenuData = {
     }
   },
   sdkDocumentationMenu: {
-    name: 'SDK Documentation',
+    name: 'SDK & Plugin Documentation',
     links: [{
-      name: 'iOS SDK',
-      to: '/ios-sdk/'
-    }, {
-      name: 'Android SDK',
-      to: '/android-docs/map-sdk/overview/'
-    }, {
-      name: 'Navigation SDK',
-      to: '/navigation-sdk/'
-    }, {
-      name: 'Unity SDK',
-      to: '/unity-sdk/'
-    }, {
       name: 'GL JS',
       to: '/mapbox-gl-js/api/'
     }, {
-      name: 'Qt SDK',
+      name: 'Maps SDK - iOS',
+      to: '/ios-sdk/'
+    }, {
+      name: 'Maps SDK - Android',
+      to: '/android-docs/map-sdk/overview/'
+    }, {
+      name: 'Maps SDK - Unity',
+      to: '/unity-sdk/'
+    }, {
+      name: 'Maps SDK - Qt',
       to: '/qt/'
+    }, {
+      name: 'Navigation SDK',
+      to: '/navigation-sdk/'
     }],
     highlightedLinks: []
   },
@@ -2153,7 +2153,7 @@ var FooterSocialMediaStrip = function (_React$Component) {
             'svg',
             {
               viewBox: '0 0 50 50',
-              className: 'shell-icon shell-icon--s shell-inline'
+              className: 'shell-mr18 shell-icon shell-icon--s shell-inline'
             },
             React.createElement(
               'g',
@@ -2162,6 +2162,22 @@ var FooterSocialMediaStrip = function (_React$Component) {
               React.createElement('path', { d: 'M25,33.33A8.33,8.33,0,1,1,33.33,25,8.33,8.33,0,0,1,25,33.33Zm0-21.17A12.84,12.84,0,1,0,37.84,25,12.84,12.84,0,0,0,25,12.16Z' }),
               React.createElement('path', { d: 'M41.35,11.65a3,3,0,1,1-3-3,3,3,0,0,1,3,3Z' })
             )
+          )
+        ),
+        React.createElement(
+          'a',
+          {
+            'aria-label': 'Github',
+            className: 'shell-color-blue shell-color-gray-dark-on-hover',
+            href: 'https://github.com/mapbox'
+          },
+          React.createElement(
+            'svg',
+            {
+              viewBox: '0 0 1790 1790',
+              className: 'shell-icon shell-icon--s shell-inline'
+            },
+            React.createElement('path', { d: 'M704 1216q0 40-12.5 82t-43 76-72.5 34-72.5-34-43-76-12.5-82 12.5-82 43-76 72.5-34 72.5 34 43 76 12.5 82zm640 0q0 40-12.5 82t-43 76-72.5 34-72.5-34-43-76-12.5-82 12.5-82 43-76 72.5-34 72.5 34 43 76 12.5 82zm160 0q0-120-69-204t-187-84q-41 0-195 21-71 11-157 11t-157-11q-152-21-195-21-118 0-187 84t-69 204q0 88 32 153.5t81 103 122 60 140 29.5 149 7h168q82 0 149-7t140-29.5 122-60 81-103 32-153.5zm224-176q0 207-61 331-38 77-105.5 133t-141 86-170 47.5-171.5 22-167 4.5q-78 0-142-3t-147.5-12.5-152.5-30-137-51.5-121-81-86-115q-62-123-62-331 0-237 136-396-27-82-27-170 0-116 51-218 108 0 190 39.5t189 123.5q147-35 309-35 148 0 280 32 105-82 187-121t189-39q51 102 51 218 0 87-27 168 136 160 136 398z' })
           )
         )
       );
