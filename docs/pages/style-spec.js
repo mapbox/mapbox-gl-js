@@ -679,7 +679,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_raster).map(([name, prop], i) =>
+                                        { entries(ref.source_raster_dem).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
                                             <Item key={i} id={`sources-raster-dem-${name}`} name={name} {...prop}/>)}
                                     </div>

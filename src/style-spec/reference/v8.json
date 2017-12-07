@@ -240,6 +240,38 @@
       "type": "string",
       "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
     },
+    "tiles": {
+      "type": "array",
+      "value": "string",
+      "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
+    },
+    "bounds": {
+      "type": "array",
+      "value": "number",
+      "length": 4,
+      "default": [-180, -85.0511, 180, 85.0511],
+      "doc": "An array containing the longitude and latitude of the southwest and northeast corners of the source's bounding box in the following order: `[sw.lng, sw.lat, ne.lng, ne.lat]`. When this property is included in a source, no tiles outside of the given bounds are requested by Mapbox GL."
+    },
+    "minzoom": {
+      "type": "number",
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels."
+    },
+    "tileSize": {
+      "type": "number",
+      "default": 512,
+      "units": "pixels",
+      "doc": "The minimum visual size to display tiles for this layer. Only configurable for raster layers."
+    },
+    "attribution": {
+      "type": "string",
+      "doc": "Contains an attribution to be displayed when the map is shown to a user."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
