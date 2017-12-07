@@ -3,7 +3,7 @@
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/cjaudgl840gn32rnrepcb9b9g', // the outdoors-v10 style but without Hillshade layers
-    center: [-118.8291, 37.4266],
+    center: [-119.5591, 37.715],
     zoom: 9
 });
 
@@ -16,9 +16,8 @@ map.on('load', function () {
         "id": "hillshading",
         "source": "dem",
         "type": "hillshade"
+    // insert below waterway-river-canal-shadow;
+    // where hillshading sits in the Mapbox Outdoors style
     }, 'waterway-river-canal-shadow');
-    // insert below waterway-river-canal-shadow as that is where Hillshading
-    // sits in the Mapbox Outdoors style
 });
-
 </script>
