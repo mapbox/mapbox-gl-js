@@ -40,7 +40,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
         // Use gl.LESS to prevent double drawing in areas where tiles overlap.
         context.setDepthMode(painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
-            layer.paint.get('raster-opacity') === 1, gl.LESS, true));
+            layer.paint.get('raster-opacity') === 1, gl.LESS));
 
         const tile = sourceCache.getTile(coord);
         const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped());

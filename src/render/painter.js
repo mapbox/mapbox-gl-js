@@ -191,7 +191,7 @@ class Painter {
 
         context.setColorMode(ColorMode.disabled());
         context.setDepthMode(DepthMode.disabled());
-        context.setStencilMode(new StencilMode(gl.ALWAYS, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO, false));
+        context.setStencilMode(new StencilMode(gl.ALWAYS, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO));
 
         const matrix = mat4.create();
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
@@ -219,7 +219,7 @@ class Painter {
             const id = this._tileClippingMaskIDs[tileID.key] = idNext++;
 
             // Tests will always pass, and ref value will be written to stencil buffer.
-            context.setStencilMode(new StencilMode(gl.ALWAYS, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE, true));
+            context.setStencilMode(new StencilMode(gl.ALWAYS, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE));
 
             const program = this.useProgram('fill', programConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
@@ -232,7 +232,7 @@ class Painter {
 
     stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
         const gl = this.context.gl;
-        return new StencilMode(gl.EQUAL, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE, true);
+        return new StencilMode(gl.EQUAL, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     colorModeForRenderPass(): ColorMode {
@@ -241,7 +241,7 @@ class Painter {
             const numOverdrawSteps = 8;
             const a = 1 / numOverdrawSteps;
 
-            return new ColorMode(true, [gl.CONSTANT_COLOR, gl.ONE], new Color(a, a, a, 0), [true, true, true, true]);
+            return new ColorMode([gl.CONSTANT_COLOR, gl.ONE], new Color(a, a, a, 0), [true, true, true, true]);
         } else if (this.renderPass === 'opaque') {
             return ColorMode.unblended();
         } else {
@@ -249,10 +249,10 @@ class Painter {
         }
     }
 
-    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType, test: ?boolean): DepthMode {
+    depthModeForSublayer(n: number, mask: DepthMaskType, func: ?DepthFuncType): DepthMode {
         const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
         const nearDepth = farDepth - 1 + this.depthRange;
-        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth], test);
+        return new DepthMode(func || this.context.gl.LEQUAL, mask, [nearDepth, farDepth]);
     }
 
     render(style: Style, options: PainterOptions) {

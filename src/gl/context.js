@@ -196,28 +196,39 @@ class Context {
     }
 
     setDepthMode(depthMode: DepthMode) {
-        this.depthFunc.set(depthMode.func);
-        this.depthMask.set(depthMode.mask);
-        this.depthRange.set(depthMode.range);
-        this.depthTest.set(depthMode.test);
+        if (depthMode.func === this.gl.ALWAYS && !depthMode.mask) {
+            this.depthTest.set(false);
+        } else {
+            this.depthTest.set(true);
+            this.depthFunc.set(depthMode.func);
+            this.depthMask.set(depthMode.mask);
+            this.depthRange.set(depthMode.range);
+        }
     }
 
     setStencilMode(stencilMode: StencilMode) {
-        this.stencilFunc.set(util.pick(stencilMode, ['func', 'ref', 'mask']));
-        this.stencilOp.set([stencilMode.fail, stencilMode.depthFail, stencilMode.pass]);
-        this.stencilTest.set(stencilMode.test);
-        this.stencilMask.set(stencilMode.mask);
+        if (stencilMode.func === this.gl.ALWAYS && !stencilMode.mask) {
+            this.stencilTest.set(false);
+        } else {
+            this.stencilTest.set(true);
+            this.stencilMask.set(stencilMode.mask);
+            this.stencilOp.set([stencilMode.fail, stencilMode.depthFail, stencilMode.pass]);
+            this.stencilFunc.set(util.pick(stencilMode, ['func', 'ref', 'mask']));
+        }
     }
 
     setColorMode(colorMode: ColorMode) {
-        this.blend.set(colorMode.blend);
-        this.colorMask.set(colorMode.mask);
-        if (colorMode.blend) {
+        if (util.deepEqual(colorMode.blendFunction, ColorMode.Replace)) {
+            this.blend.set(false);
+        } else {
+            this.blend.set(true);
             this.blendFunc.set(colorMode.blendFunction);
             if (colorMode.blendColor) {
                 this.blendColor.set(colorMode.blendColor);
             }
         }
+
+        this.colorMask.set(colorMode.mask);
     }
 }
 

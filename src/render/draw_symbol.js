@@ -9,6 +9,7 @@ const identityMat4 = mat4.identity(new Float32Array(16));
 const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
 const browser = require('../util/browser');
 const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -69,7 +70,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthOn = pitchWithMap;
 
-    context.setDepthMode(painter.depthModeForSublayer(0, false, undefined, depthOn));
+    context.setDepthMode(depthOn ? painter.depthModeForSublayer(0, false) : DepthMode.disabled());
 
     let program;
 

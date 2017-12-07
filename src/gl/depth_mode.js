@@ -7,14 +7,11 @@ class DepthMode {
     func: DepthFuncType;
     mask: DepthMaskType;
     range: DepthRangeType;
-    test: boolean;
 
-    constructor(depthFunc: DepthFuncType, depthMask: DepthMaskType, depthRange: DepthRangeType, test: ?boolean) {
+    constructor(depthFunc: DepthFuncType, depthMask: DepthMaskType, depthRange: DepthRangeType) {
         this.func = depthFunc;
         this.mask = depthMask;
         this.range = depthRange;
-        this.test = (typeof test !== 'undefined' && test !== null) ? test :
-            !(this.func === ALWAYS && !this.mask);
     }
 
     static disabled() {
