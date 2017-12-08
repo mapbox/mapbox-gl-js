@@ -4,7 +4,6 @@ const util = require('./util');
 const Actor = require('./actor');
 
 import type WorkerPool from './worker_pool';
-import type {Transferable} from '../types/transferable';
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated
@@ -48,13 +47,13 @@ class Dispatcher {
      * @param targetID The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.
      * @returns The ID of the worker to which the message was sent.
      */
-    send(type: string, data: mixed, callback?: ?Function, targetID?: number, buffers?: Array<Transferable>): number {
+    send(type: string, data: mixed, callback?: ?Function, targetID?: number): number {
         if (typeof targetID !== 'number' || isNaN(targetID)) {
             // Use round robin to send requests to web workers.
             targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
         }
 
-        this.actors[targetID].send(type, data, callback, buffers);
+        this.actors[targetID].send(type, data, callback);
         return targetID;
     }
 

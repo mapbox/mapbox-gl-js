@@ -9,7 +9,6 @@ const util = require('../util/util');
 const assert = require('assert');
 const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
-const {serialize} = require('../util/web_worker_transfer');
 const EvaluationParameters = require('../style/evaluation_parameters');
 const {OverscaledTileID} = require('./tile_id');
 
@@ -23,7 +22,6 @@ import type {
     WorkerTileParameters,
     WorkerTileCallback,
 } from '../source/worker_source';
-import type {Transferable} from '../types/transferable';
 
 class WorkerTile {
     tileID: OverscaledTileID;
@@ -164,18 +162,13 @@ class WorkerTile {
 
                 this.status = 'done';
 
-                const transferables = [
-                    glyphAtlas.image.data.buffer,
-                    imageAtlas.image.data.buffer
-                ];
-
                 callback(null, {
-                    buckets: serializeBuckets(util.values(buckets), transferables),
-                    featureIndex: serialize(featureIndex, transferables),
-                    collisionBoxArray: serialize(this.collisionBoxArray),
+                    buckets: util.values(buckets).filter(b => !b.isEmpty()),
+                    featureIndex,
+                    collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
                     iconAtlasImage: imageAtlas.image
-                }, transferables);
+                });
             }
         }
     }
@@ -187,12 +180,6 @@ function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     for (const layer of layers) {
         layer.recalculate(parameters);
     }
-}
-
-function serializeBuckets(buckets: $ReadOnlyArray<Bucket>, transferables: Array<Transferable>) {
-    return buckets
-        .filter((b) => !b.isEmpty())
-        .map((b) => serialize(b, transferables));
 }
 
 module.exports = WorkerTile;

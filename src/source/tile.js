@@ -19,7 +19,6 @@ const {TriangleIndexArray} = require('../data/index_array_type');
 const projection = require('../symbol/projection');
 const {performSymbolPlacement, updateOpacities} = require('../symbol/symbol_placement');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const {deserialize} = require('../util/web_worker_transfer');
 const browser = require('../util/browser');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -153,8 +152,8 @@ class Tile {
             // Only vector tiles have rawTileData
             this.rawTileData = data.rawTileData;
         }
-        this.collisionBoxArray = (deserialize(data.collisionBoxArray): any);
-        this.featureIndex = (deserialize(data.featureIndex): any);
+        this.collisionBoxArray = data.collisionBoxArray;
+        this.featureIndex = data.featureIndex;
         this.featureIndex.rawTileData = this.rawTileData;
         this.buckets = deserializeBucket(data.buckets, painter.style);
 

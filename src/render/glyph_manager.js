@@ -5,6 +5,7 @@ const TinySDF = require('@mapbox/tiny-sdf');
 const isChar = require('../util/is_char_in_unicode_block');
 const {asyncAll} = require('../util/util');
 const {AlphaImage} = require('../util/image');
+const {clone} = require('../util/util');
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestTransformFunction} from '../ui/map';
@@ -100,7 +101,8 @@ class GlyphManager {
                 const result = {};
 
                 for (const {stack, id, glyph} of glyphs) {
-                    (result[stack] || (result[stack] = {}))[id] = glyph;
+                    // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
+                    (result[stack] || (result[stack] = {}))[id] = clone(glyph);
                 }
 
                 callback(null, result);

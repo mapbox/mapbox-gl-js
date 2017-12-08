@@ -5,17 +5,15 @@ import type {GlobalProperties} from "../style-spec/expression/index";
 const createVertexArrayType = require('./vertex_array_type');
 const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
 const Color = require('../style-spec/util/color');
-const {deserialize, serialize, register} = require('../util/web_worker_transfer');
+const {register} = require('../util/web_worker_transfer');
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type {Serialized} from '../util/web_worker_transfer';
 import type {ViewType, StructArray} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type Program from '../render/program';
 import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
-import type {Transferable} from '../types/transferable';
 
 export type LayoutAttribute = {
     name: string,
@@ -371,17 +369,12 @@ class ProgramConfiguration {
 class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[string]: ProgramConfiguration};
 
-    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<Layer>, zoom: number, arrays?: Serialized) {
-        if (arrays) {
-            // remove this path once Bucket classes no longer use it.
-            this.programConfigurations = (deserialize(arrays): any).programConfigurations;
-        } else {
-            this.programConfigurations = {};
-            for (const layer of layers) {
-                const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
-                programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
-                this.programConfigurations[layer.id] = programConfiguration;
-            }
+    constructor(programInterface: ProgramInterface, layers: $ReadOnlyArray<Layer>, zoom: number) {
+        this.programConfigurations = {};
+        for (const layer of layers) {
+            const programConfiguration = ProgramConfiguration.createDynamic(programInterface, layer, zoom);
+            programConfiguration.paintVertexArray = new programConfiguration.PaintVertexArray();
+            this.programConfigurations[layer.id] = programConfiguration;
         }
     }
 
@@ -389,11 +382,6 @@ class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         for (const key in this.programConfigurations) {
             this.programConfigurations[key].populatePaintArray(length, feature);
         }
-    }
-
-    // remove once Bucket no longer needs this
-    serialize(transferables?: Array<Transferable>) {
-        return serialize(this, transferables);
     }
 
     get(layerId: string) {

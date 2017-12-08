@@ -5,6 +5,7 @@ const {RGBAImage} = require('../util/image');
 const {imagePosition} = require('./image_atlas');
 const Texture = require('./texture');
 const assert = require('assert');
+const {clone} = require('../util/util');
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
@@ -120,7 +121,8 @@ class ImageManager {
         for (const id of ids) {
             const image = this.images[id];
             if (image) {
-                response[id] = image;
+                // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
+                response[id] = clone(image);
             }
         }
 

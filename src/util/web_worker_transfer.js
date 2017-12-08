@@ -13,6 +13,7 @@ const {
 } = require('../style-spec/expression');
 const {CompoundExpression} = require('../style-spec/expression/compound_expression');
 const expressions = require('../style-spec/expression/definitions');
+const {ImageData} = require('./window');
 
 import type {Transferable} from '../types/transferable';
 
@@ -29,6 +30,7 @@ export type Serialized =
     | RegExp
     | ArrayBuffer
     | $ArrayBufferView
+    | ImageData
     | Array<Serialized>
     | {| name: string, properties: {+[string]: Serialized} |};
 
@@ -142,6 +144,13 @@ function serialize(input: mixed, transferables?: Array<Transferable>): Serialize
         return view;
     }
 
+    if (input instanceof ImageData) {
+        if (transferables) {
+            transferables.push(input.data.buffer);
+        }
+        return input;
+    }
+
     if (Array.isArray(input)) {
         const serialized = [];
         for (const item of input) {
@@ -199,7 +208,8 @@ function deserialize(input: Serialized): mixed {
         input instanceof Date ||
         input instanceof RegExp ||
         input instanceof ArrayBuffer ||
-        ArrayBuffer.isView(input)) {
+        ArrayBuffer.isView(input) ||
+        input instanceof ImageData) {
         return input;
     }
 
