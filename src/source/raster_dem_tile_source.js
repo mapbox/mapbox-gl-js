@@ -66,14 +66,14 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             }
         }
 
-        function done(err, serialized) {
+        function done(err, dem) {
             if (err) {
                 tile.state = 'errored';
                 callback(err);
             }
 
-            if (serialized) {
-                tile.dem = serialized;
+            if (dem) {
+                tile.dem = dem;
                 tile.needsHillshadePrepare = true;
                 tile.state = 'loaded';
                 callback(null);
