@@ -60,11 +60,11 @@ class StyleExpressionWithErrorHandling extends StyleExpression {
 
     _evaluator: EvaluationContext;
 
-    constructor(expression: Expression, propertySpec: StylePropertySpecification, warnings: boolean) {
+    constructor(expression: Expression, propertySpec: StylePropertySpecification, warnings: boolean, defaultValue: Value) {
         super(expression);
         this._warnings = warnings;
         this._warningHistory = {};
-        this._defaultValue = getDefaultValue(propertySpec);
+        this._defaultValue = defaultValue;
         if (propertySpec.type === 'enum') {
             this._enumValues = propertySpec.values;
         }
@@ -104,6 +104,12 @@ function isExpression(expression: mixed) {
         typeof expression[0] === 'string' && expression[0] in definitions;
 }
 
+type ExpressionOptions = {
+    handleErrors?: boolean,
+    warnings?: boolean,
+    defaultValue?: Value
+};
+
 /**
  * Parse and typecheck the given style spec JSON expression.  If
  * options.defaultValue is provided, then the resulting StyleExpression's
@@ -115,7 +121,7 @@ function isExpression(expression: mixed) {
  */
 function createExpression(expression: mixed,
                           propertySpec: StylePropertySpecification,
-                          options: {handleErrors?: boolean, warnings?: boolean} = {}): Result<StyleExpression, Array<ParsingError>> {
+                          options: ExpressionOptions = {}): Result<StyleExpression, Array<ParsingError>> {
     const parser = new ParsingContext(definitions, [], getExpectedType(propertySpec));
     const parsed = parser.parse(expression);
     if (!parsed) {
@@ -126,7 +132,10 @@ function createExpression(expression: mixed,
     if (options.handleErrors === false) {
         return success(new StyleExpression(parsed));
     } else {
-        return success(new StyleExpressionWithErrorHandling(parsed, propertySpec, options.warnings !== false));
+        return success(new StyleExpressionWithErrorHandling(parsed, propertySpec,
+            options.warnings !== false,
+            options.defaultValue !== undefined ? options.defaultValue : getDefaultValue(propertySpec)
+        ));
     }
 }
 
@@ -203,7 +212,7 @@ export type StylePropertyExpression =
 
 function createPropertyExpression(expression: mixed,
                                   propertySpec: StylePropertySpecification,
-                                  options: {handleErrors?: boolean, warnings?: boolean} = {}): Result<StylePropertyExpression, Array<ParsingError>> {
+                                  options: ExpressionOptions = {}): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, options);
     if (expression.result === 'error') {
         return expression;
@@ -252,7 +261,14 @@ const {Color} = require('./values');
 
 function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification): StylePropertyExpression {
     if (isFunction(value)) {
-        const expression = createPropertyExpression(convertFunction(value, specification), specification, {warnings: false});
+        let defaultValue = (value: any).default;
+        if (defaultValue && specification.type === 'color') {
+            defaultValue = Color.parse(defaultValue);
+        }
+        const expression = createPropertyExpression(convertFunction(value, specification), specification, {
+            warnings: false,
+            defaultValue
+        });
         if (expression.result === 'error') {
             assert(false);
             throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));

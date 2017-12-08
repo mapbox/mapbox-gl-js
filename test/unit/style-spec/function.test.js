@@ -450,9 +450,9 @@ test('exponential function', (t) => {
             'property-function': true
         });
 
-        t.equal(f.evaluate({zoom: 0}, {properties: {}}), undefined);
-        t.equal(f.evaluate({zoom: 0.5}, {properties: {}}), undefined);
-        t.equal(f.evaluate({zoom: 1}, {properties: {}}), undefined);
+        t.equal(f.evaluate({zoom: 0}, {properties: {}}), null);
+        t.equal(f.evaluate({zoom: 0.5}, {properties: {}}), null);
+        t.equal(f.evaluate({zoom: 1}, {properties: {}}), null);
 
         t.end();
     });

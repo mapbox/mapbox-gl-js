@@ -147,11 +147,12 @@ class Interpolate implements Expression {
         const labels = this.labels;
         const outputs = this.outputs;
 
+        const value = ((this.input.evaluate(ctx): any): number);
+
         if (labels.length === 1) {
             return outputs[0].evaluate(ctx);
         }
 
-        const value = ((this.input.evaluate(ctx): any): number);
         if (value <= labels[0]) {
             return outputs[0].evaluate(ctx);
         }
