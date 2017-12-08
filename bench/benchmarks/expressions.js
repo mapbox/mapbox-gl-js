@@ -3,8 +3,7 @@
 const Benchmark = require('../lib/benchmark');
 const accessToken = require('../lib/access_token');
 const spec = require('../../src/style-spec/reference/latest');
-const convertFunction = require('../../src/style-spec/function/convert');
-const {isFunction, createFunction} = require('../../src/style-spec/function');
+const {isFunction, convertFunction} = require('../../src/style-spec/expression/convert_function');
 const {createPropertyExpression} = require('../../src/style-spec/expression');
 
 import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
@@ -15,7 +14,6 @@ class ExpressionBenchmark extends Benchmark {
         propertySpec: StylePropertySpecification,
         rawValue: mixed,
         rawExpression: mixed,
-        compiledFunction: StylePropertyExpression,
         compiledExpression: StylePropertyExpression
     }>;
 
@@ -32,7 +30,6 @@ class ExpressionBenchmark extends Benchmark {
 
                     const expressionData = function(rawValue, propertySpec: StylePropertySpecification) {
                         const rawExpression = convertFunction(rawValue, propertySpec);
-                        const compiledFunction = createFunction(rawValue, propertySpec);
                         const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
                         if (compiledExpression.result === 'error') {
                             throw new Error(compiledExpression.value.map(err => `${err.key}: ${err.message}`).join(', '));
@@ -41,7 +38,6 @@ class ExpressionBenchmark extends Benchmark {
                             propertySpec,
                             rawValue,
                             rawExpression,
-                            compiledFunction,
                             compiledExpression: compiledExpression.value
                         };
                     };
@@ -65,15 +61,15 @@ class ExpressionBenchmark extends Benchmark {
 class FunctionCreate extends ExpressionBenchmark {
     bench() {
         for (const {rawValue, propertySpec} of this.data) {
-            createFunction(rawValue, propertySpec);
+            createPropertyExpression(convertFunction(rawValue, propertySpec), propertySpec);
         }
     }
 }
 
 class FunctionEvaluate extends ExpressionBenchmark {
     bench() {
-        for (const {compiledFunction} of this.data) {
-            compiledFunction.evaluate({zoom: 0});
+        for (const {compiledExpression} of this.data) {
+            compiledExpression.evaluate({zoom: 0});
         }
     }
 }

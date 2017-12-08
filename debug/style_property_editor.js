@@ -1,5 +1,4 @@
-const convertFunction = require('../src/style-spec/function/convert');
-const {isFunction} = require('../src/style-spec/function');
+const {isFunction, convertFunction} = require('../src/style-spec/expression/convert_function');
 const util = require('../src/util/util');
 const spec = require('../src/style-spec/reference/v8.json');
 const stringify = require('json-stringify-pretty-compact');

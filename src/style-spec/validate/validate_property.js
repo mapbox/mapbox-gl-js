@@ -2,7 +2,7 @@
 const validate = require('./validate');
 const ValidationError = require('../error/validation_error');
 const getType = require('../util/get_type');
-const {isFunction} = require('../function');
+const {isFunction} = require('../expression/convert_function');
 const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateProperty(options, propertyType) {

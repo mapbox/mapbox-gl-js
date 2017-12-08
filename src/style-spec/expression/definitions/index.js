@@ -48,7 +48,9 @@ const expressions: { [string]: Class<Expression> } = {
     'match': Match,
     'coalesce': Coalesce,
     'step': Step,
-    'interpolate': Interpolate
+    'interpolate': Interpolate,
+    'interpolate-hcl': Interpolate,
+    'interpolate-lab': Interpolate
 };
 
 function rgba(ctx, [r, g, b, a]) {

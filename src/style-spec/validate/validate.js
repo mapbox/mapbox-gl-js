@@ -4,7 +4,7 @@ const getType = require('../util/get_type');
 const extend = require('../util/extend');
 const unbundle = require('../util/unbundle_jsonlint');
 const {isExpression} = require('../expression');
-const {isFunction} = require('../function');
+const {isFunction} = require('../expression/convert_function');
 
 // Main recursive validation function. Tracks:
 //

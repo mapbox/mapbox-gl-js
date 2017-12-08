@@ -5,7 +5,16 @@ const extend = require('../util/extend');
 
 import type {StylePropertySpecification} from '../style-spec';
 
-module.exports = convertFunction;
+module.exports = {
+    isFunction,
+    convertFunction,
+    isTokenString,
+    convertTokenString
+};
+
+function isFunction(value: PropertyValueSpecification<any>) {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function convertFunction(parameters: PropertyValueSpecification<any>, propertySpec: StylePropertySpecification) {
     let expression;
@@ -33,10 +42,6 @@ function convertFunction(parameters: PropertyValueSpecification<any>, propertySp
             }
             return [stop[0], convertValue(stop[1], propertySpec)];
         });
-
-        if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
-            throw new Error('Unimplemented');
-        }
 
         if (zoomAndFeatureDependent) {
             expression = convertZoomAndPropertyFunction(parameters, propertySpec, stops, defaultExpression);
@@ -89,6 +94,14 @@ function convertValue(value, spec) {
     }
 }
 
+function getInterpolateOperator(parameters) {
+    switch (parameters.colorSpace) {
+    case 'hcl': return 'interpolate-hcl';
+    case 'lab': return 'interpolate-lab';
+    default: return 'interpolate';
+    }
+}
+
 function convertZoomAndPropertyFunction(parameters, propertySpec, stops, defaultExpression) {
     const featureFunctionParameters = {};
     const featureFunctionStops = {};
@@ -115,7 +128,7 @@ function convertZoomAndPropertyFunction(parameters, propertySpec, stops, default
     // otherwise.
     const functionType = getFunctionType({}, propertySpec);
     if (functionType === 'exponential') {
-        const expression = ['interpolate', ['linear'], ['zoom']];
+        const expression = [getInterpolateOperator(parameters), ['linear'], ['zoom']];
 
         for (const z of zoomStops) {
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z], defaultExpression);
@@ -170,7 +183,7 @@ function convertPropertyFunction(parameters, propertySpec, stops, defaultExpress
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['interpolate', ['exponential', base], input];
+        expression = [getInterpolateOperator(parameters), ['exponential', base], input];
     } else {
         throw new Error(`Unknown property function type ${type}`);
     }
@@ -197,7 +210,7 @@ function convertZoomFunction(parameters, propertySpec, stops, input = ['zoom']) 
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['interpolate', ['exponential', base], input];
+        expression = [getInterpolateOperator(parameters), ['exponential', base], input];
     } else {
         throw new Error(`Unknown zoom function type "${type}"`);
     }
@@ -215,7 +228,7 @@ function fixupDegenerateStepCurve(expression) {
     // degenerate step curve (i.e. a constant function): add a noop stop
     if (expression[0] === 'step' && expression.length === 3) {
         expression.push(0);
-        expression.push(expression[3]);
+        expression.push(expression[2]);
     }
 }
 
@@ -242,8 +255,12 @@ function getFunctionType(parameters, propertySpec) {
     }
 }
 
+function isTokenString(value: PropertyValueSpecification<any>, propertySpec: StylePropertySpecification) {
+    return typeof value === 'string' && propertySpec.tokens && /{([^{}]+)}/.test(value);
+}
+
 // "String with {name} token" => ["concat", "String with ", ["get", "name"], " token"]
-function convertTokenString(s) {
+function convertTokenString(s: string) {
     const result = ['concat'];
     const re = /{([^{}]+)}/g;
     let pos = 0;
@@ -252,7 +269,7 @@ function convertTokenString(s) {
         const literal = s.slice(pos, re.lastIndex - match[0].length);
         pos = re.lastIndex;
         if (literal.length > 0) result.push(literal);
-        result.push(['to-string', ['get', match[1]]]);
+        result.push(['case', ['has', match[1]], ['to-string', ['get', match[1]]], '']);
     }
 
     if (result.length === 1) {
