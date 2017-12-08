@@ -269,7 +269,7 @@ function convertTokenString(s: string) {
         const literal = s.slice(pos, re.lastIndex - match[0].length);
         pos = re.lastIndex;
         if (literal.length > 0) result.push(literal);
-        result.push(['to-string', ['get', match[1]]]);
+        result.push(['case', ['has', match[1]], ['to-string', ['get', match[1]]], '']);
     }
 
     if (result.length === 1) {

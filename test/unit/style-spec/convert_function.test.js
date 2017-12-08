@@ -27,26 +27,26 @@ test('convertFunction', (t) => {
             [
                 'concat',
                 'my name is ',
-                ['to-string', ['get', 'name']],
+                ['case', ['has', 'name'], ['to-string', ['get', 'name']], ''],
                 '.'
             ],
             1,
             [
                 'concat',
-                ['to-string', ['get', 'a']],
+                ['case', ['has', 'a'], ['to-string', ['get', 'a']], ''],
                 ' ',
-                ['to-string', ['get', 'b']],
+                ['case', ['has', 'b'], ['to-string', ['get', 'b']], ''],
                 ' ',
-                ['to-string', ['get', 'c']]
+                ['case', ['has', 'c'], ['to-string', ['get', 'c']], '']
             ],
             2,
             'no tokens',
             3,
-            ['to-string', ['get', 'one_token']],
+            ['case', ['has', 'one_token'], ['to-string', ['get', 'one_token']], ''],
             4,
-            ['concat', ['to-string', ['get', 'leading']], ' token'],
+            ['concat', ['case', ['has', 'leading'], ['to-string', ['get', 'leading']], ''], ' token'],
             5,
-            ['concat', 'trailing ', ['to-string', ['get', 'token']]]
+            ['concat', 'trailing ', ['case', ['has', 'token'], ['to-string', ['get', 'token']], '']]
         ]);
 
         t.end();
