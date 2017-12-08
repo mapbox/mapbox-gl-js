@@ -50,6 +50,7 @@
       "source": "geojson",
       "layout": {
         "icon-image": "dot.sdf",
+        "icon-allow-overlap": true,
         "symbol-placement": "line"
       },
       "paint": {
@@ -62,7 +63,7 @@
       "source": "geojson",
       "layout": {
         "icon-image": "dot.sdf",
-        "symbol-placement": "line"
+        "icon-allow-overlap": true
       },
       "paint": {
         "icon-color": "blue"
