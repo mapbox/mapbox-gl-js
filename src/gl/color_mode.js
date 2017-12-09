@@ -9,10 +9,10 @@ const ONE_MINUS_SRC_ALPHA = 0x0303;
 
 class ColorMode {
     blendFunction: BlendFuncType;
-    blendColor: ?Color;
+    blendColor: Color;
     mask: ColorMaskType;
 
-    constructor(blendFunction: BlendFuncType, blendColor: ?Color, mask: ColorMaskType) {
+    constructor(blendFunction: BlendFuncType, blendColor: Color, mask: ColorMaskType) {
         this.blendFunction = blendFunction;
         this.blendColor = blendColor;
         this.mask = mask;
@@ -21,15 +21,15 @@ class ColorMode {
     static Replace: BlendFuncType;
 
     static disabled(): ColorMode {
-        return new ColorMode(ColorMode.Replace, null, [false, false, false, false]);
+        return new ColorMode(ColorMode.Replace, Color.transparent, [false, false, false, false]);
     }
 
     static unblended(): ColorMode {
-        return new ColorMode(ColorMode.Replace, null, [true, true, true, true]);
+        return new ColorMode(ColorMode.Replace, Color.transparent, [true, true, true, true]);
     }
 
     static alphaBlended(): ColorMode {
-        return new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], null, [true, true, true, true]);
+        return new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
     }
 }
 

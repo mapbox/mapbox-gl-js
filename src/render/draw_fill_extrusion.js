@@ -30,7 +30,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             drawExtrusion(painter, source, layer, coords[i]);
         }
     } else if (painter.renderPass === 'translucent') {
-        painter.context.setColorMode(painter.colorModeForRenderPass());
         drawExtrusionTexture(painter, layer);
     }
 }
@@ -64,7 +63,7 @@ function drawToExtrusionFramebuffer(painter, layer) {
     context.clear({ color: Color.transparent });
 
     context.setStencilMode(StencilMode.disabled());
-    context.setDepthMode(new DepthMode(gl.LEQUAL, true, [0, 1]));
+    context.setDepthMode(new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, [0, 1]));
     context.setColorMode(painter.colorModeForRenderPass());
 }
 
@@ -78,6 +77,7 @@ function drawExtrusionTexture(painter, layer) {
 
     context.setStencilMode(StencilMode.disabled());
     context.setDepthMode(DepthMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     context.activeTexture.set(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, renderedTexture.colorAttachment.get());

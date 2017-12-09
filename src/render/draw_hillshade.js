@@ -4,6 +4,7 @@ const Texture = require('./texture');
 const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -17,7 +18,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 
     const context = painter.context;
 
-    context.setDepthMode(painter.depthModeForSublayer(0, false));
+    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
     context.setStencilMode(StencilMode.disabled());
     context.setColorMode(painter.colorModeForRenderPass());
 

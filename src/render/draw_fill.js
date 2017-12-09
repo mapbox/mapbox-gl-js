@@ -2,6 +2,7 @@
 
 const pattern = require('./pattern');
 const Color = require('../style-spec/util/color');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -31,7 +32,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     if (painter.renderPass === pass) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
-        context.setDepthMode(painter.depthModeForSublayer(1, painter.renderPass === 'opaque'));
+        context.setDepthMode(painter.depthModeForSublayer(1, painter.renderPass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly));
         drawFillTiles(painter, sourceCache, layer, coords, drawFillTile);
     }
 
@@ -48,7 +49,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // the current shape, some pixels from the outline stroke overlapped
         // the (non-antialiased) fill.
         context.setDepthMode(painter.depthModeForSublayer(
-            layer.getPaintProperty('fill-outline-color') ? 2 : 0, false));
+            layer.getPaintProperty('fill-outline-color') ? 2 : 0, DepthMode.ReadOnly));
         drawFillTiles(painter, sourceCache, layer, coords, drawStrokeTile);
     }
 }

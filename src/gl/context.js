@@ -223,9 +223,7 @@ class Context {
         } else {
             this.blend.set(true);
             this.blendFunc.set(colorMode.blendFunction);
-            if (colorMode.blendColor) {
-                this.blendColor.set(colorMode.blendColor);
-            }
+            this.blendColor.set(colorMode.blendColor);
         }
 
         this.colorMask.set(colorMode.mask);

@@ -8,6 +8,10 @@ class DepthMode {
     mask: DepthMaskType;
     range: DepthRangeType;
 
+    // DepthMask enums
+    static ReadOnly: boolean;
+    static ReadWrite: boolean;
+
     constructor(depthFunc: DepthFuncType, depthMask: DepthMaskType, depthRange: DepthRangeType) {
         this.func = depthFunc;
         this.mask = depthMask;
@@ -15,8 +19,11 @@ class DepthMode {
     }
 
     static disabled() {
-        return new DepthMode(ALWAYS, false, [0, 1]);
+        return new DepthMode(ALWAYS, DepthMode.ReadOnly, [0, 1]);
     }
 }
+
+DepthMode.ReadOnly = false;
+DepthMode.ReadWrite = true;
 
 module.exports = DepthMode;

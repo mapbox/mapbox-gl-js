@@ -70,7 +70,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthOn = pitchWithMap;
 
-    context.setDepthMode(depthOn ? painter.depthModeForSublayer(0, false) : DepthMode.disabled());
+    context.setDepthMode(depthOn ? painter.depthModeForSublayer(0, DepthMode.ReadOnly) : DepthMode.disabled());
 
     let program;
 

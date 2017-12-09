@@ -2,6 +2,7 @@
 
 const browser = require('../util/browser');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -17,7 +18,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
     const context = painter.context;
 
-    context.setDepthMode(painter.depthModeForSublayer(0, false));
+    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
     context.setColorMode(painter.colorModeForRenderPass());
 
     const programId =
