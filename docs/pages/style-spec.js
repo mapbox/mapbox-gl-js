@@ -1686,7 +1686,7 @@ export default class extends React.Component {
                                 </div>
 
                                 <div className='pad2'>
-                                    <a id='#other-filter' className='anchor'></a>
+                                    <a id='other-filter' className='anchor'></a>
                                     <h3 className='space-bottom1'><a href='#other-filter' title='link to filter'>Filter</a></h3>
                                     <p>A filter selects specific features from a layer. A filter is defined using any boolean <a href="#types-expression">expression</a>. In previous versions of the style specification, filters were defined using the deprecated syntax documented below:</p>
 
