@@ -45,7 +45,7 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
         }
     };
 
-    for (const input of fixture.inputs) {
+    for (const input of fixture.inputs || []) {
         try {
             const feature = { properties: input[1].properties || {} };
             if ('id' in input[1]) {

@@ -1,0 +1,14 @@
+{
+  "expression": ["==", ["get", "x"], ["to-color", "red"]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected at least one argument to be a string, number, boolean, or null, but found (value, color) instead."
+        }
+      ]
+    }
+  }
+}
