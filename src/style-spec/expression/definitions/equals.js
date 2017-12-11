@@ -4,7 +4,7 @@ const {
     ValueType,
     BooleanType,
 } = require('../types');
-const {toString, checkSubtype} = require('../types');
+const {toString} = require('../types');
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';
@@ -56,7 +56,7 @@ class Equals implements Expression {
             return context.error(`Expected at least one argument to be a string, number, boolean, or null, but found (${toString(lhs.type)}, ${toString(rhs.type)}) instead.`);
         }
 
-        if (checkSubtype(lhs.type, rhs.type) && checkSubtype(rhs.type, lhs.type)) {
+        if (lhs.type.kind !== rhs.type.kind && lhs.type.kind !== 'value' && rhs.type.kind !== 'value') {
             return context.error(`Cannot compare ${toString(lhs.type)} and ${toString(rhs.type)}.`);
         }
 
