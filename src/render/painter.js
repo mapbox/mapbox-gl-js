@@ -95,6 +95,7 @@ class Painter {
     _showOverdrawInspector: boolean;
     cache: { [string]: Program };
     crossTileSymbolIndex: CrossTileSymbolIndex;
+    symbolFadeChange: number;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -262,6 +263,8 @@ class Painter {
         this.lineAtlas = style.lineAtlas;
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
+
+        this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
 
         for (const id in style.sourceCaches) {
             const sourceCache = this.style.sourceCaches[id];
