@@ -58,3 +58,13 @@ export type StencilOpType = [StencilOpConstant, StencilOpConstant, StencilOpCons
 export type TextureUnitType = number;
 
 export type ViewportType = [number, number, number, number];
+
+export type StencilTest =
+    | { func: $PropertyType<WebGLRenderingContext, 'NEVER'>, mask: 0 }
+    | { func: $PropertyType<WebGLRenderingContext, 'LESS'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'EQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'LEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'GREATER'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'NOTEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'GEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'ALWAYS'>, mask: 0 };

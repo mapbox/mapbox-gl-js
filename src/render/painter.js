@@ -191,7 +191,7 @@ class Painter {
 
         context.setColorMode(ColorMode.disabled());
         context.setDepthMode(DepthMode.disabled());
-        context.setStencilMode(new StencilMode(gl.ALWAYS, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO));
+        context.setStencilMode(new StencilMode({ func: gl.ALWAYS, mask: 0 }, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO));
 
         const matrix = mat4.create();
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
@@ -219,7 +219,7 @@ class Painter {
             const id = this._tileClippingMaskIDs[tileID.key] = idNext++;
 
             // Tests will always pass, and ref value will be written to stencil buffer.
-            context.setStencilMode(new StencilMode(gl.ALWAYS, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE));
+            context.setStencilMode(new StencilMode({ func: gl.ALWAYS, mask: 0 }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE));
 
             const program = this.useProgram('fill', programConfiguration);
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
@@ -232,7 +232,7 @@ class Painter {
 
     stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
         const gl = this.context.gl;
-        return new StencilMode(gl.EQUAL, this._tileClippingMaskIDs[tileID.key], 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+        return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     colorModeForRenderPass(): ColorMode {

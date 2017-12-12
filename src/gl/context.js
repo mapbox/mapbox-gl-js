@@ -213,7 +213,11 @@ class Context {
             this.stencilTest.set(true);
             this.stencilMask.set(stencilMode.mask);
             this.stencilOp.set([stencilMode.fail, stencilMode.depthFail, stencilMode.pass]);
-            this.stencilFunc.set(util.pick(stencilMode, ['func', 'ref', 'mask']));
+            this.stencilFunc.set({
+                func: stencilMode.test.func,
+                ref: stencilMode.ref,
+                mask: stencilMode.test.mask
+            });
         }
     }
 
