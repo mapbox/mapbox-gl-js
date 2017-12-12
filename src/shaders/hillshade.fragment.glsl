@@ -1,12 +1,8 @@
 uniform sampler2D u_image;
 varying vec2 v_pos;
+
 uniform vec2 u_latrange;
-
-uniform int u_mode;
-uniform float u_mipmap;
-
 uniform vec3 u_light;
-
 uniform vec4 u_shadow;
 uniform vec4 u_highlight;
 uniform vec4 u_accent;
