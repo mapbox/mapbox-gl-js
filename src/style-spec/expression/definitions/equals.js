@@ -22,9 +22,16 @@ function isComparableType(type: Type) {
 }
 
 /**
- * Special form for error-coalescing coercion expressions "to-number",
- * "to-color".  Since these coercions can fail at runtime, they accept multiple
- * arguments, only evaluating one at a time until one succeeds.
+ * Special form for ==, !=, implementing the following signatures:
+ * - (T1: Comparable, T2: Comparable) => boolean { T1 == T2 }
+ * - (Comparable, value) => boolean
+ * - (value, Comparable) => boolean
+ *
+ * Where Comparable = string | number | boolean | null.
+ *
+ * Evaluation semantics for the value cases are equivalent to Javascript's
+ * strict equality (===/!==) -- i.e., when the value argument's type doesn't
+ * match that of the Comparable argument, == evaluates to false, != to true.
  *
  * @private
  */
@@ -69,7 +76,7 @@ class Equals implements Expression {
     }
 
     possibleOutputs() {
-        return this.lhs.possibleOutputs().concat(this.rhs.possibleOutputs());
+        return [true, false];
     }
 }
 
