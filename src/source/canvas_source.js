@@ -2,6 +2,8 @@
 
 const ImageSource = require('./image_source');
 const window = require('../util/window');
+const VertexArrayObject = require('../render/vertex_array_object');
+const Texture = require('../render/texture');
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -134,7 +136,34 @@ class CanvasSource extends ImageSource {
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
 
-        this._prepareImage(this.map.painter.context, this.canvas, resize);
+        const context = this.map.painter.context;
+        const gl = context.gl;
+
+        if (!this.boundsBuffer) {
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray);
+        }
+
+        if (!this.boundsVAO) {
+            this.boundsVAO = new VertexArrayObject();
+        }
+
+        if (!this.texture) {
+            this.texture = new Texture(context, this.canvas, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        } else if (resize) {
+            this.texture.update(this.canvas);
+        } else if (this._playing) {
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+        }
+
+        for (const w in this.tiles) {
+            const tile = this.tiles[w];
+            if (tile.state !== 'loaded') {
+                tile.state = 'loaded';
+                tile.texture = this.texture;
+            }
+        }
     }
 
     serialize(): Object {
