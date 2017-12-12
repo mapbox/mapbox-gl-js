@@ -1,0 +1,20 @@
+{
+  "expression": ["!=", ["get", "x"], ["get", "y"]],
+  "inputs": [
+    [{}, {"properties": {"x": 0, "y": 0}}],
+    [{}, {"properties": {"x": "0", "y": "0"}}],
+    [{}, {"properties": {"x": 0, "y": false}}],
+    [{}, {"properties": {"x": 0, "y": "0"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected at least one argument to be a string, number, boolean, or null, but found (value, value) instead."
+        }
+      ]
+    }
+  }
+}

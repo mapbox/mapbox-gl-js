@@ -1,7 +1,6 @@
 // @flow
 
 const {
-    NullType,
     NumberType,
     StringType,
     BooleanType,
@@ -28,27 +27,30 @@ const Case = require('./case');
 const Step = require('./step');
 const Interpolate = require('./interpolate');
 const Coalesce = require('./coalesce');
+const Equals = require('./equals');
 
 import type { Expression } from '../expression';
 
 const expressions: { [string]: Class<Expression> } = {
     // special forms
-    'let': Let,
-    'var': Var,
-    'literal': Literal,
-    'string': Assertion,
-    'number': Assertion,
-    'boolean': Assertion,
-    'object': Assertion,
+    '!=': Equals,
+    '==': Equals,
     'array': ArrayAssertion,
-    'to-number': Coercion,
-    'to-color': Coercion,
     'at': At,
+    'boolean': Assertion,
     'case': Case,
-    'match': Match,
     'coalesce': Coalesce,
+    'interpolate': Interpolate,
+    'let': Let,
+    'literal': Literal,
+    'match': Match,
+    'number': Assertion,
+    'object': Assertion,
     'step': Step,
-    'interpolate': Interpolate
+    'string': Assertion,
+    'to-color': Coercion,
+    'to-number': Coercion,
+    'var': Var
 };
 
 function rgba(ctx, [r, g, b, a]) {
@@ -74,8 +76,6 @@ function length(ctx, [v]) {
     return v.evaluate(ctx).length;
 }
 
-function eq(ctx, [a, b]) { return a.evaluate(ctx) === b.evaluate(ctx); }
-function ne(ctx, [a, b]) { return a.evaluate(ctx) !== b.evaluate(ctx); }
 function lt(ctx, [a, b]) { return a.evaluate(ctx) < b.evaluate(ctx); }
 function gt(ctx, [a, b]) { return a.evaluate(ctx) > b.evaluate(ctx); }
 function lteq(ctx, [a, b]) { return a.evaluate(ctx) <= b.evaluate(ctx); }
@@ -315,24 +315,6 @@ CompoundExpression.register(expressions, {
         varargs(NumberType),
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
     ],
-    '==': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], eq],
-            [[StringType, StringType], eq],
-            [[BooleanType, BooleanType], eq],
-            [[NullType, NullType], eq]
-        ]
-    },
-    '!=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], ne],
-            [[StringType, StringType], ne],
-            [[BooleanType, BooleanType], ne],
-            [[NullType, NullType], ne]
-        ]
-    },
     '>': {
         type: BooleanType,
         overloads: [

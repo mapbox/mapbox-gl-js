@@ -1,11 +1,12 @@
 {
-  "expression": ["!=", ["number", ["get", "x"]], ["number", ["get", "y"]]],
+  "expression": ["!=", ["number", ["get", "x"]], ["get", "y"]],
   "inputs": [
     [{}, {"properties": {"x": 1, "y": 1}}],
+    [{}, {"properties": {"x": 1, "y": "1"}}],
     [{}, {"properties": {"x": 1, "y": 2}}]
   ],
   "expected": {
-    "outputs": [false, true],
+    "outputs": [false, true, true],
     "compiled": {
       "result": "success",
       "isZoomConstant": true,

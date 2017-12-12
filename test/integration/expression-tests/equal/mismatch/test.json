@@ -3,12 +3,7 @@
   "expected": {
     "compiled": {
       "result": "error",
-      "errors": [
-        {
-          "key": "",
-          "error": "Expected arguments of type (number, number) | (string, string) | (boolean, boolean) | (null, null), but found (string, number) instead."
-        }
-      ]
+      "errors": [{"key": "", "error": "Cannot compare string and number."}]
     }
   }
 }

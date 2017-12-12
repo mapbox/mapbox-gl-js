@@ -1,0 +1,13 @@
+{
+  "expression": ["==", null, ["get", "x"]],
+  "inputs": [[{}, {"properties": {}}], [{}, {"properties": {"x": 1}}]],
+  "expected": {
+    "outputs": [true, false],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "boolean"
+    }
+  }
+}
