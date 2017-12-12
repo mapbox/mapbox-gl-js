@@ -15,6 +15,7 @@
           {
             "type": "Feature",
             "properties": {
+              "width": 4
             },
             "geometry": {
               "type": "Point",
@@ -27,6 +28,7 @@
           {
             "type": "Feature",
             "properties": {
+              "width": 7
             },
             "geometry": {
               "type": "Point",
@@ -40,18 +42,16 @@
       }
     }
   },
-  "bearing": 90,
   "layers": [
     {
       "id": "circle",
       "type": "circle",
       "source": "geojson",
       "paint": {
-        "circle-translate": [
-          20,
-          0
-        ],
-        "circle-translate-anchor": "viewport"
+        "circle-radius": {
+          "type": "identity",
+          "property": "width"
+        }
       }
     }
   ]
