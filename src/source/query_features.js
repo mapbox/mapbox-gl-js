@@ -3,13 +3,15 @@
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type Coordinate from '../geo/coordinate';
+import type CollisionIndex from '../symbol/collision_index';
 
 exports.rendered = function(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Coordinate>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             zoom: number,
-                            bearing: number) {
+                            bearing: number,
+                            collisionIndex: CollisionIndex) {
     const tilesIn = sourceCache.tilesIn(queryGeometry);
 
     tilesIn.sort(sortTilesIn);
@@ -24,7 +26,8 @@ exports.rendered = function(sourceCache: SourceCache,
                 tileIn.scale,
                 params,
                 bearing,
-                sourceCache.id)
+                sourceCache.id,
+                collisionIndex)
         });
     }
 

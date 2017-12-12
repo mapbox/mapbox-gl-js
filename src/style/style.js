@@ -24,8 +24,9 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
-const Placement = require('./placement');
+const PauseablePlacement = require('./pauseable_placement');
 const ZoomHistory = require('./zoom_history');
+const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
@@ -35,6 +36,7 @@ import type {StyleGlyph} from './style_glyph';
 import type CollisionIndex from '../symbol/collision_index';
 import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
+import type Placement from '../symbol/placement';
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -90,6 +92,8 @@ class Style extends Evented {
     _layerOrderChanged: boolean;
 
     collisionIndex: CollisionIndex;
+    crossTileSymbolIndex: CrossTileSymbolIndex;
+    pauseablePlacement: PauseablePlacement;
     placement: Placement;
     z: number;
 
@@ -101,6 +105,7 @@ class Style extends Evented {
         this.imageManager = new ImageManager();
         this.glyphManager = new GlyphManager(map._transformRequest, options.localIdeographFontFamily);
         this.lineAtlas = new LineAtlas(256, 512);
+        this.crossTileSymbolIndex = new CrossTileSymbolIndex();
 
         this._layers = {};
         this._order  = [];
@@ -845,7 +850,7 @@ class Style extends Evented {
         const sourceResults = [];
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, zoom, bearing);
+            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, zoom, bearing, this.collisionIndex);
             sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
@@ -937,24 +942,6 @@ class Style extends Evented {
         }
     }
 
-    getNeedsFullPlacement() {
-        // Anything that changes our "in progress" layer and tile indices requires us
-        // to start over. When we start over, we do a full placement instead of incremental
-        // to prevent starvation.
-        if (this._layerOrderChanged) {
-            // We need to restart placement to keep layer indices in sync.
-            return true;
-        }
-        for (const id in this.sourceCaches) {
-            if (this.sourceCaches[id].getNeedsFullPlacement()) {
-                // A tile has been added or removed, we need to do a full placement
-                // New tiles can't be rendered until they've finished their first placement
-                return true;
-            }
-        }
-        return false;
-    }
-
     _generateCollisionBoxes() {
         for (const id in this.sourceCaches) {
             this._reloadSource(id);
@@ -962,19 +949,70 @@ class Style extends Evented {
     }
 
     _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number) {
-        const forceFullPlacement = this.getNeedsFullPlacement();
+        let symbolBucketsChanged = false;
+        let placementChanged = false;
 
-        if (forceFullPlacement || !this.placement || this.placement.isDone()) {
-            this.placement = new Placement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, this.placement);
+        const layerTiles = {};
+
+        for (const layerID of this._order) {
+            const styleLayer = this._layers[layerID];
+            if (styleLayer.type !== 'symbol') continue;
+
+            if (!layerTiles[styleLayer.source]) {
+                const sourceCache = this.sourceCaches[styleLayer.source];
+                layerTiles[styleLayer.source] = sourceCache.getRenderableIds()
+                    .map((id) => sourceCache.getTileByID(id))
+                    .sort((a, b) => (b.tileID.overscaledZ - a.tileID.overscaledZ) || (a.tileID.isLessThan(b.tileID) ? -1 : 1));
+            }
+
+            const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source]);
+            symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
+        }
+
+        // Anything that changes our "in progress" layer and tile indices requires us
+        // to start over. When we start over, we do a full placement instead of incremental
+        // to prevent starvation.
+        // We need to restart placement to keep layer indices in sync.
+        const forceFullPlacement = this._layerOrderChanged;
+
+        if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration);
             this._layerOrderChanged = false;
         }
 
-        this.placement.continuePlacement(this._order, this._layers, this.sourceCaches);
+        if (!this.pauseablePlacement.isDone()) {
+            this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
-        if (this.placement.isDone()) this.collisionIndex = this.placement.collisionIndex;
+            if (this.pauseablePlacement.isDone()) {
+                const placement = this.pauseablePlacement.placement;
+                placementChanged = placement.commit(this.placement, browser.now());
+                if (!this.placement || placementChanged || symbolBucketsChanged) {
+                    this.placement = placement;
+                    this.collisionIndex = this.placement.collisionIndex;
+                }
+                this.placement.setRecent(browser.now());
+
+                for (const id in layerTiles) {
+                    for (const tile of layerTiles[id]) {
+                        tile.justReloaded = false;
+                    }
+                }
+            }
+
+        } else {
+            this.placement.setStale();
+        }
+
+        if (placementChanged || symbolBucketsChanged) {
+            for (const layerID of this._order) {
+                const styleLayer = this._layers[layerID];
+                if (styleLayer.type !== 'symbol') continue;
+                this.placement.updateLayerOpacities(styleLayer, layerTiles[styleLayer.source]);
+            }
+        }
 
         // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
-        const needsRerender = !this.placement.isDone() || this.placement.stillFading();
+        const needsRerender = !this.pauseablePlacement.isDone() || this.placement.hasTransitions(browser.now());
         return needsRerender;
     }
 
