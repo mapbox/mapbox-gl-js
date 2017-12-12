@@ -2,42 +2,54 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256
+      "width": 64,
+      "height": 64
     }
   },
-  "center": [
-    13.418056,
-    52.499167
-  ],
-  "zoom": 14,
-  "bearing": 90,
   "sources": {
-    "mapbox": {
-      "type": "vector",
-      "maxzoom": 14,
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.mvt"
-      ]
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }
+        ]
+      }
     }
   },
+  "bearing": 90,
   "layers": [
     {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "white"
-      }
-    },
-    {
-      "id": "poi_label",
+      "id": "circle",
       "type": "circle",
-      "source": "mapbox",
-      "source-layer": "poi_label",
+      "source": "geojson",
       "paint": {
-        "circle-color": "black",
         "circle-translate": [
-          10,
-          10
+          20,
+          0
         ],
         "circle-translate-anchor": "map"
       }
