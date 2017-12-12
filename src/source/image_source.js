@@ -72,7 +72,6 @@ class ImageSource extends Evented implements Source {
     dispatcher: Dispatcher;
     map: Map;
     texture: Texture;
-    textureLoaded: boolean;
     image: ImageData;
     centerCoord: Coordinate;
     tileID: CanonicalTileID;
@@ -95,7 +94,6 @@ class ImageSource extends Evented implements Source {
         this.setEventedParent(eventedParent);
 
         this.options = options;
-        this.textureLoaded = false;
     }
 
     load() {
@@ -201,8 +199,7 @@ class ImageSource extends Evented implements Source {
             this.boundsVAO = new VertexArrayObject();
         }
 
-        if (!this.textureLoaded) {
-            this.textureLoaded = true;
+        if (!this.texture) {
             this.texture = new Texture(context, image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         } else if (resize) {
