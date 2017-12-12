@@ -28,7 +28,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     if (painter.renderPass !== pass) return;
 
     context.stencilTest.set(false);
-
+    context.depthMask.set(pass === 'opaque');
     painter.setDepthSublayer(0);
 
     const properties = new PossiblyEvaluated(fillLayerPaintProperties);
