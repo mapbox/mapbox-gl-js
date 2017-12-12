@@ -69,7 +69,7 @@ ${indent}${sealing}}`
 }
 
 function flowSourceTypeName(key) {
-    return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}SourceSpecification`);
+    return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}SourceSpecification`).replace(/_dem/, 'DEM');
 }
 
 function flowLayerTypeName(key) {

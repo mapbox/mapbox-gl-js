@@ -15,9 +15,7 @@ import type {Callback} from '../types/callback';
 
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
-    _options: RasterSourceSpecification;
-
-    constructor(id: string, options: RasterSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
