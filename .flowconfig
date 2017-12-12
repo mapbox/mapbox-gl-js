@@ -8,6 +8,7 @@
 .*/node_modules/htmltojsx/.*
 .*/node_modules/documentation/.*
 .*/test/unit/style-spec/fixture/invalidjson.input.json
+.*/test/integration/render-tests/.*
 
 [options]
 unsafe.enable_getters_and_setters=true
