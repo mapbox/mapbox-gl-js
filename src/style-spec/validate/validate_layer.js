@@ -71,10 +71,14 @@ module.exports = function validateLayer(options) {
         }
     }
 
+    // https://github.com/mapbox/mapbox-gl-js/issues/5772
+    const valueSpec = extend({}, styleSpec.layer,
+        {type: extend({}, styleSpec.layer.type, {required: false})});
+
     errors = errors.concat(validateObject({
         key: key,
         value: layer,
-        valueSpec: styleSpec.layer,
+        valueSpec,
         style: options.style,
         styleSpec: options.styleSpec,
         objectElementValidators: {
