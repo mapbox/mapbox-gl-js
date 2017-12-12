@@ -1,7 +1,6 @@
 // @flow
 
 const util = require('../util/util');
-const window = require('../util/window');
 const {CanonicalTileID} = require('./tile_id');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
@@ -19,14 +18,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Coordinate from '../geo/coordinate';
 import type {Callback} from '../types/callback';
-import type Context from '../gl/context';
 import type VertexBuffer from '../gl/vertex_buffer';
-
-export type ImageTextureSource =
-  ImageData |
-  HTMLImageElement |
-  HTMLCanvasElement |
-  HTMLVideoElement;
 
 /**
  * A data source containing an image.
@@ -185,12 +177,13 @@ class ImageSource extends Evented implements Source {
     }
 
     prepare() {
-        if (Object.keys(this.tiles).length === 0 || !this.image) return;
-        this._prepareImage(this.map.painter.context, this.image);
-    }
+        if (Object.keys(this.tiles).length === 0 || !this.image) {
+            return;
+        }
 
-    _prepareImage(context: Context, image: ImageTextureSource, resize?: boolean) {
+        const context = this.map.painter.context;
         const gl = context.gl;
+
         if (!this.boundsBuffer) {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray);
         }
@@ -200,13 +193,8 @@ class ImageSource extends Evented implements Source {
         }
 
         if (!this.texture) {
-            this.texture = new Texture(context, image, gl.RGBA);
+            this.texture = new Texture(context, this.image, gl.RGBA);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        } else if (resize) {
-            this.texture.update(image);
-        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData || image instanceof window.HTMLCanvasElement) {
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }
 
         for (const w in this.tiles) {

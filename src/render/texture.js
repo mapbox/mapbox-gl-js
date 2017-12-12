@@ -4,7 +4,6 @@ const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData} = requi
 
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
-import type {ImageTextureSource} from '../source/image_source';
 
 export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'RGBA'>
@@ -27,7 +26,10 @@ type EmptyImage = {
 export type TextureImage =
     | RGBAImage
     | AlphaImage
-    | ImageTextureSource
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | HTMLVideoElement
+    | ImageData
     | EmptyImage;
 
 class Texture {
