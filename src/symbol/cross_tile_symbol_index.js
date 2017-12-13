@@ -187,7 +187,7 @@ class CrossTileSymbolLayerIndex {
 
         const minZoom = Math.min(25, ...(Object.keys(this.indexes): any));
 
-        for (let z = tileID.canonical.z - 1; z >= minZoom; z--) {
+        for (let z = tileID.overscaledZ - 1; z >= minZoom; z--) {
             const parentCoord = tileID.scaledTo(z);
             if (!parentCoord) break; // Flow doesn't know that z >= minZoom would prevent this
             const parentIndex = this.indexes[z] && this.indexes[z][parentCoord.key];
