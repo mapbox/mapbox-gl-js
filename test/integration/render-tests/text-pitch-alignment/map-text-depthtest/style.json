@@ -1,0 +1,165 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "diff": 0.00025
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "pitch": 45,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "text": "Hello World"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  0,
+                  -40
+                ],
+                [
+                  10,
+                  20
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "order": "below"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -180,
+                    -60
+                  ],
+                  [
+                    -180,
+                    60
+                  ],
+                  [
+                    180,
+                    60
+                  ],
+                  [
+                    180,
+                    -60
+                  ],
+                  [
+                    -180,
+                    -60
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "order": "above"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -180,
+                    -60
+                  ],
+                  [
+                    170,
+                    60
+                  ],
+                  [
+                    180,
+                    60
+                  ],
+                  [
+                    -170,
+                    -60
+                  ],
+                  [
+                    -180,
+                    -60
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "poly-below-text",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-color": "#888"
+      },
+      "filter": [
+        "==",
+        "order",
+        "below"
+      ]
+    },
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 60,
+        "text-rotation-alignment": "map",
+        "text-pitch-alignment": "map",
+        "text-field": "{text}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-opacity": 1
+      }
+    },
+    {
+      "id": "poly-above-text",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-color": "#f00"
+      },
+      "filter": [
+        "==",
+        "order",
+        "above"
+      ]
+    }
+  ]
+}

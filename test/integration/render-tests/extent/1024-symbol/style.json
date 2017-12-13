@@ -1,0 +1,49 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "diff": 0.003
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "zoom": 0,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/extent1024-14-8802-5374.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "mapbox",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "layout": {
+        "icon-image": "dog-park-12",
+        "text-field": "mapbox",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "flowtype/require-valid-file-annotation": [0],
+    "prefer-arrow-callback": "off",
+    "no-var": "off",
+    "strict": "off",
+    "no-restricted-properties": "off",
+    "no-unused-vars": "off",
+    "prefer-template": "off"
+  },
+  "env": {
+    "es6": false,
+    "browser": true
+  },
+  "globals": {
+    "mapboxgl": false,
+    "React": false,
+    "ReactDOM": false
+  }
+}

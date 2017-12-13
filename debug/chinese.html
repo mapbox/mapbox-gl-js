@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        .mapboxgl-marker {
+            width: 10px;
+            height: 10px;
+            background: red;
+            margin-top: -5px;
+            margin-left: -5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-70.751953125, 43.38904828677382],
+    style: 'mapbox://styles/mapbox/streets-v9',
+    hash: true
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+
+map.on('load', function () {
+    map.addSource("points", {
+        "type": "geojson",
+        "data": '/test/integration/data/chinese.geojson'
+    });
+
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": "points",
+        "layout": {
+            "icon-image": "{icon}-15",
+            "text-field": "{name}",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top",
+            "text-allow-overlap": true,
+            "icon-allow-overlap": true
+        }
+    });
+});
+
+</script>
+</body>
+</html>

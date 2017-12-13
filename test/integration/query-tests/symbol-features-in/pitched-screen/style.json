@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "debug": true,
+      "width": 1000,
+      "height": 1000,
+      "queryGeometry": [
+        [
+          100,
+          85
+        ],
+        [
+          850,
+          400
+        ]
+      ]
+    }
+  },
+  "center": [
+    3,
+    3
+  ],
+  "zoom": 8.75,
+  "pitch": 60,
+  "bearing": 45,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/121points.geojson"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "icon-image": "bicycle-12",
+        "text-field": "A lot of test text so that the collision box is big",
+        "text-max-width": 10,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "interactive": true
+    }
+  ]
+}

@@ -3,22 +3,24 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         .map { width: 300px; height: 300px; display: block; float: left; margin: 5px; }
     </style>
 </head>
 
-<div class='map' id='map1'></div>
-<div class='map' id='map2'></div>
+<body>
+<div class='map'></div>
+<div class='map'></div>
+<div class='map'></div>
+<div class='map'></div>
 
-<script src='mapbox-gl.js'></script>
-<script src='access-token.js'></script>
-
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
 <script>
+
 var style = {
     "version": 8,
     "sources": {
@@ -27,6 +29,10 @@ var style = {
             "url": "mapbox://mapbox.satellite",
             "tileSize": 256
         },
+        "streets": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v7"
+        }
     },
     "layers": [{
         "id": "background",
@@ -38,41 +44,32 @@ var style = {
         "id": "satellite",
         "type": "raster",
         "source": "satellite"
+    }, {
+        "id": "road",
+        "type": "line",
+        "source": "streets",
+        "source-layer": "road",
+        "paint": { "line-color": "rgb(55,89,144)",  "line-width": 4  }
     }]
 };
 
-var map1 = new mapboxgl.Map({
-  container: 'map1',
-  minZoom: 14,
-  zoom: 17,
-  center: [-122.514426, 37.562984],
-  bearing: -96,
-  style: style,
-  hash: false
-});
-
-var map2 = new mapboxgl.Map({
-  container: 'map2',
-  minZoom: 14,
-  zoom: 17,
-  center: [-122.514426, 37.562984],
-  bearing: -96,
-  style: style,
-  hash: false
-});
-
-function popup(e) {
-    if (e.originalEvent.shiftKey) return;
-    (new mapboxgl.Popup())
-        .setLngLat(e.lngLat)
-        .setHTML('<h3>' + e.point.x + ', ' + e.point.y + '</h3>')
-        .addTo(this);
+function addMap (container) {
+    var map = new mapboxgl.Map({
+        container: container,
+        minZoom: 14,
+        zoom: 15.5,
+        center: [-122.514426, 37.562984],
+        bearing: -96,
+        style: style,
+        hash: false
+    });
 }
 
-map1.on('click', popup.bind(map1));
-map2.on('click', popup.bind(map2));
+var containers = document.querySelectorAll('.map');
+for (var i = 0; i < containers.length; i++) {
+    addMap(containers[i]);
+}
 
 </script>
-
 </body>
 </html>

@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 2000,
+      "height": 500,
+      "pixelRatio": 0.25,
+      "queryGeometry": [
+        [
+          500,
+          280
+        ],
+        [
+          1700,
+          400
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "countries",
+      "type": "circle",
+      "source": "mapbox",
+      "source-layer": "hillshade",
+      "filter": [
+        "==",
+        "level",
+        56
+      ],
+      "paint": {
+        "circle-radius": 5
+      }
+    }
+  ]
+}

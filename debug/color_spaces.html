@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+    <select onchange='pickInterpolation(this)'>
+        <option value='rgb'>rgb</option>
+        <option value='hcl'>hcl</option>
+        <option value='lab'>lab</option>
+    </select>
+</div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v9',
+    hash: true
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.GeolocateControl());
+map.addControl(new mapboxgl.ScaleControl());
+
+map.on('load', function() {
+    map.addSource('geojson', {
+        "type": "geojson",
+        "data": "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_0_countries.geojson"
+    });
+
+    map.addLayer({
+        "id": "countries",
+        "type": "fill",
+        "source": "geojson",
+        "paint": {
+            "fill-color": {
+                "property": "pop_est",
+                "colorSpace": "lab",
+                "stops": [
+                    [0, 'blue'],
+                    [140041247, 'red']
+                ]
+            }
+        }
+    }, 'country-label-lg');
+});
+
+function pickInterpolation(input) {
+    map.setPaintProperty('countries', 'fill-color', {
+        "property": "pop_est",
+        "colorSpace": input.value,
+        "stops": [
+            [0, 'blue'],
+            [140041247, 'red']
+        ]
+    });
+}
+
+</script>
+</body>
+</html>

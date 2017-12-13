@@ -1,0 +1,15 @@
+{
+  "expression": ["let", "$a", 1, ["var", "$a"]],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[1]",
+          "error": "Variable names must contain only alphanumeric characters or '_'."
+        }
+      ]
+    }
+  }
+}

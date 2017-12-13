@@ -1,0 +1,58 @@
+[
+  {
+    "message": "layers[0].filter: array expected, object found",
+    "line": 15
+  },
+  {
+    "message": "layers[1].filter: filter array must have at least 1 element",
+    "line": 22
+  },
+  {
+    "message": "layers[2].filter[0]: Unknown expression \"=\". If you wanted a literal array, use [\"literal\", [...]].",
+    "line": 29
+  },
+  {
+    "message": "layers[3].filter: filter array for operator \"==\" must have 3 elements",
+    "line": 40
+  },
+  {
+    "message": "layers[4].filter: filter array for operator \"==\" must have 3 elements",
+    "line": 47
+  },
+  {
+    "message": "layers[5].filter[1]: string expected, number found",
+    "line": 59
+  },
+  {
+    "message": "layers[6].filter[2]: Expected an array with at least one element. If you wanted a literal array, use [\"literal\", []].",
+    "line": 68
+  },
+  {
+    "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], \"value\" found",
+    "line": 82
+  },
+  {
+    "message": "layers[8].filter: \"$type\" cannot be use with operator \">\"",
+    "line": 90
+  },
+  {
+    "message": "layers[8].filter[2]: expected one of [Point, LineString, Polygon], \"value\" found",
+    "line": 93
+  },
+  {
+    "message": "layers[9].filter[1]: filter array must have at least 1 element",
+    "line": 103
+  },
+  {
+    "message": "layers[12].filter[2]: Expected object but found string instead.",
+    "line": 131
+  },
+  {
+    "message": "layers[13].filter[1]: Bare objects invalid. Use [\"literal\", {...}] instead.",
+    "line": 142
+  },
+  {
+    "message": "layers[14].filter[2][1]: string expected, array found",
+    "line": 152
+  }
+]

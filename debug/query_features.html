@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    hash: true,
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+
+var emptyFc = { type: 'FeatureCollection', features: [] };
+
+map.on('style.load', function() {
+    map.addSource('queried', { type: 'geojson', data: emptyFc });
+    map.addLayer({
+        "id": "query",
+        "type": "line",
+        "source": "queried",
+        "paint": {
+            "line-color": "#8D8DEC",
+            "line-width": {base: 1.5, stops: [[5, 0.75], [18, 32]]}
+        }
+    }, 'country-label-sm');
+
+    map.addSource('boxsource', { type: 'geojson', data: emptyFc });
+    map.addLayer({
+        "id": "box",
+        "type": "fill",
+        "source": "boxsource",
+        "paint": {
+            "fill-color": "#8D8DEC",
+            "fill-opacity": 0.5
+        },
+        "interactive": true
+    }, 'country-label-sm');
+});
+
+var box = [];
+map.on('click', function(e) {
+    if (box.length >= 2) {
+        box = [];
+    }
+    if (box.length <= 1) {
+        box.push(e.point);
+    }
+    if (box.length === 2) {
+        var boxcoords = box
+            .map(map.unproject.bind(map))
+            .map(function (latlng) { return [latlng.lng, latlng.lat]; })
+            .sort(function (a, b) { return a[0] - b[0]; });
+
+        boxcoords = [
+            boxcoords[0],
+            [boxcoords[0][0], boxcoords[1][1]],
+            boxcoords[1],
+            [boxcoords[1][0], boxcoords[0][1]],
+            boxcoords[0]
+        ];
+        var results = map.queryRenderedFeatures(box, {});
+        map.getSource('queried').setData({
+            type: 'FeatureCollection',
+            features: results
+        });
+
+        map.getSource('boxsource').setData({
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'LineString',
+                    coordinates: boxcoords
+                }
+            }]
+        });
+    }
+});
+
+</script>
+</body>
+</html>

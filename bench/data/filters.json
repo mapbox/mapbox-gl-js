@@ -1,0 +1,1462 @@
+[
+    {
+        "filter": [
+            "==",
+            "class",
+            "crop"
+        ],
+        "layer": "landcover"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "grass"
+        ],
+        "layer": "landcover"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "scrub"
+        ],
+        "layer": "landcover"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "wood"
+        ],
+        "layer": "landcover"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "snow"
+        ],
+        "layer": "landcover"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "hospital"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "school"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "park"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "pitch"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "pitch"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "cemetery"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "industrial"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "sand"
+        ],
+        "layer": "landuse"
+    },
+    {
+        "filter": [
+            "==",
+            "level",
+            94
+        ],
+        "layer": "hillshade"
+    },
+    {
+        "filter": [
+            "==",
+            "level",
+            90
+        ],
+        "layer": "hillshade"
+    },
+    {
+        "filter": [
+            "==",
+            "level",
+            89
+        ],
+        "layer": "hillshade"
+    },
+    {
+        "filter": [
+            "==",
+            "level",
+            78
+        ],
+        "layer": "hillshade"
+    },
+    {
+        "filter": [
+            "==",
+            "level",
+            67
+        ],
+        "layer": "hillshade"
+    },
+    {
+        "filter": [
+            "==",
+            "level",
+            56
+        ],
+        "layer": "hillshade"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!=",
+                "class",
+                "river"
+            ],
+            [
+                "!=",
+                "class",
+                "canal"
+            ]
+        ],
+        "layer": "waterway"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "Polygon"
+            ],
+            [
+                "==",
+                "class",
+                "land"
+            ]
+        ],
+        "layer": "barrier_line"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "land"
+            ]
+        ],
+        "layer": "barrier_line"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "Polygon"
+            ],
+            [
+                "!=",
+                "type",
+                "apron"
+            ]
+        ],
+        "layer": "aeroway"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "Polygon"
+            ],
+            [
+                "==",
+                "class",
+                "street_limited"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "path"
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "street"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "street_limited"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "motorway_link"
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "service",
+            "driveway"
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "!=",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "street"
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "class",
+                "main"
+            ],
+            [
+                "!=",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "class",
+                "main"
+            ],
+            [
+                "==",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "motorway"
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "==",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "in",
+                "class",
+                "main",
+                "street",
+                "street_limited"
+            ],
+            [
+                "!=",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "==",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "major_rail",
+            "minor_rail"
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "in",
+                "class",
+                "motorway",
+                "motorway_link"
+            ]
+        ],
+        "layer": "tunnel"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "path"
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "street"
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "street_limited"
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "service",
+            "driveway"
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "!=",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "street"
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "class",
+                "main"
+            ],
+            [
+                "!=",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "motorway"
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "in",
+                "class",
+                "main",
+                "street",
+                "street_limited"
+            ],
+            [
+                "!=",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "==",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "major_rail",
+            "minor_rail"
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "==",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "in",
+                "class",
+                "motorway",
+                "motorway_link"
+            ]
+        ],
+        "layer": "road"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "Polygon"
+            ],
+            [
+                "==",
+                "class",
+                "street_limited"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "path"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "street"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "==",
+                "class",
+                "street_limited"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "motorway_link"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "service",
+            "driveway"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "!=",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "street"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "in",
+                "class",
+                "main",
+                "street",
+                "street_limited"
+            ],
+            [
+                "!=",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "any",
+            [
+                "==",
+                "class",
+                "motorway"
+            ],
+            [
+                "==",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "service",
+            "driveway"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "==",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "class",
+                    "street_limited"
+                ],
+                [
+                    "!=",
+                    "type",
+                    "construction"
+                ]
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "street"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "class",
+                "main"
+            ],
+            [
+                "!=",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "class",
+                "main"
+            ],
+            [
+                "==",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "==",
+                "type",
+                "trunk"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "motorway"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "major_rail",
+            "minor_rail"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "aerialway"
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "oneway",
+                1
+            ],
+            [
+                "in",
+                "class",
+                "motorway",
+                "motorway_link"
+            ]
+        ],
+        "layer": "bridge"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "hedge"
+        ],
+        "layer": "barrier_line"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "fence"
+        ],
+        "layer": "barrier_line"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "gate"
+        ],
+        "layer": "barrier_line"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                ">=",
+                "admin_level",
+                3
+            ],
+            [
+                "==",
+                "maritime",
+                0
+            ]
+        ],
+        "layer": "admin"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                ">=",
+                "admin_level",
+                3
+            ],
+            [
+                "==",
+                "maritime",
+                0
+            ]
+        ],
+        "layer": "admin"
+    },
+    {
+        "filter": [
+            "!=",
+            "index",
+            5
+        ],
+        "layer": "contour"
+    },
+    {
+        "filter": [
+            "==",
+            "index",
+            5
+        ],
+        "layer": "contour"
+    },
+    {
+        "filter": [
+            "==",
+            "index",
+            5
+        ],
+        "layer": "contour"
+    },
+    {
+        "filter": [
+            "==",
+            "class",
+            "river"
+        ],
+        "layer": "waterway_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "maki",
+                "rail-light",
+                "rail-metro",
+                "rail",
+                "airport",
+                "airfield",
+                "heliport",
+                "rocket",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "==",
+                "scalerank",
+                4
+            ],
+            [
+                ">=",
+                "localrank",
+                15
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "maki",
+                "rail-light",
+                "rail-metro",
+                "rail",
+                "airport",
+                "airfield",
+                "heliport",
+                "rocket",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "==",
+                "scalerank",
+                4
+            ],
+            [
+                "<=",
+                "localrank",
+                14
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "maki",
+                "park",
+                "cemetery",
+                "golf",
+                "zoo",
+                "playground"
+            ],
+            [
+                "==",
+                "scalerank",
+                4
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "maki",
+                "rail-light",
+                "rail-metro",
+                "rail",
+                "airport",
+                "airfield",
+                "heliport",
+                "rocket",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "==",
+                "scalerank",
+                3
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "maki",
+                "park",
+                "cemetery",
+                "golf",
+                "zoo"
+            ],
+            [
+                "==",
+                "scalerank",
+                3
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "!in",
+                "class",
+                "motorway",
+                "main",
+                "street_limited",
+                "street"
+            ]
+        ],
+        "layer": "road_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "==",
+                "$type",
+                "LineString"
+            ],
+            [
+                "in",
+                "class",
+                "street",
+                "street_limited"
+            ]
+        ],
+        "layer": "road_label"
+    },
+    {
+        "filter": [
+            "in",
+            "class",
+            "main",
+            "motorway"
+        ],
+        "layer": "road_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "shield",
+                "us-interstate",
+                "us-interstate-business",
+                "us-interstate-duplex"
+            ],
+            [
+                "<=",
+                "reflen",
+                6
+            ]
+        ],
+        "layer": "road_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "shield",
+                "us-interstate",
+                "us-interstate-business",
+                "us-interstate-duplex"
+            ],
+            [
+                "<=",
+                "reflen",
+                6
+            ]
+        ],
+        "layer": "road_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "maki",
+                "rail-light",
+                "rail-metro",
+                "rail",
+                "airport",
+                "airfield",
+                "heliport",
+                "rocket",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "==",
+                "scalerank",
+                2
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "maki",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "==",
+                "scalerank",
+                2
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "==",
+            "type",
+            "Rail Station"
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "<=",
+            "area",
+            10000
+        ],
+        "layer": "water_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "maki",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "<=",
+                "scalerank",
+                1
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "maki",
+                "rail-light",
+                "rail-metro",
+                "rail",
+                "airport",
+                "airfield",
+                "heliport",
+                "rocket",
+                "park",
+                "golf",
+                "cemetery",
+                "zoo",
+                "campsite",
+                "swimming",
+                "dog-park"
+            ],
+            [
+                "<=",
+                "scalerank",
+                1
+            ],
+            [
+                "!=",
+                "type",
+                "Island"
+            ]
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "==",
+            "type",
+            "Islet"
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "==",
+            "type",
+            "Island"
+        ],
+        "layer": "poi_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "!in",
+                "scalerank",
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            [
+                "==",
+                "type",
+                "city"
+            ]
+        ],
+        "layer": "place_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "scalerank",
+                3,
+                4,
+                5
+            ],
+            [
+                "==",
+                "type",
+                "city"
+            ],
+            [
+                "in",
+                "ldir",
+                "S",
+                "SE",
+                "SW",
+                "E"
+            ]
+        ],
+        "layer": "place_label"
+    },
+    {
+        "filter": [
+            "all",
+            [
+                "in",
+                "scalerank",
+                3,
+                4,
+                5
+            ],
+            [
+                "==",
+                "type",
+                "city"
+            ],
+            [
+                "in",
+                "ldir",
+                "N",
+                "NE",
+                "NW",
+                "W"
+            ]
+        ],
+        "layer": "place_label"
+    }
+]

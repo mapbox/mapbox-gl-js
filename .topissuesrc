@@ -1,0 +1,8 @@
+{
+   "labels": {
+       "release blocker": 25,
+       "high priority": 7,
+       "medium priority": 5,
+       "bug": 2
+   }
+}

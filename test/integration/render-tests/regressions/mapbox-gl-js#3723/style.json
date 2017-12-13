@@ -1,0 +1,29 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "raster": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/alpha.png"
+      ],
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "raster",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-brightness-min": 0.5
+      }
+    }
+  ]
+}

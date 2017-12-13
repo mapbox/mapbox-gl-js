@@ -4,8 +4,7 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -25,10 +24,10 @@
 <body>
 <div id='map'></div>
 
-<script src='mapbox-gl.js'></script>
-<script src='access-token.js'></script>
-
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
 <script>
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
@@ -46,20 +45,18 @@ function addRandomMarker() {
 
     var lng = w + (e - w) * Math.random();
     var lat = s + (n - s) * Math.random();
+    var popup = new mapboxgl.Popup().setText('hello hi');
 
     var marker = new mapboxgl.Marker()
         .setLngLat([lng, lat])
+        .setPopup(popup)
         .addTo(map);
-
-    marker.getElement().onclick = function(e) {
-        alert('Hello world');
-        e.stopPropagation();
-    };
 }
 
 for (var i = 0; i < 100; i++) addRandomMarker();
 
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.NavigationControl());
+
 </script>
 
 </body>

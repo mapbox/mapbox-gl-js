@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0003
+    }
+  },
+  "center": [
+    -70.752954126,
+    43.39004898677380
+  ],
+  "zoom": 11,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/chinese.geojson"
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "NotoCJK"
+        ],
+        "symbol-placement": "point"
+      }
+    }
+  ]
+}

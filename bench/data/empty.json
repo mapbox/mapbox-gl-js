@@ -1,0 +1,13 @@
+{
+  "version": 8,
+  "name": "Empty",
+  "sources": {
+    "composite": {
+      "url": "mapbox://mapbox.mapbox-streets-v7",
+      "type": "vector"
+    }
+  },
+  "sprite": "mapbox://sprites/mapbox/light-v9",
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+  "layers": []
+}

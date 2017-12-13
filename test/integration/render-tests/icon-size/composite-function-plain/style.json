@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {"x": 0},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-size": {
+          "property": "x",
+          "stops": [
+            [ {"zoom": 0, "value": 0}, 0.5 ],
+            [ {"zoom": 1, "value": 0}, 1.5 ]
+          ]
+        },
+        "icon-image": "restaurant-12"
+      },
+      "paint": {
+        "icon-color": "red"
+      }
+    }
+  ]
+}

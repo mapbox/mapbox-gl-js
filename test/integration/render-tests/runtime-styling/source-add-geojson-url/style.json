@@ -1,0 +1,35 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "addSource",
+          "geojson",
+          {
+            "type": "geojson",
+            "data": "local://geojson/point.json"
+          }
+        ],
+        [
+          "addLayer",
+          {
+            "id": "circle",
+            "type": "circle",
+            "source": "geojson"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {},
+  "layers": []
+}

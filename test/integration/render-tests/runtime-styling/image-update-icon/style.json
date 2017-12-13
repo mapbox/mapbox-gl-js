@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "updateImage",
+          "generic_icon",
+          "./image/marker.png"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geometry": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "geometry",
+      "type": "symbol",
+      "source": "geometry",
+      "layout": {
+        "icon-image": "generic_icon"
+      }
+    }
+  ]
+}

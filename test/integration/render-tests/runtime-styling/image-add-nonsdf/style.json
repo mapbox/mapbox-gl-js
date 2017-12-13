@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "addImage",
+          "line.sdf",
+          "./image/line.sdf.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "geometry",
+            "type": "symbol",
+            "source": "geometry",
+            "layout": {
+              "icon-image": "line.sdf"
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geometry": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "layers": []
+}
+

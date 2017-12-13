@@ -1,0 +1,123 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "property": 0
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -10,
+            -10
+          ]
+        }
+      }
+    },
+    "b": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "property": 0
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            10,
+            -10
+          ]
+        }
+      }
+    },
+    "c": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "property": "invalid"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -10,
+            10
+          ]
+        }
+      }
+    },
+    "d": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "property": "invalid"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            10,
+            10
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "a",
+      "source": "a",
+      "type": "circle",
+      "paint": {
+        "circle-color": {
+          "type": "identity",
+          "property": "property",
+          "default": "red"
+        }
+      }
+    },
+    {
+      "id": "b",
+      "source": "b",
+      "type": "circle",
+      "paint": {
+        "circle-color": {
+          "type": "identity",
+          "property": "property"
+        }
+      }
+    },
+    {
+      "id": "c",
+      "source": "c",
+      "type": "circle",
+      "paint": {
+        "circle-color": {
+          "type": "identity",
+          "property": "property",
+          "default": "blue"
+        }
+      }
+    },
+    {
+      "id": "d",
+      "source": "d",
+      "type": "circle",
+      "paint": {
+        "circle-color": {
+          "type": "identity",
+          "property": "property"
+        }
+      }
+    }
+  ]
+}

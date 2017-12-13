@@ -1,108 +1,34 @@
-[![Build Status](https://circleci.com/gh/mapbox/mapbox-gl-js.svg?style=svg)](https://circleci.com/gh/mapbox/mapbox-gl-js) [![Coverage Status](https://coveralls.io/repos/github/mapbox/mapbox-gl-js/badge.svg?branch=master)](https://coveralls.io/github/mapbox/mapbox-gl-js?branch=master)
+[<img width="400" alt="Mapbox" src="docs/pages/assets/logo.png">](https://www.mapbox.com/)
 
-# Mapbox GL JS
+**Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
+[Mapbox Style Specification](https://github.com/mapbox/mapbox-gl-js/style-spec/), applies them to vector tiles that
+conform to the [Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec), and renders them using
+WebGL.
 
-Mapbox GL JS is a Javascript & WebGL library that renders interactive maps from [vector tiles](https://www.mapbox.com/blog/vector-tiles/) and [Mapbox styles](https://www.mapbox.com/mapbox-gl-style-spec).
+Mapbox GL JS is part of the [cross-platform Mapbox GL ecosystem](https://www.mapbox.com/maps/), which also includes
+compatible native SDKs for applications on [Android](https://www.mapbox.com/android-sdk/),
+[iOS](https://www.mapbox.com/ios-sdk/), [macOS](http://mapbox.github.io/mapbox-gl-native/macos),
+[Qt](https://github.com/mapbox/mapbox-gl-native/tree/master/platform/qt), and [React Native](https://github.com/mapbox/react-native-mapbox-gl/). Mapbox provides building blocks to add location features like maps, search, and navigation into any experience you
+create. To get started with GL JS or any of our other building blocks,
+[sign up for a Mapbox account](https://www.mapbox.com/signup/).
 
-It is part of the [Mapbox GL ecosystem](https://github.com/mapbox/mapbox-gl) which includes [Mapbox GL Native](https://github.com/mapbox/mapbox-gl-native), a suite of compatible SDKs for native desktop and mobile applications.
+In addition to GL JS, this repository contains code, issues, and test fixtures that are common to both GL JS and the
+native SDKs. For code and issues specific to the native SDKs, see the
+[mapbox/mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native/) repository.
 
-- [API Documentation](https://www.mapbox.com/mapbox-gl-js/api)
-- [API Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
-- [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec)
-- [Gallery](https://www.mapbox.com/gallery/)
+- [Getting started with Mapbox GL JS](https://www.mapbox.com/mapbox-gl-js/api/)
+- [API documentation](https://www.mapbox.com/mapbox-gl-js/api/)
+- [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
+- [Style documentation](https://www.mapbox.com/mapbox-gl-js/style-spec/)
+- [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
+- [Roadmap](https://www.mapbox.com/mapbox-gl-js/roadmap/)
+- [Contributor documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
 
-[<img width="981" alt="Mapbox GL JS gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
+[<img width="981" alt="Mapbox GL gallery" src="docs/pages/assets/gallery.png">](https://www.mapbox.com/gallery/)
 
-## Using Mapbox GL JS with a `<script>` tag
+## License
 
-To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on http://mapbox.com, you must [create an account](https://www.mapbox.com/studio/signup/) and then [obtain an access token](https://www.mapbox.com/studio/account/tokens/). You may learn more about access tokens [here](https://www.mapbox.com/help/define-access-token/).
+Mapbox GL JS is licensed under the [3-Clause BSD license](https://github.com/mapbox/mapbox-gl-js/blob/master/LICENSE.txt).
+The licenses of its dependencies are tracked via [FOSSA](https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmapbox%2Fmapbox-gl-js):
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
-</head>
-
-<body>
-    <div id='map' style='width: 400px; height: 300px;' />
-
-    <script>
-        mapboxgl.accessToken = '<your access token here>';
-        var map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v9'
-        });
-    </script>
-</body>
-</html>
-```
-
-## Using Mapbox GL JS with [Browserify](http://browserify.org/)
-
-To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on http://mapbox.com, you must [create an account](https://www.mapbox.com/studio/signup/) and then [obtain an access token](https://www.mapbox.com/studio/account/tokens/). You may learn more about access tokens [here](https://www.mapbox.com/help/define-access-token/).
-
-Install the [`mapbox-gl` npm package](https://www.npmjs.com/package/mapbox-gl)
-
-```bash
-npm install --save mapbox-gl
-```
-
-Instantiate `mapboxgl.Map`
-
-```js
-var mapboxgl = require('mapbox-gl');
-mapboxgl.accessToken = '<your access token here>';
-var map = new mapboxgl.Map({
-    container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v9'
-});
-```
-
-## Using Mapbox GL JS with [Webpack](https://webpack.github.io/)
-
-To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on http://mapbox.com, you must [create an account](https://www.mapbox.com/studio/signup/) and then [obtain an access token](https://www.mapbox.com/studio/account/tokens/). You may learn more about access tokens [here](https://www.mapbox.com/help/define-access-token/).
-
-Install the [`mapbox-gl` npm package](https://www.npmjs.com/package/mapbox-gl)
-and the required loaders.
-
-```bash
-npm install --save mapbox-gl
-npm install --save transform-loader
-npm install --save json-loader
-npm install --save webworkify-webpack
-```
-
-Add the [required additional options from webpack.config.example.js](webpack.config.example.js)
-to your webpack configuration.
-
-Instantiate `mapboxgl.Map`
-
-```js
-var mapboxgl = require('mapbox-gl');
-mapboxgl.accessToken = '<your access token here>';
-var map = new mapboxgl.Map({
-    container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v9'
-});
-```
-
-### Using import
-
-If you're using the ES6 module system, you can import `mapboxgl` like so:
-
-```js
-import mapboxgl from 'mapbox-gl';
-```
-
-## Third Party Projects
-
-These projects are written and maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects! 
-
- - [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
- - [Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
-
-## Contributing to Mapbox GL JS
-
-See [CONTRIBUTING.md](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md).
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmapbox%2Fmapbox-gl-js.svg?type=large)](https://app.fossa.io/projects/git%2Bhttps%3A%2F%2Fgithub.com%2Fmapbox%2Fmapbox-gl-js?ref=badge_large)

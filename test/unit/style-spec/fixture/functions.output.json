@@ -1,0 +1,198 @@
+[
+  {
+    "message": "layers[0].paint.line-width.base: number expected, string found",
+    "line": 17
+  },
+  {
+    "message": "layers[0].paint.line-width.stops: array must have at least one stop",
+    "line": 18
+  },
+  {
+    "message": "layers[1].paint.line-width: missing required property \"stops\"",
+    "line": 28
+  },
+  {
+    "message": "layers[2].paint.line-width.stops: array must have at least one stop",
+    "line": 39
+  },
+  {
+    "message": "layers[3].paint.line-width.stops: array expected, object found",
+    "line": 50
+  },
+  {
+    "message": "layers[4].paint.line-width.stops[0]: array expected, string found",
+    "line": 62
+  },
+  {
+    "message": "layers[5].paint.line-width.stops[0]: array length 2 expected, length 0 found",
+    "line": 75
+  },
+  {
+    "message": "layers[6].paint.line-dasharray.stops[0][0]: number expected, string found",
+    "line": 89
+  },
+  {
+    "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found",
+    "line": 106
+  },
+  {
+    "message": "layers[8].paint.line-width.stops[1][0]: stop domain values must appear in ascending order",
+    "line": 125
+  },
+  {
+    "message": "layers[9].paint.fill-translate[0]: number expected, object found",
+    "line": 139
+  },
+  {
+    "message": "layers[9].paint.fill-translate[1]: number expected, object found",
+    "line": 152
+  },
+  {
+    "message": "layers[12].paint.fill-color.stops[1]: object expected, number found",
+    "line": 227
+  },
+  {
+    "message": "layers[13].paint.fill-color.stops[0]: object stop key must have zoom",
+    "line": 244
+  },
+  {
+    "message": "layers[14].paint.fill-color.stops[0]: object stop key must have value",
+    "line": 263
+  },
+  {
+    "message": "layers[15].paint.fill-color.stops[0][0].zoom: number expected, string found",
+    "line": 284
+  },
+  {
+    "message": "layers[16].paint.fill-color.stops[0][0].value: stop domain value must be a number, string, or boolean",
+    "line": 305
+  },
+  {
+    "message": "layers[17].paint.fill-color.stops[0][0]: number expected, string found\nIf you intended to use a categorical function, specify `\"type\": \"categorical\"`.",
+    "line": 324
+  },
+  {
+    "message": "layers[18].paint.fill-color.stops[0][0]: number expected, string found\nIf you intended to use a categorical function, specify `\"type\": \"categorical\"`.",
+    "line": 341
+  },
+  {
+    "message": "layers[19].paint.fill-color: \"property\" property is required",
+    "line": 354
+  },
+  {
+    "message": "layers[22].paint.fill-color: missing required property \"property\"",
+    "line": 401
+  },
+  {
+    "message": "layers[23].paint.fill-color.stops: identity function may not have a \"stops\" property",
+    "line": 415
+  },
+  {
+    "message": "layers[24].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
+    "line": 434
+  },
+  {
+    "message": "layers[25].paint.fill-color.stops[1][0].value: number stop domain type must match previous stop domain type string",
+    "line": 456
+  },
+  {
+    "message": "layers[26].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 474
+  },
+  {
+    "message": "layers[27].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 492
+  },
+  {
+    "message": "layers[28].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 510
+  },
+  {
+    "message": "layers[29].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 528
+  },
+  {
+    "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
+    "line": 564
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
+    "line": 581
+  },
+  {
+    "message": "layers[33].paint.fill-antialias: exponential functions not supported",
+    "line": 595
+  },
+  {
+    "message": "layers[34].paint.fill-antialias: \"property\" property is required",
+    "line": 616
+  },
+  {
+    "message": "layers[34].paint.fill-antialias.stops[0][0].value: number expected, string found",
+    "line": 621
+  },
+  {
+    "message": "layers[35].paint.fill-opacity.stops[2][0]: stop domain values must be unique",
+    "line": 648
+  },
+  {
+    "message": "layers[36].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
+    "line": 666
+  },
+  {
+    "message": "layers[37].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
+    "line": 692
+  },
+  {
+    "message": "layers[38].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
+    "line": 718
+  },
+  {
+    "message": "layers[39].paint.fill-opacity.stops[2][0].value: stop domain values must be unique",
+    "line": 754
+  },
+  {
+    "message": "layers[42].paint.fill-opacity.default: number expected, string found",
+    "line": 826
+  },
+  {
+    "message": "layers[43].paint.fill-color.default: color expected, \"invalid\" found",
+    "line": 839
+  },
+  {
+    "message": "layers[44].paint.fill-opacity.stops[1][0]: stop domain values must appear in ascending order",
+    "line": 857
+  },
+  {
+    "message": "layers[47].paint.fill-color: Expected color but found number instead.",
+    "line": 898
+  },
+  {
+    "message": "layers[48].paint.fill-color[2]: Expected number but found string instead.",
+    "line": 907
+  },
+  {
+    "message": "layers[49].paint.fill-opacity: \"zoom\" expression may only be used as input to a top-level \"step\" or \"interpolate\" expression.",
+    "line": 916
+  },
+  {
+    "message": "layers[50].layout.visibility: expected one of [visible, none], [\"literal\",true] found",
+    "line": 925
+  },
+  {
+    "message": "layers[51].paint.fill-extrusion-opacity: property expressions not supported",
+    "line": 934
+  },
+  {
+    "message": "layers[52].paint.line-dasharray: Type array<number> is not interpolatable.",
+    "line": 943
+  },
+  {
+    "message": "layers[53].paint.heatmap-color: zoom expressions not supported",
+    "line": 952
+  },
+  {
+    "message": "layers[54].paint.heatmap-color: zoom functions not supported",
+    "line": 960
+  }
+]

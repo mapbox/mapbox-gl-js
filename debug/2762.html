@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: {
+        "version": 8,
+        "sources": {
+            "geojson": {
+                "type": "geojson",
+                "data": {
+                    "type": "Point",
+                    "coordinates": [0, 0]
+                }
+            }
+        },
+        "transition": {
+            "duration": 1000
+        },
+        "layers": [
+            {
+                "id": "circle",
+                "type": "circle",
+                "source": "geojson",
+                "paint": {
+                    "circle-translate": [-50, -50]
+                }
+            }
+        ]
+    }
+});
+
+map.on('click', function(e) {
+    map.setPaintProperty("circle", "circle-color", "red");
+    map.setPaintProperty("circle", "circle-translate", [50, 50]);
+});
+
+</script>
+</body>
+</html>

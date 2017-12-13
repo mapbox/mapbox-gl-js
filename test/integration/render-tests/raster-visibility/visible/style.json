@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 16,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "raster-visible",
+      "type": "raster",
+      "source": "satellite",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "raster-opacity": 1,
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "raster-none",
+      "type": "raster",
+      "source": "satellite",
+      "layout": {
+        "visibility": "none"
+      },
+      "paint": {
+        "raster-opacity": 0,
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

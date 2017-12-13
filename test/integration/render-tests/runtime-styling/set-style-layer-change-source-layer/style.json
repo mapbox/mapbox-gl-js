@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setStyle",
+          {
+            "version": 8,
+            "transition": {
+              "duration": 0
+            },
+            "sources": {
+              "vector": {
+                "type": "vector",
+                "tiles": [
+                  "local://tiles/{z}-{x}-{y}.mvt"
+                ]
+              }
+            },
+            "layers": [
+              {
+                "id": "fill",
+                "type": "fill",
+                "source": "vector",
+                "source-layer": "building",
+                "paint": {
+                  "fill-antialias": false
+                }
+              }
+            ]
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "transition": {
+    "duration": 0
+  },
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "landuse"
+    }
+  ]
+}

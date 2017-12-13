@@ -1,0 +1,35 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {}
+  },
+  "zoom": 2,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "cemetery_icon"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "blue"
+      }
+    }
+  ]
+}

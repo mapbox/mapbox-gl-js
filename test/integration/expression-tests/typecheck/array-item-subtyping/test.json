@@ -1,0 +1,18 @@
+{
+  "propertySpec": {
+    "type": "array",
+    "function": true,
+    "property-function": true
+  },
+  "expression": ["array", "number", 2, ["get", "x"]],
+  "inputs": [],
+  "expected": {
+    "outputs": [],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "array<number, 2>"
+    }
+  }
+}

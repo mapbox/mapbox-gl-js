@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<canvas id="testCanvasID" width="200" height="100"
+style="border:10px solid blue;">
+Canvas not supported
+</canvas>
+<div id='map'></div>
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+function drawToCanvas() {
+    var canvas = document.getElementById('testCanvasID');
+    if (canvas.getContext) {
+        var ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = 'rgb(200, 0, 0)';
+        ctx.fillRect(10, 10, 50, 50);
+
+        ctx.fillStyle = 'rgba(0, 0, 200, 0.5)';
+        ctx.fillRect(30, 30, 50, 50);
+    }
+}
+
+var canvasStyle = {
+    "version": 8,
+    "sources": {
+        "canvas": {
+            "type": "canvas",
+            "canvas": "testCanvasID",
+            "coordinates": [
+                [-122.51596391201019, 37.56238816766053],
+                [-122.51467645168304, 37.56410183312965],
+                [-122.51309394836426, 37.563391708549425],
+                [-122.51423120498657, 37.56161849366671]
+            ],
+            "contextType": '2d'
+        }
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
+        "id": "canvas",
+        "type": "raster",
+        "source": "canvas"
+    }]
+};
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    minZoom: 14,
+    zoom: 17,
+    center: [-122.514426, 37.562984],
+    bearing: -96,
+    style: canvasStyle,
+    hash: false
+});
+
+drawToCanvas();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
+    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+    <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
+    <label><input id='pitch-checkbox' type='checkbox' checked> pitch with rotate</label><br />
+</div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: true,
+    showUserLocation: true,
+    fitBoundsOptions: {
+        maxZoom: 20
+    }
+}));
+map.addControl(new mapboxgl.ScaleControl());
+
+map.on('load', function() {
+    map.addSource('geojson', {
+        "type": "geojson",
+        "data": "/test/integration/data/linestring.geojson"
+    });
+    map.addLayer({
+        "id": "route",
+        "type": "line",
+        "source": "geojson",
+        "paint": {
+            "line-color": "#EC8D8D",
+            "line-width": {"base": 1.5, "stops": [[5, 0.75], [18, 32]]}
+        }
+    }, 'country-label-lg');
+
+    map.addSource("points", {
+        "type": "geojson",
+        "data": '/debug/cross_source_points.geojson'
+    });
+
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": "points",
+        "layout": {
+            "text-field": "{name}",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+        }
+    });
+});
+
+map.on('click', function(e) {
+    if (e.originalEvent.shiftKey) return;
+    (new mapboxgl.Popup())
+        .setLngLat(map.unproject(e.point))
+        .setHTML("<h1>Hello World!</h1>")
+        .addTo(map);
+});
+
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
+};
+
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
+};
+
+document.getElementById('show-overdraw-checkbox').onclick = function() {
+    map.showOverdrawInspector = !!this.checked;
+};
+
+document.getElementById('pitch-checkbox').onclick = function() {
+    map.dragRotate._pitchWithRotate = !!this.checked;
+};
+
+// keyboard shortcut for comparing rendering with Mapbox GL native
+document.onkeypress = function(e) {
+    if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {
+        var center = map.getCenter();
+        location.href = "mapboxgl://?center=" + center.lat + "," + center.lng + "&zoom=" + map.getZoom() + "&bearing=" + map.getBearing();
+        return false;
+    }
+};
+
+</script>
+</body>
+</html>

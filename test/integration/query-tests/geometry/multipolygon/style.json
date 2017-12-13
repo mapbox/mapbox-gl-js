@@ -1,0 +1,90 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "debug": true,
+      "queryGeometry": [
+        [
+          0,
+          0
+        ],
+        [
+          512,
+          512
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -30,
+                30
+              ],
+              [
+                30,
+                30
+              ],
+              [
+                30,
+                -30
+              ],
+              [
+                -30,
+                -30
+              ],
+              [
+                -30,
+                30
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                -15,
+                15
+              ],
+              [
+                15,
+                15
+              ],
+              [
+                15,
+                -15
+              ],
+              [
+                -15,
+                -15
+              ],
+              [
+                -15,
+                15
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circles",
+      "type": "fill",
+      "source": "geojson"
+    }
+  ]
+}

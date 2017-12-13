@@ -1,0 +1,13 @@
+{
+  "expression": ["ln2"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": [0.6931471805599453],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "number"
+    }
+  }
+}

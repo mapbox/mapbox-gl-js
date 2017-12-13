@@ -1,0 +1,13 @@
+{
+  "expression": ["all"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": [true],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "boolean"
+    }
+  }
+}

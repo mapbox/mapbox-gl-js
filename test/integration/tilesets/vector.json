@@ -1,0 +1,6 @@
+{
+  "type": "vector",
+  "tiles": [
+    "http://localhost:2900/tiles/{z}-{x}-{y}.mvt"
+  ]
+}

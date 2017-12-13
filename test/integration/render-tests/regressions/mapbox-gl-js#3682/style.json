@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "width": 5
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              0,
+              -20
+            ],
+            [
+              0,
+              20
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-dasharray": [
+          1,
+          1
+        ],
+        "line-width": {
+          "type": "identity",
+          "property": "width"
+        }
+      }
+    }
+  ]
+}

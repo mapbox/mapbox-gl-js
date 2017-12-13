@@ -3,21 +3,21 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
     </style>
 </head>
 
+<body>
 <div id='map'></div>
 
-<script src='mapbox-gl.js'></script>
-<script src='access-token.js'></script>
-
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
 <script>
+
 var videoStyle = {
     "version": 8,
     "sources": {
@@ -55,15 +55,15 @@ var videoStyle = {
 };
 
 var map = new mapboxgl.Map({
-  container: 'map',
-  minZoom: 14,
-  zoom: 17,
-  center: [-122.514426, 37.562984],
-  bearing: -96,
-  style: videoStyle,
-  hash: false
+    container: 'map',
+    minZoom: 14,
+    zoom: 17,
+    center: [-122.514426, 37.562984],
+    bearing: -96,
+    style: videoStyle,
+    hash: false
 });
-</script>
 
+</script>
 </body>
 </html>

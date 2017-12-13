@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2,
+    center: [0, 0],
+    style: 'mapbox://styles/mapbox/satellite-streets-v10',
+    hash: false
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.GeolocateControl());
+
+map.on('load', function() {
+
+    map.addSource('heatmap', {
+        "type": "geojson",
+        "data": "../test/integration/data/places.geojson",
+        "maxzoom": 23
+    });
+
+    map.addLayer({
+        "id": "heatmap",
+        "type": "heatmap",
+        "source": "heatmap",
+        "paint": {
+            "heatmap-radius": 50,
+            "heatmap-weight": {
+                "stops": [[0, 0.5], [4, 2]]
+            },
+            "heatmap-intensity": 0.9,
+            "heatmap-color": [
+                "interpolate",
+                ["linear"],
+                ["heatmap-density"],
+                0, "rgba(0, 0, 255, 0)",
+                0.1, "royalblue",
+                0.3, "cyan",
+                0.5, "lime",
+                0.7, "yellow",
+                1, "red"
+            ]
+        }
+    }, 'waterway-label');
+});
+
+</script>
+</body>
+</html>

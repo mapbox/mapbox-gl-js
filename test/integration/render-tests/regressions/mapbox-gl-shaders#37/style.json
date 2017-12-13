@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "opacity": 0.6
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  -20
+                ],
+                [
+                  -10,
+                  20
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "opacity": 0.9
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  10,
+                  -20
+                ],
+                [
+                  10,
+                  20
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 5,
+        "line-dasharray": [
+          1,
+          1
+        ],
+        "line-opacity": {
+          "type": "identity",
+          "property": "opacity"
+        }
+      }
+    }
+  ]
+}

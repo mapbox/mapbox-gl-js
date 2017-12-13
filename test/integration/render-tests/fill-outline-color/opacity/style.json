@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "diff": 0.00075
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-color": "rgba(0,0,0,0)",
+        "fill-outline-color": "rgba(255,0,0,1)",
+        "fill-opacity": 0.5
+      }
+    }
+  ]
+}

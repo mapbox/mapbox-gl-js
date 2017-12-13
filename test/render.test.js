@@ -1,12 +1,9 @@
 'use strict';
 
-var renderSuite = require('mapbox-gl-test-suite').render;
-var suiteImplementation = require('./suite_implementation');
+require('flow-remove-types/register');
 
-var tests;
+const suite = require('./integration').render;
+const suiteImplementation = require('./suite_implementation');
+const ignores = require('./ignores.json');
 
-if (process.argv[1] === __filename && process.argv.length > 2) {
-    tests = process.argv.slice(2);
-}
-
-renderSuite.run('js', {tests: tests}, suiteImplementation);
+suite.run('js', ignores, suiteImplementation);

@@ -1,0 +1,12 @@
+{
+  "expression": ["match", null, null, "match", "otherwise"],
+  "inputs": [[{}, {"properties": {}}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[2]", "error": "Branch labels must be numbers or strings."}
+      ]
+    }
+  }
+}

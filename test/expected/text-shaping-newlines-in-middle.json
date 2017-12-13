@@ -1,0 +1,70 @@
+{
+  "positionedGlyphs": [
+    {
+      "glyph": 97,
+      "x": -32.5,
+      "y": -41,
+      "vertical": false
+    },
+    {
+      "glyph": 98,
+      "x": -19.5,
+      "y": -41,
+      "vertical": false
+    },
+    {
+      "glyph": 99,
+      "x": -5.5,
+      "y": -41,
+      "vertical": false
+    },
+    {
+      "glyph": 100,
+      "x": 5.5,
+      "y": -41,
+      "vertical": false
+    },
+    {
+      "glyph": 101,
+      "x": 19.5,
+      "y": -41,
+      "vertical": false
+    },
+    {
+      "glyph": 97,
+      "x": -32.5,
+      "y": 7,
+      "vertical": false
+    },
+    {
+      "glyph": 98,
+      "x": -19.5,
+      "y": 7,
+      "vertical": false
+    },
+    {
+      "glyph": 99,
+      "x": -5.5,
+      "y": 7,
+      "vertical": false
+    },
+    {
+      "glyph": 100,
+      "x": 5.5,
+      "y": 7,
+      "vertical": false
+    },
+    {
+      "glyph": 101,
+      "x": 19.5,
+      "y": 7,
+      "vertical": false
+    }
+  ],
+  "text": "abcde\n\nabcde",
+  "top": -36,
+  "bottom": 36,
+  "left": -32.5,
+  "right": 32.5,
+  "writingMode": 1
+}

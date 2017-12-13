@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "red",
+      "type": "background",
+      "paint": {
+        "background-color": "rgb(255, 0, 0)",
+        "background-opacity": 1
+      }
+    },
+    {
+      "id": "green",
+      "type": "background",
+      "paint": {
+        "background-color": "rgb(0, 255, 0)",
+        "background-opacity": 0
+      }
+    },
+    {
+      "id": "other",
+      "type": "circle",
+      "source": "geojson"
+    }
+  ]
+}

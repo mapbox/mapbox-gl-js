@@ -1,0 +1,20 @@
+{
+  "expression": [
+    "let",
+    "x",
+    ["interpolate", ["linear"], ["zoom"], 0, 0, 1, 1],
+    ["interpolate", ["linear"], ["zoom"], 0, 0, 1, 1]
+  ],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Only one zoom-based \"step\" or \"interpolate\" subexpression may be used in an expression."
+        }
+      ]
+    }
+  }
+}

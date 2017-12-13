@@ -1,0 +1,15 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        5.003394345022144
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "identifier": "secondSource"
+    }
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "expression": ["==", ["string", ["get", "x"]], ["number", ["get", "y"]]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [{"key": "", "error": "Cannot compare string and number."}]
+    }
+  }
+}

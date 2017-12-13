@@ -1,0 +1,19 @@
+{
+  "name": "@mapbox/mapbox-gl-test-suite",
+  "description": "Rendering tests for Mapbox GL",
+  "version": "0.0.0",
+  "license": "BSD",
+  "main": "index.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "d3-queue": "^3.0.3",
+    "diff": "^3.0.0",
+    "json-stringify-pretty-compact": "^1.0.4",
+    "lodash": "^4.17.4",
+    "mapbox-gl-styles": "2.0.2",
+    "pixelmatch": "^4.0.2",
+    "pngjs": "^3.0.0",
+    "shuffle-seed": "^1.1.6",
+    "st": "^1.1.0"
+  }
+}
