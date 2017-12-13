@@ -5,6 +5,7 @@ const validateObject = require('./validate_object');
 const validateFilter = require('./validate_filter');
 const validatePaintProperty = require('./validate_paint_property');
 const validateLayoutProperty = require('./validate_layout_property');
+const validateSpec = require('./validate');
 const extend = require('../util/extend');
 
 module.exports = function validateLayer(options) {
@@ -71,19 +72,28 @@ module.exports = function validateLayer(options) {
         }
     }
 
-    // https://github.com/mapbox/mapbox-gl-js/issues/5772
-    const valueSpec = extend({}, styleSpec.layer,
-        {type: extend({}, styleSpec.layer.type, {required: false})});
-
     errors = errors.concat(validateObject({
         key: key,
         value: layer,
-        valueSpec,
+        valueSpec: styleSpec.layer,
         style: options.style,
         styleSpec: options.styleSpec,
         objectElementValidators: {
             '*': function() {
                 return [];
+            },
+            // We don't want to enforce the spec's `"requires": true` for backward compatibility with refs;
+            // the actual requirement is validated above. See https://github.com/mapbox/mapbox-gl-js/issues/5772.
+            type: function() {
+                return validateSpec({
+                    key: `${key}.type`,
+                    value: layer.type,
+                    valueSpec: styleSpec.layer.type,
+                    style: options.style,
+                    styleSpec: options.styleSpec,
+                    object: layer,
+                    objectKey: 'type'
+                });
             },
             filter: validateFilter,
             layout: function(options) {
