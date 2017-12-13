@@ -91,7 +91,7 @@ class AlphaImage {
     }
 
     clone() {
-        return new AlphaImage({width: this.width, height: this.height}, this.data.slice());
+        return new AlphaImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
     static copy(srcImg: AlphaImage, dstImg: AlphaImage, srcPt: Point, dstPt: Point, size: Size) {
@@ -115,7 +115,7 @@ class RGBAImage {
     }
 
     clone() {
-        return new RGBAImage({width: this.width, height: this.height}, this.data.slice());
+        return new RGBAImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
     static copy(srcImg: RGBAImage | ImageData, dstImg: RGBAImage, srcPt: Point, dstPt: Point, size: Size) {
