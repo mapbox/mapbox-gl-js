@@ -3,6 +3,8 @@
 const util = require('../util/util');
 const ImageSource = require('../source/image_source');
 const browser = require('../util/browser');
+const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -20,12 +22,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    context.depthTest.set(true);
-    context.depthMask.set(layer.paint.get('raster-opacity') === 1);
-    // Change depth function to prevent double drawing in areas where tiles overlap.
-    context.depthFunc.set(gl.LESS);
-
-    context.stencilTest.set(false);
+    context.setStencilMode(StencilMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     // Constant parameters.
     gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));
@@ -40,8 +38,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const minTileZ = coords.length && coords[0].overscaledZ;
 
     for (const coord of coords) {
-        // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
-        painter.setDepthSublayer(coord.overscaledZ - minTileZ);
+        // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
+        // Use gl.LESS to prevent double drawing in areas where tiles overlap.
+        context.setDepthMode(painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
+            layer.paint.get('raster-opacity') === 1 ? DepthMode.ReadWrite : DepthMode.ReadOnly, gl.LESS));
 
         const tile = sourceCache.getTile(coord);
         const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped());
@@ -97,8 +97,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         }
     }
-
-    context.depthFunc.set(gl.LEQUAL);
 }
 
 function spinWeights(angle) {

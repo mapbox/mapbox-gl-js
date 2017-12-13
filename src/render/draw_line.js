@@ -2,6 +2,7 @@
 
 const browser = require('../util/browser');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -17,10 +18,8 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
     const context = painter.context;
 
-    painter.setDepthSublayer(0);
-    context.depthMask.set(false);
-
-    context.stencilTest.set(true);
+    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
+    context.setColorMode(painter.colorModeForRenderPass());
 
     const programId =
         layer.paint.get('line-dasharray') ? 'lineSDF' :
@@ -110,7 +109,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         }
     }
 
-    painter.enableTileClippingMask(coord);
+    context.setStencilMode(painter.stencilModeForClipping(coord));
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);

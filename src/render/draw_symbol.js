@@ -8,6 +8,8 @@ const mat4 = require('@mapbox/gl-matrix').mat4;
 const identityMat4 = mat4.identity(new Float32Array(16));
 const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
 const browser = require('../util/browser');
+const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -23,10 +25,8 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const context = painter.context;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
-    context.stencilTest.set(false);
-
-    painter.setDepthSublayer(0);
-    context.depthMask.set(false);
+    context.setStencilMode(StencilMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
         drawLayerSymbols(painter, sourceCache, layer, coords, false,
@@ -70,7 +70,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthOn = pitchWithMap;
 
-    context.depthTest.set(depthOn);
+    context.setDepthMode(depthOn ? painter.depthModeForSublayer(0, DepthMode.ReadOnly) : DepthMode.disabled());
 
     let program;
 
@@ -108,8 +108,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             gl.uniform2fv(program.uniforms.u_texsize, tile.iconAtlasTexture.size);
         }
 
-        painter.enableTileClippingMask(coord);
-
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
@@ -128,8 +126,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap);
     }
-
-    if (!depthOn) context.depthTest.set(true);
 }
 
 function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData) {

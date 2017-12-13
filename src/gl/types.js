@@ -21,8 +21,6 @@ export type BlendFuncType = [BlendFuncConstant, BlendFuncConstant];
 
 export type ColorMaskType = [boolean, boolean, boolean, boolean];
 
-export type DepthRangeType = [number, number];
-
 export type CompareFuncType =
     | $PropertyType<WebGLRenderingContext, 'NEVER'>
     | $PropertyType<WebGLRenderingContext, 'LESS'>
@@ -33,15 +31,19 @@ export type CompareFuncType =
     | $PropertyType<WebGLRenderingContext, 'GEQUAL'>
     | $PropertyType<WebGLRenderingContext, 'ALWAYS'>;
 
+export type DepthMaskType = boolean;
+
+export type DepthRangeType = [number, number];
+
+export type DepthFuncType = CompareFuncType;
+
 export type StencilFuncType = {
     func: CompareFuncType,
     ref: number,
     mask: number
 };
 
-export type DepthFuncType = CompareFuncType;
-
-type StencilOpConstant =
+export type StencilOpConstant =
     | $PropertyType<WebGLRenderingContext, 'KEEP'>
     | $PropertyType<WebGLRenderingContext, 'ZERO'>
     | $PropertyType<WebGLRenderingContext, 'REPLACE'>
@@ -56,3 +58,13 @@ export type StencilOpType = [StencilOpConstant, StencilOpConstant, StencilOpCons
 export type TextureUnitType = number;
 
 export type ViewportType = [number, number, number, number];
+
+export type StencilTest =
+    | { func: $PropertyType<WebGLRenderingContext, 'NEVER'>, mask: 0 }
+    | { func: $PropertyType<WebGLRenderingContext, 'LESS'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'EQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'LEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'GREATER'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'NOTEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'GEQUAL'>, mask: number }
+    | { func: $PropertyType<WebGLRenderingContext, 'ALWAYS'>, mask: 0 };

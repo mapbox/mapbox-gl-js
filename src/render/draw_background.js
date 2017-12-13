@@ -4,6 +4,8 @@ const pattern = require('./pattern');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} = require('../style/properties');
 const fillLayerPaintProperties = require('../style/style_layer/fill_style_layer_properties').paint;
+const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -27,9 +29,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
 
-    context.stencilTest.set(false);
-    context.depthMask.set(pass === 'opaque');
-    painter.setDepthSublayer(0);
+    context.setStencilMode(StencilMode.disabled());
+    context.setDepthMode(painter.depthModeForSublayer(0, pass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly));
+    context.setColorMode(painter.colorModeForRenderPass());
 
     const properties = new PossiblyEvaluated(fillLayerPaintProperties);
 
