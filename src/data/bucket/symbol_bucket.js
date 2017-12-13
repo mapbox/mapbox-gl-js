@@ -177,7 +177,7 @@ function addVertex(array, anchorX, anchorY, ox, oy, tx, ty, sizeVertex) {
     );
 }
 
-function addDynamicAttributes(dynamicLayoutVertexArray, p, angle) {
+function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, p: Point, angle: number) {
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
     dynamicLayoutVertexArray.emplaceBack(p.x, p.y, angle);
