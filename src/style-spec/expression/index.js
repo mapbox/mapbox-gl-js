@@ -261,7 +261,7 @@ class StylePropertyFunction<T> {
     }
 
     static deserialize(serialized: {_parameters: PropertyValueSpecification<T>, _specification: StylePropertySpecification}) {
-        return new StylePropertyFunction(serialized._parameters, serialized._specification);
+        return ((new StylePropertyFunction(serialized._parameters, serialized._specification)): StylePropertyFunction<T>);
     }
 
     static serialize(input: StylePropertyFunction<T>) {
