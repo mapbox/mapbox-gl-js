@@ -5,7 +5,7 @@ import md from '../components/md';
 import PageShell from '../components/page_shell';
 import LeftNav from '../components/left_nav';
 import TopNav from '../components/top_nav';
-import {highlightJavascript, highlightJSON} from '../components/prism_highlight';
+import {highlightJavascript, highlightJSON, highlightMarkup} from '../components/prism_highlight';
 import entries from 'object.entries';
 
 const ref = require('../../src/style-spec/reference/latest');
@@ -844,12 +844,12 @@ export default class extends React.Component {
                                         If an HTML document contains a canvas such as this:
                                     </p>
                                     <div className='space-bottom1 clearfix'>
-                                        &lt;canvas id="mycanvas" width="400" height="300" style="display: none;"&gt;&lt;/canvas&gt;
+                                        {highlightMarkup(`<canvas id="mycanvas" width="400" height="300" style="display: none;"/>`)}
                                     </div>
                                     <p>
                                         the corresponding canvas source would be specified as follows:
                                     </p>
-                                    <div>
+                                    <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
                                             "canvas": {
                                                 "type": "canvas",
@@ -862,6 +862,10 @@ export default class extends React.Component {
                                                 ]
                                             }`)}
                                     </div>
+                                    <p>
+                                        This source type is available only in Mapbox GL JS. Avoid using it in styles that need to maintain
+                                        compatibility with other Mapbox Maps SDKs.
+                                    </p>
                                     <div className='space-bottom1 clearfix'>
                                         { entries(ref.source_canvas).map(([name, prop], i) =>
                                             name !== '*' && name !== 'type' &&
