@@ -256,8 +256,11 @@ class SourceCache extends Evented {
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
 
         this._updatePlacement();
-        if (this.map)
+        if (this.map && this.getTileByID(id)) {
+            // Only add this tile to the CrossTileSymbolIndex if it is still in the retain set
+            // See issue #5837
             tile.added(this.map.painter.crossTileSymbolIndex);
+        }
     }
 
     /**
