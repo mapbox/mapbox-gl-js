@@ -3191,7 +3191,7 @@
       "function": "interpolated",
       "zoom-function": false,
       "property-function": false,
-      "transition": true,
+      "transition": false,
       "sdk-support": {
         "basic functionality": {
           "js": "0.41.0"
