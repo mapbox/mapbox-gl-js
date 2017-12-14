@@ -87,7 +87,7 @@ class GeoJSONSource extends Evented implements Source {
         this.type = 'geojson';
 
         this.minzoom = 0;
-        this.maxzoom = 22;
+        this.maxzoom = 18;
         this.tileSize = 512;
         this.isTileClipped = true;
         this.reparseOverscaled = true;
