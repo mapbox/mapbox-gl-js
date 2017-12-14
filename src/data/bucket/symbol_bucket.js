@@ -351,8 +351,8 @@ class SymbolBucket implements Bucket {
     }
 
     createArrays() {
-        this.text = new SymbolBuffers(symbolBufferConfigurations.text, new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => property.startsWith('text')));
-        this.icon = new SymbolBuffers(symbolBufferConfigurations.icon, new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => property.startsWith('icon')));
+        this.text = new SymbolBuffers(symbolBufferConfigurations.text, new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
+        this.icon = new SymbolBuffers(symbolBufferConfigurations.icon, new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
         this.collisionBox = new SymbolBuffers(symbolBufferConfigurations.collisionBox, new ProgramConfigurationSet(collisionBoxLayout.members, this.layers, this.zoom, () => false));
         this.collisionCircle = new SymbolBuffers(symbolBufferConfigurations.collisionCircle, new ProgramConfigurationSet(collisionCircleLayout.members, this.layers, this.zoom, () => false));
 
