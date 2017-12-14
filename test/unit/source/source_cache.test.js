@@ -249,6 +249,23 @@ test('SourceCache#removeTile', (t) => {
         t.end();
     });
 
+    t.test('_tileLoaded after _removeTile skips tile.added', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.added = t.notOk();
+                sourceCache._removeTile(tileID.key);
+                callback();
+            }
+        });
+        sourceCache.map = { painter: { crossTileSymbolIndex: "", tileExtentVAO: {} } };
+
+        sourceCache._addTile(tileID);
+
+        t.end();
+    });
+
     t.end();
 });
 
