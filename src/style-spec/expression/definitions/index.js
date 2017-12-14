@@ -57,10 +57,10 @@ function rgba(ctx, [r, g, b, a]) {
     r = r.evaluate(ctx);
     g = g.evaluate(ctx);
     b = b.evaluate(ctx);
-    a = a && a.evaluate(ctx);
-    const error = validateRGBA(r, g, b, a);
+    const alpha = a ? a.evaluate(ctx) : 1;
+    const error = validateRGBA(r, g, b, alpha);
     if (error) throw new RuntimeError(error);
-    return new Color(r / 255, g / 255, b / 255, a);
+    return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
 function has(key, obj) {
@@ -101,7 +101,7 @@ CompoundExpression.register(expressions, {
             if (v === null || type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
             } else if (v instanceof Color) {
-                return `rgba(${v.r * 255},${v.g * 255},${v.b * 255},${v.a})`;
+                return v.toString();
             } else {
                 return JSON.stringify(v);
             }
@@ -117,7 +117,7 @@ CompoundExpression.register(expressions, {
         [ColorType],
         (ctx, [v]) => {
             const {r, g, b, a} = v.evaluate(ctx);
-            return [255 * r, 255 * g, 255 * b, a];
+            return [255 * r / a, 255 * g / a, 255 * b / a, a];
         }
     ],
     'rgb': [
