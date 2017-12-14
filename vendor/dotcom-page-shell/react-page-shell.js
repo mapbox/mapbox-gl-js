@@ -723,28 +723,28 @@ var navigationMenuData = {
     documentation: {
       name: 'Documentation',
       links: [{
-        name: 'iOS SDK',
-        to: '/ios-sdk/',
-        hideInHeader: true
-      }, {
-        name: 'Android SDK',
-        to: '/android-docs/map-sdk/overview/',
-        hideInHeader: true
-      }, {
-        name: 'Navigation SDK',
-        to: '/navigation-sdk/',
-        hideInHeader: true
-      }, {
         name: 'GL JS',
         to: '/mapbox-gl-js/api/',
         hideInHeader: true
       }, {
-        name: 'Unity SDK',
+        name: 'Maps SDK - iOS',
+        to: '/ios-sdk/',
+        hideInHeader: true
+      }, {
+        name: 'Maps SDK - Android',
+        to: '/android-docs/map-sdk/overview/',
+        hideInHeader: true
+      }, {
+        name: 'Maps SDK - Unity',
         to: '/unity-sdk/',
         hideInHeader: true
       }, {
-        name: 'Qt SDK',
+        name: 'Maps SDK - Qt',
         to: '/qt/',
+        hideInHeader: true
+      }, {
+        name: 'Navigation SDK',
+        to: '/navigation-sdk/',
         hideInHeader: true
       }],
       highlightedLinks: [{
@@ -763,25 +763,25 @@ var navigationMenuData = {
     }
   },
   sdkDocumentationMenu: {
-    name: 'SDK Documentation',
+    name: 'SDK & Plugin Documentation',
     links: [{
-      name: 'iOS SDK',
-      to: '/ios-sdk/'
-    }, {
-      name: 'Android SDK',
-      to: '/android-docs/map-sdk/overview/'
-    }, {
-      name: 'Navigation SDK',
-      to: '/navigation-sdk/'
-    }, {
-      name: 'Unity SDK',
-      to: '/unity-sdk/'
-    }, {
       name: 'GL JS',
       to: '/mapbox-gl-js/api/'
     }, {
-      name: 'Qt SDK',
+      name: 'Maps SDK - iOS',
+      to: '/ios-sdk/'
+    }, {
+      name: 'Maps SDK - Android',
+      to: '/android-docs/map-sdk/overview/'
+    }, {
+      name: 'Maps SDK - Unity',
+      to: '/unity-sdk/'
+    }, {
+      name: 'Maps SDK - Qt',
       to: '/qt/'
+    }, {
+      name: 'Navigation SDK',
+      to: '/navigation-sdk/'
     }],
     highlightedLinks: []
   },
@@ -2079,15 +2079,31 @@ var FooterSocialMediaStrip = function (_React$Component) {
         React.createElement(
           'a',
           {
+            'aria-label': 'Github',
+            className: 'shell-color-blue shell-color-gray-dark-on-hover',
+            href: 'https://github.com/mapbox'
+          },
+          React.createElement(
+            'svg',
+            {
+              viewBox: '0 0 1790 1790',
+              className: 'shell-mr18 shell-icon shell-icon--s shell-inline'
+            },
+            React.createElement('path', { d: 'M704 1216q0 40-12.5 82t-43 76-72.5 34-72.5-34-43-76-12.5-82 12.5-82 43-76 72.5-34 72.5 34 43 76 12.5 82zm640 0q0 40-12.5 82t-43 76-72.5 34-72.5-34-43-76-12.5-82 12.5-82 43-76 72.5-34 72.5 34 43 76 12.5 82zm160 0q0-120-69-204t-187-84q-41 0-195 21-71 11-157 11t-157-11q-152-21-195-21-118 0-187 84t-69 204q0 88 32 153.5t81 103 122 60 140 29.5 149 7h168q82 0 149-7t140-29.5 122-60 81-103 32-153.5zm224-176q0 207-61 331-38 77-105.5 133t-141 86-170 47.5-171.5 22-167 4.5q-78 0-142-3t-147.5-12.5-152.5-30-137-51.5-121-81-86-115q-62-123-62-331 0-237 136-396-27-82-27-170 0-116 51-218 108 0 190 39.5t189 123.5q147-35 309-35 148 0 280 32 105-82 187-121t189-39q51 102 51 218 0 87-27 168 136 160 136 398z' })
+          )
+        ),
+        React.createElement(
+          'a',
+          {
             'aria-label': 'Twitter',
-            className: 'shell-mr18 shell-color-blue shell-color-gray-dark-on-hover',
+            className: 'shell-color-blue shell-color-gray-dark-on-hover ',
             href: 'https://twitter.com/mapbox/'
           },
           React.createElement(
             'svg',
             {
               viewBox: '0 0 50 50',
-              className: 'shell-icon shell-icon--s shell-inline'
+              className: 'shell-mr18 shell-icon shell-icon--s shell-inline'
             },
             React.createElement(
               'g',
@@ -2100,14 +2116,14 @@ var FooterSocialMediaStrip = function (_React$Component) {
           'a',
           {
             'aria-label': 'LinkedIn',
-            className: 'shell-mr18 shell-color-blue shell-color-gray-dark-on-hover',
+            className: 'shell-color-blue shell-color-gray-dark-on-hover',
             href: 'https://www.linkedin.com/company/mapbox'
           },
           React.createElement(
             'svg',
             {
               viewBox: '0 0 50 50',
-              className: 'shell-icon shell-icon--s shell-inline'
+              className: 'shell-mr18 shell-icon shell-icon--s shell-inline'
             },
             React.createElement(
               'g',
@@ -2122,14 +2138,14 @@ var FooterSocialMediaStrip = function (_React$Component) {
           'a',
           {
             'aria-label': 'Facebook',
-            className: 'shell-mr18 shell-color-blue shell-color-gray-dark-on-hover',
+            className: 'shell-color-blue shell-color-gray-dark-on-hover',
             href: 'https://www.facebook.com/Mapbox'
           },
           React.createElement(
             'svg',
             {
               viewBox: '0 0 50 50',
-              className: 'shell-icon shell-icon--s shell-inline'
+              className: 'shell-mr18 shell-icon shell-icon--s shell-inline'
             },
             React.createElement(
               'g',
@@ -2139,6 +2155,30 @@ var FooterSocialMediaStrip = function (_React$Component) {
                 'data-name': 'f',
                 d: 'M28.87,50V27.19h7.65l1.15-8.89h-8.8V12.63c0-2.57.71-4.33,4.41-4.33H38v-8A63.78,63.78,0,0,0,31.13,0C24.34,0,19.69,4.14,19.69,11.75V18.3H12v8.89h7.68V50Z'
               })
+            )
+          )
+        ),
+        React.createElement(
+          'a',
+          {
+            'aria-label': 'Dribbble',
+            className: 'shell-color-blue shell-color-gray-dark-on-hover',
+            href: 'https://dribbble.com/mapbox'
+          },
+          React.createElement(
+            'svg',
+            {
+              viewBox: '0 0 216 216',
+              className: 'shell-mr18 shell-icon shell-icon--s shell-inline'
+            },
+            React.createElement(
+              'g',
+              { id: 'bce6e84c-15aa-4744-93d1-a9e4a673398a', 'data-name': 'ball' },
+              React.createElement(
+                'g',
+                { id: '99079e24-a239-40f3-bf61-84ebc8f0b2ce', 'data-name': 'ball' },
+                React.createElement('path', { d: 'M108,15.78a92.16,92.16,0,1,0,92.16,92.16A92.27,92.27,0,0,0,108,15.78ZM169,58.28a78.31,78.31,0,0,1,17.78,49c-2.6-.55-28.62-5.83-54.81-2.54-.55-1.35-1.12-2.7-1.7-4.06-1.63-3.84-3.39-7.65-5.22-11.4C154.1,77.44,167.29,60.53,169,58.28ZM108,29.34A78.41,78.41,0,0,1,160.2,49.18c-1.41,2-13.26,17.94-41.25,28.43A421.91,421.91,0,0,0,89.58,31.53,79,79,0,0,1,108,29.34ZM74.56,36.82a503.63,503.63,0,0,1,29.18,45.53A293.82,293.82,0,0,1,31,91.94,79,79,0,0,1,74.56,36.82ZM29.31,108.06c0-.8,0-1.61,0-2.41,3.44.08,41.59.57,80.9-11.2,2.25,4.41,4.4,8.89,6.38,13.36-1,.29-2.08.61-3.1.94-40.6,13.12-62.2,48.89-64,51.94A78.39,78.39,0,0,1,29.31,108.06ZM108,186.78a78.29,78.29,0,0,1-48.31-16.62c1.41-2.9,17.35-33.69,61.75-49.16l.52-.17a326.92,326.92,0,0,1,16.79,59.69A78.19,78.19,0,0,1,108,186.78Zm44-13.47a338.31,338.31,0,0,0-15.29-56.12c24.67-4,46.34,2.51,49,3.36A78.84,78.84,0,0,1,152,173.31Z' })
+              )
             )
           )
         ),
@@ -2336,7 +2376,7 @@ var MetaTagger = function (_React$PureComponent) {
 
       var metaItems = [{ name: 'description', content: preppedDescription }];
 
-      metaItems.push({ name: 'twitter:title', content: props.title }, { name: 'og:title', content: props.title }, { name: 'twitter:description', content: preppedDescription }, { name: 'og:description', content: preppedDescription }, { name: 'og:url', content: prodUrl }, { name: 'og:type', content: 'website' }, {
+      metaItems.push({ name: 'twitter:title', content: props.title }, { property: 'og:title', content: props.title }, { name: 'twitter:description', content: preppedDescription }, { property: 'og:description', content: preppedDescription }, { property: 'og:url', content: prodUrl }, { property: 'og:type', content: 'website' }, {
         class: 'swiftype',
         name: 'title',
         'data-type': 'string',
@@ -2346,7 +2386,7 @@ var MetaTagger = function (_React$PureComponent) {
         name: 'excerpt',
         'data-type': 'string',
         content: props.description
-      }, { name: 'twitter:image:alt', content: props.imageAlt }, { name: 'og:image', content: props.imageUrl }, {
+      }, { name: 'twitter:image:alt', content: props.imageAlt }, { property: 'og:image', content: props.imageUrl }, {
         class: 'swiftype',
         name: 'image',
         'data-type': 'enum',

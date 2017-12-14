@@ -20,7 +20,7 @@ const inertiaLinearity = 0.25,
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  * @param {Object} [options]
  * @param {number} [options.bearingSnap] The threshold, measured in degrees, that determines when the map's
- *   bearing (rotation) will snap to north.
+ *   bearing will snap to north.
  * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
  */
 class DragRotateHandler {

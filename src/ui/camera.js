@@ -20,8 +20,8 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
  * @typedef {Object} CameraOptions
  * @property {LngLatLike} center The desired center.
  * @property {number} zoom The desired zoom level.
- * @property {number} bearing The desired bearing, in degrees counter-clockwise from north. A `bearing` of 90° orients the map
- * so that east is up.
+ * @property {number} bearing The desired bearing, in degrees. The bearing is the compass direction that
+ * is "up"; for example, a bearing of 90° orients the map so that east is up.
  * @property {number} pitch The desired pitch, in degrees.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  */
@@ -235,19 +235,23 @@ class Camera extends Evented {
     }
 
     /**
-     * Returns the map's current bearing (rotation).
+     * Returns the map's current bearing. The bearing is the compass direction that is \"up\"; for example, a bearing
+     * of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @returns The map's current bearing, measured in degrees counter-clockwise from north.
+     * @returns The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
 
     /**
-     * Sets the maps' bearing (rotation). Equivalent to `jumpTo({bearing: bearing})`.
+     * Sets the map's bearing (rotation). The bearing is the compass direction that is \"up\"; for example, a bearing
+     * of 90° orients the map so that east is up.
+     *
+     * Equivalent to `jumpTo({bearing: bearing})`.
      *
      * @memberof Map#
-     * @param bearing The bearing to set, measured in degrees counter-clockwise from north.
+     * @param bearing The desired bearing.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
@@ -262,10 +266,11 @@ class Camera extends Evented {
     }
 
     /**
-     * Rotates the map to the specified bearing, with an animated transition.
+     * Rotates the map to the specified bearing, with an animated transition. The bearing is the compass direction
+     * that is \"up\"; for example, a bearing of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @param bearing The bearing to rotate the map to, measured in degrees counter-clockwise from north.
+     * @param bearing The desired bearing.
      * @param options
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
@@ -279,7 +284,7 @@ class Camera extends Evented {
     }
 
     /**
-     * Rotates the map to a bearing of 0 (due north), with an animated transition.
+     * Rotates the map so that north is up (0° bearing), with an animated transition.
      *
      * @memberof Map#
      * @param options
@@ -294,7 +299,8 @@ class Camera extends Evented {
     }
 
     /**
-     * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (i.e. within the `bearingSnap` threshold).
+     * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (i.e. within the
+     * `bearingSnap` threshold).
      *
      * @memberof Map#
      * @param options
