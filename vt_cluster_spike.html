@@ -25,44 +25,41 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
-    // map.addLayer({
-    //     "id": "terrain-data",
-    //     "type": "line",
-    //     "source": {
-    //         type: 'vector',
+  map.addSource('vectorDataSource', {
+      "type": "vector",
+      "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$select=count(*),snap_for_zoom(point, {x}) as __snapped_point&$group=__snapped_point&$where=point is not null AND {{'point' column condition}}&$limit=100000" ]
+      // "tiles": [ "https://dataspace.demo.socrata.com/tiles/r6t9-rak2/point/{z}/{x}/{y}.json?$limit=1000" ]
+      // "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$limit=1000&$where=point is not null" ]
+  });
 
-    //         url: 'mapbox://mapbox.mapbox-terrain-v2'
-    //     },
-    //     "source-layer": "contour",
-    //     "layout": {
-    //         "line-join": "round",
-    //         "line-cap": "round"
-    //     },
-    //     "paint": {
-    //         "line-color": "#ff69b4",
-    //         "line-width": 1
-    //     }
-    // });
+   map.addLayer({
+    'id': 'pointLayer',
+    'type': 'circle',
+    'source': 'vectorDataSource',
+    'source-layer': '_geojsonTileLayer',
+    'cluster': true,
+    'clusterRadius': 20,
 
-    map.addSource('vectorDataSource', {
-        "type": "vector",
-        "tiles": [ "https://dataspace.demo.socrata.com/tiles/r6t9-rak2/point/{z}/{x}/{y}.json?$limit=1000" ]
-        // "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$limit=1000&$where=point is not null" ]
-    });
-
-    map.addLayer({
-        'id': 'pointLayer',
-        'type': 'circle',
-        'source': 'vectorDataSource',
-        'source-layer': '_geojsonTileLayer',
-        'paint': {
-            'circle-radius': 2,
-            'circle-color': '#288dc1',
-            "circle-opacity": 0.5
-        }
-    });
+    'paint': {
+        'circle-radius': 20,
+        'circle-color': '#288dc1 ',
+        "circle-opacity": 0.5
+    }
+  });
+  map.addLayer({
+    id: "cluster-count",
+    type: "symbol",
+    'source': 'vectorDataSource',
+    'source-layer': '_geojsonTileLayer',
+    layout: {
+        "text-field": "{point_count_abbreviated}",
+        "text-size": 12
+    }
+  });
 });
 </script>
+
+
 
 </body>
 </html>

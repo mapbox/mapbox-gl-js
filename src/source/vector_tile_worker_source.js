@@ -49,7 +49,13 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
     if ((params.request.url + '').indexOf('tiles.mapbox.com') >= 0) {
         return loadVectorTileOriginal(params, callback);
     }
-    const xhr = ajax.getJSON(params.request, (err, data) => {
+
+    const tileLatLngBounds = util.tileCoordToBounds(params.coord)
+    const replacedRequestUrl = params.request.url.replace(/{{'(.*)' column condition}}/, function(entireMatch, columnId){
+      return `within_box(${columnId}, ${tileLatLngBounds.getSouth()}, ${tileLatLngBounds.getWest()}, ${tileLatLngBounds.getNorth()}, ${tileLatLngBounds.getEast()})`;
+    });
+
+    const xhr = ajax.getJSON({url: replacedRequestUrl}, (err, data) => {
         if (err || !data) {
             return callback(err);
         } else if (typeof data !== 'object') {
