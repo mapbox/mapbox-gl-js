@@ -521,7 +521,8 @@
           }
         }
       },
-      "doc": "Rendering type of this layer."
+      "doc": "Rendering type of this layer.",
+      "required": true
     },
     "metadata": {
       "type": "*",
