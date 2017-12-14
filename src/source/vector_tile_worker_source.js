@@ -11,6 +11,7 @@ const EXTENT = require('../data/extent');
 const supercluster = require('supercluster');
 const GeoJSONWrapper = require('./geojson_wrapper');
 const vtpbf = require('vt-pbf');
+const tileUtils = require('../util/tile_utils');
 
 import type {
     WorkerSource,
@@ -50,7 +51,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
         return loadVectorTileOriginal(params, callback);
     }
 
-    const tileLatLngBounds = util.tileCoordToBounds(params.coord)
+    const tileLatLngBounds = tileUtils.tileCoordToBounds(params.coord);
     const replacedRequestUrl = params.request.url.replace(/{{'(.*)' column condition}}/, function(entireMatch, columnId){
       return `within_box(${columnId}, ${tileLatLngBounds.getSouth()}, ${tileLatLngBounds.getWest()}, ${tileLatLngBounds.getNorth()}, ${tileLatLngBounds.getEast()})`;
     });
