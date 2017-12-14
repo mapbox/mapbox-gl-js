@@ -98,6 +98,7 @@ class VectorTileSource extends Evented implements Source {
             zoom: tile.coord.z,
             tileSize: this.tileSize * overscaling,
             type: this.type,
+            options: this._options,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             overscaling: overscaling,

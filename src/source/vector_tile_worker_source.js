@@ -53,8 +53,11 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
 
     const tileLatLngBounds = tileUtils.tileCoordToBounds(params.coord);
     const replacedRequestUrl = params.request.url.replace(/{{'(.*)' column condition}}/, function(entireMatch, columnId){
-      return `within_box(${columnId}, ${tileLatLngBounds.getSouth()}, ${tileLatLngBounds.getWest()}, ${tileLatLngBounds.getNorth()}, ${tileLatLngBounds.getEast()})`;
-    });
+        return `within_box(${columnId}, ${tileLatLngBounds.getSouth()}, ${tileLatLngBounds.getWest()}, ${tileLatLngBounds.getNorth()}, ${tileLatLngBounds.getEast()})`;
+      })
+      .replace(/{snap_zoom}/, Math.max(params.zoom - 6, 1))
+      .replace(/{snap_precision}/, 0.0001/(2*params.zoom) );
+
 
     const xhr = ajax.getJSON({url: replacedRequestUrl}, (err, data) => {
         if (err || !data) {
@@ -64,22 +67,49 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
         } else {
             rewind(data, true);
 
-            const superclusterOptions = {
-                minZoom: 5,
-                maxZoom: 20,
-                extent: EXTENT,
-                radius: 50 * (EXTENT/512),
-            };
             try {
-                const index = supercluster(superclusterOptions).load(data.features);
+                const options = params.options || {};
+                const scale = EXTENT / params.tileSize;
+                console.log('params', params);
+                let index;
+                if (options.cluster) {
+                  const superclusterOptions = {
+                      // TODO: Work based on current zoom level.
+                      minZoom: params.zoom - 3,
+                      maxZoom: params.zoom + 3,
+                      extent: EXTENT,
+                      radius: (options.clusterRadius || 50) * scale
+                  };
+                  if (options.aggregateBy) {
+                      superclusterOptions.map = function(props) {
+                          return {sum: Number(props[options.aggregateBy]) || 1};
+                      }
+                      superclusterOptions.reduce = function (accumulated, props) {
+                          accumulated.sum += props.sum;
+                      }
+                      superclusterOptions.initial = function () {
+                          return {sum: 0};
+                      }
+                  }
+                  console.log('superclusterOptions', superclusterOptions);
+                  index = supercluster(superclusterOptions).load(data.features);
+                } else {
+                  const geojsonVtOptions = {
+                    buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
+                    tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
+                    extent: EXTENT,
+                    // TODO: Work based on current zoom level.
+                    maxZoom: params.zoom
+                  }
+                  index = geojsonvt(data, geojsonVtOptions)
+                }
+
                 const geoJSONTile = index.getTile(params.zoom, params.coord.x, params.coord.y);
                 if (!geoJSONTile) {
                     return; // callback(null);
-                } else {
-                    console.log('geoJSONTile yaaaay', params.zoom, params.coord.x, params.coord.y,  geoJSONTile);
                 }
                 const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-                console.log('geojsonWrapper', geojsonWrapper);
+
                 let pbf = vtpbf(geojsonWrapper);
                 // if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
                 //     // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
@@ -91,6 +121,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
                     cacheControl: 'max-age=90000',
                     expires: undefined
                 });
+
             } catch (err) {
                 return callback(err);
             }

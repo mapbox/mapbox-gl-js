@@ -22,17 +22,21 @@ var map = new mapboxgl.Map({
     zoom: 11,
     center: [-122.411,37.771]
 });
+map.showTileBoundaries = true;
 
 map.on('load', function () {
 
   map.addSource('vectorDataSource', {
       "type": "vector",
-      "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$select=count(*),snap_for_zoom(point, {z}) as __snapped_point&$group=__snapped_point&$where=point is not null AND {{'point' column condition}}&$limit=100000" ]
+      "cluster": true,
+      "clusterRadius": 50,
+      "aggregateBy": 'count',
+      "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$select=count(*),snap_for_zoom(point, {snap_zoom}) as __snapped_point&$group=__snapped_point&$where=point is not null AND {{'point' column condition}}&$limit=100000" ]
       // "tiles": [ "https://dataspace.demo.socrata.com/tiles/r6t9-rak2/point/{z}/{x}/{y}.json?$limit=1000" ]
       // "tiles": [ "https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$limit=1000&$where=point is not null" ]
   });
 
-   map.addLayer({
+  map.addLayer({
     'id': 'pointLayer',
     'type': 'circle',
     'source': 'vectorDataSource',
@@ -53,7 +57,7 @@ map.on('load', function () {
     'source-layer': '_geojsonTileLayer',
     'filter': ['all', ['has', 'point_count']],
     layout: {
-        "text-field": "{point_count_abbreviated}",
+        "text-field": "{sum}",
         "text-size": 12
     }
   });
@@ -65,7 +69,7 @@ map.on('load', function () {
     'source-layer': '_geojsonTileLayer',
     'filter': ['all', ['!has', 'point_count']],
     layout: {
-        "text-field": "1",
+        "text-field": "{count}",
         "text-size": 12
     }
   });
