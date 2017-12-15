@@ -2,7 +2,7 @@
 import assert from 'assert';
 
 import type {StructArray} from '../util/struct_array';
-import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
+import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
 import type Context from '../gl/context';
 
 
@@ -11,7 +11,7 @@ class IndexBuffer {
     buffer: WebGLBuffer;
     dynamicDraw: boolean;
 
-    constructor(context: Context, array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {
+    constructor(context: Context, array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
         this.context = context;
         const gl = context.gl;
         this.buffer = gl.createBuffer();

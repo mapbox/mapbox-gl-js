@@ -11,20 +11,29 @@ import Context from '../gl/context';
 import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
+import type DepthMode from '../gl/depth_mode';
+import type StencilMode from '../gl/stencil_mode';
+import type ColorMode from '../gl/color_mode';
+import type {Uniforms, UniformBindings, UniformValues, UniformLocations, BinderUniformTypes} from './uniform_binding';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
-    | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>;
+    | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>
+    | $PropertyType<WebGLRenderingContext, 'LINE_STRIP'>;
 
-class Program {
+class Program<Us: UniformBindings> {
     program: WebGLProgram;
-    uniforms: {[string]: WebGLUniformLocation};
+    uniforms: UniformLocations;
     attributes: {[string]: number};
     numAttributes: number;
+    fixedUniforms: Uniforms<Us>;
+    binderUniforms: Uniforms<BinderUniformTypes>;
+    configuration: ProgramConfiguration;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
+                fixedUniforms: (Context) => Uniforms<Us>,
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
@@ -81,23 +90,43 @@ class Program {
                 this.uniforms[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
             }
         }
+
+        this.fixedUniforms = fixedUniforms(context);
     }
 
     draw(context: Context,
          drawMode: DrawMode,
+         depthMode: $ReadOnly<DepthMode>,
+         stencilMode: $ReadOnly<StencilMode>,
+         colorMode: $ReadOnly<ColorMode>,
+         uniformValues: UniformValues<Us>,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: IndexBuffer,
          segments: SegmentVector,
+         currentProperties: any,
+         zoom: ?number,
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer,
          dynamicLayoutBuffer2: ?VertexBuffer) {
 
         const gl = context.gl;
 
+        context.setDepthMode(depthMode);
+        context.setStencilMode(stencilMode);
+        context.setColorMode(colorMode);
+
+        this.fixedUniforms.set(this.uniforms, uniformValues);
+        if (configuration) {
+            const invalidate = this.configuration && this.configuration !== configuration;
+            configuration.setUniforms(context, this, currentProperties, {zoom: (zoom: any)}, invalidate);
+            this.configuration = configuration;
+        }
+
         const primitiveSize = {
             [gl.LINES]: 2,
-            [gl.TRIANGLES]: 3
+            [gl.TRIANGLES]: 3,
+            [gl.LINE_STRIP]: 1
         }[drawMode];
 
         for (const segment of segments.get()) {
