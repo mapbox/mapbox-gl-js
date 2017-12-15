@@ -565,6 +565,35 @@ register('StructArrayLayout2ui4', StructArrayLayout2ui4);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Uint16[1]
+ *
+ * @private
+ */
+class StructArrayLayout1ui2 extends StructArray {
+    uint8: Uint8Array;
+    uint16: Uint16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        const o2 = i * 1;
+        this.uint16[o2 + 0] = v0;
+        return i;
+    }
+
+}
+
+StructArrayLayout1ui2.prototype.bytesPerElement = 2;
+register('StructArrayLayout1ui2', StructArrayLayout1ui2);
+
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Float32[2]
  *
  * @private
@@ -870,6 +899,7 @@ export {
     StructArrayLayout1ul2ui8,
     StructArrayLayout3ui6,
     StructArrayLayout2ui4,
+    StructArrayLayout1ui2,
     StructArrayLayout2f8,
     StructArrayLayout4f16,
     StructArrayLayout2i4 as PosArray,
@@ -886,5 +916,6 @@ export {
     StructArrayLayout2i2i2i12 as CollisionCircleLayoutArray,
     StructArrayLayout2ub4 as CollisionVertexArray,
     StructArrayLayout3ui6 as TriangleIndexArray,
-    StructArrayLayout2ui4 as LineIndexArray
+    StructArrayLayout2ui4 as LineIndexArray,
+    StructArrayLayout1ui2 as LineStripIndexArray
 };

@@ -31,7 +31,7 @@ class Transform {
     angle: number;
     rotationMatrix: Float64Array;
     zoomFraction: number;
-    pixelsToGLUnits: Array<number>;
+    pixelsToGLUnits: [number, number];
     cameraToCenterDistance: number;
     projMatrix: Float64Array;
     alignedProjMatrix: Float64Array;
