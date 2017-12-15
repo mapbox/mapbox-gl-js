@@ -7,6 +7,7 @@ import { register } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
 import EvaluationParameters from '../style/evaluation_parameters';
+import { Uniform, Uniform1f, Uniform4fv } from '../render/uniform_binding';
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -62,8 +63,11 @@ function packColor(color: Color): [number, number] {
  *
  * @private
  */
+
 interface Binder<T> {
     statistics: { max: number };
+    uniformName: string;
+    uniformBinding: ?$Subtype<Uniform<any>>;
 
     populatePaintArray(length: number, feature: Feature): void;
     updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState): void;
@@ -72,21 +76,22 @@ interface Binder<T> {
 
     defines(): Array<string>;
 
-    setUniforms(context: Context,
-                program: Program,
-                globals: GlobalProperties,
-                currentValue: PossiblyEvaluatedPropertyValue<T>): void;
+    setUniforms(context: Context, program: Program<*>, invalidate: boolean,
+                globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<T>): void;
 }
 
 class ConstantBinder<T> implements Binder<T> {
     value: T;
     name: string;
-    type: string;
     statistics: { max: number };
+    type: string;
+    uniformName: string;
+    uniformBinding: ?$Subtype<Uniform<any>>;
 
     constructor(value: T, name: string, type: string) {
         this.value = value;
         this.name = name;
+        this.uniformName = `u_${this.name}`;
         this.type = type;
         this.statistics = { max: -Infinity };
     }
@@ -100,25 +105,25 @@ class ConstantBinder<T> implements Binder<T> {
     upload() {}
     destroy() {}
 
-    setUniforms(context: Context,
-                program: Program,
-                globals: GlobalProperties,
-                currentValue: PossiblyEvaluatedPropertyValue<T>) {
-        const value: any = currentValue.constantOr(this.value);
-        const gl = context.gl;
-        if (this.type === 'color') {
-            gl.uniform4f(program.uniforms[`u_${this.name}`], value.r, value.g, value.b, value.a);
-        } else {
-            gl.uniform1f(program.uniforms[`u_${this.name}`], value);
+    setUniforms(context: Context, program: Program<*>, invalidate: boolean,
+                globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<T>): void {
+        const value = currentValue.constantOr(this.value);
+
+        if (!this.uniformBinding) {
+            this.uniformBinding = this.type === 'color' ? new Uniform4fv(context) : new Uniform1f(context);
         }
+
+        this.uniformBinding.set(program.uniforms[this.uniformName], (value: any), invalidate);
     }
 }
 
 class SourceExpressionBinder<T> implements Binder<T> {
     expression: SourceExpression;
     name: string;
+    uniformName: string;
     type: string;
     statistics: { max: number };
+    uniformBinding: ?Uniform1f;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -128,6 +133,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         this.expression = expression;
         this.name = name;
         this.type = type;
+        this.uniformName = `a_${name}`;
         this.statistics = { max: -Infinity };
         const PaintVertexArray = type === 'color' ? StructArrayLayout2f8 : StructArrayLayout1f4;
         this.paintVertexAttributes = [{
@@ -199,18 +205,25 @@ class SourceExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(context: Context, program: Program) {
-        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], 0);
+    setUniforms(context: Context, program: Program<*>, invalidate: boolean): void {
+        if (!this.uniformBinding) {
+            this.uniformBinding = new Uniform1f(context);
+            this.uniformBinding.set(program.uniforms[this.uniformName], 0);
+        } else if (invalidate) {
+            this.uniformBinding.set(program.uniforms[this.uniformName], 0, invalidate);
+        }
     }
 }
 
 class CompositeExpressionBinder<T> implements Binder<T> {
     expression: CompositeExpression;
     name: string;
+    uniformName: string;
     type: string;
     useIntegerZoom: boolean;
     zoom: number;
     statistics: { max: number };
+    uniformBinding: ?Uniform1f;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -219,6 +232,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     constructor(expression: CompositeExpression, name: string, type: string, useIntegerZoom: boolean, zoom: number) {
         this.expression = expression;
         this.name = name;
+        this.uniformName = `a_${this.name}_t`;
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
@@ -306,8 +320,13 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(context: Context, program: Program, globals: GlobalProperties) {
-        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], this.interpolationFactor(globals.zoom));
+    setUniforms(context: Context, program: Program<*>, invalidate: boolean,
+                globals: GlobalProperties): void {
+        if (!this.uniformBinding) {
+            this.uniformBinding = new Uniform1f(context);
+        }
+
+        this.uniformBinding.set(program.uniforms[this.uniformName], this.interpolationFactor(globals.zoom), invalidate);
     }
 }
 
@@ -335,6 +354,7 @@ export default class ProgramConfiguration {
     binders: { [string]: Binder<any> };
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
+    program: ?Program<*>;
 
     _buffers: Array<VertexBuffer>;
 
@@ -432,15 +452,23 @@ export default class ProgramConfiguration {
         return result;
     }
 
-    setUniforms<Properties: Object>(context: Context, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            binder.setUniforms(context, program, globals, properties.get(property));
-        }
-    }
-
     getPaintVertexBuffers(): Array<VertexBuffer> {
         return this._buffers;
+    }
+
+    setUniforms<Properties: Object>(context: Context, program: Program<*>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties, invalidate: boolean) {
+        // We maintain a reference here to the last Program used, and a reference
+        // on each Program to the last ProgramConfiguration used: if these match,
+        // we can assume the uniform bindings haven't changed, but if we're using
+        // a different ProgramConfiguration for the same Program or a different
+        // Program with the same ProgramConfiguration, our tracked uniform state
+        // won't be right, so we invalidate the old bindings here.
+        invalidate = invalidate || this.program !== program;
+
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            binder.setUniforms(context, program, invalidate, globals, properties.get(property));
+        }
     }
 
     upload(context: Context) {
