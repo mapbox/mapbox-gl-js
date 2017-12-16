@@ -26,8 +26,6 @@ class LayerBenchmark extends Benchmark {
     }
 
     bench() {
-        this.map._styleDirty = true;
-        this.map._sourcesDirty = true;
         this.map._render();
     }
 
