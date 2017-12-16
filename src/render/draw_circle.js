@@ -39,9 +39,12 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const bucket: ?CircleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
+        const prevProgram = painter.context.program.get();
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('circle', programConfiguration);
-        programConfiguration.setUniforms(context, program, layer.paint, {zoom: painter.transform.zoom});
+        if (i === 0 || program.program !== prevProgram) {
+            programConfiguration.setUniforms(context, program, layer.paint, {zoom: painter.transform.zoom});
+        }
 
         gl.uniform1f(program.uniforms.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
         gl.uniform1i(program.uniforms.u_scale_with_map, layer.paint.get('circle-pitch-scale') === 'map' ? 1 : 0);

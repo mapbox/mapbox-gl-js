@@ -52,10 +52,13 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
+            const prevProgram = painter.context.program.get();
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
-            programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
+            if (i === 0 || program.program !== prevProgram) {
+                programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
+            }
             gl.uniform1f(program.uniforms.u_radius, layer.paint.get('heatmap-radius'));
 
             gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));
