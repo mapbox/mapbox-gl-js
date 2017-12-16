@@ -34,9 +34,9 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
         if (!bucket) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const prevProgram = painter.currentProgram;
+        const prevProgram = painter.context.program.get();
         const program = painter.useProgram(programId, programConfiguration);
-        const programChanged = firstTile || program !== prevProgram;
+        const programChanged = firstTile || program.program !== prevProgram;
         const tileRatioChanged = prevTileZoom !== tile.tileID.overscaledZ;
 
         if (programChanged) {

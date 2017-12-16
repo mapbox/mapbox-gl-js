@@ -94,7 +94,6 @@ class Painter {
     id: string;
     _showOverdrawInspector: boolean;
     cache: { [string]: Program };
-    currentProgram: Program;
     crossTileSymbolIndex: CrossTileSymbolIndex;
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {

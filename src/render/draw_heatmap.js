@@ -40,6 +40,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             blendFunction: [gl.ONE, gl.ONE]
         }));
 
+        let first = true;
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
 
@@ -52,10 +53,14 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
+            const prevProgram = painter.context.program.get();
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
-            programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
+            if (first || program.program !== prevProgram) {
+                programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
+                first = false;
+            }
             gl.uniform1f(program.uniforms.u_radius, layer.paint.get('heatmap-radius'));
 
             gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));

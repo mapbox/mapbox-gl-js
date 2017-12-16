@@ -105,15 +105,15 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
 
 function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programConfiguration, layer, tile, coord, firstTile) {
     let program;
-    const prevProgram = painter.currentProgram;
+    const prevProgram = painter.context.program.get();
     if (!pat) {
         program = painter.useProgram(programId, programConfiguration);
-        if (firstTile || program !== prevProgram) {
+        if (firstTile || program.program !== prevProgram) {
             programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
         }
     } else {
         program = painter.useProgram(`${programId}Pattern`, programConfiguration);
-        if (firstTile || program !== prevProgram) {
+        if (firstTile || program.program !== prevProgram) {
             programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
             pattern.prepare(pat, painter, program);
         }
