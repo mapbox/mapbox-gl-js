@@ -40,7 +40,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             blendFunction: [gl.ONE, gl.ONE]
         }));
 
-        let first;
+        let first = true;
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
 
