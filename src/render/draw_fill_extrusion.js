@@ -26,8 +26,14 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     if (painter.renderPass === 'offscreen') {
         drawToExtrusionFramebuffer(painter, layer);
 
-        for (let i = 0; i < coords.length; i++) {
-            drawExtrusion(painter, source, layer, coords[i], i);
+        let first = true;
+        for (const coord of coords) {
+            const tile = source.getTile(coord);
+            const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
+            if (!bucket) continue;
+
+            drawExtrusion(painter, source, layer, tile, coord, bucket, first);
+            first = false;
         }
     } else if (painter.renderPass === 'translucent') {
         drawExtrusionTexture(painter, layer);
@@ -95,11 +101,7 @@ function drawExtrusionTexture(painter, layer) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function drawExtrusion(painter, source, layer, coord, i) {
-    const tile = source.getTile(coord);
-    const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
-    if (!bucket) return;
-
+function drawExtrusion(painter, source, layer, tile, coord, bucket, first) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -108,7 +110,7 @@ function drawExtrusion(painter, source, layer, coord, i) {
     const prevProgram = painter.context.program.get();
     const programConfiguration = bucket.programConfigurations.get(layer.id);
     const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
-    if (i === 0 || program.program !== prevProgram) {
+    if (first || program.program !== prevProgram) {
         programConfiguration.setUniforms(context, program, layer.paint, {zoom: painter.transform.zoom});
     }
 

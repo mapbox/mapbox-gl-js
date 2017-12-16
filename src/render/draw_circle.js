@@ -32,6 +32,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     context.setStencilMode(StencilMode.disabled());
     context.setColorMode(painter.colorModeForRenderPass());
 
+    let first = true;
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
 
@@ -42,8 +43,9 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const prevProgram = painter.context.program.get();
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('circle', programConfiguration);
-        if (i === 0 || program.program !== prevProgram) {
+        if (first || program.program !== prevProgram) {
             programConfiguration.setUniforms(context, program, layer.paint, {zoom: painter.transform.zoom});
+            first = false;
         }
 
         gl.uniform1f(program.uniforms.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
