@@ -525,17 +525,12 @@ class DataConstantProperty<T> implements Property<T, T> {
  */
 class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
-    useIntegerZoom: boolean;
 
-    constructor(specification: StylePropertySpecification, useIntegerZoom: boolean = false) {
+    constructor(specification: StylePropertySpecification) {
         this.specification = specification;
-        this.useIntegerZoom = useIntegerZoom;
     }
 
     possiblyEvaluate(value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>, parameters: EvaluationParameters): PossiblyEvaluatedPropertyValue<T> {
-        if (this.useIntegerZoom) {
-            parameters = extend({}, parameters, {zoom: Math.floor(parameters.zoom)});
-        }
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters)}, parameters);
         } else {
@@ -564,9 +559,6 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
     }
 
     evaluate(value: PossiblyEvaluatedValue<T>, globals: GlobalProperties, feature: Feature): T {
-        if (this.useIntegerZoom) {
-            globals = extend({}, globals, {zoom: Math.floor(globals.zoom)});
-        }
         if (value.kind === 'constant') {
             return value.value;
         } else {

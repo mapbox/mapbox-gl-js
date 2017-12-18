@@ -7,6 +7,8 @@ const LineBucket = require('../../data/bucket/line_bucket');
 const {multiPolygonIntersectsBufferedMultiLine} = require('../../util/intersection_tests');
 const {getMaximumPaintValue, translateDistance, translate} = require('../query_utils');
 const properties = require('./line_style_layer_properties');
+const {extend} = require('../../util/util');
+const EvaluationParameters = require('../evaluation_parameters');
 
 const {
     Transitionable,
@@ -18,9 +20,28 @@ const {
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
-import type EvaluationParameters from '../evaluation_parameters';
 
-const lineFloorwidthProperty = new DataDrivenProperty(properties.paint.properties['line-width'].specification, true);
+class LineFloorwidthProperty extends DataDrivenProperty<number> {
+    useIntegerZoom: true;
+
+    possiblyEvaluate(value, parameters) {
+        parameters = new EvaluationParameters(Math.floor(parameters.zoom), {
+            now: parameters.now,
+            fadeDuration: parameters.fadeDuration,
+            zoomHistory: parameters.zoomHistory,
+            transition: parameters.transition
+        });
+        return super.possiblyEvaluate(value, parameters);
+    }
+
+    evaluate(value, globals, feature) {
+        globals = extend({}, globals, {zoom: Math.floor(globals.zoom)});
+        return super.evaluate(value, globals, feature);
+    }
+}
+
+const lineFloorwidthProperty = new LineFloorwidthProperty(properties.paint.properties['line-width'].specification);
+lineFloorwidthProperty.useIntegerZoom = true;
 
 class LineStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
