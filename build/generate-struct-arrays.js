@@ -154,7 +154,7 @@ createStructArrayType('feature_index', createLayout([
     { type: 'Uint16', name: 'sourceLayerIndex' },
     // the bucket the feature appears in
     { type: 'Uint16', name: 'bucketIndex' }
-], 4), true);
+], 2), true);
 
 // triangle index array
 createStructArrayType('triangle_index', createLayout([

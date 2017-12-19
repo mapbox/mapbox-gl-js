@@ -472,7 +472,7 @@ register('StructArrayLayout3i6', StructArrayLayout3i6);
  *
  * @private
  */
-class StructArrayLayout1ul2ui12 extends StructArray {
+class StructArrayLayout1ul2ui8 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
     uint16: Uint16Array;
@@ -486,8 +486,8 @@ class StructArrayLayout1ul2ui12 extends StructArray {
     emplaceBack(v0: number, v1: number, v2: number) {
         const i = this.length;
         this.resize(i + 1);
-        const o4 = i * 3;
-        const o2 = i * 6;
+        const o4 = i * 2;
+        const o2 = i * 4;
         this.uint32[o4 + 0] = v0;
         this.uint16[o2 + 2] = v1;
         this.uint16[o2 + 3] = v2;
@@ -496,8 +496,8 @@ class StructArrayLayout1ul2ui12 extends StructArray {
 
 }
 
-StructArrayLayout1ul2ui12.prototype.bytesPerElement = 12;
-register('StructArrayLayout1ul2ui12', StructArrayLayout1ul2ui12);
+StructArrayLayout1ul2ui8.prototype.bytesPerElement = 8;
+register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
 
 
 /**
@@ -825,11 +825,11 @@ class FeatureIndexStruct extends Struct {
     set featureIndex(x) { this._structArray.uint32[this._pos4 + 0] = x; }
     get sourceLayerIndex() { return this._structArray.uint16[this._pos2 + 2]; }
     set sourceLayerIndex(x) { this._structArray.uint16[this._pos2 + 2] = x; }
-    get bucketIndex() { return this._structArray.uint16[this._pos2 + 4]; }
-    set bucketIndex(x) { this._structArray.uint16[this._pos2 + 4] = x; }
+    get bucketIndex() { return this._structArray.uint16[this._pos2 + 3]; }
+    set bucketIndex(x) { this._structArray.uint16[this._pos2 + 3] = x; }
 }
 
-FeatureIndexStruct.prototype.size = 12;
+FeatureIndexStruct.prototype.size = 8;
 
 export type FeatureIndex = FeatureIndexStruct;
 
@@ -837,7 +837,7 @@ export type FeatureIndex = FeatureIndexStruct;
 /**
  * @private
  */
-class FeatureIndexArray extends StructArrayLayout1ul2ui12 {
+class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
     /**
      * Return the FeatureIndexStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -865,7 +865,7 @@ module.exports = {
     StructArrayLayout2i2ui3ul3ui2f2ub40,
     StructArrayLayout1f4,
     StructArrayLayout3i6,
-    StructArrayLayout1ul2ui12,
+    StructArrayLayout1ul2ui8,
     StructArrayLayout3ui6,
     StructArrayLayout2ui4,
     StructArrayLayout2f8,
