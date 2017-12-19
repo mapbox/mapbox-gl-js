@@ -225,7 +225,7 @@ class Marker {
                 popup.options.offset = this._offset;
             }
             this._popup = popup;
-            this._popup.setLngLat(this._lngLat);
+            if (this._lngLat) this._popup.setLngLat(this._lngLat);
         }
 
         return this;
