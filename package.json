@@ -154,7 +154,8 @@
     "test-flow": "node build/generate-flow-typed-style-spec && flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
-    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
+    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
+    "codegen": "node build/generate-style-code.js && flow-node build/generate-struct-arrays.js"
   },
   "files": [
     "build/",
