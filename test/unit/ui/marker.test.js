@@ -5,6 +5,7 @@ const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const Marker = require('../../../src/ui/marker');
 const Popup = require('../../../src/ui/popup');
+const LngLat = require('../../../src/geo/lng_lat');
 
 function createMap() {
     const container = window.document.createElement('div');
@@ -60,6 +61,17 @@ test('Marker', (t) => {
         t.ok(marker.getPopup() instanceof Popup);
         t.ok(marker.setPopup() instanceof Marker, 'passing no argument to Marker.setPopup() is valid');
         t.ok(!marker.getPopup(), 'Calling setPopup with no argument successfully removes Popup instance from Marker instance');
+        t.end();
+    });
+
+    t.test('popups can be set before LngLat', (t) => {
+        const map = createMap();
+        const popup = new Popup();
+        new Marker(window.document.createElement('div'))
+            .setPopup(popup)
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
+        t.deepEqual(popup.getLngLat(), new LngLat(-77.01866, 38.888));
         t.end();
     });
 
