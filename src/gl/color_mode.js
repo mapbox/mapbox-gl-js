@@ -20,9 +20,9 @@ class ColorMode {
 
     static Replace: BlendFuncType;
 
-    static disabled: ColorMode;
-    static unblended: ColorMode;
-    static alphaBlended: ColorMode;
+    static disabled: $ReadOnly<ColorMode>;
+    static unblended: $ReadOnly<ColorMode>;
+    static alphaBlended: $ReadOnly<ColorMode>;
 }
 
 ColorMode.Replace = [ONE, ZERO];

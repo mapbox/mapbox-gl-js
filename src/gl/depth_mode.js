@@ -18,7 +18,7 @@ class DepthMode {
         this.range = depthRange;
     }
 
-    static disabled: DepthMode;
+    static disabled: $ReadOnly<DepthMode>;
 }
 
 DepthMode.ReadOnly = false;

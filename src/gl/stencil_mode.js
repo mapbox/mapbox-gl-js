@@ -22,7 +22,7 @@ class StencilMode {
         this.pass = pass;
     }
 
-    static disabled: StencilMode;
+    static disabled: $ReadOnly<StencilMode>;
 }
 
 StencilMode.disabled = new StencilMode({ func: ALWAYS, mask: 0 }, 0, 0, KEEP, KEEP, KEEP);

@@ -6,6 +6,7 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
 const StencilMode = require('../gl/stencil_mode');
+const ColorMode = require('../gl/color_mode');
 const util = require('../util/util');
 
 import type Painter from './painter';
@@ -36,9 +37,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         context.clear({ color: Color.transparent });
 
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-        context.setColorMode(util.extend({}, painter.colorModeForRenderPass(), {
-            blendFunction: [gl.ONE, gl.ONE]
-        }));
+        context.setColorMode(new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]));
 
         let first = true;
         for (let i = 0; i < coords.length; i++) {
