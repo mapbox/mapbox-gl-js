@@ -235,7 +235,7 @@ class Painter {
         return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
-    colorModeForRenderPass(): ColorMode {
+    colorModeForRenderPass(): $ReadOnly<ColorMode> {
         const gl = this.context.gl;
         if (this._showOverdrawInspector) {
             const numOverdrawSteps = 8;

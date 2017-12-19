@@ -36,7 +36,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         context.clear({ color: Color.transparent });
 
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
-        context.setColorMode(util.extend(painter.colorModeForRenderPass(), {
+        context.setColorMode(util.extend({}, painter.colorModeForRenderPass(), {
             blendFunction: [gl.ONE, gl.ONE]
         }));
 
