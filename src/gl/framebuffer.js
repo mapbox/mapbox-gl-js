@@ -1,5 +1,4 @@
 // @flow
-const State = require('./state');
 const { ColorAttachment, DepthAttachment } = require('./value');
 
 import type Context from './context';
@@ -9,8 +8,8 @@ class Framebuffer {
     width: number;
     height: number;
     framebuffer: WebGLFramebuffer;
-    colorAttachment: State<?WebGLTexture>;
-    depthAttachment: State<?WebGLRenderbuffer>;
+    colorAttachment: ColorAttachment;
+    depthAttachment: DepthAttachment;
 
     constructor(context: Context, width: number, height: number) {
         this.context = context;
@@ -19,8 +18,8 @@ class Framebuffer {
         const gl = context.gl;
         const fbo = this.framebuffer = gl.createFramebuffer();
 
-        this.colorAttachment = new State(new ColorAttachment(context, fbo));
-        this.depthAttachment = new State(new DepthAttachment(context, fbo));
+        this.colorAttachment = new ColorAttachment(context, fbo);
+        this.depthAttachment = new DepthAttachment(context, fbo);
     }
 
     destroy() {
