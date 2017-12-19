@@ -35,7 +35,8 @@ class ClearColor implements Value<Color> {
     get(): Color { return this.current; }
 
     set(v: Color): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a) {
             this.context.gl.clearColor(v.r, v.g, v.b, v.a);
             this.current = v;
         }
@@ -92,7 +93,8 @@ class ColorMask implements Value<ColorMaskType> {
     get(): ColorMaskType { return this.current; }
 
     set(v: ColorMaskType): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3]) {
             this.context.gl.colorMask(v[0], v[1], v[2], v[3]);
             this.current = v;
         }
@@ -153,7 +155,8 @@ class StencilFunc implements Value<StencilFuncType> {
     get(): StencilFuncType { return this.current; }
 
     set(v: StencilFuncType): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v.func !== c.func || v.ref !== c.ref || v.mask !== c.mask) {
             this.context.gl.stencilFunc(v.func, v.ref, v.mask);
             this.current = v;
         }
@@ -173,7 +176,8 @@ class StencilOp implements Value<StencilOpType> {
     get(): StencilOpType { return this.current; }
 
     set(v: StencilOpType): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2]) {
             this.context.gl.stencilOp(v[0], v[1], v[2]);
             this.current = v;
         }
@@ -216,7 +220,8 @@ class DepthRange implements Value<DepthRangeType> {
     get(): DepthRangeType { return this.current; }
 
     set(v: DepthRangeType): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1]) {
             this.context.gl.depthRange(v[0], v[1]);
             this.current = v;
         }
@@ -303,7 +308,8 @@ class BlendFunc implements Value<BlendFuncType> {
     get(): BlendFuncType { return this.current; }
 
     set(v: BlendFuncType): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1]) {
             this.context.gl.blendFunc(v[0], v[1]);
             this.current = v;
         }
@@ -322,7 +328,8 @@ class BlendColor implements Value<Color> {
     get(): Color { return this.current; }
 
     set(v: Color): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a) {
             this.context.gl.blendColor(v.r, v.g, v.b, v.a);
             this.current = v;
         }
@@ -401,7 +408,8 @@ class Viewport implements Value<ViewportType> {
     get(): ViewportType { return this.current; }
 
     set(v: ViewportType): void {
-        if (!util.deepEqual(this.current, v)) {
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3]) {
             this.context.gl.viewport(v[0], v[1], v[2], v[3]);
             this.current = v;
         }
