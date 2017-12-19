@@ -29,7 +29,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         // Allow kernels to be drawn across boundaries, so that
         // large kernels are not clipped to tiles
-        context.setStencilMode(StencilMode.disabled());
+        context.setStencilMode(StencilMode.disabled);
 
         bindFramebuffer(context, painter, layer);
 
@@ -149,7 +149,7 @@ function renderTextureToMap(painter, layer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    context.setDepthMode(DepthMode.disabled());
+    context.setDepthMode(DepthMode.disabled);
 
     const program = painter.useProgram('heatmapTexture');
 

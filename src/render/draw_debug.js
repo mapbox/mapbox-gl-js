@@ -30,8 +30,8 @@ function drawDebugTile(painter, sourceCache, coord) {
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');
 
-    context.setDepthMode(DepthMode.disabled());
-    context.setStencilMode(StencilMode.disabled());
+    context.setDepthMode(DepthMode.disabled);
+    context.setStencilMode(StencilMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);

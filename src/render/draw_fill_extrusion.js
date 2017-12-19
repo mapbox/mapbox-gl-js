@@ -68,7 +68,7 @@ function drawToExtrusionFramebuffer(painter, layer) {
 
     context.clear({ color: Color.transparent });
 
-    context.setStencilMode(StencilMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
     context.setDepthMode(new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, [0, 1]));
     context.setColorMode(painter.colorModeForRenderPass());
 }
@@ -81,8 +81,8 @@ function drawExtrusionTexture(painter, layer) {
     const gl = context.gl;
     const program = painter.useProgram('extrusionTexture');
 
-    context.setStencilMode(StencilMode.disabled());
-    context.setDepthMode(DepthMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
+    context.setDepthMode(DepthMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     context.activeTexture.set(gl.TEXTURE0);

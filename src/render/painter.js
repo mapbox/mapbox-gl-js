@@ -189,8 +189,8 @@ class Painter {
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
 
-        context.setColorMode(ColorMode.disabled());
-        context.setDepthMode(DepthMode.disabled());
+        context.setColorMode(ColorMode.disabled);
+        context.setDepthMode(DepthMode.disabled);
         context.setStencilMode(new StencilMode({ func: gl.ALWAYS, mask: 0 }, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO));
 
         const matrix = mat4.create();
@@ -208,8 +208,8 @@ class Painter {
         const context = this.context;
         const gl = context.gl;
 
-        context.setColorMode(ColorMode.disabled());
-        context.setDepthMode(DepthMode.disabled());
+        context.setColorMode(ColorMode.disabled);
+        context.setDepthMode(DepthMode.disabled);
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
@@ -243,9 +243,9 @@ class Painter {
 
             return new ColorMode([gl.CONSTANT_COLOR, gl.ONE], new Color(a, a, a, 0), [true, true, true, true]);
         } else if (this.renderPass === 'opaque') {
-            return ColorMode.unblended();
+            return ColorMode.unblended;
         } else {
-            return ColorMode.alphaBlended();
+            return ColorMode.alphaBlended;
         }
     }
 
