@@ -86,6 +86,7 @@ test('reloadTile', (t) => {
 
         function addData(callback) {
             source.loadData({ source: 'sourceId', data: JSON.stringify(geoJson) }, (err) => {
+                source.coalesce();
                 t.equal(err, null);
                 callback();
             });
