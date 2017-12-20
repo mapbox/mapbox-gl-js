@@ -61,7 +61,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
                 programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
                 first = false;
             }
-            gl.uniform1f(program.uniforms.u_radius, layer.paint.get('heatmap-radius'));
 
             gl.uniform1f(program.uniforms.u_extrude_scale, pixelsToTileUnits(tile, 1, zoom));
 
