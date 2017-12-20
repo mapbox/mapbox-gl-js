@@ -1,4 +1,4 @@
-## 0.43.0-beta.1 (December 14, 2017)
+## 0.43.0 (December 21, 2017)
 
 ### ⚠️ Breaking changes
 
@@ -11,6 +11,7 @@
 * Introduce client-side hillshading with `raster-dem` source type and `hillshade` layer type [#5286](https://github.com/mapbox/mapbox-gl-js/pull/5286)
 * GeoJSON sources take 2x less memory and generate tiles 20%–100% faster [#5799](https://github.com/mapbox/mapbox-gl-js/pull/5799)
 * Enable data-driven values for text-font [#5698](https://github.com/mapbox/mapbox-gl-js/pull/5698)
+* Enable data-driven values for heatmap-radius [#5898](https://github.com/mapbox/mapbox-gl-js/pull/5898)
 * Add getter and setter for offset on marker [#5759](https://github.com/mapbox/mapbox-gl-js/pull/5759)
 * Add `Map#hasImage` [#5775](https://github.com/mapbox/mapbox-gl-js/pull/5775)
 * Improve typing for `==` and `!=` expressions [#5840](https://github.com/mapbox/mapbox-gl-js/pull/5840)
@@ -34,6 +35,7 @@
 * Handle NaN as input to step and interpolate expressions [#5757](https://github.com/mapbox/mapbox-gl-js/pull/5757)
 * Clone property values on input and output [#5806](https://github.com/mapbox/mapbox-gl-js/pull/5806)
 * Bump geojson-rewind dependency [#5769](https://github.com/mapbox/mapbox-gl-js/pull/5769)
+* Allow setting Marker's popup before LngLat [#5893](https://github.com/mapbox/mapbox-gl-js/pull/5893)
 
 ## 0.42.2 (November 21, 2017)
 
