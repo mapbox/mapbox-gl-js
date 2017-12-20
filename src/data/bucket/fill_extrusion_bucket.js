@@ -32,12 +32,11 @@ function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
         // a_pos
         x,
         y,
-        // a_normal
+        // a_normal_ed: 3-component normal and 1-component edgedistance
         Math.floor(nx * FACTOR) * 2 + t,
         ny * FACTOR * 2,
         nz * FACTOR * 2,
-
-        // a_edgedistance
+        // edgedistance (used for wrapping patterns around extrusion sides)
         Math.round(e)
     );
 }
