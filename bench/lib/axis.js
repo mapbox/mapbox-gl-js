@@ -1,3 +1,4 @@
+const React = require('react');
 
 function identity(x) {
     return x;
