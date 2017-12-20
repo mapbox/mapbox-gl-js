@@ -47,17 +47,28 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
 
-    if ((params.request.url + '').indexOf('tiles.mapbox.com') >= 0) {
+    if ((params.request.url + '').indexOf('.geojson') === -1) {
         return loadVectorTileOriginal(params, callback);
     }
 
     const tileLatLngBounds = tileUtils.tileCoordToBounds(params.coord);
-    const replacedRequestUrl = params.request.url.replace(/{{'(.*)' column condition}}/, function(entireMatch, columnId){
-        return `within_box(${columnId}, ${tileLatLngBounds.getSouth()}, ${tileLatLngBounds.getWest()}, ${tileLatLngBounds.getNorth()}, ${tileLatLngBounds.getEast()})`;
+    const snapZoom = Math.max(params.zoom - 6, 1);
+    const snapPrecision = 0.0001 / (2 * params.zoom);
+    const simplifyPrecision = 0.0001 / (2 * params.zoom);
+    const options = params.options || {};
+    const tilePolygonWKT = `POLYGON(( ` +
+      `${tileLatLngBounds.getWest()} ${tileLatLngBounds.getSouth()} ,` +
+      `${tileLatLngBounds.getWest()} ${tileLatLngBounds.getNorth()} ,` +
+      `${tileLatLngBounds.getEast()} ${tileLatLngBounds.getNorth()} ,` +
+      `${tileLatLngBounds.getEast()} ${tileLatLngBounds.getSouth()} ,` +
+      `${tileLatLngBounds.getWest()} ${tileLatLngBounds.getSouth()} ))`;
+    const replacedRequestUrl = params.request.url
+      .replace(/{{'(.*)' column condition}}/g, function(entireMatch, columnId){
+        return `intersects(${columnId}, '${tilePolygonWKT}')`;
       })
-      .replace(/{snap_zoom}/, Math.max(params.zoom - 6, 1))
-      .replace(/{snap_precision}/, 0.0001/(2*params.zoom) );
-
+      .replace(/{snap_zoom}/g, (options.snapZoom || {})[params.zoom] || snapZoom)
+      .replace(/{snap_precision}/g, Math.max((options.snapPrecision || {})[params.zoom] || snapPrecision), 0.0000001)
+      .replace(/{simplify_precision}/g, Math.max((options.simplifyPrecision || {})[params.zoom] || simplifyPrecision), 0.0000001);
 
     const xhr = ajax.getJSON({url: replacedRequestUrl}, (err, data) => {
         if (err || !data) {
@@ -82,10 +93,15 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
                   };
                   if (options.aggregateBy) {
                       superclusterOptions.map = function(props) {
-                          return {sum: Number(props[options.aggregateBy]) || 1};
+                          return {sum: Number(props[options.aggregateBy]) || 1, sum_abbrev: 1};
                       }
                       superclusterOptions.reduce = function (accumulated, props) {
-                          accumulated.sum += props.sum;
+                        var sum = accumulated.sum + props.sum;
+                        var abbrev = sum >= 10000 ? Math.round(sum / 1000) + 'k' :
+                        sum >= 1000 ? (Math.round(sum / 100) / 10) + 'k' : sum;
+
+                        accumulated.sum_abbrev = abbrev;
+                        accumulated.sum = sum;
                       }
                       superclusterOptions.initial = function () {
                           return {sum: 0};
@@ -111,10 +127,10 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
                 const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
 
                 let pbf = vtpbf(geojsonWrapper);
-                // if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
-                //     // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
-                //     pbf = new Uint8Array(pbf);
-                // }
+                if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
+                    // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
+                    pbf = new Uint8Array(pbf);
+                }
                 callback(null, {
                     vectorTile: geojsonWrapper,
                     rawData: pbf.buffer,
