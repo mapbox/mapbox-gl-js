@@ -72,11 +72,13 @@ register('StructArrayLayout4i8', StructArrayLayout4i8);
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Int16[6]
+ * [0]: Int16[2]
+ * [4]: Int16[3]
+ * [12]: Int16[1]
  *
  * @private
  */
-class StructArrayLayout6i16 extends StructArray {
+class StructArrayLayout2i3i1i16 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -94,14 +96,14 @@ class StructArrayLayout6i16 extends StructArray {
         this.int16[o2 + 2] = v2;
         this.int16[o2 + 3] = v3;
         this.int16[o2 + 4] = v4;
-        this.int16[o2 + 5] = v5;
+        this.int16[o2 + 6] = v5;
         return i;
     }
 
 }
 
-StructArrayLayout6i16.prototype.bytesPerElement = 16;
-register('StructArrayLayout6i16', StructArrayLayout6i16);
+StructArrayLayout2i3i1i16.prototype.bytesPerElement = 16;
+register('StructArrayLayout2i3i1i16', StructArrayLayout2i3i1i16);
 
 
 /**
@@ -290,11 +292,13 @@ register('StructArrayLayout6i1ul2ui2i24', StructArrayLayout6i1ul2ui2i24);
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Int16[6]
+ * [0]: Int16[2]
+ * [4]: Int16[2]
+ * [8]: Int16[2]
  *
  * @private
  */
-class StructArrayLayout6i12 extends StructArray {
+class StructArrayLayout2i2i2i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -318,8 +322,8 @@ class StructArrayLayout6i12 extends StructArray {
 
 }
 
-StructArrayLayout6i12.prototype.bytesPerElement = 12;
-register('StructArrayLayout6i12', StructArrayLayout6i12);
+StructArrayLayout2i2i2i12.prototype.bytesPerElement = 12;
+register('StructArrayLayout2i2i2i12', StructArrayLayout2i2i2i12);
 
 
 /**
@@ -854,13 +858,13 @@ register('FeatureIndexArray', FeatureIndexArray);
 module.exports = {
     StructArrayLayout2i4,
     StructArrayLayout4i8,
-    StructArrayLayout6i16,
+    StructArrayLayout2i3i1i16,
     StructArrayLayout4i4ub12,
     StructArrayLayout4i4ui16,
     StructArrayLayout3f12,
     StructArrayLayout1ul4,
     StructArrayLayout6i1ul2ui2i24,
-    StructArrayLayout6i12,
+    StructArrayLayout2i2i2i12,
     StructArrayLayout2ub4,
     StructArrayLayout2i2ui3ul3ui2f2ub40,
     StructArrayLayout1f4,
@@ -874,14 +878,14 @@ module.exports = {
     RasterBoundsArray: StructArrayLayout4i8,
     CircleLayoutArray: StructArrayLayout2i4,
     FillLayoutArray: StructArrayLayout2i4,
-    FillExtrusionLayoutArray: StructArrayLayout6i16,
+    FillExtrusionLayoutArray: StructArrayLayout2i3i1i16,
     HeatmapLayoutArray: StructArrayLayout2i4,
     LineLayoutArray: StructArrayLayout4i4ub12,
     SymbolLayoutArray: StructArrayLayout4i4ui16,
     SymbolDynamicLayoutArray: StructArrayLayout3f12,
     SymbolOpacityArray: StructArrayLayout1ul4,
-    CollisionBoxLayoutArray: StructArrayLayout6i12,
-    CollisionCircleLayoutArray: StructArrayLayout6i12,
+    CollisionBoxLayoutArray: StructArrayLayout2i2i2i12,
+    CollisionCircleLayoutArray: StructArrayLayout2i2i2i12,
     CollisionVertexArray: StructArrayLayout2ub4,
     TriangleIndexArray: StructArrayLayout3ui6,
     LineIndexArray: StructArrayLayout2ui4,
