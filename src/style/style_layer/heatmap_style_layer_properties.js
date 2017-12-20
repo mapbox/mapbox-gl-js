@@ -1,4 +1,4 @@
-// This file is generated. Edit build/generate-style-code.js, then run `node build/generate-style-code.js`.
+// This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
 // @flow
 /* eslint-disable */
 

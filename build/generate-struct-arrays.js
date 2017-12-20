@@ -76,13 +76,13 @@ function createStructArrayType(name: string, layout: StructArrayLayout, includeS
     }
 }
 
-function createStructArrayLayoutType({members, size}) {
+function createStructArrayLayoutType({members, size, alignment}) {
     const usedTypes = new Set(['Uint8']);
     members = normalizeMembers(members, usedTypes);
 
     // combine consecutive 'members' with same underlying type, summing their
     // component counts
-    members = members.reduce((memo, member) => {
+    if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
         if (memo.length > 0 && memo[memo.length - 1].type === member.type) {
             const last = memo[memo.length - 1];
             return memo.slice(0, -1).concat(util.extend({}, last, {
@@ -154,7 +154,7 @@ createStructArrayType('feature_index', createLayout([
     { type: 'Uint16', name: 'sourceLayerIndex' },
     // the bucket the feature appears in
     { type: 'Uint16', name: 'bucketIndex' }
-], 4), true);
+]), true);
 
 // triangle index array
 createStructArrayType('triangle_index', createLayout([
@@ -192,7 +192,7 @@ createStructArrayLayoutType(createLayout([{
 const layouts = Object.keys(layoutCache).map(k => layoutCache[k]);
 
 fs.writeFileSync('src/data/array_types.js',
-    `// This file is generated. Edit build/generate-struct-arrays.js, then run \`node build/generate-struct-arrays.js\`.
+    `// This file is generated. Edit build/generate-struct-arrays.js, then run \`yarn run codegen\`.
 // @flow
 
 const assert = require('assert');

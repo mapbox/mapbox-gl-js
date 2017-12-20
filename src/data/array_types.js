@@ -1,4 +1,4 @@
-// This file is generated. Edit build/generate-struct-arrays.js, then run `node build/generate-struct-arrays.js`.
+// This file is generated. Edit build/generate-struct-arrays.js, then run `yarn run codegen`.
 // @flow
 
 const assert = require('assert');
@@ -72,11 +72,12 @@ register('StructArrayLayout4i8', StructArrayLayout4i8);
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Int16[6]
+ * [0]: Int16[2]
+ * [4]: Int16[4]
  *
  * @private
  */
-class StructArrayLayout6i16 extends StructArray {
+class StructArrayLayout2i4i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -88,7 +89,7 @@ class StructArrayLayout6i16 extends StructArray {
     emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
         const i = this.length;
         this.resize(i + 1);
-        const o2 = i * 8;
+        const o2 = i * 6;
         this.int16[o2 + 0] = v0;
         this.int16[o2 + 1] = v1;
         this.int16[o2 + 2] = v2;
@@ -100,8 +101,8 @@ class StructArrayLayout6i16 extends StructArray {
 
 }
 
-StructArrayLayout6i16.prototype.bytesPerElement = 16;
-register('StructArrayLayout6i16', StructArrayLayout6i16);
+StructArrayLayout2i4i12.prototype.bytesPerElement = 12;
+register('StructArrayLayout2i4i12', StructArrayLayout2i4i12);
 
 
 /**
@@ -290,11 +291,13 @@ register('StructArrayLayout6i1ul2ui2i24', StructArrayLayout6i1ul2ui2i24);
 
 /**
  * Implementation of the StructArray layout:
- * [0]: Int16[6]
+ * [0]: Int16[2]
+ * [4]: Int16[2]
+ * [8]: Int16[2]
  *
  * @private
  */
-class StructArrayLayout6i12 extends StructArray {
+class StructArrayLayout2i2i2i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -318,8 +321,8 @@ class StructArrayLayout6i12 extends StructArray {
 
 }
 
-StructArrayLayout6i12.prototype.bytesPerElement = 12;
-register('StructArrayLayout6i12', StructArrayLayout6i12);
+StructArrayLayout2i2i2i12.prototype.bytesPerElement = 12;
+register('StructArrayLayout2i2i2i12', StructArrayLayout2i2i2i12);
 
 
 /**
@@ -472,7 +475,7 @@ register('StructArrayLayout3i6', StructArrayLayout3i6);
  *
  * @private
  */
-class StructArrayLayout1ul2ui12 extends StructArray {
+class StructArrayLayout1ul2ui8 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
     uint16: Uint16Array;
@@ -486,8 +489,8 @@ class StructArrayLayout1ul2ui12 extends StructArray {
     emplaceBack(v0: number, v1: number, v2: number) {
         const i = this.length;
         this.resize(i + 1);
-        const o4 = i * 3;
-        const o2 = i * 6;
+        const o4 = i * 2;
+        const o2 = i * 4;
         this.uint32[o4 + 0] = v0;
         this.uint16[o2 + 2] = v1;
         this.uint16[o2 + 3] = v2;
@@ -496,8 +499,8 @@ class StructArrayLayout1ul2ui12 extends StructArray {
 
 }
 
-StructArrayLayout1ul2ui12.prototype.bytesPerElement = 12;
-register('StructArrayLayout1ul2ui12', StructArrayLayout1ul2ui12);
+StructArrayLayout1ul2ui8.prototype.bytesPerElement = 8;
+register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
 
 
 /**
@@ -825,11 +828,11 @@ class FeatureIndexStruct extends Struct {
     set featureIndex(x) { this._structArray.uint32[this._pos4 + 0] = x; }
     get sourceLayerIndex() { return this._structArray.uint16[this._pos2 + 2]; }
     set sourceLayerIndex(x) { this._structArray.uint16[this._pos2 + 2] = x; }
-    get bucketIndex() { return this._structArray.uint16[this._pos2 + 4]; }
-    set bucketIndex(x) { this._structArray.uint16[this._pos2 + 4] = x; }
+    get bucketIndex() { return this._structArray.uint16[this._pos2 + 3]; }
+    set bucketIndex(x) { this._structArray.uint16[this._pos2 + 3] = x; }
 }
 
-FeatureIndexStruct.prototype.size = 12;
+FeatureIndexStruct.prototype.size = 8;
 
 export type FeatureIndex = FeatureIndexStruct;
 
@@ -837,7 +840,7 @@ export type FeatureIndex = FeatureIndexStruct;
 /**
  * @private
  */
-class FeatureIndexArray extends StructArrayLayout1ul2ui12 {
+class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
     /**
      * Return the FeatureIndexStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -854,18 +857,18 @@ register('FeatureIndexArray', FeatureIndexArray);
 module.exports = {
     StructArrayLayout2i4,
     StructArrayLayout4i8,
-    StructArrayLayout6i16,
+    StructArrayLayout2i4i12,
     StructArrayLayout4i4ub12,
     StructArrayLayout4i4ui16,
     StructArrayLayout3f12,
     StructArrayLayout1ul4,
     StructArrayLayout6i1ul2ui2i24,
-    StructArrayLayout6i12,
+    StructArrayLayout2i2i2i12,
     StructArrayLayout2ub4,
     StructArrayLayout2i2ui3ul3ui2f2ub40,
     StructArrayLayout1f4,
     StructArrayLayout3i6,
-    StructArrayLayout1ul2ui12,
+    StructArrayLayout1ul2ui8,
     StructArrayLayout3ui6,
     StructArrayLayout2ui4,
     StructArrayLayout2f8,
@@ -874,14 +877,14 @@ module.exports = {
     RasterBoundsArray: StructArrayLayout4i8,
     CircleLayoutArray: StructArrayLayout2i4,
     FillLayoutArray: StructArrayLayout2i4,
-    FillExtrusionLayoutArray: StructArrayLayout6i16,
+    FillExtrusionLayoutArray: StructArrayLayout2i4i12,
     HeatmapLayoutArray: StructArrayLayout2i4,
     LineLayoutArray: StructArrayLayout4i4ub12,
     SymbolLayoutArray: StructArrayLayout4i4ui16,
     SymbolDynamicLayoutArray: StructArrayLayout3f12,
     SymbolOpacityArray: StructArrayLayout1ul4,
-    CollisionBoxLayoutArray: StructArrayLayout6i12,
-    CollisionCircleLayoutArray: StructArrayLayout6i12,
+    CollisionBoxLayoutArray: StructArrayLayout2i2i2i12,
+    CollisionCircleLayoutArray: StructArrayLayout2i2i2i12,
     CollisionVertexArray: StructArrayLayout2ub4,
     TriangleIndexArray: StructArrayLayout3ui6,
     LineIndexArray: StructArrayLayout2ui4,

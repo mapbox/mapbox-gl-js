@@ -57,7 +57,8 @@ export type StructArrayMember = {
 
 export type StructArrayLayout = {
     members: Array<StructArrayMember>,
-    size: number
+    size: number,
+    alignment: ?number
 }
 
 export type SerializedStructArray = {
@@ -224,7 +225,8 @@ function createLayout(
 
     return {
         members: layoutMembers,
-        size
+        size,
+        alignment
     };
 }
 
