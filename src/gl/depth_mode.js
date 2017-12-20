@@ -18,12 +18,12 @@ class DepthMode {
         this.range = depthRange;
     }
 
-    static disabled() {
-        return new DepthMode(ALWAYS, DepthMode.ReadOnly, [0, 1]);
-    }
+    static disabled: $ReadOnly<DepthMode>;
 }
 
 DepthMode.ReadOnly = false;
 DepthMode.ReadWrite = true;
+
+DepthMode.disabled = new DepthMode(ALWAYS, DepthMode.ReadOnly, [0, 1]);
 
 module.exports = DepthMode;

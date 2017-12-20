@@ -187,7 +187,7 @@ class Context {
         gl.clear(mask);
     }
 
-    setDepthMode(depthMode: DepthMode) {
+    setDepthMode(depthMode: $ReadOnly<DepthMode>) {
         if (depthMode.func === this.gl.ALWAYS && !depthMode.mask) {
             this.depthTest.set(false);
         } else {
@@ -198,7 +198,7 @@ class Context {
         }
     }
 
-    setStencilMode(stencilMode: StencilMode) {
+    setStencilMode(stencilMode: $ReadOnly<StencilMode>) {
         if (stencilMode.func === this.gl.ALWAYS && !stencilMode.mask) {
             this.stencilTest.set(false);
         } else {
@@ -213,7 +213,7 @@ class Context {
         }
     }
 
-    setColorMode(colorMode: ColorMode) {
+    setColorMode(colorMode: $ReadOnly<ColorMode>) {
         if (util.deepEqual(colorMode.blendFunction, ColorMode.Replace)) {
             this.blend.set(false);
         } else {

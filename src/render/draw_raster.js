@@ -22,7 +22,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    context.setStencilMode(StencilMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     // Constant parameters.

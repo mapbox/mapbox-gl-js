@@ -29,7 +29,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles
-    context.setStencilMode(StencilMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     let first = true;

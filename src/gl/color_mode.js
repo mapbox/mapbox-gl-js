@@ -20,19 +20,15 @@ class ColorMode {
 
     static Replace: BlendFuncType;
 
-    static disabled(): ColorMode {
-        return new ColorMode(ColorMode.Replace, Color.transparent, [false, false, false, false]);
-    }
-
-    static unblended(): ColorMode {
-        return new ColorMode(ColorMode.Replace, Color.transparent, [true, true, true, true]);
-    }
-
-    static alphaBlended(): ColorMode {
-        return new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
-    }
+    static disabled: $ReadOnly<ColorMode>;
+    static unblended: $ReadOnly<ColorMode>;
+    static alphaBlended: $ReadOnly<ColorMode>;
 }
 
 ColorMode.Replace = [ONE, ZERO];
+
+ColorMode.disabled = new ColorMode(ColorMode.Replace, Color.transparent, [false, false, false, false]);
+ColorMode.unblended = new ColorMode(ColorMode.Replace, Color.transparent, [true, true, true, true]);
+ColorMode.alphaBlended = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 
 module.exports = ColorMode;

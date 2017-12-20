@@ -29,7 +29,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
 
-    context.setStencilMode(StencilMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
     context.setDepthMode(painter.depthModeForSublayer(0, pass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly));
     context.setColorMode(painter.colorModeForRenderPass());
 
