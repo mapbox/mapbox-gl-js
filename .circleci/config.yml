@@ -24,20 +24,29 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-mapbox-gl-js-cache
+          keys:
+            - v1-yarn-{{ checksum "yarn.lock" }}
+            - v1-yarn
+      - restore_cache:
+          keys:
+            - v1-lint-{{ .Branch }}
+            - v1-lint
       - run:
           name: install dependencies
           command: yarn
       - save_cache:
-          key: v1-mapbox-gl-js-cache
+          key: v1-yarn-{{ checksum "yarn.lock" }}
           paths:
             - '~/.yarn'
-            - '.eslintcache'
             - 'node_modules'
       - run:
           name: run tests
           command: |
             bash ./.circleci/test.sh
+      - save_cache:
+          key: v1-lint-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - '.eslintcache'
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
