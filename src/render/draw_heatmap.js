@@ -7,7 +7,6 @@ const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
 const StencilMode = require('../gl/stencil_mode');
 const ColorMode = require('../gl/color_mode');
-const util = require('../util/util');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
