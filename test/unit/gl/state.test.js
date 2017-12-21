@@ -1,7 +1,6 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const State = require('../../../src/gl/state');
 const {
     ClearColor,
     ClearDepth,
@@ -33,29 +32,25 @@ const {
 } = require('../../../src/gl/value');
 const Context = require('../../../src/gl/context');
 const Color = require('../../../src/style-spec/util/color');
+const {deepEqual} = require('../../../src/util/util');
 
 const context = new Context(require('gl')(10, 10));
+context.lineWidthRange = [0, 1];
 
 function ValueTest(Constructor, options, t) {
     t.test('#constructor', (t) => {
-        const v = new State(new Constructor(context));
+        const v = new Constructor(context);
         t.ok(v);
         const currentV = v.get();
-        const defaultV = v.value.constructor.default(context);
-        t.notEqual(typeof currentV, 'undefined');
-        t.notEqual(typeof defaultV, 'undefined');
-        t.ok(v.value.constructor.equal(currentV, defaultV) ||
-            // special case for BindElementBuffer, where equal always returns false
-            currentV === defaultV);
+        t.notEqual(typeof currentV, 'undefined', 'instantiates with a default value');
         t.end();
     });
 
     t.test('#set', (t) => {
-        const v = new State(new Constructor(context));
+        const v = new Constructor(context);
         v.set(options.setValue);
-        t.ok(v.value.constructor.equal(v.get(), options.setValue) ||
-            // special case for BindElementBuffer, where equal always returns false
-            v.get() === options.setValue);
+        const equality = (options.equality) || ((a, b) => deepEqual(a, b));
+        t.ok(equality(v.get(), options.setValue));
         t.end();
     });
 
@@ -128,6 +123,7 @@ test('BlendColor', ValueTest.bind(ValueTest, BlendColor, {
 }));
 
 test('Program', ValueTest.bind(ValueTest, Program, {
+    equality: (a, b) => a === b,
     setValue: context.gl.createProgram()
 }));
 
@@ -144,26 +140,32 @@ test('Viewport', ValueTest.bind(ValueTest, Viewport, {
 }));
 
 test('BindFramebuffer', ValueTest.bind(ValueTest, BindFramebuffer, {
+    equality: (a, b) => a === b,
     setValue: context.gl.createFramebuffer()
 }));
 
 test('BindRenderbuffer', ValueTest.bind(ValueTest, BindRenderbuffer, {
+    equality: (a, b) => a === b,
     setValue: context.gl.createRenderbuffer()
 }));
 
 test('BindTexture', ValueTest.bind(ValueTest, BindTexture, {
+    equality: (a, b) => a === b,
     setValue: context.gl.createTexture()
 }));
 
 test('BindVertexBuffer', ValueTest.bind(ValueTest, BindVertexBuffer, {
+    equality: (a, b) => a === b,
     setValue: context.gl.createBuffer()
 }));
 
 test('BindElementBuffer', ValueTest.bind(ValueTest, BindElementBuffer, {
+    equality: (a, b) => a === b,
     setValue: context.gl.createBuffer()
 }));
 
 test('BindVertexArrayOES', ValueTest.bind(ValueTest, BindVertexArrayOES, {
+    equality: (a, b) => a === b,
     setValue: context.extVertexArrayObject
 }));
 

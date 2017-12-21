@@ -18,355 +18,614 @@ import type {
 
 export interface Value<T> {
     context: Context;
-    static default(context?: Context): T;
+    current: T;
+    get(): T;
     set(value: T): void;
-    static equal(a: T, b: T): boolean;
 }
 
-class ContextValue {
+class ClearColor implements Value<Color> {
     context: Context;
+    current: Color;
 
     constructor(context: Context) {
         this.context = context;
+        this.current = Color.transparent;
     }
 
-    static equal(a, b): boolean {
-        return util.deepEqual(a, b);
-    }
-}
-
-class ClearColor extends ContextValue implements Value<Color> {
-    static default() { return Color.transparent; }
+    get(): Color { return this.current; }
 
     set(v: Color): void {
-        this.context.gl.clearColor(v.r, v.g, v.b, v.a);
+        const c = this.current;
+        if (v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a) {
+            this.context.gl.clearColor(v.r, v.g, v.b, v.a);
+            this.current = v;
+        }
     }
 }
 
-class ClearDepth extends ContextValue implements Value<number> {
-    static default() { return 1; }
+class ClearDepth implements Value<number> {
+    context: Context;
+    current: number;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = 1;
+    }
+
+    get(): number { return this.current; }
 
     set(v: number): void {
-        this.context.gl.clearDepth(v);
+        if (this.current !== v) {
+            this.context.gl.clearDepth(v);
+            this.current = v;
+        }
     }
 }
 
-class ClearStencil extends ContextValue implements Value<number> {
-    static default() { return 0; }
+class ClearStencil implements Value<number> {
+    context: Context;
+    current: number;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = 0;
+    }
+
+    get(): number { return this.current; }
 
     set(v: number): void {
-        this.context.gl.clearStencil(v);
+        if (this.current !== v) {
+            this.context.gl.clearStencil(v);
+            this.current = v;
+        }
     }
 }
 
-class ColorMask extends ContextValue implements Value<ColorMaskType> {
-    static default() { return [true, true, true, true]; }
+class ColorMask implements Value<ColorMaskType> {
+    context: Context;
+    current: ColorMaskType;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = [true, true, true, true];
+    }
+
+    get(): ColorMaskType { return this.current; }
 
     set(v: ColorMaskType): void {
-        this.context.gl.colorMask(v[0], v[1], v[2], v[3]);
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3]) {
+            this.context.gl.colorMask(v[0], v[1], v[2], v[3]);
+            this.current = v;
+        }
     }
 }
 
-class DepthMask extends ContextValue implements Value<DepthMaskType> {
-    static default() { return true; }
+class DepthMask implements Value<DepthMaskType> {
+    context: Context;
+    current: DepthMaskType;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = true;
+    }
+
+    get(): DepthMaskType { return this.current; }
 
     set(v: DepthMaskType): void {
-        this.context.gl.depthMask(v);
+        if (this.current !== v) {
+            this.context.gl.depthMask(v);
+            this.current = v;
+        }
     }
 }
 
-class StencilMask extends ContextValue implements Value<number> {
-    static default() { return 0xFF; }
+class StencilMask implements Value<number> {
+    context: Context;
+    current: number;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = 0xFF;
+    }
+
+    get(): number { return this.current; }
 
     set(v: number): void {
-        this.context.gl.stencilMask(v);
+        if (this.current !== v) {
+            this.context.gl.stencilMask(v);
+            this.current = v;
+        }
     }
 }
 
-class StencilFunc extends ContextValue implements Value<StencilFuncType> {
-    static default(context: Context) {
-        return {
+class StencilFunc implements Value<StencilFuncType> {
+    context: Context;
+    current: StencilFuncType;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = {
             func: context.gl.ALWAYS,
             ref: 0,
             mask: 0xFF
         };
     }
 
+    get(): StencilFuncType { return this.current; }
+
     set(v: StencilFuncType): void {
-        this.context.gl.stencilFunc(v.func, v.ref, v.mask);
+        const c = this.current;
+        if (v.func !== c.func || v.ref !== c.ref || v.mask !== c.mask) {
+            this.context.gl.stencilFunc(v.func, v.ref, v.mask);
+            this.current = v;
+        }
     }
 }
 
-class StencilOp extends ContextValue implements Value<StencilOpType> {
-    static default(context: Context) {
-        const gl = context.gl;
-        return [gl.KEEP, gl.KEEP, gl.KEEP];
+class StencilOp implements Value<StencilOpType> {
+    context: Context;
+    current: StencilOpType;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.current = [gl.KEEP, gl.KEEP, gl.KEEP];
     }
+
+    get(): StencilOpType { return this.current; }
 
     set(v: StencilOpType): void {
-        this.context.gl.stencilOp(v[0], v[1], v[2]);
-    }
-}
-
-class StencilTest extends ContextValue implements Value<boolean> {
-    static default() { return false; }
-
-    set(v: boolean): void {
-        const gl = this.context.gl;
-        if (v) {
-            gl.enable(gl.STENCIL_TEST);
-        } else {
-            gl.disable(gl.STENCIL_TEST);
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2]) {
+            this.context.gl.stencilOp(v[0], v[1], v[2]);
+            this.current = v;
         }
     }
 }
 
-class DepthRange extends ContextValue implements Value<DepthRangeType> {
-    static default() { return [0, 1]; }
+class StencilTest implements Value<boolean> {
+    context: Context;
+    current: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = false;
+    }
+
+    get(): boolean { return this.current; }
+
+    set(v: boolean): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            if (v) {
+                gl.enable(gl.STENCIL_TEST);
+            } else {
+                gl.disable(gl.STENCIL_TEST);
+            }
+            this.current = v;
+        }
+    }
+}
+
+class DepthRange implements Value<DepthRangeType> {
+    context: Context;
+    current: DepthRangeType;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = [0, 1];
+    }
+
+    get(): DepthRangeType { return this.current; }
 
     set(v: DepthRangeType): void {
-        this.context.gl.depthRange(v[0], v[1]);
-    }
-}
-
-class DepthTest extends ContextValue implements Value<boolean> {
-    static default() { return false; }
-
-    set(v: boolean): void {
-        const gl = this.context.gl;
-        if (v) {
-            gl.enable(gl.DEPTH_TEST);
-        } else {
-            gl.disable(gl.DEPTH_TEST);
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1]) {
+            this.context.gl.depthRange(v[0], v[1]);
+            this.current = v;
         }
     }
 }
 
-class DepthFunc extends ContextValue implements Value<DepthFuncType> {
-    static default(context: Context) {
-        return context.gl.LESS;
+class DepthTest implements Value<boolean> {
+    context: Context;
+    current: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = false;
     }
+
+    get(): boolean { return this.current; }
+
+    set(v: boolean): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            if (v) {
+                gl.enable(gl.DEPTH_TEST);
+            } else {
+                gl.disable(gl.DEPTH_TEST);
+            }
+            this.current = v;
+        }
+    }
+}
+
+class DepthFunc implements Value<DepthFuncType> {
+    context: Context;
+    current: DepthFuncType;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = context.gl.LESS;
+    }
+
+    get(): DepthFuncType { return this.current; }
 
     set(v: DepthFuncType): void {
-        this.context.gl.depthFunc(v);
-    }
-}
-
-class Blend extends ContextValue implements Value<boolean> {
-    static default() { return false; }
-
-    set(v: boolean): void {
-        const gl = this.context.gl;
-        if (v) {
-            gl.enable(gl.BLEND);
-        } else {
-            gl.disable(gl.BLEND);
+        if (this.current !== v) {
+            this.context.gl.depthFunc(v);
+            this.current = v;
         }
     }
 }
 
-class BlendFunc extends ContextValue implements Value<BlendFuncType> {
-    static default(context: Context) {
-        const gl = context.gl;
-        return [gl.ONE, gl.ZERO];
+class Blend implements Value<boolean> {
+    context: Context;
+    current: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = false;
     }
+
+    get(): boolean { return this.current; }
+
+    set(v: boolean): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            if (v) {
+                gl.enable(gl.BLEND);
+            } else {
+                gl.disable(gl.BLEND);
+            }
+            this.current = v;
+        }
+    }
+}
+
+class BlendFunc implements Value<BlendFuncType> {
+    context: Context;
+    current: BlendFuncType;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.current = [gl.ONE, gl.ZERO];
+    }
+
+    get(): BlendFuncType { return this.current; }
 
     set(v: BlendFuncType): void {
-        this.context.gl.blendFunc(v[0], v[1]);
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1]) {
+            this.context.gl.blendFunc(v[0], v[1]);
+            this.current = v;
+        }
     }
 }
 
-class BlendColor extends ContextValue implements Value<Color> {
-    static default() { return Color.transparent; }
+class BlendColor implements Value<Color> {
+    context: Context;
+    current: Color;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = Color.transparent;
+    }
+
+    get(): Color { return this.current; }
 
     set(v: Color): void {
-        this.context.gl.blendColor(v.r, v.g, v.b, v.a);
+        const c = this.current;
+        if (v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a) {
+            this.context.gl.blendColor(v.r, v.g, v.b, v.a);
+            this.current = v;
+        }
     }
 }
 
-class Program extends ContextValue implements Value<?WebGLProgram> {
-    static default() { return null; }
+class Program implements Value<?WebGLProgram> {
+    context: Context;
+    current: ?WebGLProgram;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): ?WebGLProgram { return this.current; }
 
     set(v: ?WebGLProgram): void {
-        this.context.gl.useProgram(v);
-    }
-
-    static equal(a: ?WebGLProgram, b: ?WebGLProgram): boolean {
-        return a === b;
+        if (this.current !== v) {
+            this.context.gl.useProgram(v);
+            this.current = v;
+        }
     }
 }
 
-class LineWidth extends ContextValue implements Value<number> {
-    static default() { return 1; }
+class LineWidth implements Value<number> {
+    context: Context;
+    current: number;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = 1;
+    }
+
+    get(): number { return this.current; }
 
     set(v: number): void {
         const range = this.context.lineWidthRange;
-        this.context.gl.lineWidth(util.clamp(v, range[0], range[1]));
-    }
-}
-
-class ActiveTextureUnit extends ContextValue implements Value<TextureUnitType> {
-    static default(context: Context) {
-        return context.gl.TEXTURE0;
-    }
-
-    set(v: TextureUnitType): void {
-        this.context.gl.activeTexture(v);
-    }
-}
-
-class Viewport extends ContextValue implements Value<ViewportType> {
-    static default(context: Context) {
-        const gl = context.gl;
-        return [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
-    }
-
-    set(v: ViewportType): void {
-        this.context.gl.viewport(v[0], v[1], v[2], v[3]);
-    }
-}
-
-class BindFramebuffer extends ContextValue implements Value<?WebGLFramebuffer> {
-    static default() { return null; }
-
-    set(v: ?WebGLFramebuffer): void {
-        const gl = this.context.gl;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, v);
-    }
-
-    static equal(a: ?WebGLFramebuffer, b: ?WebGLFramebuffer): boolean {
-        return a === b;
-    }
-}
-
-class BindRenderbuffer extends ContextValue implements Value<?WebGLRenderbuffer> {
-    static default() { return null; }
-
-    set(v: ?WebGLRenderbuffer): void {
-        const gl = this.context.gl;
-        gl.bindRenderbuffer(gl.RENDERBUFFER, v);
-    }
-
-    static equal(a: ?WebGLRenderbuffer, b: ?WebGLRenderbuffer): boolean {
-        return a === b;
-    }
-}
-
-class BindTexture extends ContextValue implements Value<?WebGLTexture> {
-    static default() { return null; }
-
-    set(v: ?WebGLTexture): void {
-        const gl = this.context.gl;
-        gl.bindTexture(gl.TEXTURE_2D, v);
-    }
-
-    static equal(a: ?WebGLTexture, b: ?WebGLTexture): boolean {
-        return a === b;
-    }
-}
-
-class BindVertexBuffer extends ContextValue implements Value<?WebGLBuffer> {
-    static default() { return null; }
-
-    set(v: ?WebGLBuffer): void {
-        const gl = this.context.gl;
-        gl.bindBuffer(gl.ARRAY_BUFFER, v);
-    }
-
-    static equal(a: ?WebGLBuffer, b: ?WebGLBuffer): boolean {
-        return a === b;
-    }
-}
-
-class BindElementBuffer extends ContextValue implements Value<?WebGLBuffer> {
-    static default() { return null; }
-
-    set(v: ?WebGLBuffer): void {
-        const gl = this.context.gl;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v);
-    }
-
-    static equal(): boolean {
-        // Always rebind:
-        return false;
-    }
-}
-
-class BindVertexArrayOES extends ContextValue implements Value<any> {
-    static default() { return null; }
-
-    set(v: ?any): void {
-        const context = this.context;
-        if (context.extVertexArrayObject) {
-            context.extVertexArrayObject.bindVertexArrayOES(v);
+        const clamped = util.clamp(v, range[0], range[1]);
+        if (this.current !== clamped) {
+            this.context.gl.lineWidth(clamped);
+            this.current = v;
         }
     }
+}
 
-    static equal(a: any, b: any): boolean {
-        return a === b;
+class ActiveTextureUnit implements Value<TextureUnitType> {
+    context: Context;
+    current: TextureUnitType;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = context.gl.TEXTURE0;
+    }
+
+    get(): TextureUnitType { return this.current; }
+
+    set(v: TextureUnitType): void {
+        if (this.current !== v) {
+            this.context.gl.activeTexture(v);
+            this.current = v;
+        }
     }
 }
 
-class PixelStoreUnpack extends ContextValue implements Value<number> {
-    static default() { return 4; }
+class Viewport implements Value<ViewportType> {
+    context: Context;
+    current: ViewportType;
+
+    constructor(context: Context) {
+        this.context = context;
+        const gl = this.context.gl;
+        this.current = [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
+    }
+
+    get(): ViewportType { return this.current; }
+
+    set(v: ViewportType): void {
+        const c = this.current;
+        if (v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3]) {
+            this.context.gl.viewport(v[0], v[1], v[2], v[3]);
+            this.current = v;
+        }
+    }
+}
+
+class BindFramebuffer implements Value<?WebGLFramebuffer> {
+    context: Context;
+    current: ?WebGLFramebuffer;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): ?WebGLFramebuffer { return this.current; }
+
+    set(v: ?WebGLFramebuffer): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, v);
+            this.current = v;
+        }
+    }
+}
+
+class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
+    context: Context;
+    current: ?WebGLRenderbuffer;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): ?WebGLRenderbuffer { return this.current; }
+
+    set(v: ?WebGLRenderbuffer): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            gl.bindRenderbuffer(gl.RENDERBUFFER, v);
+            this.current = v;
+        }
+    }
+}
+
+class BindTexture implements Value<?WebGLTexture> {
+    context: Context;
+    current: ?WebGLTexture;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): ?WebGLTexture { return this.current; }
+
+    set(v: ?WebGLTexture): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            gl.bindTexture(gl.TEXTURE_2D, v);
+            this.current = v;
+        }
+    }
+}
+
+class BindVertexBuffer implements Value<?WebGLBuffer> {
+    context: Context;
+    current: ?WebGLBuffer;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): ?WebGLBuffer { return this.current; }
+
+    set(v: ?WebGLBuffer): void {
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            gl.bindBuffer(gl.ARRAY_BUFFER, v);
+            this.current = v;
+        }
+    }
+}
+
+class BindElementBuffer implements Value<?WebGLBuffer> {
+    context: Context;
+    current: ?WebGLBuffer;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): ?WebGLBuffer { return this.current; }
+
+    set(v: ?WebGLBuffer): void {
+        // Always rebind
+        const gl = this.context.gl;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, v);
+        this.current = v;
+    }
+}
+
+class BindVertexArrayOES implements Value<any> {
+    context: Context;
+    current: any;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = null;
+    }
+
+    get(): any { return this.current; }
+
+    set(v: any): void {
+        if (this.current !== v && this.context.extVertexArrayObject) {
+            this.context.extVertexArrayObject.bindVertexArrayOES(v);
+            this.current = v;
+        }
+    }
+}
+
+class PixelStoreUnpack implements Value<number> {
+    context: Context;
+    current: number;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = 4;
+    }
+
+    get(): number { return this.current; }
 
     set(v: number): void {
-        const gl = this.context.gl;
-        gl.pixelStorei(gl.UNPACK_ALIGNMENT, v);
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            gl.pixelStorei(gl.UNPACK_ALIGNMENT, v);
+            this.current = v;
+        }
     }
 }
 
-class PixelStoreUnpackPremultiplyAlpha extends ContextValue implements Value<boolean> {
-    static default() { return false; }
+class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
+    context: Context;
+    current: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.current = false;
+    }
+
+    get(): boolean { return this.current; }
 
     set(v: boolean): void {
-        const gl = this.context.gl;
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
+            this.current = v;
+        }
     }
 }
 
 /**
  * Framebuffer values
  */
-class FramebufferValue extends ContextValue {
+class FramebufferValue<T> {
     context: Context;
     parent: WebGLFramebuffer;
+    current: ?T;
 
     constructor(context: Context, parent: WebGLFramebuffer) {
-        super(context);
+        this.context = context;
+        this.current = null;
         this.parent = parent;
     }
+
+    get(): ?T { return this.current; }
 }
 
-class ColorAttachment extends FramebufferValue implements Value<?WebGLTexture> {
-    static default() { return null; }
+class ColorAttachment extends FramebufferValue<?WebGLTexture> implements Value<?WebGLTexture> {
+    dirty: boolean;
+
+    constructor(context: Context, parent: WebGLFramebuffer) {
+        super(context, parent);
+        this.dirty = false;
+    }
 
     set(v: ?WebGLTexture): void {
-        const gl = this.context.gl;
-        this.context.bindFramebuffer.set(this.parent);
-        // note: it's possible to attach a renderbuffer to the color
-        // attachment point, but thus far MBGL only uses textures for color
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+        if (this.dirty || this.current !== v) {
+            const gl = this.context.gl;
+            this.context.bindFramebuffer.set(this.parent);
+            // note: it's possible to attach a renderbuffer to the color
+            // attachment point, but thus far MBGL only uses textures for color
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+            this.current = v;
+            this.dirty = false;
+        }
     }
 
-    static equal(a: ?WebGLTexture, b: ?WebGLTexture): boolean {
-        return a === b;
+    setDirty() {
+        this.dirty = true;
     }
 }
 
-class DepthAttachment extends FramebufferValue implements Value<?WebGLRenderbuffer> {
-    static default() { return null; }
-
+class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Value<?WebGLRenderbuffer> {
     set(v: ?WebGLRenderbuffer): void {
-        const gl = this.context.gl;
-        this.context.bindFramebuffer.set(this.parent);
-        // note: it's possible to attach a texture to the depth attachment
-        // point, but thus far MBGL only uses renderbuffers for depth
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
-    }
-
-    static equal(a: ?WebGLRenderbuffer, b: ?WebGLRenderbuffer): boolean {
-        return a === b;
+        if (this.current !== v) {
+            const gl = this.context.gl;
+            this.context.bindFramebuffer.set(this.parent);
+            // note: it's possible to attach a texture to the depth attachment
+            // point, but thus far MBGL only uses renderbuffers for depth
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, v);
+            this.current = v;
+        }
     }
 }
 

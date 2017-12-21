@@ -22,9 +22,9 @@ class StencilMode {
         this.pass = pass;
     }
 
-    static disabled() {
-        return new StencilMode({ func: ALWAYS, mask: 0 }, 0, 0, KEEP, KEEP, KEEP);
-    }
+    static disabled: $ReadOnly<StencilMode>;
 }
+
+StencilMode.disabled = new StencilMode({ func: ALWAYS, mask: 0 }, 0, 0, KEEP, KEEP, KEEP);
 
 module.exports = StencilMode;

@@ -1,4 +1,4 @@
-// This file is generated. Edit build/generate-style-code.js, then run `node build/generate-style-code.js`.
+// This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
 // @flow
 /* eslint-disable */
 
@@ -16,7 +16,7 @@ import type Color from '../../style-spec/util/color';
 
 
 export type PaintProps = {|
-    "heatmap-radius": DataConstantProperty<number>,
+    "heatmap-radius": DataDrivenProperty<number>,
     "heatmap-weight": DataDrivenProperty<number>,
     "heatmap-intensity": DataConstantProperty<number>,
     "heatmap-color": HeatmapColorProperty,
@@ -24,7 +24,7 @@ export type PaintProps = {|
 |};
 
 const paint: Properties<PaintProps> = new Properties({
-    "heatmap-radius": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-radius"]),
+    "heatmap-radius": new DataDrivenProperty(styleSpec["paint_heatmap"]["heatmap-radius"]),
     "heatmap-weight": new DataDrivenProperty(styleSpec["paint_heatmap"]["heatmap-weight"]),
     "heatmap-intensity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-intensity"]),
     "heatmap-color": new HeatmapColorProperty(styleSpec["paint_heatmap"]["heatmap-color"]),

@@ -25,7 +25,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const context = painter.context;
 
     // Disable the stencil test so that labels aren't clipped to tile boundaries.
-    context.setStencilMode(StencilMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     if (layer.paint.get('icon-opacity').constantOr(1) !== 0) {
@@ -70,7 +70,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
     const depthOn = pitchWithMap;
 
-    context.setDepthMode(depthOn ? painter.depthModeForSublayer(0, DepthMode.ReadOnly) : DepthMode.disabled());
+    context.setDepthMode(depthOn ? painter.depthModeForSublayer(0, DepthMode.ReadOnly) : DepthMode.disabled);
 
     let program;
 

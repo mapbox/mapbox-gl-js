@@ -32,12 +32,11 @@ function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
         // a_pos
         x,
         y,
-        // a_normal
+        // a_normal_ed: 3-component normal and 1-component edgedistance
         Math.floor(nx * FACTOR) * 2 + t,
         ny * FACTOR * 2,
         nz * FACTOR * 2,
-
-        // a_edgedistance
+        // edgedistance (used for wrapping patterns around extrusion sides)
         Math.round(e)
     );
 }
@@ -107,11 +106,14 @@ class FillExtrusionBucket implements Bucket {
             for (const ring of polygon) {
                 numVertices += ring.length;
             }
-
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
             for (const ring of polygon) {
                 if (ring.length === 0) {
+                    continue;
+                }
+
+                if (isEntirelyOutside(ring)) {
                     continue;
                 }
 
@@ -129,11 +131,13 @@ class FillExtrusionBucket implements Bucket {
                             }
 
                             const perp = p1.sub(p2)._perp()._unit();
+                            const dist = p2.dist(p1);
+                            if (edgeDistance + dist > 32768) edgeDistance = 0;
 
                             addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
                             addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
 
-                            edgeDistance += p2.dist(p1);
+                            edgeDistance += dist;
 
                             addVertex(this.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 0, edgeDistance);
                             addVertex(this.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 1, edgeDistance);
@@ -202,4 +206,11 @@ module.exports = FillExtrusionBucket;
 function isBoundaryEdge(p1, p2) {
     return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||
         (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
+}
+
+function isEntirelyOutside(ring) {
+    return ring.every(p => p.x < 0) ||
+        ring.every(p => p.x > EXTENT) ||
+        ring.every(p => p.y < 0) ||
+        ring.every(p => p.y > EXTENT);
 }

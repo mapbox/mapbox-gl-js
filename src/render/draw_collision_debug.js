@@ -16,8 +16,8 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
     const gl = context.gl;
     const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
 
-    context.setDepthMode(DepthMode.disabled());
-    context.setStencilMode(StencilMode.disabled());
+    context.setDepthMode(DepthMode.disabled);
+    context.setStencilMode(StencilMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     for (let i = 0; i < coords.length; i++) {

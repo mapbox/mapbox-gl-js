@@ -3215,7 +3215,7 @@
       "minimum": 1,
       "function": "interpolated",
       "zoom-function": true,
-      "property-function": false,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed.",

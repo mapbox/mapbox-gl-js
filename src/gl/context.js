@@ -2,7 +2,6 @@
 const IndexBuffer = require('./index_buffer');
 const VertexBuffer = require('./vertex_buffer');
 const Framebuffer = require('./framebuffer');
-const State = require('./state');
 const DepthMode = require('./depth_mode');
 const StencilMode = require('./stencil_mode');
 const ColorMode = require('./color_mode');
@@ -43,16 +42,6 @@ import type {
     StructArray,
     StructArrayMember
 } from '../util/struct_array';
-import type {
-    BlendFuncType,
-    ColorMaskType,
-    DepthRangeType,
-    StencilFuncType,
-    DepthFuncType,
-    StencilOpType,
-    TextureUnitType,
-    ViewportType,
-} from './types';
 import type Color from '../style-spec/util/color';
 
 type ClearArgs = {
@@ -68,33 +57,33 @@ class Context {
     currentNumAttributes: ?number;
     lineWidthRange: [number, number];
 
-    clearColor: State<Color>;
-    clearDepth: State<number>;
-    clearStencil: State<number>;
-    colorMask: State<ColorMaskType>;
-    depthMask: State<boolean>;
-    stencilMask: State<number>;
-    stencilFunc: State<StencilFuncType>;
-    stencilOp: State<StencilOpType>;
-    stencilTest: State<boolean>;
-    depthRange: State<DepthRangeType>;
-    depthTest: State<boolean>;
-    depthFunc: State<DepthFuncType>;
-    blend: State<boolean>;
-    blendFunc: State<BlendFuncType>;
-    blendColor: State<Color>;
-    program: State<?WebGLProgram>;
-    lineWidth: State<number>;
-    activeTexture: State<TextureUnitType>;
-    viewport: State<ViewportType>;
-    bindFramebuffer: State<?WebGLFramebuffer>;
-    bindRenderbuffer: State<?WebGLRenderbuffer>
-    bindTexture: State<?WebGLTexture>;
-    bindVertexBuffer: State<?WebGLBuffer>;
-    bindElementBuffer: State<?WebGLBuffer>;
-    bindVertexArrayOES: State<any>;
-    pixelStoreUnpack: State<number>;
-    pixelStoreUnpackPremultiplyAlpha: State<boolean>;
+    clearColor: ClearColor;
+    clearDepth: ClearDepth;
+    clearStencil: ClearStencil;
+    colorMask: ColorMask;
+    depthMask: DepthMask;
+    stencilMask: StencilMask;
+    stencilFunc: StencilFunc;
+    stencilOp: StencilOp;
+    stencilTest: StencilTest;
+    depthRange: DepthRange;
+    depthTest: DepthTest;
+    depthFunc: DepthFunc;
+    blend: Blend;
+    blendFunc: BlendFunc;
+    blendColor: BlendColor;
+    program: Program;
+    lineWidth: LineWidth;
+    activeTexture: ActiveTextureUnit;
+    viewport: Viewport;
+    bindFramebuffer: BindFramebuffer;
+    bindRenderbuffer: BindRenderbuffer;
+    bindTexture: BindTexture;
+    bindVertexBuffer: BindVertexBuffer;
+    bindElementBuffer: BindElementBuffer;
+    bindVertexArrayOES: BindVertexArrayOES;
+    pixelStoreUnpack: PixelStoreUnpack;
+    pixelStoreUnpackPremultiplyAlpha: PixelStoreUnpackPremultiplyAlpha;
 
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
@@ -105,33 +94,33 @@ class Context {
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
-        this.clearColor = new State(new ClearColor(this));
-        this.clearDepth = new State(new ClearDepth(this));
-        this.clearStencil = new State(new ClearStencil(this));
-        this.colorMask = new State(new ColorMask(this));
-        this.depthMask = new State(new DepthMask(this));
-        this.stencilMask = new State(new StencilMask(this));
-        this.stencilFunc = new State(new StencilFunc(this));
-        this.stencilOp = new State(new StencilOp(this));
-        this.stencilTest = new State(new StencilTest(this));
-        this.depthRange = new State(new DepthRange(this));
-        this.depthTest = new State(new DepthTest(this));
-        this.depthFunc = new State(new DepthFunc(this));
-        this.blend = new State(new Blend(this));
-        this.blendFunc = new State(new BlendFunc(this));
-        this.blendColor = new State(new BlendColor(this));
-        this.program = new State(new Program(this));
-        this.lineWidth = new State(new LineWidth(this));
-        this.activeTexture = new State(new ActiveTextureUnit(this));
-        this.viewport = new State(new Viewport(this));
-        this.bindFramebuffer = new State(new BindFramebuffer(this));
-        this.bindRenderbuffer = new State(new BindRenderbuffer(this));
-        this.bindTexture = new State(new BindTexture(this));
-        this.bindVertexBuffer = new State(new BindVertexBuffer(this));
-        this.bindElementBuffer = new State(new BindElementBuffer(this));
-        this.bindVertexArrayOES = this.extVertexArrayObject && new State(new BindVertexArrayOES(this));
-        this.pixelStoreUnpack = new State(new PixelStoreUnpack(this));
-        this.pixelStoreUnpackPremultiplyAlpha = new State(new PixelStoreUnpackPremultiplyAlpha(this));
+        this.clearColor = new ClearColor(this);
+        this.clearDepth = new ClearDepth(this);
+        this.clearStencil = new ClearStencil(this);
+        this.colorMask = new ColorMask(this);
+        this.depthMask = new DepthMask(this);
+        this.stencilMask = new StencilMask(this);
+        this.stencilFunc = new StencilFunc(this);
+        this.stencilOp = new StencilOp(this);
+        this.stencilTest = new StencilTest(this);
+        this.depthRange = new DepthRange(this);
+        this.depthTest = new DepthTest(this);
+        this.depthFunc = new DepthFunc(this);
+        this.blend = new Blend(this);
+        this.blendFunc = new BlendFunc(this);
+        this.blendColor = new BlendColor(this);
+        this.program = new Program(this);
+        this.lineWidth = new LineWidth(this);
+        this.activeTexture = new ActiveTextureUnit(this);
+        this.viewport = new Viewport(this);
+        this.bindFramebuffer = new BindFramebuffer(this);
+        this.bindRenderbuffer = new BindRenderbuffer(this);
+        this.bindTexture = new BindTexture(this);
+        this.bindVertexBuffer = new BindVertexBuffer(this);
+        this.bindElementBuffer = new BindElementBuffer(this);
+        this.bindVertexArrayOES = this.extVertexArrayObject && new BindVertexArrayOES(this);
+        this.pixelStoreUnpack = new PixelStoreUnpack(this);
+        this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
 
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
@@ -198,7 +187,7 @@ class Context {
         gl.clear(mask);
     }
 
-    setDepthMode(depthMode: DepthMode) {
+    setDepthMode(depthMode: $ReadOnly<DepthMode>) {
         if (depthMode.func === this.gl.ALWAYS && !depthMode.mask) {
             this.depthTest.set(false);
         } else {
@@ -209,7 +198,7 @@ class Context {
         }
     }
 
-    setStencilMode(stencilMode: StencilMode) {
+    setStencilMode(stencilMode: $ReadOnly<StencilMode>) {
         if (stencilMode.func === this.gl.ALWAYS && !stencilMode.mask) {
             this.stencilTest.set(false);
         } else {
@@ -224,7 +213,7 @@ class Context {
         }
     }
 
-    setColorMode(colorMode: ColorMode) {
+    setColorMode(colorMode: $ReadOnly<ColorMode>) {
         if (util.deepEqual(colorMode.blendFunction, ColorMode.Replace)) {
             this.blend.set(false);
         } else {

@@ -19,7 +19,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     const context = painter.context;
 
     context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
-    context.setStencilMode(StencilMode.disabled());
+    context.setStencilMode(StencilMode.disabled);
     context.setColorMode(painter.colorModeForRenderPass());
 
     for (const tileID of tileIDs) {

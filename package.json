@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.43.0-beta.1",
+  "version": "0.43.0",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -155,7 +155,8 @@
     "test-flow": "node build/generate-flow-typed-style-spec && flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
-    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
+    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
+    "codegen": "node build/generate-style-code.js && flow-node build/generate-struct-arrays.js"
   },
   "files": [
     "build/",
