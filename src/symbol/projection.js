@@ -163,7 +163,7 @@ function updateLineLabels(bucket: SymbolBucket,
     dynamicLayoutVertexArray.clear();
 
     const lineVertexArray = bucket.lineVertexArray;
-    const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
+    const placedSymbols = isText ? bucket.text.placedSymbolArray : bucket.icon.placedSymbolArray;
 
     const aspectRatio = painter.transform.width / painter.transform.height;
 

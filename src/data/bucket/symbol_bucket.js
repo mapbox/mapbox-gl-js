@@ -159,6 +159,8 @@ class SymbolBuffers {
     collisionVertexArray: CollisionVertexArray;
     collisionVertexBuffer: VertexBuffer;
 
+    placedSymbolArray: PlacedSymbolArray;
+
     constructor(programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>) {
         this.layoutVertexArray = new SymbolLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -166,6 +168,7 @@ class SymbolBuffers {
         this.segments = new SegmentVector();
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
+        this.placedSymbolArray = new PlacedSymbolArray();
     }
 
     upload(context: Context, dynamicIndexBuffer: boolean) {
@@ -280,8 +283,6 @@ class SymbolBucket implements Bucket {
     textSizeData: SizeData;
     iconSizeData: SizeData;
 
-    placedGlyphArray: PlacedSymbolArray;
-    placedIconArray: PlacedSymbolArray;
     glyphOffsetArray: GlyphOffsetArray;
     lineVertexArray: SymbolLineVertexArray;
     features: Array<SymbolFeature>;
@@ -325,8 +326,6 @@ class SymbolBucket implements Bucket {
         this.collisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.collisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
 
-        this.placedGlyphArray = new PlacedSymbolArray();
-        this.placedIconArray = new PlacedSymbolArray();
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();
     }
@@ -472,8 +471,7 @@ class SymbolBucket implements Bucket {
                writingMode: any,
                labelAnchor: Anchor,
                lineStartIndex: number,
-               lineLength: number,
-               placedSymbolArray: PlacedSymbolArray) {
+               lineLength: number) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const dynamicLayoutVertexArray = arrays.dynamicLayoutVertexArray;
@@ -509,7 +507,7 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(symbol.glyphOffset[0]);
         }
 
-        placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
+        arrays.placedSymbolArray.emplaceBack(labelAnchor.x, labelAnchor.y,
             glyphOffsetArrayStart, this.glyphOffsetArray.length - glyphOffsetArrayStart, vertexStartIndex,
             lineStartIndex, lineLength, (labelAnchor.segment: any),
             sizeVertex ? sizeVertex[0] : 0, sizeVertex ? sizeVertex[1] : 0,
@@ -656,7 +654,7 @@ class SymbolBucket implements Bucket {
             const symbolInstance = this.symbolInstances[i];
 
             for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                const placedSymbol = (this.placedGlyphArray.get(placedTextSymbolIndex): any);
+                const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
 
                 const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
                 for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
@@ -665,7 +663,7 @@ class SymbolBucket implements Bucket {
                 }
             }
 
-            const placedIcon = (this.placedIconArray.get(i): any);
+            const placedIcon = this.icon.placedSymbolArray.get(i);
             if (placedIcon.numGlyphs) {
                 const vertexIndex = placedIcon.vertexStartIndex;
                 this.icon.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);

@@ -292,12 +292,11 @@ function addTextVertices(bucket: SymbolBucket,
         writingMode,
         anchor,
         lineArray.lineStartIndex,
-        lineArray.lineLength,
-        bucket.placedGlyphArray);
+        lineArray.lineLength);
 
-    // The placedGlyphArray is used at render time in drawTileSymbols
+    // The placedSymbolArray is used at render time in drawTileSymbols
     // These indices allow access to the array at collision detection time
-    placedTextSymbolIndices.push(bucket.placedGlyphArray.length - 1);
+    placedTextSymbolIndices.push(bucket.text.placedSymbolArray.length - 1);
 
     return glyphQuads.length * 4;
 }
@@ -385,8 +384,7 @@ function addSymbol(bucket: SymbolBucket,
             false,
             anchor,
             lineArray.lineStartIndex,
-            lineArray.lineLength,
-            bucket.placedIconArray);
+            lineArray.lineLength);
     }
 
     const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : bucket.collisionBoxArray.length;
