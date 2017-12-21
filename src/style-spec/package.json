@@ -12,7 +12,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
-    "build": "../../node_modules/.bin/browserify style-spec.js --no-builtins --insert-global-vars=\"__filename,__dirname\" --standalone=mapboxGlStyleSpecification | ../../node_modules/.bin/derequire > dist/index.js",
+    "build": "../../node_modules/.bin/browserify style-spec.js --standalone=mapboxGlStyleSpecification | ../../node_modules/.bin/derequire > dist/index.js",
     "prepublish": "in-publish && yarn copy-flow-typed && yarn build || not-in-publish",
     "postpublish": "in-publish && rm -r flow-typed dist/index.js || not-in-publish"
   },
