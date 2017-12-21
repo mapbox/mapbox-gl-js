@@ -81,10 +81,10 @@ function updateOpacities(bucket: SymbolBucket, collisionFadeTimes: any, instant:
             const nowHidden = opacityState.opacity === 0 && opacityState.targetOpacity === 0;
             if (initialHidden !== nowHidden) {
                 for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                    const placedSymbol = (bucket.placedGlyphArray.get(placedTextSymbolIndex): any);
+                    const placedSymbol = bucket.text.placedSymbolArray.get(placedTextSymbolIndex);
                     // If this label is completely faded, mark it so that we don't have to calculate
                     // its position at render time
-                    placedSymbol.hidden = nowHidden;
+                    placedSymbol.hidden = (nowHidden: any);
                 }
             }
 
@@ -196,7 +196,7 @@ function performSymbolPlacement(bucket: SymbolBucket, collisionIndex: CollisionI
 
             const textCircles = symbolInstance.collisionArrays.textCircles;
             if (textCircles) {
-                const placedSymbol = (bucket.placedGlyphArray.get(symbolInstance.placedTextSymbolIndices[0]): any);
+                const placedSymbol = bucket.text.placedSymbolArray.get(symbolInstance.placedTextSymbolIndices[0]);
                 const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
                 placedGlyphCircles = collisionIndex.placeCollisionCircles(textCircles,
                     layout.get('text-allow-overlap'),
