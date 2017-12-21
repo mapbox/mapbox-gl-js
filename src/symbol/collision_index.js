@@ -60,10 +60,10 @@ class CollisionIndex {
     placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4): Array<number> {
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
-        const tlX = collisionBox.x1 / tileToViewport + projectedPoint.point.x;
-        const tlY = collisionBox.y1 / tileToViewport + projectedPoint.point.y;
-        const brX = collisionBox.x2 / tileToViewport + projectedPoint.point.x;
-        const brY = collisionBox.y2 / tileToViewport + projectedPoint.point.y;
+        const tlX = collisionBox.x1 * tileToViewport + projectedPoint.point.x;
+        const tlY = collisionBox.y1 * tileToViewport + projectedPoint.point.y;
+        const brX = collisionBox.x2 * tileToViewport + projectedPoint.point.x;
+        const brY = collisionBox.y2 * tileToViewport + projectedPoint.point.y;
 
         if (!allowOverlap) {
             if (this.grid.hitTest(tlX, tlY, brX, brY)) {
@@ -138,8 +138,10 @@ class CollisionIndex {
         let collisionDetected = false;
 
         const tileToViewport = projectedAnchor.perspectiveRatio * textPixelRatio;
+        // pixelsToTileUnits is used for translating line geometry to tile units
+        // ... so we care about 'scale' but not 'perspectiveRatio'
         // equivalent to pixel_to_tile_units
-        const pixelsToTileUnits = tileToViewport / scale;
+        const pixelsToTileUnits = 1 / (textPixelRatio * scale);
 
         let firstTileDistance = 0, lastTileDistance = 0;
         if (firstAndLastGlyph) {
@@ -163,7 +165,7 @@ class CollisionIndex {
             }
 
             const projectedPoint = this.projectPoint(posMatrix, anchorPointX, anchorPointY);
-            const radius = tileUnitRadius / tileToViewport;
+            const radius = tileUnitRadius * tileToViewport;
 
             const atLeastOneCirclePlaced = placedCollisionCircles.length > 0;
             if (atLeastOneCirclePlaced) {
@@ -292,10 +294,10 @@ class CollisionIndex {
             // to work with.
             const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, blocking.anchorPointX, blocking.anchorPointY);
             const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
-            const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
-            const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
-            const x2 = blocking.x2 / tileToViewport + projectedPoint.point.x;
-            const y2 = blocking.y2 / tileToViewport + projectedPoint.point.y;
+            const x1 = blocking.x1 * tileToViewport + projectedPoint.point.x;
+            const y1 = blocking.y1 * tileToViewport + projectedPoint.point.y;
+            const x2 = blocking.x2 * tileToViewport + projectedPoint.point.x;
+            const y2 = blocking.y2 * tileToViewport + projectedPoint.point.y;
             const bbox = [
                 new Point(x1, y1),
                 new Point(x2, y1),
@@ -356,7 +358,10 @@ class CollisionIndex {
         );
         return {
             point: a,
-            perspectiveRatio: 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance)
+            // See perspective ratio comment in symbol_sdf.vertex
+            // We're doing collision detection in viewport space so we need
+            // to scale down boxes in the distance
+            perspectiveRatio: 0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3])
         };
     }
 

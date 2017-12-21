@@ -227,7 +227,7 @@ class Tile {
             const posMatrix = collisionIndex.transform.calculatePosMatrix(this.tileID.toUnwrapped());
 
             const pitchWithMap = bucket.layers[0].layout.get('text-pitch-alignment') === 'map';
-            const textPixelRatio = EXTENT / this.tileSize; // text size is not meant to be affected by scale
+            const textPixelRatio = this.tileSize / EXTENT; // text size is not meant to be affected by scale
             const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
 
             const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
