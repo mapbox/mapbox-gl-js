@@ -12,12 +12,11 @@
 
 <body>
     <div id="benchmarks"></div>
-    <script src="/bench/benchmarks_generated-3d30c4b.js"></script>
     <script>
         // Unless the URL contains a no-master query parameter, include the
         // current master-branch build of benchmarks.js for comparison
         if (!/no-master/.test(window.location.search)) {
-            document.write(`<script src="https://s3.amazonaws.com/mapbox-gl-js/release-0.43.0/benchmarks.js"><` + `/script>`);
+            document.write(`<script src="https://s3.amazonaws.com/mapbox-gl-js/master/benchmarks.js"><` + `/script>`);
         }
     </script>
     <script src="/bench/benchmarks_generated.js"></script>
