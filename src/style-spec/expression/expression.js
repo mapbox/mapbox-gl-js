@@ -2,13 +2,15 @@
 
 import type {Type} from './types';
 import type {Value} from './values';
-import type ParsingContext from './parsing_context';
 import type EvaluationContext from './evaluation_context';
 
 export interface Expression {
     +type: Type;
 
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression;
+    // Static interface properties are not supported in flow as of 0.62.0.
+    // https://github.com/facebook/flow/issues/5590
+    // static parse(args: Array<mixed>, context: ParsingContext): ?Expression;
+
     evaluate(ctx: EvaluationContext): any;
 
     eachChild(fn: Expression => void): void;

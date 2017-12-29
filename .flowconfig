@@ -10,8 +10,5 @@
 .*/test/unit/style-spec/fixture/invalidjson.input.json
 .*/test/integration/render-tests/.*
 
-[options]
-unsafe.enable_getters_and_setters=true
-
 [version]
-0.61.0
+0.62.0
