@@ -79,7 +79,8 @@ class ParsingContext {
 
             const Expr = context.definitions[op];
             if (Expr) {
-                let parsed = Expr.parse(expr, context);
+                // https://github.com/facebook/flow/issues/5590
+                let parsed: ?Expression = (Expr: any).parse(expr, context);
                 if (!parsed) return null;
 
                 if (context.expectedType) {

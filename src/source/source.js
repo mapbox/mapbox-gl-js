@@ -40,7 +40,9 @@ export interface Source {
      * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
      * @private
      */
-    static workerSourceURL?: URL;
+    // Static interface properties are not supported in flow as of 0.62.0.
+    // https://github.com/facebook/flow/issues/5590
+    // static workerSourceURL?: URL;
 
     +type: string;
     id: string;
