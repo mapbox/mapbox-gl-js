@@ -5,13 +5,10 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
-const geojsonvt = require('geojson-vt');
-const rewind = require('geojson-rewind');
-const EXTENT = require('../data/extent');
-const supercluster = require('supercluster');
-const GeoJSONWrapper = require('./geojson_wrapper');
-const vtpbf = require('vt-pbf');
+const geojsonToVectorTile = require('./geojson_to_vector_tile')
 const tileUtils = require('../util/tile_utils');
+const vtpbf = require('vt-pbf');
+const rewind = require('geojson-rewind');
 
 import type {
     WorkerSource,
@@ -45,32 +42,26 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
 /**
  * @private
  */
+
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-
-    if ((params.request.url + '').indexOf('.geojson') === -1) {
-        return loadVectorTileOriginal(params, callback);
-    }
-
-    const tileLatLngBounds = tileUtils.tileCoordToBounds(params.coord);
-    const snapZoom = Math.max(params.zoom - 6, 1);
-    const snapPrecision = 0.0001 / (2 * params.zoom);
-    const simplifyPrecision = 0.0001 / (2 * params.zoom);
     const options = params.options || {};
-    const tilePolygonWKT = `POLYGON(( ` +
-      `${tileLatLngBounds.getWest()} ${tileLatLngBounds.getSouth()} ,` +
-      `${tileLatLngBounds.getWest()} ${tileLatLngBounds.getNorth()} ,` +
-      `${tileLatLngBounds.getEast()} ${tileLatLngBounds.getNorth()} ,` +
-      `${tileLatLngBounds.getEast()} ${tileLatLngBounds.getSouth()} ,` +
-      `${tileLatLngBounds.getWest()} ${tileLatLngBounds.getSouth()} ))`;
-    const replacedRequestUrl = params.request.url
-      .replace(/{{'(.*)' column condition}}/g, function(entireMatch, columnId){
-        return `intersects(${columnId}, '${tilePolygonWKT}')`;
-      })
-      .replace(/{snap_zoom}/g, (options.snapZoom || {})[params.zoom] || snapZoom)
-      .replace(/{snap_precision}/g, Math.max((options.snapPrecision || {})[params.zoom] || snapPrecision), 0.0000001)
-      .replace(/{simplify_precision}/g, Math.max((options.simplifyPrecision || {})[params.zoom] || simplifyPrecision), 0.0000001);
+    if (params.options.soqlTile === true) {
+        return loadSoqlTile(params, callback)
+    } else {
+        return defaultLoadVectorTile(params, callback);
+    }
+}
 
-    const xhr = ajax.getJSON({url: replacedRequestUrl}, (err, data) => {
+function loadSoqlTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+    const options = params.options || {};
+    const tileUrlOptions = {
+      snapZoom: options.snapZoom,
+      snapPrecision: options.snapPrecision,
+      simplifyPrecision: options.simplifyPrecision
+    }
+    const requestUrl = tileUtils.getTileUrlFromUrlTemplate(params.request.url, params.coord, params.zoom, tileUrlOptions);
+
+    const xhr = ajax.getJSON({url: requestUrl}, (err, data) => {
         if (err || !data) {
             return callback(err);
         } else if (typeof data !== 'object') {
@@ -79,65 +70,24 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
             rewind(data, true);
 
             try {
-                const options = params.options || {};
-                const scale = EXTENT / params.tileSize;
-                console.log('params', params);
-                let index;
-                if (options.cluster) {
-                  const superclusterOptions = {
-                      // TODO: Work based on current zoom level.
-                      minZoom: params.zoom - 3,
-                      maxZoom: params.zoom + 3,
-                      extent: EXTENT,
-                      radius: (options.clusterRadius || 50) * scale
-                  };
-                  if (options.aggregateBy) {
-                      superclusterOptions.map = function(props) {
-                          return {sum: Number(props[options.aggregateBy]) || 1, sum_abbrev: 1};
-                      }
-                      superclusterOptions.reduce = function (accumulated, props) {
-                        var sum = accumulated.sum + props.sum;
-                        var abbrev = sum >= 10000 ? Math.round(sum / 1000) + 'k' :
-                        sum >= 1000 ? (Math.round(sum / 100) / 10) + 'k' : sum;
+                const geojsonWrappedVectorTile = geojsonToVectorTile(data, options, params.tileSize, params.zoom, params.coord);
 
-                        accumulated.sum_abbrev = abbrev;
-                        accumulated.sum = sum;
-                      }
-                      superclusterOptions.initial = function () {
-                          return {sum: 0};
-                      }
-                  }
-                  console.log('superclusterOptions', superclusterOptions);
-                  index = supercluster(superclusterOptions).load(data.features);
-                } else {
-                  const geojsonVtOptions = {
-                    buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
-                    tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
-                    extent: EXTENT,
-                    // TODO: Work based on current zoom level.
-                    maxZoom: params.zoom
-                  }
-                  index = geojsonvt(data, geojsonVtOptions)
+                if (!geojsonWrappedVectorTile) {
+                    return;
+                    // return callback(null, null);
                 }
 
-                const geoJSONTile = index.getTile(params.zoom, params.coord.x, params.coord.y);
-                if (!geoJSONTile) {
-                    return; // callback(null);
-                }
-                const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-
-                let pbf = vtpbf(geojsonWrapper);
+                let pbf = vtpbf(geojsonWrappedVectorTile);
                 if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
                     // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
                     pbf = new Uint8Array(pbf);
                 }
                 callback(null, {
-                    vectorTile: geojsonWrapper,
+                    vectorTile: geojsonWrappedVectorTile,
                     rawData: pbf.buffer,
                     cacheControl: 'max-age=90000',
                     expires: undefined
                 });
-
             } catch (err) {
                 return callback(err);
             }
@@ -150,7 +100,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
     };
 }
 
-function loadVectorTileOriginal(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+function defaultLoadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
