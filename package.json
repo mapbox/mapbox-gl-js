@@ -1,10 +1,13 @@
 {
-  "name": "mapbox-gl",
+  "name": "socrata-mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.42.2",
+  "version": "0.0.1",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
+  "publishConfig": {
+    "registry": "https://repo.socrata.com/artifactory/api/npm/npm-local"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
