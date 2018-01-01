@@ -29,9 +29,9 @@ const Interpolate = require('./interpolate');
 const Coalesce = require('./coalesce');
 const Equals = require('./equals');
 
-import type { Expression } from '../expression';
+import type { ExpressionRegistry } from '../expression';
 
-const expressions: { [string]: Class<Expression> } = {
+const expressions: ExpressionRegistry = {
     // special forms
     '!=': Equals,
     '==': Equals,

@@ -99,7 +99,7 @@ register('ZoomDependentExpression', ZoomDependentExpression);
 register('ZoomConstantExpression', ZoomConstantExpression);
 register('CompoundExpression', CompoundExpression, {omit: ['_evaluate']});
 for (const name in expressions) {
-    if (expressions[name]._classRegistryKey) continue;
+    if ((expressions[name]: any)._classRegistryKey) continue;
     register(`Expression_${name}`, expressions[name]);
 }
 
