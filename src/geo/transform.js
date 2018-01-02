@@ -196,9 +196,11 @@ class Transform {
         const w0 = Math.floor(ul.column);
         const w1 = Math.floor(ur.column);
         const result = [new UnwrappedTileID(0, tileID)];
-        for (let w = w0; w <= w1; w++) {
-            if (w === 0) continue;
-            result.push(new UnwrappedTileID(w, tileID));
+        if (this._renderWorldCopies) {
+            for (let w = w0; w <= w1; w++) {
+                if (w === 0) continue;
+                result.push(new UnwrappedTileID(w, tileID));
+            }
         }
         return result;
     }
