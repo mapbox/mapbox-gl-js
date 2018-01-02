@@ -154,6 +154,15 @@
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
+    "aggregateBy": {
+      "type": "string",
+      "doc": "point_count will be an aggregate of this property in all the features in the cluster."
+    },
+    "geojsonTile": {
+      "type": "boolean",
+      "default": false,
+      "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
+    },
     "*": {
       "type": "*",
       "doc": "Other keys to configure the data source."
@@ -274,6 +283,11 @@
     "aggregateBy": {
       "type": "string",
       "doc": "point_count will be an aggregate of this property in all the features in the cluster."
+    },
+    "geojsonTile": {
+      "type": "boolean",
+      "default": false,
+      "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
     }
   },
   "source_video": {

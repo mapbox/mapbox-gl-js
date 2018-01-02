@@ -44,14 +44,14 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
 
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
-    if (params.options.soqlTile === true) {
-        return loadSoqlTile(params, callback)
+    if (params.options.geojsonTile === true) {
+        return loadGeojsonTile(params, callback)
     } else {
         return defaultLoadVectorTile(params, callback);
     }
 }
 
-function loadSoqlTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
+function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
     const tileUrlOptions = {
       snapZoom: options.snapZoom,
