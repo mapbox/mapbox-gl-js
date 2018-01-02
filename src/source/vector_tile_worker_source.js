@@ -6,7 +6,6 @@ const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
 const geojsonToVectorTile = require('./geojson_to_vector_tile')
-const tileUtils = require('../util/tile_utils');
 const vtpbf = require('vt-pbf');
 const rewind = require('geojson-rewind');
 
@@ -59,9 +58,8 @@ function loadSoqlTile(params: WorkerTileParameters, callback: LoadVectorDataCall
       snapPrecision: options.snapPrecision,
       simplifyPrecision: options.simplifyPrecision
     }
-    const requestUrl = tileUtils.getTileUrlFromUrlTemplate(params.request.url, params.coord, params.zoom, tileUrlOptions);
 
-    const xhr = ajax.getJSON({url: requestUrl}, (err, data) => {
+    const xhr = ajax.getJSON(params.request, (err, data) => {
         if (err || !data) {
             return callback(err);
         } else if (typeof data !== 'object') {

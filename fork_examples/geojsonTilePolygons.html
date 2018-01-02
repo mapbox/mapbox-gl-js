@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Geojson Tile polygons</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='./scripts/mapConstants.js'></script>
+    <script src='./scripts/soqlTileUrlSubstitute.js'></script>
+    <script src='../dist/mapbox-gl.js'></script>
+    <link href='../dist/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamFtaW4td3lzcyIsImEiOiJVcm5FdEw4In0.S8HRIEq8NqdtFVz2-BwQog';
+
+  var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/light-v9',
+      zoom: 11,
+      center: [-74.0060,40.7128],
+      // -----------------------------  //
+      // Required to work with fork     //
+      "transformRequest": substituteSoqlParams
+      // -----------------------------  //
+  });
+
+  var simplifiedGeom = 'simplify_preserve_topology(snap_to_grid(the_geom,{snap_precision}),{simplify_precision})';
+
+  var tileUrl = 'https://data.cityofnewyork.us/resource/4vr5-tahr.geojson?$query=' +
+      'select ' + simplifiedGeom + ' ' +
+      'where  {{\'the_geom\' column condition}}' +
+      'group by ' + simplifiedGeom + ' ' +
+      'limit 100000 ' +
+      '#substituteSoqlParams_tileParams={z}|{x}|{y}';
+
+  map.showTileBoundaries = true;
+
+  map.on('load', function () {
+    map.addSource('vectorDataSource', {
+        "type": "vector",
+        "tiles": [ tileUrl],
+        // -----------------------------  //
+        // Required to work with fork     //
+        "soqlTile": true,
+        // -----------------------------  //
+    });
+
+     map.addLayer({
+      'id': 'fillLayer',
+      'type': 'line',
+      'source': 'vectorDataSource',
+      'source-layer': '_geojsonTileLayer',
+      'paint': {
+        'line-color': '#288dc1',
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
