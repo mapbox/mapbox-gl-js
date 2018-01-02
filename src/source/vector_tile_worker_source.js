@@ -71,8 +71,7 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
                 const geojsonWrappedVectorTile = geojsonToVectorTile(data, options, params.tileSize, params.zoom, params.coord);
 
                 if (!geojsonWrappedVectorTile) {
-                    return;
-                    // return callback(null, null);
+                    return callback(null, null);
                 }
 
                 let pbf = vtpbf(geojsonWrappedVectorTile);
