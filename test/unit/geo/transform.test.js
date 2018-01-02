@@ -3,8 +3,8 @@
 const test = require('mapbox-gl-js-test').test;
 const Point = require('@mapbox/point-geometry');
 const Transform = require('../../../src/geo/transform');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 const LngLat = require('../../../src/geo/lng_lat');
+const {OverscaledTileID, CanonicalTileID} = require('../../../src/source/tile_id');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedLngLat = fixed.LngLat;
@@ -230,6 +230,23 @@ test('transform', (t) => {
 
         transform.pitch = 90;
         t.equal(transform.pitch, 60);
+
+        t.end();
+    });
+
+    t.test('visibleUnwrappedCoordinates', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.zoom = 0;
+        transform.center = { lng: -170.01, lat: 0.01 };
+
+        let unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
+        t.equal(unwrappedCoords.length, 2);
+
+        //getVisibleUnwrappedCoordinates should honor _renderWorldCopies
+        transform._renderWorldCopies = false;
+        unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
+        t.equal(unwrappedCoords.length, 1);
 
         t.end();
     });
