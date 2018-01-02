@@ -17,7 +17,7 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
   }
   const geoJSONTile = index.getTile(zoom, tileCoord.x, tileCoord.y);
   if (!geoJSONTile) {
-      return null; // callback(null);
+      return new GeoJSONWrapper([]);
   }
   return new GeoJSONWrapper(geoJSONTile.features);
 };

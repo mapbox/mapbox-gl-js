@@ -70,10 +70,6 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
             try {
                 const geojsonWrappedVectorTile = geojsonToVectorTile(data, options, params.tileSize, params.zoom, params.coord);
 
-                if (!geojsonWrappedVectorTile) {
-                    return callback(null, null);
-                }
-
                 let pbf = vtpbf(geojsonWrappedVectorTile);
                 if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
                     // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
