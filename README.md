@@ -16,6 +16,10 @@ Fork Version | Mapbox version
   * fork_examples/geojsonTileClusters.html
   * fork_examples/geojsonTilePolygons.html
 
+
+## Known Fork shortcomings:
+  Geojson tiles, always set the cache expiry time to 'undefined' and cache control to 'max-age=90000', ignoring the cache headers in the tile's response.
+
 **Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
 [Mapbox Style Specification](https://github.com/mapbox/mapbox-gl-js/style-spec/), applies them to vector tiles that
 conform to the [Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec), and renders them using
