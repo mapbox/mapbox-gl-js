@@ -332,100 +332,94 @@ CompoundExpression.register(expressions, {
     'filter-==': [
         BooleanType,
         [StringType, ValueType],
-        function (ctx) {
-            return ctx.properties()[this.args[0].value] === this.args[1].value;
-        }
+        (ctx, [k, v]) => ctx.properties()[(k: any).value] === (v: any).value
     ],
     'filter-id-==': [
         BooleanType,
         [ValueType],
-        function (ctx) {
-            return ctx.id() === this.args[0].value;
-        }
+        (ctx, [v]) => ctx.id() === (v: any).value
     ],
     'filter-type-==': [
         BooleanType,
         [StringType],
-        function (ctx) {
-            return ctx.geometryType() === this.args[0].value;
-        }
+        (ctx, [v]) => ctx.geometryType() === (v: any).value
     ],
     'filter-<': [
         BooleanType,
         [StringType, ValueType],
-        function (ctx) {
-            const v = ctx.properties()[this.args[0].value];
-            const b = this.args[1];
-            return typeof v === typeof b.value && v < b.value;
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a < b;
         }
     ],
     'filter-id-<': [
         BooleanType,
         [ValueType],
-        function (ctx) {
-            const v = ctx.id();
-            const b = this.args[0];
-            return typeof v === typeof b.value && v < b.value;
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a < b;
         }
     ],
     'filter->': [
         BooleanType,
         [StringType, ValueType],
-        function (ctx) {
-            const v = ctx.properties()[this.args[0].value];
-            const b = this.args[1];
-            return typeof v === typeof b.value && v > b.value;
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a > b;
         }
     ],
     'filter-id->': [
         BooleanType,
         [ValueType],
-        function (ctx) {
-            const v = ctx.id();
-            const b = this.args[0];
-            return typeof v === typeof b.value && v > b.value;
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a > b;
         }
     ],
     'filter-<=': [
         BooleanType,
         [StringType, ValueType],
-        function (ctx) {
-            const v = ctx.properties()[this.args[0].value];
-            const b = this.args[1];
-            return typeof v === typeof b.value && v <= b.value;
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a <= b;
         }
     ],
     'filter-id-<=': [
         BooleanType,
         [ValueType],
-        function (ctx) {
-            const v = ctx.id();
-            const b = this.args[0];
-            return typeof v === typeof b.value && v <= b.value;
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a <= b;
         }
     ],
     'filter->=': [
         BooleanType,
         [StringType, ValueType],
-        function (ctx) {
-            const v = ctx.properties()[this.args[0].value];
-            const b = this.args[1];
-            return typeof v === typeof b.value && v >= b.value;
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a >= b;
         }
     ],
     'filter-id->=': [
         BooleanType,
         [ValueType],
-        function (ctx) {
-            const v = ctx.id();
-            const b = this.args[0];
-            return typeof v === typeof b.value && v >= b.value;
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a >= b;
         }
     ],
     'filter-has': [
         BooleanType,
         [ValueType],
-        function (ctx) { return this.args[0].value in ctx.properties(); }
+        (ctx, [k]) => (k: any).value in ctx.properties()
     ],
     'filter-has-id': [
         BooleanType,
@@ -435,33 +429,24 @@ CompoundExpression.register(expressions, {
     'filter-type-in': [
         BooleanType,
         [array(StringType)],
-        function (ctx) { return this.args[0].value.indexOf(ctx.geometryType()) >= 0; }
+        (ctx, [v]) => (v: any).value.indexOf(ctx.geometryType()) >= 0
     ],
     'filter-id-in': [
         BooleanType,
         [array(ValueType)],
-        function (ctx) { return this.args[0].value.indexOf(ctx.id()) >= 0; }
+        (ctx, [v]) => (v: any).value.indexOf(ctx.id()) >= 0
     ],
     'filter-in-small': [
         BooleanType,
         [StringType, array(ValueType)],
-        function (ctx) {
-            // assumes this.args[1] is an array Literal
-            const value = ctx.properties()[this.args[0].value];
-            const array = this.args[1].value;
-            return array.indexOf(value) >= 0;
-        }
+        // assumes v is an array literal
+        (ctx, [k, v]) => (v: any).value.indexOf(ctx.properties()[(k: any).value]) >= 0
     ],
     'filter-in-large': [
         BooleanType,
         [StringType, array(ValueType)],
-        function (ctx) {
-            // assumes this.args[1] is a array Literal with values
-            // sorted in ascending order and of a single type
-            const value = ctx.properties()[this.args[0].value];
-            const array = this.args[1].value;
-            return binarySearch(value, array, 0, array.length - 1);
-        }
+        // assumes v is a array literal with values sorted in ascending order and of a single type
+        (ctx, [k, v]) => binarySearch(ctx.properties()[(k: any).value], (v: any).value, 0, (v: any).value.length - 1)
     ],
     '>': {
         type: BooleanType,
