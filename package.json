@@ -1,5 +1,5 @@
 {
-  "name": "socrata-mapbox-gl",
+  "name": "@socrata/mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "0.0.1",
   "main": "dist/mapbox-gl.js",
