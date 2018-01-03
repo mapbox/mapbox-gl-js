@@ -9,15 +9,15 @@ module.exports = function validateNumber(options) {
     const type = getType(value);
 
     if (type !== 'number') {
-        return [new ValidationError(key, value, 'number expected, %s found', type)];
+        return [new ValidationError(key, value, `number expected, ${type} found`)];
     }
 
     if ('minimum' in valueSpec && value < valueSpec.minimum) {
-        return [new ValidationError(key, value, '%s is less than the minimum value %s', value, valueSpec.minimum)];
+        return [new ValidationError(key, value, `${value} is less than the minimum value ${valueSpec.minimum}`)];
     }
 
     if ('maximum' in valueSpec && value > valueSpec.maximum) {
-        return [new ValidationError(key, value, '%s is greater than the maximum value %s', value, valueSpec.maximum)];
+        return [new ValidationError(key, value, `${value} is greater than the maximum value ${valueSpec.maximum}`)];
     }
 
     return [];
