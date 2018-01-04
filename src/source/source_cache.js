@@ -212,7 +212,8 @@ class SourceCache extends Evented {
             return;
         }
 
-        this._cache.reset();
+        this._resetCache();
+
         for (const i in this._tiles) {
             this._reloadTile(i, 'reloading');
         }
@@ -678,6 +679,10 @@ class SourceCache extends Evented {
         for (const id in this._tiles)
             this._removeTile(id);
 
+        this._resetCache();
+    }
+
+    _resetCache() {
         for (const id in this._cacheTimers)
             clearTimeout(this._cacheTimers[id]);
 
