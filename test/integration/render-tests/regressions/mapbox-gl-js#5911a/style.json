@@ -3,7 +3,6 @@
     "metadata": {
         "test": {
             "collisionDebug": true,
-            "debug": true,
             "width": 1024,
             "height": 2048,
             "description": "This is the line-label equivalent of issue #5911. The middle feature barely misses the bottom feature and barely collides with the top feature, so that the test can detect a small change in either direction. The viewport is only 1024px wide to make debug collision circles render better (issue #5941)."
