@@ -27,14 +27,14 @@ const Case = require('./case');
 const Step = require('./step');
 const Interpolate = require('./interpolate');
 const Coalesce = require('./coalesce');
-const Equals = require('./equals');
+const {Equals, NotEquals} = require('./equals');
 
 import type { Expression } from '../expression';
 
 const expressions: { [string]: Class<Expression> } = {
     // special forms
-    '!=': Equals,
     '==': Equals,
+    '!=': NotEquals,
     'array': ArrayAssertion,
     'at': At,
     'boolean': Assertion,
