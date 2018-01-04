@@ -611,6 +611,11 @@ class SourceCache extends Evented {
     }
 
     _setTileReloadTimer(id: string | number, tile: Tile) {
+        if (id in this._timers) {
+            clearTimeout(this._timers[id]);
+            delete this._timers[id];
+        }
+
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
@@ -621,6 +626,11 @@ class SourceCache extends Evented {
     }
 
     _setCacheInvalidationTimer(id: string | number, tile: Tile) {
+        if (id in this._cacheTimers) {
+            clearTimeout(this._cacheTimers[id]);
+            delete this._cacheTimers[id];
+        }
+
         const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
