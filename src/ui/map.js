@@ -530,6 +530,27 @@ class Map extends Camera {
     }
 
     /**
+     * Returns the state of renderWorldCopies.
+     *
+     * @returns {boolean} renderWorldCopies
+     */
+    getRenderWorldCopies() { return this.transform.renderWorldCopies; }
+
+    /**
+     * Sets the state of renderWorldCopies.
+     *
+     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered, when zoomed out.
+     * @returns {Map} `this`
+     */
+    setRenderWorldCopies(renderWorldCopies?: ?boolean) {
+
+        this.transform.renderWorldCopies = renderWorldCopies;
+        this._update();
+
+        return this;
+    }
+
+    /**
      * Returns the map's maximum allowable zoom level.
      *
      * @returns {number} maxZoom

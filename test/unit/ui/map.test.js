@@ -665,6 +665,40 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getRenderWorldCopies', (t) => {
+        t.test('initially false', (t) => {
+            const map = createMap({renderWorldCopies: false});
+            t.equal(map.getRenderWorldCopies(), false);
+            t.end();
+        });
+
+        t.test('initially true', (t) => {
+            const map = createMap({renderWorldCopies: true});
+            t.equal(map.getRenderWorldCopies(), true);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('#setRenderWorldCopies', (t) => {
+        t.test('initially false', (t) => {
+            const map = createMap({renderWorldCopies: false});
+            map.setRenderWorldCopies(true);
+            t.equal(map.getRenderWorldCopies(), true);
+            t.end();
+        });
+
+        t.test('initially true', (t) => {
+            const map = createMap({renderWorldCopies: true});
+            map.setRenderWorldCopies(false);
+            t.equal(map.getRenderWorldCopies(), false);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('#setMinZoom', (t) => {
         const map = createMap({zoom:5});
         map.setMinZoom(3.5);
