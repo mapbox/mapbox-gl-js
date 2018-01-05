@@ -97,7 +97,13 @@ class Transform {
     }
 
     get renderWorldCopies(): boolean { return this._renderWorldCopies; }
-    set renderWorldCopies(renderWorldCopies: boolean) {
+    set renderWorldCopies(renderWorldCopies?: ?boolean) {
+        if (renderWorldCopies === undefined) {
+            renderWorldCopies = true;
+        } else if (renderWorldCopies === null) {
+            renderWorldCopies = false;
+        }
+
         this._renderWorldCopies = renderWorldCopies;
     }
 
