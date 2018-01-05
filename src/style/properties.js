@@ -547,7 +547,7 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
         }
 
         // Special case hack solely for fill-outline-color.
-        if (a.value.value === undefined || a.value.value === undefined)
+        if (a.value.value === undefined || b.value.value === undefined)
             return (undefined: any);
 
         const interp: ?(a: T, b: T, t: number) => T = (interpolate: any)[this.specification.type];
