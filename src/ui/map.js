@@ -544,7 +544,7 @@ class Map extends Camera {
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean) {
 
-        this.transform.renderWorldCopies = renderWorldCopies;
+        this.transform.renderWorldCopies = renderWorldCopies ? true : false;
         this._update();
 
         return this;
