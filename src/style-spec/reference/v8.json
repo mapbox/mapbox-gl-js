@@ -1162,7 +1162,6 @@
     "icon-offset": {
       "type": "array",
       "value": "number",
-      "units": "pixels multiplied by the value of \"icon-size\"",
       "length": 2,
       "default": [
         0,
@@ -1171,7 +1170,7 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
+      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. Each component is multiplied by the value of `icon-size` to obtain the final offset in pixels. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
       "requires": [
         "icon-image"
       ],
