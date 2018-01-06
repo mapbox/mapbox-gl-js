@@ -1484,7 +1484,7 @@ export default class extends React.Component {
                                                 input value and one output value is known as a "stop." Stop output values
                                                 must be literal values (i.e. not functions or expressions), and appropriate
                                                 for the property. For example, stop output values for a function used in
-                                                the `fill-color` property must be <a href="#types-color">colors</a>.
+                                                the <code>fill-color</code> property must be <a href="#types-color">colors</a>.
                                             </div>
                                         </div>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
