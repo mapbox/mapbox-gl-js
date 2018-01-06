@@ -17,6 +17,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 [mapbox/mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native/) repository.
 
 - [Getting started with Mapbox GL JS](https://www.mapbox.com/mapbox-gl-js/api/)
+- [Tutorials](https://www.mapbox.com/help/tutorials/#web-apps)
 - [API documentation](https://www.mapbox.com/mapbox-gl-js/api/)
 - [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style documentation](https://www.mapbox.com/mapbox-gl-js/style-spec/)
