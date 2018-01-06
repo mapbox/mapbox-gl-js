@@ -1162,7 +1162,7 @@
     "icon-offset": {
       "type": "array",
       "value": "number",
-      "units": "pixels multiplied by the value of \"icon-size\"",
+      "units": "pixels multiplied by the value of `icon-size`",
       "length": 2,
       "default": [
         0,
@@ -1353,7 +1353,7 @@
       "property-function": true,
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like `{field_name}`. (`{token}` replacement is only supported for literal `text-field` values; not for property functions.)",
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like `{field_name}`. (`{token}` replacement is only supported for literal `text-field` values, not for data expressions or property functions.)",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
