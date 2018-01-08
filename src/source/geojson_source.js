@@ -221,11 +221,7 @@ class GeoJSONSource extends Evented implements Source {
                 return callback(err);
             }
 
-            if (message === 'reloadTile') {
-                tile.justReloaded = true;
-            }
-
-            tile.loadVectorData(data, this.map.painter);
+            tile.loadVectorData(data, this.map.painter, message === 'reloadTile');
 
             return callback(null);
         }, this.workerID);

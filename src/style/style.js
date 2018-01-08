@@ -990,13 +990,14 @@ class Style extends Evented {
                     this.placement = placement;
                     this.collisionIndex = this.placement.collisionIndex;
                 }
-                this.placement.setRecent(browser.now());
+                this.placement.setRecent(browser.now(), placement.stale);
+            }
 
-                for (const id in layerTiles) {
-                    for (const tile of layerTiles[id]) {
-                        tile.justReloaded = false;
-                    }
-                }
+            if (symbolBucketsChanged) {
+                // since the placement gets split over multiple frames it is possible
+                // these buckets were processed before they were changed and so the
+                // placement is already stale while it is in progress
+                this.pauseablePlacement.placement.setStale();
             }
 
         } else {

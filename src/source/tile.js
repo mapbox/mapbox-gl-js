@@ -89,7 +89,6 @@ class Tile {
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
-    justReloaded: boolean;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -134,7 +133,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: WorkerTileResult, painter: any) {
+    loadVectorData(data: WorkerTileResult, painter: any, justReloaded: ?boolean) {
         if (this.hasData()) {
             this.unloadVectorData();
         }
@@ -155,6 +154,15 @@ class Tile {
         this.featureIndex = data.featureIndex;
         this.featureIndex.rawTileData = this.rawTileData;
         this.buckets = deserializeBucket(data.buckets, painter.style);
+
+        if (justReloaded) {
+            for (const id in this.buckets) {
+                const bucket = this.buckets[id];
+                if (bucket instanceof SymbolBucket) {
+                    bucket.justReloaded = true;
+                }
+            }
+        }
 
         if (data.iconAtlasImage) {
             this.iconAtlasImage = data.iconAtlasImage;
@@ -236,7 +244,10 @@ class Tile {
             const bucket = this.getBucket(layers[id]);
             if (bucket) {
                 additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
-                if (bucket instanceof SymbolBucket) {
+
+                // Add the bucket instance's id to the set of current ids.
+                // The query will only include results from current buckets.
+                if (bucket instanceof SymbolBucket && bucket.bucketInstanceId !== undefined) {
                     bucketInstanceIds[bucket.bucketInstanceId] = true;
                 }
             }

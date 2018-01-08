@@ -18,11 +18,11 @@ import type {CollisionBoxArray, CollisionVertexArray} from '../data/array_types'
 class OpacityState {
     opacity: number;
     placed: boolean;
-    constructor(prevState: ?OpacityState, increment: number, placed: boolean, offscreen: ?boolean) {
+    constructor(prevState: ?OpacityState, increment: number, placed: boolean, skipFade: ?boolean) {
         if (prevState) {
             this.opacity = Math.max(0, Math.min(1, prevState.opacity + (prevState.placed ? increment : -increment)));
         } else {
-            this.opacity = (offscreen && placed) ? 1 : 0;
+            this.opacity = (skipFade && placed) ? 1 : 0;
         }
         this.placed = placed;
     }
@@ -34,9 +34,9 @@ class OpacityState {
 class JointOpacityState {
     text: OpacityState;
     icon: OpacityState;
-    constructor(prevState: ?JointOpacityState, increment: number, placedText: boolean, placedIcon: boolean, offscreen: ?boolean) {
-        this.text = new OpacityState(prevState ? prevState.text : null, increment, placedText, offscreen);
-        this.icon = new OpacityState(prevState ? prevState.icon : null, increment, placedIcon, offscreen);
+    constructor(prevState: ?JointOpacityState, increment: number, placedText: boolean, placedIcon: boolean, skipFade: ?boolean) {
+        this.text = new OpacityState(prevState ? prevState.text : null, increment, placedText, skipFade);
+        this.icon = new OpacityState(prevState ? prevState.icon : null, increment, placedIcon, skipFade);
     }
     isHidden() {
         return this.text.isHidden() && this.icon.isHidden();
@@ -46,15 +46,15 @@ class JointOpacityState {
 class JointPlacement {
     text: boolean;
     icon: boolean;
-    // offscreen = outside viewport, but within CollisionIndex::viewportPadding px of the edge
+    // skipFade = outside viewport, but within CollisionIndex::viewportPadding px of the edge
     // Because these symbols aren't onscreen yet, we can skip the "fade in" animation,
     // and if a subsequent viewport change brings them into view, they'll be fully
     // visible right away.
-    offscreen: boolean;
-    constructor(text: boolean, icon: boolean, offscreen: boolean) {
+    skipFade: boolean;
+    constructor(text: boolean, icon: boolean, skipFade: boolean) {
         this.text = text;
         this.icon = icon;
-        this.offscreen = offscreen;
+        this.skipFade = skipFade;
     }
 }
 
@@ -102,12 +102,12 @@ class Placement {
                 pixelsToTileUnits(tile, 1, this.transform.zoom));
 
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source, tile.justReloaded);
+                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
             scale: number, textPixelRatio: number, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean },
-            collisionBoxArray: ?CollisionBoxArray, tileKey: number, sourceID: string, justReloaded: boolean) {
+            collisionBoxArray: ?CollisionBoxArray, tileKey: number, sourceID: string) {
 
         const layout = bucket.layers[0].layout;
 
@@ -196,10 +196,12 @@ class Placement {
                 assert(symbolInstance.crossTileID !== 0);
                 assert(bucket.bucketInstanceId !== 0);
 
-                this.placements[symbolInstance.crossTileID] = new JointPlacement(placeText, placeIcon, offscreen || justReloaded);
+                this.placements[symbolInstance.crossTileID] = new JointPlacement(placeText, placeIcon, offscreen || bucket.justReloaded);
                 seenCrossTileIDs[symbolInstance.crossTileID] = true;
             }
         }
+
+        bucket.justReloaded = false;
     }
 
     commit(prevPlacement: ?Placement, now: number) {
@@ -223,7 +225,7 @@ class Placement {
                     jointPlacement.text !== prevOpacity.text.placed ||
                     jointPlacement.icon !== prevOpacity.icon.placed;
             } else {
-                this.opacities[crossTileID] = new JointOpacityState(null, increment, jointPlacement.text, jointPlacement.icon, jointPlacement.offscreen);
+                this.opacities[crossTileID] = new JointOpacityState(null, increment, jointPlacement.text, jointPlacement.icon, jointPlacement.skipFade);
                 placementChanged = placementChanged || jointPlacement.text || jointPlacement.icon;
             }
         }
@@ -268,9 +270,15 @@ class Placement {
         for (let s = 0; s < bucket.symbolInstances.length; s++) {
             const symbolInstance = bucket.symbolInstances[s];
             const isDuplicate = seenCrossTileIDs[symbolInstance.crossTileID];
-            const opacityState = (!isDuplicate && this.opacities[symbolInstance.crossTileID]) ?
-                this.opacities[symbolInstance.crossTileID] :
-                defaultOpacityState;
+
+            let opacityState = this.opacities[symbolInstance.crossTileID];
+            if (!opacityState) {
+                opacityState = defaultOpacityState;
+                // store the state so that future placements use it as a starting point
+                this.opacities[symbolInstance.crossTileID] = opacityState;
+            } else if (isDuplicate) {
+                opacityState = defaultOpacityState;
+            }
 
             seenCrossTileIDs[symbolInstance.crossTileID] = true;
 
@@ -361,8 +369,8 @@ class Placement {
         return this.recentUntil > now;
     }
 
-    setRecent(now: number) {
-        this.stale = false;
+    setRecent(now: number, stale: boolean) {
+        this.stale = stale;
         this.recentUntil = now + this.fadeDuration;
     }
 

@@ -279,6 +279,7 @@ class CollisionIndex {
         const thisTileFeatures = [];
         const features = this.grid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < features.length; i++) {
+            // Only include results from the matching source, tile and version of the bucket that was indexed
             if (features[i].sourceID === sourceID && features[i].tileID === tileID && bucketInstanceIds[features[i].bucketInstanceId]) {
                 thisTileFeatures.push(features[i].boxIndex);
             }
