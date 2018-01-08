@@ -109,6 +109,9 @@ const types = {
 };
 
 for (const name in CompoundExpression.definitions) {
+    if (/^filter-/.test(name)) {
+        continue;
+    }
     const definition = CompoundExpression.definitions[name];
     if (Array.isArray(definition)) {
         types[name] = [{
