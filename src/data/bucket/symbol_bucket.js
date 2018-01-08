@@ -278,6 +278,7 @@ class SymbolBucket implements Bucket {
     sdfIcons: boolean;
     iconsNeedLinear: boolean;
     bucketInstanceId: number;
+    justReloaded: boolean;
 
     textSizeData: SizeData;
     iconSizeData: SizeData;
