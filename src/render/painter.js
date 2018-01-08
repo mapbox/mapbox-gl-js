@@ -47,13 +47,15 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type {DepthMaskType, DepthFuncType} from '../gl/types';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
+export type GPUTiming = 'none' | 'frame' | 'layer';
 
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
     rotating: boolean,
     zooming: boolean,
-    fadeDuration: number
+    fadeDuration: number,
+    gpuTiming: GPUTiming
 }
 
 /**
@@ -95,6 +97,7 @@ class Painter {
     _showOverdrawInspector: boolean;
     cache: { [string]: Program };
     crossTileSymbolIndex: CrossTileSymbolIndex;
+    layerTimers: { [string]: any };
 
     constructor(gl: WebGLRenderingContext, transform: Transform) {
         this.context = new Context(gl);
@@ -113,6 +116,8 @@ class Painter {
         this.emptyProgramConfiguration = new ProgramConfiguration();
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
+
+        this.layerTimers = {};
     }
 
     /*
@@ -307,7 +312,7 @@ class Painter {
 
                 if (!coords.length) continue;
 
-                this.renderLayer(this, (sourceCache: any), layer, coords);
+                this.renderLayer(this, (sourceCache: any), layer, coords, options.gpuTiming);
             }
 
             // Rebind the main framebuffer now that all offscreen layers
@@ -347,7 +352,7 @@ class Painter {
                     }
                 }
 
-                this.renderLayer(this, (sourceCache: any), layer, coords);
+                this.renderLayer(this, (sourceCache: any), layer, coords, options.gpuTiming);
             }
         }
 
@@ -378,7 +383,7 @@ class Painter {
                     coords.reverse();
                 }
 
-                this.renderLayer(this, (sourceCache: any), layer, coords);
+                this.renderLayer(this, (sourceCache: any), layer, coords, options.gpuTiming);
             }
         }
 
@@ -398,12 +403,59 @@ class Painter {
         }
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
+    renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, gpuTiming: GPUTiming) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && !coords.length) return;
         this.id = layer.id;
 
+        const ext = this.context.timerQueryExt;
+        let renderLayerStart;
+        let layerTimer;
+        if (gpuTiming === 'layer') {
+            // This tries to time the draw call itself, but note that the cost for drawing a layer
+            // may be dominated by the cost of uploading vertices to the GPU.
+            // To instrument that, we'd need to pass the layerTimers object down into the bucket
+            // uploading logic.
+            layerTimer = this.layerTimers[layer.id];
+            if (!layerTimer) {
+                layerTimer = this.layerTimers[layer.id] = {
+                    calls: 0,
+                    cpuTime: 0,
+                    query: ext.createQueryEXT()
+                };
+            }
+            layerTimer.calls++;
+            ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, layerTimer.query);
+            renderLayerStart = browser.now();
+        }
+
         draw[layer.type](painter, sourceCache, layer, coords);
+
+        if (gpuTiming === 'layer') {
+            layerTimer.cpuTime = browser.now() - renderLayerStart;
+            ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
+        }
+    }
+
+    resetLayerTimers() {
+        const currentLayerTimers = this.layerTimers;
+        this.layerTimers = {};
+        return currentLayerTimers;
+    }
+
+    queryAndClearLayerTimers(layerTimers: {[string]: any}) {
+        const layers = {};
+        for (const layerId in layerTimers) {
+            const layerTimer = layerTimers[layerId];
+            const ext = this.context.timerQueryExt;
+            const gpuTime = ext.getQueryObjectEXT(layerTimer.query, ext.QUERY_RESULT_EXT) / (1000 * 1000);
+            ext.deleteQueryEXT(layerTimer.query);
+            layers[layerId] = {
+                gpuTime: gpuTime,
+                cpuTime: layerTimer.cpuTime
+            };
+        }
+        return layers;
     }
 
     /**
