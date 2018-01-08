@@ -78,6 +78,12 @@ class Light extends Evented {
     constructor(lightOptions?: LightSpecification) {
         super();
         this._transitionable = new Transitionable(properties);
+        // make sure initial state is set even if all light values are defaults.
+        lightOptions = lightOptions || {};
+        for (const key in properties.properties) {
+            if (lightOptions[key] === undefined) lightOptions[key] = styleSpec.light[key].default;
+        }
+
         this.setLight(lightOptions);
         this._transitioning = this._transitionable.untransitioned();
     }

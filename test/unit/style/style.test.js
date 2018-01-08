@@ -287,6 +287,25 @@ test('Style#loadJSON', (t) => {
         });
     });
 
+    t.test('populates light values even if style does not specify properties', (t)=>{
+        const style = new Style(new StubMap());
+        style.on('style.load', ()=>{
+            console.log(Object.keys(style.getLight()));
+            t.deepEqual(Object.keys(style.getLight()), ['anchor', 'position', 'color', 'intensity']);
+            t.end();
+        });
+
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "foo": {
+                    "type": "vector"
+                }
+            },
+            "layers": []
+        });
+    });
+
     t.test('transforms sprite json and image URLs before request', (t) => {
         window.useFakeXMLHttpRequest();
 
