@@ -1069,7 +1069,7 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Name of image in sprite to use for drawing an image background. A string with `{tokens}` replaced, referencing the data property to pull from. (`{token}` replacement is only supported for literal `icon-image` values; not for property functions.)",
+      "doc": "Name of image in sprite to use for drawing an image background. Within literal values and zoom functions, property names enclosed in curly brackets (e.g. `{token}`) are replaced with the value of the named property. Expressions and property functions do not support this syntax; for equivalent functionality in expressions, use the [`concat`](#expressions-concat) and [`get`](#expressions-get) operators.",
       "tokens": true,
       "sdk-support": {
         "basic functionality": {
@@ -1352,7 +1352,7 @@
       "property-function": true,
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like `{field_name}`. (`{token}` replacement is only supported for literal `text-field` values; not for property functions.)",
+      "doc": "Value to use for a text label. Within literal values and zoom functions, property names enclosed in curly brackets (e.g. `{token}`) are replaced with the value of the named property. Expressions and property functions do not support this syntax; for equivalent functionality in expressions, use the [`concat`](#expressions-concat) and [`get`](#expressions-get) operators.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
