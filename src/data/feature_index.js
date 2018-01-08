@@ -32,6 +32,7 @@ type QueryParameters = {
     },
     collisionBoxArray: CollisionBoxArray,
     sourceID: string,
+    bucketInstanceIds: { [number]: boolean },
     collisionIndex: CollisionIndex
 }
 
@@ -121,7 +122,7 @@ class FeatureIndex {
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         const matchingSymbols = args.collisionIndex ?
-            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
+            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);

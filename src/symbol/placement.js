@@ -181,16 +181,20 @@ class Placement {
                 }
 
                 if (placeText && placedGlyphBoxes) {
-                    this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'), tileKey, sourceID, symbolInstance.textBoxStartIndex);
+                    this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
+                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.textBoxStartIndex);
                 }
                 if (placeIcon && placedIconBoxes) {
-                    this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'), tileKey, sourceID, symbolInstance.iconBoxStartIndex);
+                    this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
+                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.iconBoxStartIndex);
                 }
                 if (placeText && placedGlyphCircles) {
-                    this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'), tileKey, sourceID, symbolInstance.textBoxStartIndex);
+                    this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'),
+                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.textBoxStartIndex);
                 }
 
                 assert(symbolInstance.crossTileID !== 0);
+                assert(bucket.bucketInstanceId !== 0);
 
                 this.placements[symbolInstance.crossTileID] = new JointPlacement(placeText, placeIcon, offscreen || justReloaded);
                 seenCrossTileIDs[symbolInstance.crossTileID] = true;

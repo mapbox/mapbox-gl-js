@@ -8,6 +8,7 @@ const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
 const CollisionIndex = require('../symbol/collision_index');
+const SymbolBucket = require('../data/bucket/symbol_bucket');
 const {
     RasterBoundsArray,
     CollisionBoxArray
@@ -230,10 +231,14 @@ class Tile {
 
         // Determine the additional radius needed factoring in property functions
         let additionalRadius = 0;
+        const bucketInstanceIds = {};
         for (const id in layers) {
             const bucket = this.getBucket(layers[id]);
             if (bucket) {
                 additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
+                if (bucket instanceof SymbolBucket) {
+                    bucketInstanceIds[bucket.bucketInstanceId] = true;
+                }
             }
         }
 
@@ -246,7 +251,8 @@ class Tile {
             additionalRadius: additionalRadius,
             collisionBoxArray: this.collisionBoxArray,
             sourceID: sourceID,
-            collisionIndex: collisionIndex
+            collisionIndex: collisionIndex,
+            bucketInstanceIds: bucketInstanceIds
         }, layers);
     }
 
