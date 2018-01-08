@@ -197,7 +197,7 @@ class Painter {
         mat4.ortho(matrix, 0, this.width, this.height, 0, 0, 1);
         mat4.scale(matrix, matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight, 0]);
 
-        const program = this.useProgram('fill', ProgramConfiguration.forTileClippingMask());
+        const program = this.useProgram('clippingMask');
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
         this.viewportVAO.bind(context, program, this.viewportBuffer, []);
@@ -213,7 +213,6 @@ class Painter {
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
-        const programConfiguration = ProgramConfiguration.forTileClippingMask();
 
         for (const tileID of tileIDs) {
             const id = this._tileClippingMaskIDs[tileID.key] = idNext++;
@@ -221,7 +220,7 @@ class Painter {
             // Tests will always pass, and ref value will be written to stencil buffer.
             context.setStencilMode(new StencilMode({ func: gl.ALWAYS, mask: 0 }, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE));
 
-            const program = this.useProgram('fill', programConfiguration);
+            const program = this.useProgram('clippingMask');
             gl.uniformMatrix4fv(program.uniforms.u_matrix, false, tileID.posMatrix);
 
             // Draw the clipping mask

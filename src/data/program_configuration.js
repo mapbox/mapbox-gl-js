@@ -316,32 +316,6 @@ class ProgramConfiguration {
         return self;
     }
 
-    static forBackgroundColor(color: Color, opacity: number) {
-        const self = new ProgramConfiguration();
-
-        self.binders['background-color'] = new ConstantBinder(color, 'color', 'color');
-        self.cacheKey += `/u_color`;
-
-        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number');
-        self.cacheKey += `/u_opacity`;
-
-        return self;
-    }
-
-    static forBackgroundPattern(opacity: number) {
-        const self = new ProgramConfiguration();
-
-        self.binders['background-opacity'] = new ConstantBinder(opacity, 'opacity', 'number');
-        self.cacheKey += `/u_opacity`;
-
-        return self;
-    }
-
-    static forTileClippingMask() {
-        // The color and opacity values don't matter.
-        return ProgramConfiguration.forBackgroundColor(Color.black, 1);
-    }
-
     populatePaintArrays(length: number, feature: Feature) {
         for (const property in this.binders) {
             this.binders[property].populatePaintArray(length, feature);
