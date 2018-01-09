@@ -1,0 +1,24 @@
+Scene:
+
+http://localhost:9966/debug/debug.html#13.52/40.71403/-73.96428
+
+Style:
+
+'mapbox://styles/mapbox/streets-v10'
+
+Viewport:
+
+2200x1340px
+
+Animation:
+
+map.panBy([800,800], { duration: 3000})
+
+Reset:
+
+map.panBy([-800,-800], { animate: false })
+
+Benchmark:
+
+mapboxgl.AnimationBenchmarker.benchmarkScene(map, 3000, function(map) { map.panBy([800,800], { duration: 3000}); }, function(map) { map.panBy([-800,-800], { animate: false }); });
+Results:

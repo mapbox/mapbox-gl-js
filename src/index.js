@@ -18,6 +18,7 @@ const Point = require('@mapbox/point-geometry');
 const Evented = require('./util/evented');
 const config = require('./util/config');
 const rtlTextPlugin = require('./source/rtl_text_plugin');
+const AnimationBenchmarker = require('./util/animation_benchmarker');
 
 module.exports = {
     version,
@@ -40,6 +41,7 @@ module.exports = {
     Point,
     Evented,
     config,
+    AnimationBenchmarker,
 
     /**
      * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
