@@ -2222,11 +2222,11 @@
         "group": "Math"
       },
       "==": {
-        "doc": "Returns `true` if the input values are equal, `false` otherwise. The inputs must be numbers, strings, or booleans, and both of the same type.",
+        "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision"
       },
       "!=": {
-        "doc": "Returns `true` if the input values are not equal, `false` otherwise. The inputs must be numbers, strings, or booleans, and both of the same type.",
+        "doc": "Returns `true` if the input values are not equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision"
       },
       ">": {
