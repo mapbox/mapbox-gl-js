@@ -10,7 +10,8 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters
+    TileParameters,
+    PerformanceResourceTiming
 } from '../source/worker_source';
 
 import type Actor from '../util/actor';
@@ -22,6 +23,7 @@ export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
     expires?: any;
     cacheControl?: any;
+    resourceTiming?: Array<PerformanceResourceTiming>;
 };
 
 /**
@@ -111,13 +113,19 @@ class VectorTileWorkerSource implements WorkerSource {
             const cacheControl = {};
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
+            const resourceTiming = {};
+            if (params.collectResourceTiming && performance && performance.getEntriesByName) {
+                // it's necessary to eval the result of getEntriesByName() here via parse/stringify
+                // late evaluation in the main thread causes TypeError: illegal invocation
+                resourceTiming.resourceTiming = JSON.parse(JSON.stringify(performance.getEntriesByName(params.request.url)));
+            }
 
             workerTile.vectorTile = response.vectorTile;
             workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result) => {
                 if (err || !result) return callback(err);
 
                 // Transferring a copy of rawTileData because the worker needs to retain its copy.
-                callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl));
+                callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
             });
 
             this.loaded[source] = this.loaded[source] || {};

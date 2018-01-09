@@ -272,6 +272,7 @@ class Map extends Camera {
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
         this._crossFadingFactor = 1;
+        this._collectResourceTiming = options.collectResourceTiming;
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });

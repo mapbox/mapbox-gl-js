@@ -101,7 +101,8 @@ class VectorTileSource extends Evented implements Source {
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             overscaling: overscaling,
-            showCollisionBoxes: this.map.showCollisionBoxes
+            showCollisionBoxes: this.map.showCollisionBoxes,
+            collectResourceTiming: this._options.collectResourceTiming
         };
 
         if (tile.workerID === undefined || tile.state === 'expired') {
@@ -120,6 +121,9 @@ class VectorTileSource extends Evented implements Source {
             if (err) {
                 return callback(err);
             }
+
+            if (data.resourceTiming)
+                tile.resourceTiming = data.resourceTiming;
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);

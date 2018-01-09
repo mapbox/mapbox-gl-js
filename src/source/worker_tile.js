@@ -50,6 +50,7 @@ class WorkerTile {
         this.source = params.source;
         this.overscaling = params.overscaling;
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.collectResourceTiming = params.collectResourceTiming;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
