@@ -36,9 +36,6 @@ class NavigationControl {
 
     constructor(options: any) {
         this.options = util.extend({}, defaultOptions, options);
-        util.bindAll([
-            '_rotateCompassArrow'
-        ], this);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
         this._container.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -48,34 +45,39 @@ class NavigationControl {
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom Out', () => this._map.zoomOut());
         }
         if (this.options.showCompass) {
+            util.bindAll([
+                '_rotateCompassArrow'
+            ], this);
             this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset North', () => this._map.resetNorth());
             this._compassArrow = DOM.create('span', 'mapboxgl-ctrl-compass-arrow', this._compass);
         }
     }
 
     _rotateCompassArrow() {
-        if (this.options.showCompass) {
-            const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
-            this._compassArrow.style.transform = rotate;
-        }
+        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        this._compassArrow.style.transform = rotate;
     }
 
     onAdd(map: Map) {
         this._map = map;
-        this._map.on('rotate', this._rotateCompassArrow);
-        this._rotateCompassArrow();
-        this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
-        this._handler.enable();
+        if (this.options.showCompass) {
+            this._map.on('rotate', this._rotateCompassArrow);
+            this._rotateCompassArrow();
+            this._handler = new DragRotateHandler(map, {button: 'left', element: this._compass});
+            this._handler.enable();
+        }
         return this._container;
     }
 
     onRemove() {
         DOM.remove(this._container);
-        this._map.off('rotate', this._rotateCompassArrow);
-        delete this._map;
+        if (this.options.showCompass) {
+            this._map.off('rotate', this._rotateCompassArrow);
+            this._handler.disable();
+            delete this._handler;
+        }
 
-        this._handler.disable();
-        delete this._handler;
+        delete this._map;
     }
 
     _createButton(className: string, ariaLabel: string, fn: () => mixed) {
