@@ -63,7 +63,10 @@ class PauseablePlacement {
         while (this._currentPlacementIndex >= 0) {
             const layerId = order[this._currentPlacementIndex];
             const layer = layers[layerId];
-            if (layer.type === 'symbol') {
+            const placementZoom = this.placement.collisionIndex.transform.zoom;
+            if (layer.type === 'symbol' &&
+                (!layer.minzoom || layer.minzoom <= placementZoom) &&
+                (!layer.maxzoom || layer.maxzoom >= placementZoom)) {
 
                 if (!this._inProgressLayer) {
                     this._inProgressLayer = new LayerPlacement();
