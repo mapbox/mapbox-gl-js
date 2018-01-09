@@ -88,6 +88,7 @@ class Context {
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
+    timerQueryExt: any;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;

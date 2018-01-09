@@ -409,8 +409,8 @@ class Painter {
         this.id = layer.id;
 
         const ext = this.context.timerQueryExt;
-        let renderLayerStart;
-        let layerTimer;
+        let renderLayerStart = 0;
+        let layerTimer = {};
         if (gpuTiming === 'layer') {
             // This tries to time the draw call itself, but note that the cost for drawing a layer
             // may be dominated by the cost of uploading vertices to the GPU.

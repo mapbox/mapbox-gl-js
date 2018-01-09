@@ -235,6 +235,7 @@ class Map extends Camera {
     _transformRequest: RequestTransformFunction;
     _maxTileCacheSize: number;
     _frameId: any;
+    _lastFrameId: any;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
@@ -248,6 +249,8 @@ class Map extends Camera {
     _fadeDuration: number;
     _crossFadingFactor: number;
     _gpuTiming: GPUTiming;
+    _render: () => Map;
+    _renderInternal: () => Map;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -1482,6 +1485,8 @@ class Map extends Camera {
                 gpuTime: renderGPUTime
             });
         }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
+
+        return this;
     }
 
     _layerTimedRender() {
@@ -1503,6 +1508,8 @@ class Map extends Camera {
                 layerTimes: renderedLayerTimes
             });
         }, 50); // Wait 50ms to give time for all GPU calls to finish before querying
+
+        return this;
     }
 
     /**
