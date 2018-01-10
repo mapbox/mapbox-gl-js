@@ -31,6 +31,10 @@ export type LoadGeoJSONParameters = {
     geojsonVtOptions?: Object
 };
 
+export type CoalesceParameters = {
+    source: string
+};
+
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<mixed>) => void;
 
 export interface GeoJSONIndex {
@@ -84,8 +88,8 @@ export type SourceState =
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
     _geoJSONIndexes: { [string]: GeoJSONIndex };
     loadGeoJSON: LoadGeoJSON;
-    state: SourceState;
-    pendingCallback: Callback<void>;
+    sourceStates: { [string]: SourceState };
+    pendingCallback: Callback<boolean>;
     pendingLoadDataParams: LoadGeoJSONParameters;
 
     /**
@@ -100,7 +104,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         }
         // object mapping source ids to geojson-vt-like tile indexes
         this._geoJSONIndexes = {};
-        this.state = 'Idle';
+        this.sourceStates = {};
     }
 
     /**
@@ -120,13 +124,19 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param params.source The id of the source.
      * @param callback
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<void>) {
+    loadData(params: LoadGeoJSONParameters, callback: Callback<boolean>) {
+        if (this.pendingCallback) {
+            // Tell the foreground the previous call has been abandoned
+            this.pendingCallback(null, true);
+        }
         this.pendingCallback = callback;
         this.pendingLoadDataParams = params;
-        if (this.state !== 'Idle') {
-            this.state = 'NeedsLoadData';
+
+        if (this.sourceStates[params.source] &&
+            this.sourceStates[params.source] !== 'Idle') {
+            this.sourceStates[params.source] = 'NeedsLoadData';
         } else {
-            this.state = 'Coalescing';
+            this.sourceStates[params.source] = 'Coalescing';
             this._loadData();
         }
     }
@@ -182,11 +192,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      *          |          ↓
      *        State: NeedsLoadData
      */
-    coalesce() {
-        if (this.state === 'Coalescing') {
-            this.state = 'Idle';
-        } else if (this.state === 'NeedsLoadData') {
-            this.state = 'Coalescing';
+    coalesce(params: CoalesceParameters) {
+        if (this.sourceStates[params.source] === 'Coalescing') {
+            this.sourceStates[params.source] = 'Idle';
+        } else if (this.sourceStates[params.source] === 'NeedsLoadData') {
+            this.sourceStates[params.source] = 'Coalescing';
             this._loadData();
         }
     }
