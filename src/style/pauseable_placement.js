@@ -66,7 +66,7 @@ class PauseablePlacement {
             const placementZoom = this.placement.collisionIndex.transform.zoom;
             if (layer.type === 'symbol' &&
                 (!layer.minzoom || layer.minzoom <= placementZoom) &&
-                (!layer.maxzoom || layer.maxzoom >= placementZoom)) {
+                (!layer.maxzoom || layer.maxzoom > placementZoom)) {
 
                 if (!this._inProgressLayer) {
                     this._inProgressLayer = new LayerPlacement();
