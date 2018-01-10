@@ -30,7 +30,6 @@
     "gray-matter": "^3.0.8",
     "grid-index": "^1.0.0",
     "jsonlint-lines-primitives": "~1.6.0",
-    "lodash.isequal": "^3.0.4",
     "minimist": "0.0.8",
     "package-json-versionify": "^1.0.2",
     "pbf": "^3.0.5",
