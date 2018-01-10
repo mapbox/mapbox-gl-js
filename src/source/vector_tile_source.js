@@ -15,17 +15,6 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 
-declare type VectorSourceSpecification = {
-    type: "vector",
-    url?: string,
-    tiles?: Array<string>,
-    bounds?: [number, number, number, number],
-    minzoom?: number,
-    maxzoom?: number,
-    attribution?: string,
-    collectResourceTiming?: boolean
-};
-
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
     id: string;
@@ -36,6 +25,7 @@ class VectorTileSource extends Evented implements Source {
     tileSize: number;
 
     _options: VectorSourceSpecification;
+    _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
     bounds: ?[number, number, number, number];
@@ -44,7 +34,7 @@ class VectorTileSource extends Evented implements Source {
     reparseOverscaled: boolean;
     isTileClipped: boolean;
 
-    constructor(id: string, options: VectorSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -59,6 +49,8 @@ class VectorTileSource extends Evented implements Source {
 
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
         this._options = util.extend({ type: 'vector' }, options);
+
+        this._collectResourceTiming = options.collectResourceTiming;
 
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
@@ -113,8 +105,8 @@ class VectorTileSource extends Evented implements Source {
             pixelRatio: browser.devicePixelRatio,
             overscaling: overscaling,
             showCollisionBoxes: this.map.showCollisionBoxes,
-            collectResourceTiming: this._options.collectResourceTiming
         };
+        params.request.collectResourceTiming = this._collectResourceTiming;
 
         if (tile.workerID === undefined || tile.state === 'expired') {
             tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
@@ -133,7 +125,7 @@ class VectorTileSource extends Evented implements Source {
                 return callback(err);
             }
 
-            if (data.resourceTiming)
+            if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData(data);

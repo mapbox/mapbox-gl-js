@@ -14,7 +14,6 @@ import type {
 } from '../source/worker_source';
 
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
-
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {Callback} from '../types/callback';
@@ -115,7 +114,7 @@ class VectorTileWorkerSource implements WorkerSource {
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
             const resourceTiming = {};
-            if (params.collectResourceTiming && performance && performance.getEntriesByName) {
+            if (params.request.collectResourceTiming && performance && performance.getEntriesByName) {
                 // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                 // late evaluation in the main thread causes TypeError: illegal invocation
                 resourceTiming.resourceTiming = JSON.parse(JSON.stringify(performance.getEntriesByName(params.request.url)));
