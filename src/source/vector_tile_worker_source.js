@@ -114,7 +114,7 @@ class VectorTileWorkerSource implements WorkerSource {
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
             const resourceTiming = {};
-            if (params.request.collectResourceTiming && performance && performance.getEntriesByName) {
+            if (params.request && params.request.collectResourceTiming && performance && performance.getEntriesByName) {
                 // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                 // late evaluation in the main thread causes TypeError: illegal invocation
                 resourceTiming.resourceTiming = JSON.parse(JSON.stringify(performance.getEntriesByName(params.request.url)));
