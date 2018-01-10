@@ -540,13 +540,13 @@
       "type": "number",
       "minimum": 0,
       "maximum": 24,
-      "doc": "The minimum zoom level on which the layer gets parsed and appears on."
+      "doc": "The minimum zoom level for the layer. At zoom levels less than the minzoom, the layer will be hidden."
     },
     "maxzoom": {
       "type": "number",
       "minimum": 0,
       "maximum": 24,
-      "doc": "The maximum zoom level on which the layer gets parsed and appears on."
+      "doc": "The maximum zoom level for the layer. At zoom levels equal to or greater than the maxzoom, the layer will be hidden."
     },
     "filter": {
       "type": "filter",
