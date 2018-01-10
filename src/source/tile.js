@@ -38,6 +38,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
+import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -94,6 +95,7 @@ class Tile {
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     justReloaded: boolean;
+    resourceTiming: ?Array<PerformanceResourceTiming>;
 
     /**
      * @param {OverscaledTileID} tileID

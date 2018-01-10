@@ -10,9 +10,10 @@ import type {
     WorkerSource,
     WorkerTileParameters,
     WorkerTileCallback,
-    TileParameters,
-    PerformanceResourceTiming
+    TileParameters
 } from '../source/worker_source';
+
+import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';

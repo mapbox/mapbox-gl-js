@@ -15,6 +15,17 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 
+declare type VectorSourceSpecification = {
+    type: "vector",
+    url?: string,
+    tiles?: Array<string>,
+    bounds?: [number, number, number, number],
+    minzoom?: number,
+    maxzoom?: number,
+    attribution?: string,
+    collectResourceTiming?: boolean
+};
+
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
     id: string;

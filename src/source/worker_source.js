@@ -23,7 +23,7 @@ export type WorkerTileParameters = TileParameters & {
     pixelRatio: number,
     overscaling: number,
     showCollisionBoxes: boolean,
-    collectResourceTiming: boolean
+    collectResourceTiming?: boolean
 };
 
 export type WorkerDEMTileParameters = TileParameters & {

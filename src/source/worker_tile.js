@@ -32,6 +32,7 @@ class WorkerTile {
     source: string;
     overscaling: number;
     showCollisionBoxes: boolean;
+    collectResourceTiming: boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -50,7 +51,7 @@ class WorkerTile {
         this.source = params.source;
         this.overscaling = params.overscaling;
         this.showCollisionBoxes = params.showCollisionBoxes;
-        this.collectResourceTiming = params.collectResourceTiming;
+        this.collectResourceTiming = !!params.collectResourceTiming;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
