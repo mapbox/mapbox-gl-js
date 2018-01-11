@@ -944,7 +944,7 @@ class Camera extends Evented {
         }
 
         this._prevEase = {
-            start: (new Date()).getTime(),
+            start: browser.now(),
             duration: duration,
             easing: easing
         };
