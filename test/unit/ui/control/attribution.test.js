@@ -86,19 +86,15 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     map.addControl(attribution);
 
     map.on('load', () => {
+        map.on('styledata', () => {
+            t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
+            t.end();
+        });
         map.addSource('1', { type: 'vector', attribution: 'World' });
         map.addSource('2', { type: 'vector', attribution: 'Hello World' });
         map.addSource('3', { type: 'vector', attribution: 'Another Source' });
         map.addSource('4', { type: 'vector', attribution: 'Hello' });
         map.addSource('5', { type: 'vector', attribution: 'Hello World' });
-    });
-
-    let times = 0;
-    map.on('styledata', () => {
-        if (++times === 2) {
-            t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
-            t.end();
-        }
     });
 });
 
@@ -108,18 +104,16 @@ test('AttributionControl is removed when source is removed', (t) => {
     map.addControl(attribution);
 
     map.on('load', () => {
+        map.on('styledata', () => {
+            t.equal(attribution._container.innerHTML, 'Hello World');
+            t.end();
+        });
         map.addSource('1', { type: 'vector', attribution: 'Hello World' });
         map.addSource('2', { type: 'vector', attribution: 'Another Source' });
         map.removeSource('2');
+
     });
 
-    let times = 0;
-    map.on('styledata', () => {
-        if (++times === 2) {
-            t.equal(attribution._container.innerHTML, 'Hello World');
-            t.end();
-        }
-    });
 });
 
 test('AttributionControl has the correct edit map link', (t) => {

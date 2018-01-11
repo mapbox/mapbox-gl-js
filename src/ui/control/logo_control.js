@@ -33,12 +33,14 @@ class LogoControl {
         this._container.style.display = 'none';
 
         this._map.on('styledata', this._updateLogo);
+        this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
         return this._container;
     }
 
     onRemove() {
         DOM.remove(this._container);
+        this._map.off('styledata', this._updateLogo);
         this._map.off('sourcedata', this._updateLogo);
     }
 
@@ -46,8 +48,8 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo() {
-        this._container.style.display = this._logoRequired() ? 'block' : 'none';
+    _updateLogo(e) {
+        if (e && (e.type === 'styledata' || e.sourceDataType === "metadata")) this._container.style.display = this._logoRequired() ? 'block' : 'none';
     }
 
     _logoRequired() {
