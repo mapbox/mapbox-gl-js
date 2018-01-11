@@ -91,16 +91,33 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
         map.addSource('3', { type: 'vector', attribution: 'Another Source' });
         map.addSource('4', { type: 'vector', attribution: 'Hello' });
         map.addSource('5', { type: 'vector', attribution: 'Hello World' });
-
     });
 
     let times = 0;
-    map.on('data', (e) => {
-        if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-            if (++times === 5) {
-                t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
-                t.end();
-            }
+    map.on('styledata', () => {
+        if (++times === 2) {
+            t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
+            t.end();
+        }
+    });
+});
+
+test('AttributionControl is removed when source is removed', (t) => {
+    const map = createMap();
+    const attribution = new AttributionControl();
+    map.addControl(attribution);
+
+    map.on('load', () => {
+        map.addSource('1', { type: 'vector', attribution: 'Hello World' });
+        map.addSource('2', { type: 'vector', attribution: 'Another Source' });
+        map.removeSource('2');
+    });
+
+    let times = 0;
+    map.on('styledata', () => {
+        if (++times === 2) {
+            t.equal(attribution._container.innerHTML, 'Hello World');
+            t.end();
         }
     });
 });
@@ -111,13 +128,11 @@ test('AttributionControl has the correct edit map link', (t) => {
     map.addControl(attribution);
     map.on('load', () => {
         map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/feedback/" target="_blank">Improve this map</a>'});
-        map.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
-                map.setZoom(2);
-                t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2', 'edit link updates on mapmove');
-                t.end();
-            }
+        map.on('styledata', () => {
+            t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
+            map.setZoom(2);
+            t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2', 'edit link updates on mapmove');
+            t.end();
         });
     });
 });

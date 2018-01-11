@@ -33,7 +33,6 @@ class LogoControl {
         this._container.style.display = 'none';
 
         this._map.on('styledata', this._updateLogo);
-        this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
         return this._container;
     }

@@ -53,7 +53,7 @@ class AttributionControl {
         this._updateAttributions();
         this._updateEditLink();
 
-        this._map.on('sourcedata', this._updateData);
+        this._map.on('styledata', this._updateData);
         this._map.on('moveend', this._updateEditLink);
 
         if (compact === undefined) {
@@ -97,15 +97,13 @@ class AttributionControl {
         }
     }
 
-    _updateData(e: any) {
-        if (e && e.sourceDataType === 'metadata') {
-            this._updateAttributions();
-            this._updateEditLink();
-        }
+    _updateData() {
+        this._updateAttributions();
+        this._updateEditLink();
     }
 
     _updateAttributions() {
-        if (!this._map.style) return;
+        if (!this._map || !this._map.style) return;
         let attributions: Array<string> = [];
 
         if (this._map.style.stylesheet) {
