@@ -54,7 +54,7 @@ test('LogoControl is shown when a source with the mapbox_logo property is added'
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
             mapbox_logo: true // eslint-disable-line
         });
-        map.once('sourcedata', () => {
+        map.once('styledata', () => {
             t.equal(map.getContainer().querySelector('.mapboxgl-ctrl-logo').parentNode.style.display, 'block');
             t.end();
         });
