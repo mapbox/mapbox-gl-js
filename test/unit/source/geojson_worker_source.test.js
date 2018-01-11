@@ -217,5 +217,34 @@ test('loadData', (t) => {
         });
     });
 
+    t.test('does not mix stored callbacks between sources', (t) => {
+        // Two loadData calls per source means no calls should
+        // be abandoned.
+        const worker = createWorker();
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            worker.coalesce({ source: 'source1' });
+        });
+
+        worker.loadData({ source: 'source2', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            worker.coalesce({ source: 'source2' });
+        });
+
+        worker.loadData({ source: 'source2', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            // test ends here because source2 has the last coalesce call
+            t.end();
+        });
+
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+        });
+    });
+
     t.end();
 });

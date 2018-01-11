@@ -6,6 +6,7 @@ const GeoJSONWrapper = require('./geojson_wrapper');
 const vtpbf = require('vt-pbf');
 const supercluster = require('supercluster');
 const geojsonvt = require('geojson-vt');
+const assert = require('assert');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
 
@@ -44,11 +45,11 @@ function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataC
     const source = params.source,
         canonical = params.tileID.canonical;
 
-    if (!this._geoJSONIndexes[source]) {
+    if (!this._sources[source] || !this._sources[source].geoJSONIndex) {
         return callback(null, null);  // we couldn't load the file
     }
 
-    const geoJSONTile = this._geoJSONIndexes[source].getTile(canonical.z, canonical.x, canonical.y);
+    const geoJSONTile = this._sources[source].geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
     if (!geoJSONTile) {
         return callback(null, null); // nothing in the given tile
     }
@@ -86,11 +87,13 @@ export type SourceState =
  * @private
  */
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
-    _geoJSONIndexes: { [string]: GeoJSONIndex };
     loadGeoJSON: LoadGeoJSON;
-    sourceStates: { [string]: SourceState };
-    pendingCallback: Callback<boolean>;
-    pendingLoadDataParams: LoadGeoJSONParameters;
+    _sources: { [string]: {
+        state?: SourceState,
+        pendingCallback?: Callback<boolean>,
+        pendingLoadDataParams?: LoadGeoJSONParameters,
+        geoJSONIndex?: GeoJSONIndex // object mapping source ids to geojson-vt-like tile indexes
+    }};
 
     /**
      * @param [loadGeoJSON] Optional method for custom loading/parsing of
@@ -102,9 +105,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
         }
-        // object mapping source ids to geojson-vt-like tile indexes
-        this._geoJSONIndexes = {};
-        this.sourceStates = {};
+        this._sources = {};
     }
 
     /**
@@ -125,19 +126,24 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param callback
      */
     loadData(params: LoadGeoJSONParameters, callback: Callback<boolean>) {
-        if (this.pendingCallback) {
-            // Tell the foreground the previous call has been abandoned
-            this.pendingCallback(null, true);
+        if (!this._sources[params.source]) {
+            this._sources[params.source] = {};
         }
-        this.pendingCallback = callback;
-        this.pendingLoadDataParams = params;
+        const source = this._sources[params.source];
 
-        if (this.sourceStates[params.source] &&
-            this.sourceStates[params.source] !== 'Idle') {
-            this.sourceStates[params.source] = 'NeedsLoadData';
+        if (source.pendingCallback) {
+            // Tell the foreground the previous call has been abandoned
+            source.pendingCallback(null, true);
+        }
+        source.pendingCallback = callback;
+        source.pendingLoadDataParams = params;
+
+        if (source.state &&
+            source.state !== 'Idle') {
+            source.state = 'NeedsLoadData';
         } else {
-            this.sourceStates[params.source] = 'Coalescing';
-            this._loadData();
+            source.state = 'Coalescing';
+            this._loadData(params.source);
         }
     }
 
@@ -145,11 +151,16 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * Internal implementation: called directly by `loadData`
      * or by `coalesce` using stored parameters.
      */
-    _loadData() {
-        const callback = this.pendingCallback;
-        const params = this.pendingLoadDataParams;
-        delete this.pendingCallback;
-        delete this.pendingLoadDataParams;
+    _loadData(sourceId: string) {
+        const source = this._sources[sourceId];
+        if (!source.pendingCallback || !source.pendingLoadDataParams) {
+            assert(false);
+            return;
+        }
+        const callback = source.pendingCallback;
+        const params = source.pendingLoadDataParams;
+        delete source.pendingCallback;
+        delete source.pendingLoadDataParams;
         this.loadGeoJSON(params, (err, data) => {
             if (err || !data) {
                 return callback(err);
@@ -159,7 +170,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 rewind(data, true);
 
                 try {
-                    this._geoJSONIndexes[params.source] = params.cluster ?
+                    source.geoJSONIndex = params.cluster ?
                         supercluster(params.superclusterOptions).load(data.features) :
                         geojsonvt(data, params.geojsonVtOptions);
                 } catch (err) {
@@ -193,11 +204,15 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      *        State: NeedsLoadData
      */
     coalesce(params: CoalesceParameters) {
-        if (this.sourceStates[params.source] === 'Coalescing') {
-            this.sourceStates[params.source] = 'Idle';
-        } else if (this.sourceStates[params.source] === 'NeedsLoadData') {
-            this.sourceStates[params.source] = 'Coalescing';
-            this._loadData();
+        const source = this._sources[params.source];
+        if (!source) {
+            return; // coalesce queued after removeSource
+        }
+        if (source.state === 'Coalescing') {
+            source.state = 'Idle';
+        } else if (source.state === 'NeedsLoadData') {
+            source.state = 'Coalescing';
+            this._loadData(params.source);
         }
     }
 
@@ -252,8 +267,13 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     removeSource(params: {source: string}, callback: Callback<mixed>) {
-        if (this._geoJSONIndexes[params.source]) {
-            delete this._geoJSONIndexes[params.source];
+        const removedSource = this._sources[params.source];
+        if (removedSource) {
+            if (removedSource.pendingCallback) {
+                // Don't leak callbacks
+                removedSource.pendingCallback(null, true);
+            }
+            delete this._sources[params.source];
         }
         callback();
     }
