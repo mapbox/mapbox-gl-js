@@ -5,6 +5,7 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
+const perf = require('../util/performance');
 
 import type {
     WorkerSource,
@@ -114,10 +115,12 @@ class VectorTileWorkerSource implements WorkerSource {
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
             const resourceTiming = {};
-            if (params.request && params.request.collectResourceTiming && performance && performance.getEntriesByName) {
+            if (params.request && params.request.collectResourceTiming) {
+                const resourceTimingData = perf.getEntriesByName(params.request.url);
                 // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                 // late evaluation in the main thread causes TypeError: illegal invocation
-                resourceTiming.resourceTiming = JSON.parse(JSON.stringify(performance.getEntriesByName(params.request.url)));
+                if (resourceTimingData)
+                    resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
             }
 
             workerTile.vectorTile = response.vectorTile;
