@@ -99,7 +99,7 @@ class AttributionControl {
         }
     }
 
-    _updateData(e) {
+    _updateData(e: ?Object) {
         if (e && (e.type === "styledata" || e.sourceDataType === "metadata")) {
             this._updateAttributions();
             this._updateEditLink();

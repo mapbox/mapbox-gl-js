@@ -48,7 +48,7 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo(e) {
+    _updateLogo(e: ?Object) {
         if (e && (e.type === 'styledata' || e.sourceDataType === "metadata")) this._container.style.display = this._logoRequired() ? 'block' : 'none';
     }
 
