@@ -7,9 +7,6 @@ var map = new mapboxgl.Map({
     zoom: 16
 });
 
-var red = '#F7455D';
-var blue = '#33C9EB';
-
 map.on('load', function() {
     map.addLayer({
         'id': 'lines',
@@ -21,7 +18,7 @@ map.on('load', function() {
                 'features': [{
                     'type': 'Feature',
                     'properties': {
-                        'color': red,
+                        'color': '#F7455D' // red
                     },
                     'geometry': {
                         'type': 'LineString',
@@ -39,7 +36,7 @@ map.on('load', function() {
                 }, {
                     'type': 'Feature',
                     'properties': {
-                        'color': blue
+                        'color': '#33C9EB' // blue
                     },
                     'geometry': {
                         'type': 'LineString',
@@ -73,14 +70,11 @@ map.on('load', function() {
                 }]
             }
         },
-        // The identity function does not take a 'stops' property.
-        // Instead, the property value (in this case, 'color') on the source will be the direct output.
         'paint': {
             'line-width': 3,
-            'line-color': {
-                'type': 'identity',
-                'property': 'color'
-            }
+            // Use a get expression (https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions-get)
+            // to set the line-color to a feature property value.
+            'line-color': ['get', 'color']
         }
     });
 });
