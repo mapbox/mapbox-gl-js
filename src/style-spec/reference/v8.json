@@ -2302,7 +2302,7 @@
       "default": [1.15, 210, 30],
       "length": 3,
       "value": "number",
-      "transition": false,
+      "transition": true,
       "function": "interpolated",
       "zoom-function": true,
       "property-function": false,
