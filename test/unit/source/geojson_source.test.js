@@ -6,6 +6,7 @@ const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID
 const GeoJSONSource = require('../../../src/source/geojson_source');
 const Transform = require('../../../src/geo/transform');
 const LngLat = require('../../../src/geo/lng_lat');
+const util = require('../../../src/util/util');
 
 const mockDispatcher = {
     send: function () {}
