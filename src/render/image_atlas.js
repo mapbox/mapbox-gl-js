@@ -17,37 +17,32 @@ type Rect = {
 };
 
 class ImagePosition {
-    textureRect: Rect;
+    paddedRect: Rect;
     pixelRatio: number;
 
-    constructor(rect: Rect, {pixelRatio}: StyleImage) {
-        this.textureRect = {
-            x: rect.x + padding,
-            y: rect.y + padding,
-            w: rect.w - padding * 2,
-            h: rect.h - padding * 2
-        };
+    constructor(paddedRect: Rect, {pixelRatio}: StyleImage) {
+        this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
     }
 
     get tl(): [number, number] {
         return [
-            this.textureRect.x,
-            this.textureRect.y
+            this.paddedRect.x + padding,
+            this.paddedRect.y + padding
         ];
     }
 
     get br(): [number, number] {
         return [
-            this.textureRect.x + this.textureRect.w,
-            this.textureRect.y + this.textureRect.h
+            this.paddedRect.x + this.paddedRect.w - padding,
+            this.paddedRect.y + this.paddedRect.h - padding
         ];
     }
 
     get displaySize(): [number, number] {
         return [
-            this.textureRect.w / this.pixelRatio,
-            this.textureRect.h / this.pixelRatio
+            (this.paddedRect.w - padding * 2) / this.pixelRatio,
+            (this.paddedRect.h - padding * 2) / this.pixelRatio
         ];
     }
 }

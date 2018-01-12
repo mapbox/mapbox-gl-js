@@ -116,14 +116,7 @@ function getIconQuads(anchor: Anchor,
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    const textureRect = {
-        x: image.textureRect.x - border,
-        y: image.textureRect.y - border,
-        w: image.textureRect.w + border * 2,
-        h: image.textureRect.h + border * 2
-    };
-
-    return [{tl, tr, bl, br, tex: textureRect, writingMode: undefined, glyphOffset: [0, 0]}];
+    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0]}];
 }
 
 /**
