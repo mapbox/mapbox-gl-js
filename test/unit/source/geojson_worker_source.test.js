@@ -86,7 +86,7 @@ test('reloadTile', (t) => {
 
         function addData(callback) {
             source.loadData({ source: 'sourceId', data: JSON.stringify(geoJson) }, (err) => {
-                source.coalesce();
+                source.coalesce({ source: 'sourceId' });
                 t.equal(err, null);
                 callback();
             });
@@ -127,6 +127,122 @@ test('reloadTile', (t) => {
                 t.equal(loadVectorCallCount, 2);
                 t.end();
             });
+        });
+    });
+
+    t.end();
+});
+
+
+test('loadData', (t) => {
+    const layers = [
+        {
+            id: 'layer1',
+            source: 'source1',
+            type: 'symbol',
+        },
+        {
+            id: 'layer2',
+            source: 'source2',
+            type: 'symbol',
+        }
+    ];
+
+    const geoJson = {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [0, 0]
+        }
+    };
+
+    const layerIndex = new StyleLayerIndex(layers);
+    function createWorker() {
+        const worker = new GeoJSONWorkerSource(null, layerIndex);
+
+        // Making the call to loadGeoJSON to asynchronous
+        // allows these tests to mimic a message queue building up
+        // (regardless of timing)
+        const originalLoadGeoJSON = worker.loadGeoJSON;
+        worker.loadGeoJSON = function(params, callback) {
+            setTimeout(() => {
+                originalLoadGeoJSON(params, callback);
+            }, 0);
+        };
+        return worker;
+    }
+
+    t.test('abandons coalesced callbacks', (t) => {
+        // Expect first call to run, second to be abandoned,
+        // and third to run in response to coalesce
+        const worker = createWorker();
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            worker.coalesce({ source: 'source1' });
+        });
+
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.ok(abandoned);
+        });
+
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            t.end();
+        });
+    });
+
+    t.test('does not mix coalesce state between sources', (t) => {
+        // Expect first and second calls to run independently,
+        // and third call should run in response to coalesce
+        // from first call.
+        const worker = createWorker();
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            worker.coalesce({ source: 'source1' });
+        });
+
+        worker.loadData({ source: 'source2', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+        });
+
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            t.end();
+        });
+    });
+
+    t.test('does not mix stored callbacks between sources', (t) => {
+        // Two loadData calls per source means no calls should
+        // be abandoned.
+        const worker = createWorker();
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            worker.coalesce({ source: 'source1' });
+        });
+
+        worker.loadData({ source: 'source2', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            worker.coalesce({ source: 'source2' });
+        });
+
+        worker.loadData({ source: 'source2', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
+            // test ends here because source2 has the last coalesce call
+            t.end();
+        });
+
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+            t.equal(err, null);
+            t.notOk(abandoned);
         });
     });
 
