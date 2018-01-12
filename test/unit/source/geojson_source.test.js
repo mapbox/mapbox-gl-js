@@ -46,8 +46,10 @@ const hawkHill = {
 };
 
 test('GeoJSONSource#setData', (t) => {
-    function createSource() {
-        return new GeoJSONSource('id', {data: {}}, {
+    function createSource(opts) {
+        opts = opts || {};
+        opts = util.extend(opts, { data: {} });
+        return new GeoJSONSource('id', opts, {
             send: function (type, data, callback) {
                 if (callback) {
                     return setTimeout(callback, 0);
@@ -75,6 +77,22 @@ test('GeoJSONSource#setData', (t) => {
         const source = createSource();
         source.on('dataloading', t.end);
         source.load();
+    });
+
+    t.test('respects collectResourceTiming parameter on source', (t) => {
+        const source = createSource({ collectResourceTiming: true });
+        source.map = {
+            _transformRequest: (data) => { return { url: data }; }
+        };
+        source.dispatcher.send = function(type, params, cb) {
+            if (type === 'geojson.loadData') {
+                t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+                setTimeout(cb, 0);
+                t.end();
+            }
+            return 1;
+        };
+        source.setData('http://localhost/nonexistent');
     });
 
     t.end();
