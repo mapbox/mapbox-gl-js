@@ -67,18 +67,18 @@
     padding: 0;
     outline: none;
     border: none;
-    border-bottom: 1px solid #ddd;
     box-sizing: border-box;
     background-color: rgba(0,0,0,0);
     cursor: pointer;
+}
+
+.mapboxgl-ctrl-group > button + button {
+    border-top: 1px solid #ddd;
 }
 /* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
 .mapboxgl-ctrl > button::-moz-focus-inner {
     border: 0;
     padding: 0;
-}
-.mapboxgl-ctrl > button:last-child {
-    border-bottom: 0;
 }
 .mapboxgl-ctrl > button:hover {
     background-color: rgba(0,0,0,0.05);

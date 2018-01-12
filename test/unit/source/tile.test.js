@@ -8,8 +8,6 @@ const fs = require('fs');
 const path = require('path');
 const vtpbf = require('vt-pbf');
 const FeatureIndex = require('../../../src/data/feature_index');
-const CollisionIndex = require('../../../src/symbol/collision_index');
-const Transform = require('../../../src/geo/transform');
 const {CollisionBoxArray} = require('../../../src/data/array_types');
 const util = require('../../../src/util/util');
 const Context = require('../../../src/gl/context');
@@ -217,32 +215,6 @@ test('Tile#isLessThan', (t)=>{
         ]);
         t.end();
     });
-    t.end();
-});
-
-test('Tile#placeLayer', (t) => {
-    test('placeLayer on an empty tile', (t) => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        tile.loadVectorData(null, createPainter());
-
-        t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
-        t.end();
-    });
-
-    test('placeLayer on a loading tile', (t) => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        t.doesNotThrow(() => tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'}));
-        t.end();
-    });
-
-    test('placeLayer on a reloading tile', (t) => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        tile.loadVectorData(createVectorData(), createPainter());
-
-        tile.placeLayer(false, new CollisionIndex(new Transform()), {id: 'layer'});
-        t.end();
-    });
-
     t.end();
 });
 

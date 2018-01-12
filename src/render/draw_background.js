@@ -1,9 +1,6 @@
 // @flow
 
 const pattern = require('./pattern');
-const {ProgramConfiguration} = require('../data/program_configuration');
-const {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} = require('../style/properties');
-const fillLayerPaintProperties = require('../style/style_layer/fill_style_layer_properties').paint;
 const StencilMode = require('../gl/stencil_mode');
 const DepthMode = require('../gl/depth_mode');
 
@@ -24,7 +21,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const transform = painter.transform;
     const tileSize = transform.tileSize;
     const image = layer.paint.get('background-pattern');
-    const globals = {zoom: transform.zoom};
 
     const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;
@@ -33,28 +29,19 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     context.setDepthMode(painter.depthModeForSublayer(0, pass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly));
     context.setColorMode(painter.colorModeForRenderPass());
 
-    const properties = new PossiblyEvaluated(fillLayerPaintProperties);
-
-    (properties._values: any)['background-color'] = new PossiblyEvaluatedPropertyValue(
-        fillLayerPaintProperties.properties['fill-color'], {kind: 'constant', value: color}, globals);
-    (properties._values: any)['background-opacity'] = new PossiblyEvaluatedPropertyValue(
-        fillLayerPaintProperties.properties['fill-opacity'], {kind: 'constant', value: opacity}, globals);
-
     let program;
     if (image) {
         if (pattern.isPatternMissing(image, painter)) return;
-        const configuration = ProgramConfiguration.forBackgroundPattern(opacity);
-        program = painter.useProgram('fillPattern', configuration);
-        configuration.setUniforms(context, program, properties, globals);
+        program = painter.useProgram('backgroundPattern');
         pattern.prepare(image, painter, program);
         painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer, []);
     } else {
-        const configuration = ProgramConfiguration.forBackgroundColor(color, opacity);
-        program = painter.useProgram('fill', configuration);
-        configuration.setUniforms(context, program, properties, globals);
+        program = painter.useProgram('background');
+        gl.uniform4fv(program.uniforms.u_color, [color.r, color.g, color.b, color.a]);
         painter.tileExtentVAO.bind(context, program, painter.tileExtentBuffer, []);
     }
 
+    gl.uniform1f(program.uniforms.u_opacity, opacity);
     const tileIDs = transform.coveringTiles({tileSize});
 
     for (const tileID of tileIDs) {
