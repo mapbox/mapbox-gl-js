@@ -3,6 +3,7 @@
 import ShelfPack from '@mapbox/shelf-pack';
 
 import { RGBAImage } from '../util/image';
+import { register } from '../util/web_worker_transfer';
 
 import type {StyleImage} from '../style/style_image';
 
@@ -15,91 +16,95 @@ type Rect = {
     h: number
 };
 
-export type ImagePosition = {
-    pixelRatio: number,
-    textureRect: Rect,
-    tl: [number, number],
-    br: [number, number],
-    displaySize: [number, number]
-};
+class ImagePosition {
+    textureRect: Rect;
+    pixelRatio: number;
 
-// This wants to be a class, but is sent to workers, so must be a plain JSON blob.
-function imagePosition(rect: Rect, {pixelRatio}: StyleImage): ImagePosition {
-    const textureRect = {
-        x: rect.x + padding,
-        y: rect.y + padding,
-        w: rect.w - padding * 2,
-        h: rect.h - padding * 2
-    };
-    return {
-        pixelRatio,
-        textureRect,
+    constructor(rect: Rect, {pixelRatio}: StyleImage) {
+        this.textureRect = {
+            x: rect.x + padding,
+            y: rect.y + padding,
+            w: rect.w - padding * 2,
+            h: rect.h - padding * 2
+        };
+        this.pixelRatio = pixelRatio;
+    }
 
-        // Redundant calculated members.
-        tl: [
-            textureRect.x,
-            textureRect.y
-        ],
-        br: [
-            textureRect.x + textureRect.w,
-            textureRect.y + textureRect.h
-        ],
-        displaySize: [
-            textureRect.w / pixelRatio,
-            textureRect.h / pixelRatio
-        ]
-    };
+    get tl(): [number, number] {
+        return [
+            this.textureRect.x,
+            this.textureRect.y
+        ];
+    }
+
+    get br(): [number, number] {
+        return [
+            this.textureRect.x + this.textureRect.w,
+            this.textureRect.y + this.textureRect.h
+        ];
+    }
+
+    get displaySize(): [number, number] {
+        return [
+            this.textureRect.w / this.pixelRatio,
+            this.textureRect.h / this.pixelRatio
+        ];
+    }
 }
 
-export type ImageAtlas = {
-    image: RGBAImage,
-    positions: {[string]: ImagePosition}
-};
+class ImageAtlas {
+    image: RGBAImage;
+    positions: {[string]: ImagePosition};
 
-function makeImageAtlas(images: {[string]: StyleImage}): ImageAtlas {
-    const image = new RGBAImage({width: 0, height: 0});
-    const positions = {};
+    constructor(images: {[string]: StyleImage}) {
+        const image = new RGBAImage({width: 0, height: 0});
+        const positions = {};
 
-    const pack = new ShelfPack(0, 0, {autoResize: true});
+        const pack = new ShelfPack(0, 0, {autoResize: true});
 
-    for (const id in images) {
-        const src = images[id];
+        for (const id in images) {
+            const src = images[id];
 
-        const bin = pack.packOne(
-            src.data.width + 2 * padding,
-            src.data.height + 2 * padding);
+            const bin = pack.packOne(
+                src.data.width + 2 * padding,
+                src.data.height + 2 * padding);
 
+            image.resize({
+                width: pack.w,
+                height: pack.h
+            });
+
+            RGBAImage.copy(
+                src.data,
+                image,
+                { x: 0, y: 0 },
+                {
+                    x: bin.x + padding,
+                    y: bin.y + padding
+                },
+                src.data);
+
+            positions[id] = new ImagePosition(bin, src);
+        }
+
+        pack.shrink();
         image.resize({
             width: pack.w,
             height: pack.h
         });
 
-        RGBAImage.copy(
-            src.data,
-            image,
-            { x: 0, y: 0 },
-            {
-                x: bin.x + padding,
-                y: bin.y + padding
-            },
-            src.data);
-
-        positions[id] = imagePosition(bin, src);
+        this.image = image;
+        this.positions = positions;
     }
-
-    pack.shrink();
-    image.resize({
-        width: pack.w,
-        height: pack.h
-    });
-
-    return {image, positions};
 }
 
+register('ImagePosition', ImagePosition);
+register('ImageAtlas', ImageAtlas);
+
 const exported = {
-    imagePosition,
-    makeImageAtlas
+    ImagePosition,
+    ImageAtlas
 };
 
 export default exported;
-export { imagePosition, makeImageAtlas };
+export { ImagePosition, ImageAtlas };
