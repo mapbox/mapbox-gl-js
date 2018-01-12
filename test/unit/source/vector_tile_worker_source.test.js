@@ -106,7 +106,7 @@ test('loadTile', (t) => {
 
         const source = new VectorTileWorkerSource(null, layerIndex, loadVectorData);
 
-        t.stub(perf, 'getEntriesByName').callsFake((url) => { return [ exampleResourceTiming ]; });
+        t.stub(perf, 'getEntriesByName').callsFake(() => { return [ exampleResourceTiming ]; });
 
         source.loadTile({
             source: 'source',
