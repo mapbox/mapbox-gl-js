@@ -86,7 +86,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     _geoJSONIndexes: { [string]: GeoJSONIndex };
     loadGeoJSON: LoadGeoJSON;
     state: SourceState;
-    pendingCallback: Callback<void>;
+    pendingCallback: Callback<{[string]: {[string]: Array<PerformanceResourceTiming>}}>;
     pendingLoadDataParams: LoadGeoJSONParameters;
 
     /**
@@ -121,7 +121,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param params.source The id of the source.
      * @param callback
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<void>) {
+    loadData(params: LoadGeoJSONParameters, callback: Callback<{[string]: {[string]: Array<PerformanceResourceTiming>}}>) {
         this.pendingCallback = callback;
         this.pendingLoadDataParams = params;
         if (this.state !== 'Idle') {

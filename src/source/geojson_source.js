@@ -80,7 +80,7 @@ class GeoJSONSource extends Evented implements Source {
     _collectResourceTiming: boolean;
     _resourceTimings: {[string]: Array<PerformanceResourceTiming>};
 
-    constructor(id: string, options: GeojsonSourceSpecification & { workerOptions?: any } & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: GeojsonSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
 
         this.id = id;
@@ -141,7 +141,9 @@ class GeoJSONSource extends Evented implements Source {
                 return;
             }
 
-            const data = {dataType: 'source', sourceDataType: 'metadata'};
+            const data = {};
+            data.dataType = 'source';
+            data.sourceDataType = 'metadata';
             if (this._collectResourceTiming && this._resourceTimings[this.id]) {
                 data.resourceTiming = this._resourceTimings[this.id];
                 delete this._resourceTimings[this.id];
@@ -172,7 +174,9 @@ class GeoJSONSource extends Evented implements Source {
                 return this.fire('error', { error: err });
             }
 
-            const data = {dataType: 'source', sourceDataType: 'content'};
+            const data = {};
+            data.dataType = 'source';
+            data.sourceDataType = 'content';
             if (this._collectResourceTiming && this._resourceTimings[this.id]) {
                 data.resourceTiming = this._resourceTimings[this.id];
                 delete this._resourceTimings[this.id];
