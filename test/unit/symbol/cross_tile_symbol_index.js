@@ -119,5 +119,37 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.end();
     });
 
+    t.test('does not duplicate ids within one zoom level', (t) => {
+        const index = new CrossTileSymbolIndex();
+
+        const mainID = new OverscaledTileID(6, 0, 6, 8, 8);
+        const mainInstances = [
+            makeSymbolInstance(1000, 1000, ""), // A
+            makeSymbolInstance(1000, 1000, "")  // B
+        ];
+        const mainTile = makeTile(mainID, mainInstances);
+
+        const childID = new OverscaledTileID(7, 0, 7, 16, 16);
+        const childInstances = [
+            makeSymbolInstance(2000, 2000, ""), // A'
+            makeSymbolInstance(2000, 2000, ""), // B'
+            makeSymbolInstance(2000, 2000, "")  // C'
+        ];
+        const childTile = makeTile(childID, childInstances);
+
+        // assigns new ids
+        index.addLayer(styleLayer, [mainTile]);
+        t.equal(mainInstances[0].crossTileID, 1);
+        t.equal(mainInstances[1].crossTileID, 2);
+
+        // copies parent ids without duplicate ids in this tile
+        index.addLayer(styleLayer, [childTile]);
+        t.equal(childInstances[0].crossTileID, 1); // A' copies from A
+        t.equal(childInstances[1].crossTileID, 2); // B' copies from B
+        t.equal(childInstances[2].crossTileID, 3); // C' gets new ID
+
+        t.end();
+    });
+
     t.end();
 });

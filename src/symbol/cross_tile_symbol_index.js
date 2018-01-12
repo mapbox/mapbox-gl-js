@@ -71,7 +71,7 @@ class TileLayerIndex {
         };
     }
 
-    findMatches(symbolInstances: Array<SymbolInstance>, newTileID: OverscaledTileID) {
+    findMatches(symbolInstances: Array<SymbolInstance>, newTileID: OverscaledTileID, zoomCrossTileIDs: {[crossTileID: number]: boolean}) {
         const tolerance = this.tileID.canonical.z < newTileID.canonical.z ? 1 : Math.pow(2, this.tileID.canonical.z - newTileID.canonical.z);
 
         for (const symbolInstance of symbolInstances) {
@@ -92,7 +92,12 @@ class TileLayerIndex {
                 // Return any symbol with the same keys whose coordinates are within 1
                 // grid unit. (with a 4px grid, this covers a 12px by 12px area)
                 if (Math.abs(thisTileSymbol.coord.x - scaledSymbolCoord.x) <= tolerance &&
-                    Math.abs(thisTileSymbol.coord.y - scaledSymbolCoord.y) <= tolerance) {
+                    Math.abs(thisTileSymbol.coord.y - scaledSymbolCoord.y) <= tolerance &&
+                    !zoomCrossTileIDs[thisTileSymbol.crossTileID]) {
+                    // Once we've marked ourselves duplicate against this parent symbol,
+                    // don't let any other symbols at the same zoom level duplicate against
+                    // the same parent (see issue #5993)
+                    zoomCrossTileIDs[thisTileSymbol.crossTileID] = true;
                     symbolInstance.crossTileID = thisTileSymbol.crossTileID;
                     break;
                 }
@@ -113,9 +118,11 @@ class CrossTileIDs {
 
 class CrossTileSymbolLayerIndex {
     indexes: {[zoom: string | number]: {[tileId: string | number]: TileLayerIndex}};
+    usedCrossTileIDs: {[zoom: string | number]: {[crossTileID: number]: boolean}};
 
     constructor() {
         this.indexes = {};
+        this.usedCrossTileIDs = {};
     }
 
     addBucket(tileID: OverscaledTileID, bucket: SymbolBucket, crossTileIDs: CrossTileIDs) {
@@ -129,20 +136,25 @@ class CrossTileSymbolLayerIndex {
             symbolInstance.crossTileID = 0;
         }
 
+        if (!this.usedCrossTileIDs[tileID.overscaledZ]) {
+            this.usedCrossTileIDs[tileID.overscaledZ] = {};
+        }
+        const zoomCrossTileIDs = this.usedCrossTileIDs[tileID.overscaledZ];
+
         for (const zoom in this.indexes) {
             const zoomIndexes = this.indexes[zoom];
             if (Number(zoom) > tileID.overscaledZ) {
                 for (const id in zoomIndexes) {
                     const childIndex = zoomIndexes[id];
                     if (childIndex.tileID.isChildOf(tileID)) {
-                        childIndex.findMatches(bucket.symbolInstances, tileID);
+                        childIndex.findMatches(bucket.symbolInstances, tileID, zoomCrossTileIDs);
                     }
                 }
             } else {
                 const parentCoord = tileID.scaledTo(Number(zoom));
                 const parentIndex = zoomIndexes[parentCoord.key];
                 if (parentIndex) {
-                    parentIndex.findMatches(bucket.symbolInstances, tileID);
+                    parentIndex.findMatches(bucket.symbolInstances, tileID, zoomCrossTileIDs);
                 }
             }
         }
@@ -151,6 +163,7 @@ class CrossTileSymbolLayerIndex {
             if (!symbolInstance.crossTileID) {
                 // symbol did not match any known symbol, assign a new id
                 symbolInstance.crossTileID = crossTileIDs.generate();
+                zoomCrossTileIDs[symbolInstance.crossTileID] = true;
             }
         }
 
@@ -168,6 +181,11 @@ class CrossTileSymbolLayerIndex {
             const zoomIndexes = this.indexes[z];
             for (const tileKey in zoomIndexes) {
                 if (!currentIDs[zoomIndexes[tileKey].bucketInstanceId]) {
+                    for (const key in zoomIndexes[tileKey].indexedSymbolInstances) {
+                        for (const symbolInstance of zoomIndexes[tileKey].indexedSymbolInstances[key]) {
+                            delete this.usedCrossTileIDs[z][symbolInstance.crossTileID];
+                        }
+                    }
                     delete zoomIndexes[tileKey];
                     tilesChanged = true;
                 }
