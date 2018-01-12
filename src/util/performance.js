@@ -4,9 +4,9 @@
 // Not incorporated into browser.js because the latter is poisonous when used outside the main thread
 module.exports = {
     getEntriesByName: (url) => {
-    	if (performance && performance.getEntriesByName)
-    		return performance.getEntriesByName(url);
-    	else
-    		return false;
+        if (performance && performance.getEntriesByName)
+            return performance.getEntriesByName(url);
+        else
+            return false;
     }
 };
