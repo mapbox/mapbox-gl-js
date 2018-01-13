@@ -2,13 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 256,
+      "width": 64,
+      "height": 64,
       "description": "Tests that light transitions correctly by checking the rendering halfway through the (default 300ms long) transition",
       "operations": [
         [
           "setLight",
           {
-            "position":[1.15, 0, 30],
+            "position": [1.15, 0, 30],
             "intensity": 1,
             "color": "red"
           }
@@ -24,126 +25,45 @@
       ]
     }
   },
-  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
     "geojson": {
       "type": "geojson",
       "data": {
-        "type": "FeatureCollection",
-        "features": [
-          {
-            "type": "Feature",
-            "properties": {
-              "property": 30
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    -0.0001,
-                    -0.0001
-                  ],
-                  [
-                    -0.0001,
-                    0.0001
-                  ],
-                  [
-                    0.0001,
-                    0.0001
-                  ],
-                  [
-                    0.0001,
-                    -0.0001
-                  ],
-                  [
-                    -0.0001,
-                    -0.0001
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "property": 20
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    -0.0002,
-                    -0.0002
-                  ],
-                  [
-                    -0.0002,
-                    0.0002
-                  ],
-                  [
-                    0.0002,
-                    0.0002
-                  ],
-                  [
-                    0.0002,
-                    -0.0002
-                  ],
-                  [
-                    -0.0002,
-                    -0.0002
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "property": 10
-            },
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [
-                    -0.0003,
-                    -0.0003
-                  ],
-                  [
-                    -0.0003,
-                    0.0003
-                  ],
-                  [
-                    0.0003,
-                    0.0003
-                  ],
-                  [
-                    0.0003,
-                    -0.0003
-                  ],
-                  [
-                    -0.0003,
-                    -0.0003
-                  ]
-                ]
-              ]
-            }
-          }
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ]
+          ]
         ]
       }
     }
   },
-  "pitch": 60,
-  "zoom": 18,
   "layers": [
     {
       "id": "extrusion",
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-height": 10,
-        "fill-extrusion-opacity": 0.7,
+        "fill-extrusion-height": 0,
         "fill-extrusion-color":"blue"
       }
     }
