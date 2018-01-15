@@ -10,6 +10,14 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
   const scale = EXTENT / tileSize;
   let index;
 
+  if (data && data.features && data.features.forEach && options.aggregateBy) {
+    data.features.forEach((datum) => {
+      if (datum && datum.properties) {
+        datum.properties[options.aggregateBy] = Number(datum.properties[options.aggregateBy]);
+      }
+    });
+  }
+
   if (options.cluster) {
       index = getSuperCluterIndex(data, options, zoom, scale);
   } else {

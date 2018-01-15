@@ -2,10 +2,11 @@
 
 ## Fork Versions:
 
-Fork Version | Mapbox version
------------- | -------------
-0.0.1        | 0.42.2
-
+Fork Version | Mapbox version | Notes
+------------ | -------------- | ------
+0.0.1        | 0.42.2         |
+0.0.2        | 0.42.2         |
+0.0.3        | 0.42.2         | Converting aggregateBy properties from string to number. Otherwise, not able to use exponential/interval stops.
 
 ## Fork Modifications:
  * **Get Pins in Cluster**: Expose getLeaves in superCluster via an interface, so that we can get the pins in a cluster and spiderfy them.
