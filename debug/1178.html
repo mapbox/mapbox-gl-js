@@ -33,7 +33,7 @@
     });
 
     map.on('load', async () => {
-      const geojson = await fetch('https://storage.googleapis.com/storage.ubidev.net/meteogroup/dWU5OHd6Zmg4NzI5cmZjMDh6/geojson/geojsonsample-1178.json').then(res => res.json());
+      const geojson = await fetch('https://storage.googleapis.com/storage.ubidev.net/mapbox-gl-js/329034912902/geojsonsample-1178.json').then(res => res.json());
       map.addSource('src', {
         type: 'geojson',
         data: geojson
