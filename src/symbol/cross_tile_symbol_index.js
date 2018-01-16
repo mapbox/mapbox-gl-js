@@ -127,9 +127,19 @@ class CrossTileSymbolLayerIndex {
 
     addBucket(tileID: OverscaledTileID, bucket: SymbolBucket, crossTileIDs: CrossTileIDs) {
         if (this.indexes[tileID.overscaledZ] &&
-            this.indexes[tileID.overscaledZ][tileID.key] &&
-            this.indexes[tileID.overscaledZ][tileID.key].bucketInstanceId === bucket.bucketInstanceId) {
-            return false;
+            this.indexes[tileID.overscaledZ][tileID.key]) {
+            if (this.indexes[tileID.overscaledZ][tileID.key].bucketInstanceId ===
+                bucket.bucketInstanceId) {
+                return false;
+            } else {
+                // We're replacing this bucket with an updated version
+                // Remove the old bucket's "used crossTileIDs" now so that
+                // the new bucket can claim them.
+                // The old index entries themselves stick around until
+                // 'removeStaleBuckets' is called.
+                this.removeBucketCrossTileIDs(tileID.overscaledZ,
+                    this.indexes[tileID.overscaledZ][tileID.key]);
+            }
         }
 
         for (const symbolInstance of bucket.symbolInstances) {
@@ -175,17 +185,21 @@ class CrossTileSymbolLayerIndex {
         return true;
     }
 
+    removeBucketCrossTileIDs(zoom: string | number, removedBucket: TileLayerIndex) {
+        for (const key in removedBucket.indexedSymbolInstances) {
+            for (const symbolInstance of removedBucket.indexedSymbolInstances[key]) {
+                delete this.usedCrossTileIDs[zoom][symbolInstance.crossTileID];
+            }
+        }
+    }
+
     removeStaleBuckets(currentIDs: { [string | number]: boolean }) {
         let tilesChanged = false;
         for (const z in this.indexes) {
             const zoomIndexes = this.indexes[z];
             for (const tileKey in zoomIndexes) {
                 if (!currentIDs[zoomIndexes[tileKey].bucketInstanceId]) {
-                    for (const key in zoomIndexes[tileKey].indexedSymbolInstances) {
-                        for (const symbolInstance of zoomIndexes[tileKey].indexedSymbolInstances[key]) {
-                            delete this.usedCrossTileIDs[z][symbolInstance.crossTileID];
-                        }
-                    }
+                    this.removeBucketCrossTileIDs(z, zoomIndexes[tileKey]);
                     delete zoomIndexes[tileKey];
                     tilesChanged = true;
                 }
