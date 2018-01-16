@@ -83,11 +83,11 @@ module.exports = function bindHandlers(map: Map, options: {}) {
 
     function onMouseOver(e: MouseEvent) {
 
-      let target: any = e.toElement || e.target;
-      while (target && target !== el) target = target.parentNode;
-      if (target !== el) return;
+        let target: any = e.toElement || e.target;
+        while (target && target !== el) target = target.parentNode;
+        if (target !== el) return;
 
-      fireMouseEvent('mouseover', e);
+        fireMouseEvent('mouseover', e);
     }
 
     function onTouchStart(e: TouchEvent) {
