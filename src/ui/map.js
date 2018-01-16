@@ -1458,9 +1458,7 @@ class Map extends Camera {
      * @private
      */
     _render() {
-        if (this.isEasing()) {
-            this._updateEase();
-        }
+        this._updateCamera();
 
         let crossFading = false;
 
