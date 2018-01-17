@@ -78,7 +78,7 @@ class GeoJSONSource extends Evented implements Source {
     workerID: number;
     _loaded: boolean;
     _collectResourceTiming: boolean;
-    _resourceTimings: {[string]: Array<PerformanceResourceTiming>};
+    _resourceTiming: Array<PerformanceResourceTiming>;
 
     constructor(id: string, options: GeojsonSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -102,7 +102,7 @@ class GeoJSONSource extends Evented implements Source {
         this._options = util.extend({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
-        this._resourceTimings = {};
+        this._resourceTiming = [];
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
@@ -144,9 +144,9 @@ class GeoJSONSource extends Evented implements Source {
             const data = {};
             data.dataType = 'source';
             data.sourceDataType = 'metadata';
-            if (this._collectResourceTiming && this._resourceTimings[this.id]) {
-                data.resourceTiming = this._resourceTimings[this.id];
-                delete this._resourceTimings[this.id];
+            if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
+                data.resourceTiming = this._resourceTiming;
+                this._resourceTiming = [];
             }
 
             // although GeoJSON sources contain no metadata, we fire this event to let the SourceCache
@@ -177,9 +177,9 @@ class GeoJSONSource extends Evented implements Source {
             const data = {};
             data.dataType = 'source';
             data.sourceDataType = 'content';
-            if (this._collectResourceTiming && this._resourceTimings[this.id]) {
-                data.resourceTiming = this._resourceTimings[this.id];
-                delete this._resourceTimings[this.id];
+            if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
+                data.resourceTiming = this._resourceTiming;
+                this._resourceTiming = [];
             }
             this.fire('data', data);
         });
@@ -208,8 +208,8 @@ class GeoJSONSource extends Evented implements Source {
         this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, result) => {
             this._loaded = true;
 
-            if (result && result.resourceTiming)
-                this._resourceTimings = util.extend(this._resourceTimings, result.resourceTiming);
+            if (result && result.resourceTiming && result.resourceTiming[this.id])
+                this._resourceTiming = result.resourceTiming[this.id].slice(0);
 
             // Any `loadData` calls that piled up while we were processing
             // this one will get coalesced into a single call when this
