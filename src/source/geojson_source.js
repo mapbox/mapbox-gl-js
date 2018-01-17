@@ -141,9 +141,7 @@ class GeoJSONSource extends Evented implements Source {
                 return;
             }
 
-            const data = {};
-            data.dataType = 'source';
-            data.sourceDataType = 'metadata';
+            const data: Object = { dataType: 'source', sourceDataType: 'metadata' };
             if (this._collectResourceTiming && this._resourceTiming && (this._resourceTiming.length > 0)) {
                 data.resourceTiming = this._resourceTiming;
                 this._resourceTiming = [];
