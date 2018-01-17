@@ -209,14 +209,6 @@ class GeoJSONSource extends Evented implements Source {
             if (result && result.resourceTiming && result.resourceTiming[this.id])
                 this._resourceTiming = result.resourceTiming[this.id].slice(0);
 
-            // Any `loadData` calls that piled up while we were processing
-            // this one will get coalesced into a single call when this
-            // 'coalesce' message is processed.
-            // We would self-send from the worker if we had access to its
-            // message queue. Waiting instated for the 'coalesce' to round-trip
-            // through the foreground just means we're throttling the worker
-            // to run at a little less than full-throttle.
-            this.dispatcher.send(`${this.type}.coalesce`, null, null, this.workerID);
             callback(err);
         }, this.workerID);
     }

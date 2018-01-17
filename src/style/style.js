@@ -899,13 +899,16 @@ class Style extends Evented {
         }
         if (!_update) return;
 
-        const transition = util.extend({
-            duration: 300,
-            delay: 0
-        }, this.stylesheet.transition);
+        const parameters = {
+            now: browser.now(),
+            transition: util.extend({
+                duration: 300,
+                delay: 0
+            }, this.stylesheet.transition)
+        };
 
         this.light.setLight(lightOptions);
-        this.light.updateTransitions(transition);
+        this.light.updateTransitions(parameters);
     }
 
     _validate(validate: ({}) => void, key: string, value: any, props: any, options?: {validate?: boolean}) {
