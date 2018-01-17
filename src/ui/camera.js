@@ -913,7 +913,7 @@ class Camera extends Evented {
      * @param finish A callback that is called when this animation is stopped (i.e., when `Camera#stop()` is called).
      */
     _startAnimation(onFrame: (Transform) => void,
-           finish: () => void): this {
+                    finish: () => void = () => {}): this {
         this.stop();
         this._onFrame = onFrame;
         this._finishFn = finish;
