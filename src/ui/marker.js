@@ -31,8 +31,6 @@ class Marker {
     _pos: ?Point;
 
     constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
-        this._offset = Point.convert(options && options.offset || [0, 0]);
-
         bindAll(['_update', '_onMapClick'], this);
 
         if (!element) {
@@ -127,7 +125,21 @@ class Marker {
             svg.appendChild(page1);
 
             element.appendChild(svg);
+
+            // if no element and no offset option given apply an offset for the default marker
+            const defaultMarkerOffset = [0, -14];
+            if (!(options && options.offset)) {
+                if (!options) {
+                    options = {
+                        offset: defaultMarkerOffset
+                    };
+                } else {
+                    options.offset = defaultMarkerOffset;
+                }
+            }
         }
+
+        this._offset = Point.convert(options && options.offset || [0, 0]);
 
         element.classList.add('mapboxgl-marker');
         this._element = element;
