@@ -972,6 +972,7 @@ class Style extends Evented {
             const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source]);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
+        this.crossTileSymbolIndex.pruneUnusedLayers(this._order);
 
         // Anything that changes our "in progress" layer and tile indices requires us
         // to start over. When we start over, we do a full placement instead of incremental

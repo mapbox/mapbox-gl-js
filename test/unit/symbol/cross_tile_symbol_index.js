@@ -196,3 +196,26 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
 
     t.end();
 });
+
+test('CrossTileSymbolIndex.pruneUnusedLayers', (t) => {
+    const index = new CrossTileSymbolIndex();
+
+    const tileID = new OverscaledTileID(6, 0, 6, 8, 8);
+    const instances = [
+        makeSymbolInstance(1000, 1000, ""), // A
+        makeSymbolInstance(1000, 1000, "")  // B
+    ];
+    const tile = makeTile(tileID, instances);
+
+    // assigns new ids
+    index.addLayer(styleLayer, [tile]);
+    t.equal(instances[0].crossTileID, 1);
+    t.equal(instances[1].crossTileID, 2);
+    t.ok(index.layerIndexes[styleLayer.id]);
+
+    // remove styleLayer
+    index.pruneUnusedLayers([]);
+    t.notOk(index.layerIndexes[styleLayer.id]);
+
+    t.end();
+});
