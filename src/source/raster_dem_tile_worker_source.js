@@ -25,7 +25,7 @@ class RasterDEMTileWorkerSource {
 
         const dem = new DEMData(uid);
         this.loading[uid] = dem;
-        dem.loadFromImage(params.rawImageData);
+        dem.loadFromImage(params.rawImageData, params.encoding);
         delete this.loading[uid];
 
         this.loaded = this.loaded || {};
