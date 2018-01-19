@@ -11,11 +11,20 @@ import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
 import type {MapMouseEvent} from './events';
 
+export type Anchor = number | PointLike;
+export type Offset = number | PointLike | Anchor;
+
+export type MarkerOptions = {
+    anchor: Anchor,
+    offset: Offset
+}
+
 /**
  * Creates a marker component
- * @param element DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
- * @param options
- * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+ * @param {Object} [element] DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
+ * @param {Object} [options]
+ * @param {number|PointLike|Object} [options.anchor] The sets anchor in pixels as a {@link PointLike} object to apply relative to the element's position.
+ * @param {number|PointLike|Object} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -24,13 +33,16 @@ import type {MapMouseEvent} from './events';
  */
 class Marker {
     _map: Map;
+    options: MarkerOptions;
+    _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
 
-    constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
+    constructor(element: ?HTMLElement, options?: {anchor: Anchor, offset: PointLike}) {
+        this._anchor = Point.convert(options && options.anchor || [0, 0]);
         this._offset = Point.convert(options && options.offset || [0, 0]);
 
         bindAll(['_update', '_onMapClick'], this);
@@ -268,7 +280,7 @@ class Marker {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat)._add(this._offset);
+        this._pos = this._map.project(this._lngLat)._add(this._anchor)._add(this._offset);
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -277,7 +289,26 @@ class Marker {
             this._pos = this._pos.round();
         }
 
-        DOM.setTransform(this._element, `translate(-50%, -50%) translate(${this._pos.x}px, ${this._pos.y}px)`);
+        DOM.setTransform(this._element, `translate(${this._pos.x}px, ${this._pos.y}px)`);
+    }
+
+    /**
+     * Get the marker's anchor.
+     * @returns {Point}
+     */
+    getAnchor() {
+        return this._anchor;
+    }
+
+    /**
+     * Sets the anchor of the marker
+     * @param {PointLike} [anchor] The anchor in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @returns {Marker} `this`
+     */
+    setAnchor(anchor: PointLike) {
+        this._anchor = Point.convert(anchor);
+        this._update();
+        return this;
     }
 
     /**
