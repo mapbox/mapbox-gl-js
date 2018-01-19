@@ -225,7 +225,7 @@ const navigation = [
 ];
 
 const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video', 'canvas'];
-const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];
+const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade', 'webgl'];
 
 const {expressions, expressionGroups} = require('../components/expression-metadata');
 

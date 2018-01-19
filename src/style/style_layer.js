@@ -61,7 +61,7 @@ class StyleLayer extends Evented {
         this.maxzoom = layer.maxzoom;
         this.visibility = 'visible';
 
-        if (layer.type !== 'background') {
+        if (layer.type !== 'background' && layer.type !== 'webgl') {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
@@ -215,6 +215,7 @@ const subclasses = {
     'line': require('./style_layer/line_style_layer'),
     'symbol': require('./style_layer/symbol_style_layer'),
     'background': require('./style_layer/background_style_layer'),
+    'webgl': require('./style_layer/webgl_layer'),
     'raster': require('./style_layer/raster_style_layer')
 };
 

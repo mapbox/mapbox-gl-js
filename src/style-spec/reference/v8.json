@@ -509,6 +509,14 @@
             }
           }
         },
+        "webgl": {
+          "doc": "Defer rendering to an external webgl renderer",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.43.0"
+            }
+          }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -570,8 +578,42 @@
     "layout_symbol",
     "layout_raster",
     "layout_hillshade",
-    "layout_background"
+    "layout_background",
+    "layout_webgl"
   ],
+  "layout_webgl": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    },
+    "callback": {
+      "type": "string",
+      "default": "asdf",
+      "doc": "The name of the callback on 'window' of the external WebGL renderer",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0"
+        }
+      }
+    }
+  },
   "layout_background": {
     "visibility": {
       "type": "enum",
@@ -3879,6 +3921,8 @@
         "zoom-function": true,
         "transition": true
       }
+  },
+  "paint_webgl": {
   },
   "paint_background": {
     "background-color": {
