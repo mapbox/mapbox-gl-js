@@ -231,7 +231,7 @@
       "type": "enum",
       "values": {
         "raster-dem": {
-            "doc": "A raster DEM source using Mapbox Terrain RGB"
+            "doc": "A raster DEM source"
         }
       },
       "doc": "The type of the source."
@@ -271,6 +271,10 @@
     "attribution": {
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
+    },
+    "encoding": {
+      "type": "string",
+      "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
     },
     "*": {
       "type": "*",

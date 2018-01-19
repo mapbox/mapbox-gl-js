@@ -57,22 +57,14 @@ class DEMData {
         this.loaded = !!data;
     }
 
-    loadFromImage(data: RGBAImage) {
+    loadFromImage(data: RGBAImage, encoding: string) {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
 
         // Build level 0
         const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
 
-        // unpack
-        for (let y = 0; y < level.dim; y++) {
-            for (let x = 0; x < level.dim; x++) {
-                const i = y * level.dim + x;
-                const j = i * 4;
-                // decoding per https://blog.mapbox.com/global-elevation-data-6689f1d0ba65
-                level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
-            }
-        }
+        this.unpackData(level, data, encoding);
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
@@ -93,6 +85,40 @@ class DEMData {
         level.set(-1, level.dim, level.get(0, level.dim - 1));
         level.set(level.dim, level.dim, level.get(level.dim - 1, level.dim - 1));
         this.loaded = true;
+    }
+
+    unpackData(level: Level, pixels: Uint8Array, encoding: string) {
+
+        switch(encoding) {
+            case 'mapzen':
+                this.unpackMapzenData(level, pixels);
+                break;
+            default:
+                this.unpackMapboxData(level, pixels);
+        }
+
+    }
+
+    unpackMapboxData(level: Level, pixels: Uint8Array) {
+        for (let y = 0; y < level.dim; y++) {
+            for (let x = 0; x < level.dim; x++) {
+                const i = y * level.dim + x;
+                const j = i * 4;
+                // decoding per https://blog.mapbox.com/global-elevation-data-6689f1d0ba65
+                level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
+            }
+        }
+    }
+
+    unpackMapzenData(level: Level, pixels: Uint8Array) {
+        for (let y = 0; y < level.dim; y++) {
+            for (let x = 0; x < level.dim; x++) {
+                const i = y * level.dim + x;
+                const j = i * 4;
+                // decoding per https://mapzen.com/documentation/terrain-tiles/formats/#types-of-terrain-tiles
+                level.set(x, y, this.scale * ((pixels[j] * 256 + pixels[j + 1] + pixels[j + 2] / 256) - 32768.0));
+            }
+        }
     }
 
     getPixels() {
