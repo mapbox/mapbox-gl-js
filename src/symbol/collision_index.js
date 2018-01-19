@@ -280,13 +280,17 @@ class CollisionIndex {
         const features = this.grid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < features.length; i++) {
             // Only include results from the matching source, tile and version of the bucket that was indexed
-            if (features[i].sourceID === sourceID && features[i].tileID === tileID && bucketInstanceIds[features[i].bucketInstanceId]) {
+            if (features[i].sourceID === sourceID &&
+                features[i].tileID === tileID &&
+                bucketInstanceIds[features[i].bucketInstanceId]) {
                 thisTileFeatures.push(features[i].boxIndex);
             }
         }
         const ignoredFeatures = this.ignoredGrid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < ignoredFeatures.length; i++) {
-            if (ignoredFeatures[i].sourceID === sourceID && ignoredFeatures[i].tileID === tileID) {
+            if (ignoredFeatures[i].sourceID === sourceID &&
+                ignoredFeatures[i].tileID === tileID &&
+                bucketInstanceIds[ignoredFeatures[i].bucketInstanceId]) {
                 thisTileFeatures.push(ignoredFeatures[i].boxIndex);
             }
         }

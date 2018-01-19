@@ -119,5 +119,80 @@ test('CrossTileSymbolIndex.addLayer', (t) => {
         t.end();
     });
 
+    t.test('does not duplicate ids within one zoom level', (t) => {
+        const index = new CrossTileSymbolIndex();
+
+        const mainID = new OverscaledTileID(6, 0, 6, 8, 8);
+        const mainInstances = [
+            makeSymbolInstance(1000, 1000, ""), // A
+            makeSymbolInstance(1000, 1000, "")  // B
+        ];
+        const mainTile = makeTile(mainID, mainInstances);
+
+        const childID = new OverscaledTileID(7, 0, 7, 16, 16);
+        const childInstances = [
+            makeSymbolInstance(2000, 2000, ""), // A'
+            makeSymbolInstance(2000, 2000, ""), // B'
+            makeSymbolInstance(2000, 2000, "")  // C'
+        ];
+        const childTile = makeTile(childID, childInstances);
+
+        // assigns new ids
+        index.addLayer(styleLayer, [mainTile]);
+        t.equal(mainInstances[0].crossTileID, 1);
+        t.equal(mainInstances[1].crossTileID, 2);
+
+        const layerIndex = index.layerIndexes[styleLayer.id];
+        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2]);
+
+        // copies parent ids without duplicate ids in this tile
+        index.addLayer(styleLayer, [childTile]);
+        t.equal(childInstances[0].crossTileID, 1); // A' copies from A
+        t.equal(childInstances[1].crossTileID, 2); // B' copies from B
+        t.equal(childInstances[2].crossTileID, 3); // C' gets new ID
+
+        // Updates per-zoom usedCrossTileIDs
+        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), []);
+        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[7]), [1, 2, 3]);
+
+        t.end();
+    });
+
+    t.test('does not regenerate ids for same zoom', (t) => {
+        const index = new CrossTileSymbolIndex();
+
+        const tileID = new OverscaledTileID(6, 0, 6, 8, 8);
+        const firstInstances = [
+            makeSymbolInstance(1000, 1000, ""), // A
+            makeSymbolInstance(1000, 1000, "")  // B
+        ];
+        const firstTile = makeTile(tileID, firstInstances);
+
+        const secondInstances = [
+            makeSymbolInstance(1000, 1000, ""), // A'
+            makeSymbolInstance(1000, 1000, ""), // B'
+            makeSymbolInstance(1000, 1000, ""), // C'
+        ];
+        const secondTile = makeTile(tileID, secondInstances);
+
+        // assigns new ids
+        index.addLayer(styleLayer, [firstTile]);
+        t.equal(firstInstances[0].crossTileID, 1);
+        t.equal(firstInstances[1].crossTileID, 2);
+
+        const layerIndex = index.layerIndexes[styleLayer.id];
+        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2]);
+
+        // uses same ids when tile gets updated
+        index.addLayer(styleLayer, [secondTile]);
+        t.equal(secondInstances[0].crossTileID, 1); // A' copies from A
+        t.equal(secondInstances[1].crossTileID, 2); // B' copies from B
+        t.equal(secondInstances[2].crossTileID, 3); // C' gets new ID
+
+        t.deepEqual(Object.keys(layerIndex.usedCrossTileIDs[6]), [1, 2, 3]);
+
+        t.end();
+    });
+
     t.end();
 });

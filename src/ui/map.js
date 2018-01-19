@@ -309,9 +309,6 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('move', () => {
-            this._rerender();
-        });
 
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this._onWindowOnline, false);
@@ -1461,9 +1458,7 @@ class Map extends Camera {
      * @private
      */
     _render() {
-        if (this.isEasing()) {
-            this._updateEase();
-        }
+        this._updateCamera();
 
         let crossFading = false;
 
@@ -1528,7 +1523,7 @@ class Map extends Camera {
         // Even though `_styleDirty` and `_sourcesDirty` are reset in this
         // method, synchronous events fired during Style#update or
         // Style#_updateSources could have caused them to be set again.
-        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty || this.isEasing()) {
+        if (this._sourcesDirty || this._repaint || this._styleDirty || this._placementDirty) {
             this._rerender();
         }
 
