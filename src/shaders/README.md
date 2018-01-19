@@ -37,8 +37,6 @@ When using pragmas, the following requirements apply.
  - `initialize` pragmas must be in function scope
  - all pragma-defined variables defined and initialized in the fragment shader must also be defined and initialized in the vertex shader because `attribute`s are not accessible from the fragment shader
 
-To see concretely how pragmas are applied, you can use the `describe_shaders` utility to create a markdown file showing how a given style JSON is compiled into a collection of shaders.
-
 ## Util
 
 The `util.glsl` file is automatically included in all shaders by the compiler.

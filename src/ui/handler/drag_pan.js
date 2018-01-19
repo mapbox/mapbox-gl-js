@@ -1,8 +1,13 @@
-'use strict';
+// @flow
 
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const browser = require('../../util/browser');
+
+import type Map from '../map';
+import type Point from '@mapbox/point-geometry';
+import type Transform from '../../geo/transform';
 
 const inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -16,7 +21,17 @@ const inertiaLinearity = 0.3,
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class DragPanHandler {
-    constructor(map) {
+    _map: Map;
+    _el: HTMLElement;
+    _enabled: boolean;
+    _active: boolean;
+    _pos: Point;
+    _previousPos: Point;
+    _startPos: Point;
+    _inertia: Array<[number, Point]>;
+    _lastMoveEvent: MouseEvent | TouchEvent | void;
+
+    constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
@@ -25,7 +40,9 @@ class DragPanHandler {
             '_onMove',
             '_onUp',
             '_onTouchEnd',
-            '_onMouseUp'
+            '_onMouseUp',
+            '_onDragFrame',
+            '_onDragFinished'
         ], this);
     }
 
@@ -75,7 +92,7 @@ class DragPanHandler {
         this._enabled = false;
     }
 
-    _onDown(e) {
+    _onDown(e: MouseEvent | TouchEvent) {
         if (this._ignoreEvent(e)) return;
         if (this.isActive()) return;
 
@@ -90,41 +107,58 @@ class DragPanHandler {
         window.addEventListener('blur', this._onMouseUp);
 
         this._active = false;
-        this._startPos = this._pos = DOM.mousePos(this._el, e);
-        this._inertia = [[Date.now(), this._pos]];
+        this._startPos = this._previousPos = DOM.mousePos(this._el, e);
+        this._inertia = [[browser.now(), this._pos]];
     }
 
-    _onMove(e) {
+    _onMove(e: MouseEvent | TouchEvent) {
         if (this._ignoreEvent(e)) return;
+        this._lastMoveEvent = e;
+        e.preventDefault();
+
+        this._pos = DOM.mousePos(this._el, e);
+        this._drainInertiaBuffer();
+        this._inertia.push([browser.now(), this._pos]);
 
         if (!this.isActive()) {
+            // we treat the first move event (rather than the mousedown event)
+            // as the start of the drag
             this._active = true;
             this._map.moving = true;
             this._fireEvent('dragstart', e);
             this._fireEvent('movestart', e);
+
+            this._map._startAnimation(this._onDragFrame, this._onDragFinished);
         }
+    }
 
-        const pos = DOM.mousePos(this._el, e),
-            map = this._map;
+    /**
+     * Called in each render frame while dragging is happening.
+     * @private
+     */
+    _onDragFrame(tr: Transform) {
+        const e = this._lastMoveEvent;
+        if (!e) return;
 
-        map.stop();
-        this._drainInertiaBuffer();
-        this._inertia.push([Date.now(), pos]);
-
-        map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
-
+        tr.setLocationAtPoint(tr.pointLocation(this._previousPos), this._pos);
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
 
-        this._pos = pos;
-
-        e.preventDefault();
+        this._previousPos = this._pos;
+        delete this._lastMoveEvent;
     }
 
-    _onUp(e) {
+    /**
+     * Called when dragging stops.
+     * @private
+     */
+    _onDragFinished(e: MouseEvent | TouchEvent | FocusEvent | void) {
         if (!this.isActive()) return;
 
         this._active = false;
+        delete this._lastMoveEvent;
+        delete this._previousPos;
+
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();
 
@@ -168,7 +202,11 @@ class DragPanHandler {
         }, { originalEvent: e });
     }
 
-    _onMouseUp(e) {
+    _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
+        this._onDragFinished(e);
+    }
+
+    _onMouseUp(e: MouseEvent | FocusEvent) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
         window.document.removeEventListener('mousemove', this._onMove);
@@ -176,18 +214,18 @@ class DragPanHandler {
         window.removeEventListener('blur', this._onMouseUp);
     }
 
-    _onTouchEnd(e) {
+    _onTouchEnd(e: TouchEvent) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
         window.document.removeEventListener('touchmove', this._onMove);
         window.document.removeEventListener('touchend', this._onTouchEnd);
     }
 
-    _fireEvent(type, e) {
-        return this._map.fire(type, { originalEvent: e });
+    _fireEvent(type: string, e: ?Event) {
+        return this._map.fire(type, e ? { originalEvent: e } : {});
     }
 
-    _ignoreEvent(e) {
+    _ignoreEvent(e: any) {
         const map = this._map;
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
@@ -196,15 +234,13 @@ class DragPanHandler {
             return (e.touches.length > 1);
         } else {
             if (e.ctrlKey) return true;
-            const buttons = 1,  // left button
-                button = 0;   // left button
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button && e.button !== button);
+            return e.type !== 'mousemove' && e.button && e.button !== 0; // left button
         }
     }
 
     _drainInertiaBuffer() {
         const inertia = this._inertia,
-            now = Date.now(),
+            now = browser.now(),
             cutoff = 160;   // msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff) inertia.shift();
@@ -212,30 +248,3 @@ class DragPanHandler {
 }
 
 module.exports = DragPanHandler;
-
-/**
- * Fired when a "drag to pan" interaction starts. See {@link DragPanHandler}.
- *
- * @event dragstart
- * @memberof Map
- * @instance
- * @property {{originalEvent: DragEvent}} data
- */
-
-/**
- * Fired repeatedly during a "drag to pan" interaction. See {@link DragPanHandler}.
- *
- * @event drag
- * @memberof Map
- * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
- */
-
-/**
- * Fired when a "drag to pan" interaction ends. See {@link DragPanHandler}.
- *
- * @event dragend
- * @memberof Map
- * @instance
- * @property {{originalEvent: DragEvent}} data
- */

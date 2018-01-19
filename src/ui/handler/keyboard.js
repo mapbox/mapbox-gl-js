@@ -1,4 +1,8 @@
-'use strict';
+// @flow
+
+const util = require('../../util/util');
+
+import type Map from '../map';
 
 const panStep = 100,
     bearingStep = 15,
@@ -21,11 +25,17 @@ const panStep = 100,
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class KeyboardHandler {
-    constructor(map) {
+    _map: Map;
+    _el: HTMLElement;
+    _enabled: boolean;
+
+    constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
 
-        this._onKeyDown = this._onKeyDown.bind(this);
+        util.bindAll([
+            '_onKeyDown'
+        ], this);
     }
 
     /**
@@ -61,7 +71,7 @@ class KeyboardHandler {
         this._enabled = false;
     }
 
-    _onKeyDown(e) {
+    _onKeyDown(e: KeyboardEvent) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
         let zoomDir = 0;

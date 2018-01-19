@@ -1,4 +1,3 @@
-'use strict';
 
 const ValidationError = require('../error/validation_error');
 const getType = require('../util/get_type');
@@ -16,7 +15,7 @@ module.exports = function validateLight(options) {
     if (light === undefined) {
         return errors;
     } else if (rootType !== 'object') {
-        errors = errors.concat([new ValidationError('light', light, 'object expected, %s found', rootType)]);
+        errors = errors.concat([new ValidationError('light', light, `object expected, ${rootType} found`)]);
         return errors;
     }
 
@@ -40,7 +39,7 @@ module.exports = function validateLight(options) {
                 styleSpec: styleSpec
             }));
         } else {
-            errors = errors.concat([new ValidationError(key, light[key], 'unknown property "%s"', key)]);
+            errors = errors.concat([new ValidationError(key, light[key], `unknown property "${key}"`)]);
         }
     }
 

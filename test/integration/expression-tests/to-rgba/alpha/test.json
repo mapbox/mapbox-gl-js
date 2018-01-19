@@ -1,0 +1,15 @@
+{
+  "expression": ["to-rgba", ["rgba", 0, 128, 255, 0.5]],
+  "inputs": [
+    [{}, {}]
+  ],
+  "expected": {
+    "outputs": [[0, 128, 255, 0.5]],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "array<number, 4>"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "description": "Tests that light transitions correctly by checking the rendering halfway through the (default 300ms long) transition",
+      "operations": [
+        [
+          "setLight",
+          {
+            "position": [1.15, 0, 30],
+            "intensity": 1,
+            "color": "red"
+          }
+        ],
+        [
+          "wait",
+          0
+        ],
+        [
+          "wait",
+          150
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-height": 0,
+        "fill-extrusion-color":"blue"
+      }
+    }
+  ]
+}

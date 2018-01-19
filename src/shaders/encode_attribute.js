@@ -1,4 +1,4 @@
-'use strict';
+// @flow
 
 const util = require('../util/util');
 
@@ -9,7 +9,7 @@ const util = require('../util/util');
  *
  * @private
  */
-exports.packUint8ToFloat = function pack(a, b) {
+exports.packUint8ToFloat = function pack(a: number, b: number) {
     // coerce a and b to 8-bit ints
     a = util.clamp(Math.floor(a), 0, 255);
     b = util.clamp(Math.floor(b), 0, 255);

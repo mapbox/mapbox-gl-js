@@ -1,0 +1,32 @@
+{
+  "propertySpec": {
+    "type": "array",
+    "value": "number",
+    "length": 2,
+    "function": true,
+    "property-function": true
+  },
+  "expression": ["get", "array"],
+  "inputs": [
+    [{}, {"properties": {"array": [1, 2]}}],
+    [{}, {"properties": {"array": [1, 2, 3]}}],
+    [{}, {"properties": {"array": "not"}}]
+  ],
+  "expected": {
+    "outputs": [
+      [1, 2],
+      {
+        "error": "Expected value to be of type array<number, 2>, but found array<number, 3> instead."
+      },
+      {
+        "error": "Expected value to be of type array<number, 2>, but found string instead."
+      }
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "array<number, 2>"
+    }
+  }
+}

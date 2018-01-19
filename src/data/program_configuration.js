@@ -1,8 +1,255 @@
-'use strict';
+// @flow
 
-const assert = require('assert');
-const createVertexArrayType = require('./vertex_array_type');
-const util = require('../util/util');
+import type {GlobalProperties} from "../style-spec/expression/index";
+
+const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
+const Color = require('../style-spec/util/color');
+const {register} = require('../util/web_worker_transfer');
+const {PossiblyEvaluatedPropertyValue} = require('../style/properties');
+const {
+    StructArrayLayout1f4,
+    StructArrayLayout2f8,
+    StructArrayLayout4f16
+} = require('./array_types');
+
+import type Context from '../gl/context';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {StructArray, StructArrayMember} from '../util/struct_array';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type Program from '../render/program';
+import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
+import type {PossiblyEvaluated} from '../style/properties';
+
+function packColor(color: Color): [number, number] {
+    return [
+        packUint8ToFloat(255 * color.r, 255 * color.g),
+        packUint8ToFloat(255 * color.b, 255 * color.a)
+    ];
+}
+
+/**
+ *  `Binder` is the interface definition for the strategies for constructing,
+ *  uploading, and binding paint property data as GLSL attributes.
+ *
+ *  It has three implementations, one for each of the three strategies we use:
+ *
+ *  * For _constant_ properties -- those whose value is a constant, or the constant
+ *    result of evaluating a camera expression at a particular camera position -- we
+ *    don't need a vertex buffer, and instead use a uniform.
+ *  * For data expressions, we use a vertex buffer with a single attribute value,
+ *    the evaluated result of the source function for the given feature.
+ *  * For composite expressions, we use a vertex buffer with two attributes: min and
+ *    max values covering the range of zooms at which we expect the tile to be
+ *    displayed. These values are calculated by evaluating the composite expression for
+ *    the given feature at strategically chosen zoom levels. In addition to this
+ *    attribute data, we also use a uniform value which the shader uses to interpolate
+ *    between the min and max value at the final displayed zoom level. The use of a
+ *    uniform allows us to cheaply update the value on every frame.
+ *
+ *  Note that the shader source varies depending on whether we're using a uniform or
+ *  attribute. We dynamically compile shaders at runtime to accomodate this.
+ *
+ * @private
+ */
+interface Binder<T> {
+    statistics: { max: number };
+
+    populatePaintArray(length: number, feature: Feature): void;
+    upload(Context): void;
+    destroy(): void;
+
+    defines(): Array<string>;
+
+    setUniforms(context: Context,
+                program: Program,
+                globals: GlobalProperties,
+                currentValue: PossiblyEvaluatedPropertyValue<T>): void;
+}
+
+class ConstantBinder<T> implements Binder<T> {
+    value: T;
+    name: string;
+    type: string;
+    statistics: { max: number };
+
+    constructor(value: T, name: string, type: string) {
+        this.value = value;
+        this.name = name;
+        this.type = type;
+        this.statistics = { max: -Infinity };
+    }
+
+    defines() {
+        return [`#define HAS_UNIFORM_u_${this.name}`];
+    }
+
+    populatePaintArray() {}
+    upload() {}
+    destroy() {}
+
+    setUniforms(context: Context,
+                program: Program,
+                globals: GlobalProperties,
+                currentValue: PossiblyEvaluatedPropertyValue<T>) {
+        const value: any = currentValue.constantOr(this.value);
+        const gl = context.gl;
+        if (this.type === 'color') {
+            gl.uniform4f(program.uniforms[`u_${this.name}`], value.r, value.g, value.b, value.a);
+        } else {
+            gl.uniform1f(program.uniforms[`u_${this.name}`], value);
+        }
+    }
+}
+
+class SourceExpressionBinder<T> implements Binder<T> {
+    expression: SourceExpression;
+    name: string;
+    type: string;
+    statistics: { max: number };
+
+    paintVertexArray: StructArray;
+    paintVertexAttributes: Array<StructArrayMember>;
+    paintVertexBuffer: ?VertexBuffer;
+
+    constructor(expression: SourceExpression, name: string, type: string) {
+        this.expression = expression;
+        this.name = name;
+        this.type = type;
+        this.statistics = { max: -Infinity };
+        const PaintVertexArray = type === 'color' ? StructArrayLayout2f8 : StructArrayLayout1f4;
+        this.paintVertexAttributes = [{
+            name: `a_${name}`,
+            type: 'Float32',
+            components: type === 'color' ? 2 : 1,
+            offset: 0
+        }];
+        this.paintVertexArray = new PaintVertexArray();
+    }
+
+    defines() {
+        return [];
+    }
+
+    populatePaintArray(length: number, feature: Feature) {
+        const paintArray = this.paintVertexArray;
+
+        const start = paintArray.length;
+        paintArray.reserve(length);
+
+        const value = this.expression.evaluate({zoom: 0}, feature);
+
+        if (this.type === 'color') {
+            const color = packColor(value);
+            for (let i = start; i < length; i++) {
+                paintArray.emplaceBack(color[0], color[1]);
+            }
+        } else {
+            for (let i = start; i < length; i++) {
+                paintArray.emplaceBack(value);
+            }
+
+            this.statistics.max = Math.max(this.statistics.max, value);
+        }
+    }
+
+    upload(context: Context) {
+        if (this.paintVertexArray) {
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes);
+        }
+    }
+
+    destroy() {
+        if (this.paintVertexBuffer) {
+            this.paintVertexBuffer.destroy();
+        }
+    }
+
+    setUniforms(context: Context, program: Program) {
+        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], 0);
+    }
+}
+
+class CompositeExpressionBinder<T> implements Binder<T> {
+    expression: CompositeExpression;
+    name: string;
+    type: string;
+    useIntegerZoom: boolean;
+    zoom: number;
+    statistics: { max: number };
+
+    paintVertexArray: StructArray;
+    paintVertexAttributes: Array<StructArrayMember>;
+    paintVertexBuffer: ?VertexBuffer;
+
+    constructor(expression: CompositeExpression, name: string, type: string, useIntegerZoom: boolean, zoom: number) {
+        this.expression = expression;
+        this.name = name;
+        this.type = type;
+        this.useIntegerZoom = useIntegerZoom;
+        this.zoom = zoom;
+        this.statistics = { max: -Infinity };
+        const PaintVertexArray = type === 'color' ? StructArrayLayout4f16 : StructArrayLayout2f8;
+        this.paintVertexAttributes = [{
+            name: `a_${name}`,
+            type: 'Float32',
+            components: type === 'color' ? 4 : 2,
+            offset: 0
+        }];
+        this.paintVertexArray = new PaintVertexArray();
+    }
+
+    defines() {
+        return [];
+    }
+
+    populatePaintArray(length: number, feature: Feature) {
+        const paintArray = this.paintVertexArray;
+
+        const start = paintArray.length;
+        paintArray.reserve(length);
+
+        const min = this.expression.evaluate({zoom: this.zoom    }, feature);
+        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature);
+
+        if (this.type === 'color') {
+            const minColor = packColor(min);
+            const maxColor = packColor(max);
+            for (let i = start; i < length; i++) {
+                paintArray.emplaceBack(minColor[0], minColor[1], maxColor[0], maxColor[1]);
+            }
+        } else {
+            for (let i = start; i < length; i++) {
+                paintArray.emplaceBack(min, max);
+            }
+
+            this.statistics.max = Math.max(this.statistics.max, min, max);
+        }
+    }
+
+    upload(context: Context) {
+        if (this.paintVertexArray) {
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes);
+        }
+    }
+
+    destroy() {
+        if (this.paintVertexBuffer) {
+            this.paintVertexBuffer.destroy();
+        }
+    }
+
+    interpolationFactor(currentZoom: number) {
+        if (this.useIntegerZoom) {
+            return this.expression.interpolationFactor(Math.floor(currentZoom), this.zoom, this.zoom + 1);
+        } else {
+            return this.expression.interpolationFactor(currentZoom, this.zoom, this.zoom + 1);
+        }
+    }
+
+    setUniforms(context: Context, program: Program, globals: GlobalProperties) {
+        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], this.interpolationFactor(globals.zoom));
+    }
+}
 
 /**
  * ProgramConfiguration contains the logic for binding style layer properties and tile
@@ -25,266 +272,160 @@ const util = require('../util/util');
  * @private
  */
 class ProgramConfiguration {
+    binders: { [string]: Binder<any> };
+    cacheKey: string;
+    layoutAttributes: Array<StructArrayMember>;
+
+    _buffers: Array<VertexBuffer>;
 
     constructor() {
-        this.attributes = [];
-        this.uniforms = [];
-        this.interpolationUniforms = [];
-        this.pragmas = {vertex: {}, fragment: {}};
+        this.binders = {};
         this.cacheKey = '';
-        this.interface = {};
+
+        this._buffers = [];
     }
 
-    static createDynamic(programInterface, layer, zoom) {
+    static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
         const self = new ProgramConfiguration();
+        const keys = [];
 
-        for (const attributeConfig of programInterface.paintAttributes || []) {
-            const attribute = normalizePaintAttribute(attributeConfig, layer);
-            assert(/^a_/.test(attribute.name));
-            const name = attribute.name.slice(2);
+        for (const property in layer.paint._values) {
+            if (!filterProperties(property)) continue;
+            const value = layer.paint.get(property);
+            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !value.property.specification['property-function']) {
+                continue;
+            }
+            const name = paintAttributeName(property, layer.type);
+            const type = value.property.specification.type;
+            const useIntegerZoom = value.property.useIntegerZoom;
 
-            if (layer.isPaintValueFeatureConstant(attribute.property)) {
-                self.addZoomAttribute(name, attribute);
-            } else if (layer.isPaintValueZoomConstant(attribute.property)) {
-                self.addPropertyAttribute(name, attribute);
+            if (value.value.kind === 'constant') {
+                self.binders[property] = new ConstantBinder(value.value, name, type);
+                keys.push(`/u_${name}`);
+            } else if (value.value.kind === 'source') {
+                self.binders[property] = new SourceExpressionBinder(value.value, name, type);
+                keys.push(`/a_${name}`);
             } else {
-                self.addZoomAndPropertyAttribute(name, attribute, layer, zoom);
+                self.binders[property] = new CompositeExpressionBinder(value.value, name, type, useIntegerZoom, zoom);
+                keys.push(`/z_${name}`);
             }
         }
-        self.PaintVertexArray = createVertexArrayType(self.attributes);
-        self.interface = programInterface;
+
+        self.cacheKey = keys.sort().join('');
 
         return self;
     }
 
-    static createStatic(uniformNames) {
-        const self = new ProgramConfiguration();
-
-        for (const name of uniformNames) {
-            self.addUniform(name, `u_${name}`);
+    populatePaintArrays(length: number, feature: Feature) {
+        for (const property in this.binders) {
+            this.binders[property].populatePaintArray(length, feature);
         }
-        return self;
     }
 
-    addUniform(name, inputName) {
-        const pragmas = this.getPragmas(name);
-
-        pragmas.define.push(`uniform {precision} {type} ${inputName};`);
-        pragmas.initialize.push(`{precision} {type} ${name} = ${inputName};`);
-
-        this.cacheKey += `/u_${name}`;
+    defines(): Array<string> {
+        const result = [];
+        for (const property in this.binders) {
+            result.push.apply(result, this.binders[property].defines());
+        }
+        return result;
     }
 
-    addZoomAttribute(name, attribute) {
-        this.uniforms.push(attribute);
-        this.addUniform(name, attribute.name);
+    setUniforms<Properties: Object>(context: Context, program: Program, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            binder.setUniforms(context, program, globals, properties.get(property));
+        }
     }
 
-    addPropertyAttribute(name, attribute) {
-        const pragmas = this.getPragmas(name);
-
-        this.attributes.push(attribute);
-
-        pragmas.define.push(`varying {precision} {type} ${name};`);
-
-        pragmas.vertex.define.push(`attribute {precision} {type} ${attribute.name};`);
-        pragmas.vertex.initialize.push(`${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
-
-        this.cacheKey += `/a_${name}`;
+    getPaintVertexBuffers(): Array<VertexBuffer> {
+        return this._buffers;
     }
 
-    /*
-     * For composite functions, the idea here is to provide the shader with a
-     * _partially evaluated_ function for each feature (or rather, for each
-     * vertex associated with a feature).  If the composite function is
-     * F(properties, zoom), then for each feature we'll provide the following
-     * as a vertex attribute, built at layout time:
-     * [
-     *   F(feature.properties, zA),
-     *   F(feature.properties, zB),
-     *   F(feature.properties, zC),
-     *   F(feature.properties, zD)
-     * ]
-     * where zA, zB, zC, zD are specific zoom stops defined in the composite
-     * function.
-     *
-     * And then, at render time, we'll set a corresonding 'interpolation
-     * uniform', determined by the currently rendered zoom level, which is
-     * essentially a possibly-fractional index into the above vector. By
-     * interpolating between the appropriate pair of values, the shader can
-     * thus obtain the value of F(feature.properties, currentZoom).
-     *
-     * @private
-     */
-    addZoomAndPropertyAttribute(name, attribute, layer, zoom) {
-        const pragmas = this.getPragmas(name);
-
-        pragmas.define.push(`varying {precision} {type} ${name};`);
-
-        // Pick the index of the first zoom stop to add to the buffers
-        const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.property);
-        let stopOffset = 0;
-        if (zoomLevels.length > 4) {
-            while (stopOffset < (zoomLevels.length - 2) &&
-                zoomLevels[stopOffset] < zoom) stopOffset++;
+    upload(context: Context) {
+        for (const property in this.binders) {
+            this.binders[property].upload(context);
         }
 
-
-        const tName = `u_${name}_t`;
-
-        pragmas.vertex.define.push(`uniform lowp float ${tName};`);
-
-        this.interpolationUniforms.push({
-            name: tName,
-            property: attribute.property,
-            useIntegerZoom: attribute.useIntegerZoom,
-            stopOffset
-        });
-
-        // Find the four closest stops, ideally with two on each side of the zoom level.
-        const zoomStops = [];
-        for (let s = 0; s < 4; s++) {
-            zoomStops.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
-        }
-
-        const componentNames = [];
-
-        if (attribute.components === 1) {
-            this.attributes.push(util.extend({}, attribute, {
-                components: 4,
-                zoomStops
-            }));
-            pragmas.vertex.define.push(`attribute {precision} vec4 ${attribute.name};`);
-            componentNames.push(attribute.name);
-
-        } else {
-            for (let k = 0; k < 4; k++) {
-                const componentName = attribute.name + k;
-                componentNames.push(componentName);
-
-                this.attributes.push(util.extend({}, attribute, {
-                    name: componentName,
-                    zoomStops: [zoomStops[k]]
-                }));
-                pragmas.vertex.define.push(`attribute {precision} {type} ${componentName};`);
+        const buffers = [];
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            if ((binder instanceof SourceExpressionBinder ||
+                binder instanceof CompositeExpressionBinder) &&
+                binder.paintVertexBuffer
+            ) {
+                buffers.push(binder.paintVertexBuffer);
             }
         }
-        pragmas.vertex.initialize.push(`${name} = evaluate_zoom_function_${attribute.components}(\
-            ${componentNames.join(', ')}, ${tName}) / ${attribute.multiplier}.0;`);
-
-        this.cacheKey += `/z_${name}`;
+        this._buffers = buffers;
     }
 
-    getPragmas(name) {
-        if (!this.pragmas[name]) {
-            this.pragmas[name]          = {define: [], initialize: []};
-            this.pragmas[name].fragment = {define: [], initialize: []};
-            this.pragmas[name].vertex   = {define: [], initialize: []};
-        }
-        return this.pragmas[name];
-    }
-
-    applyPragmas(source, shaderType) {
-        return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
-            return this.pragmas[name][operation].concat(this.pragmas[name][shaderType][operation])
-                .join('\n')
-                .replace(/{type}/g, type)
-                .replace(/{precision}/g, precision);
-        });
-    }
-
-    // Since this object is accessed frequently during populatePaintArray, it
-    // is helpful to initialize it ahead of time to avoid recalculating
-    // 'hidden class' optimizations to take effect
-    createPaintPropertyStatistics() {
-        const paintPropertyStatistics = {};
-        for (const attribute of this.attributes) {
-            if (attribute.dimensions !== 1) continue;
-            paintPropertyStatistics[attribute.property] = {
-                max: -Infinity
-            };
-        }
-        return paintPropertyStatistics;
-    }
-
-    populatePaintArray(layer, paintArray, paintPropertyStatistics, length, globalProperties, featureProperties) {
-        const start = paintArray.length;
-        paintArray.resize(length);
-
-        for (const attribute of this.attributes) {
-            const zoomBase = attribute.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
-            const value = getPaintAttributeValue(attribute, layer, zoomBase, featureProperties);
-
-            for (let i = start; i < length; i++) {
-                const vertex = paintArray.get(i);
-                if (attribute.components === 4) {
-                    for (let c = 0; c < 4; c++) {
-                        vertex[attribute.name + c] = value[c] * attribute.multiplier;
-                    }
-                } else {
-                    vertex[attribute.name] = value * attribute.multiplier;
-                }
-                if (attribute.dimensions === 1) {
-                    const stats = paintPropertyStatistics[attribute.property];
-                    stats.max = Math.max(stats.max,
-                        attribute.components === 1 ? value : Math.max.apply(Math, value));
-                }
-            }
-        }
-    }
-
-    setUniforms(gl, program, layer, globalProperties) {
-        for (const uniform of this.uniforms) {
-            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
-            const value = layer.getPaintValue(uniform.property, zoomBase);
-
-            if (uniform.components === 4) {
-                gl.uniform4fv(program[uniform.name], value);
-            } else {
-                gl.uniform1f(program[uniform.name], value);
-            }
-        }
-        for (const uniform of this.interpolationUniforms) {
-            const zoomBase = uniform.useIntegerZoom ? { zoom: Math.floor(globalProperties.zoom) } : globalProperties;
-            // stopInterp indicates which stops need to be interpolated.
-            // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-            const stopInterp = layer.getPaintInterpolationT(uniform.property, zoomBase);
-            // We can only store four stop values in the buffers. stopOffset is the number of stops that come
-            // before the stops that were added to the buffers.
-            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(3, stopInterp - uniform.stopOffset)));
+    destroy() {
+        for (const property in this.binders) {
+            this.binders[property].destroy();
         }
     }
 }
 
-function getPaintAttributeValue(attribute, layer, globalProperties, featureProperties) {
-    if (!attribute.zoomStops) {
-        return layer.getPaintValue(attribute.property, globalProperties, featureProperties);
-    }
-    // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
-    const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(
-            attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
+class ProgramConfigurationSet<Layer: TypedStyleLayer> {
+    programConfigurations: {[string]: ProgramConfiguration};
 
-    return values.length === 1 ? values[0] : values;
+    constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
+        this.programConfigurations = {};
+        for (const layer of layers) {
+            this.programConfigurations[layer.id] = ProgramConfiguration.createDynamic(layer, zoom, filterProperties);
+            this.programConfigurations[layer.id].layoutAttributes = layoutAttributes;
+        }
+    }
+
+    populatePaintArrays(length: number, feature: Feature) {
+        for (const key in this.programConfigurations) {
+            this.programConfigurations[key].populatePaintArrays(length, feature);
+        }
+    }
+
+    get(layerId: string) {
+        return this.programConfigurations[layerId];
+    }
+
+    upload(context: Context) {
+        for (const layerId in this.programConfigurations) {
+            this.programConfigurations[layerId].upload(context);
+        }
+    }
+
+    destroy() {
+        for (const layerId in this.programConfigurations) {
+            this.programConfigurations[layerId].destroy();
+        }
+    }
 }
 
-function normalizePaintAttribute(attribute, layer) {
-    let name = attribute.name;
-
-    // by default, construct the shader variable name for paint attribute
-    // `layertype-some-property` as `some_property`
-    if (!name) {
-        name = attribute.property.replace(`${layer.type}-`, '').replace(/-/g, '_');
-    }
-    const isColor = layer._paintSpecifications[attribute.property].type === 'color';
-
-    return util.extend({
-        name: `a_${name}`,
-        components: isColor ? 4 : 1,
-        multiplier: isColor ? 255 : 1,
-        // distinct from `components`, because components can be overridden for
-        // zoom interpolation
-        dimensions: isColor ? 4 : 1
-    }, attribute);
+// paint property arrays
+function paintAttributeName(property, type) {
+    const attributeNameExceptions = {
+        'text-opacity': 'opacity',
+        'icon-opacity': 'opacity',
+        'text-color': 'fill_color',
+        'icon-color': 'fill_color',
+        'text-halo-color': 'halo_color',
+        'icon-halo-color': 'halo_color',
+        'text-halo-blur': 'halo_blur',
+        'icon-halo-blur': 'halo_blur',
+        'text-halo-width': 'halo_width',
+        'icon-halo-width': 'halo_width',
+        'line-gap-width': 'gapwidth'
+    };
+    return attributeNameExceptions[property] ||
+        property.replace(`${type}-`, '').replace(/-/g, '_');
 }
 
-module.exports = ProgramConfiguration;
+register('ConstantBinder', ConstantBinder);
+register('SourceExpressionBinder', SourceExpressionBinder);
+register('CompositeExpressionBinder', CompositeExpressionBinder);
+register('ProgramConfiguration', ProgramConfiguration, {omit: ['_buffers']});
+register('ProgramConfigurationSet', ProgramConfigurationSet);
+
+module.exports = {
+    ProgramConfiguration,
+    ProgramConfigurationSet
+};

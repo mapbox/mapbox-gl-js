@@ -1,6 +1,6 @@
-'use strict';
 // @flow
 
+const supported = require('@mapbox/mapbox-gl-supported');
 const browser = require('./util/browser');
 const version: string = require('../package.json').version;
 const Map = require('./ui/map');
@@ -14,15 +14,15 @@ const Marker = require('./ui/marker');
 const Style = require('./style/style');
 const LngLat = require('./geo/lng_lat');
 const LngLatBounds = require('./geo/lng_lat_bounds');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const Evented = require('./util/evented');
 const config = require('./util/config');
 const rtlTextPlugin = require('./source/rtl_text_plugin');
 
 module.exports = {
     version,
+    supported,
 
-    supported: browser.supported,
     workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
     setRTLTextPlugin: rtlTextPlugin.setRTLTextPlugin,
 
@@ -66,14 +66,13 @@ module.exports = {
  */
 
 /**
- * Returns a Boolean indicating whether the browser
- * [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
+ * Test whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
  *
  * @function supported
- * @param {Object} options
+ * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
  *   the function will return `false` if the performance of Mapbox GL JS would
- *   be dramatically worse than expected (i.e. a software renderer would be used).
+ *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
  * @return {boolean}
  * @example
  * mapboxgl.supported() // = true

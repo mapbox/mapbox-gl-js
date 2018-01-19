@@ -1,4 +1,3 @@
-'use strict';
 
 const getType = require('../util/get_type');
 const ValidationError = require('../error/validation_error');
@@ -9,7 +8,7 @@ module.exports = function validateString(options) {
     const type = getType(value);
 
     if (type !== 'string') {
-        return [new ValidationError(key, value, 'string expected, %s found', type)];
+        return [new ValidationError(key, value, `string expected, ${type} found`)];
     }
 
     return [];

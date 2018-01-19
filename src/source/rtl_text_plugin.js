@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const ajax = require('../util/ajax');
@@ -25,7 +24,7 @@ module.exports.registerForPluginAvailability = function(
 
 // Exposed so it can be stubbed out by tests
 module.exports.createBlobURL = function(response: Object) {
-    return window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
+    return window.URL.createObjectURL(new window.Blob([response.data], {type: "text/javascript"}));
 };
 // Only exposed for tests
 module.exports.clearRTLTextPlugin = function() {
@@ -39,12 +38,15 @@ module.exports.setRTLTextPlugin = function(pluginURL: string, callback: ErrorCal
     }
     pluginRequested = true;
     module.exports.errorCallback = callback;
-    ajax.getArrayBuffer(pluginURL, (err, response) => {
+    ajax.getArrayBuffer({ url: pluginURL }, (err, response) => {
         if (err) {
             callback(err);
-        } else {
+        } else if (response) {
             pluginBlobURL = module.exports.createBlobURL(response);
             module.exports.evented.fire('pluginAvailable', { pluginBlobURL: pluginBlobURL, errorCallback: callback });
         }
     });
 };
+
+module.exports.applyArabicShaping = (null: ?Function);
+module.exports.processBidirectionalText = (null: ?(string, Array<number>) => Array<string>);

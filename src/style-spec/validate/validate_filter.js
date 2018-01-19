@@ -1,21 +1,35 @@
-'use strict';
 
 const ValidationError = require('../error/validation_error');
+const validateExpression = require('./validate_expression');
 const validateEnum = require('./validate_enum');
 const getType = require('../util/get_type');
 const unbundle = require('../util/unbundle_jsonlint');
+const extend = require('../util/extend');
+const {isExpressionFilter} = require('../feature_filter');
 
 module.exports = function validateFilter(options) {
+    if (isExpressionFilter(unbundle.deep(options.value))) {
+        return validateExpression(extend({}, options, {
+            expressionContext: 'filter',
+            valueSpec: { value: 'boolean' }
+        }));
+    } else {
+        return validateNonExpressionFilter(options);
+    }
+};
+
+function validateNonExpressionFilter(options) {
     const value = options.value;
     const key = options.key;
+
+    if (getType(value) !== 'array') {
+        return [new ValidationError(key, value, `array expected, ${getType(value)} found`)];
+    }
+
     const styleSpec = options.styleSpec;
     let type;
 
     let errors = [];
-
-    if (getType(value) !== 'array') {
-        return [new ValidationError(key, value, 'array expected, %s found', getType(value))];
-    }
 
     if (value.length < 1) {
         return [new ValidationError(key, value, 'filter array must have at least 1 element')];
@@ -35,13 +49,13 @@ module.exports = function validateFilter(options) {
     case '>':
     case '>=':
         if (value.length >= 2 && unbundle(value[1]) === '$type') {
-            errors.push(new ValidationError(key, value, '"$type" cannot be use with operator "%s"', value[0]));
+            errors.push(new ValidationError(key, value, `"$type" cannot be use with operator "${value[0]}"`));
         }
         /* falls through */
     case '==':
     case '!=':
         if (value.length !== 3) {
-            errors.push(new ValidationError(key, value, 'filter array for operator "%s" must have 3 elements', value[0]));
+            errors.push(new ValidationError(key, value, `filter array for operator "${value[0]}" must have 3 elements`));
         }
         /* falls through */
     case 'in':
@@ -49,7 +63,7 @@ module.exports = function validateFilter(options) {
         if (value.length >= 2) {
             type = getType(value[1]);
             if (type !== 'string') {
-                errors.push(new ValidationError(`${key}[1]`, value[1], 'string expected, %s found', type));
+                errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${type} found`));
             }
         }
         for (let i = 2; i < value.length; i++) {
@@ -63,7 +77,7 @@ module.exports = function validateFilter(options) {
                     styleSpec: options.styleSpec
                 }));
             } else if (type !== 'string' && type !== 'number' && type !== 'boolean') {
-                errors.push(new ValidationError(`${key}[${i}]`, value[i], 'string, number, or boolean expected, %s found', type));
+                errors.push(new ValidationError(`${key}[${i}]`, value[i], `string, number, or boolean expected, ${type} found`));
             }
         }
         break;
@@ -72,7 +86,7 @@ module.exports = function validateFilter(options) {
     case 'all':
     case 'none':
         for (let i = 1; i < value.length; i++) {
-            errors = errors.concat(validateFilter({
+            errors = errors.concat(validateNonExpressionFilter({
                 key: `${key}[${i}]`,
                 value: value[i],
                 style: options.style,
@@ -85,13 +99,13 @@ module.exports = function validateFilter(options) {
     case '!has':
         type = getType(value[1]);
         if (value.length !== 2) {
-            errors.push(new ValidationError(key, value, 'filter array for "%s" operator must have 2 elements', value[0]));
+            errors.push(new ValidationError(key, value, `filter array for "${value[0]}" operator must have 2 elements`));
         } else if (type !== 'string') {
-            errors.push(new ValidationError(`${key}[1]`, value[1], 'string expected, %s found', type));
+            errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${type} found`));
         }
         break;
 
     }
 
     return errors;
-};
+}

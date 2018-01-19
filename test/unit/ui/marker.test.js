@@ -5,6 +5,7 @@ const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const Marker = require('../../../src/ui/marker');
 const Popup = require('../../../src/ui/popup');
+const LngLat = require('../../../src/geo/lng_lat');
 
 function createMap() {
     const container = window.document.createElement('div');
@@ -18,6 +19,12 @@ test('Marker', (t) => {
         const el = window.document.createElement('div');
         const marker = new Marker(el);
         t.ok(marker.getElement(), 'marker element is created');
+        t.end();
+    });
+
+    t.test('default marker', (t) => {
+        const marker = new Marker();
+        t.ok(marker.getElement(), 'default marker is created');
         t.end();
     });
 
@@ -54,6 +61,46 @@ test('Marker', (t) => {
         t.ok(marker.getPopup() instanceof Popup);
         t.ok(marker.setPopup() instanceof Marker, 'passing no argument to Marker.setPopup() is valid');
         t.ok(!marker.getPopup(), 'Calling setPopup with no argument successfully removes Popup instance from Marker instance');
+        t.end();
+    });
+
+    t.test('popups can be set before LngLat', (t) => {
+        const map = createMap();
+        const popup = new Popup();
+        new Marker(window.document.createElement('div'))
+            .setPopup(popup)
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
+        t.deepEqual(popup.getLngLat(), new LngLat(-77.01866, 38.888));
+        t.end();
+    });
+
+    t.test('marker centered by default', (t) => {
+        const map = createMap();
+        const element = window.document.createElement('div');
+        const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
+        const translate = Math.round(map.getContainer().offsetWidth / 2);
+        t.equal(marker.getElement().style.transform, `translate(-50%, -50%) translate(${translate}px, ${translate}px)`, 'Marker centered');
+        t.end();
+    });
+
+    t.test('togglePopup returns Marker instance', (t) => {
+        const map = createMap();
+        const element = window.document.createElement('div');
+        const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
+        marker.setPopup(new Popup());
+        t.ok(marker.togglePopup() instanceof Marker);
+        t.end();
+    });
+
+    t.test('marker\'s offset can be changed', (t) => {
+        const map = createMap();
+        const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
+        const offset = marker.getOffset();
+        t.ok(offset.x === 0 && offset.y === 0, 'default offset');
+        t.ok(marker.setOffset([50, -75]) instanceof Marker, 'marker.setOffset() returns Marker instance');
+        const newOffset = marker.getOffset();
+        t.ok(newOffset.x === 50 &&  newOffset.y === -75, 'marker\'s offset can be updated');
         t.end();
     });
 

@@ -3,6 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Camera = require('../../../src/ui/camera');
 const Transform = require('../../../src/geo/transform');
+const browser = require('../../../src/util/browser');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedLngLat = fixed.LngLat;
@@ -15,8 +16,12 @@ test('camera', (t) => {
         const transform = new Transform(0, 20, options.renderWorldCopies);
         transform.resize(512, 512);
 
-        return new Camera(transform, {})
+        const camera = new Camera(transform, {})
             .jumpTo(options);
+
+        camera._update = () => {};
+
+        return camera;
     }
 
     t.test('#jumpTo', (t) => {
@@ -715,7 +720,11 @@ test('camera', (t) => {
 
         t.test('can be called from within a moveend event handler', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
+            stub.callsFake(() => 0);
             camera.easeTo({ center: [100, 0], duration: 10 });
+
             camera.once('moveend', () => {
                 camera.easeTo({ center: [200, 0], duration: 10 });
                 camera.once('moveend', () => {
@@ -723,12 +732,31 @@ test('camera', (t) => {
                     camera.once('moveend', () => {
                         t.end();
                     });
+
+                    setTimeout(() => {
+                        stub.callsFake(() => 30);
+                        camera._updateCamera();
+                    }, 0);
                 });
+
+                // setTimeout to avoid a synchronous callback
+                setTimeout(() => {
+                    stub.callsFake(() => 20);
+                    camera._updateCamera();
+                }, 0);
             });
+
+            // setTimeout to avoid a synchronous callback
+            setTimeout(() => {
+                stub.callsFake(() => 10);
+                camera._updateCamera();
+            }, 0);
         });
 
         t.test('pans eastward across the antimeridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([170, 0]);
             let crossedAntimeridian;
 
@@ -743,11 +771,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.easeTo({ center: [-170, 0], duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('pans westward across the antimeridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([-170, 0]);
             let crossedAntimeridian;
 
@@ -762,7 +803,18 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.easeTo({ center: [170, 0], duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.end();
@@ -788,7 +840,15 @@ test('camera', (t) => {
             const camera = createCamera({zoom: 22, center:[0, 0]});
             t.doesNotThrow(()=>camera.flyTo({zoom:10, center:[0, 0]}));
             t.end();
+        });
 
+        t.test('does not throw when cameras current zoom is above maxzoom and an offset creates infinite zoom out factor', (t)=>{
+            const transform = new Transform(0, 20.9999, true);
+            transform.resize(512, 512);
+            const camera = new Camera(transform, {}).jumpTo({zoom: 21, center:[0, 0]});
+            camera._update = () => {};
+            t.doesNotThrow(()=>camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]}));
+            t.end();
         });
 
         t.test('zooms to specified level', (t) => {
@@ -920,8 +980,7 @@ test('camera', (t) => {
         t.test('for short flights, emits (solely) move events, preserving eventData', (t) => {
             //As I type this, the code path for guiding super-short flights is (and will probably remain) different.
             //As such; it deserves a separate test case. This test case flies the map from A to A.
-            const fromTo = { center: [100, 0] };
-            const camera = createCamera(fromTo);
+            const camera = createCamera({ center: [100, 0] });
             let movestarted, moved, rotated, pitched, pitchstarted, pitchended, zoomstarted, zoomed, zoomended;
             const eventData = { data: 'ok' };
 
@@ -953,7 +1012,20 @@ test('camera', (t) => {
                     t.end();
                 });
 
-            camera.flyTo(fromTo, eventData);
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
+
+            camera.flyTo({ center: [100, 0], duration: 10 }, eventData);
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('stops existing ease', (t) => {
@@ -966,6 +1038,9 @@ test('camera', (t) => {
 
         t.test('can be called from within a moveend event handler', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
+
             camera.flyTo({ center: [100, 0], duration: 10 });
             camera.once('moveend', () => {
                 camera.flyTo({ center: [200, 0], duration: 10 });
@@ -976,6 +1051,21 @@ test('camera', (t) => {
                     });
                 });
             });
+
+            setTimeout(() => {
+                stub.callsFake(() => 10);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 20);
+                    camera._updateCamera();
+
+                    setTimeout(() => {
+                        stub.callsFake(() => 30);
+                        camera._updateCamera();
+                    }, 0);
+                }, 0);
+            }, 0);
         });
 
         t.test('ascends', (t) => {
@@ -994,11 +1084,26 @@ test('camera', (t) => {
                 t.end();
             });
 
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
+
             camera.flyTo({ center: [100, 0], zoom: 18, duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('pans eastward across the prime meridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([-10, 0]);
             let crossedPrimeMeridian;
 
@@ -1013,11 +1118,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [10, 0], duration: 20 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 20);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('pans westward across the prime meridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([10, 0]);
             let crossedPrimeMeridian;
 
@@ -1032,11 +1150,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [-10, 0], duration: 20 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 20);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('pans eastward across the antimeridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([170, 0]);
             let crossedAntimeridian;
 
@@ -1051,11 +1182,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [-170, 0], duration: 20 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 20);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('pans westward across the antimeridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([-170, 0]);
             let crossedAntimeridian;
 
@@ -1070,11 +1214,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [170, 0], duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('does not pan eastward across the antimeridian if no world copies', (t) => {
             const camera = createCamera({renderWorldCopies: false});
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([170, 0]);
             let crossedAntimeridian;
 
@@ -1089,11 +1246,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [-170, 0], duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('does not pan westward across the antimeridian if no world copies', (t) => {
             const camera = createCamera({renderWorldCopies: false});
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([-170, 0]);
             let crossedAntimeridian;
 
@@ -1108,11 +1278,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [170, 0], duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('jumps back to world 0 when crossing the antimeridian', (t) => {
             const camera = createCamera();
+            const stub = t.stub(browser, 'now');
+
             camera.setCenter([-170, 0]);
 
             let leftWorld0 = false;
@@ -1126,11 +1309,24 @@ test('camera', (t) => {
                 t.end();
             });
 
+            stub.callsFake(() => 0);
             camera.flyTo({ center: [170, 0], duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('peaks at the specified zoom level', (t) => {
             const camera = createCamera({zoom: 20});
+            const stub = t.stub(browser, 'now');
+
             const minZoom = 1;
             let zoomed = false;
 
@@ -1150,16 +1346,26 @@ test('camera', (t) => {
                 t.end();
             });
 
-            const options = { center: [1, 0], zoom: 20, minZoom };
-            camera.flyTo(options);
+            stub.callsFake(() => 0);
+            camera.flyTo({ center: [1, 0], zoom: 20, minZoom, duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 3);
+                camera._updateCamera();
+
+                setTimeout(() => {
+                    stub.callsFake(() => 10);
+                    camera._updateCamera();
+                }, 0);
+            }, 0);
         });
 
         t.test('respects transform\'s maxZoom', (t) => {
-
             const transform = new Transform(2, 10, false);
             transform.resize(512, 512);
 
             const camera = new Camera(transform, {});
+            camera._update = () => {};
 
             camera.on('moveend', () => {
                 t.equalWithPrecision(camera.getZoom(), 10, 1e-10);
@@ -1170,16 +1376,22 @@ test('camera', (t) => {
                 t.end();
             });
 
-            const flyOptions = { center: [12, 34], zoom: 30};
-            camera.flyTo(flyOptions);
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
+            camera.flyTo({ center: [12, 34], zoom: 30, duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 10);
+                camera._updateCamera();
+            }, 0);
         });
 
         t.test('respects transform\'s minZoom', (t) => {
-
             const transform = new Transform(2, 10, false);
             transform.resize(512, 512);
 
             const camera = new Camera(transform, {});
+            camera._update = () => {};
 
             camera.on('moveend', () => {
                 t.equalWithPrecision(camera.getZoom(), 2, 1e-10);
@@ -1190,8 +1402,30 @@ test('camera', (t) => {
                 t.end();
             });
 
-            const flyOptions = { center: [12, 34], zoom: 1};
-            camera.flyTo(flyOptions);
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
+            camera.flyTo({ center: [12, 34], zoom: 1, duration: 10 });
+
+            setTimeout(() => {
+                stub.callsFake(() => 10);
+                camera._updateCamera();
+            }, 0);
+        });
+
+        t.test('resets duration to 0 if it exceeds maxDuration', (t) => {
+            let startTime, endTime, timeDiff;
+            const camera = createCamera({ center: [37.63454, 55.75868], zoom: 18});
+
+            camera
+                .on('movestart', () => { startTime = new Date(); })
+                .on('moveend', () => {
+                    endTime = new Date();
+                    timeDiff = endTime - startTime;
+                    t.equalWithPrecision(timeDiff, 0, 1e+1);
+                    t.end();
+                });
+
+            camera.flyTo({ center: [-122.3998631, 37.7884307], maxDuration: 100 });
         });
 
         t.end();
@@ -1206,9 +1440,9 @@ test('camera', (t) => {
 
         t.test('returns true when panning', (t) => {
             const camera = createCamera();
-            camera.on('moveend', () => { t.end(); });
             camera.panTo([100, 0], {duration: 1});
             t.ok(camera.isEasing());
+            t.end();
         });
 
         t.test('returns false when done panning', (t) => {
@@ -1217,16 +1451,20 @@ test('camera', (t) => {
                 t.ok(!camera.isEasing());
                 t.end();
             });
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
             camera.panTo([100, 0], {duration: 1});
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+            }, 0);
         });
 
         t.test('returns true when zooming', (t) => {
             const camera = createCamera();
-            camera.on('moveend', () => {
-                t.end();
-            });
             camera.zoomTo(3.2, {duration: 1});
             t.ok(camera.isEasing());
+            t.end();
         });
 
         t.test('returns false when done zooming', (t) => {
@@ -1235,14 +1473,20 @@ test('camera', (t) => {
                 t.ok(!camera.isEasing());
                 t.end();
             });
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
             camera.zoomTo(3.2, {duration: 1});
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+            }, 0);
         });
 
         t.test('returns true when rotating', (t) => {
             const camera = createCamera();
-            camera.on('moveend', () => { t.end(); });
             camera.rotateTo(90, {duration: 1});
             t.ok(camera.isEasing());
+            t.end();
         });
 
         t.test('returns false when done rotating', (t) => {
@@ -1251,7 +1495,13 @@ test('camera', (t) => {
                 t.ok(!camera.isEasing());
                 t.end();
             });
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
             camera.rotateTo(90, {duration: 1});
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+            }, 0);
         });
 
         t.end();
@@ -1323,7 +1573,14 @@ test('camera', (t) => {
                 t.end(); // Fails with ".end() called twice" if we get here a second time.
             });
 
+            const stub = t.stub(browser, 'now');
+            stub.callsFake(() => 0);
             camera.panTo([100, 0], {duration: 1}, eventData);
+
+            setTimeout(() => {
+                stub.callsFake(() => 1);
+                camera._updateCamera();
+            }, 0);
         });
 
         t.end();
@@ -1355,7 +1612,7 @@ test('camera', (t) => {
             const bb = [[-133, 16], [-68, 50]];
 
             camera.fitBounds(bb, { padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0 });
-            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -91.5221, lat: 28.6089 }, 'pans to coordinates based on fitBounds with padding option as object applied');
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -96.5558, lat: 32.0833 }, 'pans to coordinates based on fitBounds with padding option as object applied');
             t.end();
         });
 

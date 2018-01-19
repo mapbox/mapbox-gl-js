@@ -1,15 +1,28 @@
-'use strict';
+// @flow
 
-const Point = require('point-geometry');
-const mat4 = require('@mapbox/gl-matrix').mat4;
-const vec4 = require('@mapbox/gl-matrix').vec4;
+const Point = require('@mapbox/point-geometry');
+const {mat4, vec4} = require('@mapbox/gl-matrix');
 const symbolSize = require('./symbol_size');
-const addDynamicAttributes = require('../data/bucket/symbol_bucket').addDynamicAttributes;
+const {addDynamicAttributes} = require('../data/bucket/symbol_bucket');
+const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
+
+import type Painter from '../render/painter';
+import type Transform from '../geo/transform';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type {
+    GlyphOffsetArray,
+    SymbolLineVertexArray,
+    SymbolDynamicLayoutArray
+} from '../data/array_types';
+const WritingMode = require('../symbol/shaping').WritingMode;
 
 module.exports = {
-    updateLineLabels: updateLineLabels,
-    getLabelPlaneMatrix: getLabelPlaneMatrix,
-    getGlCoordMatrix: getGlCoordMatrix
+    updateLineLabels,
+    getLabelPlaneMatrix,
+    getGlCoordMatrix,
+    project,
+    placeFirstAndLastGlyph,
+    xyTransformMat4
 };
 
 /*
@@ -60,7 +73,11 @@ module.exports = {
 /*
  * Returns a matrix for converting from tile units to the correct label coordinate space.
  */
-function getLabelPlaneMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
+function getLabelPlaneMatrix(posMatrix: mat4,
+                             pitchWithMap: boolean,
+                             rotateWithMap: boolean,
+                             transform: Transform,
+                             pixelsToTileUnits: number) {
     const m = mat4.identity(new Float32Array(16));
     if (pitchWithMap) {
         mat4.identity(m);
@@ -79,7 +96,11 @@ function getLabelPlaneMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, 
 /*
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
  */
-function getGlCoordMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pixelsToTileUnits) {
+function getGlCoordMatrix(posMatrix: mat4,
+                          pitchWithMap: boolean,
+                          rotateWithMap: boolean,
+                          transform: Transform,
+                          pixelsToTileUnits: number) {
     const m = mat4.identity(new Float32Array(16));
     if (pitchWithMap) {
         mat4.multiply(m, m, posMatrix);
@@ -95,83 +116,155 @@ function getGlCoordMatrix(posMatrix, pitchWithMap, rotateWithMap, transform, pix
     return m;
 }
 
-function project(point, matrix) {
+function project(point: Point, matrix: mat4) {
     const pos = [point.x, point.y, 0, 1];
-    vec4.transformMat4(pos, pos, matrix);
-    return new Point(pos[0] / pos[3], pos[1] / pos[3]);
+    xyTransformMat4(pos, pos, matrix);
+    const w = pos[3];
+    return {
+        point: new Point(pos[0] / w, pos[1] / w),
+        signedDistanceFromCamera: w
+    };
 }
 
-function isVisible(anchorPos, placementZoom, clippingBuffer, painter) {
+function isVisible(anchorPos: [number, number, number, number],
+                   clippingBuffer: [number, number]) {
     const x = anchorPos[0] / anchorPos[3];
     const y = anchorPos[1] / anchorPos[3];
     const inPaddedViewport = (
-            x >= -clippingBuffer[0] &&
-            x <= clippingBuffer[0] &&
-            y >= -clippingBuffer[1] &&
-            y <= clippingBuffer[1]);
-    return inPaddedViewport && painter.frameHistory.isVisible(placementZoom);
+        x >= -clippingBuffer[0] &&
+        x <= clippingBuffer[0] &&
+        y >= -clippingBuffer[1] &&
+        y <= clippingBuffer[1]);
+    return inPaddedViewport;
 }
 
 /*
  *  Update the `dynamicLayoutVertexBuffer` for the buffer with the correct glyph positions for the current map view.
  *  This is only run on labels that are aligned with lines. Horizontal labels are handled entirely in the shader.
  */
-function updateLineLabels(bucket, posMatrix, painter, isText, labelPlaneMatrix, glCoordMatrix, pitchWithMap, keepUpright, pixelsToTileUnits, layer) {
+function updateLineLabels(bucket: SymbolBucket,
+                          posMatrix: mat4,
+                          painter: Painter,
+                          isText: boolean,
+                          labelPlaneMatrix: mat4,
+                          glCoordMatrix: mat4,
+                          pitchWithMap: boolean,
+                          keepUpright: boolean) {
 
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform, layer, isText);
+    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom,
+        symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
 
     const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 
     const dynamicLayoutVertexArray = isText ?
-        bucket.buffers.glyph.dynamicLayoutVertexArray :
-        bucket.buffers.icon.dynamicLayoutVertexArray;
+        bucket.text.dynamicLayoutVertexArray :
+        bucket.icon.dynamicLayoutVertexArray;
     dynamicLayoutVertexArray.clear();
 
     const lineVertexArray = bucket.lineVertexArray;
-    const placedSymbols = isText ? bucket.placedGlyphArray : bucket.placedIconArray;
+    const placedSymbols = isText ? bucket.text.placedSymbolArray : bucket.icon.placedSymbolArray;
+
+    const aspectRatio = painter.transform.width / painter.transform.height;
+
+    let useVertical = false;
 
     for (let s = 0; s < placedSymbols.length; s++) {
-        const symbol = placedSymbols.get(s);
+        const symbol: any = placedSymbols.get(s);
+        // Don't do calculations for vertical glyphs unless the previous symbol was horizontal
+        // and we determined that vertical glyphs were necessary.
+        // Also don't do calculations for symbols that are collided and fully faded out
+        if (symbol.hidden || symbol.writingMode === WritingMode.vertical && !useVertical) {
+            hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
+            continue;
+        }
+        // Awkward... but we're counting on the paired "vertical" symbol coming immediately after its horizontal counterpart
+        useVertical = false;
 
         const anchorPos = [symbol.anchorX, symbol.anchorY, 0, 1];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        if (!isVisible(anchorPos, symbol.placementZoom, clippingBuffer, painter)) {
+        if (!isVisible(anchorPos, clippingBuffer)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
             continue;
         }
 
         const cameraToAnchorDistance = anchorPos[3];
-        const perspectiveRatio = 1 + 0.5 * ((cameraToAnchorDistance / painter.transform.cameraToCenterDistance) - 1);
+        const perspectiveRatio = 0.5 + 0.5 * (cameraToAnchorDistance / painter.transform.cameraToCenterDistance);
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ?
             fontSize * perspectiveRatio :
             fontSize / perspectiveRatio;
 
-        const anchorPoint = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
+        const tileAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
+        const anchorPoint = project(tileAnchorPoint, labelPlaneMatrix).point;
         const projectionCache = {};
 
-        const placeUnflipped = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-                                  bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache);
-        if (placeUnflipped.notEnoughRoom ||
+        const placeUnflipped: any = placeGlyphsAlongLine(symbol, pitchScaledFontSize, false /*unflipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
+            bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio);
+
+        useVertical = placeUnflipped.useVertical;
+
+        if (placeUnflipped.notEnoughRoom || useVertical ||
             (placeUnflipped.needsFlipping &&
              placeGlyphsAlongLine(symbol, pitchScaledFontSize, true /*flipped*/, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix,
-                    bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache).notEnoughRoom)) {
+                 bucket.glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio).notEnoughRoom)) {
             hideGlyphs(symbol.numGlyphs, dynamicLayoutVertexArray);
         }
     }
 
     if (isText) {
-        bucket.buffers.glyph.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
+        bucket.text.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
     } else {
-        bucket.buffers.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray.serialize());
+        bucket.icon.dynamicLayoutVertexBuffer.updateData(dynamicLayoutVertexArray);
     }
 }
 
-function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, projectionCache) {
+function placeFirstAndLastGlyph(fontScale: number, glyphOffsetArray: GlyphOffsetArray, lineOffsetX: number, lineOffsetY: number, flip: boolean, anchorPoint: Point, tileAnchorPoint: Point, symbol: any, lineVertexArray: SymbolLineVertexArray, labelPlaneMatrix: mat4, projectionCache: any, returnTileDistance: boolean) {
+    const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
+    const lineStartIndex = symbol.lineStartIndex;
+    const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
+
+    const firstGlyphOffset = glyphOffsetArray.getoffsetX(symbol.glyphStartIndex);
+    const lastGlyphOffset = glyphOffsetArray.getoffsetX(glyphEndIndex - 1);
+
+    const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, returnTileDistance);
+    if (!firstPlacedGlyph)
+        return null;
+
+    const lastPlacedGlyph = placeGlyphAlongLine(fontScale * lastGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
+        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, returnTileDistance);
+    if (!lastPlacedGlyph)
+        return null;
+
+    return { first: firstPlacedGlyph, last: lastPlacedGlyph };
+}
+
+function requiresOrientationChange(writingMode, firstPoint, lastPoint, aspectRatio) {
+    if (writingMode === WritingMode.horizontal) {
+        // On top of choosing whether to flip, choose whether to render this version of the glyphs or the alternate
+        // vertical glyphs. We can't just filter out vertical glyphs in the horizontal range because the horizontal
+        // and vertical versions can have slightly different projections which could lead to angles where both or
+        // neither showed.
+        const rise = Math.abs(lastPoint.y - firstPoint.y);
+        const run = Math.abs(lastPoint.x - firstPoint.x) * aspectRatio;
+        if (rise > run) {
+            return { useVertical: true };
+        }
+    }
+
+    if (writingMode === WritingMode.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x) {
+        // Includes "horizontalOnly" case for labels without vertical glyphs
+        return { needsFlipping: true };
+    }
+
+    return null;
+}
+
+function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, labelPlaneMatrix, glCoordMatrix, glyphOffsetArray, lineVertexArray, dynamicLayoutVertexArray, anchorPoint, tileAnchorPoint, projectionCache, aspectRatio) {
     const fontScale = fontSize / 24;
     const lineOffsetX = symbol.lineOffsetX * fontSize;
     const lineOffsetY = symbol.lineOffsetY * fontSize;
@@ -179,69 +272,94 @@ function placeGlyphsAlongLine(symbol, fontSize, flip, keepUpright, posMatrix, la
     let placedGlyphs;
     if (symbol.numGlyphs > 1) {
         const glyphEndIndex = symbol.glyphStartIndex + symbol.numGlyphs;
-
-        // Place the first and the last glyph in the label first, so we can figure out
-        // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
-        const firstGlyphOffset = glyphOffsetArray.get(symbol.glyphStartIndex).offsetX;
-        const lastGlyphOffset = glyphOffsetArray.get(glyphEndIndex - 1).offsetX;
         const lineStartIndex = symbol.lineStartIndex;
         const lineEndIndex = symbol.lineStartIndex + symbol.lineLength;
 
-        const firstPlacedGlyph = placeGlyphAlongLine(fontScale * firstGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
-        if (!firstPlacedGlyph)
+        // Place the first and the last glyph in the label first, so we can figure out
+        // the overall orientation of the label and determine whether it needs to be flipped in keepUpright mode
+        const firstAndLastGlyph = placeFirstAndLastGlyph(fontScale, glyphOffsetArray, lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol, lineVertexArray, labelPlaneMatrix, projectionCache, false);
+        if (!firstAndLastGlyph) {
             return { notEnoughRoom: true };
+        }
+        const firstPoint = project(firstAndLastGlyph.first.point, glCoordMatrix).point;
+        const lastPoint = project(firstAndLastGlyph.last.point, glCoordMatrix).point;
 
-        const lastPlacedGlyph = placeGlyphAlongLine(fontScale * lastGlyphOffset, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache);
-        if (!lastPlacedGlyph)
-            return { notEnoughRoom: true };
-
-        const firstPoint = project(firstPlacedGlyph.point, glCoordMatrix);
-        const lastPoint = project(lastPlacedGlyph.point, glCoordMatrix);
-
-        if (keepUpright && !flip &&
-            (symbol.vertical ? firstPoint.y < lastPoint.y : firstPoint.x > lastPoint.x)) {
-            return { needsFlipping: true };
+        if (keepUpright && !flip) {
+            const orientationChange = requiresOrientationChange(symbol.writingMode, firstPoint, lastPoint, aspectRatio);
+            if (orientationChange) {
+                return orientationChange;
+            }
         }
 
-        placedGlyphs = [firstPlacedGlyph];
+        placedGlyphs = [firstAndLastGlyph.first];
         for (let glyphIndex = symbol.glyphStartIndex + 1; glyphIndex < glyphEndIndex - 1; glyphIndex++) {
-            const glyph = glyphOffsetArray.get(glyphIndex);
-
             // Since first and last glyph fit on the line, we're sure that the rest of the glyphs can be placed
-            placedGlyphs.push(placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                    lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache));
+            // $FlowFixMe
+            placedGlyphs.push(placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(glyphIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
+                lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache, false));
         }
-        placedGlyphs.push(lastPlacedGlyph);
+        placedGlyphs.push(firstAndLastGlyph.last);
     } else {
         // Only a single glyph to place
         // So, determine whether to flip based on projected angle of the line segment it's on
         if (keepUpright && !flip) {
-            const a = project(lineVertexArray.get(symbol.lineStartIndex + symbol.segment), posMatrix);
-            const b = project(lineVertexArray.get(symbol.lineStartIndex + symbol.segment + 1), posMatrix);
-            if (symbol.vertical ? b.y > a.y : b.x < a.x) {
-                return { needsFlipping: true };
+            const a = project(tileAnchorPoint, posMatrix).point;
+            const tileVertexIndex = (symbol.lineStartIndex + symbol.segment + 1);
+            // $FlowFixMe
+            const tileSegmentEnd = new Point(lineVertexArray.getx(tileVertexIndex), lineVertexArray.gety(tileVertexIndex));
+            const projectedVertex = project(tileSegmentEnd, posMatrix);
+            // We know the anchor will be in the viewport, but the end of the line segment may be
+            // behind the plane of the camera, in which case we can use a point at any arbitrary (closer)
+            // point on the segment.
+            const b = (projectedVertex.signedDistanceFromCamera > 0) ?
+                projectedVertex.point :
+                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix);
+
+
+            const orientationChange = requiresOrientationChange(symbol.writingMode, a, b, aspectRatio);
+            if (orientationChange) {
+                return orientationChange;
             }
         }
-        const glyph = glyphOffsetArray.get(symbol.glyphStartIndex);
-        const singleGlyph = placeGlyphAlongLine(fontScale * glyph.offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, symbol.segment,
-                symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache);
+        // $FlowFixMe
+        const singleGlyph = placeGlyphAlongLine(fontScale * glyphOffsetArray.getoffsetX(symbol.glyphStartIndex), lineOffsetX, lineOffsetY, flip, anchorPoint, tileAnchorPoint, symbol.segment,
+            symbol.lineStartIndex, symbol.lineStartIndex + symbol.lineLength, lineVertexArray, labelPlaneMatrix, projectionCache, false);
         if (!singleGlyph)
             return { notEnoughRoom: true };
 
         placedGlyphs = [singleGlyph];
     }
 
-    const placementZoom = symbol.placementZoom;
-    for (const glyph of placedGlyphs) {
-        addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle, placementZoom);
+    for (const glyph: any of placedGlyphs) {
+        addDynamicAttributes(dynamicLayoutVertexArray, glyph.point, glyph.angle);
     }
     return {};
 }
 
-function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoint, anchorSegment,
-        lineStartIndex, lineEndIndex, lineVertexArray, labelPlaneMatrix, projectionCache) {
+function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint: Point, previousProjectedPoint: Point, minimumLength: number, projectionMatrix: mat4) {
+    // We are assuming "previousTilePoint" won't project to a point within one unit of the camera plane
+    // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
+    // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
+    // plane of the camera.
+    const projectedUnitVertex = project(previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit()), projectionMatrix).point;
+    const projectedUnitSegment = previousProjectedPoint.sub(projectedUnitVertex);
+
+    return previousProjectedPoint.add(projectedUnitSegment._mult(minimumLength / projectedUnitSegment.mag()));
+}
+
+function placeGlyphAlongLine(offsetX: number,
+                             lineOffsetX: number,
+                             lineOffsetY: number,
+                             flip: boolean,
+                             anchorPoint: Point,
+                             tileAnchorPoint: Point,
+                             anchorSegment: number,
+                             lineStartIndex: number,
+                             lineEndIndex: number,
+                             lineVertexArray: SymbolLineVertexArray,
+                             labelPlaneMatrix: mat4,
+                             projectionCache: {[number]: Point},
+                             returnTileDistance: boolean) {
 
     const combinedOffsetX = flip ?
         offsetX - lineOffsetX :
@@ -263,6 +381,7 @@ function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoin
         lineStartIndex + anchorSegment :
         lineStartIndex + anchorSegment + 1;
 
+    const initialIndex = currentIndex;
     let current = anchorPoint;
     let prev = anchorPoint;
     let distanceToPrev = 0;
@@ -280,7 +399,20 @@ function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoin
 
         current = projectionCache[currentIndex];
         if (current === undefined) {
-            current = projectionCache[currentIndex] = project(lineVertexArray.get(currentIndex), labelPlaneMatrix);
+            const currentVertex = new Point(lineVertexArray.getx(currentIndex), lineVertexArray.gety(currentIndex));
+            const projection = project(currentVertex, labelPlaneMatrix);
+            if (projection.signedDistanceFromCamera > 0) {
+                current = projectionCache[currentIndex] = projection.point;
+            } else {
+                // The vertex is behind the plane of the camera, so we can't project it
+                // Instead, we'll create a vertex along the line that's far enough to include the glyph
+                const previousLineVertexIndex = currentIndex - dir;
+                const previousTilePoint = distanceToPrev === 0 ?
+                    tileAnchorPoint :
+                    new Point(lineVertexArray.getx(previousLineVertexIndex), lineVertexArray.gety(previousLineVertexIndex));
+                // Don't cache because the new vertex might not be far enough out for future glyphs on the same segment
+                current = projectTruncatedLineSegment(previousTilePoint, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix);
+            }
         }
 
         distanceToPrev += currentSegmentDistance;
@@ -299,16 +431,35 @@ function placeGlyphAlongLine(offsetX, lineOffsetX, lineOffsetY, flip, anchorPoin
 
     return {
         point: p,
-        angle: segmentAngle
+        angle: segmentAngle,
+        tileDistance: returnTileDistance ?
+            {
+                prevTileDistance: (currentIndex - dir) === initialIndex ? 0 : lineVertexArray.gettileUnitDistanceFromAnchor(currentIndex - dir),
+                lastSegmentViewportDistance: absOffsetX - distanceToPrev
+            } : null
     };
 }
 
-const offscreenPoint = new Point(-Infinity, -Infinity);
+const hiddenGlyphAttributes = new Float32Array([-Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0, -Infinity, -Infinity, 0]);
 
 // Hide them by moving them offscreen. We still need to add them to the buffer
 // because the dynamic buffer is paired with a static buffer that doesn't get updated.
-function hideGlyphs(num, dynamicLayoutVertexArray) {
+function hideGlyphs(num: number, dynamicLayoutVertexArray: SymbolDynamicLayoutArray) {
     for (let i = 0; i < num; i++) {
-        addDynamicAttributes(dynamicLayoutVertexArray, offscreenPoint, 0, 25);
+        const offset = dynamicLayoutVertexArray.length;
+        dynamicLayoutVertexArray.resize(offset + 4);
+        // Since all hidden glyphs have the same attributes, we can build up the array faster with a single call to Float32Array.set
+        // for each set of four vertices, instead of calling addDynamicAttributes for each vertex.
+        dynamicLayoutVertexArray.float32.set(hiddenGlyphAttributes, offset * 3);
     }
+}
+
+// For line label layout, we're not using z output and our w input is always 1
+// This custom matrix transformation ignores those components to make projection faster
+function xyTransformMat4(out: vec4, a: vec4, m: mat4) {
+    const x = a[0], y = a[1];
+    out[0] = m[0] * x + m[4] * y + m[12];
+    out[1] = m[1] * x + m[5] * y + m[13];
+    out[3] = m[3] * x + m[7] * y + m[15];
+    return out;
 }

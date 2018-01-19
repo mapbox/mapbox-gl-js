@@ -16,10 +16,7 @@
         [
           "wait"
         ]
-      ],
-      "skipped": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/4804"
-      }
+      ]
     }
   },
   "sources": {
@@ -27,7 +24,10 @@
       "type": "geojson",
       "data": {
         "type": "Point",
-        "coordinates": [0, 0]
+        "coordinates": [
+          0,
+          0
+        ]
       }
     }
   },

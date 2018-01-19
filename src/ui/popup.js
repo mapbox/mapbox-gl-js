@@ -1,16 +1,29 @@
-'use strict';
+// @flow
 
 const util = require('../util/util');
 const Evented = require('../util/evented');
 const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const window = require('../util/window');
 const smartWrap = require('../util/smart_wrap');
+
+import type Map from './map';
+import type {LngLatLike} from '../geo/lng_lat';
 
 const defaultOptions = {
     closeButton: true,
     closeOnClick: true
+};
+
+export type Anchor = 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type Offset = number | PointLike | {[Anchor]: PointLike};
+
+export type PopupOptions = {
+    closeButton: boolean,
+    closeOnClick: boolean,
+    anchor: Anchor,
+    offset: Offset
 };
 
 /**
@@ -54,13 +67,19 @@ const defaultOptions = {
  * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  */
 class Popup extends Evented {
-    constructor(options) {
+    _map: Map;
+    options: PopupOptions;
+    _content: HTMLElement;
+    _container: HTMLElement;
+    _closeButton: HTMLElement;
+    _tip: HTMLElement;
+    _lngLat: LngLat;
+    _pos: ?Point;
+
+    constructor(options: PopupOptions) {
         super();
         this.options = util.extend(Object.create(defaultOptions), options);
-        util.bindAll([
-            '_update',
-            '_onClickClose'],
-            this);
+        util.bindAll(['_update', '_onClickClose'], this);
     }
 
     /**
@@ -69,7 +88,7 @@ class Popup extends Evented {
      * @param {Map} map The Mapbox GL JS map to add the popup to.
      * @returns {Popup} `this`
      */
-    addTo(map) {
+    addTo(map: Map) {
         this._map = map;
         this._map.on('move', this._update);
         if (this.options.closeOnClick) {
@@ -95,12 +114,12 @@ class Popup extends Evented {
      * @returns {Popup} `this`
      */
     remove() {
-        if (this._content && this._content.parentNode) {
-            this._content.parentNode.removeChild(this._content);
+        if (this._content) {
+            DOM.remove(this._content);
         }
 
         if (this._container) {
-            this._container.parentNode.removeChild(this._container);
+            DOM.remove(this._container);
             delete this._container;
         }
 
@@ -140,10 +159,10 @@ class Popup extends Evented {
     /**
      * Sets the geographical location of the popup's anchor, and moves the popup to it.
      *
-     * @param {LngLatLike} lnglat The geographical location to set as the popup's anchor.
+     * @param lnglat The geographical location to set as the popup's anchor.
      * @returns {Popup} `this`
      */
-    setLngLat(lnglat) {
+    setLngLat(lnglat: LngLatLike) {
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
         this._update();
@@ -157,7 +176,7 @@ class Popup extends Evented {
      * so it cannot insert raw HTML. Use this method for security against XSS
      * if the popup content is user-provided.
      *
-     * @param {string} text Textual content for the popup.
+     * @param text Textual content for the popup.
      * @returns {Popup} `this`
      * @example
      * var popup = new mapboxgl.Popup()
@@ -165,7 +184,7 @@ class Popup extends Evented {
      *   .setText('Hello, world!')
      *   .addTo(map);
      */
-    setText(text) {
+    setText(text: string) {
         return this.setDOMContent(window.document.createTextNode(text));
     }
 
@@ -176,10 +195,10 @@ class Popup extends Evented {
      * used only with trusted content. Consider {@link Popup#setText} if
      * the content is an untrusted text string.
      *
-     * @param {string} html A string representing HTML content for the popup.
+     * @param html A string representing HTML content for the popup.
      * @returns {Popup} `this`
      */
-    setHTML(html) {
+    setHTML(html: string) {
         const frag = window.document.createDocumentFragment();
         const temp = window.document.createElement('body');
         let child;
@@ -196,7 +215,7 @@ class Popup extends Evented {
     /**
      * Sets the popup's content to the element provided as a DOM node.
      *
-     * @param {Node} htmlNode A DOM node to be used as content for the popup.
+     * @param htmlNode A DOM node to be used as content for the popup.
      * @returns {Popup} `this`
      * @example
      * // create an element with the popup content
@@ -207,7 +226,7 @@ class Popup extends Evented {
      *   .setDOMContent(div)
      *   .addTo(map);
      */
-    setDOMContent(htmlNode) {
+    setDOMContent(htmlNode: Node) {
         this._createContent();
         this._content.appendChild(htmlNode);
         this._update();
@@ -215,8 +234,8 @@ class Popup extends Evented {
     }
 
     _createContent() {
-        if (this._content && this._content.parentNode) {
-            this._content.parentNode.removeChild(this._content);
+        if (this._content) {
+            DOM.remove(this._content);
         }
 
         this._content = DOM.create('div', 'mapboxgl-popup-content', this._container);
@@ -243,7 +262,7 @@ class Popup extends Evented {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat);
+        const pos = this._pos = this._map.project(this._lngLat);
 
         let anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
@@ -252,17 +271,17 @@ class Popup extends Evented {
             const width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (this._pos.y + offset.bottom.y < height) {
+            if (pos.y + offset.bottom.y < height) {
                 anchor = ['top'];
-            } else if (this._pos.y > this._map.transform.height - height) {
+            } else if (pos.y > this._map.transform.height - height) {
                 anchor = ['bottom'];
             } else {
                 anchor = [];
             }
 
-            if (this._pos.x < width / 2) {
+            if (pos.x < width / 2) {
                 anchor.push('left');
-            } else if (this._pos.x > this._map.transform.width - width / 2) {
+            } else if (pos.x > this._map.transform.width - width / 2) {
                 anchor.push('right');
             }
 
@@ -273,7 +292,7 @@ class Popup extends Evented {
             }
         }
 
-        const offsetedPos = this._pos.add(offset[anchor]).round();
+        const offsetedPos = pos.add(offset[anchor]).round();
 
         const anchorTranslate = {
             'top': 'translate(-50%,0)',
@@ -300,8 +319,7 @@ class Popup extends Evented {
     }
 }
 
-function normalizeOffset(offset) {
-
+function normalizeOffset(offset: ?Offset) {
     if (!offset) {
         return normalizeOffset(new Point(0, 0));
 
@@ -319,7 +337,7 @@ function normalizeOffset(offset) {
             'right': new Point(-offset, 0)
         };
 
-    } else if (isPointLike(offset)) {
+    } else if (offset instanceof Point || Array.isArray(offset)) {
         // input specifies a single offset to be applied to all positions
         const convertedOffset = Point.convert(offset);
         return {
@@ -346,10 +364,6 @@ function normalizeOffset(offset) {
             'right': Point.convert(offset['right'] || [0, 0])
         };
     }
-}
-
-function isPointLike(input) {
-    return input instanceof Point || Array.isArray(input);
 }
 
 module.exports = Popup;

@@ -1,0 +1,13 @@
+{
+  "expression": ["rgba", 0, 0, 255, 1],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": [[0, 0, 1, 1]],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "color"
+    }
+  }
+}

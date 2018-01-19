@@ -1,6 +1,8 @@
-'use strict';
+// @flow
 
 const EXTENT = require('../data/extent');
+
+import type {OverscaledTileID} from './tile_id';
 
 /**
  * Converts a pixel value at a the given zoom level to tile units.
@@ -11,12 +13,9 @@ const EXTENT = require('../data/extent');
  * For example, a translation by 30 pixels at zoom 6.5 will be a
  * translation by pixelsToTileUnits(30, 6.5) tile units.
  *
- * @param {Object} tile a {Tile object} will work well, but any object that follows the format {coord: {TileCord object}, tileSize: {number}} will work
- * @param {number} pixelValue
- * @param {number} z
- * @returns {number} value in tile units
+ * @returns value in tile units
  * @private
  */
-module.exports = function(tile, pixelValue, z) {
-    return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.coord.z)));
+module.exports = function(tile: {tileID: OverscaledTileID, tileSize: number}, pixelValue: number, z: number): number {
+    return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.tileID.overscaledZ)));
 };

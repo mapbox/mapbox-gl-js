@@ -1,11 +1,69 @@
-'use strict';
+// @flow
 
 const styleSpec = require('../style-spec/reference/latest');
 const util = require('../util/util');
 const Evented = require('../util/evented');
 const validateStyle = require('./validate_style');
-const StyleDeclaration = require('./style_declaration');
-const StyleTransition = require('./style_transition');
+const {sphericalToCartesian} = require('../util/util');
+const Color = require('../style-spec/util/color');
+const interpolate = require('../style-spec/util/interpolate');
+
+import type {StylePropertySpecification} from '../style-spec/style-spec';
+import type EvaluationParameters from './evaluation_parameters';
+
+const {
+    Properties,
+    Transitionable,
+    Transitioning,
+    PossiblyEvaluated,
+    DataConstantProperty
+} = require('./properties');
+
+import type {
+    Property,
+    PropertyValue,
+    TransitionParameters
+} from './properties';
+
+type LightPosition = {
+    x: number,
+    y: number,
+    z: number
+};
+
+class LightPositionProperty implements Property<[number, number, number], LightPosition> {
+    specification: StylePropertySpecification;
+
+    constructor() {
+        this.specification = styleSpec.light.position;
+    }
+
+    possiblyEvaluate(value: PropertyValue<[number, number, number], LightPosition>, parameters: EvaluationParameters): LightPosition {
+        return sphericalToCartesian(value.expression.evaluate(parameters));
+    }
+
+    interpolate(a: LightPosition, b: LightPosition, t: number): LightPosition {
+        return {
+            x: interpolate.number(a.x, b.x, t),
+            y: interpolate.number(a.y, b.y, t),
+            z: interpolate.number(a.z, b.z, t),
+        };
+    }
+}
+
+type Props = {|
+    "anchor": DataConstantProperty<"map" | "viewport">,
+    "position": LightPositionProperty,
+    "color": DataConstantProperty<Color>,
+    "intensity": DataConstantProperty<number>,
+|};
+
+const properties: Properties<Props> = new Properties({
+    "anchor": new DataConstantProperty(styleSpec.light.anchor),
+    "position": new LightPositionProperty(),
+    "color": new DataConstantProperty(styleSpec.light.color),
+    "intensity": new DataConstantProperty(styleSpec.light.intensity),
+});
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -13,126 +71,49 @@ const TRANSITION_SUFFIX = '-transition';
  * Represents the light used to light extruded features.
  */
 class Light extends Evented {
+    _transitionable: Transitionable<Props>;
+    _transitioning: Transitioning<Props>;
+    properties: PossiblyEvaluated<Props>;
 
-    constructor(lightOptions) {
+    constructor(lightOptions?: LightSpecification) {
         super();
-        this.properties = ['anchor', 'color', 'position', 'intensity'];
-        this._specifications = styleSpec.light;
-        this.set(lightOptions);
-    }
-
-    set(lightOpts) {
-        if (this._validate(validateStyle.light, lightOpts)) return;
-        this._declarations = {};
-        this._transitions = {};
-        this._transitionOptions = {};
-        this.calculated = {};
-
-        lightOpts = util.extend({
-            anchor: this._specifications.anchor.default,
-            color: this._specifications.color.default,
-            position: this._specifications.position.default,
-            intensity: this._specifications.intensity.default
-        }, lightOpts);
-
-        for (const prop of this.properties) {
-            this._declarations[prop] = new StyleDeclaration(this._specifications[prop], lightOpts[prop]);
-        }
-
-        return this;
+        this._transitionable = new Transitionable(properties);
+        this.setLight(lightOptions);
+        this._transitioning = this._transitionable.untransitioned();
     }
 
     getLight() {
-        return {
-            anchor: this.getLightProperty('anchor'),
-            color: this.getLightProperty('color'),
-            position: this.getLightProperty('position'),
-            intensity: this.getLightProperty('intensity')
-        };
+        return this._transitionable.serialize();
     }
 
-    getLightProperty(property) {
-        if (util.endsWith(property, TRANSITION_SUFFIX)) {
-            return (
-                this._transitionOptions[property]
-            );
-        } else {
-            return (
-                this._declarations[property] &&
-                this._declarations[property].value
-            );
-        }
-    }
-
-    getLightValue(property, globalProperties) {
-        if (property === 'position') {
-            const calculated = this._transitions[property].calculate(globalProperties),
-                cartesian = util.sphericalToCartesian(calculated);
-            return {
-                x: cartesian[0],
-                y: cartesian[1],
-                z: cartesian[2]
-            };
+    setLight(options?: LightSpecification) {
+        if (this._validate(validateStyle.light, options)) {
+            return;
         }
 
-        return this._transitions[property].calculate(globalProperties);
-    }
-
-    setLight(options) {
-        if (this._validate(validateStyle.light, options)) return;
-
-        for (const key in options) {
-            const value = options[key];
-
-            if (util.endsWith(key, TRANSITION_SUFFIX)) {
-                this._transitionOptions[key] = value;
-            } else if (value === null || value === undefined) {
-                delete this._declarations[key];
+        for (const name in options) {
+            const value = options[name];
+            if (util.endsWith(name, TRANSITION_SUFFIX)) {
+                this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
             } else {
-                this._declarations[key] = new StyleDeclaration(this._specifications[key], value);
+                this._transitionable.setValue(name, value);
             }
         }
     }
 
-    recalculate(zoom) {
-        for (const property in this._declarations) {
-            this.calculated[property] = this.getLightValue(property, {zoom: zoom});
-        }
+    updateTransitions(parameters: TransitionParameters) {
+        this._transitioning = this._transitionable.transitioned(parameters, this._transitioning);
     }
 
-    _applyLightDeclaration(property, declaration, options, globalOptions, animationLoop) {
-        const oldTransition = options.transition ? this._transitions[property] : undefined;
-        const spec = this._specifications[property];
-
-        if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default);
-        }
-
-        if (oldTransition && oldTransition.declaration.json === declaration.json) return;
-
-        const transitionOptions = util.extend({
-            duration: 300,
-            delay: 0
-        }, globalOptions, this.getLightProperty(property + TRANSITION_SUFFIX));
-        const newTransition = this._transitions[property] =
-            new StyleTransition(spec, declaration, oldTransition, transitionOptions);
-        if (!newTransition.instant()) {
-            newTransition.loopID = animationLoop.set(newTransition.endTime - Date.now());
-        }
-
-        if (oldTransition) {
-            animationLoop.cancel(oldTransition.loopID);
-        }
+    hasTransition() {
+        return this._transitioning.hasTransition();
     }
 
-    updateLightTransitions(options, globalOptions, animationLoop) {
-        let property;
-        for (property in this._declarations) {
-            this._applyLightDeclaration(property, this._declarations[property], options, globalOptions, animationLoop);
-        }
+    recalculate(parameters: EvaluationParameters) {
+        this.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
-    _validate(validate, value) {
+    _validate(validate, value: mixed) {
         return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
             value: value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407

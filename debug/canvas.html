@@ -17,8 +17,10 @@ style="border:10px solid blue;">
 Canvas not supported
 </canvas>
 <div id='map'></div>
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
 
-<script type="application/javascript">
 function drawToCanvas() {
     var canvas = document.getElementById('testCanvasID');
     if (canvas.getContext) {
@@ -31,10 +33,6 @@ function drawToCanvas() {
         ctx.fillRect(30, 30, 50, 50);
     }
 }
-</script>
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
-<script>
 
 var canvasStyle = {
     "version": 8,

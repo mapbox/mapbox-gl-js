@@ -143,6 +143,13 @@
         "has",
         {"mapbox": true}
       ]
+    },
+    {
+      "id": "mixing old filters and expressions",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": ["all", [">=", "Constructi", 1930], [">=", ["zoom"], 10]]
     }
   ]
 }

@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "pitch": 90,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            60
+          ],
+          [
+            0,
+            -60
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circles",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 40,
+        "circle-color": "blue",
+        "circle-pitch-scale": "viewport",
+        "circle-pitch-alignment": "viewport"
+      }
+    }
+  ]
+}

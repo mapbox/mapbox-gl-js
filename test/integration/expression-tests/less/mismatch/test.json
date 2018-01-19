@@ -1,0 +1,14 @@
+{
+  "expression": ["<", ["string", ["get", "x"]], ["number", ["get", "y"]]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected arguments of type (number, number) | (string, string), but found (string, number) instead."
+        }
+      ]
+    }
+  }
+}

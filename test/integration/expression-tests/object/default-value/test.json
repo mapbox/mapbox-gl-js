@@ -1,0 +1,25 @@
+{
+  "expression": ["object", ["get", "x"], ["literal", {"default": "value"}]],
+  "inputs": [
+    [{}, {"properties": {"x": {"inner": "object"}}}],
+    [{}, {"properties": {"x": 1}}],
+    [{}, {"properties": {"x": "1"}}],
+    [{}, {"properties": {"x": false}}],
+    [{}, {"properties": {"x": null}}]
+  ],
+  "expected": {
+    "outputs": [
+      {"inner": "object"},
+      {"default": "value"},
+      {"default": "value"},
+      {"default": "value"},
+      {"default": "value"}
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "object"
+    }
+  }
+}

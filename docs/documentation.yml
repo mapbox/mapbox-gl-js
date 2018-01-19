@@ -5,11 +5,13 @@ toc:
   - version
   - setRTLTextPlugin
   - AnimationOptions
+  - CameraOptions
+  - PaddingOptions
+  - RequestParameters
   - name: Geography & Geometry
     description: |
       `LngLat` and `LngLatBounds` represent points and rectanges in geographic
       coordinates. `Point` represents points in screen coordinates.
-  - CameraOptions
   - LngLat
   - LngLatLike
   - LngLatBounds

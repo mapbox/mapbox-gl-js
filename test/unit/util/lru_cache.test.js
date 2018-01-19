@@ -7,12 +7,12 @@ test('LRUCache', (t) => {
     const cache = new LRUCache(10, (removed) => {
         t.equal(removed, 'dc');
     });
-    t.equal(cache.get('foo'), null, '.get() to null');
+    t.equal(cache.getAndRemove('foo'), null, '.getAndRemove() to null');
     t.equal(cache.add('washington', 'dc'), cache, '.add()');
     t.deepEqual(cache.keys(), ['washington'], '.keys()');
     t.equal(cache.has('washington'), true, '.has()');
-    t.equal(cache.get('washington'), 'dc', '.get()');
-    t.equal(cache.get('washington'), null, '.get()');
+    t.equal(cache.getAndRemove('washington'), 'dc', '.getAndRemove()');
+    t.equal(cache.getAndRemove('washington'), null, '.getAndRemove()');
     t.equal(cache.has('washington'), false, '.has()');
     t.deepEqual(cache.keys(), [], '.keys()');
     t.end();
@@ -23,7 +23,7 @@ test('LRUCache - getWithoutRemoving', (t) => {
         t.fail();
     });
     t.equal(cache.add('washington', 'dc'), cache, '.add()');
-    t.equal(cache.getWithoutRemoving('washington'), 'dc', '.getWithoutRemoving()');
+    t.equal(cache.get('washington'), 'dc', '.get()');
     t.deepEqual(cache.keys(), ['washington'], '.keys()');
     t.end();
 });
@@ -38,7 +38,7 @@ test('LRUCache - duplicate add', (t) => {
 
     t.deepEqual(cache.keys(), ['a']);
     t.ok(cache.has('a'));
-    t.equal(cache.get('a'), 'c');
+    t.equal(cache.getAndRemove('a'), 'c');
     t.end();
 });
 
@@ -65,10 +65,13 @@ test('LRUCache - remove', (t) => {
 test('LRUCache - overflow', (t) => {
     const cache = new LRUCache(1, (removed) => {
         t.equal(removed, 'b');
-        t.end();
     });
     cache.add('a', 'b');
     cache.add('c', 'd');
+
+    t.ok(cache.has('c'));
+    t.notOk(cache.has('a'));
+    t.end();
 });
 
 test('LRUCache#reset', (t) => {

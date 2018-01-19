@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const GeoJSONWorkerSource = require('../../../src/source/geojson_worker_source');
 const StyleLayerIndex = require('../../../src/style/style_layer_index');
-const TileCoord = require('../../../src/source/tile_coord');
+const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 
 test('removeSource', (t) => {
     t.test('removes the source from _geoJSONIndexes', (t) => {
@@ -26,7 +26,7 @@ test('removeSource', (t) => {
         function loadTile(callback) {
             const loadVectorDataOpts = {
                 source: 'source',
-                coord: { x: 0, y: 0, z: 0 },
+                tileID: new OverscaledTileID(0, 0, 0, 0, 0),
                 maxZoom: 10
             };
             source.loadVectorData(loadVectorDataOpts, (err, vectorTile) => {
@@ -38,7 +38,10 @@ test('removeSource', (t) => {
         addData(() => {
             loadTile((vectorTile) => {
                 t.notEqual(vectorTile, null);
-                source.removeSource({ source: 'source' });
+                source.removeSource({ source: 'source' }, (err, res) => {
+                    t.false(err);
+                    t.false(res);
+                });
                 loadTile((vectorTile) => {
                     t.equal(vectorTile, null);
                     t.end();
@@ -77,7 +80,7 @@ test('reloadTile', (t) => {
         const tileParams = {
             source: 'sourceId',
             uid: 0,
-            coord: new TileCoord(0, 0, 0),
+            tileID: new OverscaledTileID(0, 0, 0, 0, 0),
             maxZoom: 10
         };
 

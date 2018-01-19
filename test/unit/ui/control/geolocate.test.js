@@ -140,7 +140,7 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
             (bufferedAccuracyBounds.getSouth().toFixed(4) > mapBounds.getSouth().toFixed(4)) &&
             (bufferedAccuracyBounds.getEast().toFixed(4) < mapBounds.getEast().toFixed(4)) &&
             (bufferedAccuracyBounds.getWest().toFixed(4) > mapBounds.getWest().toFixed(4)),
-        'map bounds is much is larger than the accuracy radius');
+            'map bounds is much is larger than the accuracy radius');
 
         t.end();
     });

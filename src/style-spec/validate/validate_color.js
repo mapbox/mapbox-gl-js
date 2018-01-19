@@ -1,4 +1,3 @@
-'use strict';
 
 const ValidationError = require('../error/validation_error');
 const getType = require('../util/get_type');
@@ -10,11 +9,11 @@ module.exports = function validateColor(options) {
     const type = getType(value);
 
     if (type !== 'string') {
-        return [new ValidationError(key, value, 'color expected, %s found', type)];
+        return [new ValidationError(key, value, `color expected, ${type} found`)];
     }
 
     if (parseCSSColor(value) === null) {
-        return [new ValidationError(key, value, 'color expected, "%s" found', value)];
+        return [new ValidationError(key, value, `color expected, "${value}" found`)];
     }
 
     return [];

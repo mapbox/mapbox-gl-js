@@ -1,0 +1,14 @@
+{
+  "expression": ["<", ["boolean", ["get", "x"]], ["boolean", ["get", "y"]]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "",
+          "error": "Expected arguments of type (number, number) | (string, string), but found (boolean, boolean) instead."
+        }
+      ]
+    }
+  }
+}

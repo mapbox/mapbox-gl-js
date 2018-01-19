@@ -1,11 +1,13 @@
-'use strict';
+// @flow
 
 module.exports = require('../style-spec/validate_style.min');
 
-module.exports.emitErrors = function (emitter, errors) {
+import type Evented from '../util/evented';
+
+module.exports.emitErrors = function (emitter: Evented, errors: ?Array<{message: string}>) {
     if (errors && errors.length) {
-        for (let i = 0; i < errors.length; i++) {
-            emitter.fire('error', { error: new Error(errors[i].message) });
+        for (const {message} of errors) {
+            emitter.fire('error', { error: new Error(message) });
         }
         return true;
     } else {

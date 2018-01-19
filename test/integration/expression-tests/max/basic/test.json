@@ -1,0 +1,13 @@
+{
+  "expression": ["max", 0, -1, 100],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": [100],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "number"
+    }
+  }
+}

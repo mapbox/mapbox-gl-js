@@ -1,4 +1,3 @@
-'use strict';
 
 /*
  * Validate a style against the latest specification. This method is optimized

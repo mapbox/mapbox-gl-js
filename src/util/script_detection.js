@@ -1,30 +1,31 @@
-'use strict';
+// @flow
+
 /* eslint-disable new-cap */
 
 const isChar = require('./is_char_in_unicode_block');
 
-module.exports.allowsIdeographicBreaking = function(chars) {
+module.exports.allowsIdeographicBreaking = function(chars: string) {
     for (const char of chars) {
         if (!exports.charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
     }
     return true;
 };
 
-module.exports.allowsVerticalWritingMode = function(chars) {
+module.exports.allowsVerticalWritingMode = function(chars: string) {
     for (const char of chars) {
         if (exports.charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
     }
     return false;
 };
 
-module.exports.allowsLetterSpacing = function(chars) {
+module.exports.allowsLetterSpacing = function(chars: string) {
     for (const char of chars) {
         if (!exports.charAllowsLetterSpacing(char.charCodeAt(0))) return false;
     }
     return true;
 };
 
-module.exports.charAllowsLetterSpacing = function(char) {
+module.exports.charAllowsLetterSpacing = function(char: number) {
     if (isChar['Arabic'](char)) return false;
     if (isChar['Arabic Supplement'](char)) return false;
     if (isChar['Arabic Extended-A'](char)) return false;
@@ -34,7 +35,7 @@ module.exports.charAllowsLetterSpacing = function(char) {
     return true;
 };
 
-module.exports.charAllowsIdeographicBreaking = function(char) {
+module.exports.charAllowsIdeographicBreaking = function(char: number) {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
@@ -63,7 +64,7 @@ module.exports.charAllowsIdeographicBreaking = function(char) {
 };
 
 // The following logic comes from
-// <http://www.unicode.org/Public/vertical/revision-16/VerticalOrientation-16.txt>.
+// <http://www.unicode.org/Public/vertical/revision-17/VerticalOrientation-17.txt>.
 // The data file denotes with “U” or “Tu” any codepoint that may be drawn
 // upright in vertical text but does not distinguish between upright and
 // “neutral” characters.
@@ -81,7 +82,7 @@ module.exports.charAllowsIdeographicBreaking = function(char) {
  * always drawn upright. An uprightly oriented character causes an adjacent
  * “neutral” character to be drawn upright as well.
  */
-exports.charHasUprightVerticalOrientation = function(char) {
+exports.charHasUprightVerticalOrientation = function(char: number) {
     if (char === 0x02EA /* modifier letter yin departing tone mark */ ||
         char === 0x02EB /* modifier letter yang departing tone mark */) {
         return true;
@@ -168,7 +169,7 @@ exports.charHasUprightVerticalOrientation = function(char) {
  * letters. A neutrally oriented character does not influence whether an
  * adjacent character is drawn upright or rotated.
  */
-exports.charHasNeutralVerticalOrientation = function(char) {
+exports.charHasNeutralVerticalOrientation = function(char: number) {
     if (isChar['Latin-1 Supplement'](char)) {
         if (char === 0x00A7 /* section sign */ ||
             char === 0x00A9 /* copyright sign */ ||
@@ -258,7 +259,7 @@ exports.charHasNeutralVerticalOrientation = function(char) {
  * example, a Latin letter is drawn rotated along a vertical line. A rotated
  * character causes an adjacent “neutral” character to be drawn rotated as well.
  */
-exports.charHasRotatedVerticalOrientation = function(char) {
+exports.charHasRotatedVerticalOrientation = function(char: number) {
     return !(exports.charHasUprightVerticalOrientation(char) ||
              exports.charHasNeutralVerticalOrientation(char));
 };

@@ -1,7 +1,10 @@
-'use strict';
+// @flow
 
 const util = require('../util/util');
 const window = require('../util/window');
+const throttle = require('../util/throttle');
+
+import type Map from './map';
 
 /*
  * Adds the map's position to its page's location hash.
@@ -10,11 +13,17 @@ const window = require('../util/window');
  * @returns {Hash} `this`
  */
 class Hash {
+    _map: Map;
+    _updateHash: () => number;
+
     constructor() {
         util.bindAll([
             '_onHashChange',
             '_updateHash'
         ], this);
+
+        // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
+        this._updateHash = throttle(this._updateHashUnthrottled.bind(this), 30 * 1000 / 100);
     }
 
     /*
@@ -23,7 +32,7 @@ class Hash {
      * @param {Object} map
      * @returns {Hash} `this`
      */
-    addTo(map) {
+    addTo(map: Map) {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
         this._map.on('moveend', this._updateHash);
@@ -42,12 +51,14 @@ class Hash {
         return this;
     }
 
-    getHashString(mapFeedback) {
+    getHashString(mapFeedback?: boolean) {
         const center = this._map.getCenter(),
             zoom = Math.round(this._map.getZoom() * 100) / 100,
-            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
-            lng = Math.round(center.lng * Math.pow(10, precision)) / Math.pow(10, precision),
-            lat = Math.round(center.lat * Math.pow(10, precision)) / Math.pow(10, precision),
+            // derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
+            precision = Math.ceil((zoom * Math.LN2 + Math.log(512 / 360 / 0.5)) / Math.LN10),
+            m = Math.pow(10, precision),
+            lng = Math.round(center.lng * m) / m,
+            lat = Math.round(center.lat * m) / m,
             bearing = this._map.getBearing(),
             pitch = this._map.getPitch();
         let hash = '';
@@ -78,7 +89,7 @@ class Hash {
         return false;
     }
 
-    _updateHash() {
+    _updateHashUnthrottled() {
         const hash = this.getHashString();
         window.history.replaceState('', '', hash);
     }

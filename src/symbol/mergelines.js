@@ -1,8 +1,10 @@
-'use strict';
+// @flow
 
-module.exports = function (features) {
-    const leftIndex = {};
-    const rightIndex = {};
+import type {SymbolFeature} from '../data/bucket/symbol_bucket';
+
+module.exports = function (features: Array<SymbolFeature>) {
+    const leftIndex: {[string]: number} = {};
+    const rightIndex: {[string]: number} = {};
     const mergedFeatures = [];
     let mergedIndex = 0;
 
@@ -11,7 +13,7 @@ module.exports = function (features) {
         mergedIndex++;
     }
 
-    function mergeFromRight(leftKey, rightKey, geom) {
+    function mergeFromRight(leftKey: string, rightKey: string, geom) {
         const i = rightIndex[leftKey];
         delete rightIndex[leftKey];
         rightIndex[rightKey] = i;
@@ -21,7 +23,7 @@ module.exports = function (features) {
         return i;
     }
 
-    function mergeFromLeft(leftKey, rightKey, geom) {
+    function mergeFromLeft(leftKey: string, rightKey: string, geom) {
         const i = leftIndex[rightKey];
         delete leftIndex[rightKey];
         leftIndex[leftKey] = i;
@@ -58,7 +60,7 @@ module.exports = function (features) {
             delete rightIndex[rightKey];
 
             rightIndex[getKey(text, mergedFeatures[i].geometry, true)] = i;
-            mergedFeatures[j].geometry = null;
+            mergedFeatures[j].geometry = (null: any);
 
         } else if (leftKey in rightIndex) {
             // found mergeable line adjacent to the start of the current line, merge

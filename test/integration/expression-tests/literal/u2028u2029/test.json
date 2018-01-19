@@ -1,0 +1,13 @@
+{
+  "expression": "ah\u2028\u2029oy!",
+  "inputs": [[{}, {}]],
+  "expected": {
+    "outputs": ["ah\u2028\u2029oy!"],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": true,
+      "type": "string"
+    }
+  }
+}

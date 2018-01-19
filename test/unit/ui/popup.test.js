@@ -5,7 +5,7 @@ const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const Popup = require('../../../src/ui/popup');
 const LngLat = require('../../../src/geo/lng_lat');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 const simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 
 const containerWidth = 512;
@@ -417,5 +417,19 @@ test('Popup#addTo is idempotent (#1811)', (t) => {
         .addTo(map);
 
     t.equal(map.getContainer().querySelector('.mapboxgl-popup-content').textContent, "Test");
+    t.end();
+});
+
+test('Popup#remove is idempotent (#2395)', (t) => {
+    const map = createMap();
+
+    new Popup({closeButton: false})
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map)
+        .remove()
+        .remove();
+
+    t.equal(map.getContainer().querySelectorAll('.mapboxgl-popup').length, 0);
     t.end();
 });

@@ -1,0 +1,57 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 128,
+            "height": 128,
+            "queryGeometry": [
+                64,
+                64
+            ]
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sources": {
+        "source": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "identifier": "firstSource"
+                  },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                      0,
+                      0
+                    ]
+                  }
+                }
+            ]
+            }
+        }
+    },
+    "layers": [
+        {
+          "id": "background",
+          "type": "background",
+          "paint": {
+            "background-color": "white"
+          }
+        },
+        {
+            "id": "heatmap",
+            "source": "source",
+            "type": "heatmap",
+            "paint": {
+                "heatmap-radius": 50,
+                "heatmap-weight": 10,
+                "heatmap-intensity": 0.9,
+                "heatmap-color": "red"
+            }
+        }
+    ]
+}

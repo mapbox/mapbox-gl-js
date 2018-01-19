@@ -23,8 +23,13 @@ test('LngLat', (t) => {
 
     t.test('#convert', (t) => {
         t.ok(LngLat.convert([0, 10]) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert([0, 10, 0]) instanceof LngLat, 'convert creates a LngLat instance (Elevation)');
+        t.throw(() => {
+            LngLat.convert([0, 10, 0, 5]);
+        }, "LngLat must not accept an array size bigger than 3'", 'detects and throws on invalid input');
         t.ok(LngLat.convert({lng: 0, lat: 10}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert({lng: 0, lat: 0}) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lng: 0, lat: 0, elev: 0}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert(new LngLat(0, 0)) instanceof LngLat, 'convert creates a LngLat instance');
         t.throws(() => {
             LngLat.convert(0, 10);

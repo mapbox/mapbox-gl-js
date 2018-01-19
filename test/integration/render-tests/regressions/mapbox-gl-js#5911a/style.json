@@ -1,0 +1,111 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "collisionDebug": true,
+            "width": 512,
+            "height": 2048,
+            "description": "This is the line-label equivalent of issue #5911. The middle feature barely misses the bottom feature and barely collides with the top feature, so that the test can detect a small change in either direction."
+        }
+    },
+    "center": [
+        -15,
+        70
+    ],
+    "zoom": 5,
+    "pitch": 60,
+    "bearing": 0,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "First First First"
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -19.9,
+                                    81.37
+                                ],
+                                [
+                                    -10,
+                                    81.37
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "Second 2nd"
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -18,
+                                    82
+                                ],
+                                [
+                                    -10,
+                                    82
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "Third 3rd 3rd"
+                        },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [
+                                    -19.9,
+                                    82.55
+                                ],
+                                [
+                                    -10,
+                                    82.55
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "symbol-placement": "line",
+                "text-field": "{name}",
+                "text-size": 32,
+                "text-pitch-alignment": "viewport",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}

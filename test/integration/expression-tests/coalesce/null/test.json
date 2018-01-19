@@ -1,0 +1,14 @@
+{
+  "expectExpressionType": null,
+  "expression": ["coalesce", ["get", "z"], 0],
+  "inputs": [[{}, {"properties": {"z": 1}}], [{}, {"properties": {"z": null}}]],
+  "expected": {
+    "outputs": [1, 0],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "value"
+    }
+  }
+}

@@ -1,4 +1,3 @@
-'use strict';
 // @flow
 
 const config = require('./config');
@@ -13,10 +12,14 @@ type UrlObject = {|
     params: Array<string>
 |};
 
-function makeAPIURL(urlObject: UrlObject, accessToken): string {
+function makeAPIURL(urlObject: UrlObject, accessToken: string | null | void): string {
     const apiUrlObject = parseUrl(config.API_URL);
     urlObject.protocol = apiUrlObject.protocol;
     urlObject.authority = apiUrlObject.authority;
+
+    if (apiUrlObject.path !== '/') {
+        urlObject.path = `${apiUrlObject.path}${urlObject.path}`;
+    }
 
     if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
 
@@ -36,21 +39,21 @@ function isMapboxURL(url: string) {
 
 exports.isMapboxURL = isMapboxURL;
 
-exports.normalizeStyleURL = function(url: string, accessToken: string): string {
+exports.normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeGlyphsURL = function(url: string, accessToken: string): string {
+exports.normalizeGlyphsURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSourceURL = function(url: string, accessToken: string): string {
+exports.normalizeSourceURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/v4/${urlObject.authority}.json`;
@@ -60,7 +63,7 @@ exports.normalizeSourceURL = function(url: string, accessToken: string): string 
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken: string): string {
+exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
     const urlObject = parseUrl(url);
     if (!isMapboxURL(url)) {
         urlObject.path += `${format}${extension}`;

@@ -1,8 +1,8 @@
-'use strict';
 
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
 const extend = require('../util/extend');
+const unbundle = require('../util/unbundle_jsonlint');
+const {isExpression} = require('../expression');
+const {isFunction} = require('../function');
 
 // Main recursive validation function. Tracks:
 //
@@ -12,10 +12,12 @@ const extend = require('../util/extend');
 //   high level object that needs to be descended into deeper or a simple
 //   scalar value.
 // - valueSpec: current spec being evaluated. Tracks value.
+// - styleSpec: current full spec being evaluated.
 
 module.exports = function validate(options) {
 
     const validateFunction = require('./validate_function');
+    const validateExpression = require('./validate_expression');
     const validateObject = require('./validate_object');
     const VALIDATORS = {
         '*': function() {
@@ -38,22 +40,13 @@ module.exports = function validate(options) {
 
     const value = options.value;
     const valueSpec = options.valueSpec;
-    const key = options.key;
     const styleSpec = options.styleSpec;
-    const style = options.style;
 
-    if (getType(value) === 'string' && value[0] === '@') {
-        if (styleSpec.$version > 7) {
-            return [new ValidationError(key, value, 'constants have been deprecated as of v8')];
-        }
-        if (!(value in style.constants)) {
-            return [new ValidationError(key, value, 'constant "%s" not found', value)];
-        }
-        options = extend({}, options, { value: style.constants[value] });
-    }
-
-    if (valueSpec.function && getType(value) === 'object') {
+    if (valueSpec.function && isFunction(unbundle(value))) {
         return validateFunction(options);
+
+    } else if (valueSpec.function && isExpression(unbundle.deep(value))) {
+        return validateExpression(options);
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
         return VALIDATORS[valueSpec.type](options);

@@ -1,7 +1,14 @@
-'use strict';
+// @flow
 
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');
+const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
+const VertexArrayObject = require('../render/vertex_array_object');
+const Texture = require('../render/texture');
+
+import type Map from '../ui/map';
+import type Dispatcher from '../util/dispatcher';
+import type Evented from '../util/evented';
 
 /**
  * A data source containing video.
@@ -36,8 +43,12 @@ const ImageSource = require('./image_source');
  * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource {
+    options: VideoSourceSpecification;
+    urls: Array<string>;
+    video: HTMLVideoElement;
+    roundZoom: boolean;
 
-    constructor(id, options, dispatcher, eventedParent) {
+    constructor(id: string, options: VideoSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;
         this.type = 'video';
@@ -49,29 +60,24 @@ class VideoSource extends ImageSource {
         this.urls = options.urls;
 
         ajax.getVideo(options.urls, (err, video) => {
-            if (err) return this.fire('error', {error: err});
+            if (err) {
+                this.fire('error', {error: err});
+            } else if (video) {
+                this.video = video;
+                this.video.loop = true;
 
-            this.video = video;
-            this.video.loop = true;
+                // Start repainting when video starts playing. hasTransition() will then return
+                // true to trigger additional frames as long as the videos continues playing.
+                this.video.addEventListener('playing', () => {
+                    this.map._rerender();
+                });
 
-            let loopID;
+                if (this.map) {
+                    this.video.play();
+                }
 
-            // start repainting when video starts playing
-            this.video.addEventListener('playing', () => {
-                loopID = this.map.style.animationLoop.set(Infinity);
-                this.map._rerender();
-            });
-
-            // stop repainting when video stops
-            this.video.addEventListener('pause', () => {
-                this.map.style.animationLoop.cancel(loopID);
-            });
-
-            if (this.map) {
-                this.video.play();
+                this._finishLoading();
             }
-
-            this._finishLoading();
         });
     }
 
@@ -84,10 +90,10 @@ class VideoSource extends ImageSource {
         return this.video;
     }
 
-    onAdd(map) {
+    onAdd(map: Map) {
         if (this.map) return;
-        this.load();
         this.map = map;
+        this.load();
         if (this.video) {
             this.video.play();
             this.setCoordinates(this.coordinates);
@@ -98,6 +104,8 @@ class VideoSource extends ImageSource {
      * Sets the video's coordinates and re-renders the map.
      *
      * @method setCoordinates
+     * @instance
+     * @memberof VideoSource
      * @param {Array<Array<number>>} coordinates Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
      *   The coordinates start at the top left corner of the video and proceed in clockwise order.
@@ -107,8 +115,36 @@ class VideoSource extends ImageSource {
     // setCoordinates inherited from ImageSource
 
     prepare() {
-        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) return; // not enough data for current position
-        this._prepareImage(this.map.painter.gl, this.video);
+        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) {
+            return; // not enough data for current position
+        }
+
+        const context = this.map.painter.context;
+        const gl = context.gl;
+
+        if (!this.boundsBuffer) {
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+        }
+
+        if (!this.boundsVAO) {
+            this.boundsVAO = new VertexArrayObject();
+        }
+
+        if (!this.texture) {
+            this.texture = new Texture(context, this.video, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        } else if (!this.video.paused) {
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
+        }
+
+        for (const w in this.tiles) {
+            const tile = this.tiles[w];
+            if (tile.state !== 'loaded') {
+                tile.state = 'loaded';
+                tile.texture = this.texture;
+            }
+        }
     }
 
     serialize() {
@@ -117,6 +153,10 @@ class VideoSource extends ImageSource {
             urls: this.urls,
             coordinates: this.coordinates
         };
+    }
+
+    hasTransition() {
+        return this.video && !this.video.paused;
     }
 }
 

@@ -4,7 +4,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Coordinate = require('../../../src/geo/coordinate');
 const util = require('../../../src/util/util');
-const Point = require('point-geometry');
+const Point = require('@mapbox/point-geometry');
 
 test('util', (t) => {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');
@@ -19,12 +19,10 @@ test('util', (t) => {
     t.ok(typeof util.uniqueId() === 'number', 'uniqueId');
 
     t.test('getCoordinatesCenter', (t) => {
-        t.deepEqual(util.getCoordinatesCenter(
-            [
-                new Coordinate(0, 0, 2),
-                new Coordinate(1, 1, 2)
-            ]),
-            new Coordinate(0.5, 0.5, 0));
+        t.deepEqual(util.getCoordinatesCenter([
+            new Coordinate(0, 0, 2),
+            new Coordinate(1, 1, 2)
+        ]), new Coordinate(0.5, 0.5, 0));
         t.end();
     });
 
