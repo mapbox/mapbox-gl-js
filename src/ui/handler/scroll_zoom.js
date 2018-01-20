@@ -121,6 +121,7 @@ class ScrollZoomHandler {
             // If the delta per time is small, we assume it's a fast trackpad; otherwise we switch into wheel mode.
             this._type = (Math.abs(timeDelta * value) < 200) ? 'trackpad' : 'wheel';
 
+
             // Make sure our delayed event isn't fired again, because we accumulate
             // the previous event (which was less than 40ms ago) into this event.
             if (this._timeout) {
