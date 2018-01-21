@@ -80,7 +80,7 @@ test('Marker', (t) => {
         const element = window.document.createElement('div');
         const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
         const translate = Math.round(map.getContainer().offsetWidth / 2);
-        t.equal(marker.getElement().style.transform, `translate(${translate}px, ${translate}px)`, 'Marker centered');
+        t.equal(marker.getElement().style.transform, `translate(-50%, -50%), translate(${translate}px, ${translate}px)`, 'Marker centered');
         t.end();
     });
 
