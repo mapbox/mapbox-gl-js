@@ -231,7 +231,7 @@
       "type": "enum",
       "values": {
         "raster-dem": {
-            "doc": "A raster DEM source"
+            "doc": "A RGB-encoded raster DEM source"
         }
       },
       "doc": "The type of the source."
@@ -274,7 +274,7 @@
     },
     "encoding": {
       "type": "string",
-      "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
+      "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default. Supported encodings are `mapbox` and `mapzen`."
     },
     "*": {
       "type": "*",
