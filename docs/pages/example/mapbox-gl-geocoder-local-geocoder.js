@@ -4,7 +4,7 @@ description: >-
   Use the [mapbox-gl-geocoder](https://github.com/mapbox/mapbox-gl-geocoder)
   control to search for places using Mapbox Geocoding API, supplementing
   results from a local data source or function, in this case to match
-  geographic coordinates provided as input
+  geographic coordinates provided as input.
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/mapbox-gl-geocoder-local-geocoder/
