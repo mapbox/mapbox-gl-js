@@ -231,7 +231,7 @@
       "type": "enum",
       "values": {
         "raster-dem": {
-            "doc": "A raster DEM source"
+            "doc": "A RGB-encoded raster DEM source"
         }
       },
       "doc": "The type of the source."
