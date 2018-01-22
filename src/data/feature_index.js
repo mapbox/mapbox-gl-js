@@ -88,13 +88,6 @@ class FeatureIndex {
 
     // Finds features in this tile at a particular position.
     query(args: QueryParameters, styleLayers: {[string]: StyleLayer}) {
-        if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
-            this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
-        }
-
-        const result = {};
-
         const params = args.params || {},
             pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
             filter = featureFilter(params.filter);
@@ -115,6 +108,18 @@ class FeatureIndex {
                 maxX = Math.max(maxX, p.x);
                 maxY = Math.max(maxY, p.y);
             }
+        }
+
+        const result = {};
+
+        if (maxX + additionalRadius < 0 || maxY + additionalRadius < 0 || minX - additionalRadius >= EXTENT || minY - additionalRadius >= EXTENT) {
+            // query does not intersect tile, return early
+            return result;
+        }
+
+        if (!this.vtLayers) {
+            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
+            this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
         }
 
         const matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);

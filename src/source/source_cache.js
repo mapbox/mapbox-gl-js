@@ -4,9 +4,7 @@ const createSource = require('./source').create;
 const Tile = require('./tile');
 const Evented = require('../util/evented');
 const Cache = require('../util/lru_cache');
-const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
-const EXTENT = require('../data/extent');
 const Context = require('../gl/context');
 const Point = require('@mapbox/point-geometry');
 const browser = require('../util/browser');
@@ -676,60 +674,6 @@ class SourceCache extends Evented {
         this._cache.reset();
     }
 
-    /**
-     * Search through our current tiles and attempt to find the tiles that
-     * cover the given bounds.
-     * @param queryGeometry coordinates of the corners of bounding rectangle
-     * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
-     */
-    tilesIn(queryGeometry: Array<Coordinate>) {
-        const tileResults = [];
-        const ids = this.getIds();
-
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        const z = queryGeometry[0].zoom;
-
-        for (let k = 0; k < queryGeometry.length; k++) {
-            const p = queryGeometry[k];
-            minX = Math.min(minX, p.column);
-            minY = Math.min(minY, p.row);
-            maxX = Math.max(maxX, p.column);
-            maxY = Math.max(maxY, p.row);
-        }
-
-
-        for (let i = 0; i < ids.length; i++) {
-            const tile = this._tiles[ids[i]];
-            const tileID = tile.tileID;
-
-            const tileSpaceBounds = [
-                coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),
-                coordinateToTilePoint(tileID, new Coordinate(maxX, maxY, z))
-            ];
-
-            if (tileSpaceBounds[0].x < EXTENT && tileSpaceBounds[0].y < EXTENT &&
-                tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
-
-                const tileSpaceQueryGeometry = [];
-                for (let j = 0; j < queryGeometry.length; j++) {
-                    tileSpaceQueryGeometry.push(coordinateToTilePoint(tileID, queryGeometry[j]));
-                }
-
-                tileResults.push({
-                    tile: tile,
-                    tileID: tileID,
-                    queryGeometry: [tileSpaceQueryGeometry],
-                    scale: Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ)
-                });
-            }
-        }
-
-        return tileResults;
-    }
-
     getVisibleCoordinates() {
         const coords = this.getRenderableIds().map((id) => this._tiles[id].tileID);
         for (const coord of coords) {
@@ -758,18 +702,6 @@ class SourceCache extends Evented {
 
 SourceCache.maxOverzooming = 10;
 SourceCache.maxUnderzooming = 3;
-
-/**
- * Convert a coordinate to a point in a tile's coordinate space.
- * @private
- */
-function coordinateToTilePoint(tileID: OverscaledTileID, coord: Coordinate): Point {
-    const zoomedCoord = coord.zoomTo(tileID.canonical.z);
-    return new Point(
-        (zoomedCoord.column - (tileID.canonical.x + tileID.wrap * Math.pow(2, tileID.canonical.z))) * EXTENT,
-        (zoomedCoord.row - tileID.canonical.y) * EXTENT
-    );
-}
 
 function isRasterType(type) {
     return type === 'raster' || type === 'image' || type === 'video';

@@ -1,9 +1,13 @@
 // @flow
 
+const Point = require('@mapbox/point-geometry');
+const EXTENT = require('../data/extent');
+
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type Coordinate from '../geo/coordinate';
 import type CollisionIndex from '../symbol/collision_index';
+import type {OverscaledTileID} from './tile_id';
 
 exports.rendered = function(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
@@ -12,18 +16,37 @@ exports.rendered = function(sourceCache: SourceCache,
                             zoom: number,
                             bearing: number,
                             collisionIndex: CollisionIndex) {
-    const tilesIn = sourceCache.tilesIn(queryGeometry);
 
-    tilesIn.sort(sortTilesIn);
+    const tiles = [];
+    const ids = sourceCache.getIds();
+
+    for (const id of ids) {
+        const tile = sourceCache.getTileByID(id);
+        const tileID = tile.tileID;
+
+        const tileSpaceQueryGeometry = [];
+        for (let j = 0; j < queryGeometry.length; j++) {
+            tileSpaceQueryGeometry.push(coordinateToTilePoint(tileID, queryGeometry[j]));
+        }
+
+        tiles.push({
+            tile: tile,
+            tileID: tileID,
+            queryGeometry: [tileSpaceQueryGeometry],
+            scale: Math.pow(2, zoom - tile.tileID.overscaledZ)
+        });
+    }
+
+    tiles.sort(sortTiles);
 
     const renderedFeatureLayers = [];
-    for (const tileIn of tilesIn) {
+    for (const tile of tiles) {
         renderedFeatureLayers.push({
-            wrappedTileID: tileIn.tileID.wrapped().key,
-            queryResults: tileIn.tile.queryRenderedFeatures(
+            wrappedTileID: tile.tileID.wrapped().key,
+            queryResults: tile.tile.queryRenderedFeatures(
                 styleLayers,
-                tileIn.queryGeometry,
-                tileIn.scale,
+                tile.queryGeometry,
+                tile.scale,
                 params,
                 bearing,
                 sourceCache.id,
@@ -54,7 +77,19 @@ exports.source = function(sourceCache: SourceCache, params: any) {
     return result;
 };
 
-function sortTilesIn(a, b) {
+/**
+ *  * Convert a coordinate to a point in a tile's coordinate space.
+ *   * @private
+ *    */
+function coordinateToTilePoint(tileID: OverscaledTileID, coord: Coordinate): Point {
+    const zoomedCoord = coord.zoomTo(tileID.canonical.z);
+    return new Point(
+            (zoomedCoord.column - (tileID.canonical.x + tileID.wrap * Math.pow(2, tileID.canonical.z))) * EXTENT,
+            (zoomedCoord.row - tileID.canonical.y) * EXTENT
+    );
+}
+
+function sortTiles(a, b) {
     const idA = a.tileID;
     const idB = b.tileID;
     return (idA.overscaledZ - idB.overscaledZ) || (idA.canonical.y - idB.canonical.y) || (idA.wrap - idB.wrap) || (idA.canonical.x - idB.canonical.x);
