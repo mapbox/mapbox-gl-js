@@ -447,6 +447,7 @@ class Style extends Evented {
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
 
+        if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
         const sourceCache = this.sourceCaches[id] = new SourceCache(id, source, this.dispatcher);
         sourceCache.style = this;
         sourceCache.setEventedParent(this, () => ({
