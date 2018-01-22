@@ -1152,6 +1152,7 @@ test('SourceCache#tilesIn', (t) => {
         const sourceCache = createSourceCache({
             loadTile: function(tile, callback) {
                 tile.state = 'loaded';
+                tile.additionalRadius = 0;
                 callback();
             }
         });
@@ -1193,7 +1194,11 @@ test('SourceCache#tilesIn', (t) => {
 
     t.test('reparsed overscaled tiles', (t) => {
         const sourceCache = createSourceCache({
-            loadTile: function(tile, callback) { tile.state = 'loaded'; callback(); },
+            loadTile: function(tile, callback) {
+                tile.state = 'loaded';
+                tile.additionalRadius = 0;
+                callback();
+            },
             reparseOverscaled: true,
             minzoom: 1,
             maxzoom: 1,

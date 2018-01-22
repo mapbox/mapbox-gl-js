@@ -704,14 +704,16 @@ class SourceCache extends Evented {
         for (let i = 0; i < ids.length; i++) {
             const tile = this._tiles[ids[i]];
             const tileID = tile.tileID;
+            const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
+            const additionalRadius = tile.additionalRadius * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
                 coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),
                 coordinateToTilePoint(tileID, new Coordinate(maxX, maxY, z))
             ];
 
-            if (tileSpaceBounds[0].x < EXTENT && tileSpaceBounds[0].y < EXTENT &&
-                tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
+            if (tileSpaceBounds[0].x - additionalRadius < EXTENT && tileSpaceBounds[0].y - additionalRadius < EXTENT &&
+                tileSpaceBounds[1].x + additionalRadius >= 0 && tileSpaceBounds[1].y + additionalRadius >= 0) {
 
                 const tileSpaceQueryGeometry = [];
                 for (let j = 0; j < queryGeometry.length; j++) {
@@ -722,7 +724,7 @@ class SourceCache extends Evented {
                     tile: tile,
                     tileID: tileID,
                     queryGeometry: [tileSpaceQueryGeometry],
-                    scale: Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ)
+                    scale: scale
                 });
             }
         }
