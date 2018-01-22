@@ -91,6 +91,7 @@ class Tile {
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
+    additionalRadius: number;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -103,6 +104,7 @@ class Tile {
         this.tileSize = size;
         this.buckets = {};
         this.expirationTime = null;
+        this.additionalRadius = 0;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -164,6 +166,12 @@ class Tile {
                     bucket.justReloaded = true;
                 }
             }
+        }
+
+        this.additionalRadius = 0;
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            this.additionalRadius = Math.max(this.additionalRadius, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
         }
 
         if (data.iconAtlasImage) {
@@ -239,14 +247,11 @@ class Tile {
         if (!this.featureIndex || !this.collisionBoxArray)
             return {};
 
-        // Determine the additional radius needed factoring in property functions
-        let additionalRadius = 0;
+        // Create the set of the current bucket instance ids
         const bucketInstanceIds = {};
         for (const id in layers) {
             const bucket = this.getBucket(layers[id]);
             if (bucket) {
-                additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
-
                 // Add the bucket instance's id to the set of current ids.
                 // The query will only include results from current buckets.
                 if (bucket instanceof SymbolBucket && bucket.bucketInstanceId !== undefined) {
@@ -261,7 +266,7 @@ class Tile {
             tileSize: this.tileSize,
             bearing: bearing,
             params: params,
-            additionalRadius: additionalRadius,
+            additionalRadius: this.additionalRadius,
             collisionBoxArray: this.collisionBoxArray,
             sourceID: sourceID,
             collisionIndex: collisionIndex,
