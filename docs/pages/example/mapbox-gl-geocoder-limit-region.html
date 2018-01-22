@@ -10,13 +10,6 @@ var map = new mapboxgl.Map({
     zoom: 4
 });
 
-// String.prototype.startsWith polyfill
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(search, pos) {
-        return this.substr(!pos || pos < 0 ? 0 : +pos, search.length) === search;
-    };
-}
-
 map.addControl(new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
 
@@ -32,7 +25,9 @@ map.addControl(new MapboxGeocoder({
     filter: function (item) {
         // returns true if item contains New South Wales region
         return item.context.map((i) => {
-            return (i.id.startsWith('region') && i.text === "New South Wales");
+            // id is in the form {index}.{id} per https://github.com/mapbox/carmen/blob/master/carmen-geojson.md
+            // this example attempts to find the `region` named `New South Wales`
+            return (i.id.split('.').shift() === 'region' && i.text === 'New South Wales');
         }).reduce((acc, cur) => {
             return acc || cur;
         });
