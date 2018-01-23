@@ -11,6 +11,13 @@ import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 import type Transform from '../../geo/transform';
 
+// magic number controlling how much we zoom for a given amount of scrolling
+const scrollZoomRate = 0.01;
+
+// upper bound on how much we scale the map in any single render frame; this
+// is used to limit zoom rate in the case of very fast scrolling
+const maxScalePerFrame = 2;
+
 const ua = window.navigator.userAgent.toLowerCase(),
     firefox = ua.indexOf('firefox') !== -1,
     safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
@@ -191,9 +198,10 @@ class ScrollZoomHandler {
         // accumulated delta, and update the target zoom level accordingly
         if (this._delta !== 0) {
             // Scale by sigmoid of scroll wheel delta.
-            let scale = 2 / (1 + Math.exp(-Math.abs(this._delta / 100)));
+            let scale = maxScalePerFrame / (1 + Math.exp(-Math.abs(this._delta * scrollZoomRate)));
             if (this._delta < 0 && scale !== 0) scale = 1 / scale;
-            const fromScale = tr.scale;
+
+            const fromScale = typeof this._targetZoom === 'number' ? tr.zoomScale(this._targetZoom) : tr.scale;
             this._targetZoom = tr.scaleZoom(fromScale * scale);
 
             // if this is a mouse wheel, refresh the starting zoom and easing
