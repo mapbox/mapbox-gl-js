@@ -231,7 +231,7 @@
       "type": "enum",
       "values": {
         "raster-dem": {
-            "doc": "A raster DEM source"
+            "doc": "A RGB-encoded raster DEM source"
         }
       },
       "doc": "The type of the source."
@@ -515,7 +515,7 @@
           }
         },
         "hillshade": {
-          "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles",
+          "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB and Mapzen Terrarium tiles.",
           "sdk-support": {
             "basic functionality": {
               "js": "0.43.0"
