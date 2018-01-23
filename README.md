@@ -7,6 +7,7 @@ Fork Version | Mapbox version | Notes
 0.0.1        | 0.42.2         |
 0.0.2        | 0.42.2         |
 0.0.3        | 0.42.2         | Converting aggregateBy properties from string to number. Otherwise, not able to use exponential/interval stops.
+0.0.4        | 0.42.2         | Support for multple aggregate by. Useful for aggregating by count and resizeBy column. Points (along with clusters which already have) will have abbreviated value for all aggregateBys.
 
 ## Fork Modifications:
  * **Get Pins in Cluster**: Expose getLeaves in superCluster via an interface, so that we can get the pins in a cluster and spiderfy them.

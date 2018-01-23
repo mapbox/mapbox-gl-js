@@ -30,8 +30,10 @@
       // -----------------------------  //
   });
 
+  var AGGREGATE_BY_ALIAS = '__aggregate_by__';
+
   var tileUrl = 'https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$query=' +
-        'select count(*),snap_to_grid(point,{snap_precision}) ' +
+        'select count(*),snap_to_grid(point,{snap_precision}),sum(supervisor_district) as '+ AGGREGATE_BY_ALIAS + ' ' +
         'where  {{\'point\' column condition}}' +
         'group by snap_to_grid(point,{snap_precision})' +
         'limit 100000' +
@@ -43,7 +45,7 @@
         "type": "vector",
         "cluster": true,
         "clusterRadius": 80,
-        "aggregateBy": 'count',
+        "aggregateBy": ['count', AGGREGATE_BY_ALIAS],
         "tiles": [ tileUrl ],
         // -----------------------------  //
         // Required to work with fork     //
@@ -72,7 +74,7 @@
       'source-layer': '_geojsonTileLayer',
       'filter': ['all', ['has', 'point_count']],
       layout: {
-          "text-field": "{sum}",
+          "text-field": "{count_abbrev} | {" + AGGREGATE_BY_ALIAS + "_abbrev}",
           "text-size": 12
       }
     });
@@ -84,7 +86,7 @@
       'source-layer': '_geojsonTileLayer',
       'filter': ['all', ['!has', 'point_count']],
       layout: {
-          "text-field": "{count}",
+          "text-field": "{count} | {" + AGGREGATE_BY_ALIAS + "}",
           "text-size": 12
       }
     });

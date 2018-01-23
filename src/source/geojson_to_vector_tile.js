@@ -8,12 +8,17 @@ const GeoJSONWrapper = require('./geojson_wrapper');
 
 module.exports = function(data: any, options: VectorSourceSpecification, tileSize: number, zoom: number, tileCoord: TileCoord) {
   const scale = EXTENT / tileSize;
+  const aggregateByKeys = sanitizedAggregateByKeys(options);
   let index;
 
   if (data && data.features && data.features.forEach && options.aggregateBy) {
     data.features.forEach((datum) => {
       if (datum && datum.properties) {
-        datum.properties[options.aggregateBy] = Number(datum.properties[options.aggregateBy]);
+        aggregateByKeys.forEach((aggregateBy) => {
+          const value =  Number(datum.properties[aggregateBy])
+          datum.properties[aggregateBy] = value;
+          datum.properties[aggregateBy + '_abbrev'] = abbreviate(value);
+        });
       }
     });
   }
@@ -38,19 +43,34 @@ function getSuperCluterIndex(data: any, options: VectorSourceSpecification, zoom
         extent: EXTENT,
         radius: (options.clusterRadius || 50) * scale
     };
+    const aggregateByKeys = sanitizedAggregateByKeys(options);
+
     superclusterOptions.map = function(props) {
-        return {sum: Number(props[options.aggregateBy]) || 1, sum_abbrev: 1};
+        const mapped = {};
+        aggregateByKeys.forEach((aggregateBy) => {
+            const value = Number(props[aggregateBy]) || 0;
+
+            mapped[aggregateBy] = value;
+            mapped[aggregateBy + '_abbrev'] = abbreviate(value);
+        });
+        return mapped;
     }
     superclusterOptions.reduce = function (accumulated, props) {
-        var sum = accumulated.sum + props.sum;
-        var abbrev = sum >= 10000 ? Math.round(sum / 1000) + 'k' :
-        sum >= 1000 ? (Math.round(sum / 100) / 10) + 'k' : sum;
+        aggregateByKeys.forEach((aggregateBy) => {
+            const value = Number(props[aggregateBy]) || 0;
+            const aggregate = accumulated[aggregateBy] + value;
 
-        accumulated.sum_abbrev = abbrev;
-        accumulated.sum = sum;
+            accumulated[aggregateBy] = aggregate;
+            accumulated[aggregateBy + '_abbrev'] = abbreviate(aggregate);
+        });
     }
     superclusterOptions.initial = function () {
-        return {sum: 0};
+        const initial = {};
+        aggregateByKeys.forEach((aggregateBy) => {
+            initial[aggregateBy] = 0;
+            initial[aggregateBy + '_abbrev'] = '0';
+        });
+        return initial;
     }
     return supercluster(superclusterOptions).load(data.features);
 }
@@ -64,4 +84,22 @@ function getGeojsonVTIndex(data: any, options: VectorSourceSpecification, zoom: 
         maxZoom: zoom
     }
     return geojsonvt(data, geojsonVtOptions);
+}
+
+const MILLION = 1000000;
+const HUNDRED_K = 100000;
+
+function abbreviate(value) {
+  return value >= 10 * MILLION ? Math.round(value / MILLION) + 'm' :
+        value >= MILLION ? (Math.round(value / HUNDRED_K) / 10) + 'm' :
+        value >= 10000 ? Math.round(value / 1000) + 'k' :
+        value >= 1000 ? (Math.round(value / 100) / 10) + 'k' : value;
+}
+
+function sanitizedAggregateByKeys(options: VectorSourceSpecification) {
+    let aggregateByKeys = [];
+    if (options.aggregateBy) {
+        aggregateByKeys = Array.isArray(options.aggregateBy) ? options.aggregateBy : [options.aggregateBy];
+    }
+    return aggregateByKeys;
 }

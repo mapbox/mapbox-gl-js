@@ -155,7 +155,7 @@
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
     "aggregateBy": {
-      "type": "string",
+      "type": "*",
       "doc": "point_count will be an aggregate of this property in all the features in the cluster."
     },
     "geojsonTile": {
