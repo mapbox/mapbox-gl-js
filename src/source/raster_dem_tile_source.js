@@ -22,7 +22,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
         this.type = 'raster-dem';
         this.maxzoom = 22;
         this._options = util.extend({}, options);
-        this.encoding = "mapbox";
+        this.encoding = options.encoding || "mapbox";
     }
 
     serialize() {
