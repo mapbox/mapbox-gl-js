@@ -64,7 +64,7 @@ class DEMData {
         const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
 
-        this.unpackData(level, data, encoding);
+        this.unpackData(level, pixels, encoding);
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
@@ -90,7 +90,7 @@ class DEMData {
     unpackData(level: Level, pixels: Uint8Array, encoding: string) {
 
         switch(encoding) {
-            case 'mapzen':
+            case 'terrarium':
                 this.unpackMapzenData(level, pixels);
                 break;
             default:
@@ -115,7 +115,7 @@ class DEMData {
             for (let x = 0; x < level.dim; x++) {
                 const i = y * level.dim + x;
                 const j = i * 4;
-                // decoding per https://mapzen.com/documentation/terrain-tiles/formats/#types-of-terrain-tiles
+                // decoding per https://aws.amazon.com/es/public-datasets/terrain/
                 level.set(x, y, this.scale * ((pixels[j] * 256 + pixels[j + 1] + pixels[j + 2] / 256) - 32768.0));
             }
         }

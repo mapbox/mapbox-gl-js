@@ -273,7 +273,16 @@
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
     },
     "encoding": {
-      "type": "string",
+      "type": "enum",
+      "values": {
+        "terrarium": {
+          "doc": "Terrarium format PNG tiles. See https://aws.amazon.com/es/public-datasets/terrain/ for more info."
+        },
+        "mapbox": {
+          "doc": "Mapbox Terrain RGB tiles. See https://www.mapbox.com/blog/terrain-rgb/ for more info."
+        }
+      },
+      "default": "mapbox",
       "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
     },
     "*": {
