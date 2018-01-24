@@ -11,8 +11,12 @@ import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 import type Transform from '../../geo/transform';
 
-// magic number controlling how much we zoom for a given amount of scrolling
-const scrollZoomRate = 0.01;
+// deltaY value for mouse scroll wheel identification
+const wheelZoomDelta = 4.000244140625;
+// These magic numbers control the rate of zoom. Trackpad events fire at a greater
+// frequency than mouse scroll wheel, so reduce the zoom rate per wheel tick
+const defaultZoomRate = 1 / 100;
+const wheelZoomRate = 1 / 500;
 
 // upper bound on how much we scale the map in any single render frame; this
 // is used to limit zoom rate in the case of very fast scrolling
@@ -128,7 +132,7 @@ class ScrollZoomHandler {
 
         this._lastWheelEventTime = now;
 
-        if (value !== 0 && (value % 4.000244140625) === 0) {
+        if (value !== 0 && (value % wheelZoomDelta) === 0) {
             // This one is definitely a mouse wheel event.
             this._type = 'wheel';
 
@@ -148,7 +152,6 @@ class ScrollZoomHandler {
             // This is a repeating event, but we don't know the type of event just yet.
             // If the delta per time is small, we assume it's a fast trackpad; otherwise we switch into wheel mode.
             this._type = (Math.abs(timeDelta * value) < 200) ? 'trackpad' : 'wheel';
-
 
             // Make sure our delayed event isn't fired again, because we accumulate
             // the previous event (which was less than 40ms ago) into this event.
@@ -178,7 +181,6 @@ class ScrollZoomHandler {
                 this._aroundPoint = this._map.transform.locationPoint(this._around);
                 this._map._startAnimation(this._onScrollFrame, this._onScrollFinished);
             }
-
             this._lastWheelEvent = e;
             this._delta -= value;
         }
@@ -197,12 +199,17 @@ class ScrollZoomHandler {
         // if we've had scroll events since the last render frame, consume the
         // accumulated delta, and update the target zoom level accordingly
         if (this._delta !== 0) {
+            // For trackpad events and single mouse wheel ticks, use the default zoom rate
+            const zoomRate = (this._type === 'wheel' && Math.abs(this._delta) > wheelZoomDelta) ? wheelZoomRate : defaultZoomRate;
             // Scale by sigmoid of scroll wheel delta.
-            let scale = maxScalePerFrame / (1 + Math.exp(-Math.abs(this._delta * scrollZoomRate)));
-            if (this._delta < 0 && scale !== 0) scale = 1 / scale;
+            let scale = maxScalePerFrame / (1 + Math.exp(-Math.abs(this._delta * zoomRate)));
+
+            if (this._delta < 0 && scale !== 0) {
+                scale = 1 / scale;
+            }
 
             const fromScale = typeof this._targetZoom === 'number' ? tr.zoomScale(this._targetZoom) : tr.scale;
-            this._targetZoom = tr.scaleZoom(fromScale * scale);
+            this._targetZoom = Math.min(tr.maxZoom, Math.max(tr.minZoom, tr.scaleZoom(fromScale * scale)));
 
             // if this is a mouse wheel, refresh the starting zoom and easing
             // function we're using to smooth out the zooming between wheel
@@ -239,6 +246,7 @@ class ScrollZoomHandler {
             this._map.zooming = false;
             this._map.fire('zoomend');
             this._map.fire('moveend');
+            delete this._targetZoom;
         }, 200);
     }
 
