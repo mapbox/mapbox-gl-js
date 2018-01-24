@@ -93,7 +93,7 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
             }
         }
 
-        t.equalWithPrecision(map.getZoom() - startZoom,  1.839, 0.001);
+        t.equalWithPrecision(map.getZoom() - startZoom,  1.944, 0.001);
 
         map.remove();
         t.end();
