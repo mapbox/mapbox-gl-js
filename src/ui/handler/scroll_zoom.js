@@ -146,7 +146,7 @@ class ScrollZoomHandler {
             this._lastValue = value;
 
             // Start a timeout in case this was a singular event, and dely it by up to 40ms.
-            this._timeout = setTimeout(this._onTimeout, 40);
+            this._timeout = setTimeout(this._onTimeout, 40, e);
 
         } else if (!this._type) {
             // This is a repeating event, but we don't know the type of event just yet.
@@ -167,30 +167,39 @@ class ScrollZoomHandler {
 
         // Only fire the callback if we actually know what type of scrolling device the user uses.
         if (this._type) {
-            if (!this.isActive() && Math.abs(value) > 0.0) {
-                this._active = true;
-                this._map.moving = true;
-                this._map.zooming = true;
-                this._map.fire('movestart', {originalEvent: e});
-                this._map.fire('zoomstart', {originalEvent: e});
-                clearTimeout(this._finishTimeout);
-
-                const pos = DOM.mousePos(this._el, e);
-
-                this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
-                this._aroundPoint = this._map.transform.locationPoint(this._around);
-                this._map._startAnimation(this._onScrollFrame, this._onScrollFinished);
-            }
             this._lastWheelEvent = e;
             this._delta -= value;
+            if (!this.isActive()) {
+                this._start(e);
+            }
         }
 
         e.preventDefault();
     }
 
-    _onTimeout() {
+    _onTimeout(initialEvent: any) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
+        if (!this.isActive()) {
+            this._start(initialEvent);
+        }
+    }
+
+    _start(e: any) {
+        if (!this._delta) return;
+
+        this._active = true;
+        this._map.moving = true;
+        this._map.zooming = true;
+        this._map.fire('movestart', {originalEvent: e});
+        this._map.fire('zoomstart', {originalEvent: e});
+        clearTimeout(this._finishTimeout);
+
+        const pos = DOM.mousePos(this._el, e);
+
+        this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
+        this._aroundPoint = this._map.transform.locationPoint(this._around);
+        this._map._startAnimation(this._onScrollFrame, this._onScrollFinished);
     }
 
     _onScrollFrame(tr: Transform) {
