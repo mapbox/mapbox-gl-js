@@ -133,7 +133,7 @@
     "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --debug --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --debug --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks-view": "watchify bench/benchmarks_view.js --debug --outfile bench/benchmarks_view_generated.js --verbose",
-    "start-server": "st --no-cache --localhost --port 9966 --index index.html .",
+    "start-server": "st --no-cache -H 0.0.0.0 --port 9966 --index index.html .",
     "start": "run-p build-token watch-dev watch-style-property-editor watch-benchmarks watch-benchmarks-view start-server",
     "start-debug": "run-p build-token watch-dev watch-style-property-editor start-server",
     "start-bench": "run-p build-token watch-benchmarks watch-benchmarks-view start-server",
