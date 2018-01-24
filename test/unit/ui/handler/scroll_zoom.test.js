@@ -19,38 +19,92 @@ function createMap(options) {
     }, options));
 }
 
+// magic deltaY value that indicates the event is from a mouse wheel
+// (rather than a trackpad)
+const magicWheelZoomDelta = 4.000244140625;
+
 test('ScrollZoomHandler zooms in response to wheel events', (t) => {
-    const map = createMap();
-
     const browserNow = t.stub(browser, 'now');
-
-    const startingZoom = map.getZoom();
-
     let now = 1555555555555;
     browserNow.callsFake(() => now);
 
-    map._updateCamera();
+    t.test('Zooms for single mouse wheel tick', (t) => {
+        const map = createMap();
+        map._updateCamera();
 
-    // simulate a series of 'wheel' events representing approx 1 second
-    // of continuous scrolling
-    let count = 200;
-    while (--count) {
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -50});
-        now += 5;
-        if (count % 4 === 0) {
-            // simulate a render (animation frame) every ~20ms
-            map._updateCamera();
+        // simulate a single 'wheel' event
+        const startZoom = map.getZoom();
+
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -magicWheelZoomDelta});
+        map._updateCamera();
+
+        now += 400;
+        map._updateCamera();
+
+        t.equalWithPrecision(map.getZoom() - startZoom,  0.0285, 0.001);
+
+        map.remove();
+        t.end();
+    });
+
+    t.test('Zooms for multiple mouse wheel ticks', (t) => {
+        const map = createMap();
+
+        map._updateCamera();
+        const startZoom = map.getZoom();
+
+        const events = [
+            [2, {type: 'wheel', deltaY: -magicWheelZoomDelta}],
+            [7, {type: 'wheel', deltaY: -41}],
+            [30, {type: 'wheel', deltaY: -169}],
+            [1, {type: 'wheel', deltaY: -801}],
+            [5, {type: 'wheel', deltaY: -326}],
+            [20, {type: 'wheel', deltaY: -345}],
+            [22, {type: 'wheel', deltaY: -376}],
+        ];
+
+        const end = now + 500;
+        let lastWheelEvent = now;
+
+        // simulate the above sequence of wheel events, with render frames
+        // interspersed every 20ms
+        while (now++ < end) {
+            if (events.length && lastWheelEvent + events[0][0] === now) {
+                const [, event] = events.shift();
+                simulate.wheel(map.getCanvas(), event);
+                lastWheelEvent = now;
+            }
+            if (now % 20 === 0) {
+                map._updateCamera();
+            }
         }
-    }
 
-    now += 400;
-    map._updateCamera();
+        t.equalWithPrecision(map.getZoom() - startZoom,  1.839, 0.001);
 
-    // verified experimentally that the simulated scrolling above should
-    // cause a zoom delta well larger than 3
-    t.ok(map.getZoom() - startingZoom > 3);
+        map.remove();
+        t.end();
+    });
 
-    map.remove();
+    t.test('Gracefully ignores wheel events with deltaY: 0', (t) => {
+        const map = createMap();
+        map._updateCamera();
+
+        const startZoom = map.getZoom();
+        // simulate  shift+'wheel' events
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        map._updateCamera();
+
+        now += 400;
+        map._updateCamera();
+
+        t.equal(map.getZoom() - startZoom, 0.0);
+
+        t.end();
+    });
+
     t.end();
 });
 
