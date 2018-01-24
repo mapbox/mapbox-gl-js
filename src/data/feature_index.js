@@ -31,7 +31,9 @@ type QueryParameters = {
         layers: Array<string>,
     },
     collisionBoxArray: CollisionBoxArray,
-    sourceID: string
+    sourceID: string,
+    bucketInstanceIds: { [number]: boolean },
+    collisionIndex: CollisionIndex
 }
 
 class FeatureIndex {
@@ -84,10 +86,6 @@ class FeatureIndex {
         }
     }
 
-    setCollisionIndex(collisionIndex: CollisionIndex) {
-        this.collisionIndex = collisionIndex;
-    }
-
     // Finds features in this tile at a particular position.
     query(args: QueryParameters, styleLayers: {[string]: StyleLayer}) {
         if (!this.vtLayers) {
@@ -123,8 +121,8 @@ class FeatureIndex {
         matching.sort(topDownFeatureComparator);
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
-        const matchingSymbols = this.collisionIndex ?
-            this.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID) :
+        const matchingSymbols = args.collisionIndex ?
+            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);

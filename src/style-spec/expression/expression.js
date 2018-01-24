@@ -8,7 +8,6 @@ import type EvaluationContext from './evaluation_context';
 export interface Expression {
     +type: Type;
 
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression;
     evaluate(ctx: EvaluationContext): any;
 
     eachChild(fn: Expression => void): void;
@@ -20,3 +19,7 @@ export interface Expression {
      */
     possibleOutputs(): Array<Value | void>;
 }
+
+export type ExpressionParser = (args: Array<mixed>, context: ParsingContext) => ?Expression;
+export type ExpressionRegistration = Class<Expression> & { +parse: ExpressionParser };
+export type ExpressionRegistry = {[string]: ExpressionRegistration};

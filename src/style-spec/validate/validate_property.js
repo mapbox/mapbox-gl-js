@@ -28,17 +28,15 @@ module.exports = function validateProperty(options, propertyType) {
 
     const valueSpec = options.valueSpec || layerSpec[propertyKey];
     if (!valueSpec) {
-        return [new ValidationError(key, value, 'unknown property "%s"', propertyKey)];
+        return [new ValidationError(key, value, `unknown property "${propertyKey}"`)];
     }
 
     let tokenMatch;
     if (getType(value) === 'string' && valueSpec['property-function'] && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
         return [new ValidationError(
             key, value,
-            '"%s" does not support interpolation syntax\n' +
-                'Use an identity property function instead: `{ "type": "identity", "property": %s` }`.',
-            propertyKey, JSON.stringify(tokenMatch[1])
-        )];
+            `"${propertyKey}" does not support interpolation syntax\n` +
+                `Use an identity property function instead: \`{ "type": "identity", "property": ${JSON.stringify(tokenMatch[1])} }\`.`)];
     }
 
     const errors = [];

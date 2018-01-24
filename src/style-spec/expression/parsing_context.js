@@ -8,7 +8,7 @@ const Assertion = require('./definitions/assertion');
 const ArrayAssertion = require('./definitions/array');
 const Coercion = require('./definitions/coercion');
 
-import type {Expression} from './expression';
+import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
 
 /**
@@ -16,7 +16,7 @@ import type {Type} from './types';
  * @private
  */
 class ParsingContext {
-    definitions: {[string]: Class<Expression>};
+    registry: ExpressionRegistry;
     path: Array<number>;
     key: string;
     scope: Scope;
@@ -29,13 +29,13 @@ class ParsingContext {
     expectedType: ?Type;
 
     constructor(
-        definitions: *,
+        registry: ExpressionRegistry,
         path: Array<number> = [],
         expectedType: ?Type,
         scope: Scope = new Scope(),
         errors: Array<ParsingError> = []
     ) {
-        this.definitions = definitions;
+        this.registry = registry;
         this.path = path;
         this.key = path.map(part => `[${part}]`).join('');
         this.scope = scope;
@@ -77,7 +77,7 @@ class ParsingContext {
                 return null;
             }
 
-            const Expr = context.definitions[op];
+            const Expr = context.registry[op];
             if (Expr) {
                 let parsed = Expr.parse(expr, context);
                 if (!parsed) return null;
@@ -146,7 +146,7 @@ class ParsingContext {
         const path = typeof index === 'number' ? this.path.concat(index) : this.path;
         const scope = bindings ? this.scope.concat(bindings) : this.scope;
         return new ParsingContext(
-            this.definitions,
+            this.registry,
             path,
             expectedType || null,
             scope,

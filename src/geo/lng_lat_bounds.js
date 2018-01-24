@@ -201,6 +201,15 @@ class LngLatBounds {
     }
 
     /**
+     * Check if the bounding box is an empty/`null`-type box.
+     *
+     * @returns {boolean} True if bounds have been defined, otherwise false.
+     */
+    isEmpty() {
+        return !(this._sw && this._ne);
+    }
+
+    /**
      * Converts an array to a `LngLatBounds` object.
      *
      * If a `LngLatBounds` object is passed in, the function returns it unchanged.

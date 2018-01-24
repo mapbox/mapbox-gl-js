@@ -20,6 +20,7 @@ export type MapMouseEvent = {
         | 'click'
         | 'dblclick'
         | 'mousemove'
+        | 'mouseover'
         | 'mouseenter'
         | 'mouseleave'
         | 'mouseover'
@@ -130,13 +131,26 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is moved within the map.
      *
-     * @event mousemove
+     * @event mouseover
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
      * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     */
+    | 'mouseover'
+
+    /**
+     * Fired when a pointing device (usually a mouse) is moved within the map.
+     *
+     * @event mousemove
+     * @memberof Map
+     * @instance
+     * @property {MapMouseEvent} data
+     * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Display a popup on over](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      */
     | 'mousemove'
 

@@ -735,21 +735,21 @@ test('camera', (t) => {
 
                     setTimeout(() => {
                         stub.callsFake(() => 30);
-                        camera._updateEase();
+                        camera._updateCamera();
                     }, 0);
                 });
 
                 // setTimeout to avoid a synchronous callback
                 setTimeout(() => {
                     stub.callsFake(() => 20);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             });
 
             // setTimeout to avoid a synchronous callback
             setTimeout(() => {
                 stub.callsFake(() => 10);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 
@@ -776,11 +776,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -808,11 +808,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1019,11 +1019,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1054,15 +1054,15 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 10);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 20);
-                    camera._updateEase();
+                    camera._updateCamera();
 
                     setTimeout(() => {
                         stub.callsFake(() => 30);
-                        camera._updateEase();
+                        camera._updateCamera();
                     }, 0);
                 }, 0);
             }, 0);
@@ -1091,11 +1091,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1123,11 +1123,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 20);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1155,11 +1155,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 20);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1187,11 +1187,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 20);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1219,11 +1219,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1251,11 +1251,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1283,11 +1283,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1314,11 +1314,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1351,11 +1351,11 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 3);
-                camera._updateEase();
+                camera._updateCamera();
 
                 setTimeout(() => {
                     stub.callsFake(() => 10);
-                    camera._updateEase();
+                    camera._updateCamera();
                 }, 0);
             }, 0);
         });
@@ -1382,7 +1382,7 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 10);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 
@@ -1408,7 +1408,7 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 10);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 
@@ -1456,7 +1456,7 @@ test('camera', (t) => {
             camera.panTo([100, 0], {duration: 1});
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 
@@ -1478,7 +1478,7 @@ test('camera', (t) => {
             camera.zoomTo(3.2, {duration: 1});
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 
@@ -1500,7 +1500,7 @@ test('camera', (t) => {
             camera.rotateTo(90, {duration: 1});
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 
@@ -1579,7 +1579,7 @@ test('camera', (t) => {
 
             setTimeout(() => {
                 stub.callsFake(() => 1);
-                camera._updateEase();
+                camera._updateCamera();
             }, 0);
         });
 

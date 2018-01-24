@@ -33,6 +33,7 @@ class Transform {
     pixelsToGLUnits: Array<number>;
     cameraToCenterDistance: number;
     projMatrix: Float64Array;
+    alignedProjMatrix: Float64Array;
     pixelMatrix: Float64Array;
     pixelMatrixInverse: Float64Array;
     _fov: number;
@@ -45,6 +46,7 @@ class Transform {
     _center: LngLat;
     _constraining: boolean;
     _posMatrixCache: {[number]: Float32Array};
+    _alignedPosMatrixCache: {[number]: Float32Array};
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
@@ -64,6 +66,7 @@ class Transform {
         this._pitch = 0;
         this._unmodified = true;
         this._posMatrixCache = {};
+        this._alignedPosMatrixCache = {};
     }
 
     clone(): Transform {
@@ -196,9 +199,11 @@ class Transform {
         const w0 = Math.floor(ul.column);
         const w1 = Math.floor(ur.column);
         const result = [new UnwrappedTileID(0, tileID)];
-        for (let w = w0; w <= w1; w++) {
-            if (w === 0) continue;
-            result.push(new UnwrappedTileID(w, tileID));
+        if (this._renderWorldCopies) {
+            for (let w = w0; w <= w1; w++) {
+                if (w === 0) continue;
+                result.push(new UnwrappedTileID(w, tileID));
+            }
         }
         return result;
     }
@@ -396,10 +401,11 @@ class Transform {
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
      * @param {UnwrappedTileID} unwrappedTileID;
      */
-    calculatePosMatrix(unwrappedTileID: UnwrappedTileID): Float32Array {
+    calculatePosMatrix(unwrappedTileID: UnwrappedTileID, aligned: boolean = false): Float32Array {
         const posMatrixKey = unwrappedTileID.key;
-        if (this._posMatrixCache[posMatrixKey]) {
-            return this._posMatrixCache[posMatrixKey];
+        const cache = aligned ? this._alignedPosMatrixCache : this._posMatrixCache;
+        if (cache[posMatrixKey]) {
+            return cache[posMatrixKey];
         }
 
         const canonical = unwrappedTileID.canonical;
@@ -409,10 +415,10 @@ class Transform {
         const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [unwrappedX * scale, canonical.y * scale, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
-        mat4.multiply(posMatrix, this.projMatrix, posMatrix);
+        mat4.multiply(posMatrix, aligned ? this.alignedProjMatrix : this.projMatrix, posMatrix);
 
-        this._posMatrixCache[posMatrixKey] = new Float32Array(posMatrix);
-        return this._posMatrixCache[posMatrixKey];
+        cache[posMatrixKey] = new Float32Array(posMatrix);
+        return cache[posMatrixKey];
     }
 
     _constrain() {
@@ -494,6 +500,7 @@ class Transform {
         const halfFov = this._fov / 2;
         const groundAngle = Math.PI / 2 + this._pitch;
         const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+        const x = this.x, y = this.y;
 
         // Calculate z distance of the farthest fragment that should be rendered.
         const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
@@ -508,7 +515,7 @@ class Transform {
         mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this.angle);
-        mat4.translate(m, m, [-this.x, -this.y, 0]);
+        mat4.translate(m, m, [-x, -y, 0]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
         // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
@@ -516,6 +523,20 @@ class Transform {
         mat4.scale(m, m, [1, 1, verticalScale, 1]);
 
         this.projMatrix = m;
+
+        // Make a second projection matrix that is aligned to a pixel grid for rendering raster tiles.
+        // We're rounding the (floating point) x/y values to achieve to avoid rendering raster images to fractional
+        // coordinates. Additionally, we adjust by half a pixel in either direction in case that viewport dimension
+        // is an odd integer to preserve rendering to the pixel grid. We're rotating this shift based on the angle
+        // of the transformation so that 0°, 90°, 180°, and 270° rasters are crisp, and adjust the shift so that
+        // it is always <= 0.5 pixels.
+        const xShift = (this.width % 2) / 2, yShift = (this.height % 2) / 2,
+            angleCos = Math.cos(this.angle), angleSin = Math.sin(this.angle),
+            dx = x - Math.round(x) + angleCos * xShift + angleSin * yShift,
+            dy = y - Math.round(y) + angleCos * yShift + angleSin * xShift;
+        const alignedM = new Float64Array(m);
+        mat4.translate(alignedM, alignedM, [ dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0 ]);
+        this.alignedProjMatrix = alignedM;
 
         // matrix for conversion from location to screen coordinates
         m = mat4.create();
@@ -529,6 +550,7 @@ class Transform {
         this.pixelMatrixInverse = m;
 
         this._posMatrixCache = {};
+        this._alignedPosMatrixCache = {};
     }
 }
 

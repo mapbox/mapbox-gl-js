@@ -67,18 +67,18 @@
     padding: 0;
     outline: none;
     border: none;
-    border-bottom: 1px solid #ddd;
     box-sizing: border-box;
     background-color: rgba(0,0,0,0);
     cursor: pointer;
+}
+
+.mapboxgl-ctrl-group > button + button {
+    border-top: 1px solid #ddd;
 }
 /* https://bugzilla.mozilla.org/show_bug.cgi?id=140562 */
 .mapboxgl-ctrl > button::-moz-focus-inner {
     border: 0;
     padding: 0;
-}
-.mapboxgl-ctrl > button:last-child {
-    border-bottom: 0;
 }
 .mapboxgl-ctrl > button:hover {
     background-color: rgba(0,0,0,0.05);
@@ -213,6 +213,9 @@ a.mapboxgl-ctrl-logo {
 .mapboxgl-ctrl-attrib .mapbox-improve-map {
     font-weight: bold;
     margin-left: 2px;
+}
+.mapboxgl-attrib-empty {
+    display: none;
 }
 /*stylelint-enable*/
 .mapboxgl-ctrl-scale {
@@ -354,56 +357,49 @@ a.mapboxgl-ctrl-logo {
 }
 
 .mapboxgl-user-location-dot {
-    background-color: #1DA1F2;
-    width: 16px;
-    height: 16px;
+    background-color: #1da1f2;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
-    box-shadow: 0 0 2px rgba(0,0,0,0.25);
-    border: 2px solid #fff;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
 }
-.mapboxgl-user-location-dot:after {
+.mapboxgl-user-location-dot::before {
+    background-color: #1da1f2;
     content: '';
-    display: block;
-    box-shadow: #1DA1F2 0 0 0 2px;
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
-    position: relative;
-    z-index: -1;
-
-    -webkit-animation: mapboxgl-user-location-dot-pulse 2s;
-    -moz-animation: mapboxgl-user-location-dot-pulse 2s;
-    -ms-animation: mapboxgl-user-location-dot-pulse 2s;
-    animation: mapboxgl-user-location-dot-pulse 2s;
-
-    -webkit-animation-iteration-count: infinite;
-    -moz-animation-iteration-count: infinite;
-    -ms-animation-iteration-count: infinite;
-    animation-iteration-count: infinite;
+    position: absolute;
+    -webkit-animation: mapboxgl-user-location-dot-pulse 2s infinite;
+    -moz-animation: mapboxgl-user-location-dot-pulse 2s infinite;
+    -ms-animation: mapboxgl-user-location-dot-pulse 2s infinite;
+    animation: mapboxgl-user-location-dot-pulse 2s infinite;
 }
+.mapboxgl-user-location-dot::after {
+    border-radius: 50%;
+    border: 2px solid #fff;
+    content: '';
+    height: 15px;
+    left: -2px;
+    position: absolute;
+    top: -2px;
+    width: 15px;
+}
+
 @-webkit-keyframes mapboxgl-user-location-dot-pulse {
-    0%   {   -webkit-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8); }
-    70%  {   -webkit-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0); }
-    242% {   -webkit-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0); }
+    0%   { -webkit-transform: scale(1); opacity: 1; }
+    70%  { -webkit-transform: scale(3); opacity: 0; }
+    100% { -webkit-transform: scale(1); opacity: 0; }
 }
 @-ms-keyframes mapboxgl-user-location-dot-pulse {
-    0%   {   -ms-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8); }
-    70%  {   -ms-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0); }
-    242% {   -ms-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0); }
+    0%   { -ms-transform: scale(1); opacity: 1; }
+    70%  { -ms-transform: scale(3); opacity: 0; }
+    100% { -ms-transform: scale(1); opacity: 0; }
 }
 @keyframes mapboxgl-user-location-dot-pulse {
-    0% {
-        -moz-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.8);
-             box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.4);
-    }
-    70% {
-        -moz-box-shadow: 0 0 0 15px rgba(29, 161, 242, 0);
-             box-shadow: 0 0 0 15px rgba(29, 161, 242, 0);
-    }
-    100% {
-        -moz-box-shadow: 0 0 0 0 rgba(29, 161, 242, 0);
-             box-shadow: 0 0 0 0 rgba(29, 161, 242, 0);
-    }
+    0%   { transform: scale(1); opacity: 1; }
+    70%  { transform: scale(3); opacity: 0; }
+    100% { transform: scale(1); opacity: 0; }
 }
 .mapboxgl-user-location-dot-stale {
     background-color: #aaa;

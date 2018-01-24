@@ -23,7 +23,7 @@ void main() {
 
     float extrude_scale_length = length(v_extrude_scale);
     float extrude_length = length(v_extrude) * extrude_scale_length;
-    float stroke_width = 3.0;
+    float stroke_width = 15.0 * extrude_scale_length;
     float radius = v_radius * extrude_scale_length;
 
     float distance_to_edge = abs(extrude_length - radius);

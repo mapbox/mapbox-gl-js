@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
   "description": "a specification for mapbox gl styles",
-  "version": "10.1.0",
+  "version": "11.0.0",
   "author": "Mapbox",
   "keywords": [
     "mapbox",
@@ -12,7 +12,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
-    "build": "../../node_modules/.bin/browserify style-spec.js --no-builtins --insert-global-vars=\"__filename,__dirname\" --standalone=mapboxGlStyleSpecification | ../../node_modules/.bin/derequire > dist/index.js",
+    "build": "../../node_modules/.bin/browserify style-spec.js --standalone=mapboxGlStyleSpecification | ../../node_modules/.bin/derequire > dist/index.js",
     "prepublish": "in-publish && yarn copy-flow-typed && yarn build || not-in-publish",
     "postpublish": "in-publish && rm -r flow-typed dist/index.js || not-in-publish"
   },
@@ -50,7 +50,6 @@
     "csscolorparser": "~1.0.2",
     "in-publish": "^2.0.0",
     "jsonlint-lines-primitives": "~1.6.0",
-    "lodash.isequal": "^3.0.4",
     "minimist": "0.0.8",
     "rw": "^1.3.3",
     "sort-object": "^0.3.2",

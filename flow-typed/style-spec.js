@@ -303,7 +303,7 @@ declare type HeatmapLayerSpecification = {|
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
-        "heatmap-radius"?: PropertyValueSpecification<number>,
+        "heatmap-radius"?: DataDrivenPropertyValueSpecification<number>,
         "heatmap-weight"?: DataDrivenPropertyValueSpecification<number>,
         "heatmap-intensity"?: PropertyValueSpecification<number>,
         "heatmap-color"?: ExpressionSpecification,

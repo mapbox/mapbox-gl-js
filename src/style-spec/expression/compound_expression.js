@@ -5,7 +5,7 @@ const ParsingContext = require('./parsing_context');
 const EvaluationContext = require('./evaluation_context');
 const assert = require('assert');
 
-import type { Expression } from './expression';
+import type { Expression, ExpressionRegistry } from './expression';
 import type { Type } from './types';
 import type { Value } from './values';
 
@@ -83,7 +83,7 @@ class CompoundExpression implements Expression {
         for (const [params, evaluate] of overloads) {
             // Use a fresh context for each attempted signature so that, if
             // we eventually succeed, we haven't polluted `context.errors`.
-            signatureContext = new ParsingContext(context.definitions, context.path, null, context.scope);
+            signatureContext = new ParsingContext(context.registry, context.path, null, context.scope);
 
             if (Array.isArray(params)) {
                 if (params.length !== parsedArgs.length) {
@@ -122,13 +122,13 @@ class CompoundExpression implements Expression {
     }
 
     static register(
-        expressions: { [string]: Class<Expression> },
+        registry: ExpressionRegistry,
         definitions: { [string]: Definition }
     ) {
         assert(!CompoundExpression.definitions);
         CompoundExpression.definitions = definitions;
         for (const name in definitions) {
-            expressions[name] = CompoundExpression;
+            registry[name] = CompoundExpression;
         }
     }
 }

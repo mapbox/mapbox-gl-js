@@ -2,13 +2,13 @@
 
 const util = require('../util/util');
 const deserializeBucket = require('../data/bucket').deserialize;
-const SymbolBucket = require('../data/bucket/symbol_bucket');
 const FeatureIndex = require('../data/feature_index');
 const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
 const CollisionIndex = require('../symbol/collision_index');
+const SymbolBucket = require('../data/bucket/symbol_bucket');
 const {
     RasterBoundsArray,
     CollisionBoxArray
@@ -19,9 +19,6 @@ const Point = require('@mapbox/point-geometry');
 const Texture = require('../render/texture');
 const {SegmentVector} = require('../data/segment');
 const {TriangleIndexArray} = require('../data/index_array_type');
-const projection = require('../symbol/projection');
-const {performSymbolPlacement, updateOpacities} = require('../symbol/symbol_placement');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const browser = require('../util/browser');
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
@@ -32,12 +29,12 @@ import type {WorkerTileResult} from './worker_source';
 import type {DEMData} from '../data/dem_data';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
-import type CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import type Context from '../gl/context';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
+import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -93,7 +90,7 @@ class Tile {
     demTexture: ?Texture;
     refreshedUponExpiration: boolean;
     reloadCallback: any;
-    justReloaded: boolean;
+    resourceTiming: ?Array<PerformanceResourceTiming>;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -138,7 +135,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: WorkerTileResult, painter: any) {
+    loadVectorData(data: WorkerTileResult, painter: any, justReloaded: ?boolean) {
         if (this.hasData()) {
             this.unloadVectorData();
         }
@@ -160,6 +157,15 @@ class Tile {
         this.featureIndex.rawTileData = this.rawTileData;
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
+        if (justReloaded) {
+            for (const id in this.buckets) {
+                const bucket = this.buckets[id];
+                if (bucket instanceof SymbolBucket) {
+                    bucket.justReloaded = true;
+                }
+            }
+        }
+
         if (data.iconAtlasImage) {
             this.iconAtlasImage = data.iconAtlasImage;
         }
@@ -174,10 +180,6 @@ class Tile {
      * @private
      */
     unloadVectorData() {
-        if (this.state === 'reloading') {
-            this.justReloaded = true;
-        }
-
         for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
@@ -199,59 +201,6 @@ class Tile {
         this.dem = null;
         this.neighboringTiles = null;
         this.state = 'unloaded';
-    }
-
-    added(crossTileSymbolIndex: CrossTileSymbolIndex) {
-        for (const id in this.buckets) {
-            const bucket = this.buckets[id];
-            if (bucket instanceof SymbolBucket) {
-                crossTileSymbolIndex.addTileLayer(id, this.tileID, bucket.symbolInstances);
-            }
-        }
-    }
-
-    removed(crossTileSymbolIndex: CrossTileSymbolIndex) {
-        for (const id in this.buckets) {
-            const bucket = this.buckets[id];
-            if (bucket instanceof SymbolBucket) {
-                crossTileSymbolIndex.removeTileLayer(id, this.tileID);
-            }
-        }
-    }
-
-    placeLayer(showCollisionBoxes: boolean, collisionIndex: CollisionIndex, layer: any, sourceID: string) {
-        const bucket = this.getBucket(layer);
-        const collisionBoxArray = this.collisionBoxArray;
-
-        if (bucket && bucket instanceof SymbolBucket && collisionBoxArray) {
-            const posMatrix = collisionIndex.transform.calculatePosMatrix(this.tileID.toUnwrapped());
-
-            const pitchWithMap = bucket.layers[0].layout.get('text-pitch-alignment') === 'map';
-            const textPixelRatio = EXTENT / this.tileSize; // text size is not meant to be affected by scale
-            const pixelRatio = pixelsToTileUnits(this, 1, collisionIndex.transform.zoom);
-
-            const labelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix, pitchWithMap, true, collisionIndex.transform, pixelRatio);
-            performSymbolPlacement(bucket, collisionIndex, showCollisionBoxes, collisionIndex.transform.zoom, textPixelRatio, posMatrix, labelPlaneMatrix, this.tileID.key, sourceID, collisionBoxArray);
-        }
-    }
-
-    commitPlacement(collisionIndex: CollisionIndex, collisionFadeTimes: any, angle: number) {
-        // Start all collision animations at the same time
-        for (const id in this.buckets) {
-            const bucket = this.buckets[id];
-            if (bucket instanceof SymbolBucket) {
-                updateOpacities(bucket, collisionFadeTimes, this.justReloaded);
-                bucket.sortFeatures(angle);
-            }
-        }
-
-        // Don't update the collision index used for queryRenderedFeatures
-        // until all layers have been updated to the same state
-        if (this.featureIndex) {
-            this.featureIndex.setCollisionIndex(collisionIndex);
-        }
-
-        this.justReloaded = false;
     }
 
     getBucket(layer: StyleLayer) {
@@ -285,16 +234,24 @@ class Tile {
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
                           bearing: number,
-                          sourceID: string): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          sourceID: string,
+                          collisionIndex: CollisionIndex): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.featureIndex || !this.collisionBoxArray)
             return {};
 
         // Determine the additional radius needed factoring in property functions
         let additionalRadius = 0;
+        const bucketInstanceIds = {};
         for (const id in layers) {
             const bucket = this.getBucket(layers[id]);
             if (bucket) {
                 additionalRadius = Math.max(additionalRadius, layers[id].queryRadius(bucket));
+
+                // Add the bucket instance's id to the set of current ids.
+                // The query will only include results from current buckets.
+                if (bucket instanceof SymbolBucket && bucket.bucketInstanceId !== undefined) {
+                    bucketInstanceIds[bucket.bucketInstanceId] = true;
+                }
             }
         }
 
@@ -306,7 +263,9 @@ class Tile {
             params: params,
             additionalRadius: additionalRadius,
             collisionBoxArray: this.collisionBoxArray,
-            sourceID: sourceID
+            sourceID: sourceID,
+            collisionIndex: collisionIndex,
+            bucketInstanceIds: bucketInstanceIds
         }, layers);
     }
 

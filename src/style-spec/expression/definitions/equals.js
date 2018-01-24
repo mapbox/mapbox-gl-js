@@ -11,9 +11,6 @@ import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
 import type { Type } from '../types';
 
-function eq(ctx) { return this.lhs.evaluate(ctx) === this.rhs.evaluate(ctx); }
-function ne(ctx) { return this.lhs.evaluate(ctx) !== this.rhs.evaluate(ctx); }
-
 function isComparableType(type: Type) {
     return type.kind === 'string' ||
         type.kind === 'number' ||
@@ -35,49 +32,54 @@ function isComparableType(type: Type) {
  *
  * @private
  */
-class Equals implements Expression {
-    type: Type;
-    lhs: Expression;
-    rhs: Expression;
-    evaluate: (EvaluationContext) => any;
+function makeComparison(compare) {
+    return class Comparison implements Expression {
+        type: Type;
+        lhs: Expression;
+        rhs: Expression;
 
-    constructor(op: '==' | '!=', lhs: Expression, rhs: Expression) {
-        this.type = BooleanType;
-        this.lhs = lhs;
-        this.rhs = rhs;
-        this.evaluate = op === '==' ? eq : ne;
-    }
-
-    static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
-        if (args.length !== 3)
-            return context.error(`Expected two arguments.`);
-
-        const op: '==' | '!=' = (args[0]: any);
-
-        const lhs = context.parse(args[1], 1, ValueType);
-        if (!lhs) return null;
-        const rhs = context.parse(args[2], 2, ValueType);
-        if (!rhs) return null;
-
-        if (!isComparableType(lhs.type) && !isComparableType(rhs.type)) {
-            return context.error(`Expected at least one argument to be a string, number, boolean, or null, but found (${toString(lhs.type)}, ${toString(rhs.type)}) instead.`);
+        constructor(lhs: Expression, rhs: Expression) {
+            this.type = BooleanType;
+            this.lhs = lhs;
+            this.rhs = rhs;
         }
 
-        if (lhs.type.kind !== rhs.type.kind && lhs.type.kind !== 'value' && rhs.type.kind !== 'value') {
-            return context.error(`Cannot compare ${toString(lhs.type)} and ${toString(rhs.type)}.`);
+        static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
+            if (args.length !== 3)
+                return context.error(`Expected two arguments.`);
+
+            const lhs = context.parse(args[1], 1, ValueType);
+            if (!lhs) return null;
+            const rhs = context.parse(args[2], 2, ValueType);
+            if (!rhs) return null;
+
+            if (!isComparableType(lhs.type) && !isComparableType(rhs.type)) {
+                return context.error(`Expected at least one argument to be a string, number, boolean, or null, but found (${toString(lhs.type)}, ${toString(rhs.type)}) instead.`);
+            }
+
+            if (lhs.type.kind !== rhs.type.kind && lhs.type.kind !== 'value' && rhs.type.kind !== 'value') {
+                return context.error(`Cannot compare ${toString(lhs.type)} and ${toString(rhs.type)}.`);
+            }
+
+            return new Comparison(lhs, rhs);
         }
 
-        return new Equals(op, lhs, rhs);
-    }
+        evaluate(ctx: EvaluationContext) {
+            return compare(this.lhs.evaluate(ctx), this.rhs.evaluate(ctx));
+        }
 
-    eachChild(fn: (Expression) => void) {
-        fn(this.lhs);
-        fn(this.rhs);
-    }
+        eachChild(fn: (Expression) => void) {
+            fn(this.lhs);
+            fn(this.rhs);
+        }
 
-    possibleOutputs() {
-        return [true, false];
-    }
+        possibleOutputs() {
+            return [true, false];
+        }
+    };
 }
 
-module.exports = Equals;
+module.exports = {
+    Equals: makeComparison((lhs, rhs) => lhs === rhs),
+    NotEquals: makeComparison((lhs, rhs) => lhs !== rhs)
+};

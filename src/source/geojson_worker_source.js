@@ -1,6 +1,7 @@
 // @flow
 
 const ajax = require('../util/ajax');
+const perf = require('../util/performance');
 const rewind = require('geojson-rewind');
 const GeoJSONWrapper = require('./geojson_wrapper');
 const vtpbf = require('vt-pbf');
@@ -106,7 +107,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param params.source The id of the source.
      * @param callback
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<void>) {
+    loadData(params: LoadGeoJSONParameters, callback: Callback<{[string]: {[string]: Array<PerformanceResourceTiming>}}>) {
         this.loadGeoJSON(params, (err, data) => {
             if (err || !data) {
                 return callback(err);
@@ -124,7 +125,18 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 }
 
                 this.loaded[params.source] = {};
-                callback(null);
+
+                const result = {};
+                if (params.request && params.request.collectResourceTiming) {
+                    const resourceTimingData = perf.getEntriesByName(params.request.url);
+                    // it's necessary to eval the result of getEntriesByName() here via parse/stringify
+                    // late evaluation in the main thread causes TypeError: illegal invocation
+                    if (resourceTimingData) {
+                        result.resourceTiming = {};
+                        result.resourceTiming[params.source] = JSON.parse(JSON.stringify(resourceTimingData));
+                    }
+                }
+                callback(null, result);
             }
         });
     }
