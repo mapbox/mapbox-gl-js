@@ -167,7 +167,7 @@ class ScrollZoomHandler {
 
         // Only fire the callback if we actually know what type of scrolling device the user uses.
         if (this._type) {
-            if (!this.isActive()) {
+            if (!this.isActive() && Math.abs(value) > 0.0) {
                 this._active = true;
                 this._map.moving = true;
                 this._map.zooming = true;
