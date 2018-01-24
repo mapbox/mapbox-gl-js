@@ -540,13 +540,13 @@
       "type": "number",
       "minimum": 0,
       "maximum": 24,
-      "doc": "The minimum zoom level on which the layer gets parsed and appears on."
+      "doc": "The minimum zoom level for the layer. At zoom levels less than the minzoom, the layer will be hidden."
     },
     "maxzoom": {
       "type": "number",
       "minimum": 0,
       "maximum": 24,
-      "doc": "The maximum zoom level on which the layer gets parsed and appears on."
+      "doc": "The maximum zoom level for the layer. At zoom levels equal to or greater than the maxzoom, the layer will be hidden."
     },
     "filter": {
       "type": "filter",
@@ -2221,11 +2221,11 @@
         "group": "Math"
       },
       "==": {
-        "doc": "Returns `true` if the input values are equal, `false` otherwise. The inputs must be numbers, strings, or booleans, and both of the same type.",
+        "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision"
       },
       "!=": {
-        "doc": "Returns `true` if the input values are not equal, `false` otherwise. The inputs must be numbers, strings, or booleans, and both of the same type.",
+        "doc": "Returns `true` if the input values are not equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision"
       },
       ">": {

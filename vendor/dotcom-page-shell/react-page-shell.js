@@ -199,7 +199,7 @@ var shellStyles = {
   navigationMenu: 'shell-relative shell-mx6 shell-mx12-ml shell-mx18-mxl',
 
   // Medium to X-large navigation popover
-  popoverContainer: 'shell-absolute shell-w-full shell-z2 shell-disable-text-size-adjust',
+  popoverContainer: 'shell-absolute shell-z2 shell-disable-text-size-adjust',
   popoverBody: 'shell-shadow-darken10-bold shell-bg-white',
   popoverTriangle: 'shell-triangle-wide shell-triangle-wide--u shell-color-white shell-z5',
 
@@ -213,57 +213,8 @@ var shellStyles = {
   popoverNavLinkDescription: 'shell-inline-block shell-color-darken50 shell-txt-s',
 
   // User menu popovers
-  userNavLink: 'shell-align-middle shell-color-gray-dark shell-color-blue-on-hover shell-txt-s shell-mx12 shell-mx12-ml shell-mx24-mxl shell-my12',
+  userNavLink: 'shell-color-gray-dark shell-color-blue-on-hover shell-txt-s shell-txt-bold shell-my12 shell-block',
   userAvatar: 'shell-border shell-border--2 shell-border--white shell-h30 shell-w30 shell-bg-darken25 shell-clip shell-round-full'
-};
-
-var NavigationHighlightLink = function (_React$Component) {
-  inherits(NavigationHighlightLink, _React$Component);
-
-  function NavigationHighlightLink() {
-    classCallCheck(this, NavigationHighlightLink);
-    return possibleConstructorReturn(this, (NavigationHighlightLink.__proto__ || Object.getPrototypeOf(NavigationHighlightLink)).apply(this, arguments));
-  }
-
-  createClass(NavigationHighlightLink, [{
-    key: 'shouldComponentUpdate',
-    value: function shouldComponentUpdate() {
-      return false;
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var splitText = this.props.label.split(' ');
-      var lastWord = splitText.pop();
-      var textWithoutLastWord = splitText.join(' ');
-
-      return React.createElement(
-        'span',
-        { className: 'shell-txt-bold' },
-        textWithoutLastWord,
-        ' ',
-        React.createElement(
-          'span',
-          { className: 'shell-txt-nowrap' },
-          lastWord,
-          React.createElement(
-            'span',
-            { className: 'shell-icon-inliner' },
-            React.createElement(
-              'svg',
-              { className: 'shell-icon' },
-              React.createElement('use', { xlinkHref: '#shell-icon-chevron-right' })
-            )
-          )
-        )
-      );
-    }
-  }]);
-  return NavigationHighlightLink;
-}(React.Component);
-
-NavigationHighlightLink.propTypes = {
-  label: PropTypes.string.isRequired
 };
 
 var UserMenu = function (_React$Component) {
@@ -330,18 +281,31 @@ var UserMenu = function (_React$Component) {
               },
               React.createElement(
                 'div',
-                { id: 'user-menu', className: 'shell-fr' },
+                {
+                  id: 'user-menu',
+                  className: 'shell-flex-parent shell-flex-parent--center-cross',
+                  style: { paddingRight: 16 }
+                },
                 React.createElement(
                   'button',
                   {
                     id: 'user-menu-trigger',
                     'data-test': 'user-menu-trigger',
                     'aria-haspopup': 'true',
-                    'aria-controls': 'user-menu-body',
+                    'aria-controls': 'user-menu-container',
                     'aria-expanded': 'false',
                     'aria-label': 'User menu',
-                    className: 'shell-flex-parent shell-flex-parent--center-cross ' + userButtonColorClasses
+                    className: userButtonColorClasses + ' shell-relative'
                   },
+                  React.createElement(
+                    'svg',
+                    {
+                      viewBox: '0 0 18 18',
+                      className: 'shell-icon shell-absolute shell-mt-neg12 shell-h24 shell-w24',
+                      style: { left: '100%', top: '50%' }
+                    },
+                    React.createElement('path', { d: 'M12,7L6,7l3,4L12,7z' })
+                  ),
                   React.createElement('span', {
                     'data-user-avatar': true,
                     className: 'shell-flex-child shell-flex-child--no-shrink ' + shellStyles.userAvatar
@@ -353,11 +317,11 @@ var UserMenu = function (_React$Component) {
           React.createElement(
             'div',
             {
-              id: 'user-menu-body',
+              id: 'user-menu-container',
               'data-test': 'user-menu',
               role: 'group',
               'aria-labelledby': 'user-menu-trigger',
-              className: shellStyles.popoverContainer + ' shell-align-center shell-animated-menu',
+              className: shellStyles.popoverContainer + ' shell-w-full shell-animated-menu',
               style: {
                 right: 0,
                 top: '100%',
@@ -374,30 +338,67 @@ var UserMenu = function (_React$Component) {
             }),
             React.createElement(
               'div',
-              { className: shellStyles.popoverBody + ' shell-py24' },
+              {
+                className: shellStyles.popoverBody + ' shell-absolute shell-py30 shell-px24 shell-round shell-w-full shell-w-210-mm',
+                id: 'user-menu-body',
+                style: {
+                  right: 10
+                }
+              },
               React.createElement(
-                'a',
-                { href: '/studio/account/', className: shellStyles.userNavLink },
-                'Account'
+                'div',
+                { className: 'shell-mt-neg12', 'data-generic-user-menu': true },
+                React.createElement(
+                  'a',
+                  { href: '/account/', className: shellStyles.userNavLink },
+                  'Account'
+                ),
+                React.createElement(
+                  'a',
+                  { href: '/studio/', className: shellStyles.userNavLink },
+                  'Studio'
+                ),
+                React.createElement(
+                  'a',
+                  { href: '/help/', className: shellStyles.userNavLink },
+                  'Help'
+                )
               ),
               React.createElement(
-                'a',
-                { href: '/studio/', className: shellStyles.userNavLink },
-                'Studio'
+                'div',
+                { className: 'shell-mt-neg12', 'data-app-specific-user-menu': true },
+                React.createElement(
+                  'a',
+                  { href: '/account/settings/', className: shellStyles.userNavLink },
+                  'Settings'
+                )
               ),
               React.createElement(
-                'a',
-                { href: '/help/', className: shellStyles.userNavLink },
-                'Help'
-              ),
-              React.createElement(
-                'button',
-                {
-                  'data-sign-out': true,
-                  'data-test': 'signout-button',
-                  className: shellStyles.userNavLink
-                },
-                React.createElement(NavigationHighlightLink, { label: 'Sign out' })
+                'div',
+                { className: 'shell-pt24 shell-mt24 shell-border-t shell-border--gray-light' },
+                React.createElement('div', { 'data-user-name': true, className: 'shell-txt-s shell-color-gray' }),
+                React.createElement(
+                  'button',
+                  {
+                    'data-sign-out': true,
+                    'data-test': 'signout-button',
+                    className: 'shell-color-gray-dark shell-color-blue-on-hover shell-txt-s shell-txt-bold shell-mt6 shell-block shell-w-full'
+                  },
+                  React.createElement(
+                    'div',
+                    { className: 'shell-flex-parent shell-flex-parent--center-cross shell-txt-bold' },
+                    React.createElement(
+                      'svg',
+                      { className: 'shell-icon shell-mr3', viewBox: '0 0 18 18' },
+                      React.createElement('path', { d: 'M4,4c0,0-1,0-1,1v8c0,1,1,1,1,1h4c0.6,0,1-0.4,1-1s-0.4-1-1-1H5V6h3c0.6,0,1-0.4,1-1S8.6,4,8,4H4z M11,5 c-0.3,0-0.5,0.1-0.7,0.3c-0.4,0.4-0.4,1,0,1.4L11.6,8H7C6.5,8,6,8.5,6,9s0.5,1,1,1h4.6l-1.3,1.3c-0.4,0.4-0.4,1,0,1.4s1,0.4,1.4,0 l2.8-2.9c0.2-0.2,0.4-0.5,0.4-0.9c0-0.3-0.2-0.6-0.4-0.9l-2.8-2.9C11.5,5.1,11.3,5,11,5L11,5z' })
+                    ),
+                    React.createElement(
+                      'span',
+                      { className: 'shell-flex-child' },
+                      'Sign out'
+                    )
+                  )
+                )
               )
             )
           )
@@ -925,6 +926,55 @@ var navigationMenuData = {
   }
 };
 
+var NavigationHighlightLink = function (_React$Component) {
+  inherits(NavigationHighlightLink, _React$Component);
+
+  function NavigationHighlightLink() {
+    classCallCheck(this, NavigationHighlightLink);
+    return possibleConstructorReturn(this, (NavigationHighlightLink.__proto__ || Object.getPrototypeOf(NavigationHighlightLink)).apply(this, arguments));
+  }
+
+  createClass(NavigationHighlightLink, [{
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate() {
+      return false;
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var splitText = this.props.label.split(' ');
+      var lastWord = splitText.pop();
+      var textWithoutLastWord = splitText.join(' ');
+
+      return React.createElement(
+        'span',
+        { className: 'shell-txt-bold' },
+        textWithoutLastWord,
+        ' ',
+        React.createElement(
+          'span',
+          { className: 'shell-txt-nowrap' },
+          lastWord,
+          React.createElement(
+            'span',
+            { className: 'shell-icon-inliner' },
+            React.createElement(
+              'svg',
+              { className: 'shell-icon' },
+              React.createElement('use', { xlinkHref: '#shell-icon-chevron-right' })
+            )
+          )
+        )
+      );
+    }
+  }]);
+  return NavigationHighlightLink;
+}(React.Component);
+
+NavigationHighlightLink.propTypes = {
+  label: PropTypes.string.isRequired
+};
+
 var PopoverWrapper = function (_React$Component) {
   inherits(PopoverWrapper, _React$Component);
 
@@ -1442,7 +1492,7 @@ var MobileMenuButton = function (_React$Component) {
         {
           id: 'mobile-nav-trigger-toggle',
           'aria-label': 'Toggle navigation',
-          className: extraMenuButtonClasses + ' shell-p6y shell-p3x',
+          className: extraMenuButtonClasses + ' shell-mr-neg6',
           'data-test': 'mobile-nav-trigger-toggle'
         },
         React.createElement(
@@ -1536,7 +1586,7 @@ var NavigationDividedLinkList = function (_React$Component) {
       });
       var items = React.createElement(
         'div',
-        { className: 'shell-grid shell-grid--gut24' },
+        { className: 'shell-grid shell-grid--gut12' },
         React.createElement(
           'div',
           { className: 'shell-col shell-col--6' },
@@ -1673,66 +1723,101 @@ var MobileUserMenu = function (_React$Component) {
     value: function render() {
       return React.createElement(
         'div',
-        { className: this.props.className },
+        null,
         React.createElement(
           'div',
-          { 'data-display-block-authenticated': true, style: { display: 'none' } },
+          {
+            className: 'shell-border-t shell-border--gray-light shell-mb30 shell-pt30',
+            'data-test': 'mobile-user-menu',
+            'data-generic-navigation': true,
+            style: { display: 'none' }
+          },
           React.createElement(
             'div',
-            {
-              'data-test': 'mobile-user-menu',
-              className: 'shell-grid shell-grid--gut12 shell-mt-neg12'
-            },
+            { className: 'shell-flex-child shell-flex-child--grow' },
             React.createElement(
               'div',
-              { className: 'shell-col shell-col--6' },
+              { className: 'shell-grid shell-grid--gut12' },
               React.createElement(
-                'a',
-                {
-                  href: '/studio/account/',
-                  className: shellStyles.popoverNavLink + ' shell-txt-m shell-mb0 shell-mt12'
-                },
-                'Account'
-              )
-            ),
-            React.createElement(
-              'div',
-              { className: 'shell-col shell-col--6' },
+                'div',
+                { className: 'shell-col shell-col--6' },
+                React.createElement(
+                  'a',
+                  {
+                    href: '/account/',
+                    className: shellStyles.popoverNavLink + ' shell-txt-m shell-mb0'
+                  },
+                  'Account'
+                )
+              ),
               React.createElement(
-                'a',
-                {
-                  href: '/studio/',
-                  className: shellStyles.popoverNavLink + ' shell-txt-m shell-mb0 shell-mt12'
-                },
-                'Studio'
-              )
-            ),
-            React.createElement(
-              'div',
-              { className: 'shell-col shell-col--6' },
-              React.createElement(
-                'button',
-                {
-                  'data-sign-out': true,
-                  'data-test': 'mobile-signout-button',
-                  className: shellStyles.popoverNavLink + ' shell-txt-m shell-mb0 shell-mt12'
-                },
-                React.createElement(NavigationHighlightLink, { label: 'Sign out' })
+                'div',
+                { className: 'shell-col shell-col--6' },
+                React.createElement(
+                  'a',
+                  {
+                    href: '/studio/',
+                    className: shellStyles.popoverNavLink + ' shell-txt-m shell-mb0'
+                  },
+                  'Studio'
+                )
               )
             )
           )
         ),
         React.createElement(
           'div',
-          { 'data-display-block-unauthenticated': true, style: { display: 'none' } },
+          { className: 'shell-bg-gray-faint shell-py24 shell-px24 shell-ml-neg24 shell-mr-neg24 shell-mb-neg24' },
           React.createElement(
-            'a',
-            {
-              href: '/signin/',
-              className: shellStyles.popoverNavLink + ' shell-txt-m shell-w-full',
-              'data-test': 'mobile-signin-button'
-            },
-            React.createElement(NavigationHighlightLink, { label: 'Sign in' })
+            'div',
+            { 'data-display-block-authenticated': true },
+            React.createElement(
+              'div',
+              { className: 'shell-flex-parent shell-flex-parent--space-center-main shell-flex-parent--space-between-main' },
+              React.createElement('div', {
+                'data-user-name': true,
+                className: 'shell-flex-child shell-txt-s shell-color-gray'
+              }),
+              React.createElement(
+                'div',
+                { className: 'shell-flex-child' },
+                React.createElement(
+                  'button',
+                  {
+                    'data-sign-out': true,
+                    'data-test': 'mobile-signout-button',
+                    className: shellStyles.popoverNavLink + ' shell-txt-s shell-mb0'
+                  },
+                  React.createElement(
+                    'div',
+                    { className: 'shell-flex-parent shell-flex-parent--center-cross shell-txt-bold' },
+                    React.createElement(
+                      'svg',
+                      { className: 'shell-icon shell-mr3', viewBox: '0 0 18 18' },
+                      React.createElement('path', { d: 'M4,4c0,0-1,0-1,1v8c0,1,1,1,1,1h4c0.6,0,1-0.4,1-1s-0.4-1-1-1H5V6h3c0.6,0,1-0.4,1-1S8.6,4,8,4H4z M11,5 c-0.3,0-0.5,0.1-0.7,0.3c-0.4,0.4-0.4,1,0,1.4L11.6,8H7C6.5,8,6,8.5,6,9s0.5,1,1,1h4.6l-1.3,1.3c-0.4,0.4-0.4,1,0,1.4s1,0.4,1.4,0 l2.8-2.9c0.2-0.2,0.4-0.5,0.4-0.9c0-0.3-0.2-0.6-0.4-0.9l-2.8-2.9C11.5,5.1,11.3,5,11,5L11,5z' })
+                    ),
+                    React.createElement(
+                      'span',
+                      { className: 'shell-flex-child' },
+                      'Sign out'
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          React.createElement(
+            'div',
+            { 'data-display-block-unauthenticated': true, style: { display: 'none' } },
+            React.createElement(
+              'a',
+              {
+                href: '/signin/',
+                className: shellStyles.popoverNavLink + ' shell-txt-m shell-w-full',
+                'data-test': 'mobile-signin-button'
+              },
+              React.createElement(NavigationHighlightLink, { label: 'Sign in' })
+            )
           )
         )
       );
@@ -1763,6 +1848,8 @@ var MobileNavigation = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
+      var menuItemClasses = shellStyles.popoverNavLink + ' txt-l';
+
       return React.createElement(
         'div',
         { className: 'shell-mr-neg6 shell-flex-child shell-flex-parent shell-flex-parent--end-main shell-z1 shell-absolute shell-top shell-left shell-w-full' },
@@ -1794,23 +1881,49 @@ var MobileNavigation = function (_React$Component) {
             },
             React.createElement(
               'div',
-              { className: 'shell-grid shell-grid--gut12' },
-              React.createElement(NavigationLinkList, _extends({}, navigationMenuData.headerMainMenus.products, {
-                navigationType: 'mobile-navigation'
-              })),
-              React.createElement(NavigationLinkList, _extends({}, navigationMenuData.useCaseMenu, {
-                navigationType: 'mobile-navigation'
-              }))
+              { className: 'shell-flex-parent--column', 'data-generic-navigation': true },
+              React.createElement(
+                'div',
+                { className: 'shell-grid shell-grid--gut12' },
+                React.createElement(NavigationLinkList, _extends({}, navigationMenuData.headerMainMenus.products, {
+                  navigationType: 'mobile-navigation'
+                })),
+                React.createElement(NavigationLinkList, _extends({}, navigationMenuData.useCaseMenu, {
+                  navigationType: 'mobile-navigation'
+                }))
+              ),
+              React.createElement(
+                'div',
+                { className: 'shell-relative shell-mt30 shell-pt18 shell-pb30' },
+                React.createElement('div', { className: 'shell-border-t shell-border--gray-light shell-absolute shell-top shell-left shell-right' }),
+                React.createElement(NavigationDividedLinkList, _extends({}, navigationMenuData.mobileCombinationMenu, {
+                  navigationType: 'mobile-navigation'
+                }))
+              )
             ),
             React.createElement(
               'div',
-              { className: 'shell-relative shell-mt30 shell-pt18 shell-pb30' },
-              React.createElement('div', { className: 'shell-border-t shell-border--gray-light shell-absolute shell-top shell-left shell-right' }),
-              React.createElement(NavigationDividedLinkList, _extends({}, navigationMenuData.mobileCombinationMenu, {
-                navigationType: 'mobile-navigation'
-              }))
+              {
+                className: 'shell-flex-parent--column shell-mb24',
+                'data-app-specific-navigation': true
+              },
+              React.createElement(
+                'a',
+                { href: '/account/', className: menuItemClasses + ' shell-mb12' },
+                'Account'
+              ),
+              React.createElement(
+                'a',
+                { href: '/studio/', className: menuItemClasses + ' shell-mb12' },
+                'Studio'
+              ),
+              React.createElement(
+                'a',
+                { href: '/help/', className: menuItemClasses },
+                'Help'
+              )
             ),
-            React.createElement(MobileUserMenu, { className: 'shell-bg-gray-faint shell-py24 shell-px24 shell-mr-neg24 shell-ml-neg24' })
+            React.createElement(MobileUserMenu, null)
           )
         )
       );
@@ -1895,8 +2008,36 @@ var PageHeader = function (_React$Component) {
               'div',
               {
                 className: 'shell-flex-parent shell-flex-parent--center-cross shell-flex-parent--end-main',
-                'data-unauthenticated-menu': true,
-                'data-test': 'menu-unauthenticated'
+                'data-app-specific-navigation': true,
+                'data-test': 'app-specific-navigation',
+                style: { display: 'none' }
+              },
+              React.createElement(
+                NavigationItem,
+                {
+                  darkText: this.props.darkText,
+                  href: '/studio/',
+                  name: 'Studio'
+                },
+                'Studio'
+              ),
+              React.createElement(
+                NavigationItem,
+                {
+                  darkText: this.props.darkText,
+                  href: '/account/',
+                  name: 'Account'
+                },
+                'Account'
+              )
+            ),
+            React.createElement(
+              'div',
+              {
+                className: 'shell-flex-parent shell-flex-parent--center-cross shell-flex-parent--end-main',
+                'data-generic-navigation': true,
+                'data-test': 'generic-navigation',
+                style: { display: 'none' }
               },
               React.createElement(
                 NavigationItemWithMenu,
