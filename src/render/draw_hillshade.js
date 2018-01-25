@@ -17,6 +17,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     if (painter.renderPass !== 'offscreen' && painter.renderPass !== 'translucent') return;
 
     const context = painter.context;
+    const sourceMaxZoom = sourceCache.getSource().maxzoom;
 
     context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
     context.setStencilMode(StencilMode.disabled);
@@ -25,7 +26,7 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);
         if (tile.needsHillshadePrepare && painter.renderPass === 'offscreen') {
-            prepareHillshade(painter, tile);
+            prepareHillshade(painter, tile, sourceMaxZoom);
             continue;
         } else if (painter.renderPass === 'translucent') {
             renderHillshade(painter, tile, layer);
@@ -95,7 +96,7 @@ function renderHillshade(painter, tile, layer) {
 
 // hillshade rendering is done in two steps. the prepare step first calculates the slope of the terrain in the x and y
 // directions for each pixel, and saves those values to a framebuffer texture in the r and g channels.
-function prepareHillshade(painter, tile) {
+function prepareHillshade(painter, tile, sourceMaxZoom) {
     const context = painter.context;
     const gl = context.gl;
     // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
@@ -154,6 +155,7 @@ function prepareHillshade(painter, tile) {
         gl.uniform1f(program.uniforms.u_zoom, tile.tileID.overscaledZ);
         gl.uniform2fv(program.uniforms.u_dimension, [tileSize * 2, tileSize * 2]);
         gl.uniform1i(program.uniforms.u_image, 1);
+        gl.uniform1f(program.uniforms.u_maxzoom, sourceMaxZoom);
 
         const buffer = painter.rasterBoundsBuffer;
         const vao = painter.rasterBoundsVAO;
