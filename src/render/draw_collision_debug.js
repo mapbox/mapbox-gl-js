@@ -42,6 +42,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         gl.uniform2f(program.uniforms.u_extrude_scale,
             painter.transform.pixelsToGLUnits[0] / (pixelRatio * scale),
             painter.transform.pixelsToGLUnits[1] / (pixelRatio * scale));
+        gl.uniform1f(program.uniforms.u_overscale_factor, tile.tileID.overscaleFactor());
 
         program.draw(
             context,
