@@ -79,6 +79,7 @@ class GeoJSONSource extends Evented implements Source {
     _loaded: boolean;
     _collectResourceTiming: boolean;
     _resourceTiming: Array<PerformanceResourceTiming>;
+    _removed: boolean;
 
     constructor(id: string, options: GeojsonSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -94,6 +95,7 @@ class GeoJSONSource extends Evented implements Source {
         this.tileSize = 512;
         this.isTileClipped = true;
         this.reparseOverscaled = true;
+        this._removed = false;
 
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
@@ -198,11 +200,11 @@ class GeoJSONSource extends Evented implements Source {
             options.data = JSON.stringify(data);
         }
 
-        // target {this.type}.loadData rather than literally geojson.loadData,
+        // target {this.type}.{options.source}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, abandoned) => {
-            if (!abandoned) {
+        this.workerID = this.dispatcher.send(`${this.type}.${options.source}.loadData`, options, (err, abandoned) => {
+            if (!abandoned && !this._removed) {
                 this._loaded = true;
 
            		if (result && result.resourceTiming && result.resourceTiming[this.id])
@@ -214,7 +216,7 @@ class GeoJSONSource extends Evented implements Source {
                 // message queue. Waiting instead for the 'coalesce' to round-trip
                 // through the foreground just means we're throttling the worker
                 // to run at a little less than full-throttle.
-                this.dispatcher.send(`${this.type}.coalesce`, this.workerOptions, null, this.workerID);
+                this.dispatcher.send(`${this.type}.${options.source}.coalesce`, null, null, this.workerID);
                 callback(err);
             }
         }, this.workerID);
@@ -262,7 +264,8 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     onRemove() {
-        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id });
+        this._removed = true;
+        this.dispatcher.send('removeSource', { type: this.type, source: this.id }, null, this.workerID);
     }
 
     serialize() {

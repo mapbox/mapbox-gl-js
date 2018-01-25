@@ -85,5 +85,10 @@ export interface WorkerSource {
      */
     removeTile(params: TileParameters, callback: WorkerTileCallback): void;
 
+    /**
+     * Tells the WorkerSource to abort in-progress tasks and release resources.
+     * The foreground Source is responsible for ensuring that 'removeSource' is
+     * the last message sent to the WorkerSource.
+     */
     removeSource?: (params: {source: string}, callback: WorkerTileCallback) => void;
 }

@@ -73,8 +73,8 @@ class VectorTileWorkerSource implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     loadVectorData: LoadVectorData;
-    loading: { [string]: { [string]: WorkerTile } };
-    loaded: { [string]: { [string]: WorkerTile } };
+    loading: { [string]: WorkerTile };
+    loaded: { [string]: WorkerTile };
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -96,15 +96,14 @@ class VectorTileWorkerSource implements WorkerSource {
      * a `params.url` property) for fetching and producing a VectorTile object.
      */
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
-        const source = params.source,
-            uid = params.uid;
+        const uid = params.uid;
 
-        if (!this.loading[source])
-            this.loading[source] = {};
+        if (!this.loading)
+            this.loading = {};
 
-        const workerTile = this.loading[source][uid] = new WorkerTile(params);
+        const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
-            delete this.loading[source][uid];
+            delete this.loading[uid];
 
             if (err || !response) {
                 return callback(err);
@@ -131,8 +130,8 @@ class VectorTileWorkerSource implements WorkerSource {
                 callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
             });
 
-            this.loaded[source] = this.loaded[source] || {};
-            this.loaded[source][uid] = workerTile;
+            this.loaded = this.loaded || {};
+            this.loaded[uid] = workerTile;
         });
     }
 
@@ -140,7 +139,7 @@ class VectorTileWorkerSource implements WorkerSource {
      * Implements {@link WorkerSource#reloadTile}.
      */
     reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
-        const loaded = this.loaded[params.source],
+        const loaded = this.loaded,
             uid = params.uid,
             vtSource = this;
         if (loaded && loaded[uid]) {
@@ -170,11 +169,10 @@ class VectorTileWorkerSource implements WorkerSource {
      * Implements {@link WorkerSource#abortTile}.
      *
      * @param params
-     * @param params.source The id of the source for which we're loading this tile.
      * @param params.uid The UID for this tile.
      */
     abortTile(params: TileParameters, callback: WorkerTileCallback) {
-        const loading = this.loading[params.source],
+        const loading = this.loading,
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
@@ -187,11 +185,10 @@ class VectorTileWorkerSource implements WorkerSource {
      * Implements {@link WorkerSource#removeTile}.
      *
      * @param params
-     * @param params.source The id of the source for which we're loading this tile.
      * @param params.uid The UID for this tile.
      */
     removeTile(params: TileParameters, callback: WorkerTileCallback) {
-        const loaded = this.loaded[params.source],
+        const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
