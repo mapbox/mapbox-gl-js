@@ -33,24 +33,19 @@ export type LoadGeoJSONParameters = {
     geojsonVtOptions?: Object
 };
 
-export type CoalesceParameters = {
-    source: string
-};
-
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<mixed>) => void;
 
 export interface GeoJSONIndex {
 }
 
 function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const source = params.source,
-        canonical = params.tileID.canonical;
+    const canonical = params.tileID.canonical;
 
-    if (!this._sources[source] || !this._sources[source].geoJSONIndex) {
+    if (!this._geoJSONIndex) {
         return callback(null, null);  // we couldn't load the file
     }
 
-    const geoJSONTile = this._sources[source].geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
+    const geoJSONTile = this._geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
     if (!geoJSONTile) {
         return callback(null, null); // nothing in the given tile
     }
@@ -89,12 +84,10 @@ export type SourceState =
  */
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
     loadGeoJSON: LoadGeoJSON;
-    _sources: { [string]: {
-        state?: SourceState,
-        pendingCallback?: Callback<boolean>,
-        pendingLoadDataParams?: LoadGeoJSONParameters,
-        geoJSONIndex?: GeoJSONIndex // object mapping source ids to geojson-vt-like tile indexes
-    }};
+    _state: SourceState;
+    _pendingCallback: Callback<boolean>;
+    _pendingLoadDataParams: LoadGeoJSONParameters;
+    _geoJSONIndex: GeoJSONIndex
 
     /**
      * @param [loadGeoJSON] Optional method for custom loading/parsing of
@@ -106,7 +99,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
         }
-        this._sources = {};
     }
 
     /**
@@ -123,28 +115,22 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * See {@link GeoJSONWorkerSource#coalesce}
      *
      * @param params
-     * @param params.source The id of the source.
      * @param callback
      */
     loadData(params: LoadGeoJSONParameters, callback: Callback<boolean>) {
-        if (!this._sources[params.source]) {
-            this._sources[params.source] = {};
-        }
-        const source = this._sources[params.source];
-
-        if (source.pendingCallback) {
+        if (this._pendingCallback) {
             // Tell the foreground the previous call has been abandoned
-            source.pendingCallback(null, true);
+            this._pendingCallback(null, true);
         }
-        source.pendingCallback = callback;
-        source.pendingLoadDataParams = params;
+        this._pendingCallback = callback;
+        this._pendingLoadDataParams = params;
 
-        if (source.state &&
-            source.state !== 'Idle') {
-            source.state = 'NeedsLoadData';
+        if (this._state &&
+            this._state !== 'Idle') {
+            this._state = 'NeedsLoadData';
         } else {
-            source.state = 'Coalescing';
-            this._loadData(params.source);
+            this._state = 'Coalescing';
+            this._loadData();
         }
     }
 
@@ -152,16 +138,15 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * Internal implementation: called directly by `loadData`
      * or by `coalesce` using stored parameters.
      */
-    _loadData(sourceId: string) {
-        const source = this._sources[sourceId];
-        if (!source.pendingCallback || !source.pendingLoadDataParams) {
+    _loadData() {
+        if (!this._pendingCallback || !this._pendingLoadDataParams) {
             assert(false);
             return;
         }
-        const callback = source.pendingCallback;
-        const params = source.pendingLoadDataParams;
-        delete source.pendingCallback;
-        delete source.pendingLoadDataParams;
+        const callback = this._pendingCallback;
+        const params = this._pendingLoadDataParams;
+        delete this._pendingCallback;
+        delete this._pendingLoadDataParams;
         this.loadGeoJSON(params, (err, data) => {
             if (err || !data) {
                 return callback(err);
@@ -171,14 +156,14 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 rewind(data, true);
 
                 try {
-                    source.geoJSONIndex = params.cluster ?
+                    this._geoJSONIndex = params.cluster ?
                         supercluster(params.superclusterOptions).load(data.features) :
                         geojsonvt(data, params.geojsonVtOptions);
                 } catch (err) {
                     return callback(err);
                 }
 
-                this.loaded[params.source] = {};
+                this.loaded = {};
 
                 const result = {};
                 if (params.request && params.request.collectResourceTiming) {
@@ -215,16 +200,12 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      *          |          ↓
      *        State: NeedsLoadData
      */
-    coalesce(params: CoalesceParameters) {
-        const source = this._sources[params.source];
-        if (!source) {
-            return; // coalesce queued after removeSource
-        }
-        if (source.state === 'Coalescing') {
-            source.state = 'Idle';
-        } else if (source.state === 'NeedsLoadData') {
-            source.state = 'Coalescing';
-            this._loadData(params.source);
+    coalesce() {
+        if (this._state === 'Coalescing') {
+            this._state = 'Idle';
+        } else if (this._state === 'NeedsLoadData') {
+            this._state = 'Coalescing';
+            this._loadData();
         }
     }
 
@@ -235,11 +216,10 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     * Otherwise, such as after a setData() call, we load the tile fresh.
     *
     * @param params
-    * @param params.source The id of the source for which we're loading this tile.
     * @param params.uid The UID for this tile.
     */
     reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
-        const loaded = this.loaded[params.source],
+        const loaded = this.loaded,
             uid = params.uid;
 
         if (loaded && loaded[uid]) {
@@ -279,13 +259,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     removeSource(params: {source: string}, callback: Callback<mixed>) {
-        const removedSource = this._sources[params.source];
-        if (removedSource) {
-            if (removedSource.pendingCallback) {
-                // Don't leak callbacks
-                removedSource.pendingCallback(null, true);
-            }
-            delete this._sources[params.source];
+        if (this._pendingCallback) {
+            // Don't leak callbacks
+            this._pendingCallback(null, true);
         }
         callback();
     }

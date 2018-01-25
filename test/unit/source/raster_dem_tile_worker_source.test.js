@@ -16,7 +16,7 @@ test('loadTile', (t) => {
             dim: 256
         }, (err, data)=>{
             if (err) t.fail();
-            t.deepEqual(source.loading, { source: {} });
+            t.deepEqual(source.loading, {});
             t.ok(data instanceof DEMData, 'returns DEM data');
 
             t.end();
@@ -31,9 +31,7 @@ test('removeTile', (t) => {
         const source = new RasterDEMTileWorkerSource(null, new StyleLayerIndex());
 
         source.loaded = {
-            source: {
-                '0': {}
-            }
+            '0': {}
         };
 
         source.removeTile({
@@ -41,10 +39,9 @@ test('removeTile', (t) => {
             uid: 0
         });
 
-        t.deepEqual(source.loaded, { source: {} });
+        t.deepEqual(source.loaded, {});
         t.end();
     });
 
     t.end();
 });
-
