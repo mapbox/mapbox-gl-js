@@ -85,7 +85,9 @@ export type SourceState =
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
     loadGeoJSON: LoadGeoJSON;
     _state: SourceState;
-    _pendingCallback: Callback<boolean>;
+    _pendingCallback: Callback<{
+        resourceTiming?: {[string]: Array<PerformanceResourceTiming>},
+        abandoned?: boolean }>;
     _pendingLoadDataParams: LoadGeoJSONParameters;
     _geoJSONIndex: GeoJSONIndex
 
@@ -117,10 +119,12 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param params
      * @param callback
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<boolean>) {
+    loadData(params: LoadGeoJSONParameters, callback: Callback<{
+        resourceTiming?: {[string]: Array<PerformanceResourceTiming>},
+        abandoned?: boolean }>) {
         if (this._pendingCallback) {
             // Tell the foreground the previous call has been abandoned
-            this._pendingCallback(null, true);
+            this._pendingCallback(null, { abandoned: true });
         }
         this._pendingCallback = callback;
         this._pendingLoadDataParams = params;
@@ -261,7 +265,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     removeSource(params: {source: string}, callback: Callback<mixed>) {
         if (this._pendingCallback) {
             // Don't leak callbacks
-            this._pendingCallback(null, true);
+            this._pendingCallback(null, { abandoned: true });
         }
         callback();
     }

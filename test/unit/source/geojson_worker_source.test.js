@@ -193,20 +193,20 @@ test('loadData', (t) => {
         // Expect first call to run, second to be abandoned,
         // and third to run in response to coalesce
         const worker = createWorker();
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
             t.equal(err, null);
-            t.notOk(abandoned);
+            t.notOk(result && result.abandoned);
             worker.coalesce({ source: 'source1' });
         });
 
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
             t.equal(err, null);
-            t.ok(abandoned);
+            t.ok(result && result.abandoned);
         });
 
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
             t.equal(err, null);
-            t.notOk(abandoned);
+            t.notOk(result && result.abandoned);
             t.end();
         });
     });
@@ -218,15 +218,15 @@ test('loadData', (t) => {
         // removeSource is executed immediately
         // First loadData finishes running, sends results back to foreground
         const worker = createWorker();
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
             t.equal(err, null);
-            t.notOk(abandoned);
+            t.notOk(result && result.abandoned);
             t.end();
         });
 
-        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, abandoned) => {
+        worker.loadData({ source: 'source1', data: JSON.stringify(geoJson) }, (err, result) => {
             t.equal(err, null);
-            t.ok(abandoned);
+            t.ok(result && result.abandoned);
         });
 
         worker.removeSource({ source: 'source1' }, (err) => {
