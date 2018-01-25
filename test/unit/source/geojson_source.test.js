@@ -86,7 +86,7 @@ test('GeoJSONSource#setData', (t) => {
             _transformRequest: (data) => { return { url: data }; }
         };
         source.dispatcher.send = function(type, params, cb) {
-            if (type === 'geojson.loadData') {
+            if (type === 'geojson.id.loadData') {
                 t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
                 setTimeout(cb, 0);
                 t.end();
