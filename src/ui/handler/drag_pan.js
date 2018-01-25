@@ -108,7 +108,7 @@ class DragPanHandler {
 
         this._active = false;
         this._startPos = this._previousPos = DOM.mousePos(this._el, e);
-        this._inertia = [[browser.now(), this._pos]];
+        this._inertia = [[browser.now(), this._startPos]];
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
@@ -157,7 +157,9 @@ class DragPanHandler {
 
         this._active = false;
         delete this._lastMoveEvent;
+        delete this._startPos;
         delete this._previousPos;
+        delete this._pos;
 
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();

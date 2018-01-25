@@ -447,6 +447,7 @@ class Style extends Evented {
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
 
+        if (this.map && this.map._collectResourceTiming) (source: any).collectResourceTiming = true;
         const sourceCache = this.sourceCaches[id] = new SourceCache(id, source, this.dispatcher);
         sourceCache.style = this;
         sourceCache.setEventedParent(this, () => ({
@@ -971,6 +972,7 @@ class Style extends Evented {
             const layerBucketsChanged = this.crossTileSymbolIndex.addLayer(styleLayer, layerTiles[styleLayer.source]);
             symbolBucketsChanged = symbolBucketsChanged || layerBucketsChanged;
         }
+        this.crossTileSymbolIndex.pruneUnusedLayers(this._order);
 
         // Anything that changes our "in progress" layer and tile indices requires us
         // to start over. When we start over, we do a full placement instead of incremental

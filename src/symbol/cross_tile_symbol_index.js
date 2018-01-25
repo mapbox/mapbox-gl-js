@@ -249,6 +249,18 @@ class CrossTileSymbolIndex {
 
         return symbolBucketsChanged;
     }
+
+    pruneUnusedLayers(usedLayers: Array<string>) {
+        const usedLayerMap = {};
+        usedLayers.forEach((usedLayer) => {
+            usedLayerMap[usedLayer] = true;
+        });
+        for (const layerId in this.layerIndexes) {
+            if (!usedLayerMap[layerId]) {
+                delete this.layerIndexes[layerId];
+            }
+        }
+    }
 }
 
 module.exports = CrossTileSymbolIndex;

@@ -31,8 +31,6 @@ class Marker {
     _pos: ?Point;
 
     constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
-        this._offset = Point.convert(options && options.offset || [0, 0]);
-
         bindAll(['_update', '_onMapClick'], this);
 
         if (!element) {
@@ -127,7 +125,27 @@ class Marker {
             svg.appendChild(page1);
 
             element.appendChild(svg);
+
+            // if no element and no offset option given apply an offset for the default marker
+            // the -14 as the y value of the default marker offset was determined as follows
+            //
+            // the marker tip is at the center of the shadow ellipse from the default svg
+            // the y value of the center of the shadow ellipse relative to the svg top left is "shadow transform translate-y (29.0) + ellipse cy (5.80029008)"
+            // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
+            // negative is used to move the marker up from the center so the tip is at the Marker lngLat
+            const defaultMarkerOffset = [0, -14];
+            if (!(options && options.offset)) {
+                if (!options) {
+                    options = {
+                        offset: defaultMarkerOffset
+                    };
+                } else {
+                    options.offset = defaultMarkerOffset;
+                }
+            }
         }
+
+        this._offset = Point.convert(options && options.offset || [0, 0]);
 
         element.classList.add('mapboxgl-marker');
         this._element = element;
