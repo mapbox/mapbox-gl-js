@@ -114,7 +114,7 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
 
     var link = document.createElement('a');
     link.href = '#';
-    link.className = (0 === i) ? 'active' : '';
+    link.className = (i === 0) ? 'active' : '';
     link.textContent = id;
 
     link.onclick = function (e) {
