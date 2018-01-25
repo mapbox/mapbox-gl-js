@@ -56,7 +56,7 @@ function renderHillshade(painter, tile, layer) {
     if (!fbo) return;
 
     const program = painter.useProgram('hillshade');
-    const posMatrix = painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped());
+    const posMatrix = painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), true);
     setLight(program, painter, layer);
     // for scaling the magnitude of a points slope by its latitude
     const latRange = getTileLatRange(painter, tile.tileID);
