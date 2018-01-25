@@ -89,12 +89,12 @@ class DEMData {
 
     unpackData(level: Level, pixels: Uint8Array, encoding: string) {
 
-        switch(encoding) {
-            case 'terrarium':
-                this.unpackMapzenData(level, pixels);
-                break;
-            default:
-                this.unpackMapboxData(level, pixels);
+        switch (encoding) {
+        case 'terrarium':
+            this.unpackMapzenData(level, pixels);
+            break;
+        default:
+            this.unpackMapboxData(level, pixels);
         }
 
     }
