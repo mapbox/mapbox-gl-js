@@ -3,27 +3,38 @@
     "metadata": {
         "test": {
             "collisionDebug": true,
-            "width": 500,
-            "height": 500
+            "width": 512,
+            "height": 128
         }
     },
     "center": [
-        -74.522,
-        39.92
+        0,
+        0
     ],
-    "zoom": 10,
+    "zoom": 4,
     "sources": {
-        "us-counties": {
-            "type": "vector",
-            "maxzoom": 7,
-            "minzoom": 7,
-            "tiles": [
-                "local://tiles/counties-{z}-{x}-{y}.mvt"
-            ]
+        "geojson": {
+            "type": "geojson",
+            "maxzoom": 1,
+            "data": {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        [
+                            -10,
+                            0
+                        ],
+                        [
+                            10,
+                            0
+                        ]
+                    ]
+                }
+            }
         }
     },
     "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-    "sprite": "local://sprites/sprite",
     "layers": [
         {
             "id": "background",
@@ -33,22 +44,18 @@
             }
         },
         {
-            "id": "counties",
+            "id": "line",
             "type": "symbol",
-            "source": "us-counties",
-            "source-layer": "counties",
+            "source": "geojson",
             "layout": {
-                "text-field": "{name}",
-                "text-size": 11,
-                "symbol-spacing": 60,
-                "text-max-angle": 1000,
+                "text-field": "Cover me in Circles",
+                "symbol-spacing": 15,
                 "text-font": [
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"
                 ],
                 "symbol-placement": "line"
-            },
-            "interactive": true
+            }
         }
     ]
 }
