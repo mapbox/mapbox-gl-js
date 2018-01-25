@@ -12,8 +12,8 @@ import type {
 
 class RasterDEMTileWorkerSource {
     actor: Actor;
-    loading: {[string]: {[string]: DEMData}};
-    loaded: {[string]: {[string]: DEMData}};
+    loading: {[string]: DEMData};
+    loaded: {[string]: DEMData};
 
     constructor() {
         this.loading = {};
@@ -21,24 +21,20 @@ class RasterDEMTileWorkerSource {
     }
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        const source = params.source,
-            uid = params.uid;
-
-        if (!this.loading[source])
-            this.loading[source] = {};
+        const uid = params.uid;
 
         const dem = new DEMData(uid);
-        this.loading[source][uid] = dem;
+        this.loading[uid] = dem;
         dem.loadFromImage(params.rawImageData);
-        delete this.loading[source][uid];
+        delete this.loading[uid];
 
-        this.loaded[source] = this.loaded[source] || {};
-        this.loaded[source][uid] = dem;
+        this.loaded = this.loaded || {};
+        this.loaded[uid] = dem;
         callback(null, dem);
     }
 
     removeTile(params: TileParameters) {
-        const loaded = this.loaded[params.source],
+        const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
