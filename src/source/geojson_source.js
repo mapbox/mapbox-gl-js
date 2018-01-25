@@ -201,13 +201,22 @@ class GeoJSONSource extends Evented implements Source {
         // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, result) => {
-            this._loaded = true;
+        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, abandoned) => {
+            if (!abandoned) {
+                this._loaded = true;
 
-            if (result && result.resourceTiming && result.resourceTiming[this.id])
-                this._resourceTiming = result.resourceTiming[this.id].slice(0);
-
-            callback(err);
+           		if (result && result.resourceTiming && result.resourceTiming[this.id])
+                	this._resourceTiming = result.resourceTiming[this.id].slice(0);
+                // Any `loadData` calls that piled up while we were processing
+                // this one will get coalesced into a single call when this
+                // 'coalesce' message is processed.
+                // We would self-send from the worker if we had access to its
+                // message queue. Waiting instead for the 'coalesce' to round-trip
+                // through the foreground just means we're throttling the worker
+                // to run at a little less than full-throttle.
+                this.dispatcher.send(`${this.type}.coalesce`, this.workerOptions, null, this.workerID);
+                callback(err);
+            }
         }, this.workerID);
     }
 
