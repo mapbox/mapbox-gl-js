@@ -87,7 +87,7 @@ class DEMData {
         this.loaded = true;
     }
 
-    unpackData(level: Level, pixels: Uint8Array, encoding: string) {
+    unpackData(level: Level, pixels: Uint8Array | Uint8ClampedArray, encoding: string) {
 
         switch (encoding) {
         case 'terrarium':
@@ -99,7 +99,7 @@ class DEMData {
 
     }
 
-    unpackMapboxData(level: Level, pixels: Uint8Array) {
+    unpackMapboxData(level: Level, pixels: Uint8Array | Uint8ClampedArray) {
         for (let y = 0; y < level.dim; y++) {
             for (let x = 0; x < level.dim; x++) {
                 const i = y * level.dim + x;
@@ -110,7 +110,7 @@ class DEMData {
         }
     }
 
-    unpackMapzenData(level: Level, pixels: Uint8Array) {
+    unpackMapzenData(level: Level, pixels: Uint8Array | Uint8ClampedArray) {
         for (let y = 0; y < level.dim; y++) {
             for (let x = 0; x < level.dim; x++) {
                 const i = y * level.dim + x;
