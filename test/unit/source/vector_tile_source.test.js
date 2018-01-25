@@ -273,5 +273,30 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
+    t.test('respects collectResourceTiming parameter on source', (t) => {
+        const source = createSource({
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+            collectResourceTiming: true
+        });
+        source.dispatcher.send = function(type, params, cb) {
+            t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+            setTimeout(cb, 0);
+            t.end();
+            return 1;
+        };
+
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const tile = {
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                    state: 'loading',
+                    loadVectorData: function () {},
+                    setExpiryData: function() {}
+                };
+                source.loadTile(tile, () => {});
+            }
+        });
+    });
+
     t.end();
 });
