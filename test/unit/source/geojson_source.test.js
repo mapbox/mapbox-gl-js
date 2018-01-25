@@ -52,7 +52,9 @@ test('GeoJSONSource#setData', (t) => {
         opts = util.extend(opts, { data: {} });
         return new GeoJSONSource('id', opts, {
             send: function (type, data, callback) {
-                return setTimeout(callback, 0);
+                if (callback) {
+                    return setTimeout(callback, 0);
+                }
             }
         });
     }
@@ -172,7 +174,9 @@ test('GeoJSONSource#update', (t) => {
     t.test('fires event when metadata loads', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
-                setTimeout(callback, 0);
+                if (callback) {
+                    setTimeout(callback, 0);
+                }
             }
         };
 
@@ -188,7 +192,9 @@ test('GeoJSONSource#update', (t) => {
     t.test('fires "error"', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
-                setTimeout(callback.bind(null, 'error'), 0);
+                if (callback) {
+                    setTimeout(callback.bind(null, 'error'), 0);
+                }
             }
         };
 
@@ -209,7 +215,9 @@ test('GeoJSONSource#update', (t) => {
                 if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
                     t.end();
                 }
-                setTimeout(callback, 0);
+                if (callback) {
+                    setTimeout(callback, 0);
+                }
             }
         };
 
