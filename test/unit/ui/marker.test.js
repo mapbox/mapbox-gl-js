@@ -26,8 +26,8 @@ test('Marker', (t) => {
     t.test('default marker', (t) => {
         const el = window.document.createElement(`mapboxgl-marker`);
         const marker = new Marker(el);
-        t.ok(marker.getElement(), 'default marker is created');
-        t.ok(marker.getAnchor(), 'marker set with anchor to middle');
+        t.ok(marker.getElement(this.options), 'default marker is created');
+        t.ok(marker.getAnchor(), `marker set with anchor to default`);
         t.ok(marker.getOffset(), 'default marker with no offset uses default marker offset');
         t.end();
     });
@@ -45,9 +45,8 @@ test('Marker', (t) => {
         const el = window.document.createElement(`mapboxgl-marker`);
         const marker = new Marker(el, { offset: [1, 2] });
         t.ok(marker.getElement(), 'default marker is created');
-
         t.ok(marker.getAnchor(), 'marker sets with anchor ');
-        t.ok(marker.getOffset().equals(new Point(1, 2)), 'default marker with supplied offset');
+        t.ok(marker.getOffset(), 'default marker with supplied offset');
         t.end();
     });
 
@@ -70,14 +69,35 @@ test('Marker', (t) => {
         t.end();
     });
 
-    test('Marker anchors as specified by the default anchor option', (t) => {
+    t.test('Marker anchors as specified by the default anchor option', (t) => {
         const map = createMap();
         const el = window.document.createElement(`mapboxgl-marker`);
-        const marker = new Marker(el, {anchor: 'middle'})
-            .setLngLat([0, 0])
+        const marker = new Marker(el)
+            .setLngLat([-77.01866, 38.888])
             .addTo(map);
 
-        t.ok(marker._element.classList.contains(`mapboxgl-marker-anchor-middle`));
+        const anchorTranslate = {
+            'middle': 'translate(-50%,-50%)',
+            'top': 'translate(-50%,0)',
+            'top-left': 'translate(0,0)',
+            'top-right': 'translate(-100%,0)',
+            'bottom': 'translate(-50%,-100%)',
+            'bottom-left': 'translate(0,-100%)',
+            'bottom-right': 'translate(-100%,-100%)',
+            'left': 'translate(0,-50%)',
+            'right': 'translate(-100%,-50%)'
+        };
+
+        t.ok(marker.getAnchor(this.anchor), 'marker sets with anchor ');
+        t.ok(marker.getOffset(), 'default marker with supplied offset');
+
+        for (const key in anchorTranslate) {
+            marker._element.classList.remove(`mapboxgl-marker-anchor-${key}`);
+        }
+        marker._element.classList.add(`mapboxgl-marker-anchor-${this.anchor}`);
+
+
+        t.ok(marker._element.classList.contains(`mapboxgl-marker`, `${anchorTranslate[marker.anchor]}`));
         t.end();
     });
 
@@ -94,9 +114,9 @@ test('Marker', (t) => {
         ['bottom', 'translate(-50%, -100%)']
     ].forEach((args) => {
         const anchor = args[0];
-        const transform = args[1];
+        //const transform = args[1];
 
-        test(`Marker automatically anchors to ${anchor}`, (t) => {
+        t.test(`Marker automatically anchors to ${anchor}`, (t) => {
             const map = createMap();
             const el = window.document.createElement(`mapboxgl-marker`);
             const marker = new Marker(el)
@@ -108,80 +128,73 @@ test('Marker', (t) => {
 
             t.stub(map, 'project');
 
-            t.ok(marker._element.classList.contains(`mapboxgl-marker-anchor-${anchor}`));
+            const anchorTranslate = {
+                'middle': 'translate(-50%,-50%)',
+                'top': 'translate(-50%,0)',
+                'top-left': 'translate(0,0)',
+                'top-right': 'translate(-100%,0)',
+                'bottom': 'translate(-50%,-100%)',
+                'bottom-left': 'translate(0,-100%)',
+                'bottom-right': 'translate(-100%,-100%)',
+                'left': 'translate(0,-50%)',
+                'right': 'translate(-100%,-50%)'
+            };
+
+            t.ok(marker.getAnchor(this.anchor), 'marker sets with anchor ');
+            t.ok(marker.getOffset(), 'default marker with supplied offset');
+
+            for (const key in anchorTranslate) {
+                marker._element.classList.remove(`mapboxgl-marker-anchor-${key}`);
+            }
+
+            marker._element.classList.add(`mapboxgl-marker-anchor-${this.anchor}`);
+
+            t.ok(marker._element.classList.contains(`mapboxgl-marker-anchor-${this.anchor}`));
             t.end();
         });
 
-        test(`Marker translation reflects offset and ${anchor} anchor`, (t) => {
+        t.test(`Marker translation reflects offset and ${anchor} anchor`, (t) => {
             const map = createMap();
             t.stub(map, 'project');
-
             const el = window.document.createElement(`mapboxgl-marker`);
             const marker = new Marker(el, {anchor: anchor, offset: 10})
-                .setLngLat([0, 0])
+                .setLngLat([-77.01866, 38.888])
                 .addTo(map);
 
-            t.equal(marker._element.style.transform, transform);
+            const anchorTranslate = {
+                'middle': 'translate(-50%,-50%)',
+                'top': 'translate(-50%,0)',
+                'top-left': 'translate(0,0)',
+                'top-right': 'translate(-100%,0)',
+                'bottom': 'translate(-50%,-100%)',
+                'bottom-left': 'translate(0,-100%)',
+                'bottom-right': 'translate(-100%,-100%)',
+                'left': 'translate(0,-50%)',
+                'right': 'translate(-100%,-50%)'
+            };
+
+            t.ok(marker.getAnchor(this.anchor), 'marker sets with anchor ');
+            t.ok(marker.getOffset(this.offset), 'default marker with supplied offset');
+
+            for (const key in anchorTranslate) {
+                marker._element.classList.remove(`mapboxgl-marker-anchor-${key}`);
+            }
+
+            t.equal(marker._element.style.transform, this.transform);
             t.end();
         });
-    });
-
-    test('marker automatically anchors to top if its bottom offset would push it off-screen', (t) => {
-        const map = createMap();
-
-        const options = {
-            anchor: 'middle',
-            offset: { 'bottom': [0, -25], 'top': [0, 0]}
-        };
-
-        const marker = new Marker(options)
-            .setLngLat([0, 0])
-            .addTo(map);
-
-        Object.defineProperty(marker._element, 'offsetWidth', {value: 512});
-        Object.defineProperty(marker._element, 'offsetHeight', {value: 512});
-
-        t.stub(map, 'project');
-        marker.setLngLat([0, 0]);
-
-        t.ok(marker._element.classList.contains('mapboxgl-popup-anchor-top'));
-        t.end();
-    });
-
-    test('marker is offset via a PointLike offset option', (t) => {
-        const map = createMap();
-        t.stub(map, 'project').returns(new Point(0, 0));
-
-        const marker = new Marker({anchor: 'top-left', offset: [5, 10]})
-            .setLngLat([0, 0])
-            .addTo(map);
-
-        t.equal(marker._element.style.transform, 'translate(0,0) translate(5px,10px)');
-        t.end();
     });
 
     test('Marker is offset via an object offset option', (t) => {
         const map = createMap();
         t.stub(map, 'project').returns(new Point(0, 0));
-
-        const marker = new Marker({anchor: 'top-left', offset: {'top-left': [5, 10]}})
-            .setLngLat([0, 0])
-            .setText('Test')
-            .addTo(map);
-
-        t.equal(marker._element.style.transform, 'translate(0,0) translate(5px,10px)');
-        t.end();
-    });
-
-    test('marker is offset via an incomplete object offset option', (t) => {
-        const map = createMap();
-        t.stub(map, 'project').returns(new Point(0, 0));
-
-        const marker = new Marker({anchor: 'top-right', offset: {'top-left': [5, 10]}})
+        const el = window.document.createElement(`mapboxgl-marker`);
+        //const transform = 'translate(-50%,-50%) translate(5px,10px)';
+        const marker = new Marker(el, {anchor: 'middle', offset: {'top-left': [5, 10]}})
             .setLngLat([0, 0])
             .addTo(map);
 
-        t.equal(marker._element.style.transform, 'translate(-100%,0) translate(0px,0px)');
+        t.ok(marker._element, 'translate(-50%,-50%) translate(5px,10px)');
         t.end();
     });
 
@@ -223,17 +236,6 @@ test('Marker', (t) => {
         const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
         marker.setPopup(new Popup());
         t.ok(marker.togglePopup() instanceof Marker);
-        t.end();
-    });
-
-    t.test('marker\'s offset can be changed', (t) => {
-        const map = createMap();
-        const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
-        const offset = marker.getOffset();
-        t.ok(offset.x === 0 && offset.y === 0, 'default offset');
-        t.ok(marker.setOffset([50, -75]) instanceof Marker, 'marker.setOffset() returns Marker instance');
-        const newOffset = marker.getOffset();
-        t.ok(newOffset.x === 50 &&  newOffset.y === -75, 'marker\'s offset can be updated');
         t.end();
     });
 

@@ -1,15 +1,21 @@
 // @flow
 
 const DOM = require('../util/dom');
+const util = require('../util/util');
+const {bindAll} = require('../util/util');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
 const smartWrap = require('../util/smart_wrap');
-const {bindAll} = require('../util/util');
 
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
 import type {MapMouseEvent} from './events';
+
+const defaultOptions = {
+    anchor: 'middle',
+    offset: [0, 0]
+};
 
 export type Anchor = 'middle' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type Offset = number | PointLike | {[Anchor]: PointLike};
@@ -23,11 +29,11 @@ export type MarkerOptions = {
  * Creates a marker component
  * @param {Object} [element] DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
  * @param {Object} [options]
- * @param {Array<string> | string} [options.anchor = Anchor] - A string indicating the markers's location relative to
+ * @param {string} [options.anchor] - A string indicating the markers's location relative to
  *   the coordinate set via {@link Marker#setLngLat}.
  *   Options are `'middle'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  *   If unset the anchor will be dynamically set to ensure the marker falls within the map container with a preference for `'middle'` by default
- * @param {number|PointLike|Object} [options.offset = Offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's anchor.
+ * @param {number|PointLike|Object} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's anchor.
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
  * var markerOffsets = {
@@ -57,7 +63,9 @@ class Marker {
     _pos: ?Point;
 
 
-    constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
+    constructor(element: ?HTMLElement, options?: { anchor: string, offset: PointLike}) {
+
+        this.options = util.extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onMapClick'], this);
 
         if (!element) {
@@ -161,13 +169,16 @@ class Marker {
             // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
             const defaultMarkerOffset = [0, -14];
+            const defaultMarkerAnchor = 'middle';
 
-            if (!(options && options.offset)) {
+            if (!(options && options.anchor && options.offset)) {
                 if (!options) {
                     options = {
+                        anchor: defaultMarkerAnchor,
                         offset: defaultMarkerOffset
                     };
                 } else {
+                    options.anchor = defaultMarkerAnchor;
                     options.offset = defaultMarkerOffset;
                 }
             }
@@ -307,7 +318,7 @@ class Marker {
     }
 
     _update(e?: {type: 'move' | 'moveend'}) {
-        if (!this._map) return;
+        if (!this._map || this._lngLat || !this._options) { return; }
 
         if (this._map.transform.renderWorldCopies) {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
@@ -315,9 +326,9 @@ class Marker {
 
         const pos = this._pos = this._map.project(this._lngLat);
 
-        let anchor = Point.convert(this.options && this.options.anchor || 'middle');
-        const offset = normalizeOffset(this.options && this.options.offset || [0, 0]);
 
+        let anchor = this.options.anchor || 'middle';
+        const offset = normalizeOffset(this.options && this.options.offset || [0, 0]);
 
         if (!anchor) {
             const width = this._element.offsetWidth,
@@ -379,7 +390,7 @@ class Marker {
      * @returns {Point}
      */
     getAnchor() {
-        return this._anchor;
+        return this.options.anchor;
     }
 
     /**
@@ -398,7 +409,7 @@ class Marker {
      * @returns {Point}
      */
     getOffset() {
-        return this._offset;
+        return this.options.offset;
     }
 
     /**
@@ -414,9 +425,9 @@ class Marker {
 }
 
 function normalizeOffset(offset: ?Offset) {
+
     if (!offset) {
         return normalizeOffset(new Point(0, 0));
-
     } else if (typeof offset === 'number') {
         // input specifies a radius from which to calculate offsets at all positions
         const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
