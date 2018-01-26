@@ -1,3 +1,9 @@
+## 11.1.0
+
+### ✨ Features and improvements
+
+* Avoid use of `new Function` for filters by converting old-style filters to expressions [#5665](https://github.com/mapbox/mapbox-gl-js/pull/5665).
+
 ## 11.0.0
 
 ### ⚠️ Breaking changes

@@ -182,6 +182,9 @@
 .shell-wrapper .shell-round-full {
   border-radius: 9999px !important;
 }
+.shell-wrapper .shell-round {
+  border-radius: 4px !important;
+}
 
 /* Cursors */
 .shell-wrapper .shell-cursor-pointer {
@@ -259,6 +262,9 @@
 }
 .shell-wrapper .shell-inline-block {
   display: inline-block !important;
+}
+.shell-wrapper .shell-block {
+  display: block !important;
 }
 .shell-wrapper .shell-none {
   display: none !important;
@@ -397,8 +403,14 @@
 .shell-wrapper .shell-mt-neg12 {
   margin-top: -12px !important;
 }
+.shell-wrapper .shell-ml-neg24 {
+  margin-left: -24px !important;
+}
 .shell-wrapper .shell-mr-neg24 {
   margin-right: -24px !important;
+}
+.shell-wrapper .shell-mr3 {
+  margin-right: 3px !important;
 }
 .shell-wrapper .shell-mr18 {
   margin-right: 18px !important;
@@ -412,11 +424,23 @@
 .shell-wrapper .shell-mb6 {
   margin-bottom: 6px !important;
 }
+.shell-wrapper .shell-mb12 {
+  margin-bottom: 12px !important;
+}
+.shell-wrapper .shell-mb24 {
+  margin-bottom: 24px !important;
+}
+.shell-wrapper .shell-mb30 {
+  margin-bottom: 30px !important;
+}
 .shell-wrapper .shell-ml-neg24 {
   margin-left: -24px !important;
 }
 .shell-wrapper .shell-ml6 {
   margin-left: 6px !important;
+}
+.shell-wrapper .shell-ml-auto {
+  margin-left: auto !important;
 }
 .shell-wrapper .shell-p12 {
   padding: 12px !important;
@@ -452,11 +476,17 @@
 .shell-wrapper .shell-pt3 {
   padding-top: 3px !important;
 }
+.shell-wrapper .shell-pt12 {
+  padding-top: 12px !important;
+}
 .shell-wrapper .shell-pt18 {
   padding-top: 18px !important;
 }
 .shell-wrapper .shell-pt24 {
   padding-top: 24px !important;
+}
+.shell-wrapper .shell-pt30 {
+  padding-top: 30px !important;
 }
 .shell-wrapper .shell-pr12 {
   padding-right: 12px !important;
@@ -475,6 +505,9 @@
 }
 
 /* Sizing */
+.shell-wrapper .shell-w24 {
+  width: 24px !important;
+}
 .shell-wrapper .shell-w30 {
   width: 30px !important;
 }
@@ -483,6 +516,9 @@
 }
 .shell-wrapper .shell-h-full {
   height: 100% !important;
+}
+.shell-wrapper .shell-h24 {
+  height: 24px !important;
 }
 .shell-wrapper .shell-h30 {
   height: 30px !important;
@@ -664,6 +700,9 @@
 .shell-wrapper .shell-color-blue {
   color: #4264fb !important;
 }
+.shell-wrapper .shell-color-gray {
+  color: #607d9c !important;
+}
 .shell-wrapper .shell-color-gray-dark {
   color: #273d56 !important;
 }
@@ -786,6 +825,7 @@
 .shell-wrapper .shell-footer-column {
   width: 100%;
 }
+
 @media (min-width: 640px) {
   .shell-footer-fr {
     text-align: right;
@@ -805,6 +845,9 @@
     position: absolute;
     right: 0;
     top: 50%;
+  }
+  .shell-wrapper .shell-w-210-mm {
+    width: 210px !important;
   }
 }
 /* Menu transitions */

@@ -45,6 +45,7 @@ test('Marker', (t) => {
         const el = window.document.createElement(`mapboxgl-marker`);
         const marker = new Marker(el, { offset: [1, 2] });
         t.ok(marker.getElement(), 'default marker is created');
+
         t.ok(marker.getAnchor(), 'marker sets with anchor ');
         t.ok(marker.getOffset().equals(new Point(1, 2)), 'default marker with supplied offset');
         t.end();

@@ -56,10 +56,8 @@ class Marker {
     _lngLat: LngLat;
     _pos: ?Point;
 
-    constructor(element: ?HTMLElement, options?: {anchor: Anchor, offset: PointLike}) {
-        this._anchor = Point.convert(options && options.anchor || 'middle');
-        this._offset = Point.convert(options && options.offset || [0, 0]);
 
+    constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
         bindAll(['_update', '_onMapClick'], this);
 
         if (!element) {
@@ -163,19 +161,19 @@ class Marker {
             // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
             const defaultMarkerOffset = [0, -14];
-            const defaultMarkerAnchor = 'middle';
+
             if (!(options && options.offset)) {
                 if (!options) {
                     options = {
-                        anchor: defaultMarkerAnchor,
                         offset: defaultMarkerOffset
                     };
                 } else {
-                    options.anchor = defaultMarkerAnchor;
                     options.offset = defaultMarkerOffset;
                 }
             }
         }
+
+        this._offset = Point.convert(options && options.offset || [0, 0]);
 
         element.classList.add('mapboxgl-marker');
         this._element = element;
