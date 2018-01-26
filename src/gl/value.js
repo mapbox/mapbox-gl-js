@@ -576,6 +576,7 @@ class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
 
 /**
  * Framebuffer values
+ * @private
  */
 class FramebufferValue<T> {
     context: Context;

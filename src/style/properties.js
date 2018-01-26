@@ -472,6 +472,7 @@ type PossiblyEvaluatedPropertyValues<Props: Object>
 /**
  * `PossiblyEvaluated` stores a map of all (property name, `R`) pairs for paint or layout properties of a
  * given layer type.
+ * @private
  */
 class PossiblyEvaluated<Props: Object> {
     _properties: Properties<Props>;
