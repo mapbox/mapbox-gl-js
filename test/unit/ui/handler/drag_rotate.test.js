@@ -18,6 +18,21 @@ function createMap(options) {
     }, options));
 }
 
+test('DragRotateHandler requests a new render frame after each mousemove event', (t) => {
+    const map = createMap();
+    const update = t.spy(map, '_update');
+
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    t.ok(update.callCount > 0);
+
+    // https://github.com/mapbox/mapbox-gl-js/issues/6063
+    update.reset();
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    t.equal(update.callCount, 1);
+    t.end();
+});
+
 test('DragRotateHandler rotates in response to a right-click drag', (t) => {
     const map = createMap();
 
