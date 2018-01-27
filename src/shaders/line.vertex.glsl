@@ -22,6 +22,7 @@ uniform vec2 u_gl_units_to_pixels;
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
+varying float v_linesofar;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
@@ -40,6 +41,8 @@ void main() {
 
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
+
+    v_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * 2.0;
 
     vec2 pos = a_pos_normal.xy;
 

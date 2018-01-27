@@ -4,6 +4,8 @@ import browser from '../util/browser';
 
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import DepthMode from '../gl/depth_mode';
+import Texture from './texture';
+import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -24,7 +26,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const programId =
         layer.paint.get('line-dasharray') ? 'lineSDF' :
-        layer.paint.get('line-pattern') ? 'linePattern' : 'line';
+        layer.paint.get('line-pattern') ? 'linePattern' :
+        layer.paint.get('line-gradient') ? 'lineGradient' : 'line';
 
     let prevTileZoom;
     let firstTile = true;
@@ -110,12 +113,25 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         }
     }
 
-    context.setStencilMode(painter.stencilModeForClipping(coord));
+    const hasGradient = !!layer.paint.get('line-gradient');
+
+    context.setStencilMode(hasGradient ? StencilMode.disabled : painter.stencilModeForClipping(coord));
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
     gl.uniform1f(program.uniforms.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
+
+    if (hasGradient) {
+        context.activeTexture.set(gl.TEXTURE0);
+
+        let gradientTexture = layer.gradientTexture;
+        if (!layer.gradient) return;
+        if (!gradientTexture) gradientTexture = layer.gradientTexture = new Texture(context, layer.gradient, gl.RGBA);
+        gradientTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+        gl.uniform1i(program.uniforms.u_image, 0);
+    }
 
     program.draw(
         context,

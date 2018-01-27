@@ -9,7 +9,7 @@ import {
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
+    ColorRampProperty
 } from '../properties';
 
 import type Color from '../../style-spec/util/color';
@@ -39,6 +39,7 @@ export type PaintProps = {|
     "line-blur": DataDrivenProperty<number>,
     "line-dasharray": CrossFadedProperty<Array<number>>,
     "line-pattern": CrossFadedProperty<string>,
+    "line-gradient": ColorRampProperty,
 |};
 
 const paint: Properties<PaintProps> = new Properties({
@@ -52,6 +53,7 @@ const paint: Properties<PaintProps> = new Properties({
     "line-blur": new DataDrivenProperty(styleSpec["paint_line"]["line-blur"]),
     "line-dasharray": new CrossFadedProperty(styleSpec["paint_line"]["line-dasharray"]),
     "line-pattern": new CrossFadedProperty(styleSpec["paint_line"]["line-pattern"]),
+    "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
 });
 
 export default { paint, layout };

@@ -2293,6 +2293,10 @@
           }
         }
       },
+      "line-progress": {
+        "doc": "Gets the progress along a gradient line. Can only be used in the `line-gradient` property. EXPERIMENTAL.",
+        "group": "Heatmap"
+      },
       "+": {
         "doc": "Returns the sum of the inputs.",
         "group": "Math",
@@ -3231,6 +3235,28 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-gradient": {
+      "type": "color",
+      "doc": "¡ EXPERIMENTAL, UNSUPPORTED ! Defines the color of a point of a line based on its progress along the line, if using gradient lines.",
+      "function": "interpolated",
+      "zoom-function": false,
+      "property-function": false,
+      "transition": false,
+      "requires": [
+        {
+          "!": "line-dasharray"
+        },
+        {
+          "!": "line-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.45.0"
         },
         "data-driven styling": {}
       }
