@@ -77,7 +77,7 @@ class AttributionControl {
     _updateEditLink() {
         let editLink = this._editLink;
         if (!editLink) {
-            editLink = this._editLink = (this._container.querySelector('.mapbox-improve-map'): any);
+            editLink = this._editLink = (this._container.querySelector('.mapboxgl-improve-map'): any);
         }
 
         const params = [

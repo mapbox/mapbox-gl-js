@@ -110,7 +110,7 @@ test('AttributionControl has the correct edit map link', (t) => {
     const attribution = new AttributionControl();
     map.addControl(attribution);
     map.on('load', () => {
-        map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/feedback/" target="_blank">Improve this map</a>'});
+        map.addSource('1', {type: 'vector', attribution: '<a class="mapboxgl-improve-map" href="https://www.mapbox.com/feedback/" target="_blank">Improve this map</a>'});
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.equal(attribution._editLink.href, 'https://www.mapbox.com/feedback/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0', 'edit link contains map location data');
