@@ -91,7 +91,7 @@ class DEMData {
         return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
     }
 
-    unpackMapzen(r: number, g: number, b: number) {
+    unpackTerrarium(r: number, g: number, b: number) {
         return ((r * 256 + g + b / 256) - 32768.0);
     }
 
