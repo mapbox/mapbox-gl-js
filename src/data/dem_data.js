@@ -87,36 +87,22 @@ class DEMData {
         this.loaded = true;
     }
 
+    unpackMapbox(r: number, g: number, b: number) {
+        return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
+    }
+
+    unpackMapzen(r: number, g: number, b: number) {
+        return ((r * 256 + g + b / 256) - 32768.0);
+    }
+
     unpackData(level: Level, pixels: Uint8Array | Uint8ClampedArray, encoding: string) {
-
-        switch (encoding) {
-        case 'terrarium':
-            this.unpackMapzenData(level, pixels);
-            break;
-        default:
-            this.unpackMapboxData(level, pixels);
-        }
-
-    }
-
-    unpackMapboxData(level: Level, pixels: Uint8Array | Uint8ClampedArray) {
+        const unpackFunctions = {"mapbox": this.unpackMapbox, "terrarium": this.unpackTerrarium};
+        const unpack = unpackFunctions[encoding];
         for (let y = 0; y < level.dim; y++) {
             for (let x = 0; x < level.dim; x++) {
                 const i = y * level.dim + x;
                 const j = i * 4;
-                // decoding per https://blog.mapbox.com/global-elevation-data-6689f1d0ba65
-                level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
-            }
-        }
-    }
-
-    unpackMapzenData(level: Level, pixels: Uint8Array | Uint8ClampedArray) {
-        for (let y = 0; y < level.dim; y++) {
-            for (let x = 0; x < level.dim; x++) {
-                const i = y * level.dim + x;
-                const j = i * 4;
-                // decoding per https://aws.amazon.com/es/public-datasets/terrain/
-                level.set(x, y, this.scale * ((pixels[j] * 256 + pixels[j + 1] + pixels[j + 2] / 256) - 32768.0));
+                level.set(x, y, this.scale * unpack(pixels[j], pixels[j + 1], pixels[j + 2]));
             }
         }
     }
