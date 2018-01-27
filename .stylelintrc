@@ -1,4 +1,5 @@
 {
+  "extends": "stylelint-config-standard",
   "rules": {
     "selector-class-pattern": "mapboxgl-[a-z-]+"
   }
