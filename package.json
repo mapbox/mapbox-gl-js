@@ -1,7 +1,7 @@
 {
   "name": "@socrata/mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -150,7 +150,7 @@
     "test": "run-s lint lint-css test-flow test-unit",
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/{render,query}-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "test-unit": "tap --reporter classic --no-coverage test/unit",
+    "test-unit": "tap --reporter classic --no-coverage test/unit/util/superclusterUtil.test.js",
     "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-expressions": "node test/expression.test.js",

@@ -165,7 +165,7 @@ class GeoJSONSource extends Evented implements Source {
         return this;
     }
 
-    getLeaves(clusterId, clusterZoom, limit, offset, callback){
+    getLeaves(clusterId, clusterZoom, limit, offset, callback) {
         const options = util.extend({clusterId: clusterId, clusterZoom: Math.ceil(clusterZoom), limit: limit || 10, offset: offset || 0}, this.workerOptions);
 
         this.dispatcher.send(`${this.type}.getLeaves`, options, (err, leaves) => {

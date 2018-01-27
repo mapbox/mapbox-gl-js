@@ -31,12 +31,17 @@
   });
 
   var AGGREGATE_BY_ALIAS = '__aggregate_by__';
+  var GROUP_BY_ALIAS = '__group_by__';
 
   var tileUrl = 'https://dataspace.demo.socrata.com/resource/r6t9-rak2.geojson?$query=' +
-        'select count(*),snap_to_grid(point,{snap_precision}),sum(supervisor_district) as '+ AGGREGATE_BY_ALIAS + ' ' +
-        'where  {{\'point\' column condition}}' +
-        'group by snap_to_grid(point,{snap_precision})' +
-        'limit 100000' +
+        'select count(*),' +
+        'snap_to_grid(point,{snap_precision}),sum(supervisor_district) as '+ AGGREGATE_BY_ALIAS + ',' +
+        "CASE(category in ('Street and Sidewalk Cleaning','Graffiti Private Property'," +
+        "'Graffiti Public Property','SFHA Requests','Abandoned Vehicle'),category||''," +
+        " true,'__$$other$$__') as " + GROUP_BY_ALIAS + ' ' +
+        'where  {{\'point\' column condition}} ' +
+        'group by snap_to_grid(point,{snap_precision}),' + GROUP_BY_ALIAS + ' ' +
+        'limit 100000 ' +
         '#substituteSoqlParams_tileParams={z}|{x}|{y}';
 
   map.showTileBoundaries = true;
@@ -46,6 +51,7 @@
         "cluster": true,
         "clusterRadius": 80,
         "aggregateBy": ['count', AGGREGATE_BY_ALIAS],
+        "groupBy": GROUP_BY_ALIAS,
         "tiles": [ tileUrl ],
         // -----------------------------  //
         // Required to work with fork     //
@@ -90,6 +96,16 @@
           "text-size": 12
       }
     });
+  });
+
+  map.on('mousemove', function(event) {
+    var hoveredOverFeatures = map.queryRenderedFeatures(event.point, {
+      layers: ['pointLayer']
+    });
+
+    if (hoveredOverFeatures.length > 0) {
+      console.log('hovered over', hoveredOverFeatures[0]);
+    };
   });
 </script>
 

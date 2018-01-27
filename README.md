@@ -8,6 +8,7 @@ Fork Version | Mapbox version | Notes
 0.0.2        | 0.42.2         |
 0.0.3        | 0.42.2         | Converting aggregateBy properties from string to number. Otherwise, not able to use exponential/interval stops.
 0.0.4        | 0.42.2         | Support for multple aggregate by. Useful for aggregating by count and resizeBy column. Points (along with clusters which already have) will have abbreviated value for all aggregateBys.
+0.0.5        | 0.42.2         | Added support for groupBy, for vecotTile(geojson). In each cluster it will have splitups of aggregate based on the groupBy values in the features contributing to the cluster.
 
 ## Fork Modifications:
  * **Get Pins in Cluster**: Expose getLeaves in superCluster via an interface, so that we can get the pins in a cluster and spiderfy them.
@@ -20,7 +21,10 @@ Fork Version | Mapbox version | Notes
 
 
 ## Known Fork shortcomings:
-  Geojson tiles, always set the cache expiry time to 'undefined' and cache control to 'max-age=90000', ignoring the cache headers in the tile's response.
+  * Geojson tiles, always set the cache expiry time to 'undefined' and cache control to 'max-age=90000',
+  ignoring the cache headers in the tile's response.
+  * AggregateBy multiple values/group have been implemente only in VectorTileSource(with geojson data urls)
+  but in not GeojsonSource.
 
 **Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
 [Mapbox Style Specification](https://github.com/mapbox/mapbox-gl-js/style-spec/), applies them to vector tiles that

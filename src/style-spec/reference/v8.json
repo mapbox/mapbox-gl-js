@@ -156,7 +156,11 @@
     },
     "aggregateBy": {
       "type": "*",
-      "doc": "point_count will be an aggregate of this property in all the features in the cluster."
+      "doc": "along with point_count will be an aggregate of this property in all the features in the cluster."
+    },
+    "groupBy": {
+      "type": "string",
+      "doc": "each aggregate along with count will have a breakdown based on the features value for the groupBy property."
     },
     "geojsonTile": {
       "type": "boolean",

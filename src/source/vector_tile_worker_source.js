@@ -5,7 +5,7 @@ const vt = require('@mapbox/vector-tile');
 const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
-const geojsonToVectorTile = require('./geojson_to_vector_tile')
+const geojsonToVectorTile = require('./geojson_to_vector_tile');
 const vtpbf = require('vt-pbf');
 const rewind = require('geojson-rewind');
 
@@ -44,8 +44,8 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
 
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
-    if (params.options.geojsonTile === true) {
-        return loadGeojsonTile(params, callback)
+    if (options.geojsonTile === true) {
+        return loadGeojsonTile(params, callback);
     } else {
         return defaultLoadVectorTile(params, callback);
     }
@@ -53,12 +53,6 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
 
 function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
-    const tileUrlOptions = {
-      snapZoom: options.snapZoom,
-      snapPrecision: options.snapPrecision,
-      simplifyPrecision: options.simplifyPrecision
-    }
-
     const xhr = ajax.getJSON(params.request, (err, data) => {
         if (err || !data) {
             return callback(err);

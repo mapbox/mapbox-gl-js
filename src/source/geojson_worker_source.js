@@ -135,13 +135,13 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 if (superclusterOptions.aggregateBy) {
                     superclusterOptions.map = function(props) {
                         return {sum: Number(props[superclusterOptions.aggregateBy]) || 1};
-                    }
+                    };
                     superclusterOptions.reduce = function (accumulated, props) {
                         accumulated.sum += props.sum;
-                    }
+                    };
                     superclusterOptions.initial = function () {
                         return {sum: 0};
-                    }
+                    };
                 }
                 try {
                     this._geoJSONIndexes[params.source] = params.cluster ?
