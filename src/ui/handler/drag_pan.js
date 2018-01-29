@@ -130,6 +130,9 @@ class DragPanHandler {
 
             this._map._startAnimation(this._onDragFrame, this._onDragFinished);
         }
+
+        // ensure a new render frame is scheduled
+        this._map._update();
     }
 
     /**
