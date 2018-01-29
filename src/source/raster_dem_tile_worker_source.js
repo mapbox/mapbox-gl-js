@@ -22,14 +22,15 @@ class RasterDEMTileWorkerSource {
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const source = params.source,
-            uid = params.uid;
+            uid = params.uid,
+            encoding = params.encoding || "mapbox";
 
         if (!this.loading[source])
             this.loading[source] = {};
 
         const dem = new DEMData(uid);
         this.loading[source][uid] = dem;
-        dem.loadFromImage(params.rawImageData);
+        dem.loadFromImage(params.rawImageData, encoding);
         delete this.loading[source][uid];
 
         this.loaded[source] = this.loaded[source] || {};
