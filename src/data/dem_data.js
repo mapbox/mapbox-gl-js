@@ -57,14 +57,14 @@ class DEMData {
         this.loaded = !!data;
     }
 
-    loadFromImage(data: RGBAImage, encoding: string) {
+    loadFromImage(data: RGBAImage, encoding: ?string) {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
 
         // Build level 0
         const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
 
-        this.unpackData(level, pixels, encoding);
+        this.unpackData(level, pixels, encoding || "mapbox");
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
