@@ -23,17 +23,17 @@ map.on('load', function () {
                 'base': 1.75,
                 'stops': [[12, 2], [22, 180]]
             },
-            // color circles by ethnicity, using data-driven styles
-            'circle-color': {
-                property: 'ethnicity',
-                type: 'categorical',
-                stops: [
-                    ['White', '#fbb03b'],
-                    ['Black', '#223b53'],
-                    ['Hispanic', '#e55e5e'],
-                    ['Asian', '#3bb2d0'],
-                    ['Other', '#ccc']]
-            }
+            // color circles by ethnicity, using a match expression
+            // https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+            'circle-color': [
+                'match',
+                ['get', 'ethnicity'],
+                'White', '#fbb03b',
+                'Black', '#223b53',
+                'Hispanic', '#e55e5e',
+                'Asian', '#3bb2d0',
+                /* other */ '#ccc'
+            ]
         }
     });
 });

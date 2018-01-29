@@ -704,7 +704,7 @@ class Map extends Camera {
      * @param {Object} [options]
      * @param {Array<string>} [options.layers] An array of style layer IDs for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
-     * @param {Array} [options.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
+     * @param {Array} [options.filter] A [filter](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter)
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
@@ -845,7 +845,7 @@ class Map extends Camera {
      * @param {Object} [parameters]
      * @param {string} [parameters.sourceLayer] The name of the vector tile layer to query. *For vector tile
      *   sources, this parameter is required.* For GeoJSON sources, it is ignored.
-     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
+     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter)
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
@@ -1173,7 +1173,7 @@ class Map extends Camera {
      *
      * @param {string} layer The ID of the layer to which the filter will be applied.
      * @param {Array | null | undefined} filter The filter, conforming to the Mapbox Style Specification's
-     *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
+     *   [filter definition](https://www.mapbox.com/mapbox-gl-js/style-spec/#other-filter).  If `null` or `undefined` is provided, the function removes any existing filter from the layer.
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
