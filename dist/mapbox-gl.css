@@ -111,7 +111,7 @@
   display: block;
   padding: 0;
   outline: none;
-  border: none;
+  border: 0;
   box-sizing: border-box;
   background-color: transparent;
   cursor: pointer;
@@ -405,7 +405,7 @@ a.mapboxgl-ctrl-logo {
   position: absolute;
   right: 0;
   top: 0;
-  border: none;
+  border: 0;
   border-radius: 0 3px 0 0;
   cursor: pointer;
   background-color: transparent;
