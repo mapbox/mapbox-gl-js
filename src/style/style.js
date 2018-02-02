@@ -24,6 +24,7 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
+const PauseablePlacement = require('./pauseable_placement');
 const ZoomHistory = require('./zoom_history');
 const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 
