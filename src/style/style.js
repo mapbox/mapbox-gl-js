@@ -24,7 +24,6 @@ const getWorkerPool = require('../util/global_worker_pool');
 const deref = require('../style-spec/deref');
 const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
-const PauseablePlacement = require('./pauseable_placement');
 const ZoomHistory = require('./zoom_history');
 const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 
@@ -516,6 +515,9 @@ class Style extends Evented {
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
      * ID `before`, or appended if `before` is omitted.
+     * If you are adding a layer with a source object directly,
+     * the library will create and add the source for you, with the same id
+     * as the layer.
      * @param {string} [before] ID of an existing layer to insert before
      */
     addLayer(layerObject: LayerSpecification, before?: string, options?: {validate?: boolean}) {
