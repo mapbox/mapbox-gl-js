@@ -67,6 +67,44 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('gets accurate camera position via getCameraPosition', (t) => {
+        const transform = new Transform();
+        transform.resize(500, 500);
+        transform.zoom = 12;
+        transform.pitch = 50;
+        transform.center = new LngLat(10, 10);
+        const cameraPosition = transform.getCameraPosition();
+        t.deepEqual(cameraPosition, {
+            lng: 10.00000000000881,
+            lat: 9.9028586843625,
+            altitude: 9075.137447222842,
+            pitch: 50,
+            bearing: -0
+        });
+        t.end();
+    });
+
+    t.test('sets camera position via setCameraPosition', (t) => {
+        const transform = new Transform();
+        transform.resize(500, 500);
+        transform.zoom = 12;
+        transform.pitch = 50;
+        transform.center = new LngLat(10, 10);
+        transform.setCameraPosition({
+            lng: 20,
+            lat: 20,
+            altitude: 3000,
+            pitch: 0,
+            bearing: 0
+        });
+
+        t.deepEqual(transform.center, { lng: 20, lat: 20 });
+        t.equal(transform.zoom, 14.166460609951343);
+        t.equal(transform.pitch, 0);
+        t.equal(transform.bearing, 0);
+        t.end();
+    });
+
     t.test('has a default zoom', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
