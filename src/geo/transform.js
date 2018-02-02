@@ -375,7 +375,7 @@ class Transform {
 
     /**
      * Get the latitude and longitude under the camera, the altitude of the camera in meters, bearing & pitch
-     * @returns {Object} containing longitude, latitude, altitude and pitch
+     * @returns {Object} containing longitude, latitude, altitude and pitch(in degrees)
      */
     getCameraPosition(): { lng: number, lat: number, altitude: number, pitch: number, bearing: number } {
         const pitch = this._pitch;
@@ -385,24 +385,26 @@ class Transform {
         const latLong = this.pointLocation(latPosPointInPixels);
         const verticalScaleConstant = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(latLong.lat * (Math.PI / 180))));
         const altitudeInMeters = altitude / verticalScaleConstant;
+        const pitchInDegrees = pitch * (180 / Math.PI);
 
-        return { lng: latLong.lng, lat: latLong.lat, altitude: altitudeInMeters, pitch, bearing: this.bearing };
+        return { lng: latLong.lng, lat: latLong.lat, altitude: altitudeInMeters, pitch: pitchInDegrees, bearing: this.bearing };
     }
 
     /**
-     * Set camera position to desired latitude, longitude, altitude, pitch and bearing
+     * Set camera position to desired latitude, longitude, altitude, pitch (in degrees) and bearing
      * @param {Object} camPos Object containing the latitude and longitude under the camera, the altitude in meters, bearing & pitch
      */
     setCameraPosition(camPos: { lng: number, lat: number, altitude: number, pitch: number, bearing: number }) {
         const { lng, lat, altitude, pitch, bearing } = camPos;
 
+        const pitchInRadians = pitch * (Math.PI / 180);
         const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
-        const pixelAltitude = Math.abs(Math.cos(pitch) * cameraToCenterDistance);
+        const pixelAltitude = Math.abs(Math.cos(pitchInRadians) * cameraToCenterDistance);
         const metersInWorldAtLat = (2 * Math.PI * 6378137 * Math.abs(Math.cos(lat * (Math.PI / 180))));
         const worldsize = pixelAltitude / altitude * metersInWorldAtLat;
         const zoom = Math.log(worldsize / this.tileSize) / Math.LN2;
 
-        const latOffset = Math.tan(pitch) * cameraToCenterDistance;
+        const latOffset = Math.tan(pitchInRadians) * cameraToCenterDistance;
         const newPixelPoint = new Point(this.width / 2, this.height / 2 + latOffset);
         const newLongLat = new LngLat(lng, lat);
 
