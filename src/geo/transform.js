@@ -374,10 +374,10 @@ class Transform {
     }
 
     /**
-     * Get the latitude and longitude under the camera, the altitude of the camera in meters, and the pitch
+     * Get the latitude and longitude under the camera, the altitude of the camera in meters, bearing & pitch
      * @returns {Object} containing longitude, latitude, altitude and pitch
      */
-    getCameraPosition(): { lng: number, lat: number, altitude: number, pitch: number } {
+    getCameraPosition(): { lng: number, lat: number, altitude: number, pitch: number, bearing: number } {
         const pitch = this._pitch;
         const altitude = Math.cos(pitch) * this.cameraToCenterDistance;
         const latOffset = Math.tan(pitch) * this.cameraToCenterDistance;
@@ -386,15 +386,15 @@ class Transform {
         const verticalScaleConstant = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(latLong.lat * (Math.PI / 180))));
         const altitudeInMeters = altitude / verticalScaleConstant;
 
-        return { lng: latLong.lng, lat: latLong.lat, altitude: altitudeInMeters, pitch };
+        return { lng: latLong.lng, lat: latLong.lat, altitude: altitudeInMeters, pitch, bearing: this.bearing };
     }
 
     /**
-     * Set camera position to desired latitude, longitude, altitude and pitch
-     * @param {Object} camPos Object containing the latitude and longitude under the camera, the altitude in meters, and pitch
+     * Set camera position to desired latitude, longitude, altitude, pitch and bearing
+     * @param {Object} camPos Object containing the latitude and longitude under the camera, the altitude in meters, bearing & pitch
      */
-    setCameraPosition(camPos: { lng: number, lat: number, altitude: number, pitch: number }) {
-        const { lng, lat, altitude, pitch } = camPos;
+    setCameraPosition(camPos: { lng: number, lat: number, altitude: number, pitch: number, bearing: number }) {
+        const { lng, lat, altitude, pitch, bearing } = camPos;
 
         const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
         const pixelAltitude = Math.abs(Math.cos(pitch) * cameraToCenterDistance);
@@ -408,6 +408,7 @@ class Transform {
 
         this.zoom = zoom;
         this.pitch = pitch;
+        this.bearing = bearing;
         this.setLocationAtPoint(newLongLat, newPixelPoint);
     }
 
