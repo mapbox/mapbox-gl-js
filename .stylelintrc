@@ -1,6 +1,7 @@
 {
   "extends": "stylelint-config-standard",
   "rules": {
-    "selector-class-pattern": "mapboxgl-[a-z-]+"
+    "indentation": 4,
+    "selector-class-pattern": "mapbox(gl)?-[a-z-]+"
   }
 }
