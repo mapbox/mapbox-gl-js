@@ -13,6 +13,7 @@
   "scripts": {
     "copy-flow-typed": "cp -R ../../flow-typed .",
     "build": "../../node_modules/.bin/browserify style-spec.js --standalone=mapboxGlStyleSpecification | ../../node_modules/.bin/derequire > dist/index.js",
+    "rollup": "rollup -c",
     "prepublish": "in-publish && yarn copy-flow-typed && yarn build || not-in-publish",
     "postpublish": "in-publish && rm -r flow-typed dist/index.js || not-in-publish"
   },

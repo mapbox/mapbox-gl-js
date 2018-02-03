@@ -190,6 +190,6 @@ export default class Worker {
     }
 }
 
-export default function createWorker(self: WorkerGlobalScopeInterface) {
-    return new Worker(self);
-};
+/* global self */
+new Worker(self);
+
