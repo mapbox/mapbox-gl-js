@@ -388,7 +388,7 @@ class Marker {
 
     /**
      * Sets the anchor of the marker
-     * @param {PointLike} [options.anchor] The anchor in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @param {PointLike} [anchor] The anchor in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
      */
     setAnchor(anchor: ?PointLike) {
@@ -407,7 +407,7 @@ class Marker {
 
     /**
      * Sets the offset of the marker
-     * @param {number|PointLike|Object} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @param {number|PointLike|Object} [offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
      */
     setOffset(offset: number | PointLike | Object) {
