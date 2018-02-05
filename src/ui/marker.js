@@ -35,17 +35,10 @@ export type MarkerOptions = {
  *   If unset the anchor will be dynamically set to ensure the marker falls within the map container with a preference for `'middle'` by default
  * @param {number|PointLike|Object} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's anchor.
  * @example
- * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
- * var markerOffsets = {
- *  'middle': [markerRadius/2, markerHeight/2],
- *  'top': [0, 0],
- *  'top-left': [0,0],
- *  'top-right': [0,0],
- *  'bottom': [0, -markerHeight],
- *  'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
- *  'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
- *  'left': [markerRadius, (markerHeight - markerRadius) * -1],
- *  'right': [-markerRadius, (markerHeight - markerRadius) * -1]
+ * var markerRadius = 10;
+ * var markerOptions = {
+ *  anchor: 'middle',
+ *  offset: [markerRadius/2, markerHeight/2]
  *  };
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -387,7 +380,7 @@ class Marker {
 
     /**
      * Get the marker's anchor.
-     * @returns {Point}
+     * @returns {string}
      */
     getAnchor() {
         return this.options.anchor;
@@ -395,7 +388,7 @@ class Marker {
 
     /**
      * Sets the anchor of the marker
-     * @param {PointLike} [anchor] The anchor in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @param {PointLike} [options.anchor] The anchor in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
      */
     setAnchor(anchor: ?PointLike) {
@@ -406,7 +399,7 @@ class Marker {
 
     /**
      * Get the marker's offset.
-     * @returns {Point}
+     * @returns {number|PointLike|Object}
      */
     getOffset() {
         return this.options.offset;
@@ -414,10 +407,10 @@ class Marker {
 
     /**
      * Sets the offset of the marker
-     * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @param {number|PointLike|Object} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
      */
-    setOffset(offset: PointLike) {
+    setOffset(offset: number | PointLike | Object) {
         this._offset = Point.convert(offset);
         this._update();
         return this;
