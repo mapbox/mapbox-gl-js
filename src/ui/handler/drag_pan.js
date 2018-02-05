@@ -7,6 +7,7 @@ const browser = require('../../util/browser');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
+import type Transform from '../../geo/transform';
 
 const inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -25,8 +26,10 @@ class DragPanHandler {
     _enabled: boolean;
     _active: boolean;
     _pos: Point;
+    _previousPos: Point;
     _startPos: Point;
     _inertia: Array<[number, Point]>;
+    _lastMoveEvent: MouseEvent | TouchEvent | void;
 
     constructor(map: Map) {
         this._map = map;
@@ -37,7 +40,9 @@ class DragPanHandler {
             '_onMove',
             '_onUp',
             '_onTouchEnd',
-            '_onMouseUp'
+            '_onMouseUp',
+            '_onDragFrame',
+            '_onDragFinished'
         ], this);
     }
 
@@ -102,41 +107,63 @@ class DragPanHandler {
         window.addEventListener('blur', this._onMouseUp);
 
         this._active = false;
-        this._startPos = this._pos = DOM.mousePos(this._el, e);
-        this._inertia = [[browser.now(), this._pos]];
+        this._startPos = this._previousPos = DOM.mousePos(this._el, e);
+        this._inertia = [[browser.now(), this._startPos]];
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
         if (this._ignoreEvent(e)) return;
+        this._lastMoveEvent = e;
+        e.preventDefault();
+
+        this._pos = DOM.mousePos(this._el, e);
+        this._drainInertiaBuffer();
+        this._inertia.push([browser.now(), this._pos]);
 
         if (!this.isActive()) {
+            // we treat the first move event (rather than the mousedown event)
+            // as the start of the drag
             this._active = true;
             this._map.moving = true;
             this._fireEvent('dragstart', e);
             this._fireEvent('movestart', e);
+
+            this._map._startAnimation(this._onDragFrame, this._onDragFinished);
         }
 
-        const pos = DOM.mousePos(this._el, e),
-            map = this._map;
+        // ensure a new render frame is scheduled
+        this._map._update();
+    }
 
-        map.stop();
-        this._drainInertiaBuffer();
-        this._inertia.push([browser.now(), pos]);
+    /**
+     * Called in each render frame while dragging is happening.
+     * @private
+     */
+    _onDragFrame(tr: Transform) {
+        const e = this._lastMoveEvent;
+        if (!e) return;
 
-        map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
-
+        tr.setLocationAtPoint(tr.pointLocation(this._previousPos), this._pos);
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
 
-        this._pos = pos;
-
-        e.preventDefault();
+        this._previousPos = this._pos;
+        delete this._lastMoveEvent;
     }
 
-    _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
+    /**
+     * Called when dragging stops.
+     * @private
+     */
+    _onDragFinished(e: MouseEvent | TouchEvent | FocusEvent | void) {
         if (!this.isActive()) return;
 
         this._active = false;
+        delete this._lastMoveEvent;
+        delete this._startPos;
+        delete this._previousPos;
+        delete this._pos;
+
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();
 
@@ -180,6 +207,10 @@ class DragPanHandler {
         }, { originalEvent: e });
     }
 
+    _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
+        this._onDragFinished(e);
+    }
+
     _onMouseUp(e: MouseEvent | FocusEvent) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
@@ -195,8 +226,8 @@ class DragPanHandler {
         window.document.removeEventListener('touchend', this._onTouchEnd);
     }
 
-    _fireEvent(type: string, e: Event) {
-        return this._map.fire(type, { originalEvent: e });
+    _fireEvent(type: string, e: ?Event) {
+        return this._map.fire(type, e ? { originalEvent: e } : {});
     }
 
     _ignoreEvent(e: any) {

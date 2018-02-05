@@ -1478,10 +1478,13 @@ export default class extends React.Component {
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
                                             <div><span className='code'><a id="function-stops" href="#function-stops">stops</a></span>
                                             </div>
-                                            <div><em className='quiet'>Required (except for <var>identity</var>
-                                                functions) <a href='#types-array'>array</a>.</em></div>
+                                            <div><em className='quiet'>Required (except
+                                                for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
                                             <div>Functions are defined in terms of input and output values. A set of one
-                                                input value and one output value is known as a "stop."
+                                                input value and one output value is known as a "stop." Stop output values
+                                                must be literal values (i.e. not functions or expressions), and appropriate
+                                                for the property. For example, stop output values for a function used in
+                                                the <code>fill-color</code> property must be <a href="#types-color">colors</a>.
                                             </div>
                                         </div>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">

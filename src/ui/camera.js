@@ -73,10 +73,11 @@ class Camera extends Evented {
     _bearingSnap: number;
     _onEaseEnd: number;
     _easeStart: number;
+    _isEasing: boolean;
     _easeOptions: {duration: number, easing: (number) => number};
-    _easeFn: (number) => void;
+
+    _onFrame: (Transform) => void;
     _finishFn: () => void;
-    _prevEase: any;
     +_update: () => void;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
@@ -533,10 +534,6 @@ class Camera extends Evented {
 
         if (options.animate === false) options.duration = 0;
 
-        if (options.smoothEasing && options.duration !== 0) {
-            options.easing = this._smoothOutEasing(options.duration);
-        }
-
         const tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
@@ -597,9 +594,9 @@ class Camera extends Evented {
 
         }, () => {
             if (options.delayEndEvents) {
-                this._onEaseEnd = setTimeout(() => this._easeToEnd(eventData), options.delayEndEvents);
+                this._onEaseEnd = setTimeout(() => this._afterEase(eventData), options.delayEndEvents);
             } else {
-                this._easeToEnd(eventData);
+                this._afterEase(eventData);
             }
         }, options);
 
@@ -633,7 +630,7 @@ class Camera extends Evented {
         }
     }
 
-    _easeToEnd(eventData?: Object) {
+    _afterEase(eventData?: Object) {
         const wasZooming = this.zooming;
         const wasPitching = this.pitching;
         this.moving = false;
@@ -842,13 +839,13 @@ class Camera extends Evented {
 
             this._fireMoveEvents(eventData);
 
-        }, () => this._easeToEnd(eventData), options);
+        }, () => this._afterEase(eventData), options);
 
         return this;
     }
 
     isEasing() {
-        return !!this._easeFn;
+        return !!this._isEasing;
     }
 
     /**
@@ -868,8 +865,8 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
-        if (this._easeFn) {
-            this._finishEase();
+        if (this._onFrame) {
+            this._finishAnimation();
         }
         return this;
     }
@@ -882,25 +879,49 @@ class Camera extends Evented {
             finish();
         } else {
             this._easeStart = browser.now();
-            this._easeFn = frame;
-            this._finishFn = finish;
+            this._isEasing = true;
             this._easeOptions = options;
-            this._update();
+            this._startAnimation((_) => {
+                const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
+                frame(this._easeOptions.easing(t));
+                if (t === 1) this.stop();
+            }, () => {
+                this._isEasing = false;
+                finish();
+            });
         }
     }
 
-    _updateEase() {
-        const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
-        this._easeFn(this._easeOptions.easing(t));
-        if (t === 1) {
-            this._finishEase();
+    /*
+     * Should be called at the top of the render loop to update camera position
+     * and orientation before they're read by any rendering logic.
+     */
+    _updateCamera() {
+        if (this._onFrame) {
+            this._onFrame(this.transform);
         }
     }
 
-    _finishEase() {
-        delete this._easeFn;
-        // The finish function might emit events which trigger new eases, which
-        // set a new _finishFn. Ensure we don't delete it unintentionally.
+    /*
+     * Start the camera animation using the given onFrame callback.
+     *
+     * @param onFrame A callback responsible for updating the transform to reflect the desired camera position and orientation, and also for firing any relevant camera movement events.
+     * @param finish A callback that is called when this animation is stopped (i.e., when `Camera#stop()` is called).
+     */
+    _startAnimation(onFrame: (Transform) => void,
+                    finish: () => void = () => {}): this {
+        this.stop();
+        this._onFrame = onFrame;
+        this._finishFn = finish;
+        this._update();
+        return this;
+    }
+
+    _finishAnimation() {
+        delete this._onFrame;
+        // The finish function might emit events which trigger new animation,
+        // which sets a new _finishFn. Ensure we don't delete it
+        // unintentionally.
         const finish = this._finishFn;
         delete this._finishFn;
         finish.call(this);
@@ -925,31 +946,6 @@ class Camera extends Evented {
         center.lng +=
             delta > 180 ? -360 :
             delta < -180 ? 360 : 0;
-    }
-
-    // only used on mouse-wheel zoom to smooth out animation
-    _smoothOutEasing(duration: number) {
-        let easing = util.ease;
-
-        if (this._prevEase) {
-            const ease = this._prevEase,
-                t = (browser.now() - ease.start) / ease.duration,
-                speed = ease.easing(t + 0.01) - ease.easing(t),
-
-                // Quick hack to make new bezier that is continuous with last
-                x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01,
-                y = Math.sqrt(0.27 * 0.27 - x * x);
-
-            easing = util.bezier(x, y, 0.25, 1);
-        }
-
-        this._prevEase = {
-            start: browser.now(),
-            duration: duration,
-            easing: easing
-        };
-
-        return easing;
     }
 }
 

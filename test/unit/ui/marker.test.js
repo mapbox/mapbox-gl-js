@@ -6,6 +6,7 @@ const Map = require('../../../src/ui/map');
 const Marker = require('../../../src/ui/marker');
 const Popup = require('../../../src/ui/popup');
 const LngLat = require('../../../src/geo/lng_lat');
+const Point = require('@mapbox/point-geometry');
 
 function createMap() {
     const container = window.document.createElement('div');
@@ -25,6 +26,21 @@ test('Marker', (t) => {
     t.test('default marker', (t) => {
         const marker = new Marker();
         t.ok(marker.getElement(), 'default marker is created');
+        t.ok(marker.getOffset().equals(new Point(0, -14)), 'default marker with no offset uses default marker offset');
+        t.end();
+    });
+
+    t.test('default marker with some options', (t) => {
+        const marker = new Marker(null, { foo: 'bar' });
+        t.ok(marker.getElement(), 'default marker is created');
+        t.ok(marker.getOffset().equals(new Point(0, -14)), 'default marker with no offset uses default marker offset');
+        t.end();
+    });
+
+    t.test('default marker with custom offest', (t) => {
+        const marker = new Marker(null, { offset: [1, 2] });
+        t.ok(marker.getElement(), 'default marker is created');
+        t.ok(marker.getOffset().equals(new Point(1, 2)), 'default marker with supplied offset');
         t.end();
     });
 

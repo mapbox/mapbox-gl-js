@@ -18,6 +18,21 @@ function createMap(options) {
     }, options));
 }
 
+test('DragRotateHandler requests a new render frame after each mousemove event', (t) => {
+    const map = createMap();
+    const update = t.spy(map, '_update');
+
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    t.ok(update.callCount > 0);
+
+    // https://github.com/mapbox/mapbox-gl-js/issues/6063
+    update.reset();
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    t.equal(update.callCount, 1);
+    t.end();
+});
+
 test('DragRotateHandler rotates in response to a right-click drag', (t) => {
     const map = createMap();
 
@@ -31,6 +46,8 @@ test('DragRotateHandler rotates in response to a right-click drag', (t) => {
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
+
     t.ok(rotatestart.calledOnce);
     t.ok(rotate.calledOnce);
 
@@ -44,16 +61,19 @@ test('DragRotateHandler rotates in response to a right-click drag', (t) => {
 test('DragRotateHandler stops rotating after mouseup', (t) => {
     const map = createMap();
 
-    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
-    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
-    simulate.mouseup(map.getCanvas(),   {bubbles: true, buttons: 0, button: 2});
-
     const spy = t.spy();
-
     map.on('rotatestart', spy);
     map.on('rotate',      spy);
     map.on('rotateend',   spy);
 
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
+    simulate.mouseup(map.getCanvas(),   {bubbles: true, buttons: 0, button: 2});
+
+    t.ok(spy.calledThrice);
+
+    spy.reset();
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 0});
 
     t.ok(spy.notCalled);
@@ -73,6 +93,7 @@ test('DragRotateHandler rotates in response to a control-left-click drag', (t) =
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 1, button: 0, ctrlKey: true});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 1,            ctrlKey: true});
+    map._updateCamera();
     t.ok(rotatestart.calledOnce);
     t.ok(rotate.calledOnce);
 
@@ -95,6 +116,7 @@ test('DragRotateHandler pitches in response to a right-click drag by default', (
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     t.ok(pitchstart.calledOnce);
     t.ok(pitch.calledOnce);
 
@@ -117,6 +139,7 @@ test('DragRotateHandler pitches in response to a control-left-click drag', (t) =
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 1, button: 0, ctrlKey: true});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 1,            ctrlKey: true});
+    map._updateCamera();
     t.ok(pitchstart.calledOnce);
     t.ok(pitch.calledOnce);
 
@@ -137,10 +160,12 @@ test('DragRotateHandler does not pitch if given pitchWithRotate: false', (t) => 
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     simulate.mouseup(map.getCanvas(),   {bubbles: true, buttons: 0, button: 2});
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 1, button: 0, ctrlKey: true});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 1,            ctrlKey: true});
+    map._updateCamera();
     simulate.mouseup(map.getCanvas(),   {bubbles: true, buttons: 0, button: 0, ctrlKey: true});
 
     t.ok(spy.notCalled);
@@ -163,6 +188,7 @@ test('DragRotateHandler does not rotate or pitch when disabled', (t) => {
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     simulate.mouseup(map.getCanvas(),   {bubbles: true, buttons: 0, button: 2});
 
     t.ok(spy.notCalled);
@@ -197,6 +223,7 @@ test('DragRotateHandler fires move events', (t) => {
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     t.ok(movestart.calledOnce);
     t.ok(move.calledOnce);
 
@@ -233,6 +260,7 @@ test('DragRotateHandler includes originalEvent property in triggered events', (t
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     simulate.mouseup(map.getCanvas(),   {bubbles: true, buttons: 0, button: 2});
 
     t.ok(rotatestart.firstCall.args[0].originalEvent.type, 'mousemove');
@@ -263,6 +291,7 @@ test('DragRotateHandler responds to events on the canvas container (#1301)', (t)
 
     simulate.mousedown(map.getCanvasContainer(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvasContainer(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     t.ok(rotatestart.calledOnce);
     t.ok(rotate.calledOnce);
 
@@ -280,6 +309,7 @@ test('DragRotateHandler prevents mousemove events from firing during a drag (#15
 
     simulate.mousedown(map.getCanvasContainer(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvasContainer(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     simulate.mouseup(map.getCanvasContainer(),   {bubbles: true, buttons: 0, button: 2});
 
     t.ok(mousemove.notCalled);
@@ -299,6 +329,7 @@ test('DragRotateHandler ends a control-left-click drag on mouseup even when the 
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 1, button: 0, ctrlKey: true});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 1,            ctrlKey: true});
+    map._updateCamera();
     t.ok(rotatestart.calledOnce);
     t.ok(rotate.calledOnce);
 
@@ -321,6 +352,7 @@ test('DragRotateHandler ends rotation if the window blurs (#3389)', (t) => {
 
     simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
     simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    map._updateCamera();
     t.ok(rotatestart.calledOnce);
     t.ok(rotate.calledOnce);
 

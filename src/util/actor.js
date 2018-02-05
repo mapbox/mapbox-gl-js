@@ -38,7 +38,7 @@ class Actor {
      * Sends a message from a main-thread map to a Worker or from a Worker back to
      * a main-thread map instance.
      *
-     * @param type The name of the target method to invoke or '[source-type].name' for a method on a WorkerSource.
+     * @param type The name of the target method to invoke or '[source-type].[source-name].name' for a method on a WorkerSource.
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
@@ -86,10 +86,10 @@ class Actor {
             // data.type == 'loadTile', 'removeTile', etc.
             this.parent[data.type](data.sourceMapId, deserialize(data.data), done);
         } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
-            // data.type == sourcetype.method
+            // data.type == sourcetype.sourcename.method
             const keys = data.type.split('.');
-            const workerSource = (this.parent: any).getWorkerSource(data.sourceMapId, keys[0]);
-            workerSource[keys[1]](deserialize(data.data), done);
+            const workerSource = (this.parent: any).getWorkerSource(data.sourceMapId, keys[0], keys[1]);
+            workerSource[keys[2]](deserialize(data.data), done);
         } else {
             this.parent[data.type](deserialize(data.data));
         }
