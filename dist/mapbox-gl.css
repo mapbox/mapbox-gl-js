@@ -280,7 +280,8 @@ a.mapboxgl-ctrl-logo {
     text-decoration: underline;
 }
 
-.mapboxgl-ctrl-attrib .mapboxgl-improve-map {
+/* stylelint-disable-next-line selector-class-pattern */
+.mapboxgl-ctrl-attrib .mapbox-improve-map {
     font-weight: bold;
     margin-left: 2px;
 }
@@ -556,6 +557,7 @@ a.mapboxgl-ctrl-logo {
 }
 
 @media print {
+    /* stylelint-disable-next-line selector-class-pattern */
     .mapbox-improve-map {
         display: none;
     }
