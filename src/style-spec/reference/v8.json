@@ -509,7 +509,7 @@
             }
           }
         },
-        "webgl": {
+        "custom-webgl": {
           "doc": "Defer rendering to an external webgl renderer",
           "sdk-support": {
             "basic functionality": {
@@ -579,9 +579,9 @@
     "layout_raster",
     "layout_hillshade",
     "layout_background",
-    "layout_webgl"
+    "layout_custom-webgl"
   ],
-  "layout_webgl": {
+  "layout_custom-webgl": {
     "visibility": {
       "type": "enum",
       "values": {
@@ -605,8 +605,8 @@
     },
     "callback": {
       "type": "string",
-      "default": "asdf",
-      "doc": "The name of the callback on 'window' of the external WebGL renderer",
+      "default": "",
+      "doc": "The name of the callback on 'window' of the external WebGL renderer. The callback function will be called in each redraw with two parameters. The first one will be the WebGL context and the second one the invalidateCurrentWebGLState' function. The invalidateCurrentWebGLState parameter allows external custom WebGL renderers to asynchronously use the WebGL context in a safe way. External renderers should call invalidateCurrentWebGLState when they modify the WebGL context state asynchronously. For example, if the external renderer receives some data from an AJAX request, it can upload  data to the WebGL context asynchronously (regarding Mapbox GL rendering, it would synchronous respect WebGL) and call invalidateCurrentWebGLState afterwards to ensure that in the next Mapbox GL rendering pass the WebGL tracked is not stale (which would produce rendering artifacts).",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0"

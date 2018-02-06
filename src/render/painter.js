@@ -32,7 +32,7 @@ const draw = {
     hillshade: require('./draw_hillshade'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
-    webgl: require('./draw_webgl'),
+    'custom-webgl': require('./draw_custom_webgl'),
     debug: require('./draw_debug')
 };
 
@@ -403,7 +403,7 @@ class Painter {
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if ((layer.type !== 'background' && layer.type !== 'webgl') && !coords.length) return;
+        if ((layer.type !== 'background' && layer.type !== 'custom-webgl') && !coords.length) return;
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);

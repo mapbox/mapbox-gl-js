@@ -37,7 +37,7 @@ window.callback = (gl)=>{
 map.on('load', function() {
     map.addLayer({
         "id": "externalwebgl",
-        "type": "webgl",
+        "type": "custom-webgl",
         "layout": {
             "callback": "callback",
         }
