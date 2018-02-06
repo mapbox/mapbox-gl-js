@@ -1,7 +1,7 @@
 // @flow
 
 const StyleLayer = require('../style_layer');
-const properties = require('./webgl_style_layer_properties');
+const properties = require('./custom_webgl_style_layer_properties');
 
 const {
     Transitionable,
@@ -9,7 +9,7 @@ const {
     PossiblyEvaluated
 } = require('../properties');
 
-import type {PaintProps} from './webgl_style_layer_properties';
+import type {PaintProps} from './custom_webgl_style_layer_properties';
 
 class WebGLLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;

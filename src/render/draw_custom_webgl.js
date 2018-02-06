@@ -6,7 +6,7 @@ const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type WebGLLayer from '../style/style_layer/webgl_layer';
+import type WebGLLayer from '../style/style_layer/custom_webgl_layer';
 
 module.exports = drawCustomWebGL;
 

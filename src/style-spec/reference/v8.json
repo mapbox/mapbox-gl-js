@@ -2405,7 +2405,8 @@
     "paint_symbol",
     "paint_raster",
     "paint_hillshade",
-    "paint_background"
+    "paint_background",
+    "paint_custom-webgl"
   ],
   "paint_fill": {
     "fill-antialias": {
@@ -3922,7 +3923,7 @@
         "transition": true
       }
   },
-  "paint_webgl": {
+  "paint_custom-webgl": {
   },
   "paint_background": {
     "background-color": {

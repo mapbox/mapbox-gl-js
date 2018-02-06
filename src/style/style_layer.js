@@ -215,7 +215,7 @@ const subclasses = {
     'line': require('./style_layer/line_style_layer'),
     'symbol': require('./style_layer/symbol_style_layer'),
     'background': require('./style_layer/background_style_layer'),
-    'webgl': require('./style_layer/webgl_layer'),
+    'custom-webgl': require('./style_layer/custom_webgl_layer'),
     'raster': require('./style_layer/raster_style_layer')
 };
 
