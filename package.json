@@ -96,7 +96,8 @@
     "sinon": "^2.1.0",
     "slugg": "^1.2.1",
     "st": "^1.2.0",
-    "stylelint": "^7.10.1",
+    "stylelint": "^8.4.0",
+    "stylelint-config-standard": "^18.0.0",
     "tap": "^10.3.0",
     "watchify": "^3.7.0"
   },
