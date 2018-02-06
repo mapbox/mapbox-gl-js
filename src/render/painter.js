@@ -102,6 +102,7 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
+        this.webGLDrawData = {};
 
         this.setup();
 
@@ -115,6 +116,17 @@ class Painter {
         this.emptyProgramConfiguration = new ProgramConfiguration();
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
+    }
+
+    /*
+     * Invalidate current state
+     */
+    invalidate() {
+        Object.keys(this.context).forEach((key) => {
+            if (this.context[key].current !== undefined) {
+                this.context[key].current = {};
+            }
+        });
     }
 
     /*
@@ -470,6 +482,13 @@ class Painter {
         this.context.program.set(nextProgram.program);
 
         return nextProgram;
+    }
+
+    /**
+     * TODO
+     */
+    setWebGLDrawCallback(layerId: string, callback: Function) {
+        this.webGLDrawData[layerId] = callback;
     }
 }
 

@@ -1580,6 +1580,13 @@ class Map extends Camera {
     }
 
     /**
+     * TODO
+     */
+    setWebGLDrawCallback(layerId: number, callback: Function) {
+        this.painter.setWebGLDrawCallback(layerId, callback);
+    }
+
+    /**
      * Gets and sets a Boolean indicating whether the map will render an outline
      * around each tile. These tile boundaries are useful for debugging.
      *
