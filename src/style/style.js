@@ -954,7 +954,7 @@ class Style extends Evented {
 
     _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number) {
         let symbolBucketsChanged = false;
-        let placementChanged = false;
+        let placementCommitted = false;
 
         const layerTiles = {};
 
@@ -985,17 +985,20 @@ class Style extends Evented {
             this._layerOrderChanged = false;
         }
 
-        if (!this.pauseablePlacement.isDone()) {
+        if (this.pauseablePlacement.isDone()) {
+            // the last placement finished running, but the next one hasn’t
+            // started yet because of the `stillRecent` check immediately
+            // above, so mark it stale to ensure that we request another
+            // render frame
+            this.placement.setStale();
+        } else {
             this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
             if (this.pauseablePlacement.isDone()) {
-                const placement = this.pauseablePlacement.placement;
-                placementChanged = placement.commit(this.placement, browser.now());
-                if (!this.placement || placementChanged || symbolBucketsChanged) {
-                    this.placement = placement;
-                    this.collisionIndex = this.placement.collisionIndex;
-                }
-                this.placement.setRecent(browser.now(), placement.stale);
+                this.pauseablePlacement.placement.commit(this.placement, browser.now());
+                this.placement = this.pauseablePlacement.placement;
+                this.collisionIndex = this.placement.collisionIndex;
+                placementCommitted = true;
             }
 
             if (symbolBucketsChanged) {
@@ -1004,12 +1007,9 @@ class Style extends Evented {
                 // placement is already stale while it is in progress
                 this.pauseablePlacement.placement.setStale();
             }
-
-        } else {
-            this.placement.setStale();
         }
 
-        if (placementChanged || symbolBucketsChanged) {
+        if (placementCommitted || symbolBucketsChanged) {
             for (const layerID of this._order) {
                 const styleLayer = this._layers[layerID];
                 if (styleLayer.type !== 'symbol') continue;
