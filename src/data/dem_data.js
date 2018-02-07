@@ -57,7 +57,7 @@ class DEMData {
         this.loaded = !!data;
     }
 
-    loadFromImage(data: RGBAImage, encoding: ?string) {
+    loadFromImage(data: RGBAImage, encoding?: "mapbox" | "terrarium") {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
 
         // Build level 0
@@ -87,16 +87,16 @@ class DEMData {
         this.loaded = true;
     }
 
-    unpackMapbox(r: number, g: number, b: number) {
+    _unpackMapbox(r: number, g: number, b: number) {
         return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
     }
 
-    unpackTerrarium(r: number, g: number, b: number) {
+    _unpackTerrarium(r: number, g: number, b: number) {
         return ((r * 256 + g + b / 256) - 32768.0);
     }
 
     unpackData(level: Level, pixels: Uint8Array | Uint8ClampedArray, encoding: string) {
-        const unpackFunctions = {"mapbox": this.unpackMapbox, "terrarium": this.unpackTerrarium};
+        const unpackFunctions = {"mapbox": this._unpackMapbox, "terrarium": this._unpackTerrarium};
         const unpack = unpackFunctions[encoding];
         for (let y = 0; y < level.dim; y++) {
             for (let x = 0; x < level.dim; x++) {
