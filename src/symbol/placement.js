@@ -61,17 +61,16 @@ class JointPlacement {
 class Placement {
     transform: Transform;
     collisionIndex: CollisionIndex;
-    recentUntil: number;
     placements: { [string | number]: JointPlacement };
     opacities: { [string | number]: JointOpacityState };
     commitTime: number;
+    lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
 
     constructor(transform: Transform, fadeDuration: number) {
         this.transform = transform.clone();
         this.collisionIndex = new CollisionIndex(this.transform);
-        this.recentUntil = -Infinity;
         this.placements = {};
         this.opacities = {};
         this.stale = false;
@@ -204,7 +203,7 @@ class Placement {
         bucket.justReloaded = false;
     }
 
-    commit(prevPlacement: ?Placement, now: number) {
+    commit(prevPlacement: ?Placement, now: number): void {
         this.commitTime = now;
 
         let placementChanged = false;
@@ -242,7 +241,15 @@ class Placement {
             }
         }
 
-        return placementChanged;
+        // this.lastPlacementChangeTime is the time of the last commit() that
+        // resulted in a placement change -- in other words, the start time of
+        // the last symbol fade animation
+        assert(!prevPlacement || prevPlacement.lastPlacementChangeTime !== undefined);
+        if (placementChanged) {
+            this.lastPlacementChangeTime = now;
+        } else if (typeof this.lastPlacementChangeTime !== 'number') {
+            this.lastPlacementChangeTime = prevPlacement ? prevPlacement.lastPlacementChangeTime : now;
+        }
     }
 
     updateLayerOpacities(styleLayer: StyleLayer, tiles: Array<Tile>) {
@@ -362,16 +369,13 @@ class Placement {
     }
 
     hasTransitions(now: number) {
-        return this.symbolFadeChange(now) < 1 || this.stale;
+        return this.stale ||
+            now - this.lastPlacementChangeTime < this.fadeDuration;
     }
 
     stillRecent(now: number) {
-        return this.recentUntil > now;
-    }
-
-    setRecent(now: number, stale: boolean) {
-        this.stale = stale;
-        this.recentUntil = now + this.fadeDuration;
+        return this.commitTime !== 'undefined' &&
+            this.commitTime + this.fadeDuration > now;
     }
 
     setStale() {
