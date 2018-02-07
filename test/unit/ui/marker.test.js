@@ -186,6 +186,17 @@ test('Marker', (t) => {
         t.end();
     });
 
+    t.test('marker\'s anchor can be changed', (t) => {
+        const map = createMap();
+        const el = window.document.createElement('div');
+        const marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
+
+        t.ok(marker._element, 'translate(-50%,-50%) translate(256px, 256px)', 'Marker centered');
+        t.ok(marker.setAnchor('top-left') instanceof Marker, 'marker.setAnchor() returns Marker instance');
+        t.ok(marker._element, 'translate(0, 0) translate(256px, 256px)', 'marker\'s offset can be updated');
+        t.end();
+    });
+
     t.test('marker\'s offset can be changed', (t) => {
         const map = createMap();
         const el = window.document.createElement('div');
