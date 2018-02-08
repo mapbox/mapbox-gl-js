@@ -386,8 +386,7 @@ declare type CustomWebglLayerSpecification = {|
     "minzoom"?: number,
     "maxzoom"?: number,
     "layout"?: {|
-        "visibility"?: "visible" | "none",
-        "callback"?: string
+        "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
 

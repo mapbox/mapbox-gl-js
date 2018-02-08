@@ -14,13 +14,6 @@ const {
 
 import type Color from '../../style-spec/util/color';
 
-export type LayoutProps = {|
-    "callback": DataConstantProperty<string>,
-|};
-
-const layout: Properties<LayoutProps> = new Properties({
-    "callback": new DataConstantProperty(styleSpec["layout_custom-webgl"]["callback"]),
-});
 
 export type PaintProps = {|
 |};
@@ -28,4 +21,4 @@ export type PaintProps = {|
 const paint: Properties<PaintProps> = new Properties({
 });
 
-module.exports = { paint, layout };
+module.exports = { paint };
