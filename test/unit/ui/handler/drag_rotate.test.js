@@ -361,3 +361,20 @@ test('DragRotateHandler ends rotation if the window blurs (#3389)', (t) => {
 
     t.end();
 });
+
+test('DragRotateHandler recovers after interruptino by another handler', (t) => {
+    // https://github.com/mapbox/mapbox-gl-js/issues/6106 
+    const map = createMap();
+    const initialBearing = map.getBearing();
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 12, clientY: 10});
+    map._updateCamera();
+
+    // simluates another handler taking over
+    map.stop();
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 12, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 14, clientY: 10});
+    map._updateCamera();
+    t.equalWithPrecision(map.getBearing(), initialBearing + 3.2, 1e-6);
+    t.end();
+});
