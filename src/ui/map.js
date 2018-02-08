@@ -1580,10 +1580,13 @@ class Map extends Camera {
     }
 
     /**
-     * TODO
+     * Store a DrawCallback used by a `custom-webgl` layer in the `painter`.
+     *
+     * @param {string} id The ID of the `custom-webgl` layer.
+     * @param {Function} callback The callback to be stored.
      */
-    setWebGLDrawCallback(layerId: number, callback: Function) {
-        this.painter.setWebGLDrawCallback(layerId, callback);
+    setWebGLDrawCallback(id: string, callback: Function) {
+        this.painter.setWebGLDrawCallback(id, callback);
     }
 
     /**
