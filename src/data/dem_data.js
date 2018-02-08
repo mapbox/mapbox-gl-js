@@ -59,12 +59,12 @@ class DEMData {
 
     loadFromImage(data: RGBAImage, encoding?: "mapbox" | "terrarium") {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
-
+        if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return util.warnOnce(`"${encoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`);
         // Build level 0
         const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
 
-        this.unpackData(level, pixels, encoding || "mapbox");
+        this._unpackData(level, pixels, encoding || "mapbox");
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
@@ -88,14 +88,18 @@ class DEMData {
     }
 
     _unpackMapbox(r: number, g: number, b: number) {
+        // unpacking formula for mapbox.terrain-rgb:
+        // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
         return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
     }
 
     _unpackTerrarium(r: number, g: number, b: number) {
+        // unpacking formula for mapzen terrarium:
+        // https://aws.amazon.com/public-datasets/terrain/
         return ((r * 256 + g + b / 256) - 32768.0);
     }
 
-    unpackData(level: Level, pixels: Uint8Array | Uint8ClampedArray, encoding: string) {
+    _unpackData(level: Level, pixels: Uint8Array | Uint8ClampedArray, encoding: string) {
         const unpackFunctions = {"mapbox": this._unpackMapbox, "terrarium": this._unpackTerrarium};
         const unpack = unpackFunctions[encoding];
         for (let y = 0; y < level.dim; y++) {
