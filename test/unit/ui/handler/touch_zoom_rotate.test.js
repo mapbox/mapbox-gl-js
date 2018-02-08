@@ -10,7 +10,7 @@ function createMap() {
     return new Map({ container: DOM.create('div', '', window.document.body) });
 }
 
-test('TouchZoomRotateHandler does not begin a box zoom if preventDefault is called on the touchstart event', (t) => {
+test('TouchZoomRotateHandler does not begin a gesture if preventDefault is called on the touchstart event', (t) => {
     const map = createMap();
 
     map.on('touchstart', e => e.preventDefault());
