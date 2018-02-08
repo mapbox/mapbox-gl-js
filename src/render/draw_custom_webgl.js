@@ -24,7 +24,7 @@ function drawCustomWebGL(painter: Painter, sourceCache: SourceCache, layer: WebG
                 painter.context[key].current = {};
             }
         });
-    };
+    }
 
     const drawCallbacks = painter.customWebGLDrawCallbacks;
     if (drawCallbacks.hasOwnProperty(layer.id)) {
