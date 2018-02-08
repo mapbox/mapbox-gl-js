@@ -32,3 +32,22 @@ test('DragPanHandler requests a new render frame after each mousemove event', (t
     t.equal(update.callCount, 1);
     t.end();
 });
+
+test('DragPanHandler recovers after interruption by another handler', (t) => {
+    // https://github.com/mapbox/mapbox-gl-js/issues/6106 
+    const map = createMap();
+    const initialCenter = map.getCenter();
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 12, clientY: 10});
+    map._updateCamera();
+
+    // simluates another handler taking over
+    map.stop();
+
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 14, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 16, clientY: 10});
+    map._updateCamera();
+    t.equalWithPrecision(map.getCenter().lng, initialCenter.lng - 2.8125, 1e-4);
+    t.end();
+});
+

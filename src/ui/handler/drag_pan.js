@@ -27,7 +27,6 @@ class DragPanHandler {
     _active: boolean;
     _pos: Point;
     _previousPos: Point;
-    _startPos: Point;
     _inertia: Array<[number, Point]>;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
 
@@ -107,8 +106,8 @@ class DragPanHandler {
         window.addEventListener('blur', this._onMouseUp);
 
         this._active = false;
-        this._startPos = this._previousPos = DOM.mousePos(this._el, e);
-        this._inertia = [[browser.now(), this._startPos]];
+        this._previousPos = DOM.mousePos(this._el, e);
+        this._inertia = [[browser.now(), this._previousPos]];
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
@@ -116,9 +115,18 @@ class DragPanHandler {
         this._lastMoveEvent = e;
         e.preventDefault();
 
-        this._pos = DOM.mousePos(this._el, e);
+        const pos = DOM.mousePos(this._el, e);
         this._drainInertiaBuffer();
-        this._inertia.push([browser.now(), this._pos]);
+        this._inertia.push([browser.now(), pos]);
+
+        // if the dragging animation was interrupted (e.g. by another handler),
+        // we need to reestablish a _previousPos before we can resume dragging
+        if (!this._previousPos) {
+            this._previousPos = pos;
+            return;
+        }
+
+        this._pos = pos;
 
         if (!this.isActive()) {
             // we treat the first move event (rather than the mousedown event)
@@ -160,7 +168,6 @@ class DragPanHandler {
 
         this._active = false;
         delete this._lastMoveEvent;
-        delete this._startPos;
         delete this._previousPos;
         delete this._pos;
 
