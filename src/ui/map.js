@@ -1580,6 +1580,16 @@ class Map extends Camera {
     }
 
     /**
+     * Store a DrawCallback used by a `custom-webgl` layer in the `painter`.
+     *
+     * @param {string} id The ID of the `custom-webgl` layer.
+     * @param {Function} callback The callback to be stored.
+     */
+    setCustomWebGLDrawCallback(id: string, callback: Function) {
+        this.painter.setCustomWebGLDrawCallback(id, callback);
+    }
+
+    /**
      * Gets and sets a Boolean indicating whether the map will render an outline
      * around each tile. These tile boundaries are useful for debugging.
      *

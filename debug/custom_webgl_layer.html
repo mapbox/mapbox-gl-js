@@ -3,7 +3,7 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -18,7 +18,7 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-var map = window.map = new mapboxgl.Map({
+var map = new mapboxgl.Map({
     container: 'map',
     zoom: 3,
     center: [-77.01866, 38.888],
@@ -29,18 +29,23 @@ var map = window.map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 
-window.callback = (gl)=>{
-    gl.clearColor(0, 0.5, 0, 1);
+map.setCustomWebGLDrawCallback('externallayer0', (gl, invalidate) => {
+    gl.clearColor(0, 1, 0, 0.1);
     gl.clear(gl.COLOR_BUFFER_BIT);
-}
+});
+map.setCustomWebGLDrawCallback('externallayer1', (gl, invalidate) => {
+    gl.clearColor(1, 1, 1, 0.1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+});
 
 map.on('load', function() {
     map.addLayer({
-        "id": "externalwebgl",
-        "type": "custom-webgl",
-        "layout": {
-            "callback": "callback",
-        }
+        "id": "externallayer0",
+        "type": "custom-webgl"
+    }, "marine-label-sm-ln");
+    map.addLayer({
+        "id": "externallayer1",
+        "type": "custom-webgl"
     }, "marine-label-sm-ln");
 });
 

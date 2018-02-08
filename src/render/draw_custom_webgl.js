@@ -1,9 +1,5 @@
 // @flow
 
-const pattern = require('./pattern');
-const StencilMode = require('../gl/stencil_mode');
-const DepthMode = require('../gl/depth_mode');
-
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type WebGLLayer from '../style/style_layer/custom_webgl_layer';
@@ -20,15 +16,22 @@ function drawCustomWebGL(painter: Painter, sourceCache: SourceCache, layer: WebG
         For example, if the external renderer receives some data from an AJAX request,
         it can upload data to the WebGL context asynchronously (regarding Mapbox GL rendering,
         it would synchronous respect WebGL) and call invalidateCurrentWebGLState afterwards
-         to ensure that in the next Mapbox GL rendering pass the WebGL tracked is not stale (which would produce rendering artifacts).
+        to ensure that in the next Mapbox GL rendering pass the WebGL tracked is not stale (which would produce rendering artifacts).
     */
     const invalidateCurrentWebGLState = () => {
-        const names = Object.keys(painter.context).filter(name => painter.context[name].current !== undefined);
-        names.map((name, index) => painter.context[name].current = {});
+        Object.keys(this.context).forEach((key) => {
+            if (this.context[key].current !== undefined) {
+                this.context[key].current = {};
+            }
+        });
     };
-    const callback = window[layer.layout._values.callback];
-    if (callback) {
-        callback(painter.context.gl, invalidateCurrentWebGLState);
-        invalidateCurrentWebGLState();
+
+    const drawCallbacks = painter.customWebGLDrawCallbacks;
+    if (drawCallbacks.hasOwnProperty(layer.id)) {
+        const callback = drawCallbacks[layer.id];
+        if (callback) {
+            callback(painter.context.gl, invalidateCurrentWebGLState);
+            invalidateCurrentWebGLState();
+        }
     }
 }

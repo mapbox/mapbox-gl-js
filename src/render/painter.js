@@ -102,6 +102,7 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
+        this.customWebGLDrawCallbacks = {};
 
         this.setup();
 
@@ -470,6 +471,17 @@ class Painter {
         this.context.program.set(nextProgram.program);
 
         return nextProgram;
+    }
+
+    /**
+     * Store a DrawCallback used by a `custom-webgl` layer.
+     * This callback will be called by the function renderLayer -> drawWebGL.
+     *
+     * @param {string} id The ID of the `custom-webgl` layer.
+     * @param {Function} callback The callback to be stored.
+     */
+    setCustomWebGLDrawCallback(id: string, callback: Function) {
+        this.customWebGLDrawCallbacks[id] = callback;
     }
 }
 
