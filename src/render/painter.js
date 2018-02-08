@@ -474,11 +474,10 @@ class Painter {
     }
 
     /**
-     * Store a DrawCallback used by a `custom-webgl` layer.
-     * This callback will be called by the function renderLayer -> drawWebGL.
+     * Store a draw callback to be used by a `custom-webgl` layer.
      *
      * @param id The ID of the `custom-webgl` layer.
-     * @param callback The callback to be stored.
+     * @param callback The callback to be stored. When called, the callback will receive the WebGL context and a invalidator function that should be called every time that the WebGL context is modified asynchronously.
      */
     setCustomWebGLDrawCallback(id: string, callback: Function) {
         this.customWebGLDrawCallbacks[id] = callback;
