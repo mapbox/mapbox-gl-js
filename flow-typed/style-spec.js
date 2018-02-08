@@ -420,3 +420,4 @@ declare type LayerSpecification =
     | HillshadeLayerSpecification
     | CustomWebglLayerSpecification
     | BackgroundLayerSpecification;
+

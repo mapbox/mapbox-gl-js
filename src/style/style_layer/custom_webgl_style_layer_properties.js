@@ -15,8 +15,7 @@ const {
 import type Color from '../../style-spec/util/color';
 
 
-export type PaintProps = {|
-|};
+export type PaintProps = {};
 
 const paint: Properties<PaintProps> = new Properties({
 });
