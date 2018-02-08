@@ -29,23 +29,23 @@ var map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 
-map.setWebGLDrawCallback('externalwebgl1', (gl, invalidate) => {
+map.setCustomWebGLDrawCallback('externallayer0', (gl, invalidate) => {
     gl.clearColor(0, 1, 0, 0.1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 });
-map.setWebGLDrawCallback('externalwebgl2', (gl, invalidate) => {
+map.setCustomWebGLDrawCallback('externallayer1', (gl, invalidate) => {
     gl.clearColor(1, 1, 1, 0.1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 });
 
 map.on('load', function() {
     map.addLayer({
-        "id": "externalwebgl1",
-        "type": "webgl"
+        "id": "externallayer0",
+        "type": "custom-webgl"
     }, "marine-label-sm-ln");
     map.addLayer({
-        "id": "externalwebgl2",
-        "type": "webgl"
+        "id": "externallayer1",
+        "type": "custom-webgl"
     }, "marine-label-sm-ln");
 });
 

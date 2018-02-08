@@ -32,7 +32,7 @@ const draw = {
     hillshade: require('./draw_hillshade'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
-    webgl: require('./draw_webgl'),
+    'custom-webgl': require('./draw_custom_webgl'),
     debug: require('./draw_debug')
 };
 
@@ -102,7 +102,7 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
-        this.webGLDrawData = {};
+        this.customWebGLDrawCallbacks = {};
 
         this.setup();
 
@@ -116,17 +116,6 @@ class Painter {
         this.emptyProgramConfiguration = new ProgramConfiguration();
 
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
-    }
-
-    /*
-     * Invalidate current state
-     */
-    invalidate() {
-        Object.keys(this.context).forEach((key) => {
-            if (this.context[key].current !== undefined) {
-                this.context[key].current = {};
-            }
-        });
     }
 
     /*
@@ -415,7 +404,7 @@ class Painter {
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if ((layer.type !== 'background' && layer.type !== 'webgl') && !coords.length) return;
+        if ((layer.type !== 'background' && layer.type !== 'custom-webgl') && !coords.length) return;
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);
@@ -491,8 +480,8 @@ class Painter {
      * @param {string} id The ID of the `custom-webgl` layer.
      * @param {Function} callback The callback to be stored.
      */
-    setWebGLDrawCallback(id: string, callback: Function) {
-        this.webGLDrawData[id] = callback;
+    setCustomWebGLDrawCallback(id: string, callback: Function) {
+        this.customWebGLDrawCallbacks[id] = callback;
     }
 }
 

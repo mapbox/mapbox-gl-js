@@ -19,7 +19,7 @@ export type LayoutProps = {|
 |};
 
 const layout: Properties<LayoutProps> = new Properties({
-    "callback": new DataConstantProperty(styleSpec["layout_webgl"]["callback"]),
+    "callback": new DataConstantProperty(styleSpec["layout_custom-webgl"]["callback"]),
 });
 
 export type PaintProps = {|
