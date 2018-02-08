@@ -19,9 +19,10 @@ function drawCustomWebGL(painter: Painter, sourceCache: SourceCache, layer: WebG
         to ensure that in the next Mapbox GL rendering pass the WebGL tracked is not stale (which would produce rendering artifacts).
     */
     function invalidateCurrentWebGLState() {
-        Object.keys(painter.context).forEach((key) => {
-            if (painter.context[key].current !== undefined) {
-                painter.context[key].current = {};
+        const context :Object = painter.context;
+        Object.keys(context).forEach((key) => {
+            if (context[key].current !== undefined) {
+                context[key].current = {};
             }
         });
     }
