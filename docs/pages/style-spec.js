@@ -150,7 +150,10 @@ const navigation = [
             },
             {
                 "title": "hillshade"
-            }
+            },
+            {
+                "title": "custom-webgl"
+            },
         ]
     },
     {
