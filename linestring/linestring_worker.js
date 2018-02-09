@@ -24,31 +24,48 @@ class LineStringWorkerSource extends GeoJSONWorkerSource {
                 for (const key in cover.hash) {
                     const zxy = splitKey(key);
                     const tile = gj.getTile(zxy[0], zxy[1], zxy[2]);
+                    if (!tile || !tile.features.length) continue;
 
-                    if (!tile.features.length) continue;
+                    while (tile.features[0].geometry.length > 1) {
+                        const next = tile.features[0].geometry[1];
+                        tile.features[0].geometry.splice(1, 1);
+                        tile.features.push(Object.assign({}, tile.features[0], {geometry: [next]}));
+                    }
+
                     hasFeatures = true;
 
-                    const feature = tile.features[0];
-                    feature.tags = Object.assign({}, feature.tags);
-                    feature.tags.$distances = [];
-
-                    let distances = measure(feature.geometry);
-                    distanceHash[key] = distances;
+                    distanceHash[key] = tile.features.map(feature => {
+                        feature.tags = Object.assign({}, feature.tags);
+                        return measure(feature.geometry[0]);
+                    });
                 }
 
                 if (!hasFeatures) continue;
 
-                const distanceOrder = cover.order.map(t => distanceHash[t].shift());
+                const distanceOrder = cover.order.map(t => {
+                    if (!distanceHash[t]) {
+                        return 0;
+                    }
+                    return distanceHash[t].shift();
+                });
                 const totalDistance = distanceOrder.reduce((a, b) => { return a + b; }, 0);
 
                 let startDist = 0;
+
                 for (let i = 0; i < cover.order.length; i++) {
                     const d = distanceOrder[i],
                         t = cover.order[i],
-                        zxy = splitKey(t),
-                        distances = gj.getTile(zxy[0], zxy[1], zxy[2]).features[0].tags.$distances;
+                        zxy = splitKey(t);
+                    if (!cover.hash[t].i) cover.hash[t].i = 0;
 
-                    distances.push([totalDistance, startDist]);
+                    const tile = gj.getTile(zxy[0], zxy[1], zxy[2]);
+                    if (!tile || !tile.features.length) continue;
+                    const tags = tile.features[cover.hash[t].i].tags;
+                    tags.$distance_total = totalDistance;
+                    tags.$distance_start = startDist;
+
+                    cover.hash[t].i++;
+
                     startDist += d;
                 }
             }
@@ -67,14 +84,12 @@ function splitKey(key) {
     return [xyz[2], xyz[0], xyz[1]];
 }
 
-function measure(feature) {
-    return feature.map(segment => {
-        let distance = 0;
-        const points = segment.map(point => new Point(point[0], point[1]));
-        for (let i = 1; i < points.length; i++) {
-            let prev = points[i - 1], current = points[i];
-            distance += current.dist(prev);
-        }
-        return distance;
-    });
+function measure(segment) {
+    let distance = 0;
+    const points = segment.map(point => new Point(point[0], point[1]));
+    for (let i = 1; i < points.length; i++) {
+        let prev = points[i - 1], current = points[i];
+        distance += current.dist(prev);
+    }
+    return distance;
 }
