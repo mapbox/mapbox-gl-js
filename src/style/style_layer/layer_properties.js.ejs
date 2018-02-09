@@ -32,13 +32,15 @@ const layout: Properties<LayoutProps> = new Properties({
 <% } -%>
 });
 <% } -%>
-
+<% if(paintProperties.length){ %>
 export type PaintProps = {|
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyType(property) %>,
 <% } -%>
 |};
-
+<% } else{ %>
+export type PaintProps = {};
+<% } %>
 const paint: Properties<PaintProps> = new Properties({
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyValue(property, 'paint') %>,
