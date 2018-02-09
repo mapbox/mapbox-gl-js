@@ -11,7 +11,7 @@ const {
 
 import type {PaintProps} from './custom_webgl_style_layer_properties';
 
-class WebGLLayer extends StyleLayer {
+class CustomWebGLLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
     _transitioningPaint: Transitioning<PaintProps>;
     paint: PossiblyEvaluated<PaintProps>;
@@ -21,4 +21,4 @@ class WebGLLayer extends StyleLayer {
     }
 }
 
-module.exports = WebGLLayer;
+module.exports = CustomWebGLLayer;
