@@ -36,7 +36,6 @@ class DragRotateHandler {
     _lastMoveEvent: MouseEvent;
     _pos: Point;
     _previousPos: Point;
-    _startPos: Point;
     _inertia: Array<[number, number]>;
     _center: Point;
 
@@ -132,7 +131,7 @@ class DragRotateHandler {
 
         this._active = false;
         this._inertia = [[browser.now(), this._map.getBearing()]];
-        this._startPos = this._previousPos = DOM.mousePos(this._el, e);
+        this._previousPos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
@@ -140,7 +139,15 @@ class DragRotateHandler {
 
     _onMove(e: MouseEvent) {
         this._lastMoveEvent = e;
-        this._pos = DOM.mousePos(this._el, e);
+        const pos = DOM.mousePos(this._el, e);
+        // if the dragging animation was interrupted (e.g. by another handler),
+        // we need to reestablish a _previousPos before we can resume dragging
+        if (!this._previousPos) {
+            this._previousPos = pos;
+            return;
+        }
+
+        this._pos = pos;
 
         if (!this.isActive()) {
             this._active = true;
