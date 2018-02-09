@@ -5,8 +5,8 @@
 const fs = require('fs');
 const path = require('path');
 const queue = require('d3-queue').queue;
-const colors = require('colors/safe');
-const template = require('lodash').template;
+const colors = require('chalk');
+const template = require('lodash.template');
 const shuffler = require('shuffle-seed');
 
 module.exports = function (directory, implementation, options, run) {
