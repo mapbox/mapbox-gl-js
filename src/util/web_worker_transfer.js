@@ -87,6 +87,7 @@ Grid.deserialize = function deserializeGrid(serialized: ArrayBuffer): Grid {
 register('Grid', Grid);
 
 register('Color', Color);
+register('Error', Error);
 
 register('StylePropertyFunction', StylePropertyFunction);
 register('StyleExpression', StyleExpression, {omit: ['_evaluator']});
