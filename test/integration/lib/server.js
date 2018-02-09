@@ -3,7 +3,7 @@
 const st = require('st');
 const http = require('http');
 const path = require('path');
-const colors = require('colors/safe');
+const colors = require('chalk');
 const fs = require('fs');
 
 module.exports = function () {
