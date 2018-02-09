@@ -83,6 +83,7 @@ class Camera extends Evented {
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
         this.moving = false;
+        this.zooming = false;
         this.transform = transform;
         this._bearingSnap = options.bearingSnap;
     }
@@ -855,7 +856,7 @@ class Camera extends Evented {
      * @returns A Boolean indicating whether the camera is moving.
      */
     isMoving(): boolean {
-        return !!this.moving;
+        return this.moving;
     }
 
     /**
@@ -865,7 +866,7 @@ class Camera extends Evented {
      * @returns A Boolean indicating whether the camera is zooming.
      */
     isZooming(): boolean {
-        return !!this.zooming;
+        return this.zooming;
     }
 
     /**
