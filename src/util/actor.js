@@ -69,7 +69,7 @@ class Actor {
                 sourceMapId: this.mapId,
                 type: '<response>',
                 id: String(id),
-                error: err ? String(err) : null,
+                error: err ? serialize(err) : null,
                 data: serialize(data, buffers)
             }, buffers);
         };
@@ -78,7 +78,7 @@ class Actor {
             callback = this.callbacks[data.id];
             delete this.callbacks[data.id];
             if (callback && data.error) {
-                callback(new Error(data.error));
+                callback(deserialize(data.error));
             } else if (callback) {
                 callback(null, deserialize(data.data));
             }
