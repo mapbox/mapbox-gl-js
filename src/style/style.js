@@ -33,7 +33,6 @@ import type Transform from '../geo/transform';
 import type {Source} from '../source/source';
 import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
-import type CollisionIndex from '../symbol/collision_index';
 import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
 import type Placement from '../symbol/placement';
@@ -91,7 +90,6 @@ class Style extends Evented {
     _updatedPaintProps: {[layer: string]: true};
     _layerOrderChanged: boolean;
 
-    collisionIndex: CollisionIndex;
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
     placement: Placement;
@@ -851,7 +849,7 @@ class Style extends Evented {
         const sourceResults = [];
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, zoom, bearing, this.collisionIndex);
+            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, zoom, bearing, this.placement ? this.placement.collisionIndex : null);
             sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
@@ -995,9 +993,7 @@ class Style extends Evented {
             this.pauseablePlacement.continuePlacement(this._order, this._layers, layerTiles);
 
             if (this.pauseablePlacement.isDone()) {
-                this.pauseablePlacement.placement.commit(this.placement, browser.now());
-                this.placement = this.pauseablePlacement.placement;
-                this.collisionIndex = this.placement.collisionIndex;
+                this.placement = this.pauseablePlacement.commit(this.placement, browser.now());
                 placementCommitted = true;
             }
 
