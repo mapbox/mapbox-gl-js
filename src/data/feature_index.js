@@ -33,7 +33,7 @@ type QueryParameters = {
     collisionBoxArray: CollisionBoxArray,
     sourceID: string,
     bucketInstanceIds: { [number]: boolean },
-    collisionIndex: CollisionIndex
+    collisionIndex: ?CollisionIndex
 }
 
 class FeatureIndex {
@@ -50,8 +50,6 @@ class FeatureIndex {
 
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
-
-    collisionIndex: CollisionIndex;
 
     constructor(tileID: OverscaledTileID,
                 overscaling: number,
@@ -207,7 +205,7 @@ class FeatureIndex {
 register(
     'FeatureIndex',
     FeatureIndex,
-    { omit: ['rawTileData', 'sourceLayerCoder', 'collisionIndex'] }
+    { omit: ['rawTileData', 'sourceLayerCoder'] }
 );
 
 module.exports = FeatureIndex;
