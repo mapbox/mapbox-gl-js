@@ -11,7 +11,7 @@ exports.rendered = function(sourceCache: SourceCache,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             zoom: number,
                             bearing: number,
-                            collisionIndex: CollisionIndex) {
+                            collisionIndex: ?CollisionIndex) {
     const tilesIn = sourceCache.tilesIn(queryGeometry);
 
     tilesIn.sort(sortTilesIn);
