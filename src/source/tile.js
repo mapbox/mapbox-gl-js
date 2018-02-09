@@ -235,7 +235,7 @@ class Tile {
                           params: { filter: FilterSpecification, layers: Array<string> },
                           bearing: number,
                           sourceID: string,
-                          collisionIndex: CollisionIndex): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+                          collisionIndex: ?CollisionIndex): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.featureIndex || !this.collisionBoxArray)
             return {};
 
