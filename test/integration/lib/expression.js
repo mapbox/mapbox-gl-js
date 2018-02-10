@@ -76,13 +76,22 @@ exports.run = function (implementation, options, runExpressionTest) {
 
             const expected = fixture.expected;
             const compileOk = deepEqual(result.compiled, expected.compiled);
-
             const evalOk = compileOk && deepEqual(result.outputs, expected.outputs);
-            params.ok = compileOk && evalOk;
+
+            // Serialization/round-tripping only exists on native
+            let recompileOk = true;
+            let roundTripOk = true;
+
+            if (implementation === 'native' && expected.compiled.result !== 'error') {
+                recompileOk = compileOk && deepEqual(result.recompiled, expected.compiled);
+                roundTripOk = recompileOk && deepEqual(result.roundTripOutputs, expected.outputs);
+            }
+
+            params.ok = compileOk && evalOk && recompileOk && roundTripOk;
 
             let msg = '';
-            if (!compileOk) {
-                msg += diff.diffJson(expected.compiled, result.compiled)
+            const diffCompilation = (testCompilation) => {
+                return diff.diffJson(expected.compiled, testCompilation)
                     .map((hunk) => {
                         if (hunk.added) {
                             return `+ ${hunk.value}`;
@@ -93,17 +102,29 @@ exports.run = function (implementation, options, runExpressionTest) {
                         }
                     })
                     .join('');
+            };
+            if (!compileOk) {
+                msg += diffCompilation(result.compiled);
             }
-            if (compileOk && !evalOk) {
-                msg += expected.outputs
-                    .map((expectedOutput, i) => {
-                        if (!deepEqual(expectedOutput, result.outputs[i])) {
-                            return `f(${JSON.stringify(fixture.inputs[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(result.outputs[i])}`;
-                        }
-                        return false;
-                    })
+            if (compileOk && !recompileOk) {
+                msg += diffCompilation(result.recompiled);
+            }
+
+            const diffOutputs = (testOutputs) => {
+                return expected.outputs.map((expectedOutput, i) => {
+                    if (!deepEqual(expectedOutput, testOutputs[i])) {
+                        return `f(${JSON.stringify(fixture.inputs[i])})\nExpected: ${JSON.stringify(expectedOutput)}\nActual: ${JSON.stringify(testOutputs[i])}`;
+                    }
+                    return false;
+                })
                     .filter(Boolean)
                     .join('\n');
+            };
+            if (compileOk && !evalOk) {
+                msg += diffOutputs(result.outputs);
+            }
+            if (recompileOk && !roundTripOk) {
+                msg += diffOutputs(result.roundTripOutputs);
             }
 
             params.difference = msg;
