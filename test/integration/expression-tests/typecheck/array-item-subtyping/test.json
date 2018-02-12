@@ -7,12 +7,13 @@
   "expression": ["array", "number", 2, ["get", "x"]],
   "inputs": [],
   "expected": {
-    "outputs": [],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "array<number, 2>"
-    }
+    },
+    "outputs": [],
+    "serialized": ["array", "number", 2, ["get", "x"]]
   }
 }

@@ -13,6 +13,12 @@
     [{}, {"properties": {"x": "false", "y": false}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
     "outputs": [
       "x",
       "x",
@@ -22,11 +28,13 @@
         "error": "Expected value to be of type boolean, but found string instead."
       }
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "string"
-    }
+    "serialized": [
+      "case",
+      ["boolean", ["get", "x"]],
+      "x",
+      ["boolean", ["get", "y"]],
+      "y",
+      "otherwise"
+    ]
   }
 }

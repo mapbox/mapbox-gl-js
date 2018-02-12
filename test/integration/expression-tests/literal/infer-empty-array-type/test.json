@@ -8,12 +8,13 @@
   "expression": ["literal", []],
   "inputs": [],
   "expected": {
-    "outputs": [],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "array<number>"
-    }
+    },
+    "outputs": [],
+    "serialized": ["literal", []]
   }
 }

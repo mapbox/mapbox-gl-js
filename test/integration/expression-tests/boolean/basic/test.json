@@ -11,6 +11,12 @@
     [{}, {"properties": {"x": null}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
     "outputs": [
       {
         "error": "Expected value to be of type boolean, but found null instead."
@@ -31,11 +37,6 @@
       },
       {"error": "Expected value to be of type boolean, but found null instead."}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "boolean"
-    }
+    "serialized": ["boolean", ["get", "x"]]
   }
 }

@@ -2,12 +2,13 @@
   "expression": ["any", true, ["error", "unreachable"]],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [true],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [true],
+    "serialized": ["any", true, ["error", "unreachable"]]
   }
 }

@@ -13,6 +13,12 @@
     [{}, {}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
     "outputs": [
       1,
       1,
@@ -20,11 +26,11 @@
       {"error": "Expected value to be of type number, but found null instead."},
       {"error": "Expected value to be of type number, but found null instead."}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "number"
-    }
+    "serialized": [
+      "coalesce",
+      ["number", ["get", "x"]],
+      ["number", ["get", "y"]],
+      ["number", ["get", "z"]]
+    ]
   }
 }

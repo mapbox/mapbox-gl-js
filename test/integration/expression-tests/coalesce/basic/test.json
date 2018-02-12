@@ -8,12 +8,13 @@
     [{}, {}]
   ],
   "expected": {
-    "outputs": [1, 1, 2, 3, 0],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "value"
-    }
+    },
+    "outputs": [1, 1, 2, 3, 0],
+    "serialized": ["coalesce", ["get", "x"], ["get", "y"], ["get", "z"], 0]
   }
 }

@@ -2,12 +2,13 @@
   "expression": ["+", 1, 2, 3, 4],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [10],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [10],
+    "serialized": 10
   }
 }
