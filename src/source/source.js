@@ -77,22 +77,22 @@ export interface Source {
     +prepare?: () => void;
 }
 
-import '../source/vector_tile_source';
-import '../source/raster_tile_source';
-import '../source/raster_dem_tile_source';
-import '../source/geojson_source';
-import '../source/video_source';
-import '../source/image_source';
-import '../source/canvas_source';
+import vector from '../source/vector_tile_source';
+import raster from '../source/raster_tile_source';
+import rasterDem from '../source/raster_dem_tile_source';
+import geojson from '../source/geojson_source';
+import video from '../source/video_source';
+import image from '../source/image_source';
+import canvas from '../source/canvas_source';
 
 const sourceTypes = {
-    'vector',
-    'raster',
-    'raster-dem',
-    'geojson',
-    'video',
-    'image',
-    'canvas'
+    vector,
+    raster,
+    'raster-dem': rasterDem,
+    geojson,
+    video,
+    image,
+    canvas
 };
 
 /*

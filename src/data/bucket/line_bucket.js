@@ -8,7 +8,8 @@ import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
 import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
-const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
+import mvt from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import { register } from '../../util/web_worker_transfer';
 
 import type {

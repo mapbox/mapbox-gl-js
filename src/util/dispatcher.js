@@ -1,7 +1,6 @@
 // @flow
 
 import { uniqueId, asyncAll } from './util';
-
 import Actor from './actor';
 
 import type WorkerPool from './worker_pool';

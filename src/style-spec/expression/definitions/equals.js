@@ -77,14 +77,5 @@ function makeComparison(compare) {
     };
 }
 
-const exported = {
-    Equals: makeComparison((lhs, rhs) => lhs === rhs),
-    NotEquals: makeComparison((lhs, rhs) => lhs !== rhs)
-};
-
-export default exported;
-
-export const {
-    Equals,
-    NotEquals
-} = exported;
+export const Equals = makeComparison((lhs, rhs) => lhs === rhs);
+export const NotEquals = makeComparison((lhs, rhs) => lhs !== rhs);

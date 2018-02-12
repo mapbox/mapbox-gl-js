@@ -46,7 +46,7 @@ export const prepare = function (image: CrossFaded<string>, painter: Painter, pr
     painter.imageManager.bind(painter.context);
 };
 
-export const setTile = function (tile: {tileID: OverscaledTileID, tileSize: number}, painter: Painter, program: Program) {
+export const setPatternUniforms = function (tile: {tileID: OverscaledTileID, tileSize: number}, painter: Painter, program: Program) {
     const gl = painter.context.gl;
 
     gl.uniform1f(program.uniforms.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));

@@ -7,7 +7,8 @@ import symbolProjection from '../symbol/projection';
 import symbolSize from '../symbol/symbol_size';
 import { mat4 } from '@mapbox/gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
-import { layout as symbolLayoutProperties } from '../style/style_layer/symbol_style_layer_properties';
+import properties from '../style/style_layer/symbol_style_layer_properties';
+const symbolLayoutProperties = properties.layout;
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 

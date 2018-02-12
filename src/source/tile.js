@@ -1,7 +1,6 @@
 // @flow
 
 import { uniqueId, deepEqual, parseCacheControl } from '../util/util';
-
 import { deserialize as deserializeBucket } from '../data/bucket';
 import FeatureIndex from '../data/feature_index';
 import vt from '@mapbox/vector-tile';

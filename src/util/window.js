@@ -6,17 +6,20 @@ import gl from 'gl';
 import sinon from 'sinon';
 import { extend } from './util';
 
+const exported = restore();
+export default exported;
+
 function restore(): Window {
-    // Remove previous window from module.exports
-    const previousWindow = module.exports;
+    // Remove previous window from exported object
+    const previousWindow = exported;
     if (previousWindow.close) previousWindow.close();
     for (const key in previousWindow) {
         if (previousWindow.hasOwnProperty(key)) {
-            delete previousWindow[key];
+            delete (previousWindow: any)[key];
         }
     }
 
-    // Create new window and inject into module.exports
+    // Create new window and inject into exported object
     const { window } = new jsdom.JSDOM('', {
         // Send jsdom console output to the node console object.
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
@@ -59,9 +62,7 @@ function restore(): Window {
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
-    extend(module.exports, window);
+    extend(exported, window);
 
     return window;
 }
-
-export default restore();

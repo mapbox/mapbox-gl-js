@@ -4,9 +4,9 @@ import { extend, bindAll, warnOnce } from '../util/util';
 
 import browser from '../util/browser';
 import window from '../util/window';
-import { HTMLImageElement, HTMLElement } from '../util/window';
+const { HTMLImageElement, HTMLElement } = window;
 import DOM from '../util/dom';
-import ajax from '../util/ajax';
+import { getImage, ResourceType } from '../util/ajax';
 import Style from '../style/style';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
@@ -49,7 +49,7 @@ type IControl = {
 }
 /* eslint-enable no-use-before-define */
 
-type ResourceTypeEnum = $Keys<typeof ajax.ResourceType>;
+type ResourceTypeEnum = $Keys<typeof ResourceType>;
 export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
 
 type MapOptions = {
@@ -1147,7 +1147,7 @@ class Map extends Camera {
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Function) {
-        ajax.getImage(this._transformRequest(url, ajax.ResourceType.Image), callback);
+        getImage(this._transformRequest(url, ResourceType.Image), callback);
     }
 
     /**

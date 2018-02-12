@@ -1,6 +1,7 @@
 // @flow
 
 import StyleLayer from './style_layer';
+import createStyleLayer from './create_style_layer';
 
 import { values } from '../util/util';
 import featureFilter from '../style-spec/feature_filter';
@@ -33,7 +34,7 @@ class StyleLayerIndex {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
-            const layer = this._layers[layerConfig.id] = StyleLayer.create(layerConfig);
+            const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig);
             layer._featureFilter = featureFilter(layer.filter);
         }
         for (const id of removedIds) {

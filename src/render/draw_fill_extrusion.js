@@ -2,7 +2,11 @@
 
 import glMatrix from '@mapbox/gl-matrix';
 
-import pattern from './pattern';
+import {
+    isPatternMissing,
+    setPatternUniforms,
+    prepare as preparePattern
+} from './pattern';
 import Texture from './texture';
 import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
@@ -116,9 +120,9 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first) {
     }
 
     if (image) {
-        if (pattern.isPatternMissing(image, painter)) return;
-        pattern.prepare(image, painter, program);
-        pattern.setTile(tile, painter, program);
+        if (isPatternMissing(image, painter)) return;
+        preparePattern(image, painter, program);
+        setPatternUniforms(tile, painter, program);
         gl.uniform1f(program.uniforms.u_height_factor, -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8);
     }
 

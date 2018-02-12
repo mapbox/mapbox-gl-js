@@ -2,7 +2,7 @@
 
 import { pick } from '../util/util';
 
-import ajax from '../util/ajax';
+import { getJSON, ResourceType } from '../util/ajax';
 import browser from '../util/browser';
 import { normalizeSourceURL as normalizeURL } from '../util/mapbox';
 
@@ -30,8 +30,8 @@ export default function(options: any, requestTransformFn: RequestTransformFuncti
     };
 
     if (options.url) {
-        ajax.getJSON(requestTransformFn(normalizeURL(options.url), ajax.ResourceType.Source), loaded);
+        getJSON(requestTransformFn(normalizeURL(options.url), ResourceType.Source), loaded);
     } else {
         browser.frame(() => loaded(null, options));
     }
-};
+}

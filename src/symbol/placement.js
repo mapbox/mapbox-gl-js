@@ -5,7 +5,8 @@ import CollisionIndex from './collision_index';
 import EXTENT from '../data/extent';
 import symbolSize from './symbol_size';
 import projection from './projection';
-import { layout as symbolLayoutProperties } from '../style/style_layer/symbol_style_layer_properties';
+import properties from '../style/style_layer/symbol_style_layer_properties';
+const symbolLayoutProperties = properties.layout;
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 

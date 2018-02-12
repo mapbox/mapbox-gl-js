@@ -9,13 +9,15 @@ export const evented = new Evented();
 
 type ErrorCallback = (error: Error) => void;
 
+let _errorCallback;
+
 export const registerForPluginAvailability = function(
     callback: (args: {pluginURL: string, errorCallback: ErrorCallback}) => void
 ) {
     if (pluginURL) {
-        callback({ pluginURL: pluginURL, errorCallback: module.exports.errorCallback});
+        callback({ pluginURL: pluginURL, errorCallback: _errorCallback});
     } else {
-        module.exports.evented.once('pluginAvailable', callback);
+        evented.once('pluginAvailable', callback);
     }
     return callback;
 };
@@ -32,9 +34,14 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
     }
     pluginRequested = true;
     pluginURL = url;
-    export const errorCallback = callback;
-    module.exports.evented.fire(new Event('pluginAvailable', { pluginURL: pluginURL, errorCallback: callback }));
+    evented.fire(new Event('pluginAvailable', { pluginURL: pluginURL, errorCallback: callback }));
+    _errorCallback = callback;
 };
 
-export const applyArabicShaping = null: ?Function;
-export const processBidirectionalText = null: ?(string, Array<number>) => Array<string>;
+export const plugin: {
+    applyArabicShaping: ?Function,
+    processBidirectionalText: ?(string, Array<number>) => Array<string>
+} = {
+    applyArabicShaping: null,
+    processBidirectionalText: null
+};

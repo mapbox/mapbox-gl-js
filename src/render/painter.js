@@ -27,7 +27,7 @@ import circle from './draw_circle';
 import heatmap from './draw_heatmap';
 import line from './draw_line';
 import fill from './draw_fill';
-import './draw_fill_extrusion';
+import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
@@ -39,7 +39,7 @@ const draw = {
     heatmap,
     line,
     fill,
-    'fill-extrusion',
+    'fill-extrusion': fillExtrusion,
     hillshade,
     raster,
     background,

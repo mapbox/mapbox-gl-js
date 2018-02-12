@@ -1,7 +1,6 @@
 // @flow
 
-import { extend, deepEqual, warnOnce, clamp, wrap } from '../util/util';
-
+import { extend, deepEqual, warnOnce, clamp, wrap, ease as defaultEasing } from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
 import LngLat from '../geo/lng_lat';
@@ -537,7 +536,7 @@ class Camera extends Evented {
         options = extend({
             offset: [0, 0],
             duration: 500,
-            easing: util.ease
+            easing: defaultEasing
         }, options);
 
         if (options.animate === false) options.duration = 0;
@@ -717,7 +716,7 @@ class Camera extends Evented {
      * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options, eventData?: Object) {
+    flyTo(options: Object, eventData?: Object) {
         // This method implements an “optimal path” animation, as detailed in:
         //
         // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
@@ -732,7 +731,7 @@ class Camera extends Evented {
             offset: [0, 0],
             speed: 1.2,
             curve: 1.42,
-            easing: util.ease
+            easing: defaultEasing
         }, options);
 
         const tr = this.transform,

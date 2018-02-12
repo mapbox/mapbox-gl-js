@@ -1,1 +1,3 @@
-export default self: Window;
+// @flow
+/* global self */
+export default (self: Window);

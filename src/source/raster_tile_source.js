@@ -2,7 +2,7 @@
 
 import { extend, pick } from '../util/util';
 
-import ajax from '../util/ajax';
+import { getImage, ResourceType } from '../util/ajax';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import loadTileJSON from './load_tilejson';
 import { normalizeTileURL as normalizeURL } from '../util/mapbox';
@@ -86,7 +86,7 @@ class RasterTileSource extends Evented implements Source {
 
     loadTile(tile: Tile, callback: Callback<void>) {
         const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
-        tile.request = ajax.getImage(this.map._transformRequest(url, ajax.ResourceType.Tile), (err, img) => {
+        tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), (err, img) => {
             delete tile.request;
 
             if (tile.aborted) {

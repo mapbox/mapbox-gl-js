@@ -118,23 +118,31 @@ function camelize (str) {
 
 global.camelize = camelize;
 
-createStructArrayType('pos', require('../src/data/pos_attributes'));
-createStructArrayType('raster_bounds', require('../src/data/raster_bounds_attributes'));
+import posAttributes from '../src/data/pos_attributes';
+import rasterBoundsAttributes from '../src/data/raster_bounds_attributes';
+
+createStructArrayType('pos', posAttributes);
+createStructArrayType('raster_bounds', rasterBoundsAttributes);
+
+import circleAttributes from '../src/data/bucket/circle_attributes';
+import fillAttributes from '../src/data/bucket/fill_attributes';
+import fillExtrusionAttributes from '../src/data/bucket/fill_extrusion_attributes' ;
+import lineAttributes from '../src/data/bucket/line_attributes';
 
 // layout vertex arrays
 const layoutAttributes = {
-    circle: require('../src/data/bucket/circle_attributes'),
-    fill: require('../src/data/bucket/fill_attributes'),
-    'fill-extrusion': require('../src/data/bucket/fill_extrusion_attributes'),
-    heatmap: require('../src/data/bucket/circle_attributes'),
-    line: require('../src/data/bucket/line_attributes')
+    circle: circleAttributes,
+    fill: fillAttributes,
+    'fill-extrusion': fillExtrusionAttributes,
+    heatmap: circleAttributes,
+    line: lineAttributes
 };
 for (const name in layoutAttributes) {
     createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
 }
 
 // symbol layer specific arrays
-const symbolAttributes = require('../src/data/bucket/symbol_attributes');
+import symbolAttributes from '../src/data/bucket/symbol_attributes';
 createStructArrayType(`symbol_layout`, symbolAttributes.symbolLayoutAttributes);
 createStructArrayType(`symbol_dynamic_layout`, symbolAttributes.dynamicLayoutAttributes);
 createStructArrayType(`symbol_opacity`, symbolAttributes.placementOpacityAttributes);

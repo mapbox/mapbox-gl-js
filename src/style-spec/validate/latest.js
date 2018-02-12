@@ -1,2 +1,3 @@
 
-export default require('../validate_style.min');
+import validateStyle from '../validate_style.min';
+export default validateStyle;

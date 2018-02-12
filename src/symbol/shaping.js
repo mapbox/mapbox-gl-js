@@ -1,9 +1,11 @@
 // @flow
 
-import scriptDetection from '../util/script_detection';
-
+import {
+    charHasUprightVerticalOrientation,
+    charAllowsIdeographicBreaking
+} from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
-import rtlTextPlugin from '../source/rtl_text_plugin';
+import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
@@ -254,7 +256,7 @@ function determineLineBreaks(logicalInput: string,
         // surrounding spaces.
         if ((i < logicalInput.length - 1) &&
             (breakable[codePoint] ||
-                scriptDetection.charAllowsIdeographicBreaking(codePoint))) {
+                charAllowsIdeographicBreaking(codePoint))) {
 
             potentialLineBreaks.push(
                 evaluateBreak(
@@ -346,7 +348,7 @@ function shapeLines(shaping: Shaping,
 
             if (!glyph) continue;
 
-            if (!scriptDetection.charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
+            if (!charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
                 positionedGlyphs.push({glyph: codePoint, x, y, vertical: false});
                 x += glyph.metrics.advance + spacing;
             } else {

@@ -1,6 +1,7 @@
 // @flow
 
-import { HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData } from '../util/window';
+import window from '../util/window';
+const { HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData } = window;
 
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';

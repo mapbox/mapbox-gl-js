@@ -1,6 +1,6 @@
 // @flow
 
-import ajax from '../util/ajax';
+import {getArrayBuffer} from '../util/ajax';
 
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
@@ -43,7 +43,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
+    const xhr = getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {

@@ -1,6 +1,7 @@
 // @flow
 
 import { wrap } from '../util/util';
+import LngLatBounds from './lng_lat_bounds';
 
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
@@ -86,7 +87,6 @@ class LngLat {
         const latAccuracy = 360 * radius / earthCircumferenceInMetersAtEquator,
             lngAccuracy = latAccuracy / Math.cos((Math.PI / 180) * this.lat);
 
-        const LngLatBounds = require('./lng_lat_bounds');
         return new LngLatBounds(new LngLat(this.lng - lngAccuracy, this.lat - latAccuracy),
             new LngLat(this.lng + lngAccuracy, this.lat + latAccuracy));
     }

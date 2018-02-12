@@ -1,6 +1,10 @@
 // @flow
 
-import pattern from './pattern';
+import {
+    isPatternMissing,
+    setPatternUniforms,
+    prepare as preparePattern
+} from './pattern';
 
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
@@ -32,9 +36,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     let program;
     if (image) {
-        if (pattern.isPatternMissing(image, painter)) return;
+        if (isPatternMissing(image, painter)) return;
         program = painter.useProgram('backgroundPattern');
-        pattern.prepare(image, painter, program);
+        preparePattern(image, painter, program);
         painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer, []);
     } else {
         program = painter.useProgram('background');
@@ -47,7 +51,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     for (const tileID of tileIDs) {
         if (image) {
-            pattern.setTile({tileID, tileSize}, painter, program);
+            setPatternUniforms({tileID, tileSize}, painter, program);
         }
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.transform.calculatePosMatrix(tileID.toUnwrapped()));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);

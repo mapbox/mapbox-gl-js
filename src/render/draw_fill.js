@@ -1,6 +1,10 @@
 // @flow
 
-import pattern from './pattern';
+import {
+    isPatternMissing,
+    setPatternUniforms,
+    prepare as preparePattern
+} from './pattern';
 
 import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
@@ -56,7 +60,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 }
 
 function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
-    if (pattern.isPatternMissing(layer.paint.get('fill-pattern'), painter)) return;
+    if (isPatternMissing(layer.paint.get('fill-pattern'), painter)) return;
 
     let firstTile = true;
     for (const coord of coords) {
@@ -116,9 +120,9 @@ function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programCon
         program = painter.useProgram(`${programId}Pattern`, programConfiguration);
         if (firstTile || program.program !== prevProgram) {
             programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
-            pattern.prepare(pat, painter, program);
+            preparePattern(pat, painter, program);
         }
-        pattern.setTile(tile, painter, program);
+        setPatternUniforms(tile, painter, program);
     }
     painter.context.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,

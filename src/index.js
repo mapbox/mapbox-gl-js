@@ -17,42 +17,45 @@ import LngLat from './geo/lng_lat';
 import LngLatBounds from './geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
 import config from './util/config';
-import rtlTextPlugin from './source/rtl_text_plugin';
+import {setRTLTextPlugin} from './source/rtl_text_plugin';
+import createWorker from './source/worker';
 
 const exported = {
- version,
- supported,
- workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
- setRTLTextPlugin: rtlTextPlugin.setRTLTextPlugin,
- Map,
- NavigationControl,
- GeolocateControl,
- AttributionControl,
- ScaleControl,
- FullscreenControl,
- Popup,
- Marker,
- Style,
- LngLat,
- LngLatBounds,
- Point,
- config,
+    version,
+    supported,
+    workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
+    setRTLTextPlugin: setRTLTextPlugin,
+    Map,
+    NavigationControl,
+    GeolocateControl,
+    AttributionControl,
+    ScaleControl,
+    FullscreenControl,
+    Popup,
+    Marker,
+    Style,
+    LngLat,
+    LngLatBounds,
+    Point,
+    config,
 
- /**
-  * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
-  *
-  * @var {string} accessToken
-  * @example
-  * mapboxgl.accessToken = myAccessToken;
-  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
-  */
- get accessToken() {
-     return config.ACCESS_TOKEN;
- },
+    /**
+     * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
+     *
+     * @var {string} accessToken
+     * @example
+     * mapboxgl.accessToken = myAccessToken;
+     * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
+     */
+    get accessToken() {
+        return config.ACCESS_TOKEN;
+    },
 
- set accessToken(token: string) {
-     config.ACCESS_TOKEN = token;
- }
+    set accessToken(token: string) {
+        config.ACCESS_TOKEN = token;
+    },
+
+    workerUrl: ''
 };
 
 /**
@@ -89,11 +92,3 @@ const exported = {
  */
 
 export default exported;
-export { version, supported, Map, NavigationControl, GeolocateControl, AttributionControl, ScaleControl, FullscreenControl, Popup, Marker, Style, LngLat, LngLatBounds, Point, config };
-
-export const {
- workerCount,
- setRTLTextPlugin,
- accessToken,
- accessToken
-} = exported;

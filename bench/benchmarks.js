@@ -1,6 +1,7 @@
 // @flow
 
-require('../src').accessToken = require('./lib/access_token');
+import mapboxgl from '../src';
+mapboxgl.accessToken = require('./lib/access_token');
 
 window.mapboxglVersions = window.mapboxglVersions || [];
 window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};

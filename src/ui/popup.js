@@ -1,7 +1,6 @@
 // @flow
 
 import { extend, bindAll } from '../util/util';
-
 import { Event, Evented } from '../util/evented';
 import DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';

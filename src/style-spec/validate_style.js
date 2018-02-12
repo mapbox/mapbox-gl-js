@@ -2,6 +2,7 @@
 import validateStyleMin from './validate_style.min';
 import ParsingError from './error/parsing_error';
 import jsonlint from 'jsonlint-lines-primitives';
+import {v8} from './style-spec';
 
 /**
  * Validate a Mapbox GL style against the style specification.
@@ -20,8 +21,6 @@ import jsonlint from 'jsonlint-lines-primitives';
  */
 
 export default function validateStyle(style, styleSpec) {
-    const index = require('./style-spec');
-
     if (style instanceof String || typeof style === 'string' || style instanceof Buffer) {
         try {
             style = jsonlint.parse(style.toString());
@@ -30,10 +29,10 @@ export default function validateStyle(style, styleSpec) {
         }
     }
 
-    styleSpec = styleSpec || index.v8;
+    styleSpec = styleSpec || v8;
 
     return validateStyleMin(style, styleSpec);
-};
+}
 
 export const source = validateStyleMin.source;
 export const light = validateStyleMin.light;

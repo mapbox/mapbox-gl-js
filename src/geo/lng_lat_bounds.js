@@ -66,7 +66,7 @@ class LngLatBounds {
      * @param {LngLat|LngLatBounds} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
-    extend(obj) {
+    extend(obj: LngLat | LngLatBounds) {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;

@@ -9,7 +9,10 @@ import { shapeText, shapeIcon, WritingMode } from './shaping';
 import { getGlyphQuads, getIconQuads } from './quads';
 import CollisionFeature from './collision_feature';
 import { warnOnce } from '../util/util';
-import scriptDetection from '../util/script_detection';
+import {
+    allowsVerticalWritingMode,
+    allowsLetterSpacing
+} from '../util/script_detection';
 import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility';
 import classifyRings from '../util/classify_rings';
 import EXTENT from '../data/extent';
@@ -110,10 +113,9 @@ function performSymbolLayout(bucket: SymbolBucket,
         const shapedTextOrientations = {};
         const text = feature.text;
         if (text) {
-            const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
             const textOffset: [number, number] = (layout.get('text-offset').evaluate(feature).map((t)=> t * oneEm): any);
             const spacing = layout.get('text-letter-spacing').evaluate(feature) * oneEm;
-            const spacingIfAllowed = scriptDetection.allowsLetterSpacing(text) ? spacing : 0;
+            const spacingIfAllowed = allowsLetterSpacing(text) ? spacing : 0;
             const textAnchor = layout.get('text-anchor').evaluate(feature);
             const textJustify = layout.get('text-justify').evaluate(feature);
             const maxWidth = layout.get('symbol-placement') !== 'line' ?
@@ -121,7 +123,7 @@ function performSymbolLayout(bucket: SymbolBucket,
                 0;
 
             shapedTextOrientations.horizontal = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.horizontal);
-            if (allowsVerticalWritingMode && textAlongLine && keepUpright) {
+            if (allowsVerticalWritingMode(text) && textAlongLine && keepUpright) {
                 shapedTextOrientations.vertical = shapeText(text, glyphs, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed, textOffset, oneEm, WritingMode.vertical);
             }
         }

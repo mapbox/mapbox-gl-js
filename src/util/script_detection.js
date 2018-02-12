@@ -4,28 +4,28 @@
 
 import isChar from './is_char_in_unicode_block';
 
-export const allowsIdeographicBreaking = function(chars: string) {
+export function allowsIdeographicBreaking(chars: string) {
     for (const char of chars) {
         if (!charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
     }
     return true;
-};
+}
 
-export const allowsVerticalWritingMode = function(chars: string) {
+export function allowsVerticalWritingMode(chars: string) {
     for (const char of chars) {
         if (charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
     }
     return false;
-};
+}
 
-export const allowsLetterSpacing = function(chars: string) {
+export function allowsLetterSpacing(chars: string) {
     for (const char of chars) {
         if (!charAllowsLetterSpacing(char.charCodeAt(0))) return false;
     }
     return true;
-};
+}
 
-export const charAllowsLetterSpacing = function(char: number) {
+export function charAllowsLetterSpacing(char: number) {
     if (isChar['Arabic'](char)) return false;
     if (isChar['Arabic Supplement'](char)) return false;
     if (isChar['Arabic Extended-A'](char)) return false;
@@ -33,9 +33,9 @@ export const charAllowsLetterSpacing = function(char: number) {
     if (isChar['Arabic Presentation Forms-B'](char)) return false;
 
     return true;
-};
+}
 
-export const charAllowsIdeographicBreaking = function(char: number) {
+export function charAllowsIdeographicBreaking(char: number) {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
@@ -61,7 +61,7 @@ export const charAllowsIdeographicBreaking = function(char: number) {
     if (isChar['Yi Syllables'](char)) return true;
 
     return false;
-};
+}
 
 // The following logic comes from
 // <http://www.unicode.org/Public/vertical/revision-17/VerticalOrientation-17.txt>.
@@ -83,7 +83,7 @@ export const charAllowsIdeographicBreaking = function(char: number) {
  * “neutral” character to be drawn upright as well.
  * @private
  */
-export const charHasUprightVerticalOrientation = function(char: number) {
+export function charHasUprightVerticalOrientation(char: number) {
     if (char === 0x02EA /* modifier letter yin departing tone mark */ ||
         char === 0x02EB /* modifier letter yang departing tone mark */) {
         return true;
@@ -157,7 +157,7 @@ export const charHasUprightVerticalOrientation = function(char: number) {
     if (isChar['Yi Radicals'](char)) return true;
 
     return false;
-};
+}
 
 /**
  * Returns true if the given Unicode codepoint identifies a character with
@@ -171,7 +171,7 @@ export const charHasUprightVerticalOrientation = function(char: number) {
  * adjacent character is drawn upright or rotated.
  * @private
  */
-export const charHasNeutralVerticalOrientation = function(char: number) {
+export function charHasNeutralVerticalOrientation(char: number) {
     if (isChar['Latin-1 Supplement'](char)) {
         if (char === 0x00A7 /* section sign */ ||
             char === 0x00A9 /* copyright sign */ ||
@@ -250,7 +250,7 @@ export const charHasNeutralVerticalOrientation = function(char: number) {
     }
 
     return false;
-};
+}
 
 /**
  * Returns true if the given Unicode codepoint identifies a character with
@@ -262,7 +262,7 @@ export const charHasNeutralVerticalOrientation = function(char: number) {
  * character causes an adjacent “neutral” character to be drawn rotated as well.
  * @private
  */
-export const charHasRotatedVerticalOrientation = function(char: number) {
+export function charHasRotatedVerticalOrientation(char: number) {
     return !(charHasUprightVerticalOrientation(char) ||
              charHasNeutralVerticalOrientation(char));
-};
+}

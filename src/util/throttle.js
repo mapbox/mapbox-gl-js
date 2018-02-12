@@ -25,4 +25,4 @@ export default function throttle(fn: () => void, time: number): () => TimeoutID 
         }
         return timerId;
     };
-};
+}

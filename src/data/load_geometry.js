@@ -43,4 +43,4 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
         }
     }
     return geometry;
-};
+}

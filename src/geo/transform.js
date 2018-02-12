@@ -115,11 +115,11 @@ class Transform {
         return this.tileSize * this.scale;
     }
 
-    get centerPoint() {
+    get centerPoint(): Point {
         return this.size._div(2);
     }
 
-    get size() {
+    get size(): Point {
         return new Point(this.width, this.height);
     }
 
@@ -276,7 +276,7 @@ class Transform {
             this.latY(lnglat.lat));
     }
 
-    unproject(point) {
+    unproject(point: Point): LngLat {
         return new LngLat(
             this.xLng(point.x),
             this.yLat(point.y));
@@ -285,7 +285,7 @@ class Transform {
     get x(): number { return this.lngX(this.center.lng); }
     get y(): number { return this.latY(this.center.lat); }
 
-    get point() { return new Point(this.x, this.y); }
+    get point(): Point { return new Point(this.x, this.y); }
 
     /**
      * latitude to absolute x coord
@@ -303,10 +303,10 @@ class Transform {
         return (180 - y) * this.worldSize / 360;
     }
 
-    xLng(x) {
+    xLng(x: number) {
         return x * 360 / this.worldSize - 180;
     }
-    yLat(y) {
+    yLat(y: number) {
         const y2 = 180 - y * 360 / this.worldSize;
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     }
@@ -355,7 +355,7 @@ class Transform {
      * @param {Coordinate} coord
      * @returns {LngLat} lnglat
      */
-    coordinateLocation(coord) {
+    coordinateLocation(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
         return new LngLat(
             this.xLng(zoomedCoord.column * this.tileSize),
@@ -398,7 +398,7 @@ class Transform {
      * @param {Coordinate} coord
      * @returns {Point} screen point
      */
-    coordinatePoint(coord) {
+    coordinatePoint(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
         const p = [zoomedCoord.column * this.tileSize, zoomedCoord.row * this.tileSize, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);

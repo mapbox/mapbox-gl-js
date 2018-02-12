@@ -7,7 +7,8 @@ import Color from '../style-spec/util/color';
 import { StylePropertyFunction, StyleExpression, StyleExpressionWithErrorHandling, ZoomDependentExpression, ZoomConstantExpression } from '../style-spec/expression';
 import { CompoundExpression } from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions';
-import { ImageData } from './window';
+import window from './window';
+const { ImageData } = window;
 
 import type {Transferable} from '../types/transferable';
 

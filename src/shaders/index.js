@@ -1,6 +1,6 @@
 // @flow
 
-import fs from 'fs';
+const fs = require('fs');
 
 // readFileSync calls must be written out long-form for brfs.
 /* eslint-disable prefer-template, no-path-concat */
@@ -180,32 +180,4 @@ uniform ${precision} ${type} u_${name};
     });
 }
 
-export default shaders;
-
-export const {
-    prelude,
-    background,
-    backgroundPattern,
-    circle,
-    clippingMask,
-    heatmap,
-    heatmapTexture,
-    collisionBox,
-    collisionCircle,
-    debug,
-    fill,
-    fillOutline,
-    fillOutlinePattern,
-    fillPattern,
-    fillExtrusion,
-    fillExtrusionPattern,
-    extrusionTexture,
-    hillshadePrepare,
-    hillshade,
-    line,
-    linePattern,
-    lineSDF,
-    raster,
-    symbolIcon,
-    symbolSDF
-} = shaders;
+module.exports = shaders;

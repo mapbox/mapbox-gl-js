@@ -27,7 +27,7 @@ class SegmentVector {
     prepareSegment(numVertices: number, layoutVertexArray: StructArray, indexArray: StructArray): Segment {
         let segment: Segment = this.segments[this.segments.length - 1];
         if (numVertices > MAX_VERTEX_ARRAY_LENGTH) warnOnce(`Max vertices per segment is ${MAX_VERTEX_ARRAY_LENGTH}: bucket requested ${numVertices}`);
-        if (!segment || segment.vertexLength + numVertices > module.exports.MAX_VERTEX_ARRAY_LENGTH) {
+        if (!segment || segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
             segment = ({
                 vertexOffset: layoutVertexArray.length,
                 primitiveOffset: indexArray.length,

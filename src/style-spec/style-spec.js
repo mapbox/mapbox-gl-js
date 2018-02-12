@@ -50,20 +50,39 @@ export type StylePropertySpecification = {
     default?: Array<string>
 };
 
-export const v8 = require('./reference/v8.json');
-export const latest = require('./reference/latest');
-export const format = require('./format');
-export const migrate = require('./migrate');
-export const composite = require('./composite');
-export const diff = require('./diff');
-export const ValidationError = require('./error/validation_error');
-export const ParsingError = require('./error/parsing_error');
-export const expression = require('./expression');
-export const featureFilter = require('./feature_filter');
-export const Color = require('./util/color');
-export const function = require('./function');
-exports.function.convertFunction = require('./function/convert');
+import v8 from './reference/v8.json';
+import latest from './reference/latest';
+import format from './format';
+import migrate from './migrate';
+import composite from './composite';
+import diff from './diff';
+import ValidationError from './error/validation_error';
+import ParsingError from './error/parsing_error';
+import expression from './expression';
+import featureFilter from './feature_filter';
+import Color from './util/color';
+import styleFunction from './function';
+import convertFunction from './function/convert';
 
-export const validate = require('./validate_style');
-exports.validate.parsed = require('./validate_style');
-exports.validate.latest = require('./validate_style');
+import validate from './validate_style';
+
+export const exported = {
+    v8,
+    latest,
+    format,
+    migrate,
+    composite,
+    diff,
+    ValidationError,
+    ParsingError,
+    expression,
+    featureFilter,
+    Color,
+    function: styleFunction,
+    validate
+};
+
+exported.function.convertFunction = convertFunction;
+
+validate.parsed = validate;
+validate.latest = validate;

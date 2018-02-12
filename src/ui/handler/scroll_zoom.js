@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import { bindAll, bezier } from '../../util/util';
+import { ease as _ease, bindAll, bezier } from '../../util/util';
 import browser from '../../util/browser';
 import window from '../../util/window';
 import { number as interpolate } from '../../style-spec/util/interpolate';
@@ -243,7 +243,7 @@ class ScrollZoomHandler {
     }
 
     _smoothOutEasing(duration: number) {
-        let easing = util.ease;
+        let easing = _ease;
 
         if (this._prevEase) {
             const ease = this._prevEase,

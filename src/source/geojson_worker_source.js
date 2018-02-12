@@ -1,6 +1,6 @@
 // @flow
 
-import ajax from '../util/ajax';
+import { getJSON } from '../util/ajax';
 
 import perf from '../util/performance';
 import rewind from 'geojson-rewind';
@@ -250,7 +250,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
         if (params.request) {
-            ajax.getJSON(params.request, callback);
+            getJSON(params.request, callback);
         } else if (typeof params.data === 'string') {
             try {
                 return callback(null, JSON.parse(params.data));

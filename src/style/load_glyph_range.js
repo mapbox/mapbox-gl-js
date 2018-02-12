@@ -2,7 +2,7 @@
 
 import { normalizeGlyphsURL } from '../util/mapbox';
 
-import ajax from '../util/ajax';
+import { getArrayBuffer, ResourceType } from '../util/ajax';
 import parseGlyphPBF from './parse_glyph_pbf';
 
 import type {StyleGlyph} from './style_glyph';
@@ -21,9 +21,9 @@ export default function (fontstack: string,
         normalizeGlyphsURL(urlTemplate)
             .replace('{fontstack}', fontstack)
             .replace('{range}', `${begin}-${end}`),
-        ajax.ResourceType.Glyphs);
+        ResourceType.Glyphs);
 
-    ajax.getArrayBuffer(request, (err, response) => {
+    getArrayBuffer(request, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {
@@ -36,4 +36,4 @@ export default function (fontstack: string,
             callback(null, glyphs);
         }
     });
-};
+}

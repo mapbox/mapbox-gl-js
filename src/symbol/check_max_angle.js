@@ -1,3 +1,5 @@
+// @flow
+
 export default checkMaxAngle;
 
 import type Point from '@mapbox/point-geometry';

@@ -1,11 +1,8 @@
-const exported = {
-    LineIndexArray: require('./array_types').LineIndexArray,
-    TriangleIndexArray: require('./array_types').TriangleIndexArray
-};
+// @flow
 
-export default exported;
-
-export const {
+import {
     LineIndexArray,
     TriangleIndexArray
-} = exported;
+} from './array_types';
+
+export {LineIndexArray, TriangleIndexArray};

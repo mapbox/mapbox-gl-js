@@ -9,10 +9,11 @@ import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray, LineIndexArray } from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
-import scriptDetection from '../../util/script_detection';
+import {allowsVerticalWritingMode} from '../../util/script_detection';
 import loadGeometry from '../load_geometry';
-const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
-import verticalizePunctuation from '../../util/verticalize_punctuation';
+import mvt from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import Anchor from '../../symbol/anchor';
 import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
@@ -377,11 +378,11 @@ class SymbolBucket implements Bucket {
                 const fontStack = textFont.evaluate(feature).join(',');
                 const stack = stacks[fontStack] = stacks[fontStack] || {};
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
-                const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
+                const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text);
                 for (let i = 0; i < text.length; i++) {
                     stack[text.charCodeAt(i)] = true;
-                    if (textAlongLine && allowsVerticalWritingMode) {
-                        const verticalChar = verticalizePunctuation.lookup[text.charAt(i)];
+                    if (textAlongLine && doesAllowVerticalWritingMode) {
+                        const verticalChar = verticalizedCharacterMap[text.charAt(i)];
                         if (verticalChar) {
                             stack[verticalChar.charCodeAt(0)] = true;
                         }

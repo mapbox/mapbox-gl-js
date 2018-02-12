@@ -5,7 +5,8 @@ import Point from '@mapbox/point-geometry';
 import { mat4, vec4 } from '@mapbox/gl-matrix';
 import symbolSize from './symbol_size';
 import { addDynamicAttributes } from '../data/bucket/symbol_bucket';
-import { layout as symbolLayoutProperties } from '../style/style_layer/symbol_style_layer_properties';
+import properties from '../style/style_layer/symbol_style_layer_properties';
+const symbolLayoutProperties = properties.layout;
 
 import type Painter from '../render/painter';
 import type Transform from '../geo/transform';

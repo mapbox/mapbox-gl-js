@@ -6,7 +6,7 @@ import { CanonicalTileID } from './tile_id';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import { Event, ErrorEvent, Evented } from '../util/evented';
-import ajax from '../util/ajax';
+import { getImage, ResourceType } from '../util/ajax';
 import browser from '../util/browser';
 import EXTENT from '../data/extent';
 import { RasterBoundsArray } from '../data/array_types';
@@ -97,7 +97,7 @@ class ImageSource extends Evented implements Source {
 
         this.url = this.options.url;
 
-        ajax.getImage(this.map._transformRequest(this.url, ajax.ResourceType.Image), (err, image) => {
+        getImage(this.map._transformRequest(this.url, ResourceType.Image), (err, image) => {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {

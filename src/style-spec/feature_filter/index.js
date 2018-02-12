@@ -8,7 +8,7 @@ export type FeatureFilter = (globalProperties: GlobalProperties, feature: Vector
 export default createFilter;
 export { isExpressionFilter };
 
-function isExpressionFilter(filter) {
+function isExpressionFilter(filter: any) {
     if (!Array.isArray(filter) || filter.length === 0) {
         return false;
     }

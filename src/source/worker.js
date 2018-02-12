@@ -7,7 +7,7 @@ import VectorTileWorkerSource from './vector_tile_worker_source';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
 import GeoJSONWorkerSource from './geojson_worker_source';
 import assert from 'assert';
-import globalRTLTextPlugin from './rtl_text_plugin';
+import { plugin as globalRTLTextPlugin } from './rtl_text_plugin';
 
 import type {
     WorkerSource,
@@ -24,7 +24,7 @@ import type {Callback} from '../types/callback';
 /**
  * @private
  */
-class Worker {
+export default class Worker {
     self: WorkerGlobalScopeInterface;
     actor: Actor;
     layerIndexes: { [string]: StyleLayerIndex };
