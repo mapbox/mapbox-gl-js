@@ -57,22 +57,14 @@ class DEMData {
         this.loaded = !!data;
     }
 
-    loadFromImage(data: RGBAImage) {
+    loadFromImage(data: RGBAImage, encoding: "mapbox" | "terrarium") {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
-
+        if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return util.warnOnce(`"${encoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`);
         // Build level 0
         const level = this.level = new Level(data.width, data.width / 2);
         const pixels = data.data;
 
-        // unpack
-        for (let y = 0; y < level.dim; y++) {
-            for (let x = 0; x < level.dim; x++) {
-                const i = y * level.dim + x;
-                const j = i * 4;
-                // decoding per https://blog.mapbox.com/global-elevation-data-6689f1d0ba65
-                level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
-            }
-        }
+        this._unpackData(level, pixels, encoding || "mapbox");
 
         // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
         // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
@@ -93,6 +85,30 @@ class DEMData {
         level.set(-1, level.dim, level.get(0, level.dim - 1));
         level.set(level.dim, level.dim, level.get(level.dim - 1, level.dim - 1));
         this.loaded = true;
+    }
+
+    _unpackMapbox(r: number, g: number, b: number) {
+        // unpacking formula for mapbox.terrain-rgb:
+        // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
+        return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
+    }
+
+    _unpackTerrarium(r: number, g: number, b: number) {
+        // unpacking formula for mapzen terrarium:
+        // https://aws.amazon.com/public-datasets/terrain/
+        return ((r * 256 + g + b / 256) - 32768.0);
+    }
+
+    _unpackData(level: Level, pixels: Uint8Array | Uint8ClampedArray, encoding: string) {
+        const unpackFunctions = {"mapbox": this._unpackMapbox, "terrarium": this._unpackTerrarium};
+        const unpack = unpackFunctions[encoding];
+        for (let y = 0; y < level.dim; y++) {
+            for (let x = 0; x < level.dim; x++) {
+                const i = y * level.dim + x;
+                const j = i * 4;
+                level.set(x, y, this.scale * unpack(pixels[j], pixels[j + 1], pixels[j + 2]));
+            }
+        }
     }
 
     getPixels() {
