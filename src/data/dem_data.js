@@ -57,7 +57,7 @@ class DEMData {
         this.loaded = !!data;
     }
 
-    loadFromImage(data: RGBAImage, encoding?: "mapbox" | "terrarium") {
+    loadFromImage(data: RGBAImage, encoding: "mapbox" | "terrarium") {
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (encoding && encoding !== "mapbox" && encoding !== "terrarium") return util.warnOnce(`"${encoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`);
         // Build level 0

@@ -22,7 +22,7 @@ class RasterDEMTileWorkerSource {
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
         const uid = params.uid,
-            encoding = params.encoding || "mapbox";
+            encoding = params.encoding;
 
         const dem = new DEMData(uid);
         this.loading[uid] = dem;
