@@ -9,12 +9,16 @@
     [{}, {"properties": {"x": 2}}]
   ],
   "expected": {
-    "outputs": [2, 2, 2],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [2, 2, 2],
+    "serialized": [
+      "number",
+      ["interpolate", ["exponential", 2], ["number", ["get", "x"]], 1, 2]
+    ]
   }
 }

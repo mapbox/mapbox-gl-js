@@ -14,6 +14,12 @@
     [{}, {"properties": {"x": "abcd"}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
     "outputs": [
       100,
       150,
@@ -24,11 +30,14 @@
         "error": "Expected value to be of type number, but found string instead."
       }
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "number"
-    }
+    "serialized": [
+      "interpolate",
+      ["exponential", 1],
+      ["number", ["get", "x"]],
+      0,
+      100,
+      10,
+      200
+    ]
   }
 }

@@ -18,17 +18,29 @@
     [{}, {"properties": {"x": 11, "color": "oops blue"}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<number, 4>"
+    },
     "outputs": [
       [255, 0, 0, 1],
       [153, 0, 102, 1],
       [0, 0, 255, 1],
       {"error": "Could not parse color from value 'oops blue'"}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "array<number, 4>"
-    }
+    "serialized": [
+      "to-rgba",
+      [
+        "interpolate",
+        ["exponential", 1],
+        ["number", ["get", "x"]],
+        1,
+        ["rgba", 255, 0, 0, 1],
+        11,
+        ["to-color", ["get", "color"]]
+      ]
+    ]
   }
 }

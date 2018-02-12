@@ -70,6 +70,10 @@ exports.run = function (implementation, options, runExpressionTest) {
 
             if (process.env.UPDATE) {
                 fixture.expected = result;
+                // We save the expected serialization, but the round-tripped compilation results
+                // and outputs should be identical, so no need to save them.
+                delete fixture.expected.recompiled;
+                delete fixture.expected.roundTripOutputs;
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
                 return;
             }
@@ -81,17 +85,20 @@ exports.run = function (implementation, options, runExpressionTest) {
             // Serialization/round-tripping only exists on native
             let recompileOk = true;
             let roundTripOk = true;
+            let serializationOk = true;
 
             if (implementation === 'native' && expected.compiled.result !== 'error') {
+                serializationOk = compileOk && deepEqual(expected.serialized, result.serialized);
                 recompileOk = compileOk && deepEqual(result.recompiled, expected.compiled);
                 roundTripOk = recompileOk && deepEqual(result.roundTripOutputs, expected.outputs);
             }
 
-            params.ok = compileOk && evalOk && recompileOk && roundTripOk;
+            params.ok = compileOk && evalOk && recompileOk && roundTripOk && serializationOk;
 
             let msg = '';
-            const diffCompilation = (testCompilation) => {
-                return diff.diffJson(expected.compiled, testCompilation)
+
+            const diffJson = (expectedJson, actualJson) => {
+                return diff.diffJson(expectedJson, actualJson)
                     .map((hunk) => {
                         if (hunk.added) {
                             return `+ ${hunk.value}`;
@@ -104,10 +111,13 @@ exports.run = function (implementation, options, runExpressionTest) {
                     .join('');
             };
             if (!compileOk) {
-                msg += diffCompilation(result.compiled);
+                msg += diffJson(expected.compiled, result.compiled);
+            }
+            if (compileOk && !serializationOk) {
+                msg += diffJson(expected.serialized, result.serialized);
             }
             if (compileOk && !recompileOk) {
-                msg += diffCompilation(result.recompiled);
+                msg += diffJson(expected.compiled, result.recompiled);
             }
 
             const diffOutputs = (testOutputs) => {

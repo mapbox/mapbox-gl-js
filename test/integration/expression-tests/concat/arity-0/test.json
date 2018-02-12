@@ -2,12 +2,13 @@
   "expression": ["concat"],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [""],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "string"
-    }
+    },
+    "outputs": [""],
+    "serialized": ""
   }
 }

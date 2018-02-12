@@ -10,20 +10,21 @@
     [{}, {"properties": {"x": {"y": 1}}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
     "outputs": [
       1,
       1,
-      6.02e-23,
+      6.020000147222002e-23,
       {"error": "Could not convert \"Not a number\" to number."},
       {"error": "Could not convert null to number."},
       {"error": "Could not convert [1,2] to number."},
       {"error": "Could not convert {\"y\":1} to number."}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "number"
-    }
+    "serialized": ["to-number", ["get", "x"]]
   }
 }

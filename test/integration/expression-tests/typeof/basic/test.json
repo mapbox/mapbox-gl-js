@@ -12,6 +12,12 @@
     [{}, {"properties": {"x": {}}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
     "outputs": [
       "null",
       "string",
@@ -23,11 +29,6 @@
       "array<value, 2>",
       "object"
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "string"
-    }
+    "serialized": ["typeof", ["get", "x"]]
   }
 }
