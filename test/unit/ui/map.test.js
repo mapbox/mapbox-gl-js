@@ -1268,6 +1268,23 @@ test('Map', (t) => {
         map.zoomTo(5, { duration: 0 });
     });
 
+    t.test('Map#isZooming', (t) => {
+        t.plan(3);
+        const map = createMap();
+
+        t.equal(map.isZooming(), false, 'false before zooming');
+
+        map.on('zoomstart', () => {
+            t.equal(map.isZooming(), true, 'true on zoomstart');
+        });
+
+        map.on('zoomend', () => {
+            t.equal(map.isZooming(), false, 'false on zoomend');
+        });
+
+        map.zoomTo(5, { duration: 0 });
+    });
+
     t.end();
 });
 
