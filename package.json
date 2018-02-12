@@ -162,7 +162,6 @@
     "build/",
     "dist/",
     "flow-typed/",
-    "src/",
     ".flowconfig"
   ]
 }
