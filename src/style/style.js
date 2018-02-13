@@ -521,6 +521,11 @@ class Style extends Evented {
 
         const id = layerObject.id;
 
+        if (this.getLayer(id)) {
+            this.fire('error', {error: new Error(`Layer with id "${id}" already exists on this map`)});
+            return;
+        }
+
         if (typeof layerObject.source === 'object') {
             this.addSource(id, layerObject.source);
             layerObject = util.clone(layerObject);

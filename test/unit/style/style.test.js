@@ -992,20 +992,19 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('emits error on duplicates', (t) => {
+        t.stub(console, 'error');
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
 
         style.on('error', (e) => {
-            t.deepEqual(e.layer, {id: 'background'});
-            t.notOk(/duplicate/.match(e.error.message));
+            t.match(e.error, /already exists/);
             t.end();
         });
 
         style.on('style.load', () => {
             style.addLayer(layer);
             style.addLayer(layer);
-            t.end();
         });
     });
 
