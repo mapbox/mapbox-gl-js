@@ -5,6 +5,11 @@ const util = require('../../util/util');
 
 import type Map from '../map';
 
+const defaultOptions = {
+    maxWidth: 100,
+    unit: 'metric'
+};
+
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
  *
@@ -24,15 +29,21 @@ class ScaleControl {
     options: any;
 
     constructor(options: any) {
-        this.options = options;
+        this.options = util.extend({}, defaultOptions, options);
 
         util.bindAll([
-            '_onMove'
+            '_onMove',
+            'updateUnit'
         ], this);
     }
 
     getDefaultPosition() {
         return 'bottom-left';
+    }
+
+    updateUnit(unit: string) {
+        this.options.unit = unit;
+        updateScale(this._map, this._container, this.options);
     }
 
     _onMove() {
