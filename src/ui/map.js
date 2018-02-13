@@ -539,7 +539,7 @@ class Map extends Camera {
     /**
      * Sets the state of renderWorldCopies.
      *
-     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered, when zoomed out.
+     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered, when zoomed out. `undefined` is treated as `true`, `null` is treated as `false`.
      * @returns {Map} `this`
      */
     setRenderWorldCopies(renderWorldCopies?: ?boolean) {

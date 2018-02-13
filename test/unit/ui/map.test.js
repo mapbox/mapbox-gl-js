@@ -696,6 +696,20 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('undefined', (t) => {
+            const map = createMap({renderWorldCopies: false});
+            map.setRenderWorldCopies(undefined);
+            t.equal(map.getRenderWorldCopies(), true);
+            t.end();
+        });
+
+        t.test('null', (t) => {
+            const map = createMap({renderWorldCopies: true});
+            map.setRenderWorldCopies(null);
+            t.equal(map.getRenderWorldCopies(), false);
+            t.end();
+        });
+
         t.end();
     });
 
