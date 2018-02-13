@@ -1875,9 +1875,7 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.43.0",
-          "android": "6.0.0",
-          "ios": "4.0.0"
+          "js": "0.43.0"
         },
         "data-driven styling": {}
       }
@@ -3846,9 +3844,7 @@
         "transition": false,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0",
-            "android": "6.0.0",
-            "ios": "4.0.0"
+            "js": "0.43.0"
           },
           "data-driven styling": {}
         }
@@ -3869,9 +3865,7 @@
         "doc": "Direction of light source when map is rotated.",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0",
-            "android": "6.0.0",
-            "ios": "4.0.0"
+            "js": "0.43.0"
           },
           "data-driven styling": {}
         }
@@ -3887,9 +3881,7 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0",
-            "android": "6.0.0",
-            "ios": "4.0.0"
+            "js": "0.43.0"
           },
           "data-driven styling": {}
         }
@@ -3903,9 +3895,7 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0",
-            "android": "6.0.0",
-            "ios": "4.0.0"
+            "js": "0.43.0"
           },
           "data-driven styling": {}
         }
@@ -3919,9 +3909,7 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0",
-            "android": "6.0.0",
-            "ios": "4.0.0"
+            "js": "0.43.0"
           },
           "data-driven styling": {}
         }
@@ -3935,9 +3923,7 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0",
-            "android": "6.0.0",
-            "ios": "4.0.0"
+            "js": "0.43.0"
           },
           "data-driven styling": {}
         }
