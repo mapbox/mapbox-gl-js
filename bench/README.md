@@ -14,7 +14,7 @@ To run all benchmarks, open [the benchmark page, `http://localhost:9966/bench`](
 
 To run a specific benchmark, add its name to the url hash, for example [`http://localhost:9966/bench/#Layout`](http://localhost:9966/bench/#Layout).
 
-By default, the benchmark page will compare the local branch against `master` and the latest release. To change this, include one or more `compare` query parameters in the URL: E.g., [localhost:9966/bench?compare=master](http://localhost:9966/bench?compare=master) or [localhost:9966/bench?compare=master#Layout](http://localhost:9966/bench?compare=master#Layout) to compare only to master, or [localhost:9966/bench?compare=v0.44.0&compare=v0.44.1](http://localhost:9966/bench?compare=v0.44.0&compare=v0.44.1) to compare to `v0.44.0` and `v0.44.1` (but not `master`).  Versions available for comparison are: `master` and `vX.Y.Z` for versions >= `v0.44.0`.
+By default, the benchmark page will compare the local branch against `master` and the latest release. To change this, include one or more `compare` query parameters in the URL: E.g., [localhost:9966/bench?compare=master](http://localhost:9966/bench?compare=master) or [localhost:9966/bench?compare=master#Layout](http://localhost:9966/bench?compare=master#Layout) to compare only to master, or [localhost:9966/bench?compare=v0.44.0&compare=v0.44.1](http://localhost:9966/bench?compare=v0.44.0&compare=v0.44.1) to compare to `v0.44.0` and `v0.44.1` (but not `master`).  Versions available for comparison are: `master` and `vX.Y.Z` for versions >= `v0.41.0`.
 
 
 ## Writing a Benchmark
