@@ -1875,7 +1875,9 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.43.0"
+          "js": "0.43.0",
+          "android": "6.0.0",
+          "ios": "4.0.0"
         },
         "data-driven styling": {}
       }
@@ -3841,7 +3843,15 @@
         "doc": "The direction of the light source used to generate the hillshading with 0 as the top of the viewport if `hillshade-illumination-anchor` is set to `viewport` and due north if `hillshade-illumination-anchor` is set to `map`.",
         "function": "interpolated",
         "zoom-function": true,
-        "transition": false
+        "transition": false,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0"
+          },
+          "data-driven styling": {}
+        }
       },
       "hillshade-illumination-anchor": {
         "type": "enum",
@@ -3856,7 +3866,15 @@
           }
         },
         "default": "viewport",
-        "doc": "Direction of light source when map is rotated."
+        "doc": "Direction of light source when map is rotated.",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0"
+          },
+          "data-driven styling": {}
+        }
       },
       "hillshade-exaggeration": {
         "type": "number",
@@ -3866,7 +3884,15 @@
         "maximum": 1,
         "function": "interpolated",
         "zoom-function": true,
-        "transition": true
+        "transition": true,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0"
+          },
+          "data-driven styling": {}
+        }
       },
       "hillshade-shadow-color": {
         "type": "color",
@@ -3874,7 +3900,15 @@
         "doc": "The shading color of areas that face away from the light source.",
         "function": "interpolated",
         "zoom-function": true,
-        "transition": true
+        "transition": true,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0"
+          },
+          "data-driven styling": {}
+        }
       },
       "hillshade-highlight-color": {
         "type": "color",
@@ -3882,7 +3916,15 @@
         "doc": "The shading color of areas that faces towards the light source.",
         "function": "interpolated",
         "zoom-function": true,
-        "transition": true
+        "transition": true,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0"
+          },
+          "data-driven styling": {}
+        }
       },
       "hillshade-accent-color": {
         "type": "color",
@@ -3890,7 +3932,15 @@
         "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
         "function": "interpolated",
         "zoom-function": true,
-        "transition": true
+        "transition": true,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0"
+          },
+          "data-driven styling": {}
+        }
       }
   },
   "paint_background": {
