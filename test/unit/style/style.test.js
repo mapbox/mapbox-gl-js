@@ -992,7 +992,6 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('emits error on duplicates', (t) => {
-        t.stub(console, 'error');
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         const layer = {id: 'background', type: 'background'};
