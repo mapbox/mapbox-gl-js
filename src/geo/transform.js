@@ -99,8 +99,15 @@ class Transform {
         this.zoom = Math.min(this.zoom, zoom);
     }
 
-    get renderWorldCopies(): boolean {
-        return this._renderWorldCopies;
+    get renderWorldCopies(): boolean { return this._renderWorldCopies; }
+    set renderWorldCopies(renderWorldCopies?: ?boolean) {
+        if (renderWorldCopies === undefined) {
+            renderWorldCopies = true;
+        } else if (renderWorldCopies === null) {
+            renderWorldCopies = false;
+        }
+
+        this._renderWorldCopies = renderWorldCopies;
     }
 
     get worldSize(): number {
