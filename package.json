@@ -96,7 +96,8 @@
     "sinon": "^2.1.0",
     "slugg": "^1.2.1",
     "st": "^1.2.0",
-    "stylelint": "^7.10.1",
+    "stylelint": "^8.4.0",
+    "stylelint-config-standard": "^18.0.0",
     "tap": "^10.3.0",
     "watchify": "^3.7.0"
   },
@@ -130,7 +131,7 @@
     "watch-style-property-editor": "watchify debug/style_property_editor.js --debug -o debug/style_property_editor_generated.js --standalone StylePropertyEditor --verbose",
     "build-min": "browserify src/index.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl | derequire > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
     "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
-    "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --debug --transform envify --outfile bench/benchmarks_generated.js --verbose",
+    "build-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} browserify bench/benchmarks.js --debug --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --debug --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks-view": "watchify bench/benchmarks_view.js --debug --outfile bench/benchmarks_view_generated.js --verbose",
     "start-server": "st --no-cache -H 0.0.0.0 --port 9966 --index index.html .",

@@ -102,7 +102,8 @@ declare type RasterDEMSourceSpecification = {
     "minzoom"?: number,
     "maxzoom"?: number,
     "tileSize"?: number,
-    "attribution"?: string
+    "attribution"?: string,
+    "encoding"?: "terrarium" | "mapbox"
 }
 
 declare type GeojsonSourceSpecification = {|

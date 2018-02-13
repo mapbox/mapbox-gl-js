@@ -665,6 +665,54 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getRenderWorldCopies', (t) => {
+        t.test('initially false', (t) => {
+            const map = createMap({renderWorldCopies: false});
+            t.equal(map.getRenderWorldCopies(), false);
+            t.end();
+        });
+
+        t.test('initially true', (t) => {
+            const map = createMap({renderWorldCopies: true});
+            t.equal(map.getRenderWorldCopies(), true);
+            t.end();
+        });
+
+        t.end();
+    });
+
+    t.test('#setRenderWorldCopies', (t) => {
+        t.test('initially false', (t) => {
+            const map = createMap({renderWorldCopies: false});
+            map.setRenderWorldCopies(true);
+            t.equal(map.getRenderWorldCopies(), true);
+            t.end();
+        });
+
+        t.test('initially true', (t) => {
+            const map = createMap({renderWorldCopies: true});
+            map.setRenderWorldCopies(false);
+            t.equal(map.getRenderWorldCopies(), false);
+            t.end();
+        });
+
+        t.test('undefined', (t) => {
+            const map = createMap({renderWorldCopies: false});
+            map.setRenderWorldCopies(undefined);
+            t.equal(map.getRenderWorldCopies(), true);
+            t.end();
+        });
+
+        t.test('null', (t) => {
+            const map = createMap({renderWorldCopies: true});
+            map.setRenderWorldCopies(null);
+            t.equal(map.getRenderWorldCopies(), false);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('#setMinZoom', (t) => {
         const map = createMap({zoom:5});
         map.setMinZoom(3.5);
@@ -1263,6 +1311,23 @@ test('Map', (t) => {
 
         map.on('moveend', () => {
             t.equal(map.isMoving(), false, 'false on moveend');
+        });
+
+        map.zoomTo(5, { duration: 0 });
+    });
+
+    t.test('Map#isZooming', (t) => {
+        t.plan(3);
+        const map = createMap();
+
+        t.equal(map.isZooming(), false, 'false before zooming');
+
+        map.on('zoomstart', () => {
+            t.equal(map.isZooming(), true, 'true on zoomstart');
+        });
+
+        map.on('zoomend', () => {
+            t.equal(map.isZooming(), false, 'false on zoomend');
         });
 
         map.zoomTo(5, { duration: 0 });

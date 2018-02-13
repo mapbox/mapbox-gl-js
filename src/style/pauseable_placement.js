@@ -89,6 +89,11 @@ class PauseablePlacement {
 
         this._done = true;
     }
+
+    commit(previousPlacement: ?Placement, now: number) {
+        this.placement.commit(previousPlacement, now);
+        return this.placement;
+    }
 }
 
 module.exports = PauseablePlacement;

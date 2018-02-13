@@ -33,7 +33,7 @@ type QueryParameters = {
     collisionBoxArray: CollisionBoxArray,
     sourceID: string,
     bucketInstanceIds: { [number]: boolean },
-    collisionIndex: CollisionIndex
+    collisionIndex: ?CollisionIndex
 }
 
 class FeatureIndex {
@@ -50,8 +50,6 @@ class FeatureIndex {
 
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
-
-    collisionIndex: CollisionIndex;
 
     constructor(tileID: OverscaledTileID,
                 overscaling: number,
@@ -122,7 +120,7 @@ class FeatureIndex {
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
         const matchingSymbols = args.collisionIndex ?
-            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
+            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, args.tileSize / EXTENT, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
             [];
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
@@ -207,7 +205,7 @@ class FeatureIndex {
 register(
     'FeatureIndex',
     FeatureIndex,
-    { omit: ['rawTileData', 'sourceLayerCoder', 'collisionIndex'] }
+    { omit: ['rawTileData', 'sourceLayerCoder'] }
 );
 
 module.exports = FeatureIndex;
