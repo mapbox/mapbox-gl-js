@@ -91,7 +91,7 @@ class Hash {
 
     _updateHashUnthrottled() {
         const hash = this.getHashString();
-        window.history.replaceState('', '', hash);
+        window.history.replaceState(window.history.state, '', hash);
     }
 
 }
