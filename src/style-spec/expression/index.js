@@ -355,6 +355,7 @@ const {
     NumberType,
     BooleanType,
     ValueType,
+    EnumType,
     array
 } = require('./types');
 
@@ -363,7 +364,7 @@ function getExpectedType(spec: StylePropertySpecification): Type | null {
         color: ColorType,
         string: StringType,
         number: NumberType,
-        enum: StringType,
+        enum: EnumType,
         boolean: BooleanType
     };
 
