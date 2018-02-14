@@ -140,19 +140,10 @@ exports.run = function (implementation, ignores, render) {
 
             png.data = data;
 
-            let writeExpected = !!process.env.UPDATE;
-            try {
-                stats = fs.statSync(expected, fs.R_OK | fs.W_OK);
-                if (!stats.isFile()) throw new Error();
-
-            } catch (e) { // no expected.png, create it
-                writeExpected = true;
-            }
-
             // there may be multiple expected images, covering different platforms
             const expectedPaths = glob.sync(path.join(dir, 'expected*.png'));
 
-            if (writeExpected) {
+            if (process.env.UPDATE) {
                 png.pack()
                     .pipe(fs.createWriteStream(expected))
                     .on('finish', done);
