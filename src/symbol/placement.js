@@ -118,8 +118,8 @@ class Placement {
         for (const symbolInstance of bucket.symbolInstances) {
             if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
 
-                let placeText = false;
-                let placeIcon = false;
+                let placeText = symbolInstance.feature.text !== undefined;
+                let placeIcon = symbolInstance.feature.icon !== undefined;
                 let offscreen = true;
 
                 let placedGlyphBoxes = null;
