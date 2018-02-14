@@ -143,6 +143,10 @@ exports.run = function (implementation, ignores, render) {
             // there may be multiple expected images, covering different platforms
             const expectedPaths = glob.sync(path.join(dir, 'expected*.png'));
 
+            if (expectedPaths.length === 0) {
+                throw new Error('No expected*.png files found; did you mean to run tests with UPDATE=true?');
+            }
+
             if (process.env.UPDATE) {
                 png.pack()
                     .pipe(fs.createWriteStream(expected))
