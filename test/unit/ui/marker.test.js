@@ -16,24 +16,49 @@ function createMap() {
 }
 
 test('Marker', (t) => {
+
     t.test('constructor', (t) => {
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el);
-        t.ok(marker.getElement(), 'marker element is created');
+        const marker = new Marker();
+        t.ok(marker, 'marker is created');
         t.end();
     });
 
-    t.test('default marker', (t) => {
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el);
-        t.ok(marker.getElement(), 'default marker is created');
-        t.ok(marker.getOffset(), 'default marker with no anchor and offset options, uses default marker options');
+    t.test('default marker without element', (t) => {
+        const marker = new Marker();
+        t.ok(marker.getElement(), 'marker returns default element');
+        t.end();
+    });
+
+    t.test('default marker with element', (t) => {
+        const marker = new Marker(window.document.createElement('div'));
+        t.ok(marker.getElement(), 'marker with custom element is created');
+        t.end();
+    });
+
+    t.test('default marker with anchor', (t) => {
+        const marker = new Marker();
+        t.ok(marker.getElement(), 'marker returns default element');
+        t.ok(marker.getAnchor(), 'marker returns default  anchor option');
+        t.end();
+    });
+
+    t.test('default marker with offset', (t) => {
+        const marker = new Marker();
+        t.ok(marker.getElement(), 'marker returns default element');
+        t.ok(marker.getOffset(), 'marker returns default offset option');
+        t.end();
+    });
+
+    t.test('default marker with anchor and offset', (t) => {
+        const marker = new Marker();
+        t.ok(marker.getElement(), 'marker returns default element');
+        t.ok(marker.getAnchor(), 'marker returns default  anchor option');
+        t.ok(marker.getOffset(), 'marker returns default offset option');
         t.end();
     });
 
     t.test('default marker with some options', (t) => {
-        const el = window.document.createElement(`mapboxgl-marker`);
-        const marker = new Marker(el, { anchor: 'bottom',  foo: 'bar' });
+        const marker = new Marker(null, { anchor: 'bottom',  foo: 'bar' });
         t.ok(marker.getElement(), 'default marker is created');
         t.ok(marker.getAnchor(), 'marker set with anchor options');
         t.ok(marker.getOffset(), 'default marker with no offset uses default marker offset');
@@ -41,8 +66,7 @@ test('Marker', (t) => {
     });
 
     t.test('default marker with custom offest', (t) => {
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el, { offset: [1, 2] });
+        const marker = new Marker(window.document.createElement('div'), { offset: [1, 2] });
         t.ok(marker.getElement(), 'default marker is created');
         t.ok(marker.getAnchor(), 'marker sets with anchor ');
         t.ok(marker.getOffset(), 'default marker with supplied offset');
@@ -51,8 +75,7 @@ test('Marker', (t) => {
 
     t.test('marker is added to map', (t) => {
         const map = createMap();
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el, { anchor: 'middle' }).setLngLat([-77.01866, 38.888]);
+        const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]);
         t.ok(marker.addTo(map) instanceof Marker, 'marker.addTo(map) returns Marker instance');
         t.ok(marker._map, 'marker instance is bound to map instance');
         t.end();
@@ -60,8 +83,11 @@ test('Marker', (t) => {
 
     t.test('marker\'s lngLat can be changed', (t) => {
         const map = createMap();
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el, { anchor: 'top-left' }).setLngLat([-77.01866, 38.888]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'),
+            { anchor: 'top-left' })
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
+
         t.ok(marker.setLngLat([-76, 39]) instanceof Marker, 'marker.setLngLat() returns Marker instance');
         const markerLngLat = marker.getLngLat();
         t.ok(markerLngLat.lng === -76 &&  markerLngLat.lat === 39, 'marker\'s position can be updated');
@@ -70,8 +96,8 @@ test('Marker', (t) => {
 
     t.test('Marker anchors as specified by the default anchor option', (t) => {
         const map = createMap();
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el).setLngLat([-77.01866, 38.888]);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([-77.01866, 38.888]);
 
         t.ok(marker.addTo(map) instanceof Marker, 'marker.addTo(map) returns Marker instance');
         t.ok(marker._map, 'marker instance is bound to map instance');
@@ -95,8 +121,7 @@ test('Marker', (t) => {
 
         t.test(`Marker automatically anchors to ${anchor}`, (t) => {
             const map = createMap();
-            const el = window.document.createElement(`div`);
-            const marker = new Marker(el)
+            const marker = new Marker(window.document.createElement('div'))
                 .setLngLat([0, 0])
                 .addTo(map);
 
@@ -133,8 +158,8 @@ test('Marker', (t) => {
         t.test(`Marker translation reflects offset and ${anchor} anchor`, (t) => {
             const map = createMap();
             t.stub(map, 'project');
-            const el = window.document.createElement(`mapboxgl-marker`);
-            const marker = new Marker(el, {anchor: anchor, offset: 10})
+            const marker = new Marker(window.document.createElement('div'),
+                {anchor: anchor, offset: 10})
                 .setLngLat([-77.01866, 38.888])
                 .addTo(map);
 
@@ -162,12 +187,12 @@ test('Marker', (t) => {
         });
     });
 
-    test('Marker is offset via an object offset option', (t) => {
+    t.test('Marker is offset via an object offset option', (t) => {
         const map = createMap();
         t.stub(map, 'project').returns(new Point(0, 0));
-        const el = window.document.createElement(`div`);
         //const transform = 'translate(-50%,-50%) translate(5px,10px)';
-        const marker = new Marker(el, {anchor: 'middle', offset: {'top-left': [5, 10]}})
+        const marker = new Marker(window.document.createElement('div'),
+            {anchor: 'middle', offset: {'top-left': [5, 10]}})
             .setLngLat([0, 0])
             .addTo(map);
 
@@ -177,8 +202,9 @@ test('Marker', (t) => {
 
     t.test('marker centered by default', (t) => {
         const map = createMap();
-        const el = window.document.createElement('div');
-        const marker = new Marker(el).setLngLat([0, 0]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([0, 0])
+            .addTo(map);
 
         t.ok(marker.setAnchor('middle'));
         t.ok(marker.setOffset([0, 0]));
@@ -188,8 +214,9 @@ test('Marker', (t) => {
 
     t.test('marker\'s anchor can be changed', (t) => {
         const map = createMap();
-        const el = window.document.createElement('div');
-        const marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
 
         t.ok(marker._element, 'translate(-50%,-50%) translate(256px, 256px)', 'Marker centered');
         t.ok(marker.setAnchor('top-left') instanceof Marker, 'marker.setAnchor() returns Marker instance');
@@ -199,8 +226,9 @@ test('Marker', (t) => {
 
     t.test('marker\'s offset can be changed', (t) => {
         const map = createMap();
-        const el = window.document.createElement('div');
-        const marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
 
         t.ok(marker._element, 'translate(-50%,-50%) translate(256px, 256px)', 'Marker centered');
         t.ok(marker.setOffset([50, -75]) instanceof Marker, 'marker.setOffset() returns Marker instance');
@@ -211,8 +239,10 @@ test('Marker', (t) => {
     t.test('popups can be bound to marker instance', (t) => {
         const map = createMap();
         const popup = new Popup();
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
+
         marker.setPopup(popup);
         t.ok(marker.getPopup() instanceof Popup, 'popup created with Popup instance');
         t.end();
@@ -220,8 +250,10 @@ test('Marker', (t) => {
 
     t.test('popups can be unbound from a marker instance', (t) => {
         const map = createMap();
-        const el = window.document.createElement(`div`);
-        const marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
+
         marker.setPopup(new Popup());
         t.ok(marker.getPopup() instanceof Popup);
         t.ok(marker.setPopup() instanceof Marker, 'passing no argument to Marker.setPopup() is valid');
@@ -236,14 +268,17 @@ test('Marker', (t) => {
             .setPopup(popup)
             .setLngLat([-77.01866, 38.888])
             .addTo(map);
+
         t.deepEqual(popup.getLngLat(), new LngLat(-77.01866, 38.888));
         t.end();
     });
 
     t.test('togglePopup returns Marker instance', (t) => {
         const map = createMap();
-        const el = window.document.createElement('div');
-        const marker = new Marker(el).setLngLat([0, 0]).addTo(map);
+        const marker = new Marker(window.document.createElement('div'))
+            .setLngLat([0, 0])
+            .addTo(map);
+
         marker.setPopup(new Popup());
         t.ok(marker.togglePopup() instanceof Marker);
         t.end();
