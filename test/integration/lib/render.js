@@ -21,6 +21,10 @@ function compare(actualPath, expectedPaths, diffPath, callback) {
     function doneReading() {
         if (++read < expectedPaths.length + 1) return;
 
+        // if we have multiple expected images, we'll compare against each one and pick the one with
+        // the least amount of difference; this is useful for covering features that render differently
+        // depending on platform, i.e. heatmaps use half-float textures for improved rendering where supported
+
         let minNumPixels = Infinity;
         let minDiff, minIndex;
 
