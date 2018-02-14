@@ -270,6 +270,7 @@ class Placement {
         if (bucket.hasCollisionCircleData()) bucket.collisionCircle.collisionVertexArray.clear();
 
         const layout = bucket.layers[0].layout;
+        const duplicateOpacityState = new JointOpacityState(null, 0, false, false, true);
         const defaultOpacityState = new JointOpacityState(null, 0,
                 layout.get('text-allow-overlap'),
                 layout.get('icon-allow-overlap'), true);
@@ -279,12 +280,15 @@ class Placement {
             const isDuplicate = seenCrossTileIDs[symbolInstance.crossTileID];
 
             let opacityState = this.opacities[symbolInstance.crossTileID];
-            if (!opacityState) {
+            if (isDuplicate) {
+                opacityState = duplicateOpacityState;
+            } else if (!opacityState) {
                 opacityState = defaultOpacityState;
+            }
+
+            if (!this.opacities[symbolInstance.crossTileID]) {
                 // store the state so that future placements use it as a starting point
                 this.opacities[symbolInstance.crossTileID] = opacityState;
-            } else if (isDuplicate) {
-                opacityState = defaultOpacityState;
             }
 
             seenCrossTileIDs[symbolInstance.crossTileID] = true;
