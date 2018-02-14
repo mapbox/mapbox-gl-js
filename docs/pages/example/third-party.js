@@ -1,7 +1,7 @@
 /*---
 title: Add a third party vector tile source
 description: >-
-  Render a map using an external vector source of Mapillary sequence layers provided by [Mapillary](https://www.mapillary.com/developer/tiles-documentation/#sequence-layer).
+  Render vector data provided by [Mapillary](https://www.mapillary.com/developer/tiles-documentation/#sequence-layer).
 tags:
   - sources
 pathname: /mapbox-gl-js/example/third-party/
