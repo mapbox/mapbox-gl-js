@@ -1,7 +1,7 @@
 /*---
 title: Add a third party vector tile source
 description: >-
-  Render a map using an external vector source of OpenStreetMap data provided by [Mapzen](http://mapzen.com/vector/).
+  Render vector data provided by [Mapillary](https://www.mapillary.com/developer/tiles-documentation/#sequence-layer).
 tags:
   - sources
 pathname: /mapbox-gl-js/example/third-party/
