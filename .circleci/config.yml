@@ -7,20 +7,24 @@ workflows:
       - build:
           filters:
             tags:
-              ignore: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
-      - build-and-release:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
           filters:
             tags:
               only: /v[0-9]+.[0-9]+.[0-9]+(-.+)?/
             branches:
               ignore: /.*/
 
-
-jobs:
-  build:
+defaults: &defaults
     docker:
       - image: mbgl/ci:r4-linux-gl-js
     working_directory: ~/mapbox-gl-js
+
+jobs:
+  build:
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -51,33 +55,14 @@ jobs:
           path: "test/integration/render-tests/index.html"
       - store_artifacts:
           path: "test/integration/query-tests/index.html"
-  build-and-release:
-    docker:
-      - image: mbgl/ci:r4-linux-gl-js
-    working_directory: ~/mapbox-gl-js
-    steps:
-      - checkout
-      - restore_cache:
-          key: v1-mapbox-gl-js-cache
-      - run:
-          name: install dependencies
-          command: yarn
-      - save_cache:
-          key: v1-mapbox-gl-js-cache
+      - persist_to_workspace:
+          root: .
           paths:
-            - '~/.yarn'
-            - '.eslintcache'
-            - 'node_modules'
-      - run:
-          name: run tests
-          command: |
-            bash ./.circleci/test.sh
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
-      - store_artifacts:
-          path: "test/integration/query-tests/index.html"
-      - run:
-          name: deploy
-          when: on_success
-          command: bash ./.circleci/deploy.sh
+            - dist
 
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: bash ./.circleci/deploy.sh
