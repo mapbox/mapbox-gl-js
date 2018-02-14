@@ -18,6 +18,21 @@ function createMap(options) {
     }, options));
 }
 
+test('DragRotateHandler requests a new render frame after each mousemove event', (t) => {
+    const map = createMap();
+    const update = t.spy(map, '_update');
+
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    t.ok(update.callCount > 0);
+
+    // https://github.com/mapbox/mapbox-gl-js/issues/6063
+    update.reset();
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2});
+    t.equal(update.callCount, 1);
+    t.end();
+});
+
 test('DragRotateHandler rotates in response to a right-click drag', (t) => {
     const map = createMap();
 
@@ -344,5 +359,22 @@ test('DragRotateHandler ends rotation if the window blurs (#3389)', (t) => {
     simulate.blur(window);
     t.ok(rotateend.calledOnce);
 
+    t.end();
+});
+
+test('DragRotateHandler recovers after interruptino by another handler', (t) => {
+    // https://github.com/mapbox/mapbox-gl-js/issues/6106 
+    const map = createMap();
+    const initialBearing = map.getBearing();
+    simulate.mousedown(map.getCanvas(), {bubbles: true, buttons: 2, button: 2, clientX: 10, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 12, clientY: 10});
+    map._updateCamera();
+
+    // simluates another handler taking over
+    map.stop();
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 12, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {bubbles: true, buttons: 2, clientX: 14, clientY: 10});
+    map._updateCamera();
+    t.equalWithPrecision(map.getBearing(), initialBearing + 3.2, 1e-6);
     t.end();
 });
