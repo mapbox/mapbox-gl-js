@@ -251,8 +251,8 @@ class ScrollZoomHandler {
         if (!this.isActive()) return;
         this._active = false;
         this._finishTimeout = setTimeout(() => {
-            this._map.fire(new Event('zoomend'));
-            this._map.fire(new Event('moveend'));
+            this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
+            this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
             delete this._targetZoom;
         }, 200);
     }
