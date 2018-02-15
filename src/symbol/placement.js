@@ -284,9 +284,6 @@ class Placement {
                 opacityState = duplicateOpacityState;
             } else if (!opacityState) {
                 opacityState = defaultOpacityState;
-            }
-
-            if (!this.opacities[symbolInstance.crossTileID]) {
                 // store the state so that future placements use it as a starting point
                 this.opacities[symbolInstance.crossTileID] = opacityState;
             }
