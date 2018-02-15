@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@mapbox/batfish": "^0.13.3",
-    "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
+    "@mapbox/mapbox-gl-rtl-text": "^0.1.2",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
