@@ -390,20 +390,47 @@ test('DragRotateHandler requests a new render frame after each mousemove event',
     t.end();
 });
 
-test('DragRotateHandler recovers after interruption by another handler', (t) => {
+test('DragRotateHandler can interleave with another handler', (t) => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6106
     const map = createMap();
-    const initialBearing = map.getBearing();
-    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 10, clientY: 10});
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 12, clientY: 10});
-    map._updateCamera();
 
-    // simluates another handler taking over
-    map.stop();
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 12, clientY: 10});
-    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 14, clientY: 10});
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._updateCamera();
-    t.equalWithPrecision(map.getBearing(), initialBearing + 3.2, 1e-6);
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    // simulates another handler taking over
+    map.stop();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 2);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 2);
+    t.equal(rotateend.callCount, 1);
 
     map.remove();
     t.end();
