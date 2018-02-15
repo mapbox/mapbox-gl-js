@@ -37,7 +37,6 @@ class DragPanHandler {
         util.bindAll([
             '_onDown',
             '_onMove',
-            '_onUp',
             '_onTouchEnd',
             '_onMouseUp',
             '_onDragFrame',
@@ -214,13 +213,9 @@ class DragPanHandler {
         }, { originalEvent: e });
     }
 
-    _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
-        this._onDragFinished(e);
-    }
-
     _onMouseUp(e: MouseEvent | FocusEvent) {
         if (this._ignoreEvent(e)) return;
-        this._onUp(e);
+        this._onDragFinished(e);
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onMouseUp);
         window.removeEventListener('blur', this._onMouseUp);
@@ -228,7 +223,7 @@ class DragPanHandler {
 
     _onTouchEnd(e: TouchEvent) {
         if (this._ignoreEvent(e)) return;
-        this._onUp(e);
+        this._onDragFinished(e);
         window.document.removeEventListener('touchmove', this._onMove);
         window.document.removeEventListener('touchend', this._onTouchEnd);
     }
