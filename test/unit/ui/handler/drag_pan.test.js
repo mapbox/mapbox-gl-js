@@ -131,21 +131,47 @@ test('DragPanHandler requests a new render frame after each mousemove event', (t
     t.end();
 });
 
-test('DragPanHandler recovers after interruption by another handler', (t) => {
+test('DragPanHandler can interleave with another handler', (t) => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6106
     const map = createMap();
-    const initialCenter = map.getCenter();
-    simulate.mousedown(map.getCanvas(), {clientX: 10, clientY: 10});
-    simulate.mousemove(map.getCanvas(), {clientX: 12, clientY: 10});
-    map._updateCamera();
 
-    // simluates another handler taking over
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    // simulates another handler taking over
     map.stop();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas(), {clientX: 14, clientY: 10});
-    simulate.mousemove(map.getCanvas(), {clientX: 16, clientY: 10});
+    simulate.mousemove(map.getCanvas());
     map._updateCamera();
-    t.equalWithPrecision(map.getCenter().lng, initialCenter.lng - 2.8125, 1e-4);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 1);
 
     map.remove();
     t.end();

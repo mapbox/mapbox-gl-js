@@ -114,18 +114,9 @@ class DragPanHandler {
         this._lastMoveEvent = e;
         e.preventDefault();
 
-        const pos = DOM.mousePos(this._el, e);
+        this._pos = DOM.mousePos(this._el, e);
         this._drainInertiaBuffer();
-        this._inertia.push([browser.now(), pos]);
-
-        // if the dragging animation was interrupted (e.g. by another handler),
-        // we need to reestablish a _previousPos before we can resume dragging
-        if (!this._previousPos) {
-            this._previousPos = pos;
-            return;
-        }
-
-        this._pos = pos;
+        this._inertia.push([browser.now(), this._pos]);
 
         if (!this.isActive()) {
             // we treat the first move event (rather than the mousedown event)
@@ -134,12 +125,9 @@ class DragPanHandler {
             this._map.moving = true;
             this._fireEvent('dragstart', e);
             this._fireEvent('movestart', e);
-
-            this._map._startAnimation(this._onDragFrame, this._onDragFinished);
         }
 
-        // ensure a new render frame is scheduled
-        this._map._update();
+        this._map._startAnimation(this._onDragFrame);
     }
 
     /**
