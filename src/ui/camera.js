@@ -490,7 +490,9 @@ class Camera extends Evented {
         }
 
         if (bearingChanged) {
-            this.fire('rotate', eventData);
+            this.fire('rotatestart', eventData)
+                .fire('rotate', eventData)
+                .fire('rotateend', eventData);
         }
 
         if (pitchChanged) {
@@ -613,6 +615,9 @@ class Camera extends Evented {
         if (this.zooming) {
             this.fire('zoomstart', eventData);
         }
+        if (this.rotating) {
+            this.fire('rotatestart', eventData);
+        }
         if (this.pitching) {
             this.fire('pitchstart', eventData);
         }
@@ -633,6 +638,7 @@ class Camera extends Evented {
 
     _afterEase(eventData?: Object) {
         const wasZooming = this.zooming;
+        const wasRotating = this.rotating;
         const wasPitching = this.pitching;
         this.moving = false;
         this.zooming = false;
@@ -641,6 +647,9 @@ class Camera extends Evented {
 
         if (wasZooming) {
             this.fire('zoomend', eventData);
+        }
+        if (wasRotating) {
+            this.fire('rotateend', eventData);
         }
         if (wasPitching) {
             this.fire('pitchend', eventData);
