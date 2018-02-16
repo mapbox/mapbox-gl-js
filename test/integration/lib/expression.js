@@ -32,7 +32,12 @@ function stripPrecision(x) {
             Math.max(0,
                      decimalSigFigs - Math.ceil(Math.log10(Math.abs(x)))));
 
-        return Math.floor(x * multiplier) / multiplier;
+        // We strip precision twice in a row here to avoid cases where
+        // stripping an already stripped number will modify its value
+        // due to bad floating point precision luck
+        // eg `Math.floor(8.16598 * 100000) / 100000` -> 8.16597
+        const firstStrip = Math.floor(x * multiplier) / multiplier;
+        return Math.floor(firstStrip * multiplier) / multiplier;
     } else if (typeof x !== 'object') {
         return x;
     } else if (Array.isArray(x)) {
@@ -50,10 +55,7 @@ function deepEqual(a, b) {
     if (typeof a !== typeof b)
         return false;
     if (typeof a === 'number') {
-        if (a === 0) { return b === 0; }
-        const digits = 1 + Math.floor(Math.log10(Math.abs(a)));
-        const multiplier = Math.pow(10, decimalSigFigs - digits);
-        return Math.floor(a * multiplier) === Math.floor(b * multiplier);
+        return stripPrecision(a) === stripPrecision(b);
     }
     if (a === null || b === null || typeof a !== 'object')
         return a === b;
