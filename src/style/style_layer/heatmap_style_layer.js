@@ -5,6 +5,7 @@ import StyleLayer from '../style_layer';
 import HeatmapBucket from '../../data/bucket/heatmap_bucket';
 import { RGBAImage } from '../../util/image';
 import properties from './heatmap_style_layer_properties';
+import { renderColorRamp } from '../../util/color_ramp';
 import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type Texture from '../../render/texture';
@@ -41,18 +42,7 @@ class HeatmapStyleLayer extends StyleLayer {
 
     _updateColorRamp() {
         const expression = this._transitionablePaint._values['heatmap-color'].value.expression;
-        const colorRampData = new Uint8Array(256 * 4);
-        const len = colorRampData.length;
-        for (let i = 4; i < len; i += 4) {
-            const pxColor = expression.evaluate(({heatmapDensity: i / len}: any));
-            // the colors are being unpremultiplied because Color uses
-            // premultiplied values, and the Texture class expects unpremultiplied ones
-            colorRampData[i + 0] = Math.floor(pxColor.r * 255 / pxColor.a);
-            colorRampData[i + 1] = Math.floor(pxColor.g * 255 / pxColor.a);
-            colorRampData[i + 2] = Math.floor(pxColor.b * 255 / pxColor.a);
-            colorRampData[i + 3] = Math.floor(pxColor.a * 255);
-        }
-        this.colorRamp = new RGBAImage({width: 256, height: 1}, colorRampData);
+        this.colorRamp = renderColorRamp(expression, 'heatmapDensity');
         this.colorRampTexture = null;
     }
 

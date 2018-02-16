@@ -10,6 +10,7 @@ import { getMaximumPaintValue, translateDistance, translate } from '../query_uti
 import properties from './line_style_layer_properties';
 import { extend } from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
+import { renderColorRamp } from '../../util/color_ramp';
 import { Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty } from '../properties';
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
@@ -63,18 +64,7 @@ class LineStyleLayer extends StyleLayer {
 
     _updateGradient() {
         const expression = this._transitionablePaint._values['line-gradient'].value.expression;
-        const gradientData = new Uint8Array(256 * 4);
-        const len = gradientData.length;
-        for (let i = 0; i < len; i += 4) {
-            const pxColor = expression.evaluate(({lineProgress: (i + 4) / len}: any));
-            // the colors are being unpremultiplied because Color uses
-            // premultiplied values, and the Texture class expects unpremultiplied ones
-            gradientData[i + 0] = Math.floor(pxColor.r * 255 / pxColor.a);
-            gradientData[i + 1] = Math.floor(pxColor.g * 255 / pxColor.a);
-            gradientData[i + 2] = Math.floor(pxColor.b * 255 / pxColor.a);
-            gradientData[i + 3] = Math.floor(pxColor.a * 255);
-        }
-        this.gradient = new RGBAImage({width: 256, height: 1}, gradientData);
+        this.gradient = renderColorRamp(expression, 'lineProgress');
         this.gradientTexture = null;
     }
 
