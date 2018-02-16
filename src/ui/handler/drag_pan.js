@@ -122,7 +122,6 @@ class DragPanHandler {
             // we treat the first move event (rather than the mousedown event)
             // as the start of the drag
             this._active = true;
-            this._map.moving = true;
             this._fireEvent('dragstart', e);
             this._fireEvent('movestart', e);
         }
@@ -170,7 +169,6 @@ class DragPanHandler {
         this._drainInertiaBuffer();
 
         const finish = () => {
-            this._map.moving = false;
             this._fireEvent('moveend', e);
         };
 

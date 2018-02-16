@@ -189,8 +189,6 @@ class ScrollZoomHandler {
         if (!this._delta) return;
 
         this._active = true;
-        this._map.moving = true;
-        this._map.zooming = true;
         this._map.fire('movestart', {originalEvent: e});
         this._map.fire('zoomstart', {originalEvent: e});
         clearTimeout(this._finishTimeout);
@@ -251,8 +249,6 @@ class ScrollZoomHandler {
         if (!this.isActive()) return;
         this._active = false;
         this._finishTimeout = setTimeout(() => {
-            this._map.moving = false;
-            this._map.zooming = false;
             this._map.fire('zoomend');
             this._map.fire('moveend');
             delete this._targetZoom;

@@ -581,6 +581,24 @@ class Map extends Camera {
     }
 
     /**
+     * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
+     */
+    isMoving(): boolean {
+        return this.moving ||
+            this.dragPan.isActive() ||
+            this.dragRotate.isActive() ||
+            this.scrollZoom.isActive();
+    }
+
+    /**
+     * Returns true if the map is zooming due to a camera animation or user gesture.
+     */
+    isZooming(): boolean {
+        return this.zooming ||
+            this.scrollZoom.isActive();
+    }
+
+    /**
      * Adds a listener for events of a specified type.
      *
      * @method
