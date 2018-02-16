@@ -20,7 +20,31 @@ function stringify(v) {
     return s;
 }
 
-const floatPrecision = 6; // in decimal sigfigs
+const decimalSigFigs = 6;
+
+function stripPrecision(x) {
+    // Intended for test output serialization:
+    // strips down to 6 decimal sigfigs but stops at decimal point
+    if (typeof x === 'number') {
+        if (x === 0) { return x; }
+
+        const multiplier = Math.pow(10,
+            Math.max(0,
+                     decimalSigFigs - Math.ceil(Math.log10(Math.abs(x)))));
+
+        return Math.floor(x * multiplier) / multiplier;
+    } else if (typeof x !== 'object') {
+        return x;
+    } else if (Array.isArray(x)) {
+        return x.map(stripPrecision);
+    } else {
+        const stripped = {};
+        for (const key of Object.keys(x)) {
+            stripped[key] = stripPrecision(x[key]);
+        }
+        return stripped;
+    }
+}
 
 function deepEqual(a, b) {
     if (typeof a !== typeof b)
@@ -28,7 +52,7 @@ function deepEqual(a, b) {
     if (typeof a === 'number') {
         if (a === 0) { return b === 0; }
         const digits = 1 + Math.floor(Math.log10(Math.abs(a)));
-        const multiplier = Math.pow(10, floatPrecision - digits);
+        const multiplier = Math.pow(10, decimalSigFigs - digits);
         return Math.floor(a * multiplier) === Math.floor(b * multiplier);
     }
     if (a === null || b === null || typeof a !== 'object')
@@ -69,11 +93,22 @@ exports.run = function (implementation, options, runExpressionTest) {
             const dir = path.join(directory, params.group, params.test);
 
             if (process.env.UPDATE) {
-                fixture.expected = result;
-                // We save the expected serialization, but the round-tripped compilation results
-                // and outputs should be identical, so no need to save them.
-                delete fixture.expected.recompiled;
-                delete fixture.expected.roundTripOutputs;
+                // If we're updating from GL JS, where `result.serialized` will not exist,
+                // just copy the existing expected value, or default to expect the
+                // serialized form to be identical to the input expression
+                const previousSerialized =
+                    (fixture.expected && fixture.expected.serialized !== undefined) ?
+                        fixture.expected.serialized :
+                        undefined;
+
+                fixture.expected = {
+                    compiled: result.compiled,
+                    outputs: stripPrecision(result.outputs),
+                    serialized: implementation === 'native' ?
+                        result.serialized :
+                        previousSerialized
+                };
+
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
                 return;
             }
