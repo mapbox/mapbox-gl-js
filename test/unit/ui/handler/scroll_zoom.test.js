@@ -19,10 +19,6 @@ function createMap(options) {
     }, options));
 }
 
-// magic deltaY value that indicates the event is from a mouse wheel
-// (rather than a trackpad)
-const magicWheelZoomDelta = 4.000244140625;
-
 test('ScrollZoomHandler zooms in response to wheel events', (t) => {
     const browserNow = t.stub(browser, 'now');
     let now = 1555555555555;
@@ -35,7 +31,7 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         // simulate a single 'wheel' event
         const startZoom = map.getZoom();
 
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -magicWheelZoomDelta});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
         map._updateCamera();
 
         now += 400;
@@ -68,7 +64,7 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         const startZoom = map.getZoom();
 
         const events = [
-            [2, {type: 'wheel', deltaY: -magicWheelZoomDelta}],
+            [2, {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta}],
             [7, {type: 'wheel', deltaY: -41}],
             [30, {type: 'wheel', deltaY: -169}],
             [1, {type: 'wheel', deltaY: -801}],

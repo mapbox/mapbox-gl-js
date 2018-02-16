@@ -142,7 +142,6 @@ class DragRotateHandler {
 
         if (!this.isActive()) {
             this._active = true;
-            this._map.moving = true;
             this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
             if (this._pitchWithRotate) {
@@ -206,7 +205,6 @@ class DragRotateHandler {
             if (Math.abs(mapBearing) < this._bearingSnap) {
                 map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
-                this._map.moving = false;
                 this._fireEvent('moveend', e);
             }
             if (this._pitchWithRotate) this._fireEvent('pitchend', e);

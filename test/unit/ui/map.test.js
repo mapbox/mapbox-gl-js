@@ -1299,40 +1299,6 @@ test('Map', (t) => {
         });
     });
 
-    t.test('Map#isMoving', (t) => {
-        t.plan(3);
-        const map = createMap();
-
-        t.equal(map.isMoving(), false, 'false before moving');
-
-        map.on('movestart', () => {
-            t.equal(map.isMoving(), true, 'true on movestart');
-        });
-
-        map.on('moveend', () => {
-            t.equal(map.isMoving(), false, 'false on moveend');
-        });
-
-        map.zoomTo(5, { duration: 0 });
-    });
-
-    t.test('Map#isZooming', (t) => {
-        t.plan(3);
-        const map = createMap();
-
-        t.equal(map.isZooming(), false, 'false before zooming');
-
-        map.on('zoomstart', () => {
-            t.equal(map.isZooming(), true, 'true on zoomstart');
-        });
-
-        map.on('zoomend', () => {
-            t.equal(map.isZooming(), false, 'false on zoomend');
-        });
-
-        map.zoomTo(5, { duration: 0 });
-    });
-
     t.end();
 });
 

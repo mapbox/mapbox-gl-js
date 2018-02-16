@@ -859,26 +859,6 @@ class Camera extends Evented {
     }
 
     /**
-     * Returns a Boolean indicating whether the camera is moving.
-     *
-     * @memberof Map#
-     * @returns A Boolean indicating whether the camera is moving.
-     */
-    isMoving(): boolean {
-        return this.moving;
-    }
-
-    /**
-     * Returns a Boolean indicating whether the camera is zooming.
-     *
-     * @memberof Map#
-     * @returns A Boolean indicating whether the camera is zooming.
-     */
-    isZooming(): boolean {
-        return this.zooming;
-    }
-
-    /**
      * Stops any animated transition underway.
      *
      * @memberof Map#
