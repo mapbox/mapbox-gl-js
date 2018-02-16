@@ -69,8 +69,7 @@ test('Marker', (t) => {
     });
 
     t.test('marker with custom anchor and offest', (t) => {
-        const marker = new Marker(window.document.createElement('div'), 
-        { anchor: 'top-right', offset: [1, 2] });
+        const marker = new Marker(window.document.createElement('div'), { anchor: 'top-right', offset: [1, 2] });
         t.ok(marker.getElement(), 'default marker is created');
         t.ok(marker.getAnchor().equals('top-right'), 'marker sets with supplied anchor');
         t.ok(marker.getOffset().equals(new Point(1, 2)), 'marker sets with supplied offset');
