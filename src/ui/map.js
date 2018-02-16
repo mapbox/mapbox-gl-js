@@ -584,7 +584,7 @@ class Map extends Camera {
      * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
      */
     isMoving(): boolean {
-        return this.moving ||
+        return this._moving ||
             this.dragPan.isActive() ||
             this.dragRotate.isActive() ||
             this.scrollZoom.isActive();
@@ -594,8 +594,16 @@ class Map extends Camera {
      * Returns true if the map is zooming due to a camera animation or user gesture.
      */
     isZooming(): boolean {
-        return this.zooming ||
+        return this._zooming ||
             this.scrollZoom.isActive();
+    }
+
+    /**
+     * Returns true if the map is rotating due to a camera animation or user gesture.
+     */
+    isRotating(): boolean {
+        return this._rotating ||
+            this.dragRotate.isActive();
     }
 
     /**
@@ -1544,8 +1552,8 @@ class Map extends Camera {
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
-            rotating: this.rotating,
-            zooming: this.zooming,
+            rotating: this.isRotating(),
+            zooming: this.isZooming(),
             fadeDuration: this._fadeDuration
         });
 

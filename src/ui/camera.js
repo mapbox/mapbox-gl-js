@@ -65,10 +65,10 @@ type AnimationOptions = {
 
 class Camera extends Evented {
     transform: Transform;
-    moving: boolean;
-    zooming: boolean;
-    rotating: boolean;
-    pitching: boolean;
+    _moving: boolean;
+    _zooming: boolean;
+    _rotating: boolean;
+    _pitching: boolean;
 
     _bearingSnap: number;
     _onEaseEnd: number;
@@ -82,8 +82,8 @@ class Camera extends Evented {
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
-        this.moving = false;
-        this.zooming = false;
+        this._moving = false;
+        this._zooming = false;
         this.transform = transform;
         this._bearingSnap = options.bearingSnap;
     }
@@ -562,22 +562,22 @@ class Camera extends Evented {
             aroundPoint = tr.locationPoint(around);
         }
 
-        this.zooming = (zoom !== startZoom);
-        this.rotating = (startBearing !== bearing);
-        this.pitching = (pitch !== startPitch);
+        this._zooming = (zoom !== startZoom);
+        this._rotating = (startBearing !== bearing);
+        this._pitching = (pitch !== startPitch);
 
         this._prepareEase(eventData, options.noMoveStart);
 
         clearTimeout(this._onEaseEnd);
 
         this._ease((k) => {
-            if (this.zooming) {
+            if (this._zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
-            if (this.rotating) {
+            if (this._rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this.pitching) {
+            if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
@@ -607,43 +607,43 @@ class Camera extends Evented {
     }
 
     _prepareEase(eventData?: Object, noMoveStart: boolean) {
-        this.moving = true;
+        this._moving = true;
 
         if (!noMoveStart) {
             this.fire('movestart', eventData);
         }
-        if (this.zooming) {
+        if (this._zooming) {
             this.fire('zoomstart', eventData);
         }
-        if (this.rotating) {
+        if (this._rotating) {
             this.fire('rotatestart', eventData);
         }
-        if (this.pitching) {
+        if (this._pitching) {
             this.fire('pitchstart', eventData);
         }
     }
 
     _fireMoveEvents(eventData?: Object) {
         this.fire('move', eventData);
-        if (this.zooming) {
+        if (this._zooming) {
             this.fire('zoom', eventData);
         }
-        if (this.rotating) {
+        if (this._rotating) {
             this.fire('rotate', eventData);
         }
-        if (this.pitching) {
+        if (this._pitching) {
             this.fire('pitch', eventData);
         }
     }
 
     _afterEase(eventData?: Object) {
-        const wasZooming = this.zooming;
-        const wasRotating = this.rotating;
-        const wasPitching = this.pitching;
-        this.moving = false;
-        this.zooming = false;
-        this.rotating = false;
-        this.pitching = false;
+        const wasZooming = this._zooming;
+        const wasRotating = this._rotating;
+        const wasPitching = this._pitching;
+        this._moving = false;
+        this._zooming = false;
+        this._rotating = false;
+        this._pitching = false;
 
         if (wasZooming) {
             this.fire('zoomend', eventData);
@@ -825,9 +825,9 @@ class Camera extends Evented {
             options.duration = 0;
         }
 
-        this.zooming = true;
-        this.rotating = (startBearing !== bearing);
-        this.pitching = (pitch !== startPitch);
+        this._zooming = true;
+        this._rotating = (startBearing !== bearing);
+        this._pitching = (pitch !== startPitch);
 
         this._prepareEase(eventData, false);
 
@@ -837,10 +837,10 @@ class Camera extends Evented {
             const scale = 1 / w(s);
             tr.zoom = startZoom + tr.scaleZoom(scale);
 
-            if (this.rotating) {
+            if (this._rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-            if (this.pitching) {
+            if (this._pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
