@@ -701,9 +701,9 @@ test('camera', (t) => {
                 .on('movestart', (d) => { movestarted = d.data; })
                 .on('move', (d) => { moved = d.data; })
                 .on('moveend', (d) => {
-                    t.notOk(camera.zooming);
-                    t.notOk(camera.panning);
-                    t.notOk(camera.rotating);
+                    t.notOk(camera._zooming);
+                    t.notOk(camera._panning);
+                    t.notOk(camera._rotating);
 
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
@@ -997,9 +997,9 @@ test('camera', (t) => {
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
                 .on('moveend', function(d) {
-                    t.notOk(this.zooming);
-                    t.notOk(this.panning);
-                    t.notOk(this.rotating);
+                    t.notOk(this._zooming);
+                    t.notOk(this._panning);
+                    t.notOk(this._rotating);
 
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
@@ -1064,9 +1064,9 @@ test('camera', (t) => {
                 .on('pitch', (d) => { pitched = d.data; })
                 .on('pitchend', (d) => { pitchended = d.data; })
                 .on('moveend', function(d) {
-                    t.notOk(this.zooming);
-                    t.notOk(this.panning);
-                    t.notOk(this.rotating);
+                    t.notOk(this._zooming);
+                    t.notOk(this._panning);
+                    t.notOk(this._rotating);
 
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
@@ -1579,19 +1579,19 @@ test('camera', (t) => {
     });
 
     t.test('#stop', (t) => {
-        t.test('resets camera.zooming', (t) => {
+        t.test('resets camera._zooming', (t) => {
             const camera = createCamera();
             camera.zoomTo(3.2);
             camera.stop();
-            t.ok(!camera.zooming);
+            t.ok(!camera._zooming);
             t.end();
         });
 
-        t.test('resets camera.rotating', (t) => {
+        t.test('resets camera._rotating', (t) => {
             const camera = createCamera();
             camera.rotateTo(90);
             camera.stop();
-            t.ok(!camera.rotating);
+            t.ok(!camera._rotating);
             t.end();
         });
 
