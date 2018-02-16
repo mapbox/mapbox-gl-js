@@ -11,7 +11,7 @@
       "isZoomConstant": false,
       "type": "number"
     },
-    "outputs": [5.000000149011612],
+    "outputs": [5],
     "serialized": [
       "coalesce",
       ["interpolate", ["exponential", 1], ["zoom"], 0, 0, 30, 30]
