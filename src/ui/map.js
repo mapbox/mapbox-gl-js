@@ -247,12 +247,41 @@ class Map extends Camera {
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
 
+    /**
+     * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
+     */
     scrollZoom: ScrollZoomHandler;
+
+    /**
+     * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
+     */
     boxZoom: BoxZoomHandler;
+
+    /**
+     * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
+     * mouse button or with the Control key pressed.
+     */
     dragRotate: DragRotateHandler;
+
+    /**
+     * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
+     */
     dragPan: DragPanHandler;
+
+    /**
+     * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
+     * shortcuts.
+     */
     keyboard: KeyboardHandler;
+
+    /**
+     * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
+     */
     doubleClickZoom: DoubleClickZoomHandler;
+
+    /**
+     * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
+     */
     touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
