@@ -63,16 +63,16 @@ test('Marker', (t) => {
     t.test('default marker with some options', (t) => {
         const marker = new Marker(null, { anchor: 'bottom',  foo: 'bar' });
         t.ok(marker.getElement(), 'default marker is created');
-        t.ok(marker.getAnchor().equals('bottom'), 'marker set with anchor options');
-        t.ok(marker.getOffset().equals(new Point(0, -14)), 'default marker with no offset uses default marker offset');
+        t.ok(marker.getAnchor(), 'translate(-50%,-100%)', 'marker set with anchor options');
+        t.ok(marker.getOffset(), 'translate(0px, 0px)', 'marker set with no offset uses default offset');
         t.end();
     });
 
     t.test('marker with custom anchor and offest', (t) => {
         const marker = new Marker(window.document.createElement('div'), { anchor: 'top-right', offset: [1, 2] });
         t.ok(marker.getElement(), 'default marker is created');
-        t.ok(marker.getAnchor().equals('top-right'), 'marker sets with supplied anchor');
-        t.ok(marker.getOffset().equals(new Point(1, 2)), 'marker sets with supplied offset');
+        t.ok(marker.getAnchor(), 'translate(-100%, 0)', 'marker sets with supplied anchor');
+        t.ok(marker.getOffset(), 'translate(1px, 2px)', 'marker sets with supplied offset');
         t.end();
     });
 
@@ -209,8 +209,8 @@ test('Marker', (t) => {
             .setLngLat([0, 0])
             .addTo(map);
 
-        t.ok(marker.getAnchor().equals('middle'));
-        t.ok(marker.getOffset().equals([0, 0]));
+        t.ok(marker.getAnchor(), 'translate(-50%,-50%)');
+        t.ok(marker.getOffset(), 'translate(256px, 256px)');
         t.ok(marker._element, 'translate(-50%,-50%) translate(256px, 256px)', 'Marker centered');
         t.end();
     });
