@@ -18,18 +18,21 @@ function createMap() {
 test('Marker', (t) => {
 
     t.test('constructor', (t) => {
-        const marker = new Marker();
-        t.ok(marker, 'marker is created');
+        const el = window.document.createElement('div');
+        const marker = new Marker(el);
+        t.ok(marker.getElement(), 'marker element is created');
         t.end();
     });
 
     t.test('default marker without element', (t) => {
         const marker = new Marker();
         t.ok(marker.getElement(), 'marker returns default element');
+        t.ok(marker.getAnchor(), 'marker returns default  anchor option');
+        t.ok(marker.getOffset(), 'marker returns default offset option');
         t.end();
     });
 
-    t.test('default marker with element', (t) => {
+    t.test('marker with element', (t) => {
         const marker = new Marker(window.document.createElement('div'));
         t.ok(marker.getElement(), 'marker with custom element is created');
         t.end();
@@ -60,16 +63,17 @@ test('Marker', (t) => {
     t.test('default marker with some options', (t) => {
         const marker = new Marker(null, { anchor: 'bottom',  foo: 'bar' });
         t.ok(marker.getElement(), 'default marker is created');
-        t.ok(marker.getAnchor(), 'marker set with anchor options');
-        t.ok(marker.getOffset(), 'default marker with no offset uses default marker offset');
+        t.ok(marker.getAnchor().equals('bottom'), 'marker set with anchor options');
+        t.ok(marker.getOffset().equals(new Point(0, -14)), 'default marker with no offset uses default marker offset');
         t.end();
     });
 
-    t.test('default marker with custom offest', (t) => {
-        const marker = new Marker(window.document.createElement('div'), { offset: [1, 2] });
+    t.test('marker with custom anchor and offest', (t) => {
+        const marker = new Marker(window.document.createElement('div'), 
+        { anchor: 'top-right', offset: [1, 2] });
         t.ok(marker.getElement(), 'default marker is created');
-        t.ok(marker.getAnchor(), 'marker sets with anchor ');
-        t.ok(marker.getOffset(), 'default marker with supplied offset');
+        t.ok(marker.getAnchor().equals('top-right'), 'marker sets with supplied anchor');
+        t.ok(marker.getOffset().equals(new Point(1, 2)), 'marker sets with supplied offset');
         t.end();
     });
 
@@ -200,14 +204,14 @@ test('Marker', (t) => {
         t.end();
     });
 
-    t.test('marker centered by default', (t) => {
+    t.test('marker centered by default and returns defaults for anchor and offset', (t) => {
         const map = createMap();
         const marker = new Marker(window.document.createElement('div'))
             .setLngLat([0, 0])
             .addTo(map);
 
-        t.ok(marker.setAnchor('middle'));
-        t.ok(marker.setOffset([0, 0]));
+        t.ok(marker.getAnchor().equals('middle'));
+        t.ok(marker.getOffset().equals([0, 0]));
         t.ok(marker._element, 'translate(-50%,-50%) translate(256px, 256px)', 'Marker centered');
         t.end();
     });
