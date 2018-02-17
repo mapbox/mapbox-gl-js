@@ -3,20 +3,16 @@
 const test = require('mapbox-gl-js-test').test;
 const window = require('../../../../src/util/window');
 const Map = require('../../../../src/ui/map');
-const config = require('../../../../src/util/config');
 const ScaleControl = require('../../../../src/ui/control/scale_control');
 
 function createMap() {
     const container = window.document.createElement('div');
-    config.ACCESS_TOKEN = 'pk.123';
     return new Map({
-        container: container,
+        container,
         style: {
             version: 8,
             sources: {},
-            layers: [],
-            owner: 'mapbox',
-            id: 'streets-v10',
+            layers: []
         },
         hash: true
     });
@@ -36,5 +32,16 @@ test('ScaleControl appears in the position specified by the position option', (t
     map.addControl(new ScaleControl(), 'top-left');
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-scale').length, 1);
+    t.end();
+});
+
+test('ScaleControl should change unit of distance after calling setUnit', (t) => {
+    const map = createMap();
+    const scale = new ScaleControl();
+    map.addControl(scale);
+
+    t.equal(scale.options.unit, 'metric');
+    scale.setUnit('imperial');
+    t.equal(scale.options.unit, 'imperial');
     t.end();
 });
