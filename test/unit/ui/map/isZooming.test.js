@@ -47,13 +47,35 @@ test('Map#isZooming returns true when scroll zooming', (t) => {
         t.end();
     });
 
-    const browserNow = t.stub(browser, 'now');
     let now = 0;
-    browserNow.callsFake(() => now);
+    t.stub(browser, 'now').callsFake(() => now);
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._updateCamera();
 
     now += 400;
+    map._updateCamera();
+});
+
+test('Map#isZooming returns true when double-click zooming', (t) => {
+    const map = createMap();
+
+    map.on('zoomstart', () => {
+        t.equal(map.isZooming(), true);
+    });
+
+    map.on('zoomend', () => {
+        t.equal(map.isZooming(), false);
+        map.remove();
+        t.end();
+    });
+
+    let now = 0;
+    t.stub(browser, 'now').callsFake(() => now);
+
+    simulate.dblclick(map.getCanvas());
+    map._updateCamera();
+
+    now += 500;
     map._updateCamera();
 });
