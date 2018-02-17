@@ -18,12 +18,13 @@ const defaultOptions = {
  * @param {number} [options.maxWidth='100'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
  * @example
- * var scale = map.addControl(new mapboxgl.ScaleControl({
+ * var scale = new mapboxgl.ScaleControl({
  *     maxWidth: 80,
  *     unit: 'imperial'
- * }));
+ * });
+ * map.addControl(scale);
  *
- * scale.updateUnit('metric');
+ * scale.setUnit('metric');
  */
 class ScaleControl {
     _map: Map;
@@ -35,7 +36,7 @@ class ScaleControl {
 
         util.bindAll([
             '_onMove',
-            'updateUnit'
+            'setUnit'
         ], this);
     }
 
@@ -64,11 +65,11 @@ class ScaleControl {
     }
 
     /**
-     * Update the scale's unit of the distance
+     * Set the scale's unit of the distance
      *
      * @param {String} unit
      */
-    updateUnit(unit: string) {
+    setUnit(unit: string) {
         this.options.unit = unit;
         updateScale(this._map, this._container, this.options);
     }
