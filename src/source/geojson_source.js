@@ -18,9 +18,7 @@ import type {PerformanceResourceTiming} from '../types/performance_resource_timi
  * A source containing GeoJSON.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.)
  *
- * @interface GeoJSONSource
  * @example
- *
  * map.addSource('some id', {
  *     type: 'geojson',
  *     data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson'
@@ -81,6 +79,9 @@ class GeoJSONSource extends Evented implements Source {
     _resourceTiming: Array<PerformanceResourceTiming>;
     _removed: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: GeojsonSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
 

@@ -7,14 +7,15 @@ import type Map from '../map';
 /**
  * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
  * double clicking.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class DoubleClickZoomHandler {
     _map: Map;
     _enabled: boolean;
     _active: boolean;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
 

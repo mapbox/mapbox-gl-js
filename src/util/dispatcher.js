@@ -9,7 +9,6 @@ import type WorkerPool from './worker_pool';
  * Responsible for sending messages from a {@link Source} to an associated
  * {@link WorkerSource}.
  *
- * @interface Dispatcher
  * @private
  */
 class Dispatcher {

@@ -25,7 +25,6 @@ import type VertexBuffer from '../gl/vertex_buffer';
  * A data source containing an image.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
  *
- * @interface ImageSource
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -72,6 +71,9 @@ class ImageSource extends Evented implements Source {
     boundsBuffer: VertexBuffer;
     boundsVAO: VertexArrayObject;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: ImageSourceSpecification | VideoSourceSpecification | CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;

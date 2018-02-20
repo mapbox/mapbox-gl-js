@@ -13,7 +13,6 @@ import type {Callback} from '../types/callback';
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`,
  * `video`, etc.) and all custom, third-party types.
  *
- * @class Source
  * @private
  *
  * @param {string} id The id for the source. Must not be used by any existing source.
