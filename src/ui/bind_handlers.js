@@ -58,7 +58,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseUp(e: MouseEvent) {
-        const rotating = map.dragRotate && map.dragRotate.isActive();
+        const rotating = map.dragRotate.isActive();
 
         if (contextMenuEvent && !rotating) {
             // This will be the case for Mac
@@ -71,8 +71,8 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseMove(e: MouseEvent) {
-        if (map.dragPan && map.dragPan.isActive()) return;
-        if (map.dragRotate && map.dragRotate.isActive()) return;
+        if (map.dragPan.isActive()) return;
+        if (map.dragRotate.isActive()) return;
 
         let target: any = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
@@ -136,7 +136,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onContextMenu(e: MouseEvent) {
-        const rotating = map.dragRotate && map.dragRotate.isActive();
+        const rotating = map.dragRotate.isActive();
         if (!mouseDown && !rotating) {
             // Windows: contextmenu fired on mouseup, so fire event now
             fireMouseEvent('contextmenu', e);

@@ -214,8 +214,8 @@ class DragPanHandler {
     _ignoreEvent(e: any) {
         const map = this._map;
 
-        if (map.boxZoom && map.boxZoom.isActive()) return true;
-        if (map.dragRotate && map.dragRotate.isActive()) return true;
+        if (map.boxZoom.isActive()) return true;
+        if (map.dragRotate.isActive()) return true;
         if (e.touches) {
             return (e.touches.length > 1);
         } else {
