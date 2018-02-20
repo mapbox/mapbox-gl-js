@@ -11,6 +11,7 @@ const {parseCSSColor} = require('csscolorparser');
  * @param {number} g The green channel.
  * @param {number} b The blue channel.
  * @param {number} a The alpha channel.
+ * @private
  */
 class Color {
     r: number;
