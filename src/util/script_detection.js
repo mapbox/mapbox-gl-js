@@ -81,6 +81,7 @@ module.exports.charAllowsIdeographicBreaking = function(char: number) {
  * adjacent characters can be rotated. For example, a Chinese character is
  * always drawn upright. An uprightly oriented character causes an adjacent
  * “neutral” character to be drawn upright as well.
+ * @private
  */
 exports.charHasUprightVerticalOrientation = function(char: number) {
     if (char === 0x02EA /* modifier letter yin departing tone mark */ ||
@@ -168,6 +169,7 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
  * fraction ½ is drawn upright among Chinese characters but rotated among Latin
  * letters. A neutrally oriented character does not influence whether an
  * adjacent character is drawn upright or rotated.
+ * @private
  */
 exports.charHasNeutralVerticalOrientation = function(char: number) {
     if (isChar['Latin-1 Supplement'](char)) {
@@ -258,6 +260,7 @@ exports.charHasNeutralVerticalOrientation = function(char: number) {
  * oriented vertically, even if both adjacent characters are upright. For
  * example, a Latin letter is drawn rotated along a vertical line. A rotated
  * character causes an adjacent “neutral” character to be drawn rotated as well.
+ * @private
  */
 exports.charHasRotatedVerticalOrientation = function(char: number) {
     return !(exports.charHasUprightVerticalOrientation(char) ||

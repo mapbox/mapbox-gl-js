@@ -2,6 +2,8 @@
 
 /**
  * Throttle the given function to run at most every `period` milliseconds.
+ Throttle the given function to run at most every period milliseconds.
+ * @private
  */
 module.exports = function throttle(fn: () => void, time: number): () => number {
     let pending = false;

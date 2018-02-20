@@ -1,3 +1,10 @@
+
+## 11.1.1
+
+### 🐛 Bug fixes
+
+* Update SDK support information for `text-font`, and `heatmap-color`, and `hillshade` layer properties.
+
 ## 11.1.0
 
 ### ✨ Features and improvements

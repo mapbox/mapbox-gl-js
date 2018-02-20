@@ -115,6 +115,8 @@ for (const name in expressions) {
  * If a `transferables` array is provided, add any transferable objects (i.e.,
  * any ArrayBuffers or ArrayBuffer views) to the list. (If a copy is needed,
  * this should happen in the client code, before using serialize().)
+ *
+ * @private
  */
 function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
     if (input === null ||

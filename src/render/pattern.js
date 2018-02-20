@@ -10,7 +10,7 @@ import type {CrossFaded} from '../style/cross_faded';
 
 /**
  * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
- *
+ * @private
  * @returns true if a needed image is missing and rendering needs to be skipped.
  */
 exports.isPatternMissing = function(image: ?CrossFaded<string>, painter: Painter): boolean {
