@@ -176,3 +176,157 @@ test('DragPanHandler can interleave with another handler', (t) => {
     map.remove();
     t.end();
 });
+
+test('DragPanHandler does not begin a drag if the control key is down on mousedown', (t) => {
+    const map = createMap();
+    map.dragRotate.disable();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas(), {ctrlKey: true});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {ctrlKey: true});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(), {ctrlKey: true});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler still ends a drag if the control key is down on mouseup', (t) => {
+    const map = createMap();
+    map.dragRotate.disable();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(), {ctrlKey: true});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not begin a drag on right button mousedown', (t) => {
+    const map = createMap();
+    map.dragRotate.disable();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not end a drag on right button mouseup', (t) => {
+    const map = createMap();
+    map.dragRotate.disable();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas());
+    map._updateCamera();
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 2);
+    t.equal(dragend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
