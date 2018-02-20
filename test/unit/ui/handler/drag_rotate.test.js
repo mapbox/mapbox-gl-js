@@ -435,3 +435,141 @@ test('DragRotateHandler can interleave with another handler', (t) => {
     map.remove();
     t.end();
 });
+
+test('DragRotateHandler does not begin a drag on left-button mousedown without the control key', (t) => {
+    const map = createMap();
+    map.dragPan.disable();
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    simulate.mousedown(map.getCanvas());
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas());
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragRotateHandler does not end a right-button drag on left-button mouseup', (t) => {
+    const map = createMap();
+    map.dragPan.disable();
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 3, button: 0});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 2, button: 0});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 2);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 2);
+    t.equal(rotateend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('DragRotateHandler does not end a control-left-button drag on right-button mouseup', (t) => {
+    const map = createMap();
+    map.dragPan.disable();
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 3, button: 2, ctrlKey: true});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 1, button: 2, ctrlKey: true});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 1);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 2);
+    t.equal(rotateend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
+    map._updateCamera();
+    t.equal(rotatestart.callCount, 1);
+    t.equal(rotate.callCount, 2);
+    t.equal(rotateend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
