@@ -5,12 +5,13 @@
     [{}, {"properties": {"x": false}}]
   ],
   "expected": {
-    "outputs": [false, true],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [false, true],
+    "serialized": ["!", ["boolean", ["get", "x"]]]
   }
 }

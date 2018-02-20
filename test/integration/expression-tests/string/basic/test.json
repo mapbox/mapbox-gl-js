@@ -7,6 +7,12 @@
     [{}, {"properties": {"x": null}}]
   ],
   "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
     "outputs": [
       "1",
       {
@@ -17,11 +23,6 @@
       },
       {"error": "Expected value to be of type string, but found null instead."}
     ],
-    "compiled": {
-      "result": "success",
-      "isZoomConstant": true,
-      "isFeatureConstant": false,
-      "type": "string"
-    }
+    "serialized": ["string", ["get", "x"]]
   }
 }

@@ -231,7 +231,7 @@
       "type": "enum",
       "values": {
         "raster-dem": {
-            "doc": "A raster DEM source using Mapbox Terrain RGB"
+            "doc": "A RGB-encoded raster DEM source"
         }
       },
       "doc": "The type of the source."
@@ -271,6 +271,19 @@
     "attribution": {
       "type": "string",
       "doc": "Contains an attribution to be displayed when the map is shown to a user."
+    },
+    "encoding": {
+      "type": "enum",
+      "values": {
+        "terrarium": {
+          "doc": "Terrarium format PNG tiles. See https://aws.amazon.com/es/public-datasets/terrain/ for more info."
+        },
+        "mapbox": {
+          "doc": "Mapbox Terrain RGB tiles. See https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb for more info."
+        }
+      },
+      "default": "mapbox",
+      "doc": "The encoding used by this source. Mapbox Terrain RGB is used by default"
     },
     "*": {
       "type": "*",
@@ -502,7 +515,7 @@
           }
         },
         "hillshade": {
-          "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles",
+          "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB and Mapzen Terrarium tiles.",
           "sdk-support": {
             "basic functionality": {
               "js": "0.43.0"

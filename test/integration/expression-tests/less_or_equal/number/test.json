@@ -6,12 +6,13 @@
     [{}, {"properties": {"x": 2, "y": 1}}]
   ],
   "expected": {
-    "outputs": [true, true, false],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [true, true, false],
+    "serialized": ["<=", ["number", ["get", "x"]], ["number", ["get", "y"]]]
   }
 }

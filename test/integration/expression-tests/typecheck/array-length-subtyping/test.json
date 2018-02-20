@@ -8,12 +8,13 @@
   "expression": ["array", "string", 2, ["get", "x"]],
   "inputs": [],
   "expected": {
-    "outputs": [],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "array<string, 2>"
-    }
+    },
+    "outputs": [],
+    "serialized": ["array", "string", 2, ["get", "x"]]
   }
 }

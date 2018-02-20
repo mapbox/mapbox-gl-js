@@ -2,12 +2,13 @@
   "expression": ["log10", 100],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [2],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [2],
+    "serialized": 2
   }
 }

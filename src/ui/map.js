@@ -530,6 +530,27 @@ class Map extends Camera {
     }
 
     /**
+     * Returns the state of renderWorldCopies.
+     *
+     * @returns {boolean} renderWorldCopies
+     */
+    getRenderWorldCopies() { return this.transform.renderWorldCopies; }
+
+    /**
+     * Sets the state of renderWorldCopies.
+     *
+     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered, when zoomed out. `undefined` is treated as `true`, `null` is treated as `false`.
+     * @returns {Map} `this`
+     */
+    setRenderWorldCopies(renderWorldCopies?: ?boolean) {
+
+        this.transform.renderWorldCopies = renderWorldCopies;
+        this._update();
+
+        return this;
+    }
+
+    /**
      * Returns the map's maximum allowable zoom level.
      *
      * @returns {number} maxZoom
@@ -557,6 +578,32 @@ class Map extends Camera {
      */
     unproject(point: PointLike) {
         return this.transform.pointLocation(Point.convert(point));
+    }
+
+    /**
+     * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
+     */
+    isMoving(): boolean {
+        return this._moving ||
+            this.dragPan.isActive() ||
+            this.dragRotate.isActive() ||
+            this.scrollZoom.isActive();
+    }
+
+    /**
+     * Returns true if the map is zooming due to a camera animation or user gesture.
+     */
+    isZooming(): boolean {
+        return this._zooming ||
+            this.scrollZoom.isActive();
+    }
+
+    /**
+     * Returns true if the map is rotating due to a camera animation or user gesture.
+     */
+    isRotating(): boolean {
+        return this._rotating ||
+            this.dragRotate.isActive();
     }
 
     /**
@@ -1505,8 +1552,8 @@ class Map extends Camera {
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
-            rotating: this.rotating,
-            zooming: this.zooming,
+            rotating: this.isRotating(),
+            zooming: this.isZooming(),
             fadeDuration: this._fadeDuration
         });
 

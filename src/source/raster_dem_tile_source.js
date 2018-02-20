@@ -15,11 +15,14 @@ import type {Callback} from '../types/callback';
 
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
+    encoding: "mapbox" | "terrarium";
+
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
         this._options = util.extend({}, options);
+        this.encoding = options.encoding || "mapbox";
     }
 
     serialize() {
@@ -29,6 +32,7 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             tileSize: this.tileSize,
             tiles: this.tiles,
             bounds: this.bounds,
+            encoding: this.encoding
         };
     }
 
@@ -55,7 +59,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     uid: tile.uid,
                     coord: tile.tileID,
                     source: this.id,
-                    rawImageData: rawImageData
+                    rawImageData: rawImageData,
+                    encoding: this.encoding
                 };
 
                 if (!tile.workerID || tile.state === 'expired') {

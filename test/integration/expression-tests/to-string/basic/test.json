@@ -9,12 +9,13 @@
     [{}, {"properties": {"x": {"y": 1}}}]
   ],
   "expected": {
-    "outputs": ["1", "false", "null", "string", "[1,2]", "{\"y\":1}"],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "string"
-    }
+    },
+    "outputs": ["1", "false", "null", "string", "[1,2]", "{\"y\":1}"],
+    "serialized": ["to-string", ["get", "x"]]
   }
 }

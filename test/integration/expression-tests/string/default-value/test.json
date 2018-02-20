@@ -7,12 +7,13 @@
     [{}, {"properties": {"x": null}}]
   ],
   "expected": {
-    "outputs": ["1", "default", "default", "default"],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "string"
-    }
+    },
+    "outputs": ["1", "default", "default", "default"],
+    "serialized": ["string", ["get", "x"], "default"]
   }
 }

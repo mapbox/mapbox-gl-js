@@ -55,8 +55,7 @@ class DragRotateHandler {
             '_onDown',
             '_onMove',
             '_onUp',
-            '_onDragFrame',
-            '_onDragFinished'
+            '_onDragFrame'
         ], this);
     }
 
@@ -139,40 +138,18 @@ class DragRotateHandler {
 
     _onMove(e: MouseEvent) {
         this._lastMoveEvent = e;
-        const pos = DOM.mousePos(this._el, e);
-        // if the dragging animation was interrupted (e.g. by another handler),
-        // we need to reestablish a _previousPos before we can resume dragging
-        if (!this._previousPos) {
-            this._previousPos = pos;
-            return;
-        }
-
-        this._pos = pos;
+        this._pos = DOM.mousePos(this._el, e);
 
         if (!this.isActive()) {
             this._active = true;
-            this._map.moving = true;
             this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
             if (this._pitchWithRotate) {
                 this._fireEvent('pitchstart', e);
             }
-
-            this._map._startAnimation(this._onDragFrame, this._onDragFinished);
         }
 
-        // ensure a new render frame is scheduled
-        this._map._update();
-    }
-
-    _onUp(e: MouseEvent | FocusEvent) {
-        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
-        window.document.removeEventListener('mouseup', this._onUp);
-        window.removeEventListener('blur', this._onUp);
-
-        DOM.enableDrag();
-
-        this._onDragFinished(e);
+        this._map._startAnimation(this._onDragFrame);
     }
 
     _onDragFrame(tr: Transform) {
@@ -204,7 +181,13 @@ class DragRotateHandler {
         this._previousPos = this._pos;
     }
 
-    _onDragFinished(e: MouseEvent | FocusEvent | void) {
+    _onUp(e: MouseEvent | FocusEvent) {
+        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
+        window.document.removeEventListener('mouseup', this._onUp);
+        window.removeEventListener('blur', this._onUp);
+
+        DOM.enableDrag();
+
         if (!this.isActive()) return;
 
         this._active = false;
@@ -222,7 +205,6 @@ class DragRotateHandler {
             if (Math.abs(mapBearing) < this._bearingSnap) {
                 map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
-                this._map.moving = false;
                 this._fireEvent('moveend', e);
             }
             if (this._pitchWithRotate) this._fireEvent('pitchend', e);

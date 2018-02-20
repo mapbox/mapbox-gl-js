@@ -7,12 +7,18 @@
   ],
   "inputs": [[{"zoom": 5}, {}]],
   "expected": {
-    "outputs": [5],
     "compiled": {
       "result": "success",
-      "isZoomConstant": false,
       "isFeatureConstant": true,
+      "isZoomConstant": false,
       "type": "number"
-    }
+    },
+    "outputs": [5],
+    "serialized": [
+      "let",
+      "x",
+      30,
+      ["interpolate", ["exponential", 1], ["zoom"], 0, 0, 30, ["var", "x"]]
+    ]
   }
 }
