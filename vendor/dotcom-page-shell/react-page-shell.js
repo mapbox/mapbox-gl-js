@@ -181,6 +181,10 @@ var PageHelmet = function (_React$Component) {
           name: 'p:domain_verify',
           content: '57838af58c8045c2c024bc2f9d1577f9'
         }),
+        React__default.createElement('meta', {
+          name: 'google-site-verification',
+          content: 'umPiCFUc_EX8CJ7xWQDPgQwApDxNi59w6riFZPNZj4w'
+        }),
         React__default.createElement('meta', { name: 'twitter:site', content: '@Mapbox' }),
         React__default.createElement('meta', { property: 'og:site_name', content: 'Mapbox' })
       );
@@ -845,6 +849,10 @@ var navigationMenuData = {
       name: 'Customers',
       to: '/showcase/',
       hideInFooter: true
+    }, {
+      name: 'Customer blog',
+      to: 'https://blog.mapbox.com/tagged/built-with-mapbox',
+      hideInFooter: true
     }]
   },
   resourcesMenu: {
@@ -1171,7 +1179,7 @@ var PopoverContentProducts = function (_React$Component) {
                       'a',
                       {
                         href: highlightedLink.to,
-                        className: shellStyles.popoverNavLinkHighlight + ' shell-mb3 shell-pr6',
+                        className: shellStyles.popoverNavLinkHighlight + ' shell-mb6 shell-pr6',
                         'data-nav-link': highlightedLink.name,
                         'data-test': 'nav-link-' + highlightedLink.name
                       },
