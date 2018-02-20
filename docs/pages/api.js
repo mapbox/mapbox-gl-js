@@ -188,7 +188,9 @@ class Item extends React.Component {
                     <p>Extends {section.augments.map((tag, i) =>
                         <span key={i} dangerouslySetInnerHTML={{__html: formatters.autolink(tag.name)}}/>)}.</p>}
 
-                {section.kind === 'class' && !section.interface &&
+                {section.kind === 'class' &&
+                    !section.interface &&
+                    (!section.constructorComment || section.constructorComment.access !== 'private') &&
                     <div className='code pad1 small round fill-light'
                         dangerouslySetInnerHTML={{__html: `new ${section.name}${formatters.parameters(section)}`}}/>}
 
@@ -198,7 +200,7 @@ class Item extends React.Component {
                 {section.copyright && <div>Copyright: {section.copyright}</div>}
                 {section.since && <div>Since: {section.since}</div>}
 
-                {!empty(section.params) && !(section.kind === 'class' && section.interface) &&
+                {!empty(section.params) && (section.kind !== 'class' || !section.constructorComment || section.constructorComment.access !== 'private') &&
                     <div>
                         <div className='pad1y quiet space-top2 prose-big'>Parameters</div>
                         <div>

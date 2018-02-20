@@ -21,14 +21,15 @@ const panStep = 100,
  * - `Shift+⇠`: Decrease the rotation by 15 degrees.
  * - `Shift+⇡`: Increase the pitch by 10 degrees.
  * - `Shift+⇣`: Decrease the pitch by 10 degrees.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class KeyboardHandler {
     _map: Map;
     _el: HTMLElement;
     _enabled: boolean;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();

@@ -17,12 +17,6 @@ const inertiaLinearity = 0.25,
 /**
  * The `DragRotateHandler` allows the user to rotate the map by clicking and
  * dragging the cursor while holding the right mouse button or `ctrl` key.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
- * @param {Object} [options]
- * @param {number} [options.bearingSnap] The threshold, measured in degrees, that determines when the map's
- *   bearing will snap to north.
- * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
  */
 class DragRotateHandler {
     _map: Map;
@@ -40,6 +34,14 @@ class DragRotateHandler {
     _inertia: Array<[number, number]>;
     _center: Point;
 
+    /**
+     * @param {Map} map The Mapbox GL JS map to add the handler to.
+     * @param {Object} [options]
+     * @param {number} [options.bearingSnap] The threshold, measured in degrees, that determines when the map's
+     *   bearing will snap to north.
+     * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
+     * @private
+     */
     constructor(map: Map, options: {
         button?: 'right' | 'left',
         element?: HTMLElement,

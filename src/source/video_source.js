@@ -13,7 +13,7 @@ import type Evented from '../util/evented';
 /**
  * A data source containing video.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
- * @interface VideoSource
+ *
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -48,6 +48,9 @@ class VideoSource extends ImageSource {
     video: HTMLVideoElement;
     roundZoom: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: VideoSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;

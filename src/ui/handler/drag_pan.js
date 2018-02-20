@@ -17,8 +17,6 @@ const inertiaLinearity = 0.3,
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
  * the cursor.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class DragPanHandler {
     _map: Map;
@@ -30,6 +28,9 @@ class DragPanHandler {
     _inertia: Array<[number, Point]>;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();

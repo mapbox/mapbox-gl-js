@@ -18,8 +18,6 @@ const inertiaLinearity = 0.15,
 /**
  * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
  * pinching on a touchscreen.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class TouchZoomRotateHandler {
     _map: Map;
@@ -33,6 +31,9 @@ class TouchZoomRotateHandler {
     _gestureIntent: 'rotate' | 'zoom' | void;
     _inertia: Array<[number, number, Point]>;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();

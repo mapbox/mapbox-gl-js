@@ -10,8 +10,6 @@ import type Map from '../map';
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
  * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class BoxZoomHandler {
     _map: Map;
@@ -22,6 +20,9 @@ class BoxZoomHandler {
     _startPos: any;
     _box: HTMLElement;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();

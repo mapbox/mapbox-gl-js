@@ -28,8 +28,6 @@ const ua = window.navigator.userAgent.toLowerCase(),
 
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class ScrollZoomHandler {
     _map: Map;
@@ -53,6 +51,9 @@ class ScrollZoomHandler {
     _easing: (number) => number;
     _prevEase: {start: number, duration: number, easing: (number) => number};
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();

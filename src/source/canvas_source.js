@@ -13,7 +13,7 @@ import type Evented from '../util/evented';
 /**
  * A data source containing the contents of an HTML canvas.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
- * @interface CanvasSource
+ *
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -49,6 +49,9 @@ class CanvasSource extends ImageSource {
     pause: () => void;
     _playing: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.options = options;
