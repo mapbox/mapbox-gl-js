@@ -30,6 +30,7 @@ class DragRotateHandler {
     _enabled: boolean;
     _active: boolean;
     _button: 'right' | 'left';
+    _eventButton: number;
     _bearingSnap: number;
     _pitchWithRotate: boolean;
 
@@ -107,18 +108,18 @@ class DragRotateHandler {
         if (this.isActive()) return;
 
         if (this._button === 'right') {
-            const button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
-            let eventButton = e.button;
+            this._eventButton = e.button;
             if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
                 window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
                 // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
                 // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
                 // using Control + left click
-                eventButton = 0;
+                this._eventButton = 0;
             }
-            if (eventButton !== button) return;
+            if (this._eventButton !== (e.ctrlKey ? 0 : 2)) return;
         } else {
             if (e.ctrlKey || e.button !== 0) return;
+            this._eventButton = 0;
         }
 
         DOM.disableDrag();
@@ -182,6 +183,8 @@ class DragRotateHandler {
     }
 
     _onUp(e: MouseEvent | FocusEvent) {
+        if (e.type === 'mouseup' && e.button !== this._eventButton) return;
+
         window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
         window.removeEventListener('blur', this._onUp);
