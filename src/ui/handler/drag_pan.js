@@ -89,13 +89,16 @@ class DragPanHandler {
     }
 
     _onDown(e: MouseEvent | TouchEvent) {
-        if (this._ignoreEvent(e)) return;
+        if (this._map.boxZoom.isActive()) return;
+        if (this._map.dragRotate.isActive()) return;
         if (this.isActive()) return;
 
         if (e.touches) {
+            if ((e.touches: any).length > 1) return;
             window.document.addEventListener('touchmove', this._onMove);
             window.document.addEventListener('touchend', this._onUp);
         } else {
+            if (e.ctrlKey || e.button !== 0) return;
             window.document.addEventListener('mousemove', this._onMove);
             window.document.addEventListener('mouseup', this._onUp);
         }
@@ -110,7 +113,6 @@ class DragPanHandler {
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
-        if (this._ignoreEvent(e)) return;
         this._lastMoveEvent = e;
         e.preventDefault();
 
@@ -150,7 +152,7 @@ class DragPanHandler {
      * @private
      */
     _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
-        if (this._ignoreEvent(e)) return;
+        if (e.type === 'mouseup' && e.button !== 0) return;
 
         window.document.removeEventListener('touchmove', this._onMove);
         window.document.removeEventListener('touchend', this._onUp);
@@ -209,19 +211,6 @@ class DragPanHandler {
 
     _fireEvent(type: string, e: ?Event) {
         return this._map.fire(type, e ? { originalEvent: e } : {});
-    }
-
-    _ignoreEvent(e: any) {
-        const map = this._map;
-
-        if (map.boxZoom.isActive()) return true;
-        if (map.dragRotate.isActive()) return true;
-        if (e.touches) {
-            return (e.touches.length > 1);
-        } else {
-            if (e.ctrlKey) return true;
-            return e.type !== 'mousemove' && e.button && e.button !== 0; // left button
-        }
     }
 
     _drainInertiaBuffer() {
