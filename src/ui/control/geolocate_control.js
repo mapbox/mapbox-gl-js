@@ -88,6 +88,7 @@ class GeolocateControl extends Evented {
     _watchState: string;
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
+    _setup: boolean; // set to true once the control has been setup
 
     constructor(options: any) {
         super();
@@ -99,8 +100,7 @@ class GeolocateControl extends Evented {
             '_finish',
             '_setupUI',
             '_updateCamera',
-            '_updateMarker',
-            '_onClickGeolocate'
+            '_updateMarker'
         ], this);
     }
 
@@ -272,7 +272,9 @@ class GeolocateControl extends Evented {
         }
 
         this._geolocateButton.addEventListener('click',
-            this._onClickGeolocate.bind(this));
+            this.trigger.bind(this));
+
+        this._setup = true;
 
         // when the camera is changed (and it's not as a result of the Geolocation Control) change
         // the watch mode to background watch, so that the marker is updated but not the camera.
@@ -289,7 +291,16 @@ class GeolocateControl extends Evented {
         }
     }
 
-    _onClickGeolocate() {
+    /**
+     * Trigger a geolocation
+     *
+     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+     */
+    trigger() {
+        if (!this._setup) {
+            util.warnOnce('Geolocate control triggered before added to a map');
+            return false;
+        }
         if (this.options.trackUserLocation) {
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
@@ -372,6 +383,8 @@ class GeolocateControl extends Evented {
             // the user declines to share their location in Firefox
             this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
         }
+
+        return true;
     }
 
     _clearWatch() {
