@@ -142,6 +142,27 @@ test('DragPanHandler captures touchmove events during a mouse-triggered drag (re
     t.end();
 });
 
+test('DragPanHandler prevents mousemove events from firing during a drag (#1555)', (t) => {
+    const map = createMap();
+
+    const mousemove = t.spy();
+    map.on('mousemove', mousemove);
+
+    simulate.mousedown(map.getCanvasContainer());
+    map._updateCamera();
+
+    simulate.mousemove(map.getCanvasContainer());
+    map._updateCamera();
+
+    simulate.mouseup(map.getCanvasContainer());
+    map._updateCamera();
+
+    t.ok(mousemove.notCalled);
+
+    map.remove();
+    t.end();
+});
+
 test('DragPanHandler ends a mouse-triggered drag if the window blurs', (t) => {
     const map = createMap();
 
@@ -243,72 +264,74 @@ test('DragPanHandler can interleave with another handler', (t) => {
     t.end();
 });
 
-test('DragPanHandler does not begin a drag if the control key is down on mousedown', (t) => {
-    const map = createMap();
-    map.dragRotate.disable();
+['ctrl', 'shift'].forEach((modifier) => {
+    test(`DragPanHandler does not begin a drag if the ${modifier} key is down on mousedown`, (t) => {
+        const map = createMap();
+        map.dragRotate.disable();
 
-    const dragstart = t.spy();
-    const drag      = t.spy();
-    const dragend   = t.spy();
+        const dragstart = t.spy();
+        const drag      = t.spy();
+        const dragend   = t.spy();
 
-    map.on('dragstart', dragstart);
-    map.on('drag',      drag);
-    map.on('dragend',   dragend);
+        map.on('dragstart', dragstart);
+        map.on('drag',      drag);
+        map.on('dragend',   dragend);
 
-    simulate.mousedown(map.getCanvas(), {ctrlKey: true});
-    map._updateCamera();
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
-    t.equal(dragend.callCount, 0);
+        simulate.mousedown(map.getCanvas(), {[`${modifier}Key`]: true});
+        map._updateCamera();
+        t.equal(dragstart.callCount, 0);
+        t.equal(drag.callCount, 0);
+        t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas(), {ctrlKey: true});
-    map._updateCamera();
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
-    t.equal(dragend.callCount, 0);
+        simulate.mousemove(map.getCanvas(), {[`${modifier}Key`]: true});
+        map._updateCamera();
+        t.equal(dragstart.callCount, 0);
+        t.equal(drag.callCount, 0);
+        t.equal(dragend.callCount, 0);
 
-    simulate.mouseup(map.getCanvas(), {ctrlKey: true});
-    map._updateCamera();
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
-    t.equal(dragend.callCount, 0);
+        simulate.mouseup(map.getCanvas(), {[`${modifier}Key`]: true});
+        map._updateCamera();
+        t.equal(dragstart.callCount, 0);
+        t.equal(drag.callCount, 0);
+        t.equal(dragend.callCount, 0);
 
-    map.remove();
-    t.end();
-});
+        map.remove();
+        t.end();
+    });
 
-test('DragPanHandler still ends a drag if the control key is down on mouseup', (t) => {
-    const map = createMap();
-    map.dragRotate.disable();
+    test(`DragPanHandler still ends a drag if the ${modifier} key is down on mouseup`, (t) => {
+        const map = createMap();
+        map.dragRotate.disable();
 
-    const dragstart = t.spy();
-    const drag      = t.spy();
-    const dragend   = t.spy();
+        const dragstart = t.spy();
+        const drag      = t.spy();
+        const dragend   = t.spy();
 
-    map.on('dragstart', dragstart);
-    map.on('drag',      drag);
-    map.on('dragend',   dragend);
+        map.on('dragstart', dragstart);
+        map.on('drag',      drag);
+        map.on('dragend',   dragend);
 
-    simulate.mousedown(map.getCanvas());
-    map._updateCamera();
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
-    t.equal(dragend.callCount, 0);
+        simulate.mousedown(map.getCanvas());
+        map._updateCamera();
+        t.equal(dragstart.callCount, 0);
+        t.equal(drag.callCount, 0);
+        t.equal(dragend.callCount, 0);
 
-    simulate.mouseup(map.getCanvas(), {ctrlKey: true});
-    map._updateCamera();
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
-    t.equal(dragend.callCount, 0);
+        simulate.mouseup(map.getCanvas(), {[`${modifier}Key`]: true});
+        map._updateCamera();
+        t.equal(dragstart.callCount, 0);
+        t.equal(drag.callCount, 0);
+        t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas());
-    map._updateCamera();
-    t.equal(dragstart.callCount, 0);
-    t.equal(drag.callCount, 0);
-    t.equal(dragend.callCount, 0);
+        simulate.mousemove(map.getCanvas());
+        map._updateCamera();
+        t.equal(dragstart.callCount, 0);
+        t.equal(drag.callCount, 0);
+        t.equal(dragend.callCount, 0);
 
-    map.remove();
-    t.end();
+        map.remove();
+        t.end();
+    });
 });
 
 test('DragPanHandler does not begin a drag on right button mousedown', (t) => {
@@ -392,6 +415,103 @@ test('DragPanHandler does not end a drag on right button mouseup', (t) => {
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not begin a drag if preventDefault is called on the mousedown event', (t) => {
+    const map = createMap();
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas());
+    map._updateCamera();
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+
+    simulate.mouseup(map.getCanvas());
+    map._updateCamera();
+
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not begin a drag if preventDefault is called on the touchstart event', (t) => {
+    const map = createMap();
+
+    map.on('touchstart', e => e.preventDefault());
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.touchstart(map.getCanvas());
+    map._updateCamera();
+
+    simulate.touchmove(map.getCanvas());
+    map._updateCamera();
+
+    simulate.touchend(map.getCanvas());
+    map._updateCamera();
+
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not begin a drag if preventDefault is called on the touchstart event (delegated)', (t) => {
+    const map = createMap();
+
+    t.stub(map, 'getLayer')
+        .callsFake(() => true);
+    t.stub(map, 'queryRenderedFeatures')
+        .callsFake(() => [{}]);
+
+    map.on('touchstart', 'point', (e) => {
+        e.preventDefault();
+    });
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.touchstart(map.getCanvas());
+    map._updateCamera();
+
+    simulate.touchmove(map.getCanvas());
+    map._updateCamera();
+
+    simulate.touchend(map.getCanvas());
+    map._updateCamera();
+
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
 
     map.remove();
     t.end();

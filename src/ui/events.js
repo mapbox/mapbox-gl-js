@@ -1,20 +1,22 @@
 // @flow
 
+const {Event} = require('../util/evented');
+const DOM = require('../util/dom');
+const Point = require('@mapbox/point-geometry');
+const util = require('../util/util');
+
 import type Map from './map';
-import type Point from '@mapbox/point-geometry';
 import type LngLat from '../geo/lng_lat';
 import type LngLatBounds from '../geo/lng_lat_bounds';
 
 /**
- * @typedef {Object} MapMouseEvent
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {MouseEvent} originalEvent
- * @property {Point} point The pixel coordinates of the mouse event target, relative to the map
- *   and measured from the top left corner.
- * @property {LngLat} lngLat The geographic location on the map of the mouse event target.
+ * `MapMouseEvent` is the event type for mouse-related map events.
+ * @extends {Object}
  */
-export type MapMouseEvent = {
+class MapMouseEvent extends Event {
+    /**
+     * The event type.
+     */
     type: 'mousedown'
         | 'mouseup'
         | 'click'
@@ -25,38 +27,141 @@ export type MapMouseEvent = {
         | 'mouseleave'
         | 'mouseover'
         | 'mouseout'
-        | 'contextmenu',
-    map: Map,
-    originalEvent: MouseEvent,
-    point: Point,
-    lngLat: LngLat
-};
+        | 'contextmenu';
+
+    /**
+     * The `Map` object that fired the event.
+     */
+    map: Map;
+
+    /**
+     * The DOM event which caused the map event.
+     */
+    originalEvent: MouseEvent;
+
+    /**
+     * The pixel coordinates of the mouse cursor, relative to the map and measured from the top left corner.
+     */
+    point: Point;
+
+    /**
+     * The geographic location on the map of the mouse cursor.
+     */
+    lngLat: LngLat;
+
+    /**
+     * Prevents subsequent default processing of the event by the map.
+     *
+     * Calling this method will prevent the following default map behaviors:
+     *
+     *   * On `mousedown` events, the behavior of {@link DragPanHandler}
+     *   * On `mousedown` events, the behavior of {@link DragRotateHandler}
+     *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}
+     */
+    preventDefault() {
+        this._defaultPrevented = true;
+    }
+
+    /**
+     * `true` if `preventDefault` has been called.
+     */
+    get defaultPrevented(): boolean {
+        return this._defaultPrevented;
+    }
+
+    _defaultPrevented: boolean;
+
+    /**
+     * @private
+     */
+    constructor(type: string, map: Map, originalEvent: MouseEvent, data: Object = {}) {
+        const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
+        const lngLat = map.unproject(point);
+        super(type, util.extend({ point, lngLat, originalEvent }, data));
+        this._defaultPrevented = false;
+    }
+}
 
 /**
- * @typedef {Object} MapTouchEvent
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {TouchEvent} originalEvent
- * @property {Point} point The pixel coordinates of the center of the touch event points, relative to the map
- *   and measured from the top left corner.
- * @property {LngLat} lngLat The geographic location on the map of the center of the touch event points.
- * @property {Array<Point>} points The array of pixel coordinates corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property.
- * @property {Array<LngLat>} lngLats The geographical locations on the map corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property.
+ * `MapTouchEvent` is the event type for touch-related map events.
+ * @extends {Object}
  */
-export type MapTouchEvent = {
+class MapTouchEvent extends Event {
+    /**
+     * The event type.
+     */
     type: 'touchstart'
         | 'touchend'
-        | 'touchcancel',
-    map: Map,
-    originalEvent: TouchEvent,
-    lngLat: LngLat,
-    points: Array<Point>,
-    lngLats: Array<LngLat>
-};
+        | 'touchcancel';
+
+    /**
+     * The `Map` object that fired the event.
+     */
+    map: Map;
+
+    /**
+     * The DOM event which caused the map event.
+     */
+    originalEvent: TouchEvent;
+
+    /**
+     * The geographic location on the map of the center of the touch event points.
+     */
+    lngLat: LngLat;
+
+    /**
+     * The pixel coordinates of the center of the touch event points, relative to the map and measured from the top left
+     * corner.
+     */
+    point: Point;
+
+    /**
+     * The array of pixel coordinates corresponding to a
+     * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
+     */
+    points: Array<Point>;
+
+    /**
+     * The geographical locations on the map corresponding to a
+     * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
+     */
+    lngLats: Array<LngLat>;
+
+    /**
+     * Prevents subsequent default processing of the event by the map.
+     *
+     * Calling this method will prevent the following default map behaviors:
+     *
+     *   * On `touchstart` events, the behavior of {@link DragPanHandler}
+     *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}
+     */
+    preventDefault() {
+        this._defaultPrevented = true;
+    }
+
+    /**
+     * `true` if `preventDefault` has been called.
+     */
+    get defaultPrevented(): boolean {
+        return this._defaultPrevented;
+    }
+
+    _defaultPrevented: boolean;
+
+    /**
+     * @private
+     */
+    constructor(type: string, map: Map, originalEvent: TouchEvent) {
+        const points = DOM.touchPos(map.getCanvasContainer(), originalEvent);
+        const lngLats = points.map((t) => map.unproject(t));
+        const point = points.reduce((prev, curr, i, arr) => {
+            return prev.add(curr.div(arr.length));
+        }, new Point(0, 0));
+        const lngLat = map.unproject(point);
+        super(type, { points, point, lngLats, lngLat, originalEvent });
+        this._defaultPrevented = false;
+    }
+}
 
 /**
  * @typedef {Object} MapBoxZoomEvent
@@ -618,3 +723,8 @@ export type MapEvent =
      * @private
      */
     | 'style.load';
+
+module.exports = {
+    MapMouseEvent,
+    MapTouchEvent
+};
