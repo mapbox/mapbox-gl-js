@@ -4,7 +4,13 @@
 
 import styleSpec from '../../style-spec/reference/latest';
 
-import { Properties, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty } from '../properties';
+import {
+    Properties,
+    DataConstantProperty,
+    DataDrivenProperty,
+    CrossFadedProperty,
+    HeatmapColorProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -48,10 +54,4 @@ const paint: Properties<PaintProps> = new Properties({
     "line-pattern": new CrossFadedProperty(styleSpec["paint_line"]["line-pattern"]),
 });
 
-const exported = {
-    paint,
-    layout
-};
-
-export default exported;
-export { paint, layout };
+export default { paint, layout };

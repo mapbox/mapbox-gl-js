@@ -4,7 +4,13 @@
 
 import styleSpec from '../../style-spec/reference/latest';
 
-import { Properties, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty } from '../properties';
+import {
+    Properties,
+    DataConstantProperty,
+    DataDrivenProperty,
+    CrossFadedProperty,
+    HeatmapColorProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -21,9 +27,4 @@ const paint: Properties<PaintProps> = new Properties({
     "background-opacity": new DataConstantProperty(styleSpec["paint_background"]["background-opacity"]),
 });
 
-const exported = {
-    paint
-};
-
-export default exported;
-export { paint };
+export default { paint };

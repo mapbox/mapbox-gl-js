@@ -4,7 +4,13 @@
 
 import styleSpec from '../../style-spec/reference/latest';
 
-import { Properties, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty } from '../properties';
+import {
+    Properties,
+    DataConstantProperty,
+    DataDrivenProperty,
+    CrossFadedProperty,
+    HeatmapColorProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -37,9 +43,4 @@ const paint: Properties<PaintProps> = new Properties({
     "circle-stroke-opacity": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-opacity"]),
 });
 
-const exported = {
-    paint
-};
-
-export default exported;
-export { paint };
+export default { paint };

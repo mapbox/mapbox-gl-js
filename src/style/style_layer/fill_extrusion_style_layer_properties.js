@@ -4,7 +4,13 @@
 
 import styleSpec from '../../style-spec/reference/latest';
 
-import { Properties, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty } from '../properties';
+import {
+    Properties,
+    DataConstantProperty,
+    DataDrivenProperty,
+    CrossFadedProperty,
+    HeatmapColorProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -29,9 +35,4 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
 });
 
-const exported = {
-    paint
-};
-
-export default exported;
-export { paint };
+export default { paint };

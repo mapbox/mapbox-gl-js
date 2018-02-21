@@ -4,7 +4,13 @@
 
 import styleSpec from '../../style-spec/reference/latest';
 
-import { Properties, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty } from '../properties';
+import {
+    Properties,
+    DataConstantProperty,
+    DataDrivenProperty,
+    CrossFadedProperty,
+    HeatmapColorProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -29,9 +35,4 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
 });
 
-const exported = {
-    paint
-};
-
-export default exported;
-export { paint };
+export default { paint };

@@ -2,10 +2,9 @@
 // @flow
 
 import assert from 'assert';
-
-import { StructArray } from '../util/struct_array';
-import { Struct } from '../util/struct_array';
-import { register } from '../util/web_worker_transfer';
+import {StructArray} from '../util/struct_array';
+import {Struct} from '../util/struct_array';
+import {register} from '../util/web_worker_transfer';
 import Point from '@mapbox/point-geometry';
 
 
@@ -15,7 +14,7 @@ import Point from '@mapbox/point-geometry';
  *
  * @private
  */
-class StructArrayLayout2i4 extends StructArray {
+export class StructArrayLayout2i4 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -45,7 +44,7 @@ register('StructArrayLayout2i4', StructArrayLayout2i4);
  *
  * @private
  */
-class StructArrayLayout4i8 extends StructArray {
+export class StructArrayLayout4i8 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -78,7 +77,7 @@ register('StructArrayLayout4i8', StructArrayLayout4i8);
  *
  * @private
  */
-class StructArrayLayout2i4i12 extends StructArray {
+export class StructArrayLayout2i4i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -113,7 +112,7 @@ register('StructArrayLayout2i4i12', StructArrayLayout2i4i12);
  *
  * @private
  */
-class StructArrayLayout4i4ub12 extends StructArray {
+export class StructArrayLayout4i4ub12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -151,7 +150,7 @@ register('StructArrayLayout4i4ub12', StructArrayLayout4i4ub12);
  *
  * @private
  */
-class StructArrayLayout4i4ui16 extends StructArray {
+export class StructArrayLayout4i4ui16 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -189,7 +188,7 @@ register('StructArrayLayout4i4ui16', StructArrayLayout4i4ui16);
  *
  * @private
  */
-class StructArrayLayout3f12 extends StructArray {
+export class StructArrayLayout3f12 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -220,7 +219,7 @@ register('StructArrayLayout3f12', StructArrayLayout3f12);
  *
  * @private
  */
-class StructArrayLayout1ul4 extends StructArray {
+export class StructArrayLayout1ul4 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
 
@@ -252,7 +251,7 @@ register('StructArrayLayout1ul4', StructArrayLayout1ul4);
  *
  * @private
  */
-class StructArrayLayout6i1ul2ui2i24 extends StructArray {
+export class StructArrayLayout6i1ul2ui2i24 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint32: Uint32Array;
@@ -298,7 +297,7 @@ register('StructArrayLayout6i1ul2ui2i24', StructArrayLayout6i1ul2ui2i24);
  *
  * @private
  */
-class StructArrayLayout2i2i2i12 extends StructArray {
+export class StructArrayLayout2i2i2i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -332,7 +331,7 @@ register('StructArrayLayout2i2i2i12', StructArrayLayout2i2i2i12);
  *
  * @private
  */
-class StructArrayLayout2ub4 extends StructArray {
+export class StructArrayLayout2ub4 extends StructArray {
     uint8: Uint8Array;
 
     _refreshViews() {
@@ -365,7 +364,7 @@ register('StructArrayLayout2ub4', StructArrayLayout2ub4);
  *
  * @private
  */
-class StructArrayLayout2i2ui3ul3ui2f2ub40 extends StructArray {
+export class StructArrayLayout2i2ui3ul3ui2f2ub40 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -415,7 +414,7 @@ register('StructArrayLayout2i2ui3ul3ui2f2ub40', StructArrayLayout2i2ui3ul3ui2f2u
  *
  * @private
  */
-class StructArrayLayout1f4 extends StructArray {
+export class StructArrayLayout1f4 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -444,7 +443,7 @@ register('StructArrayLayout1f4', StructArrayLayout1f4);
  *
  * @private
  */
-class StructArrayLayout3i6 extends StructArray {
+export class StructArrayLayout3i6 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -476,7 +475,7 @@ register('StructArrayLayout3i6', StructArrayLayout3i6);
  *
  * @private
  */
-class StructArrayLayout1ul2ui8 extends StructArray {
+export class StructArrayLayout1ul2ui8 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
     uint16: Uint16Array;
@@ -510,7 +509,7 @@ register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
  *
  * @private
  */
-class StructArrayLayout3ui6 extends StructArray {
+export class StructArrayLayout3ui6 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -541,7 +540,7 @@ register('StructArrayLayout3ui6', StructArrayLayout3ui6);
  *
  * @private
  */
-class StructArrayLayout2ui4 extends StructArray {
+export class StructArrayLayout2ui4 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -571,7 +570,7 @@ register('StructArrayLayout2ui4', StructArrayLayout2ui4);
  *
  * @private
  */
-class StructArrayLayout2f8 extends StructArray {
+export class StructArrayLayout2f8 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -601,7 +600,7 @@ register('StructArrayLayout2f8', StructArrayLayout2f8);
  *
  * @private
  */
-class StructArrayLayout4f16 extends StructArray {
+export class StructArrayLayout4f16 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -674,7 +673,7 @@ export type CollisionBox = CollisionBoxStruct;
 /**
  * @private
  */
-class CollisionBoxArray extends StructArrayLayout6i1ul2ui2i24 {
+export class CollisionBoxArray extends StructArrayLayout6i1ul2ui2i24 {
     /**
      * Return the CollisionBoxStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -741,7 +740,7 @@ export type PlacedSymbol = PlacedSymbolStruct;
 /**
  * @private
  */
-class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f2ub40 {
+export class PlacedSymbolArray extends StructArrayLayout2i2ui3ul3ui2f2ub40 {
     /**
      * Return the PlacedSymbolStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -769,7 +768,7 @@ export type GlyphOffset = GlyphOffsetStruct;
 /**
  * @private
  */
-class GlyphOffsetArray extends StructArrayLayout1f4 {
+export class GlyphOffsetArray extends StructArrayLayout1f4 {
     getoffsetX(index: number) { return this.float32[index * 1 + 0]; }
     /**
      * Return the GlyphOffsetStruct at the given location in the array.
@@ -804,7 +803,7 @@ export type SymbolLineVertex = SymbolLineVertexStruct;
 /**
  * @private
  */
-class SymbolLineVertexArray extends StructArrayLayout3i6 {
+export class SymbolLineVertexArray extends StructArrayLayout3i6 {
     getx(index: number) { return this.int16[index * 3 + 0]; }
     gety(index: number) { return this.int16[index * 3 + 1]; }
     gettileUnitDistanceFromAnchor(index: number) { return this.int16[index * 3 + 2]; }
@@ -841,7 +840,7 @@ export type FeatureIndex = FeatureIndexStruct;
 /**
  * @private
  */
-class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
+export class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
     /**
      * Return the FeatureIndexStruct at the given location in the array.
      * @param {number} index The index of the element.
@@ -855,46 +854,20 @@ class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
 register('FeatureIndexArray', FeatureIndexArray);
 
 
-const exported = {
-    StructArrayLayout2i4,
-    StructArrayLayout4i8,
-    StructArrayLayout2i4i12,
-    StructArrayLayout4i4ub12,
-    StructArrayLayout4i4ui16,
-    StructArrayLayout3f12,
-    StructArrayLayout1ul4,
-    StructArrayLayout6i1ul2ui2i24,
-    StructArrayLayout2i2i2i12,
-    StructArrayLayout2ub4,
-    StructArrayLayout2i2ui3ul3ui2f2ub40,
-    StructArrayLayout1f4,
-    StructArrayLayout3i6,
-    StructArrayLayout1ul2ui8,
-    StructArrayLayout3ui6,
-    StructArrayLayout2ui4,
-    StructArrayLayout2f8,
-    StructArrayLayout4f16,
-    PosArray: StructArrayLayout2i4,
-    RasterBoundsArray: StructArrayLayout4i8,
-    CircleLayoutArray: StructArrayLayout2i4,
-    FillLayoutArray: StructArrayLayout2i4,
-    FillExtrusionLayoutArray: StructArrayLayout2i4i12,
-    HeatmapLayoutArray: StructArrayLayout2i4,
-    LineLayoutArray: StructArrayLayout4i4ub12,
-    SymbolLayoutArray: StructArrayLayout4i4ui16,
-    SymbolDynamicLayoutArray: StructArrayLayout3f12,
-    SymbolOpacityArray: StructArrayLayout1ul4,
-    CollisionBoxLayoutArray: StructArrayLayout2i2i2i12,
-    CollisionCircleLayoutArray: StructArrayLayout2i2i2i12,
-    CollisionVertexArray: StructArrayLayout2ub4,
-    TriangleIndexArray: StructArrayLayout3ui6,
-    LineIndexArray: StructArrayLayout2ui4,
-    CollisionBoxArray,
-    PlacedSymbolArray,
-    GlyphOffsetArray,
-    SymbolLineVertexArray,
-    FeatureIndexArray
+export {
+    StructArrayLayout2i4 as PosArray,
+    StructArrayLayout4i8 as RasterBoundsArray,
+    StructArrayLayout2i4 as CircleLayoutArray,
+    StructArrayLayout2i4 as FillLayoutArray,
+    StructArrayLayout2i4i12 as FillExtrusionLayoutArray,
+    StructArrayLayout2i4 as HeatmapLayoutArray,
+    StructArrayLayout4i4ub12 as LineLayoutArray,
+    StructArrayLayout4i4ui16 as SymbolLayoutArray,
+    StructArrayLayout3f12 as SymbolDynamicLayoutArray,
+    StructArrayLayout1ul4 as SymbolOpacityArray,
+    StructArrayLayout2i2i2i12 as CollisionBoxLayoutArray,
+    StructArrayLayout2i2i2i12 as CollisionCircleLayoutArray,
+    StructArrayLayout2ub4 as CollisionVertexArray,
+    StructArrayLayout3ui6 as TriangleIndexArray,
+    StructArrayLayout2ui4 as LineIndexArray
 };
-
-export default exported;
-export { StructArrayLayout2i4, StructArrayLayout4i8, StructArrayLayout2i4i12, StructArrayLayout4i4ub12, StructArrayLayout4i4ui16, StructArrayLayout3f12, StructArrayLayout1ul4, StructArrayLayout6i1ul2ui2i24, StructArrayLayout2i2i2i12, StructArrayLayout2ub4, StructArrayLayout2i2ui3ul3ui2f2ub40, StructArrayLayout1f4, StructArrayLayout3i6, StructArrayLayout1ul2ui8, StructArrayLayout3ui6, StructArrayLayout2ui4, StructArrayLayout2f8, StructArrayLayout4f16, StructArrayLayout2i4 as PosArray, StructArrayLayout4i8 as RasterBoundsArray, StructArrayLayout2i4 as CircleLayoutArray, StructArrayLayout2i4 as FillLayoutArray, StructArrayLayout2i4i12 as FillExtrusionLayoutArray, StructArrayLayout2i4 as HeatmapLayoutArray, StructArrayLayout4i4ub12 as LineLayoutArray, StructArrayLayout4i4ui16 as SymbolLayoutArray, StructArrayLayout3f12 as SymbolDynamicLayoutArray, StructArrayLayout1ul4 as SymbolOpacityArray, StructArrayLayout2i2i2i12 as CollisionBoxLayoutArray, StructArrayLayout2i2i2i12 as CollisionCircleLayoutArray, StructArrayLayout2ub4 as CollisionVertexArray, StructArrayLayout3ui6 as TriangleIndexArray, StructArrayLayout2ui4 as LineIndexArray, CollisionBoxArray, PlacedSymbolArray, GlyphOffsetArray, SymbolLineVertexArray, FeatureIndexArray };
