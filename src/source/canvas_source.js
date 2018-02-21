@@ -5,10 +5,11 @@ const window = require('../util/window');
 const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
+const {ErrorEvent} = require('../util/evented');
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Evented} from '../util/evented';
 
 /**
  * A data source containing the contents of an HTML canvas.
@@ -78,7 +79,7 @@ class CanvasSource extends ImageSource {
         this.height = this.canvas.height;
 
         if (this._hasInvalidDimensions()) {
-            this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
+            this.fire(new ErrorEvent(new Error('Canvas dimensions cannot be less than or equal to zero.')));
             return;
         }
 

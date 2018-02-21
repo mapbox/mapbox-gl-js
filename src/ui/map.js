@@ -24,6 +24,7 @@ const AttributionControl = require('./control/attribution_control');
 const LogoControl = require('./control/logo_control');
 const isSupported = require('@mapbox/mapbox-gl-supported');
 const {RGBAImage} = require('../util/image');
+const {Event, ErrorEvent} = require('../util/evented');
 
 require('./events'); // Pull in for documentation.js
 
@@ -404,10 +405,10 @@ class Map extends Camera {
         this.painter.resize(width, height);
 
         return this
-            .fire('movestart')
-            .fire('move')
-            .fire('resize')
-            .fire('moveend');
+            .fire(new Event('movestart'))
+            .fire(new Event('move'))
+            .fire(new Event('resize'))
+            .fire(new Event('moveend'));
     }
 
     /**
@@ -1019,9 +1020,7 @@ class Map extends Camera {
     isSourceLoaded(id: string) {
         const source = this.style && this.style.sourceCaches[id];
         if (source === undefined) {
-            this.fire('error', {
-                error: new Error(`There is no source with ID '${id}'`)
-            });
+            this.fire(new ErrorEvent(new Error(`There is no source with ID '${id}'`)));
             return;
         }
         return source.loaded();
@@ -1107,9 +1106,9 @@ class Map extends Camera {
             const {width, height, data} = browser.getImageData(image);
             this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf });
         } else if (image.width === undefined || image.height === undefined) {
-            return this.fire('error', {error: new Error(
+            return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
-                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')});
+                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
             const {width, height, data} = image;
             this.style.addImage(id, { data: new RGBAImage({width, height}, data.slice(0)), pixelRatio, sdf });
@@ -1123,9 +1122,7 @@ class Map extends Camera {
      */
     hasImage(id: string): boolean {
         if (!id) {
-            this.fire('error', {
-                error: new Error('Missing required image id')
-            });
+            this.fire(new ErrorEvent(new Error('Missing required image id')));
             return false;
         }
 
@@ -1440,27 +1437,27 @@ class Map extends Camera {
             this._canvas.getContext('experimental-webgl', attributes);
 
         if (!gl) {
-            this.fire('error', { error: new Error('Failed to initialize WebGL') });
+            this.fire(new ErrorEvent(new Error('Failed to initialize WebGL')));
             return;
         }
 
         this.painter = new Painter(gl, this.transform);
     }
 
-    _contextLost(event: Event) {
+    _contextLost(event: *) {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
             this._frameId = null;
         }
-        this.fire('webglcontextlost', {originalEvent: event});
+        this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
-    _contextRestored(event: Event) {
+    _contextRestored(event: *) {
         this._setupPainter();
         this.resize();
         this._update();
-        this.fire('webglcontextrestored', {originalEvent: event});
+        this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
     /**
@@ -1557,11 +1554,11 @@ class Map extends Camera {
             fadeDuration: this._fadeDuration
         });
 
-        this.fire('render');
+        this.fire(new Event('render'));
 
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
-            this.fire('load');
+            this.fire(new Event('load'));
         }
 
         if (this.style && (this.style.hasTransitions() || crossFading)) {
@@ -1604,7 +1601,7 @@ class Map extends Camera {
         removeNode(this._controlContainer);
         removeNode(this._missingCSSContainer);
         this._container.classList.remove('mapboxgl-map');
-        this.fire('remove');
+        this.fire(new Event('remove'));
     }
 
     _rerender() {
@@ -1704,11 +1701,11 @@ class Map extends Camera {
 
     _onData(event: MapDataEvent) {
         this._update(event.dataType === 'style');
-        this.fire(`${event.dataType}data`, event);
+        this.fire(new Event(`${event.dataType}data`, event));
     }
 
     _onDataLoading(event: MapDataEvent) {
-        this.fire(`${event.dataType}dataloading`, event);
+        this.fire(new Event(`${event.dataType}dataloading`, event));
     }
 }
 

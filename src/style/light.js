@@ -2,7 +2,7 @@
 
 const styleSpec = require('../style-spec/reference/latest');
 const util = require('../util/util');
-const Evented = require('../util/evented');
+const {Evented} = require('../util/evented');
 const validateStyle = require('./validate_style');
 const {sphericalToCartesian} = require('../util/util');
 const Color = require('../style-spec/util/color');

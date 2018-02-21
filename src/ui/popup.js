@@ -1,7 +1,7 @@
 // @flow
 
 const util = require('../util/util');
-const Evented = require('../util/evented');
+const {Event, Evented} = require('../util/evented');
 const DOM = require('../util/dom');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
@@ -138,7 +138,7 @@ class Popup extends Evented {
          * @type {Object}
          * @property {Popup} popup object that was closed
          */
-        this.fire('close');
+        this.fire(new Event('close'));
 
         return this;
     }

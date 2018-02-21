@@ -8,7 +8,7 @@ const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID
 const Transform = require('../../../src/geo/transform');
 const LngLat = require('../../../src/geo/lng_lat');
 const Coordinate = require('../../../src/geo/coordinate');
-const Evented = require('../../../src/util/evented');
+const {Event, ErrorEvent, Evented} = require('../../../src/util/evented');
 const util = require('../../../src/util/util');
 const browser = require('../../../src/util/browser');
 
@@ -39,9 +39,9 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
         onAdd() {
             if (sourceOptions.noLoad) return;
             if (sourceOptions.error) {
-                this.fire('error', { error: sourceOptions.error });
+                this.fire(new ErrorEvent(sourceOptions.error));
             } else {
-                this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
             }
         }
         abortTile() {}
@@ -289,7 +289,7 @@ test('SourceCache / Source lifecycle', (t) => {
             if (e.sourceDataType === 'metadata') t.end();
         });
         sourceCache.onAdd();
-        sourceCache.getSource().fire('data');
+        sourceCache.getSource().fire(new Event('data'));
     });
 
     t.test('forward error event', (t) => {
@@ -355,7 +355,7 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
-                sourceCache.getSource().fire('data', {dataType: 'source', sourceDataType: 'content'});
+                sourceCache.getSource().fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
         });
 

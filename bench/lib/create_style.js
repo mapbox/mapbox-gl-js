@@ -1,7 +1,7 @@
 // @flow
 
 const Style = require('../../src/style/style');
-const Evented = require('../../src/util/evented');
+const {Evented} = require('../../src/util/evented');
 
 class StubMap extends Evented {
     _transformRequest(url) {

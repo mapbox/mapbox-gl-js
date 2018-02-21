@@ -2,7 +2,7 @@
 
 const ajax = require('../util/ajax');
 const util = require('../util/util');
-const Evented = require('../util/evented');
+const {Evented} = require('../util/evented');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const browser = require('../util/browser');
 const {OverscaledTileID} = require('./tile_id');

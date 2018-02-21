@@ -1,5 +1,6 @@
 // @flow
-const Evented = require('../util/evented');
+
+const {Event, Evented} = require('../util/evented');
 
 let pluginRequested = false;
 let pluginURL = null;
@@ -32,7 +33,7 @@ module.exports.setRTLTextPlugin = function(url: string, callback: ErrorCallback)
     pluginRequested = true;
     pluginURL = url;
     module.exports.errorCallback = callback;
-    module.exports.evented.fire('pluginAvailable', { pluginURL: pluginURL, errorCallback: callback });
+    module.exports.evented.fire(new Event('pluginAvailable', { pluginURL: pluginURL, errorCallback: callback }));
 };
 
 module.exports.applyArabicShaping = (null: ?Function);

@@ -5,10 +5,11 @@ const ImageSource = require('./image_source');
 const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
+const {ErrorEvent} = require('../util/evented');
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Evented} from '../util/evented';
 
 /**
  * A data source containing video.
@@ -64,7 +65,7 @@ class VideoSource extends ImageSource {
 
         ajax.getVideo(options.urls, (err, video) => {
             if (err) {
-                this.fire('error', {error: err});
+                this.fire(new ErrorEvent(err));
             } else if (video) {
                 this.video = video;
                 this.video.loop = true;

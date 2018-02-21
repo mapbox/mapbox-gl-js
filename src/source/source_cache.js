@@ -2,7 +2,7 @@
 
 const createSource = require('./source').create;
 const Tile = require('./tile');
-const Evented = require('../util/evented');
+const {Event, ErrorEvent, Evented} = require('../util/evented');
 const Cache = require('../util/lru_cache');
 const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
@@ -235,7 +235,7 @@ class SourceCache extends Evented {
     _tileLoaded(tile: Tile, id: string | number, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
-            if (err.status !== 404) this._source.fire('error', {tile: tile, error: err});
+            if (err.status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
             else this.update(this.transform);
             return;
@@ -245,7 +245,7 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
-        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.tileID});
+        this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -589,7 +589,7 @@ class SourceCache extends Evented {
 
         tile.uses++;
         this._tiles[tileID.key] = tile;
-        if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.tileID, dataType: 'source'});
+        if (!cached) this._source.fire(new Event('dataloading', {tile: tile, coord: tile.tileID, dataType: 'source'}));
 
         return tile;
     }

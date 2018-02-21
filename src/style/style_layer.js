@@ -4,7 +4,7 @@
 const util = require('../util/util');
 const styleSpec = require('../style-spec/reference/latest');
 const validateStyle = require('./validate_style');
-const Evented = require('../util/evented');
+const {Evented} = require('../util/evented');
 
 const {
     Layout,
