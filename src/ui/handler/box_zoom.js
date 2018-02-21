@@ -30,7 +30,6 @@ class BoxZoomHandler {
         this._container = map.getContainer();
 
         util.bindAll([
-            '_onMouseDown',
             '_onMouseMove',
             '_onMouseUp',
             '_onKeyDown'
@@ -63,14 +62,6 @@ class BoxZoomHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-
-        // the event listeners for the DragPanHandler have to fire _after_ the event listener for BoxZoomHandler in order,
-        // for the DragPanHandler's check on map.boxZoom.isActive() to tell whether or not to ignore a keydown event
-        // so this makes sure the firing order is preserved if the BoxZoomHandler is enabled after the DragPanHandler.
-        if (this._map.dragPan) this._map.dragPan.disable();
-        this._el.addEventListener('mousedown', this._onMouseDown, false);
-        if (this._map.dragPan) this._map.dragPan.enable();
-
         this._enabled = true;
     }
 
@@ -82,11 +73,11 @@ class BoxZoomHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._el.removeEventListener('mousedown', this._onMouseDown);
         this._enabled = false;
     }
 
-    _onMouseDown(e: MouseEvent) {
+    onMouseDown(e: MouseEvent) {
+        if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
 
         window.document.addEventListener('mousemove', this._onMouseMove, false);

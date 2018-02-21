@@ -80,3 +80,30 @@ test('BoxZoomHandler avoids conflicts with DragPanHandler when disabled and reen
     map.remove();
     t.end();
 });
+
+test('BoxZoomHandler does not begin a box zoom if preventDefault is called on the mousedown event', (t) => {
+    const map = createMap();
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const boxzoomstart = t.spy();
+    const boxzoomend   = t.spy();
+
+    map.on('boxzoomstart', boxzoomstart);
+    map.on('boxzoomend',   boxzoomend);
+
+    simulate.mousedown(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
+    map._updateCamera();
+
+    simulate.mousemove(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
+    map._updateCamera();
+
+    simulate.mouseup(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
+    map._updateCamera();
+
+    t.equal(boxzoomstart.callCount, 0);
+    t.equal(boxzoomend.callCount, 0);
+
+    map.remove();
+    t.end();
+});

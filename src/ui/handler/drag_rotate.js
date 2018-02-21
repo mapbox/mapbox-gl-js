@@ -56,7 +56,6 @@ class DragRotateHandler {
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
         util.bindAll([
-            '_onDown',
             '_onMove',
             '_onUp',
             '_onDragFrame'
@@ -89,7 +88,6 @@ class DragRotateHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-        this._el.addEventListener('mousedown', this._onDown);
         this._enabled = true;
     }
 
@@ -101,11 +99,11 @@ class DragRotateHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._el.removeEventListener('mousedown', this._onDown);
         this._enabled = false;
     }
 
-    _onDown(e: MouseEvent) {
+    onDown(e: MouseEvent) {
+        if (!this.isEnabled()) return;
         if (this._map.boxZoom.isActive()) return;
         if (this._map.dragPan.isActive()) return;
         if (this.isActive()) return;

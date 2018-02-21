@@ -37,7 +37,6 @@ class DragPanHandler {
         this._el = map.getCanvasContainer();
 
         util.bindAll([
-            '_onDown',
             '_onMove',
             '_onUp',
             '_onDragFrame'
@@ -71,8 +70,6 @@ class DragPanHandler {
     enable() {
         if (this.isEnabled()) return;
         this._el.classList.add('mapboxgl-touch-drag-pan');
-        this._el.addEventListener('mousedown', this._onDown);
-        this._el.addEventListener('touchstart', this._onDown);
         this._enabled = true;
     }
 
@@ -85,23 +82,22 @@ class DragPanHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._el.classList.remove('mapboxgl-touch-drag-pan');
-        this._el.removeEventListener('mousedown', this._onDown);
-        this._el.removeEventListener('touchstart', this._onDown);
         this._enabled = false;
     }
 
-    _onDown(e: MouseEvent | TouchEvent) {
+    onDown(e: MouseEvent | TouchEvent) {
+        if (!this.isEnabled()) return;
         if (this._map.boxZoom.isActive()) return;
         if (this._map.dragRotate.isActive()) return;
         if (this.isActive()) return;
 
         if (e.touches) {
             if ((e.touches: any).length > 1) return;
-            window.document.addEventListener('touchmove', this._onMove);
+            window.document.addEventListener('touchmove', this._onMove, {capture: true});
             window.document.addEventListener('touchend', this._onUp);
         } else {
             if (e.ctrlKey || e.button !== 0) return;
-            window.document.addEventListener('mousemove', this._onMove);
+            window.document.addEventListener('mousemove', this._onMove, {capture: true});
             window.document.addEventListener('mouseup', this._onUp);
         }
 
@@ -156,9 +152,9 @@ class DragPanHandler {
     _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
         if (e.type === 'mouseup' && e.button !== 0) return;
 
-        window.document.removeEventListener('touchmove', this._onMove);
+        window.document.removeEventListener('touchmove', this._onMove, {capture: true});
         window.document.removeEventListener('touchend', this._onUp);
-        window.document.removeEventListener('mousemove', this._onMove);
+        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onUp);
         window.removeEventListener('blur', this._onUp);
 

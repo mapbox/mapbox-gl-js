@@ -39,7 +39,6 @@ class TouchZoomRotateHandler {
         this._el = map.getCanvasContainer();
 
         util.bindAll([
-            '_onStart',
             '_onMove',
             '_onEnd'
         ], this);
@@ -68,7 +67,6 @@ class TouchZoomRotateHandler {
     enable(options: any) {
         if (this.isEnabled()) return;
         this._el.classList.add('mapboxgl-touch-zoom-rotate');
-        this._el.addEventListener('touchstart', this._onStart, false);
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
     }
@@ -82,7 +80,6 @@ class TouchZoomRotateHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._el.classList.remove('mapboxgl-touch-zoom-rotate');
-        this._el.removeEventListener('touchstart', this._onStart);
         this._enabled = false;
     }
 
@@ -108,7 +105,8 @@ class TouchZoomRotateHandler {
         this._rotationDisabled = false;
     }
 
-    _onStart(e: TouchEvent) {
+    onStart(e: TouchEvent) {
+        if (!this.isEnabled()) return;
         if (e.touches.length !== 2) return;
 
         const p0 = DOM.mousePos(this._el, e.touches[0]),

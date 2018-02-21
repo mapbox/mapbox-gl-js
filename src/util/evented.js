@@ -20,7 +20,7 @@ function _removeEventListener(type: string, listener: Listener, listenerList: Li
 }
 
 class Event {
-    type: string;
+    +type: string;
 
     constructor(type: string, data: Object = {}) {
         util.extend(this, data);

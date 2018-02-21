@@ -573,3 +573,33 @@ test('DragRotateHandler does not end a control-left-button drag on right-button 
     map.remove();
     t.end();
 });
+
+test('DragRotateHandler does not begin a drag if preventDefault is called on the mousedown event', (t) => {
+    const map = createMap();
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._updateCamera();
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+
+    simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
+    map._updateCamera();
+
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
