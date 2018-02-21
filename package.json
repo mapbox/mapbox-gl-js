@@ -49,6 +49,7 @@
     "@mapbox/batfish": "^0.13.3",
     "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
+    "@std/esm": "^0.21.7",
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
     "browserify": "^14.0.0",
@@ -155,7 +156,8 @@
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "codegen": "node build/generate-style-code.js && flow-node build/generate-struct-arrays.js"
+    "remove-flow-types": "flow-remove-types -i node_modules -d src_untyped src",
+    "codegen": "node -r ./build/flow-remove-types build/generate-style-code.js && node -r ./build/flow-remove-types build/generate-struct-arrays.js"
   },
   "files": [
     "build/",

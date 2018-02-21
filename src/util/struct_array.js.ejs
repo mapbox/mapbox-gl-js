@@ -69,7 +69,7 @@ export type <%=StructTypeClass.replace('Struct', '')%> = <%=StructTypeClass%>;
 /**
  * @private
  */
-class <%=StructArrayClass%> extends <%=StructArrayLayoutClass%> {
+export class <%=StructArrayClass%> extends <%=StructArrayLayoutClass%> {
 <%
 if (StructArrayClass === 'GlyphOffsetArray' || StructArrayClass === 'SymbolLineVertexArray') {
     // component getters
