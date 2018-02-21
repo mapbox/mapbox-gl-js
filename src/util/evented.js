@@ -82,6 +82,7 @@ class Evented {
      * @param {string} type The type of event to fire.
      * @param {Object} [data] Data to be passed to any listeners.
      * @returns {Object} `this`
+     * @private
      */
     fire(type: string, data?: Object) {
         if (this.listens(type)) {
@@ -117,6 +118,7 @@ class Evented {
      *
      * @param {string} type The event type
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
+     * @private
      */
     listens(type: string) {
         return (
@@ -131,6 +133,7 @@ class Evented {
      *
      * @private
      * @returns {Object} `this`
+     * @private
      */
     setEventedParent(parent: ?Evented, data?: Object | () => Object) {
         this._eventedParent = parent;
