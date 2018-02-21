@@ -1,7 +1,7 @@
 // @flow
 
 const assert = require('assert');
-const Evented = require('../util/evented');
+const {Event, ErrorEvent, Evented} = require('../util/evented');
 const StyleLayer = require('./style_layer');
 const loadSprite = require('./load_sprite');
 const ImageManager = require('../render/image_manager');
@@ -149,7 +149,7 @@ class Style extends Evented {
         validate?: boolean,
         accessToken?: string
     } = {}) {
-        this.fire('dataloading', {dataType: 'style'});
+        this.fire(new Event('dataloading', {dataType: 'style'}));
 
         const validate = typeof options.validate === 'boolean' ?
             options.validate : !mapbox.isMapboxURL(url);
@@ -159,7 +159,7 @@ class Style extends Evented {
 
         ajax.getJSON(request, (error, json) => {
             if (error) {
-                this.fire('error', {error});
+                this.fire(new ErrorEvent(error));
             } else if (json) {
                 this._load((json: any), validate);
             }
@@ -169,7 +169,7 @@ class Style extends Evented {
     loadJSON(json: StyleSpecification, options: {
         validate?: boolean
     } = {}) {
-        this.fire('dataloading', {dataType: 'style'});
+        this.fire(new Event('dataloading', {dataType: 'style'}));
 
         browser.frame(() => {
             this._load(json, options.validate !== false);
@@ -191,7 +191,7 @@ class Style extends Evented {
         if (json.sprite) {
             loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
                 if (err) {
-                    this.fire('error', err);
+                    this.fire(new ErrorEvent(err));
                 } else if (images) {
                     for (const id in images) {
                         this.imageManager.addImage(id, images[id]);
@@ -199,7 +199,7 @@ class Style extends Evented {
                 }
 
                 this.imageManager.setLoaded(true);
-                this.fire('data', {dataType: 'style'});
+                this.fire(new Event('data', {dataType: 'style'}));
             });
         } else {
             this.imageManager.setLoaded(true);
@@ -222,8 +222,8 @@ class Style extends Evented {
 
         this.light = new Light(this.stylesheet.light);
 
-        this.fire('data', {dataType: 'style'});
-        this.fire('style.load');
+        this.fire(new Event('data', {dataType: 'style'}));
+        this.fire(new Event('style.load'));
     }
 
     _validateLayer(layer: StyleLayer) {
@@ -239,13 +239,11 @@ class Style extends Evented {
 
         const source = sourceCache.getSource();
         if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
-            this.fire('error', {
-                error: new Error(
-                    `Source layer "${sourceLayer}" ` +
-                    `does not exist on source "${source.id}" ` +
-                    `as specified by style layer "${layer.id}"`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(
+                `Source layer "${sourceLayer}" ` +
+                `does not exist on source "${source.id}" ` +
+                `as specified by style layer "${layer.id}"`
+            )));
         }
     }
 
@@ -329,7 +327,7 @@ class Style extends Evented {
 
             this._resetUpdates();
 
-            this.fire('data', {dataType: 'style'});
+            this.fire(new Event('data', {dataType: 'style'}));
         }
 
         for (const sourceId in this.sourceCaches) {
@@ -412,10 +410,10 @@ class Style extends Evented {
 
     addImage(id: string, image: StyleImage) {
         if (this.getImage(id)) {
-            return this.fire('error', {error: new Error('An image with this name already exists.')});
+            return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, image);
-        this.fire('data', {dataType: 'style'});
+        this.fire(new Event('data', {dataType: 'style'}));
     }
 
     getImage(id: string): ?StyleImage {
@@ -424,10 +422,10 @@ class Style extends Evented {
 
     removeImage(id: string) {
         if (!this.getImage(id)) {
-            return this.fire('error', {error: new Error('No image with this name exists.')});
+            return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id);
-        this.fire('data', {dataType: 'style'});
+        this.fire(new Event('data', {dataType: 'style'}));
     }
 
     addSource(id: string, source: SourceSpecification, options?: {validate?: boolean}) {
@@ -471,14 +469,14 @@ class Style extends Evented {
         }
         for (const layerId in this._layers) {
             if (this._layers[layerId].source === id) {
-                return this.fire('error', {error: new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`)});
+                return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`)));
             }
         }
 
         const sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
         delete this._updatedSources[id];
-        sourceCache.fire('data', {sourceDataType: 'metadata', dataType:'source', sourceId: id});
+        sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: id}));
         sourceCache.setEventedParent(null);
         sourceCache.clearTiles();
 
@@ -522,7 +520,7 @@ class Style extends Evented {
         const id = layerObject.id;
 
         if (this.getLayer(id)) {
-            this.fire('error', {error: new Error(`Layer with id "${id}" already exists on this map`)});
+            this.fire(new ErrorEvent(new Error(`Layer with id "${id}" already exists on this map`)));
             return;
         }
 
@@ -544,7 +542,7 @@ class Style extends Evented {
 
         const index = before ? this._order.indexOf(before) : this._order.length;
         if (before && index === -1) {
-            this.fire('error', { error: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
             return;
         }
 
@@ -585,12 +583,7 @@ class Style extends Evented {
 
         const layer = this._layers[id];
         if (!layer) {
-            this.fire('error', {
-                error: new Error(
-                    `The layer '${id}' does not exist in ` +
-                    `the map's style and cannot be moved.`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be moved.`)));
             return;
         }
 
@@ -599,7 +592,7 @@ class Style extends Evented {
 
         const newIndex = before ? this._order.indexOf(before) : this._order.length;
         if (before && newIndex === -1) {
-            this.fire('error', { error: new Error(`Layer with id "${before}" does not exist on this map.`)});
+            this.fire(new ErrorEvent(new Error(`Layer with id "${before}" does not exist on this map.`)));
             return;
         }
         this._order.splice(newIndex, 0, id);
@@ -620,12 +613,7 @@ class Style extends Evented {
 
         const layer = this._layers[id];
         if (!layer) {
-            this.fire('error', {
-                error: new Error(
-                    `The layer '${id}' does not exist in ` +
-                    `the map's style and cannot be removed.`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(`The layer '${id}' does not exist in the map's style and cannot be removed.`)));
             return;
         }
 
@@ -657,12 +645,7 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
         if (!layer) {
-            this.fire('error', {
-                error: new Error(
-                    `The layer '${layerId}' does not exist in ` +
-                    `the map's style and cannot have zoom extent.`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot have zoom extent.`)));
             return;
         }
 
@@ -682,12 +665,7 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
         if (!layer) {
-            this.fire('error', {
-                error: new Error(
-                    `The layer '${layerId}' does not exist in ` +
-                    `the map's style and cannot be filtered.`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be filtered.`)));
             return;
         }
 
@@ -723,12 +701,7 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
         if (!layer) {
-            this.fire('error', {
-                error: new Error(
-                    `The layer '${layerId}' does not exist in ` +
-                    `the map's style and cannot be styled.`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
             return;
         }
 
@@ -753,12 +726,7 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
         if (!layer) {
-            this.fire('error', {
-                error: new Error(
-                    `The layer '${layerId}' does not exist in ` +
-                    `the map's style and cannot be styled.`
-                )
-            });
+            this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be styled.`)));
             return;
         }
 
@@ -836,15 +804,14 @@ class Style extends Evented {
         const includedSources = {};
         if (params && params.layers) {
             if (!Array.isArray(params.layers)) {
-                this.fire('error', {error: 'parameters.layers must be an Array.'});
+                this.fire(new ErrorEvent(new Error('parameters.layers must be an Array.')));
                 return [];
             }
             for (const layerId of params.layers) {
                 const layer = this._layers[layerId];
                 if (!layer) {
                     // this layer is not in the style.layers array
-                    this.fire('error', {error: `The layer '${layerId}' does not exist ` +
-                        `in the map's style and cannot be queried for features.`});
+                    this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be queried for features.`)));
                     return [];
                 }
                 includedSources[layer.source] = true;

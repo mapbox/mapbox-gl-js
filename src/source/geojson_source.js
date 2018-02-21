@@ -1,6 +1,6 @@
 // @flow
 
-const Evented = require('../util/evented');
+const {Event, ErrorEvent, Evented} = require('../util/evented');
 const util = require('../util/util');
 const window = require('../util/window');
 const EXTENT = require('../data/extent');
@@ -137,10 +137,10 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     load() {
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire(new Event('dataloading', {dataType: 'source'}));
         this._updateWorkerData((err) => {
             if (err) {
-                this.fire('error', {error: err});
+                this.fire(new ErrorEvent(err));
                 return;
             }
 
@@ -152,7 +152,7 @@ class GeoJSONSource extends Evented implements Source {
 
             // although GeoJSON sources contain no metadata, we fire this event to let the SourceCache
             // know its ok to start requesting tiles.
-            this.fire('data', data);
+            this.fire(new Event('data', data));
         });
     }
 
@@ -169,10 +169,10 @@ class GeoJSONSource extends Evented implements Source {
      */
     setData(data: GeoJSON | string) {
         this._data = data;
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire(new Event('dataloading', {dataType: 'source'}));
         this._updateWorkerData((err) => {
             if (err) {
-                return this.fire('error', { error: err });
+                return this.fire(new ErrorEvent(err));
             }
 
             const data: Object = { dataType: 'source', sourceDataType: 'content' };
@@ -180,7 +180,7 @@ class GeoJSONSource extends Evented implements Source {
                 data.resourceTiming = this._resourceTiming;
                 this._resourceTiming = [];
             }
-            this.fire('data', data);
+            this.fire(new Event('data', data));
         });
 
         return this;

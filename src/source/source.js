@@ -3,7 +3,7 @@
 const util = require('../util/util');
 
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Event, Evented} from '../util/evented';
 import type Map from '../ui/map';
 import type Tile from './tile';
 import type {OverscaledTileID} from './tile_id';
@@ -56,7 +56,7 @@ export interface Source {
 
     hasTransition(): boolean;
 
-    fire(type: string, data: Object): mixed;
+    fire(event: Event): mixed;
 
     +onAdd?: (map: Map) => void;
     +onRemove?: (map: Map) => void;

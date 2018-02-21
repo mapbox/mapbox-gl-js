@@ -4,6 +4,7 @@ const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
 const browser = require('../../util/browser');
+const {Event} = require('../../util/evented');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -254,8 +255,8 @@ class DragRotateHandler {
         }, { originalEvent: e });
     }
 
-    _fireEvent(type: string, e: ?Event) {
-        return this._map.fire(type, e ? { originalEvent: e } : {});
+    _fireEvent(type: string, e: *) {
+        return this._map.fire(new Event(type, e ? { originalEvent: e } : {}));
     }
 
     _drainInertiaBuffer() {

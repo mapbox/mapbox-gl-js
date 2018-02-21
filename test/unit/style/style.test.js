@@ -7,7 +7,7 @@ const SourceCache = require('../../../src/source/source_cache');
 const StyleLayer = require('../../../src/style/style_layer');
 const Transform = require('../../../src/geo/transform');
 const util = require('../../../src/util/util');
-const Evented = require('../../../src/util/evented');
+const {Event, Evented} = require('../../../src/util/evented');
 const window = require('../../../src/util/window');
 const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
 const ajax = require('../../../src/util/ajax');
@@ -356,7 +356,7 @@ test('Style#loadJSON', (t) => {
         });
 
         style.on('style.load', () => {
-            style._layers.background.fire('error', {mapbox: true});
+            style._layers.background.fire(new Event('error', {mapbox: true}));
         });
     });
 
@@ -388,7 +388,7 @@ test('Style#_remove', (t) => {
         style.on('style.load', () => {
             style._remove();
 
-            rtlTextPlugin.evented.fire('pluginAvailable');
+            rtlTextPlugin.evented.fire(new Event('pluginAvailable'));
             t.notOk(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
             t.end();
         });
@@ -638,8 +638,8 @@ test('Style#addSource', (t) => {
             });
 
             style.addSource('source-id', source); // fires data twice
-            style.sourceCaches['source-id'].fire('error');
-            style.sourceCaches['source-id'].fire('data');
+            style.sourceCaches['source-id'].fire(new Event('error'));
+            style.sourceCaches['source-id'].fire(new Event('data'));
         });
     });
 
@@ -749,8 +749,8 @@ test('Style#removeSource', (t) => {
 
             style.on('data', () => { t.ok(false); });
             style.on('error', () => { t.ok(false); });
-            source.fire('data');
-            source.fire('error');
+            source.fire(new Event('data'));
+            source.fire(new Event('error'));
 
             t.end();
         });
@@ -802,7 +802,7 @@ test('Style#addLayer', (t) => {
                 id: 'background',
                 type: 'background'
             });
-            style._layers.background.fire('error', {mapbox: true});
+            style._layers.background.fire(new Event('error', {mapbox: true}));
         });
     });
 
@@ -1138,7 +1138,7 @@ test('Style#removeLayer', (t) => {
             // Bind a listener to prevent fallback Evented error reporting.
             layer.on('error', () => {});
 
-            layer.fire('error', {mapbox: true});
+            layer.fire(new Event('error', {mapbox: true}));
             t.end();
         });
     });
@@ -1730,8 +1730,8 @@ test('Style#queryRenderedFeatures', (t) => {
 
         t.test('checks type of `layers` option', (t) => {
             let errors = 0;
-            t.stub(style, 'fire').callsFake((type, data) => {
-                if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
+            t.stub(style, 'fire').callsFake((event) => {
+                if (event.error && event.error.message.includes('parameters.layers must be an Array.')) errors++;
             });
             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
             t.equals(errors, 1);
@@ -1774,8 +1774,8 @@ test('Style#queryRenderedFeatures', (t) => {
 
         t.test('fires an error if layer included in params does not exist on the style', (t) => {
             let errors = 0;
-            t.stub(style, 'fire').callsFake((type, data) => {
-                if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
+            t.stub(style, 'fire').callsFake((event) => {
+                if (event.error && event.error.message.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});
             t.equals(errors, 1);
@@ -1817,7 +1817,7 @@ test('Style defers expensive methods', (t) => {
 
         style.update({});
 
-        t.ok(style.fire.calledWith('data'), 'a data event was fired');
+        t.equal(style.fire.args[0][0].type, 'data', 'a data event was fired');
 
         // called per source
         t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');

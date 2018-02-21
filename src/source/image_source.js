@@ -4,7 +4,7 @@ const util = require('../util/util');
 const {CanonicalTileID} = require('./tile_id');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
-const Evented = require('../util/evented');
+const {Event, ErrorEvent, Evented} = require('../util/evented');
 const ajax = require('../util/ajax');
 const browser = require('../util/browser');
 const EXTENT = require('../data/extent');
@@ -92,13 +92,13 @@ class ImageSource extends Evented implements Source {
     }
 
     load() {
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this.url = this.options.url;
 
         ajax.getImage(this.map._transformRequest(this.url, ajax.ResourceType.Image), (err, image) => {
             if (err) {
-                this.fire('error', {error: err});
+                this.fire(new ErrorEvent(err));
             } else if (image) {
                 this.image = browser.getImageData(image);
                 this._finishLoading();
@@ -109,7 +109,7 @@ class ImageSource extends Evented implements Source {
     _finishLoading() {
         if (this.map) {
             this.setCoordinates(this.coordinates);
-            this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
+            this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
         }
     }
 
@@ -175,7 +175,7 @@ class ImageSource extends Evented implements Source {
             delete this.boundsBuffer;
         }
 
-        this.fire('data', {dataType:'source', sourceDataType: 'content'});
+        this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
         return this;
     }
 

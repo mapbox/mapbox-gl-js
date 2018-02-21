@@ -4,6 +4,7 @@ const DOM = require('../../util/dom');
 const LngLatBounds = require('../../geo/lng_lat_bounds');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const {Event} = require('../../util/evented');
 
 import type Map from '../map';
 
@@ -134,7 +135,7 @@ class BoxZoomHandler {
         } else {
             this._map
                 .fitBounds(bounds, {linear: true})
-                .fire('boxzoomend', { originalEvent: e, boxZoomBounds: bounds });
+                .fire(new Event('boxzoomend', { originalEvent: e, boxZoomBounds: bounds }));
         }
     }
 
@@ -162,8 +163,8 @@ class BoxZoomHandler {
         DOM.enableDrag();
     }
 
-    _fireEvent(type: string, e: Event) {
-        return this._map.fire(type, { originalEvent: e });
+    _fireEvent(type: string, e: *) {
+        return this._map.fire(new Event(type, { originalEvent: e }));
     }
 }
 

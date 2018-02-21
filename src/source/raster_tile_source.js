@@ -2,7 +2,7 @@
 
 const util = require('../util/util');
 const ajax = require('../util/ajax');
-const Evented = require('../util/evented');
+const {Event, ErrorEvent, Evented} = require('../util/evented');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 const TileBounds = require('./tile_bounds');
@@ -53,10 +53,10 @@ class RasterTileSource extends Evented implements Source {
     }
 
     load() {
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire(new Event('dataloading', {dataType: 'source'}));
         loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
             if (err) {
-                this.fire('error', err);
+                this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 util.extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
@@ -64,8 +64,8 @@ class RasterTileSource extends Evented implements Source {
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
                 // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
-                this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
-                this.fire('data', {dataType: 'source', sourceDataType: 'content'});
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
         });
     }

@@ -6,6 +6,7 @@ const browser = require('../../util/browser');
 const window = require('../../util/window');
 const interpolate = require('../../style-spec/util/interpolate').number;
 const LngLat = require('../../geo/lng_lat');
+const {Event} = require('../../util/evented');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -190,8 +191,8 @@ class ScrollZoomHandler {
         if (!this._delta) return;
 
         this._active = true;
-        this._map.fire('movestart', {originalEvent: e});
-        this._map.fire('zoomstart', {originalEvent: e});
+        this._map.fire(new Event('movestart', {originalEvent: e}));
+        this._map.fire(new Event('zoomstart', {originalEvent: e}));
         clearTimeout(this._finishTimeout);
 
         const pos = DOM.mousePos(this._el, e);
@@ -242,16 +243,16 @@ class ScrollZoomHandler {
 
         tr.setLocationAtPoint(this._around, this._aroundPoint);
 
-        this._map.fire('move', {originalEvent: this._lastWheelEvent});
-        this._map.fire('zoom', {originalEvent: this._lastWheelEvent});
+        this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
+        this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
     }
 
     _onScrollFinished() {
         if (!this.isActive()) return;
         this._active = false;
         this._finishTimeout = setTimeout(() => {
-            this._map.fire('zoomend');
-            this._map.fire('moveend');
+            this._map.fire(new Event('zoomend'));
+            this._map.fire(new Event('moveend'));
             delete this._targetZoom;
         }, 200);
     }

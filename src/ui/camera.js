@@ -6,7 +6,7 @@ const browser = require('../util/browser');
 const LngLat = require('../geo/lng_lat');
 const LngLatBounds = require('../geo/lng_lat_bounds');
 const Point = require('@mapbox/point-geometry');
-const Evented = require('../util/evented');
+const {Event, Evented} = require('../util/evented');
 
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -480,28 +480,28 @@ class Camera extends Evented {
             tr.pitch = +options.pitch;
         }
 
-        this.fire('movestart', eventData)
-            .fire('move', eventData);
+        this.fire(new Event('movestart', eventData))
+            .fire(new Event('move', eventData));
 
         if (zoomChanged) {
-            this.fire('zoomstart', eventData)
-                .fire('zoom', eventData)
-                .fire('zoomend', eventData);
+            this.fire(new Event('zoomstart', eventData))
+                .fire(new Event('zoom', eventData))
+                .fire(new Event('zoomend', eventData));
         }
 
         if (bearingChanged) {
-            this.fire('rotatestart', eventData)
-                .fire('rotate', eventData)
-                .fire('rotateend', eventData);
+            this.fire(new Event('rotatestart', eventData))
+                .fire(new Event('rotate', eventData))
+                .fire(new Event('rotateend', eventData));
         }
 
         if (pitchChanged) {
-            this.fire('pitchstart', eventData)
-                .fire('pitch', eventData)
-                .fire('pitchend', eventData);
+            this.fire(new Event('pitchstart', eventData))
+                .fire(new Event('pitch', eventData))
+                .fire(new Event('pitchend', eventData));
         }
 
-        return this.fire('moveend', eventData);
+        return this.fire(new Event('moveend', eventData));
     }
 
     /**
@@ -610,29 +610,29 @@ class Camera extends Evented {
         this._moving = true;
 
         if (!noMoveStart) {
-            this.fire('movestart', eventData);
+            this.fire(new Event('movestart', eventData));
         }
         if (this._zooming) {
-            this.fire('zoomstart', eventData);
+            this.fire(new Event('zoomstart', eventData));
         }
         if (this._rotating) {
-            this.fire('rotatestart', eventData);
+            this.fire(new Event('rotatestart', eventData));
         }
         if (this._pitching) {
-            this.fire('pitchstart', eventData);
+            this.fire(new Event('pitchstart', eventData));
         }
     }
 
     _fireMoveEvents(eventData?: Object) {
-        this.fire('move', eventData);
+        this.fire(new Event('move', eventData));
         if (this._zooming) {
-            this.fire('zoom', eventData);
+            this.fire(new Event('zoom', eventData));
         }
         if (this._rotating) {
-            this.fire('rotate', eventData);
+            this.fire(new Event('rotate', eventData));
         }
         if (this._pitching) {
-            this.fire('pitch', eventData);
+            this.fire(new Event('pitch', eventData));
         }
     }
 
@@ -646,15 +646,15 @@ class Camera extends Evented {
         this._pitching = false;
 
         if (wasZooming) {
-            this.fire('zoomend', eventData);
+            this.fire(new Event('zoomend', eventData));
         }
         if (wasRotating) {
-            this.fire('rotateend', eventData);
+            this.fire(new Event('rotateend', eventData));
         }
         if (wasPitching) {
-            this.fire('pitchend', eventData);
+            this.fire(new Event('pitchend', eventData));
         }
-        this.fire('moveend', eventData);
+        this.fire(new Event('moveend', eventData));
     }
 
     /**

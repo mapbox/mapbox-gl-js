@@ -2,7 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const ImageSource = require('../../../src/source/image_source');
-const Evented = require('../../../src/util/evented');
+const {Evented} = require('../../../src/util/evented');
 const Transform = require('../../../src/geo/transform');
 const util = require('../../../src/util/util');
 const ajax = require('../../../src/util/ajax');

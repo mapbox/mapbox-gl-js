@@ -1,6 +1,6 @@
 // @flow
 
-const Evented = require('../../util/evented');
+const {Event, Evented} = require('../../util/evented');
 const DOM = require('../../util/dom');
 const window = require('../../util/window');
 const util = require('../../util/util');
@@ -170,7 +170,7 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire('geolocate', position);
+        this.fire(new Event('geolocate', position));
         this._finish();
     }
 
@@ -238,7 +238,7 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.add('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire('error', error);
+        this.fire(new Event('error', error));
 
         this._finish();
     }
@@ -283,7 +283,7 @@ class GeolocateControl extends Evented {
                     this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
                     this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
 
-                    this.fire('trackuserlocationend');
+                    this.fire(new Event('trackuserlocationend'));
                 }
             });
         }
@@ -297,7 +297,7 @@ class GeolocateControl extends Evented {
                 // turn on the Geolocate Control
                 this._watchState = 'WAITING_ACTIVE';
 
-                this.fire('trackuserlocationstart');
+                this.fire(new Event('trackuserlocationstart'));
                 break;
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -311,7 +311,7 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
 
-                this.fire('trackuserlocationend');
+                this.fire(new Event('trackuserlocationend'));
                 break;
             case 'BACKGROUND':
                 this._watchState = 'ACTIVE_LOCK';
@@ -319,7 +319,7 @@ class GeolocateControl extends Evented {
                 // set camera to last known location
                 if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
 
-                this.fire('trackuserlocationstart');
+                this.fire(new Event('trackuserlocationstart'));
                 break;
             default:
                 assert(false, `Unexpected watchState ${this._watchState}`);

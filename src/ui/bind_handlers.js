@@ -1,6 +1,7 @@
 // @flow
 
 const DOM = require('../util/dom');
+const {Event} = require('../util/evented');
 const Point = require('@mapbox/point-geometry');
 
 import type Map from './map';
@@ -151,11 +152,11 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     function fireMouseEvent(type, e) {
         const pos = DOM.mousePos(el, e);
 
-        return map.fire(type, {
+        return map.fire(new Event(type, {
             lngLat: map.unproject(pos),
             point: pos,
             originalEvent: e
-        });
+        }));
     }
 
     function fireTouchEvent(type, e) {
@@ -164,12 +165,12 @@ module.exports = function bindHandlers(map: Map, options: {}) {
             return prev.add(curr.div(arr.length));
         }, new Point(0, 0));
 
-        return map.fire(type, {
+        return map.fire(new Event(type, {
             lngLat: map.unproject(singular),
             point: singular,
             lngLats: touches.map((t) => { return map.unproject(t); }, this),
             points: touches,
             originalEvent: e
-        });
+        }));
     }
 };
