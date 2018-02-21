@@ -1,3 +1,9 @@
+## master
+
+### ⚠️ Breaking changes
+
+* `Evented` is no longer publicly exported, and `Evented#fire` and `Evented#listens` are now private. If you are writing a class that needs event emitting functionality, consider using [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) or similar libraries instead.
+
 ## 0.44.1
 
 ### 🐛 Bug fixes

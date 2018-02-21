@@ -15,7 +15,6 @@ const Style = require('./style/style');
 const LngLat = require('./geo/lng_lat');
 const LngLatBounds = require('./geo/lng_lat_bounds');
 const Point = require('@mapbox/point-geometry');
-const Evented = require('./util/evented');
 const config = require('./util/config');
 const rtlTextPlugin = require('./source/rtl_text_plugin');
 
@@ -38,7 +37,6 @@ module.exports = {
     LngLat,
     LngLatBounds,
     Point,
-    Evented,
     config,
 
     /**
