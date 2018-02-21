@@ -1,22 +1,45 @@
 // @flow
 
 const DOM = require('../util/dom');
+const util = require('../util/util');
+const {bindAll} = require('../util/util');
 const LngLat = require('../geo/lng_lat');
 const Point = require('@mapbox/point-geometry');
 const smartWrap = require('../util/smart_wrap');
-const {bindAll} = require('../util/util');
 
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
 import type {MapMouseEvent} from './events';
 
+const defaultOptions = {
+    anchor: 'middle',
+    offset: [0, 0]
+};
+
+export type Anchor = 'middle' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type Offset = number | PointLike | {[Anchor]: PointLike};
+
+export type MarkerOptions = {
+    anchor: Anchor,
+    offset: Offset
+}
+
 /**
  * Creates a marker component
- * @param element DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
- * @param options
- * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+ * @param {Object} [element] DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
+ * @param {Object} [options]
+ * @param {string} [options.anchor] - A string indicating the markers's location relative to
+ *   the coordinate set via {@link Marker#setLngLat}.
+ *   Options are `'middle'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+ *   If unset the anchor will be dynamically set to ensure the marker falls within the map container with a preference for `'middle'` by default
+ * @param {number|PointLike|Object} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's anchor.
  * @example
+ * var markerRadius = 10;
+ * var markerOptions = {
+ *  anchor: 'middle',
+ *  offset: [markerRadius/2, markerHeight/2]
+ *  };
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
@@ -24,13 +47,18 @@ import type {MapMouseEvent} from './events';
  */
 class Marker {
     _map: Map;
-    _offset: Point;
+    options: MarkerOptions;
+    _anchor: Anchor;
+    _offset: Offset;
     _element: HTMLElement;
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
 
-    constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
+
+    constructor(element: ?HTMLElement, options?: { anchor: string, offset: PointLike}) {
+
+        this.options = util.extend(Object.create(defaultOptions), options);
         bindAll(['_update', '_onMapClick'], this);
 
         if (!element) {
@@ -134,12 +162,16 @@ class Marker {
             // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
             const defaultMarkerOffset = [0, -14];
-            if (!(options && options.offset)) {
+            const defaultMarkerAnchor = 'middle';
+
+            if (!(options && options.anchor && options.offset)) {
                 if (!options) {
                     options = {
+                        anchor: defaultMarkerAnchor,
                         offset: defaultMarkerOffset
                     };
                 } else {
+                    options.anchor = defaultMarkerAnchor;
                     options.offset = defaultMarkerOffset;
                 }
             }
@@ -149,7 +181,6 @@ class Marker {
 
         element.classList.add('mapboxgl-marker');
         this._element = element;
-
         this._popup = null;
     }
 
@@ -280,41 +311,159 @@ class Marker {
     }
 
     _update(e?: {type: 'move' | 'moveend'}) {
-        if (!this._map) return;
+        if (!this._map || this._lngLat || !this._options) { return; }
 
         if (this._map.transform.renderWorldCopies) {
             this._lngLat = smartWrap(this._lngLat, this._pos, this._map.transform);
         }
 
-        this._pos = this._map.project(this._lngLat)._add(this._offset);
+        const pos = this._pos = this._map.project(this._lngLat);
+
+
+        let anchor = this.options.anchor || 'middle';
+        const offset = normalizeOffset(this.options && this.options.offset || [0, 0]);
+
+        if (!anchor) {
+            const width = this._element.offsetWidth,
+                height = this._element.offsetHeight;
+
+            if (pos.y + offset.bottom.y < height) {
+                anchor = ['top'];
+            } else if (pos.y > this._map.transform.height - height) {
+                anchor = ['bottom'];
+            } else {
+                anchor = [];
+            }
+
+            if (pos.x < width / 2) {
+                anchor.push('left');
+            } else if (pos.x > this._map.transform.width - width / 2) {
+                anchor.push('right');
+            }
+
+            if (anchor.length === 0) {
+                anchor = 'middle';
+            } else {
+                anchor = anchor.join('-');
+            }
+        }
+
+        const offsetedPos = pos.add(offset[anchor]);
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (!e || e.type === "moveend") {
-            this._pos = this._pos.round();
+            this._pos = offsetedPos.round();
         }
 
-        DOM.setTransform(this._element, `translate(-50%, -50%) translate(${this._pos.x}px, ${this._pos.y}px)`);
+        const anchorTranslate = {
+            'middle': 'translate(-50%,-50%)',
+            'top': 'translate(-50%,0)',
+            'top-left': 'translate(0,0)',
+            'top-right': 'translate(-100%,0)',
+            'bottom': 'translate(-50%,-100%)',
+            'bottom-left': 'translate(0,-100%)',
+            'bottom-right': 'translate(-100%,-100%)',
+            'left': 'translate(0,-50%)',
+            'right': 'translate(-100%,-50%)'
+        };
+
+        const classList = this._element.classList;
+        for (const key in anchorTranslate) {
+            classList.remove(`mapboxgl-marker-anchor-${key}`);
+        }
+        classList.add(`mapboxgl-marker-anchor-${anchor}`);
+
+        DOM.setTransform(this._element, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+    }
+
+    /**
+     * Get the marker's anchor.
+     * @returns {string}
+     */
+    getAnchor() {
+        return this.options.anchor;
+    }
+
+    /**
+     * Sets the anchor of the marker
+     * @param {PointLike} [anchor] The anchor in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @returns {Marker} `this`
+     */
+    setAnchor(anchor: ?PointLike) {
+        this._anchor = Point.convert(anchor);
+        this._update();
+        return this;
     }
 
     /**
      * Get the marker's offset.
-     * @returns {Point}
+     * @returns {number|PointLike|Object}
      */
     getOffset() {
-        return this._offset;
+        return this.options.offset;
     }
 
     /**
      * Sets the offset of the marker
-     * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * @param {number|PointLike|Object} [offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
      * @returns {Marker} `this`
      */
-    setOffset(offset: PointLike) {
+    setOffset(offset: number | PointLike | Object) {
         this._offset = Point.convert(offset);
         this._update();
         return this;
+    }
+}
+
+function normalizeOffset(offset: ?Offset) {
+
+    if (!offset) {
+        return normalizeOffset(new Point(0, 0));
+    } else if (typeof offset === 'number') {
+        // input specifies a radius from which to calculate offsets at all positions
+        const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
+        return {
+            'middle': new Point(0, 0),
+            'top': new Point(0, offset),
+            'top-left': new Point(cornerOffset, cornerOffset),
+            'top-right': new Point(-cornerOffset, cornerOffset),
+            'bottom': new Point(0, -offset),
+            'bottom-left': new Point(cornerOffset, -cornerOffset),
+            'bottom-right': new Point(-cornerOffset, -cornerOffset),
+            'left': new Point(offset, 0),
+            'right': new Point(-offset, 0)
+        };
+
+    } else if (offset instanceof Point || Array.isArray(offset)) {
+        // input specifies a single offset to be applied to all positions
+        const convertedOffset = Point.convert(offset);
+        return {
+            'middle': convertedOffset,
+            'top': convertedOffset,
+            'top-left': convertedOffset,
+            'top-right': convertedOffset,
+            'bottom': convertedOffset,
+            'bottom-left': convertedOffset,
+            'bottom-right': convertedOffset,
+            'left': convertedOffset,
+            'right': convertedOffset
+        };
+
+    } else {
+        // input specifies an offset per position
+        return {
+            'middle': Point.convert(offset['middle'] || [0, 0]),
+            'top': Point.convert(offset['top'] || [0, 0]),
+            'top-left': Point.convert(offset['top-left'] || [0, 0]),
+            'top-right': Point.convert(offset['top-right'] || [0, 0]),
+            'bottom': Point.convert(offset['bottom'] || [0, 0]),
+            'bottom-left': Point.convert(offset['bottom-left'] || [0, 0]),
+            'bottom-right': Point.convert(offset['bottom-right'] || [0, 0]),
+            'left': Point.convert(offset['left'] || [0, 0]),
+            'right': Point.convert(offset['right'] || [0, 0])
+        };
     }
 }
 
