@@ -1,7 +1,10 @@
 {
   "version": 8,
   "metadata": {
-    "test": {}
+    "test": {
+      "width": 64,
+      "height": 64
+    }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
