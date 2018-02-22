@@ -134,6 +134,27 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
+    getLeaves(tileCoordinate, clusterId, clusterZoom, limit, offset, callback) {
+        const options = util.extend({
+            tileCoordinate: tileCoordinate,
+            clusterId: clusterId,
+            clusterZoom: Math.ceil(clusterZoom),
+            limit: limit || 10,
+            offset: offset || 0,
+            source: this.id
+        }, this.workerOptions);
+
+        this.dispatcher.broadcast(`${this.type}.getLeaves`, options, (err, tilesLeaves) => {
+            const leaves = [];
+            if (err) {
+                callback({success: false, error: err});
+                return this.fire('error', { error: err });
+            }
+            tilesLeaves.each((tileLeaves) => leaves.concat(tileLeaves) );
+            callback({success: true, leaves: leaves});
+        });
+    }
+
     abortTile(tile: Tile) {
         this.dispatcher.send('abortTile', { uid: tile.uid, type: this.type, source: this.id }, undefined, tile.workerID);
     }

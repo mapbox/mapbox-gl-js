@@ -73,6 +73,7 @@
           "circle-opacity": 0.5
       }
     });
+
     map.addLayer({
       id: "cluster-count",
       type: "symbol",
@@ -96,16 +97,37 @@
           "text-size": 12
       }
     });
-  });
 
-  map.on('mousemove', function(event) {
-    var hoveredOverFeatures = map.queryRenderedFeatures(event.point, {
-      layers: ['pointLayer']
+    map.on('mousemove', function(event) {
+      var hoveredOverFeatures = map.queryRenderedFeatures(event.point, {
+        layers: ['pointLayer']
+      });
+
+      if (hoveredOverFeatures.length > 0) {
+        // console.log('hovered over', hoveredOverFeatures[0]);
+      };
     });
 
-    if (hoveredOverFeatures.length > 0) {
-      console.log('hovered over', hoveredOverFeatures[0]);
-    };
+    map.on('click', function(event) {
+      var clickedOnFeatures = map.queryRenderedFeatures(event.point, {
+        layers: ['pointLayer']
+      });
+
+      if (clickedOnFeatures.length > 0) {
+        var tileCoordinate = map.transform.locationCoordinate(event.lngLat);
+        tileCoordinate.row = Math.floor(tileCoordinate.row);
+        tileCoordinate.column = Math.floor(tileCoordinate.column);
+        tileCoordinate.zoom = Math.floor(tileCoordinate.zoom);
+
+        var clusterId = clickedOnFeatures[0].properties.cluster_id;
+
+        console.log('clicked on', clickedOnFeatures[0]);
+        map.getSource('vectorDataSource').getLeaves(tileCoordinate, clusterId, map.getZoom(), 1000, 0, function(err, leaves) {
+          console.log('error is', err);
+          console.log('leaves are', leaves);
+        });
+      };
+    });
   });
 </script>
 

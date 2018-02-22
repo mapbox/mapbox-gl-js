@@ -34,7 +34,10 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
     if (!geoJSONTile) {
         return new GeoJSONWrapper([]);
     }
-    return new GeoJSONWrapper(geoJSONTile.features);
+    return {
+      geojsonWrappedVectorTile: new GeoJSONWrapper(geoJSONTile.features),
+      geojsonIndex: index
+    };
 };
 
 function getSuperCluterIndex(data: any, options: VectorSourceSpecification, zoom: number, scale: number) {
