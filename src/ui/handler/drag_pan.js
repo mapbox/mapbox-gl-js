@@ -96,7 +96,7 @@ class DragPanHandler {
             window.document.addEventListener('touchmove', this._onMove, {capture: true});
             window.document.addEventListener('touchend', this._onUp);
         } else {
-            if (e.ctrlKey || e.button !== 0) return;
+            if (e.ctrlKey || DOM.mouseButton((e: any)) !== 0) return;
             window.document.addEventListener('mousemove', this._onMove, {capture: true});
             window.document.addEventListener('mouseup', this._onUp);
         }
@@ -150,7 +150,7 @@ class DragPanHandler {
      * @private
      */
     _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
-        if (e.type === 'mouseup' && e.button !== 0) return;
+        if (e.type === 'mouseup' && DOM.mouseButton((e: any)) !== 0) return;
 
         window.document.removeEventListener('touchmove', this._onMove, {capture: true});
         window.document.removeEventListener('touchend', this._onUp);
