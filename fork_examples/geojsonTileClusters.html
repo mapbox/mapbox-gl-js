@@ -104,7 +104,7 @@
       });
 
       if (hoveredOverFeatures.length > 0) {
-        // console.log('hovered over', hoveredOverFeatures[0]);
+        console.log('hovered over', hoveredOverFeatures[0]);
       };
     });
 
@@ -121,7 +121,6 @@
 
         var clusterId = clickedOnFeatures[0].properties.cluster_id;
 
-        console.log('clicked on', clickedOnFeatures[0]);
         map.getSource('vectorDataSource').getLeaves(tileCoordinate, clusterId, map.getZoom(), 1000, 0, function(err, leaves) {
           console.log('error is', err);
           console.log('leaves are', leaves);

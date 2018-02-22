@@ -31,11 +31,10 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
         index = getGeojsonVTIndex(data, options, zoom, scale);
     }
     const geoJSONTile = index.getTile(zoom, tileCoord.x, tileCoord.y);
-    if (!geoJSONTile) {
-        return new GeoJSONWrapper([]);
-    }
+    const geojsonWrappedVectorTile = new GeoJSONWrapper(geoJSONTile ? geoJSONTile.features : []);
+
     return {
-      geojsonWrappedVectorTile: new GeoJSONWrapper(geoJSONTile.features),
+      geojsonWrappedVectorTile,
       geojsonIndex: index
     };
 };

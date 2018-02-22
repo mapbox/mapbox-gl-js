@@ -145,12 +145,14 @@ class VectorTileSource extends Evented implements Source {
         }, this.workerOptions);
 
         this.dispatcher.broadcast(`${this.type}.getLeaves`, options, (err, tilesLeaves) => {
-            const leaves = [];
+            let leaves = [];
             if (err) {
                 callback({success: false, error: err});
                 return this.fire('error', { error: err });
             }
-            tilesLeaves.each((tileLeaves) => leaves.concat(tileLeaves) );
+            tilesLeaves.forEach((tileLeaves) => {
+                leaves = leaves.concat(tileLeaves)
+            });
             callback({success: true, leaves: leaves});
         });
     }

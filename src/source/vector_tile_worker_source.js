@@ -62,6 +62,10 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
     }
 }
 
+/**
+ * Calls a tile endpoint that responds with geojson, clusters if required(options)
+ * and converts the features into vt vector tile.
+*/
 function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
     const xhr = ajax.getJSON(params.request, (err, data) => {
@@ -101,6 +105,9 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
     };
 }
 
+/**
+ * Calls a tile endpoint that responds in pbf format, converts them vt vector tile.
+*/
 function defaultLoadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
         if (err) {
@@ -223,7 +230,7 @@ class VectorTileWorkerSource implements WorkerSource {
 
     /**
      * For a geojson vector tile that is clustered, given id of a cluster
-     * this will return the points contributing to the cluster.
+     * this will return the features contributing to the cluster.
      *
      * @param GetLeavesParameters
      * @param Callback

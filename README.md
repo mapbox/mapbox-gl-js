@@ -9,9 +9,10 @@ Fork Version | Mapbox version | Notes
 0.0.3        | 0.42.2         | Converting aggregateBy properties from string to number. Otherwise, not able to use exponential/interval stops.
 0.0.4        | 0.42.2         | Support for multple aggregate by. Useful for aggregating by count and resizeBy column. Points (along with clusters which already have) will have abbreviated value for all aggregateBys.
 0.0.5        | 0.42.2         | Added support for groupBy, for vecotTile(geojson). In each cluster it will have splitups of aggregate based on the groupBy values in the features contributing to the cluster.
+0.0.6        | 0.42.2         | Added support for finding features contributing to a cluster, so that we can spiderfy.
 
 ## Fork Modifications:
- * **Get Pins in Cluster**: Expose getLeaves in superCluster via an interface, so that we can get the pins in a cluster and spiderfy them.
+ * **Get Pins in Cluster**: Expose getLeaves in superCluster via an interface, so that we can get the pins in a cluster and spiderfy them. Same has been added for vectortile source with geojson endpoints and clustering
  * **Aggregate Cluster By**: Allow clusters to aggregated using a field. If a field is specified, each cluster will have a sum value which will be the sum of field values (pin[field]) of all pins in the cluster. Super cluster has built in support for it. But mapbox interface has not exposed it.
  * **Geojson tiles**: Provide geojson endpoints for VectorTileSource. Every fetched geojson will converted to vector tiles and handed back to the original workflow.
 
