@@ -198,6 +198,8 @@ class DragRotateHandler {
         delete this._lastMoveEvent;
         delete this._previousPos;
 
+        DOM.suppressClick();
+
         this._fireEvent('rotateend', e);
         this._drainInertiaBuffer();
 
