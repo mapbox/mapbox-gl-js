@@ -147,7 +147,7 @@ exports.run = function (implementation, ignores, render) {
             // there may be multiple expected images, covering different platforms
             const expectedPaths = glob.sync(path.join(dir, 'expected*.png'));
 
-            if (expectedPaths.length === 0) {
+            if (!process.env.UPDATE && expectedPaths.length === 0) {
                 throw new Error('No expected*.png files found; did you mean to run tests with UPDATE=true?');
             }
 
