@@ -1,6 +1,5 @@
 // @flow
 
-const DOM = require('../util/dom');
 const {MapMouseEvent, MapTouchEvent} = require('../ui/events');
 
 import type Map from './map';
@@ -19,7 +18,6 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
-    let startPos = null;
     let tapped = null;
 
     for (const name in handlers) {
@@ -60,8 +58,6 @@ module.exports = function bindHandlers(map: Map, options: {}) {
             map.stop();
         }
 
-        startPos = mapEvent.point;
-
         map.boxZoom.onMouseDown(e);
         map.dragRotate.onDown(e);
         map.dragPan.onDown(e);
@@ -92,7 +88,6 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseOver(e: MouseEvent) {
-
         let target: any = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
@@ -142,11 +137,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onClick(e: MouseEvent) {
-        const pos = DOM.mousePos(el, e);
-
-        if (pos.equals((startPos: any))) {
-            fireMouseEvent('click', e);
-        }
+        fireMouseEvent('click', e);
     }
 
     function onDblClick(e: MouseEvent) {

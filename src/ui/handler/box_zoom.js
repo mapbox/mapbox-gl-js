@@ -121,6 +121,8 @@ class BoxZoomHandler {
 
         this._finish();
 
+        DOM.suppressClick();
+
         if (p0.x === p1.x && p0.y === p1.y) {
             this._fireEvent('boxzoomcancel', e);
         } else {

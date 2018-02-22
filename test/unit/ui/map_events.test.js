@@ -530,3 +530,18 @@ test('Map#off distinguishes distinct listeners', (t) => {
         t.end();
     });
 });
+
+test(`Map#on mousedown can have default behavior prevented and still fire subsequent click event`, (t) => {
+    const map = createMap();
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const click = t.spy();
+    map.on('click', click);
+
+    simulate.click(map.getCanvas());
+    t.ok(click.callCount, 1);
+
+    map.remove();
+    t.end();
+});
