@@ -39,10 +39,6 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     el.addEventListener('dblclick', onDblClick, false);
     el.addEventListener('contextmenu', onContextMenu, false);
 
-    function onMouseOut(e: MouseEvent) {
-        fireMouseEvent('mouseout', e);
-    }
-
     function onMouseDown(e: MouseEvent) {
         mouseDown = true;
 
@@ -67,12 +63,13 @@ module.exports = function bindHandlers(map: Map, options: {}) {
 
         if (contextMenuEvent && !rotating) {
             // This will be the case for Mac
-            fireMouseEvent('contextmenu', contextMenuEvent);
+            map.fire(new MapMouseEvent('contextmenu', map, contextMenuEvent));
         }
 
         contextMenuEvent = null;
         mouseDown = false;
-        fireMouseEvent('mouseup', e);
+
+        map.fire(new MapMouseEvent('mouseup', map, e));
     }
 
     function onMouseMove(e: MouseEvent) {
@@ -83,7 +80,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
-        fireMouseEvent('mousemove', e);
+        map.fire(new MapMouseEvent('mousemove', map, e));
     }
 
     function onMouseOver(e: MouseEvent) {
@@ -91,7 +88,11 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
-        fireMouseEvent('mouseover', e);
+        map.fire(new MapMouseEvent('mouseover', map, e));
+    }
+
+    function onMouseOut(e: MouseEvent) {
+        map.fire(new MapMouseEvent('mouseout', map, e));
     }
 
     function onTouchStart(e: TouchEvent) {
@@ -110,19 +111,19 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     }
 
     function onTouchMove(e: TouchEvent) {
-        fireTouchEvent('touchmove', e);
+        map.fire(new MapTouchEvent('touchmove', map, e));
     }
 
     function onTouchEnd(e: TouchEvent) {
-        fireTouchEvent('touchend', e);
+        map.fire(new MapTouchEvent('touchend', map, e));
     }
 
     function onTouchCancel(e: TouchEvent) {
-        fireTouchEvent('touchcancel', e);
+        map.fire(new MapTouchEvent('touchcancel', map, e));
     }
 
     function onClick(e: MouseEvent) {
-        fireMouseEvent('click', e);
+        map.fire(new MapMouseEvent('click', map, e));
     }
 
     function onDblClick(e: MouseEvent) {
@@ -140,20 +141,12 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         const rotating = map.dragRotate.isActive();
         if (!mouseDown && !rotating) {
             // Windows: contextmenu fired on mouseup, so fire event now
-            fireMouseEvent('contextmenu', e);
+            map.fire(new MapMouseEvent('contextmenu', map, e));
         } else if (mouseDown) {
             // Mac: contextmenu fired on mousedown; we save it until mouseup for consistency's sake
             contextMenuEvent = e;
         }
 
         e.preventDefault();
-    }
-
-    function fireMouseEvent(type: string, originalEvent: MouseEvent) {
-        map.fire(new MapMouseEvent(type, map, originalEvent));
-    }
-
-    function fireTouchEvent(type: string, originalEvent: TouchEvent) {
-        map.fire(new MapTouchEvent(type, map, originalEvent));
     }
 };
