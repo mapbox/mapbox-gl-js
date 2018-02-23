@@ -57,6 +57,8 @@ class MapMouseEvent extends Event {
      *   * On `mousedown` events, the behavior of {@link DragPanHandler}
      *   * On `mousedown` events, the behavior of {@link DragRotateHandler}
      *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}
+     *   * On `dblclick` events, the behavior of {@link DoubleClickZoomHandler}
+     *
      */
     preventDefault() {
         this._defaultPrevented = true;
@@ -134,6 +136,7 @@ class MapTouchEvent extends Event {
      *
      *   * On `touchstart` events, the behavior of {@link DragPanHandler}
      *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}
+     *
      */
     preventDefault() {
         this._defaultPrevented = true;

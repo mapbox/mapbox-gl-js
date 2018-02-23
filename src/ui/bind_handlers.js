@@ -18,7 +18,6 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
-    let tapped = null;
 
     for (const name in handlers) {
         (map: any)[name] = new handlers[name](map, options);
@@ -105,19 +104,9 @@ module.exports = function bindHandlers(map: Map, options: {}) {
 
         map.stop();
 
-        if (!e.touches || e.touches.length > 1) return;
-
-        if (!tapped) {
-            tapped = setTimeout(onTouchTimeout, 300);
-
-        } else {
-            clearTimeout(tapped);
-            tapped = null;
-            fireMouseEvent('dblclick', (e: any));
-        }
-
         map.dragPan.onDown(e);
         map.touchZoomRotate.onStart(e);
+        map.doubleClickZoom.onTouchStart(mapEvent);
     }
 
     function onTouchMove(e: TouchEvent) {
@@ -132,17 +121,19 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         fireTouchEvent('touchcancel', e);
     }
 
-    function onTouchTimeout() {
-        tapped = null;
-    }
-
     function onClick(e: MouseEvent) {
         fireMouseEvent('click', e);
     }
 
     function onDblClick(e: MouseEvent) {
-        fireMouseEvent('dblclick', e);
-        e.preventDefault();
+        const mapEvent = new MapMouseEvent('dblclick', map, e);
+        map.fire(mapEvent);
+
+        if (mapEvent.defaultPrevented) {
+            return;
+        }
+
+        map.doubleClickZoom.onDblClick(mapEvent);
     }
 
     function onContextMenu(e: MouseEvent) {
