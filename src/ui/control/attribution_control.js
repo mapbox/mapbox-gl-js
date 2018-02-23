@@ -53,6 +53,7 @@ class AttributionControl {
         this._updateAttributions();
         this._updateEditLink();
 
+        this._map.on('styledata', this._updateData);
         this._map.on('sourcedata', this._updateData);
         this._map.on('moveend', this._updateEditLink);
 
@@ -67,6 +68,7 @@ class AttributionControl {
     onRemove() {
         DOM.remove(this._container);
 
+        this._map.off('styledata', this._updateData);
         this._map.off('sourcedata', this._updateData);
         this._map.off('moveend', this._updateEditLink);
         this._map.off('resize', this._updateCompact);
@@ -97,15 +99,15 @@ class AttributionControl {
         }
     }
 
-    _updateData(e: any) {
-        if (e && e.sourceDataType === 'metadata') {
+    _updateData(e: ?Object) {
+        if (e && (e.type === "styledata" || e.sourceDataType === "metadata")) {
             this._updateAttributions();
             this._updateEditLink();
         }
     }
 
     _updateAttributions() {
-        if (!this._map.style) return;
+        if (!this._map || !this._map.style) return;
         let attributions: Array<string> = [];
 
         if (this._map.style.stylesheet) {
