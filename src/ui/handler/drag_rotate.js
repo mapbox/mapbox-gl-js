@@ -118,9 +118,16 @@ class DragRotateHandler {
 
         DOM.disableDrag();
 
+        // Bind window-level event listeners for move and up/end events. In the absence of
+        // the pointer capture API, which is not supported by all necessary platforms,
+        // window-level event listeners give us the best shot at capturing events that
+        // fall outside the map canvas element. Use `{capture: true}` for the move event
+        // to prevent map move events from being fired during a drag.
         window.document.addEventListener('mousemove', this._onMove, {capture: true});
         window.document.addEventListener('mouseup', this._onUp);
-        /* Deactivate DragRotate when the window looses focus. Otherwise if a mouseup occurs when the window isn't in focus, DragRotate will still be active even though the mouse is no longer pressed. */
+
+        // Deactivate when the window loses focus. Otherwise if a mouseup occurs when the window
+        // isn't in focus, dragging will continue even though the mouse is no longer pressed.
         window.addEventListener('blur', this._onUp);
 
         this._active = false;
