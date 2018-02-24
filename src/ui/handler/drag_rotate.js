@@ -104,8 +104,6 @@ class DragRotateHandler {
 
     onDown(e: MouseEvent) {
         if (!this.isEnabled()) return;
-        if (this._map.boxZoom.isActive()) return;
-        if (this._map.dragPan.isActive()) return;
         if (this.isActive()) return;
 
         if (this._button === 'right') {

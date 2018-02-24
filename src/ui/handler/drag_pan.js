@@ -87,8 +87,6 @@ class DragPanHandler {
 
     onDown(e: MouseEvent | TouchEvent) {
         if (!this.isEnabled()) return;
-        if (this._map.boxZoom.isActive()) return;
-        if (this._map.dragRotate.isActive()) return;
         if (this.isActive()) return;
 
         // Bind window-level event listeners for move and up/end events. In the absence of
