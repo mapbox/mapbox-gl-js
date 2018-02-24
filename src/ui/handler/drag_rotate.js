@@ -56,8 +56,9 @@ class DragRotateHandler {
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
         util.bindAll([
-            '_onMove',
-            '_onUp',
+            '_onMouseMove',
+            '_onMouseUp',
+            '_onBlur',
             '_onDragFrame'
         ], this);
     }
@@ -102,9 +103,8 @@ class DragRotateHandler {
         this._enabled = false;
     }
 
-    onDown(e: MouseEvent) {
-        if (!this.isEnabled()) return;
-        if (this.isActive()) return;
+    onMouseDown(e: MouseEvent) {
+        if (!this.isEnabled() || this.isActive()) return;
 
         if (this._button === 'right') {
             this._eventButton = DOM.mouseButton(e);
@@ -121,12 +121,12 @@ class DragRotateHandler {
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        window.document.addEventListener('mousemove', this._onMove, {capture: true});
-        window.document.addEventListener('mouseup', this._onUp);
+        window.document.addEventListener('mousemove', this._onMouseMove, {capture: true});
+        window.document.addEventListener('mouseup', this._onMouseUp);
 
         // Deactivate when the window loses focus. Otherwise if a mouseup occurs when the window
         // isn't in focus, dragging will continue even though the mouse is no longer pressed.
-        window.addEventListener('blur', this._onUp);
+        window.addEventListener('blur', this._onBlur);
 
         this._active = false;
         this._inertia = [[browser.now(), this._map.getBearing()]];
@@ -136,7 +136,7 @@ class DragRotateHandler {
         e.preventDefault();
     }
 
-    _onMove(e: MouseEvent) {
+    _onMouseMove(e: MouseEvent) {
         this._lastMoveEvent = e;
         this._pos = DOM.mousePos(this._el, e);
 
@@ -181,12 +181,19 @@ class DragRotateHandler {
         this._previousPos = this._pos;
     }
 
-    _onUp(e: MouseEvent | FocusEvent) {
-        if (e.type === 'mouseup' && DOM.mouseButton((e: any)) !== this._eventButton) return;
+    _onMouseUp(e: MouseEvent) {
+        if (DOM.mouseButton(e) !== this._eventButton) return;
+        this._finish(e);
+    }
 
-        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
-        window.document.removeEventListener('mouseup', this._onUp);
-        window.removeEventListener('blur', this._onUp);
+    _onBlur(e: FocusEvent) {
+        this._finish(e);
+    }
+
+    _finish(e: MouseEvent | FocusEvent) {
+        window.document.removeEventListener('mousemove', this._onMouseMove, {capture: true});
+        window.document.removeEventListener('mouseup', this._onMouseUp);
+        window.removeEventListener('blur', this._onBlur);
 
         DOM.enableDrag();
 

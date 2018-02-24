@@ -38,7 +38,9 @@ class DragPanHandler {
 
         util.bindAll([
             '_onMove',
-            '_onUp',
+            '_onMouseUp',
+            '_onTouchEnd',
+            '_onBlur',
             '_onDragFrame'
         ], this);
     }
@@ -85,28 +87,40 @@ class DragPanHandler {
         this._enabled = false;
     }
 
-    onDown(e: MouseEvent | TouchEvent) {
-        if (!this.isEnabled()) return;
-        if (this.isActive()) return;
+    onMouseDown(e: MouseEvent) {
+        if (!this.isEnabled() || this.isActive()) return;
+        if (e.ctrlKey || DOM.mouseButton(e) !== 0) return;
 
-        // Bind window-level event listeners for move and up/end events. In the absence of
+        // Bind window-level event listeners for mousemove/up events. In the absence of
         // the pointer capture API, which is not supported by all necessary platforms,
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        if (e.touches) {
-            if ((e.touches: any).length > 1) return;
-            window.document.addEventListener('touchmove', this._onMove, {capture: true});
-            window.document.addEventListener('touchend', this._onUp);
-        } else {
-            if (e.ctrlKey || DOM.mouseButton((e: any)) !== 0) return;
-            window.document.addEventListener('mousemove', this._onMove, {capture: true});
-            window.document.addEventListener('mouseup', this._onUp);
-        }
+        window.document.addEventListener('mousemove', this._onMove, {capture: true});
+        window.document.addEventListener('mouseup', this._onMouseUp);
 
+        this._start(e);
+    }
+
+    onTouchStart(e: TouchEvent) {
+        if (!this.isEnabled() || this.isActive()) return;
+        if (e.touches.length > 1) return;
+
+        // Bind window-level event listeners for touchmove/end events. In the absence of
+        // the pointer capture API, which is not supported by all necessary platforms,
+        // window-level event listeners give us the best shot at capturing events that
+        // fall outside the map canvas element. Use `{capture: true}` for the move event
+        // to prevent map move events from being fired during a drag.
+        window.document.addEventListener('touchmove', this._onMove, {capture: true});
+        window.document.addEventListener('touchend', this._onTouchEnd);
+
+        this._start(e);
+    }
+
+    _start(e: MouseEvent | TouchEvent) {
         // Deactivate when the window loses focus. Otherwise if a mouseup occurs when the window
         // isn't in focus, dragging will continue even though the mouse is no longer pressed.
-        window.addEventListener('blur', this._onUp);
+        window.addEventListener('blur', this._onBlur);
 
         this._active = false;
         this._previousPos = DOM.mousePos(this._el, e);
@@ -148,18 +162,25 @@ class DragPanHandler {
         delete this._lastMoveEvent;
     }
 
-    /**
-     * Called when dragging stops.
-     * @private
-     */
-    _onUp(e: MouseEvent | TouchEvent | FocusEvent) {
-        if (e.type === 'mouseup' && DOM.mouseButton((e: any)) !== 0) return;
+    _onMouseUp(e: MouseEvent) {
+        if (DOM.mouseButton(e) !== 0) return;
+        this._finish(e);
+    }
 
+    _onTouchEnd(e: TouchEvent) {
+        this._finish(e);
+    }
+
+    _onBlur(e: FocusEvent) {
+        this._finish(e);
+    }
+
+    _finish(e: MouseEvent | TouchEvent | FocusEvent) {
         window.document.removeEventListener('touchmove', this._onMove, {capture: true});
-        window.document.removeEventListener('touchend', this._onUp);
+        window.document.removeEventListener('touchend', this._onTouchEnd);
         window.document.removeEventListener('mousemove', this._onMove, {capture: true});
-        window.document.removeEventListener('mouseup', this._onUp);
-        window.removeEventListener('blur', this._onUp);
+        window.document.removeEventListener('mouseup', this._onMouseUp);
+        window.removeEventListener('blur', this._onBlur);
 
         if (!this.isActive()) return;
 

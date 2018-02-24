@@ -56,11 +56,11 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         map.boxZoom.onMouseDown(e);
 
         if (!map.boxZoom.isActive() && !map.dragPan.isActive()) {
-            map.dragRotate.onDown(e);
+            map.dragRotate.onMouseDown(e);
         }
 
         if (!map.boxZoom.isActive() && !map.dragRotate.isActive()) {
-            map.dragPan.onDown(e);
+            map.dragPan.onMouseDown(e);
         }
     }
 
@@ -112,7 +112,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         map.stop();
 
         if (!map.boxZoom.isActive() && !map.dragRotate.isActive()) {
-            map.dragPan.onDown(e);
+            map.dragPan.onTouchStart(e);
         }
 
         map.touchZoomRotate.onStart(e);
