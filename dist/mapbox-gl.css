@@ -439,6 +439,7 @@ a.mapboxgl-ctrl-logo {
     position: absolute;
     top: -2px;
     width: 15px;
+    box-sizing: content-box;
 }
 
 @-webkit-keyframes mapboxgl-user-location-dot-pulse {
