@@ -1,0 +1,24 @@
+{
+  "expression": ["regex", ["get", "r"], ["get", "s"]],
+  "inputs": [
+    [{}, {"properties": {"r": ".*", "s": "some string"}}],
+    [{}, {"properties": {"r": "me stri", "s": "some string"}}],
+    [{}, {"properties": {"r": "(.*) string", "s": "some string"}}],
+    [{}, {"properties": {"r": "([eosm]{4}) (string)", "s": "some string"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<string>"
+    },
+    "outputs": [
+        ["some string"],
+        ["me stri"],
+        ["some string", "some"],
+        ["some string", "some", "string"]
+    ],
+    "serialized": ["regex", ["get", "r"], ["get", "s"]]
+  }
+}
