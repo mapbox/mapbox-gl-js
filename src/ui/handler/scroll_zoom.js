@@ -23,8 +23,6 @@ const wheelZoomRate = 1 / 450;
 // is used to limit zoom rate in the case of very fast scrolling
 const maxScalePerFrame = 2;
 
-const firefox = window.navigator.userAgent.toLowerCase().indexOf('firefox') !== -1;
-
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
  */
@@ -111,17 +109,8 @@ class ScrollZoomHandler {
     onWheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
 
-        let value = e.deltaY;
-
-        // Firefox doubles the values on retina screens...
-        // Remove `any` casts when https://github.com/facebook/flow/issues/4879 is fixed.
-        if (firefox && e.deltaMode === (window.WheelEvent: any).DOM_DELTA_PIXEL) {
-            value /= browser.devicePixelRatio;
-        }
-        if (e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE) {
-            value *= 40;
-        }
-
+        // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
+        let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
         const now = browser.now(),
             timeDelta = now - (this._lastWheelEventTime || 0);
 
