@@ -23,9 +23,7 @@ const wheelZoomRate = 1 / 450;
 // is used to limit zoom rate in the case of very fast scrolling
 const maxScalePerFrame = 2;
 
-const ua = window.navigator.userAgent.toLowerCase(),
-    firefox = ua.indexOf('firefox') !== -1,
-    safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
+const firefox = window.navigator.userAgent.toLowerCase().indexOf('firefox') !== -1;
 
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
@@ -96,7 +94,6 @@ class ScrollZoomHandler {
     enable(options: any) {
         if (this.isEnabled()) return;
         this._el.addEventListener('wheel', this._onWheel, false);
-        this._el.addEventListener('mousewheel', this._onWheel, false);
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
     }
@@ -110,23 +107,19 @@ class ScrollZoomHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._el.removeEventListener('wheel', this._onWheel);
-        this._el.removeEventListener('mousewheel', this._onWheel);
         this._enabled = false;
     }
 
-    _onWheel(e: any) {
-        let value = 0;
+    _onWheel(e: WheelEvent) {
+        let value = e.deltaY;
 
-        if (e.type === 'wheel') {
-            value = e.deltaY;
-            // Firefox doubles the values on retina screens...
-            // Remove `any` casts when https://github.com/facebook/flow/issues/4879 is fixed.
-            if (firefox && e.deltaMode === (window.WheelEvent: any).DOM_DELTA_PIXEL) value /= browser.devicePixelRatio;
-            if (e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE) value *= 40;
-
-        } else if (e.type === 'mousewheel') {
-            value = -e.wheelDeltaY;
-            if (safari) value = value / 3;
+        // Firefox doubles the values on retina screens...
+        // Remove `any` casts when https://github.com/facebook/flow/issues/4879 is fixed.
+        if (firefox && e.deltaMode === (window.WheelEvent: any).DOM_DELTA_PIXEL) {
+            value /= browser.devicePixelRatio;
+        }
+        if (e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE) {
+            value *= 40;
         }
 
         const now = browser.now(),
