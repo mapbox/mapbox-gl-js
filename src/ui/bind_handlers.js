@@ -1,6 +1,10 @@
 // @flow
 
-const {MapMouseEvent, MapTouchEvent} = require('../ui/events');
+const {
+    MapMouseEvent,
+    MapTouchEvent,
+    MapWheelEvent
+} = require('../ui/events');
 
 import type Map from './map';
 
@@ -38,6 +42,7 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     el.addEventListener('click', onClick, false);
     el.addEventListener('dblclick', onDblClick, false);
     el.addEventListener('contextmenu', onContextMenu, false);
+    el.addEventListener('wheel', onWheel, false);
 
     function onMouseDown(e: MouseEvent) {
         mouseDown = true;
@@ -157,5 +162,16 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         }
 
         e.preventDefault();
+    }
+
+    function onWheel(e: WheelEvent) {
+        const mapEvent = new MapWheelEvent('wheel', map, e);
+        map.fire(mapEvent);
+
+        if (mapEvent.defaultPrevented) {
+            return;
+        }
+
+        map.scrollZoom.onWheel(e);
     }
 };

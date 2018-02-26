@@ -19,7 +19,7 @@ function createMap(options) {
     }, options));
 }
 
-test('ScrollZoomHandler zooms in response to wheel events', (t) => {
+test('ScrollZoomHandler', (t) => {
     const browserNow = t.stub(browser, 'now');
     let now = 1555555555555;
     browserNow.callsFake(() => now);
@@ -115,6 +115,22 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         t.end();
     });
 
+    test('does not zoom if preventDefault is called on the wheel event', (t) => {
+        const map = createMap();
+
+        map.on('wheel', e => e.preventDefault());
+
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+        map._updateCamera();
+
+        now += 400;
+        map._updateCamera();
+
+        t.equal(map.getZoom(), 0);
+
+        map.remove();
+        t.end();
+    });
+
     t.end();
 });
-
