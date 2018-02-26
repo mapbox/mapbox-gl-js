@@ -38,6 +38,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-render-recycle-map:
+          requires:
+            - prepare
+          filters:
+            tags:
+              only: /.*/
       - test-query:
           requires:
             - prepare
@@ -57,6 +63,7 @@ workflows:
             - test-flow
             - test-unit
             - test-render
+            - test-render-recycle-map
             - test-query
             - test-expressions
           filters:
@@ -73,6 +80,7 @@ workflows:
             - test-flow
             - test-unit
             - test-render
+            - test-render-recycle-map
             - test-query
             - test-expressions
           filters:
@@ -155,6 +163,15 @@ jobs:
       - attach_workspace:
           at: .
       - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render
+      - store_artifacts:
+          path: "test/integration/render-tests/index.html"
+
+  test-render-recycle-map:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: xvfb-run --server-args="-screen 0 1024x768x24" npm run test-render --recycle-map --random
       - store_artifacts:
           path: "test/integration/render-tests/index.html"
 

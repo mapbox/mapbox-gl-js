@@ -14,7 +14,10 @@ const path = require('path');
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
 
+let map;
+
 module.exports = function(style, options, _callback) {
+
     let wasCallbackCalled = false;
 
     const timeout = setTimeout(() => {
@@ -35,28 +38,34 @@ module.exports = function(style, options, _callback) {
     Object.defineProperty(container, 'offsetWidth', {value: options.width});
     Object.defineProperty(container, 'offsetHeight', {value: options.height});
 
-    const map = new Map({
-        container: container,
-        style: style,
-        classes: options.classes,
-        interactive: false,
-        attributionControl: false,
-        preserveDrawingBuffer: true,
-        axonometric: options.axonometric || false,
-        skew: options.skew || [0, 0],
-        fadeDuration: options.fadeDuration || 0
-    });
+    if (typeof map === 'undefined' || !options.recycleMap) {
+        map = new Map({
+            container: container,
+            style: style,
+            classes: options.classes,
+            interactive: false,
+            attributionControl: false,
+            preserveDrawingBuffer: true,
+            axonometric: options.axonometric || false,
+            skew: options.skew || [0, 0],
+            fadeDuration: options.fadeDuration || 0
+        });
 
-    // Configure the map to never stop the render loop
-    map.repaint = true;
+        // Configure the map to never stop the render loop
+        map.repaint = true;
+    } else if (options.recycleMap) {
+        map.resize();
+        map.setStyle(style, {diff: false});
+        map.setClasses(options.classes || {});
+    }
 
     let now = 0;
     browser.now = function() {
         return now;
     };
 
-    if (options.debug) map.showTileBoundaries = true;
-    if (options.showOverdrawInspector) map.showOverdrawInspector = true;
+    map.showTileBoundaries = options.debug;
+    map.showOverdrawInspector = options.showOverdrawInspector;
 
     const gl = map.painter.context.gl;
 
@@ -94,9 +103,11 @@ module.exports = function(style, options, _callback) {
                 map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
                 [];
 
-            map.remove();
-            gl.getExtension('STACKGL_destroy_context').destroy();
-            delete map.painter.context.gl;
+            if (!options.recycleMap) {
+                map.remove();
+                gl.getExtension('STACKGL_destroy_context').destroy();
+                delete map.painter.context.gl;
+            }
 
             callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();

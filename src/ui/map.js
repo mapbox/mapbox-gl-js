@@ -939,6 +939,8 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
+        this._loaded = false;
+
         const shouldTryDiff = (!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style;
         if (shouldTryDiff && style && typeof style === 'object') {
             try {
