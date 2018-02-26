@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import util from '../../util/util';
+import { bindAll, warnOnce } from '../../util/util';
 import window from '../../util/window';
 
 import type Map from '../map';
@@ -27,7 +27,7 @@ class FullscreenControl {
 
     constructor() {
         this._fullscreen = false;
-        util.bindAll([
+        bindAll([
             '_onClickFullscreen',
             '_changeIcon'
         ], this);
@@ -51,7 +51,7 @@ class FullscreenControl {
             this._setupUI();
         } else {
             this._container.style.display = 'none';
-            util.warnOnce('This device does not support fullscreen mode.');
+            warnOnce('This device does not support fullscreen mode.');
         }
         return this._container;
     }

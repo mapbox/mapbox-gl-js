@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import util from '../../util/util';
+import { bezier, bindAll } from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
 import { Event } from '../../util/evented';
@@ -13,7 +13,7 @@ import type Point from '@mapbox/point-geometry';
 import type Transform from '../../geo/transform';
 
 const inertiaLinearity = 0.25,
-    inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
+    inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 180, // deg/s
     inertiaDeceleration = 720; // deg/s^2
 
@@ -57,7 +57,7 @@ class DragRotateHandler {
         this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
-        util.bindAll([
+        bindAll([
             '_onMouseMove',
             '_onMouseUp',
             '_onBlur',

@@ -2,7 +2,7 @@
 
 import styleSpec from '../style-spec/reference/latest';
 
-import util from '../util/util';
+import { endsWith, extend } from '../util/util';
 import { Evented } from '../util/evented';
 import validateStyle from './validate_style';
 import { sphericalToCartesian } from '../util/util';
@@ -88,7 +88,7 @@ class Light extends Evented {
 
         for (const name in options) {
             const value = options[name];
-            if (util.endsWith(name, TRANSITION_SUFFIX)) {
+            if (endsWith(name, TRANSITION_SUFFIX)) {
                 this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
             } else {
                 this._transitionable.setValue(name, value);
@@ -109,7 +109,7 @@ class Light extends Evented {
     }
 
     _validate(validate, value: mixed) {
-        return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
+        return validateStyle.emitErrors(this, validate.call(validateStyle, extend({
             value: value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},

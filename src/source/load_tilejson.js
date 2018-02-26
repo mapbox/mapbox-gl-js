@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { pick } from '../util/util';
 
 import ajax from '../util/ajax';
 import browser from '../util/browser';
@@ -15,7 +15,10 @@ export default function(options: any, requestTransformFn: RequestTransformFuncti
         if (err) {
             return callback(err);
         } else if (tileJSON) {
-            const result: any = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']);
+            const result: any = pick(
+                tileJSON,
+                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']
+            );
 
             if (tileJSON.vector_layers) {
                 result.vectorLayers = tileJSON.vector_layers;

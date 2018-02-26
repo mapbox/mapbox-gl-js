@@ -4,7 +4,7 @@ import LngLat from './lng_lat';
 
 import Point from '@mapbox/point-geometry';
 import Coordinate from './coordinate';
-import util from '../util/util';
+import { wrap, clamp } from '../util/util';
 import { number as interp } from '../style-spec/util/interpolate';
 import tileCover from '../util/tile_cover';
 import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
@@ -127,7 +127,7 @@ class Transform {
         return -this.angle / Math.PI * 180;
     }
     set bearing(bearing: number) {
-        const b = -util.wrap(bearing, -180, 180) * Math.PI / 180;
+        const b = -wrap(bearing, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -142,7 +142,7 @@ class Transform {
         return this._pitch / Math.PI * 180;
     }
     set pitch(pitch: number) {
-        const p = util.clamp(pitch, 0, 60) / 180 * Math.PI;
+        const p = clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;

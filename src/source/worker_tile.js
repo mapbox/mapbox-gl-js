@@ -6,7 +6,7 @@ import { performSymbolLayout } from '../symbol/symbol_layout';
 import { CollisionBoxArray } from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
-import util from '../util/util';
+import { warnOnce, mapObject, values } from '../util/util';
 import assert from 'assert';
 import { makeImageAtlas } from '../render/image_atlas';
 import { makeGlyphAtlas } from '../render/glyph_atlas';
@@ -81,7 +81,7 @@ class WorkerTile {
             }
 
             if (sourceLayer.version === 1) {
-                util.warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
+                warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
                     `does not use vector tile spec v2 and therefore may have some rendering errors.`);
             }
 
@@ -120,7 +120,7 @@ class WorkerTile {
         let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
         let imageMap: ?{[string]: StyleImage};
 
-        const stacks = util.mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
+        const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
             actor.send('getGlyphs', {uid: this.uid, stacks}, (err, result) => {
                 if (!error) {
@@ -166,7 +166,7 @@ class WorkerTile {
                 this.status = 'done';
 
                 callback(null, {
-                    buckets: util.values(buckets).filter(b => !b.isEmpty()),
+                    buckets: values(buckets).filter(b => !b.isEmpty()),
                     featureIndex,
                     collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,

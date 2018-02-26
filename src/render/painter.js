@@ -6,7 +6,7 @@ import { mat4 } from '@mapbox/gl-matrix';
 import SourceCache from '../source/source_cache';
 import EXTENT from '../data/extent';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
-import util from '../util/util';
+import { filterObject } from '../util/util';
 import VertexArrayObject from './vertex_array_object';
 import { RasterBoundsArray, PosArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
@@ -285,7 +285,10 @@ class Painter {
 
         const layerIds = this.style._order;
 
-        const rasterSources = util.filterObject(this.style.sourceCaches, (sc) => { return sc.getSource().type === 'raster' || sc.getSource().type === 'raster-dem'; });
+        const rasterSources = filterObject(
+            this.style.sourceCaches,
+            (sc) => { return sc.getSource().type === 'raster' || sc.getSource().type === 'raster-dem'; }
+        );
         for (const key in rasterSources) {
             const sourceCache = rasterSources[key];
             const coords = sourceCache.getVisibleCoordinates();

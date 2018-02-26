@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { bindAll } from '../util/util';
 
 import type Dispatcher from '../util/dispatcher';
 import type {Event, Evented} from '../util/evented';
@@ -112,7 +112,7 @@ export const create = function(id: string, specification: SourceSpecification, d
         throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);
     }
 
-    util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
+    bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
     return source;
 };
 

@@ -1,6 +1,6 @@
 // @flow
 
-import util from './util';
+import { extend, endsWith } from './util';
 
 type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
@@ -23,14 +23,14 @@ class Event {
     +type: string;
 
     constructor(type: string, data: Object = {}) {
-        util.extend(this, data);
+        extend(this, data);
         this.type = type;
     }
 }
 
 class ErrorEvent extends Event {
     constructor(error: Error, data: Object = {}) {
-        super('error', util.extend({error}, data));
+        super('error', extend({error}, data));
     }
 }
 
@@ -111,13 +111,16 @@ class Evented {
 
             const parent = this._eventedParent;
             if (parent) {
-                util.extend(event, typeof this._eventedParentData === 'function' ? this._eventedParentData() : this._eventedParentData);
+                extend(
+                    event,
+                    typeof this._eventedParentData === 'function' ? this._eventedParentData() : this._eventedParentData
+                );
                 parent.fire(event);
             }
 
         // To ensure that no error events are dropped, print them to the
         // console if they have no listeners.
-        } else if (util.endsWith(type, 'error')) {
+        } else if (endsWith(type, 'error')) {
             console.error((event && event.error) || event || 'Empty error event');
         }
 

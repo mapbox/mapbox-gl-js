@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { extend, pick } from '../util/util';
 
 import ajax from '../util/ajax';
 import { Event, ErrorEvent, Evented } from '../util/evented';
@@ -49,8 +49,8 @@ class RasterTileSource extends Evented implements Source {
         this.tileSize = 512;
         this._loaded = false;
 
-        this._options = util.extend({}, options);
-        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = extend({}, options);
+        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
     load() {
@@ -59,7 +59,7 @@ class RasterTileSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                util.extend(this, tileJSON);
+                extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
@@ -77,7 +77,7 @@ class RasterTileSource extends Evented implements Source {
     }
 
     serialize() {
-        return util.extend({}, this._options);
+        return extend({}, this._options);
     }
 
     hasTile(tileID: OverscaledTileID) {

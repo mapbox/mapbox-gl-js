@@ -1,6 +1,6 @@
 // @flow
 
-import util from './util';
+import { bindAll } from './util';
 
 import { serialize, deserialize } from './web_worker_transfer';
 
@@ -31,7 +31,7 @@ class Actor {
         this.mapId = mapId;
         this.callbacks = {};
         this.callbackID = 0;
-        util.bindAll(['receive'], this);
+        bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
     }
 

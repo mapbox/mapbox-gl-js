@@ -2,7 +2,7 @@
 
 import { Event, ErrorEvent, Evented } from '../util/evented';
 
-import util from '../util/util';
+import { extend, pick } from '../util/util';
 import loadTileJSON from './load_tilejson';
 import { normalizeTileURL as normalizeURL } from '../util/mapbox';
 import TileBounds from './tile_bounds';
@@ -48,8 +48,8 @@ class VectorTileSource extends Evented implements Source {
         this.reparseOverscaled = true;
         this.isTileClipped = true;
 
-        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-        this._options = util.extend({ type: 'vector' }, options);
+        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = extend({ type: 'vector' }, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
 
@@ -67,7 +67,7 @@ class VectorTileSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                util.extend(this, tileJSON);
+                extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
@@ -89,7 +89,7 @@ class VectorTileSource extends Evented implements Source {
     }
 
     serialize() {
-        return util.extend({}, this._options);
+        return extend({}, this._options);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {

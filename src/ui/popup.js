@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { extend, bindAll } from '../util/util';
 
 import { Event, Evented } from '../util/evented';
 import DOM from '../util/dom';
@@ -79,8 +79,8 @@ class Popup extends Evented {
 
     constructor(options: PopupOptions) {
         super();
-        this.options = util.extend(Object.create(defaultOptions), options);
-        util.bindAll(['_update', '_onClickClose'], this);
+        this.options = extend(Object.create(defaultOptions), options);
+        bindAll(['_update', '_onClickClose'], this);
     }
 
     /**

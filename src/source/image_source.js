@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { getCoordinatesCenter } from '../util/util';
 
 import { CanonicalTileID } from './tile_id';
 import LngLat from '../geo/lng_lat';
@@ -144,7 +144,7 @@ class ImageSource extends Evented implements Source {
 
         // Compute the coordinates of the tile we'll use to hold this image's
         // render data
-        const centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+        const centerCoord = this.centerCoord = getCoordinatesCenter(cornerZ0Coords);
         // `column` and `row` may be fractional; round them down so that they
         // represent integer tile coordinates
         centerCoord.column = Math.floor(centerCoord.column);

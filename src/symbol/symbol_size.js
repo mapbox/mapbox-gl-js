@@ -3,7 +3,7 @@
 import { normalizePropertyExpression } from '../style-spec/expression';
 
 import interpolate from '../style-spec/util/interpolate';
-import util from '../util/util';
+import { clamp } from '../util/util';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
@@ -122,9 +122,11 @@ function evaluateSizeForZoom(sizeData: SizeData, currentZoom: number, property: 
         // between the camera function values at a pair of zoom stops covering
         // [tileZoom, tileZoom + 1] in order to be consistent with this
         // restriction on composite functions
-        const t = util.clamp(
+        const t = clamp(
             expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max),
-            0, 1);
+            0,
+            1
+        );
 
         return {
             uSizeT: 0,
@@ -135,7 +137,11 @@ function evaluateSizeForZoom(sizeData: SizeData, currentZoom: number, property: 
         const expression = ((normalizePropertyExpression(propertyValue, property.specification): any): CompositeExpression);
 
         return {
-            uSizeT: util.clamp(expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max), 0, 1),
+            uSizeT: clamp(
+                expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max),
+                0,
+                1
+            ),
             uSize: 0
         };
     }

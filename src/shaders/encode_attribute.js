@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { clamp } from '../util/util';
 
 /**
  * Packs two numbers, interpreted as 8-bit unsigned integers, into a single
@@ -11,8 +11,8 @@ import util from '../util/util';
  */
 export const packUint8ToFloat = function pack(a: number, b: number) {
     // coerce a and b to 8-bit ints
-    a = util.clamp(Math.floor(a), 0, 255);
-    b = util.clamp(Math.floor(b), 0, 255);
+    a = clamp(Math.floor(a), 0, 255);
+    b = clamp(Math.floor(b), 0, 255);
     return 256 * a + b;
 };
 

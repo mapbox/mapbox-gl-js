@@ -4,7 +4,7 @@ import { Event } from '../util/evented';
 
 import DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
-import util from '../util/util';
+import { extend } from '../util/util';
 
 import type Map from './map';
 import type LngLat from '../geo/lng_lat';
@@ -80,7 +80,7 @@ class MapMouseEvent extends Event {
     constructor(type: string, map: Map, originalEvent: MouseEvent, data: Object = {}) {
         const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
         const lngLat = map.unproject(point);
-        super(type, util.extend({ point, lngLat, originalEvent }, data));
+        super(type, extend({ point, lngLat, originalEvent }, data));
         this._defaultPrevented = false;
     }
 }

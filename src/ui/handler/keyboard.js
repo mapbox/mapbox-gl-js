@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../../util/util';
+import { bindAll } from '../../util/util';
 
 import type Map from '../map';
 
@@ -34,7 +34,7 @@ class KeyboardHandler {
         this._map = map;
         this._el = map.getCanvasContainer();
 
-        util.bindAll([
+        bindAll([
             '_onKeyDown'
         ], this);
     }

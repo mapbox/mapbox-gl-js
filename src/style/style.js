@@ -9,7 +9,7 @@ import ImageManager from '../render/image_manager';
 import GlyphManager from '../render/glyph_manager';
 import Light from './light';
 import LineAtlas from '../render/line_atlas';
-import util from '../util/util';
+import { pick, clone, extend, deepEqual, filterObject, mapObject } from '../util/util';
 import ajax from '../util/ajax';
 import mapbox from '../util/mapbox';
 import browser from '../util/browser';
@@ -38,7 +38,7 @@ import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
 import type Placement from '../symbol/placement';
 
-const supportedDiffOperations = util.pick(diff.operations, [
+const supportedDiffOperations = pick(diff.operations, [
     'addLayer',
     'removeLayer',
     'setPaintProperty',
@@ -54,7 +54,7 @@ const supportedDiffOperations = util.pick(diff.operations, [
     // 'setSprite',
 ]);
 
-const ignoredDiffOperations = util.pick(diff.operations, [
+const ignoredDiffOperations = pick(diff.operations, [
     'setCenter',
     'setZoom',
     'setBearing',
@@ -380,7 +380,7 @@ class Style extends Evented {
 
         if (validateStyle.emitErrors(this, validateStyle(nextState))) return false;
 
-        nextState = util.clone(nextState);
+        nextState = clone(nextState);
         nextState.layers = deref(nextState.layers);
 
         const changes = diff(this.serialize(), nextState)
@@ -527,8 +527,8 @@ class Style extends Evented {
 
         if (typeof layerObject.source === 'object') {
             this.addSource(id, layerObject.source);
-            layerObject = util.clone(layerObject);
-            layerObject = (util.extend(layerObject, {source: id}): any);
+            layerObject = clone(layerObject);
+            layerObject = (extend(layerObject, {source: id}): any);
         }
 
         // this layer is not in the style.layers array, so we pass an impossible array index
@@ -670,7 +670,7 @@ class Style extends Evented {
             return;
         }
 
-        if (util.deepEqual(layer.filter, filter)) {
+        if (deepEqual(layer.filter, filter)) {
             return;
         }
 
@@ -684,7 +684,7 @@ class Style extends Evented {
             return;
         }
 
-        layer.filter = util.clone(filter);
+        layer.filter = clone(filter);
         this._updateLayer(layer);
     }
 
@@ -694,7 +694,7 @@ class Style extends Evented {
      * @returns {*} the layer's filter, if any
      */
     getFilter(layer: string) {
-        return util.clone(this.getLayer(layer).filter);
+        return clone(this.getLayer(layer).filter);
     }
 
     setLayoutProperty(layerId: string, name: string, value: any) {
@@ -706,7 +706,7 @@ class Style extends Evented {
             return;
         }
 
-        if (util.deepEqual(layer.getLayoutProperty(name), value)) return;
+        if (deepEqual(layer.getLayoutProperty(name), value)) return;
 
         layer.setLayoutProperty(name, value);
         this._updateLayer(layer);
@@ -731,7 +731,7 @@ class Style extends Evented {
             return;
         }
 
-        if (util.deepEqual(layer.getPaintProperty(name), value)) return;
+        if (deepEqual(layer.getPaintProperty(name), value)) return;
 
         const wasDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
         layer.setPaintProperty(name, value);
@@ -750,12 +750,11 @@ class Style extends Evented {
     }
 
     getTransition() {
-        return util.extend({ duration: 300, delay: 0 },
-            this.stylesheet && this.stylesheet.transition);
+        return extend({ duration: 300, delay: 0 }, this.stylesheet && this.stylesheet.transition);
     }
 
     serialize() {
-        return util.filterObject({
+        return filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
@@ -767,7 +766,7 @@ class Style extends Evented {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
-            sources: util.mapObject(this.sourceCaches, (source) => source.serialize()),
+            sources: mapObject(this.sourceCaches, (source) => source.serialize()),
             layers: this._order.map((id) => this._layers[id].serialize())
         }, (value) => { return value !== undefined; });
     }
@@ -863,7 +862,7 @@ class Style extends Evented {
         const light = this.light.getLight();
         let _update = false;
         for (const key in lightOptions) {
-            if (!util.deepEqual(lightOptions[key], light[key])) {
+            if (!deepEqual(lightOptions[key], light[key])) {
                 _update = true;
                 break;
             }
@@ -872,7 +871,7 @@ class Style extends Evented {
 
         const parameters = {
             now: browser.now(),
-            transition: util.extend({
+            transition: extend({
                 duration: 300,
                 delay: 0
             }, this.stylesheet.transition)
@@ -886,7 +885,7 @@ class Style extends Evented {
         if (options && options.validate === false) {
             return false;
         }
-        return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
+        return validateStyle.emitErrors(this, validate.call(validateStyle, extend({
             key: key,
             style: this.serialize(),
             value: value,

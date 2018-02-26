@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import util from '../../util/util';
+import { extend, bindAll } from '../../util/util';
 
 import type Map from '../map';
 
@@ -33,9 +33,9 @@ class ScaleControl {
     options: any;
 
     constructor(options: any) {
-        this.options = util.extend({}, defaultOptions, options);
+        this.options = extend({}, defaultOptions, options);
 
-        util.bindAll([
+        bindAll([
             '_onMove',
             'setUnit'
         ], this);

@@ -4,7 +4,7 @@ import jsdom from 'jsdom';
 
 import gl from 'gl';
 import sinon from 'sinon';
-import util from './util';
+import { extend } from './util';
 
 function restore(): Window {
     // Remove previous window from module.exports
@@ -59,7 +59,7 @@ function restore(): Window {
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
-    util.extend(module.exports, window);
+    extend(module.exports, window);
 
     return window;
 }

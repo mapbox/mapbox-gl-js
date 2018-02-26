@@ -5,7 +5,7 @@ import ajax from '../util/ajax';
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
-import util from '../util/util';
+import { extend } from '../util/util';
 import perf from '../util/performance';
 
 import type {
@@ -128,7 +128,7 @@ class VectorTileWorkerSource implements WorkerSource {
                 if (err || !result) return callback(err);
 
                 // Transferring a copy of rawTileData because the worker needs to retain its copy.
-                callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
+                callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
             });
 
             this.loaded = this.loaded || {};

@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import util from '../../util/util';
+import { bindAll } from '../../util/util';
 import config from '../../util/config';
 
 import type Map from '../map';
@@ -30,7 +30,7 @@ class AttributionControl {
     constructor(options: any) {
         this.options = options;
 
-        util.bindAll([
+        bindAll([
             '_updateEditLink',
             '_updateData',
             '_updateCompact'

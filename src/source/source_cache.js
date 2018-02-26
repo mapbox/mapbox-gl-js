@@ -6,7 +6,7 @@ import Tile from './tile';
 import { Event, ErrorEvent, Evented } from '../util/evented';
 import Cache from '../util/lru_cache';
 import Coordinate from '../geo/coordinate';
-import util from '../util/util';
+import { keysDifference } from '../util/util';
 import EXTENT from '../data/extent';
 import Context from '../gl/context';
 import Point from '@mapbox/point-geometry';
@@ -473,7 +473,7 @@ class SourceCache extends Evented {
             retain[fadedParent] = parentsForFading[fadedParent];
         }
         // Remove the tiles we don't need anymore.
-        const remove = util.keysDifference(this._tiles, retain);
+        const remove = keysDifference(this._tiles, retain);
         for (let i = 0; i < remove.length; i++) {
             this._removeTile(remove[i]);
         }

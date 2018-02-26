@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { extend, bindAll, warnOnce } from '../util/util';
 
 import browser from '../util/browser';
 import window from '../util/window';
@@ -253,7 +253,7 @@ class Map extends Camera {
     touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
-        options = util.extend({}, defaultOptions, options);
+        options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than minZoom`);
@@ -293,7 +293,7 @@ class Map extends Camera {
             this.setMaxBounds(options.maxBounds);
         }
 
-        util.bindAll([
+        bindAll([
             '_onWindowOnline',
             '_onWindowResize',
             '_contextLost',
@@ -943,7 +943,9 @@ class Map extends Camera {
                 }
                 return this;
             } catch (e) {
-                util.warnOnce(`Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`);
+                warnOnce(
+                    `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
+                );
             }
         }
 
@@ -987,7 +989,7 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the style is fully loaded.
      */
     isStyleLoaded() {
-        if (!this.style) return util.warnOnce('There is no style added to the map.');
+        if (!this.style) return warnOnce('There is no style added to the map.');
         return this.style.loaded();
     }
 
@@ -1426,7 +1428,7 @@ class Map extends Camera {
     }
 
     _setupPainter() {
-        const attributes = util.extend({
+        const attributes = extend({
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer
         }, isSupported.webGLContextAttributes);

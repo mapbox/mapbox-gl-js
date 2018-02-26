@@ -6,7 +6,7 @@ import Framebuffer from './framebuffer';
 import DepthMode from './depth_mode';
 import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
-import util from '../util/util';
+import { deepEqual } from '../util/util';
 import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, LineWidth, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from './value';
 
 
@@ -187,7 +187,7 @@ class Context {
     }
 
     setColorMode(colorMode: $ReadOnly<ColorMode>) {
-        if (util.deepEqual(colorMode.blendFunction, ColorMode.Replace)) {
+        if (deepEqual(colorMode.blendFunction, ColorMode.Replace)) {
             this.blend.set(false);
         } else {
             this.blend.set(true);

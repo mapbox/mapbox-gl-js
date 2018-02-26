@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { clamp } from '../util/util';
 
 import ImageSource from '../source/image_source';
 import browser from '../util/browser';
@@ -140,7 +140,7 @@ function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
         // if no parent or parent is older, fade in; if parent is younger, fade out
         const fadeIn = !parentTile || Math.abs(parentTile.tileID.overscaledZ - idealZ) > Math.abs(tile.tileID.overscaledZ - idealZ);
 
-        const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+        const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
 
         // we don't crossfade tiles that were just refreshed upon expiring:
         // once they're old enough to pass the crossfading threshold

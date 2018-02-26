@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { uniqueId, deepEqual, parseCacheControl } from '../util/util';
 
 import { deserialize as deserializeBucket } from '../data/bucket';
 import FeatureIndex from '../data/feature_index';
@@ -98,7 +98,7 @@ class Tile {
      */
     constructor(tileID: OverscaledTileID, size: number) {
         this.tileID = tileID;
-        this.uid = util.uniqueId();
+        this.uid = uniqueId();
         this.uses = 0;
         this.tileSize = size;
         this.buckets = {};
@@ -319,14 +319,14 @@ class Tile {
     setMask(mask: Mask, context: Context) {
 
         // don't redo buffer work if the mask is the same;
-        if (util.deepEqual(this.mask, mask)) return;
+        if (deepEqual(this.mask, mask)) return;
 
         this.mask = mask;
         this.clearMask();
 
         // We want to render the full tile, and keeping the segments/vertices/indices empty means
         // using the global shared buffers for covering the entire tile.
-        if (util.deepEqual(mask, {'0': true})) return;
+        if (deepEqual(mask, {'0': true})) return;
 
         const maskedBoundsArray = new RasterBoundsArray();
         const indexArray = new TriangleIndexArray();
@@ -373,7 +373,7 @@ class Tile {
         const prior = this.expirationTime;
 
         if (data.cacheControl) {
-            const parsedCC = util.parseCacheControl(data.cacheControl);
+            const parsedCC = parseCacheControl(data.cacheControl);
             if (parsedCC['max-age']) this.expirationTime = Date.now() + parsedCC['max-age'] * 1000;
         } else if (data.expires) {
             this.expirationTime = new Date(data.expires).getTime();

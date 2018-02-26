@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { warnOnce } from '../util/util';
 
 import EXTENT from './extent';
 
@@ -38,7 +38,7 @@ export default function loadGeometry(feature: VectorTileFeature): Array<Array<Po
             point.y = Math.round(point.y * scale);
 
             if (point.x < bounds.min || point.x > bounds.max || point.y < bounds.min || point.y > bounds.max) {
-                util.warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
+                warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
             }
         }
     }

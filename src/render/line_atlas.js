@@ -1,6 +1,6 @@
 // @flow
 
-import util from '../util/util';
+import { warnOnce } from '../util/util';
 
 import type Context from '../gl/context';
 
@@ -58,7 +58,7 @@ class LineAtlas {
         const offset = 128;
 
         if (this.nextRow + height > this.height) {
-            util.warnOnce('LineAtlas out of space');
+            warnOnce('LineAtlas out of space');
             return null;
         }
 

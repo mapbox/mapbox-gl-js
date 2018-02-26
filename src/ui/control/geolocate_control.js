@@ -4,7 +4,7 @@ import { Event, Evented } from '../../util/evented';
 
 import DOM from '../../util/dom';
 import window from '../../util/window';
-import util from '../../util/util';
+import { extend, bindAll } from '../../util/util';
 import assert from 'assert';
 import LngLat from '../../geo/lng_lat';
 import Marker from '../marker';
@@ -92,9 +92,9 @@ class GeolocateControl extends Evented {
 
     constructor(options: any) {
         super();
-        this.options = util.extend({}, defaultOptions, options);
+        this.options = extend({}, defaultOptions, options);
 
-        util.bindAll([
+        bindAll([
             '_onSuccess',
             '_onError',
             '_finish',

@@ -2,7 +2,7 @@
 
 import Color from '../style-spec/util/color';
 
-import util from '../util/util';
+import { clamp } from '../util/util';
 
 import type Context from './context';
 import type {
@@ -369,7 +369,7 @@ class LineWidth implements Value<number> {
 
     set(v: number): void {
         const range = this.context.lineWidthRange;
-        const clamped = util.clamp(v, range[0], range[1]);
+        const clamped = clamp(v, range[0], range[1]);
         if (this.current !== clamped) {
             this.context.gl.lineWidth(clamped);
             this.current = v;

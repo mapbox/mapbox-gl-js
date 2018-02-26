@@ -2,7 +2,7 @@
 
 import DOM from '../../util/dom';
 
-import util from '../../util/util';
+import { bindAll } from '../../util/util';
 
 import type Map from '../map';
 
@@ -20,7 +20,7 @@ class LogoControl {
     _container: HTMLElement;
 
     constructor() {
-        util.bindAll(['_updateLogo'], this);
+        bindAll(['_updateLogo'], this);
     }
 
     onAdd(map: Map) {

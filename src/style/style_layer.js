@@ -1,7 +1,7 @@
 // @flow
 
 
-import util from '../util/util';
+import { endsWith, filterObject } from '../util/util';
 
 import styleSpec from '../style-spec/reference/latest';
 import validateStyle from './validate_style';
@@ -107,7 +107,7 @@ class StyleLayer extends Evented {
     }
 
     getPaintProperty(name: string) {
-        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+        if (endsWith(name, TRANSITION_SUFFIX)) {
             return this._transitionablePaint.getTransition(name.slice(0, -TRANSITION_SUFFIX.length));
         } else {
             return this._transitionablePaint.getValue(name);
@@ -122,7 +122,7 @@ class StyleLayer extends Evented {
             }
         }
 
-        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+        if (endsWith(name, TRANSITION_SUFFIX)) {
             this._transitionablePaint.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), (value: any) || undefined);
         } else {
             this._transitionablePaint.setValue(name, value);
@@ -170,7 +170,7 @@ class StyleLayer extends Evented {
             output.layout.visibility = 'none';
         }
 
-        return util.filterObject(output, (value, key) => {
+        return filterObject(output, (value, key) => {
             return value !== undefined &&
                 !(key === 'layout' && !Object.keys(value).length) &&
                 !(key === 'paint' && !Object.keys(value).length);
