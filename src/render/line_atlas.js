@@ -1,6 +1,6 @@
 // @flow
 
-const util = require('../util/util');
+import util from '../util/util';
 
 import type Context from '../gl/context';
 
@@ -152,4 +152,4 @@ class LineAtlas {
     }
 }
 
-module.exports = LineAtlas;
+export default LineAtlas;

@@ -1,13 +1,9 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const properties = require('./hillshade_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
+import properties from './hillshade_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type {PaintProps} from './hillshade_style_layer_properties';
 
@@ -25,4 +21,4 @@ class HillshadeStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = HillshadeStyleLayer;
+export default HillshadeStyleLayer;

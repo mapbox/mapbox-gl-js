@@ -1,13 +1,13 @@
 
-const ValidationError = require('../error/validation_error');
-const validateExpression = require('./validate_expression');
-const validateEnum = require('./validate_enum');
-const getType = require('../util/get_type');
-const unbundle = require('../util/unbundle_jsonlint');
-const extend = require('../util/extend');
-const {isExpressionFilter} = require('../feature_filter');
+import ValidationError from '../error/validation_error';
+import validateExpression from './validate_expression';
+import validateEnum from './validate_enum';
+import getType from '../util/get_type';
+import unbundle from '../util/unbundle_jsonlint';
+import extend from '../util/extend';
+import { isExpressionFilter } from '../feature_filter';
 
-module.exports = function validateFilter(options) {
+export default function validateFilter(options) {
     if (isExpressionFilter(unbundle.deep(options.value))) {
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',

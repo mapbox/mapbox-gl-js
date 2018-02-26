@@ -1,7 +1,8 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
+import DOM from '../../util/dom';
+
+import util from '../../util/util';
 
 import type Map from '../map';
 
@@ -75,7 +76,7 @@ class ScaleControl {
     }
 }
 
-module.exports = ScaleControl;
+export default ScaleControl;
 
 function updateScale(map, container, options) {
     // A horizontal scale is imagined to be present at center of the map

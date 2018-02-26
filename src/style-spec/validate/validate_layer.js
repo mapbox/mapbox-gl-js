@@ -1,14 +1,14 @@
 
-const ValidationError = require('../error/validation_error');
-const unbundle = require('../util/unbundle_jsonlint');
-const validateObject = require('./validate_object');
-const validateFilter = require('./validate_filter');
-const validatePaintProperty = require('./validate_paint_property');
-const validateLayoutProperty = require('./validate_layout_property');
-const validateSpec = require('./validate');
-const extend = require('../util/extend');
+import ValidationError from '../error/validation_error';
+import unbundle from '../util/unbundle_jsonlint';
+import validateObject from './validate_object';
+import validateFilter from './validate_filter';
+import validatePaintProperty from './validate_paint_property';
+import validateLayoutProperty from './validate_layout_property';
+import validateSpec from './validate';
+import extend from '../util/extend';
 
-module.exports = function validateLayer(options) {
+export default function validateLayer(options) {
     let errors = [];
 
     const layer = options.value;

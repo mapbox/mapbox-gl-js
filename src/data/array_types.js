@@ -1,11 +1,12 @@
 // This file is generated. Edit build/generate-struct-arrays.js, then run `yarn run codegen`.
 // @flow
 
-const assert = require('assert');
-const {StructArray} = require('../util/struct_array');
-const {Struct} = require('../util/struct_array');
-const {register} = require('../util/web_worker_transfer');
-const Point = require('@mapbox/point-geometry');
+import assert from 'assert';
+
+import { StructArray } from '../util/struct_array';
+import { Struct } from '../util/struct_array';
+import { register } from '../util/web_worker_transfer';
+import Point from '@mapbox/point-geometry';
 
 
 /**
@@ -854,7 +855,7 @@ class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
 register('FeatureIndexArray', FeatureIndexArray);
 
 
-module.exports = {
+const exported = {
     StructArrayLayout2i4,
     StructArrayLayout4i8,
     StructArrayLayout2i4i12,
@@ -894,3 +895,6 @@ module.exports = {
     SymbolLineVertexArray,
     FeatureIndexArray
 };
+
+export default exported;
+export { StructArrayLayout2i4, StructArrayLayout4i8, StructArrayLayout2i4i12, StructArrayLayout4i4ub12, StructArrayLayout4i4ui16, StructArrayLayout3f12, StructArrayLayout1ul4, StructArrayLayout6i1ul2ui2i24, StructArrayLayout2i2i2i12, StructArrayLayout2ub4, StructArrayLayout2i2ui3ul3ui2f2ub40, StructArrayLayout1f4, StructArrayLayout3i6, StructArrayLayout1ul2ui8, StructArrayLayout3ui6, StructArrayLayout2ui4, StructArrayLayout2f8, StructArrayLayout4f16, StructArrayLayout2i4 as PosArray, StructArrayLayout4i8 as RasterBoundsArray, StructArrayLayout2i4 as CircleLayoutArray, StructArrayLayout2i4 as FillLayoutArray, StructArrayLayout2i4i12 as FillExtrusionLayoutArray, StructArrayLayout2i4 as HeatmapLayoutArray, StructArrayLayout4i4ub12 as LineLayoutArray, StructArrayLayout4i4ui16 as SymbolLayoutArray, StructArrayLayout3f12 as SymbolDynamicLayoutArray, StructArrayLayout1ul4 as SymbolOpacityArray, StructArrayLayout2i2i2i12 as CollisionBoxLayoutArray, StructArrayLayout2i2i2i12 as CollisionCircleLayoutArray, StructArrayLayout2ub4 as CollisionVertexArray, StructArrayLayout3ui6 as TriangleIndexArray, StructArrayLayout2ui4 as LineIndexArray, CollisionBoxArray, PlacedSymbolArray, GlyphOffsetArray, SymbolLineVertexArray, FeatureIndexArray };

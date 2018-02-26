@@ -1,10 +1,10 @@
 // @flow
 
-const {isCounterClockwise} = require('./util');
+import { isCounterClockwise } from './util';
 
 import type Point from '@mapbox/point-geometry';
 
-module.exports = {
+const exported = {
     multiPolygonIntersectsBufferedPoint,
     multiPolygonIntersectsBufferedMultiPoint,
     multiPolygonIntersectsMultiPolygon,
@@ -12,6 +12,9 @@ module.exports = {
     polygonIntersectsPolygon,
     distToSegmentSquared
 };
+
+export default exported;
+export { multiPolygonIntersectsBufferedPoint, multiPolygonIntersectsBufferedMultiPoint, multiPolygonIntersectsMultiPolygon, multiPolygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared };
 
 type Line = Array<Point>;
 type MultiLine = Array<Line>;

@@ -1,6 +1,6 @@
 // @flow
 
-const window = require('./window');
+import window from './window';
 
 const now = window.performance && window.performance.now ?
     window.performance.now.bind(window.performance) :
@@ -19,7 +19,7 @@ const cancel = window.cancelAnimationFrame ||
 /**
  * @private
  */
-module.exports = {
+const exported = {
     /**
      * Provides a function that outputs milliseconds: either performance.now()
      * or a fallback to Date.now()
@@ -47,14 +47,24 @@ module.exports = {
     },
 
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-
     get devicePixelRatio() { return window.devicePixelRatio; },
-
     supportsWebp: false
 };
 
+export default exported;
+export { now };
+
+export const {
+    frame,
+    cancelFrame,
+    getImageData,
+    hardwareConcurrency,
+    devicePixelRatio,
+    supportsWebp
+} = exported;
+
 const webpImgTest = window.document.createElement('img');
 webpImgTest.onload = function() {
-    module.exports.supportsWebp = true;
+    export const supportsWebp = true;
 };
 webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';

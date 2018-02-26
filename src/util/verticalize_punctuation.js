@@ -1,8 +1,8 @@
 // @flow
 
-const scriptDetection = require('./script_detection');
+import scriptDetection from './script_detection';
 
-module.exports = function verticalizePunctuation(input: string) {
+export default function verticalizePunctuation(input: string) {
     let output = '';
 
     for (let i = 0; i < input.length; i++) {
@@ -24,7 +24,7 @@ module.exports = function verticalizePunctuation(input: string) {
     return output;
 };
 
-module.exports.lookup = {
+export const lookup = {
     '!': '︕',
     '#': '＃',
     '$': '＄',

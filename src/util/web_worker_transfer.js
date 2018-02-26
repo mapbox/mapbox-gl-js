@@ -1,19 +1,13 @@
 // @flow
 
-const assert = require('assert');
+import assert from 'assert';
 
-const Grid = require('grid-index');
-const Color = require('../style-spec/util/color');
-const {
-    StylePropertyFunction,
-    StyleExpression,
-    StyleExpressionWithErrorHandling,
-    ZoomDependentExpression,
-    ZoomConstantExpression
-} = require('../style-spec/expression');
-const {CompoundExpression} = require('../style-spec/expression/compound_expression');
-const expressions = require('../style-spec/expression/definitions');
-const {ImageData} = require('./window');
+import Grid from 'grid-index';
+import Color from '../style-spec/util/color';
+import { StylePropertyFunction, StyleExpression, StyleExpressionWithErrorHandling, ZoomDependentExpression, ZoomConstantExpression } from '../style-spec/expression';
+import { CompoundExpression } from '../style-spec/expression/compound_expression';
+import expressions from '../style-spec/expression/definitions';
+import { ImageData } from './window';
 
 import type {Transferable} from '../types/transferable';
 
@@ -248,8 +242,11 @@ function deserialize(input: Serialized): mixed {
     throw new Error(`can't deserialize object of type ${typeof input}`);
 }
 
-module.exports = {
+const exported = {
     register,
     serialize,
     deserialize
 };
+
+export default exported;
+export { register, serialize, deserialize };

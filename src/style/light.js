@@ -1,23 +1,18 @@
 // @flow
 
-const styleSpec = require('../style-spec/reference/latest');
-const util = require('../util/util');
-const {Evented} = require('../util/evented');
-const validateStyle = require('./validate_style');
-const {sphericalToCartesian} = require('../util/util');
-const Color = require('../style-spec/util/color');
-const interpolate = require('../style-spec/util/interpolate');
+import styleSpec from '../style-spec/reference/latest';
+
+import util from '../util/util';
+import { Evented } from '../util/evented';
+import validateStyle from './validate_style';
+import { sphericalToCartesian } from '../util/util';
+import Color from '../style-spec/util/color';
+import interpolate from '../style-spec/util/interpolate';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type EvaluationParameters from './evaluation_parameters';
 
-const {
-    Properties,
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated,
-    DataConstantProperty
-} = require('./properties');
+import { Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty } from './properties';
 
 import type {
     Property,
@@ -123,4 +118,4 @@ class Light extends Evented {
     }
 }
 
-module.exports = Light;
+export default Light;

@@ -1,12 +1,13 @@
 // @flow
 
-const quickselect = require('quickselect');
-const calculateSignedArea = require('./util').calculateSignedArea;
+import quickselect from 'quickselect';
+
+import { calculateSignedArea } from './util';
 
 import type Point from '@mapbox/point-geometry';
 
 // classifies an array of rings into polygons with outer rings and holes
-module.exports = function classifyRings(rings: Array<Array<Point>>, maxRings: number) {
+export default function classifyRings(rings: Array<Array<Point>>, maxRings: number) {
     const len = rings.length;
 
     if (len <= 1) return [rings];

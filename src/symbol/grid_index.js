@@ -292,4 +292,4 @@ class GridIndex {
     }
 }
 
-module.exports = GridIndex;
+export default GridIndex;

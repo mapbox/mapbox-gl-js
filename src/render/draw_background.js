@@ -1,14 +1,15 @@
 // @flow
 
-const pattern = require('./pattern');
-const StencilMode = require('../gl/stencil_mode');
-const DepthMode = require('../gl/depth_mode');
+import pattern from './pattern';
+
+import StencilMode from '../gl/stencil_mode';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type BackgroundStyleLayer from '../style/style_layer/background_style_layer';
 
-module.exports = drawBackground;
+export default drawBackground;
 
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer) {
     const color = layer.paint.get('background-color');

@@ -1,9 +1,10 @@
 // @flow
 
-const StyleLayer = require('./style_layer');
-const util = require('../util/util');
-const featureFilter = require('../style-spec/feature_filter');
-const groupByLayout = require('../style-spec/group_by_layout');
+import StyleLayer from './style_layer';
+
+import util from '../util/util';
+import featureFilter from '../style-spec/feature_filter';
+import groupByLayout from '../style-spec/group_by_layout';
 
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 
@@ -69,4 +70,4 @@ class StyleLayerIndex {
     }
 }
 
-module.exports = StyleLayerIndex;
+export default StyleLayerIndex;

@@ -1,8 +1,9 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const DragRotateHandler = require('../handler/drag_rotate');
+import DOM from '../../util/dom';
+
+import util from '../../util/util';
+import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
 
@@ -89,4 +90,4 @@ class NavigationControl {
     }
 }
 
-module.exports = NavigationControl;
+export default NavigationControl;

@@ -1,14 +1,15 @@
 // @flow
 
-const drawCollisionDebug = require('./draw_collision_debug');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const symbolProjection = require('../symbol/projection');
-const symbolSize = require('../symbol/symbol_size');
-const mat4 = require('@mapbox/gl-matrix').mat4;
+import drawCollisionDebug from './draw_collision_debug';
+
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import symbolProjection from '../symbol/projection';
+import symbolSize from '../symbol/symbol_size';
+import { mat4 } from '@mapbox/gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
-const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
-const StencilMode = require('../gl/stencil_mode');
-const DepthMode = require('../gl/depth_mode');
+import { layout as symbolLayoutProperties } from '../style/style_layer/symbol_style_layer_properties';
+import StencilMode from '../gl/stencil_mode';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -16,7 +17,7 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = drawSymbols;
+export default drawSymbols;
 
 function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;

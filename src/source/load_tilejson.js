@@ -1,15 +1,16 @@
 // @flow
 
-const util = require('../util/util');
-const ajax = require('../util/ajax');
-const browser = require('../util/browser');
-const normalizeURL = require('../util/mapbox').normalizeSourceURL;
+import util from '../util/util';
+
+import ajax from '../util/ajax';
+import browser from '../util/browser';
+import { normalizeSourceURL as normalizeURL } from '../util/mapbox';
 
 import type {RequestTransformFunction} from '../ui/map';
 import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
 
-module.exports = function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>) {
+export default function(options: any, requestTransformFn: RequestTransformFunction, callback: Callback<TileJSON>) {
     const loaded = function(err, tileJSON: any) {
         if (err) {
             return callback(err);

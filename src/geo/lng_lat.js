@@ -1,6 +1,6 @@
 // @flow
 
-const wrap = require('../util/util').wrap;
+import { wrap } from '../util/util';
 
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
@@ -128,4 +128,4 @@ class LngLat {
  */
 export type LngLatLike = LngLat | {lng: number, lat: number} | [number, number];
 
-module.exports = LngLat;
+export default LngLat;

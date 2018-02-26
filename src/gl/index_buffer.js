@@ -1,5 +1,5 @@
 // @flow
-const assert = require('assert');
+import assert from 'assert';
 
 import type {StructArray} from '../util/struct_array';
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
@@ -59,4 +59,4 @@ class IndexBuffer {
     }
 }
 
-module.exports = IndexBuffer;
+export default IndexBuffer;

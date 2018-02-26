@@ -2,15 +2,9 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
-    Properties,
-    DataConstantProperty,
-    DataDrivenProperty,
-    CrossFadedProperty,
-    HeatmapColorProperty
-} = require('../properties');
+import { Properties, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty } from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -35,4 +29,9 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-pattern": new CrossFadedProperty(styleSpec["paint_fill"]["fill-pattern"]),
 });
 
-module.exports = { paint };
+const exported = {
+    paint
+};
+
+export default exported;
+export { paint };

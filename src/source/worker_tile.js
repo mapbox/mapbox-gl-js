@@ -1,16 +1,17 @@
 // @flow
 
-const FeatureIndex = require('../data/feature_index');
-const {performSymbolLayout} = require('../symbol/symbol_layout');
-const {CollisionBoxArray} = require('../data/array_types');
-const DictionaryCoder = require('../util/dictionary_coder');
-const SymbolBucket = require('../data/bucket/symbol_bucket');
-const util = require('../util/util');
-const assert = require('assert');
-const {makeImageAtlas} = require('../render/image_atlas');
-const {makeGlyphAtlas} = require('../render/glyph_atlas');
-const EvaluationParameters = require('../style/evaluation_parameters');
-const {OverscaledTileID} = require('./tile_id');
+import FeatureIndex from '../data/feature_index';
+
+import { performSymbolLayout } from '../symbol/symbol_layout';
+import { CollisionBoxArray } from '../data/array_types';
+import DictionaryCoder from '../util/dictionary_coder';
+import SymbolBucket from '../data/bucket/symbol_bucket';
+import util from '../util/util';
+import assert from 'assert';
+import { makeImageAtlas } from '../render/image_atlas';
+import { makeGlyphAtlas } from '../render/glyph_atlas';
+import EvaluationParameters from '../style/evaluation_parameters';
+import { OverscaledTileID } from './tile_id';
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -184,4 +185,4 @@ function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     }
 }
 
-module.exports = WorkerTile;
+export default WorkerTile;

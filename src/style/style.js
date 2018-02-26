@@ -1,32 +1,33 @@
 // @flow
 
-const assert = require('assert');
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const StyleLayer = require('./style_layer');
-const loadSprite = require('./load_sprite');
-const ImageManager = require('../render/image_manager');
-const GlyphManager = require('../render/glyph_manager');
-const Light = require('./light');
-const LineAtlas = require('../render/line_atlas');
-const util = require('../util/util');
-const ajax = require('../util/ajax');
-const mapbox = require('../util/mapbox');
-const browser = require('../util/browser');
-const Dispatcher = require('../util/dispatcher');
-const validateStyle = require('./validate_style');
-const getSourceType = require('../source/source').getType;
-const setSourceType = require('../source/source').setType;
-const QueryFeatures = require('../source/query_features');
-const SourceCache = require('../source/source_cache');
-const GeoJSONSource = require('../source/geojson_source');
-const styleSpec = require('../style-spec/reference/latest');
-const getWorkerPool = require('../util/global_worker_pool');
-const deref = require('../style-spec/deref');
-const diff = require('../style-spec/diff');
-const rtlTextPlugin = require('../source/rtl_text_plugin');
-const PauseablePlacement = require('./pauseable_placement');
-const ZoomHistory = require('./zoom_history');
-const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
+import assert from 'assert';
+
+import { Event, ErrorEvent, Evented } from '../util/evented';
+import StyleLayer from './style_layer';
+import loadSprite from './load_sprite';
+import ImageManager from '../render/image_manager';
+import GlyphManager from '../render/glyph_manager';
+import Light from './light';
+import LineAtlas from '../render/line_atlas';
+import util from '../util/util';
+import ajax from '../util/ajax';
+import mapbox from '../util/mapbox';
+import browser from '../util/browser';
+import Dispatcher from '../util/dispatcher';
+import validateStyle from './validate_style';
+import { getType as getSourceType } from '../source/source';
+import { setType as setSourceType } from '../source/source';
+import QueryFeatures from '../source/query_features';
+import SourceCache from '../source/source_cache';
+import GeoJSONSource from '../source/geojson_source';
+import styleSpec from '../style-spec/reference/latest';
+import getWorkerPool from '../util/global_worker_pool';
+import deref from '../style-spec/deref';
+import diff from '../style-spec/diff';
+import rtlTextPlugin from '../source/rtl_text_plugin';
+import PauseablePlacement from './pauseable_placement';
+import ZoomHistory from './zoom_history';
+import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
@@ -1001,4 +1002,4 @@ class Style extends Evented {
     }
 }
 
-module.exports = Style;
+export default Style;

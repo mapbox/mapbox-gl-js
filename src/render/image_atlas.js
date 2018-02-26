@@ -1,7 +1,8 @@
 // @flow
 
-const ShelfPack = require('@mapbox/shelf-pack');
-const {RGBAImage} = require('../util/image');
+import ShelfPack from '@mapbox/shelf-pack';
+
+import { RGBAImage } from '../util/image';
 
 import type {StyleImage} from '../style/style_image';
 
@@ -95,7 +96,10 @@ function makeImageAtlas(images: {[string]: StyleImage}): ImageAtlas {
     return {image, positions};
 }
 
-module.exports = {
+const exported = {
     imagePosition,
     makeImageAtlas
 };
+
+export default exported;
+export { imagePosition, makeImageAtlas };

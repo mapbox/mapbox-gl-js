@@ -1,18 +1,13 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const SymbolBucket = require('../../data/bucket/symbol_bucket');
-const resolveTokens = require('../../util/token');
-const {isExpression} = require('../../style-spec/expression');
-const assert = require('assert');
-const properties = require('./symbol_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    Layout,
-    PossiblyEvaluated
-} = require('../properties');
+import SymbolBucket from '../../data/bucket/symbol_bucket';
+import resolveTokens from '../../util/token';
+import { isExpression } from '../../style-spec/expression';
+import assert from 'assert';
+import properties from './symbol_style_layer_properties';
+import { Transitionable, Transitioning, Layout, PossiblyEvaluated } from '../properties';
 
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
@@ -83,4 +78,4 @@ class SymbolStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = SymbolStyleLayer;
+export default SymbolStyleLayer;

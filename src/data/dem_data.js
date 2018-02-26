@@ -1,7 +1,8 @@
 // @flow
-const {RGBAImage} = require('../util/image');
-const util = require('../util/util');
-const {register} = require('../util/web_worker_transfer');
+import { RGBAImage } from '../util/image';
+
+import util from '../util/util';
+import { register } from '../util/web_worker_transfer';
 
 class Level {
     dim: number;
@@ -160,5 +161,12 @@ class DEMData {
 }
 
 register('DEMData', DEMData);
-module.exports = {DEMData, Level};
+
+const exported = {
+    DEMData,
+    Level
+};
+
+export default exported;
+export { DEMData, Level };
 

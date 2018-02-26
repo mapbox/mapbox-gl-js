@@ -1,10 +1,10 @@
 
-const colorSpaces = require('../util/color_spaces');
-const Color = require('../util/color');
-const extend = require('../util/extend');
-const getType = require('../util/get_type');
-const interpolate = require('../util/interpolate');
-const Interpolate = require('../expression/definitions/interpolate');
+import colorSpaces from '../util/color_spaces';
+import Color from '../util/color';
+import extend from '../util/extend';
+import getType from '../util/get_type';
+import interpolate from '../util/interpolate';
+import Interpolate from '../expression/definitions/interpolate';
 
 function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -278,7 +278,10 @@ function interpolationFactor(input, base, lowerValue, upperValue) {
     }
 }
 
-module.exports = {
+const exported = {
     createFunction,
     isFunction
 };
+
+export default exported;
+export { createFunction, isFunction };

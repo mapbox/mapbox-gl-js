@@ -1,6 +1,6 @@
 
-const Reference = require('../reference/v8.json');
-const URL = require('url');
+import Reference from '../reference/v8.json';
+import URL from 'url';
 
 function getPropertyReference(propertyName) {
     for (let i = 0; i < Reference.layout.length; i++) {
@@ -96,7 +96,7 @@ function renameProperty(obj, from, to) {
     obj[to] = obj[from]; delete obj[from];
 }
 
-module.exports = function(style) {
+export default function(style) {
     style.version = 8;
 
     // Rename properties, reverse coordinates in source and layers

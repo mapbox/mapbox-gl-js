@@ -1,6 +1,6 @@
 // @flow
 
-const LngLat = require('./lng_lat');
+import LngLat from './lng_lat';
 
 import type {LngLatLike} from './lng_lat';
 
@@ -244,4 +244,4 @@ class LngLatBounds {
  */
 export type LngLatBoundsLike = LngLatBounds | [LngLatLike, LngLatLike] | [number, number, number, number];
 
-module.exports = LngLatBounds;
+export default LngLatBounds;

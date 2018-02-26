@@ -1,12 +1,13 @@
 // @flow
 
-const util = require('../util/util');
-const ajax = require('../util/ajax');
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const loadTileJSON = require('./load_tilejson');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const TileBounds = require('./tile_bounds');
-const Texture = require('../render/texture');
+import util from '../util/util';
+
+import ajax from '../util/ajax';
+import { Event, ErrorEvent, Evented } from '../util/evented';
+import loadTileJSON from './load_tilejson';
+import { normalizeTileURL as normalizeURL } from '../util/mapbox';
+import TileBounds from './tile_bounds';
+import Texture from '../render/texture';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -140,4 +141,4 @@ class RasterTileSource extends Evented implements Source {
     }
 }
 
-module.exports = RasterTileSource;
+export default RasterTileSource;

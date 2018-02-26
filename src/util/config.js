@@ -12,4 +12,10 @@ const config: Config = {
     ACCESS_TOKEN: null
 };
 
-module.exports = config;
+export default config;
+
+export const {
+  API_URL,
+  REQUIRE_ACCESS_TOKEN,
+  ACCESS_TOKEN
+} = config;

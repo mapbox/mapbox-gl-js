@@ -1,12 +1,13 @@
 // @flow
 
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const util = require('../util/util');
-const loadTileJSON = require('./load_tilejson');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const TileBounds = require('./tile_bounds');
-const ResourceType = require('../util/ajax').ResourceType;
-const browser = require('../util/browser');
+import { Event, ErrorEvent, Evented } from '../util/evented';
+
+import util from '../util/util';
+import loadTileJSON from './load_tilejson';
+import { normalizeTileURL as normalizeURL } from '../util/mapbox';
+import TileBounds from './tile_bounds';
+import { ResourceType } from '../util/ajax';
+import browser from '../util/browser';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -154,4 +155,4 @@ class VectorTileSource extends Evented implements Source {
     }
 }
 
-module.exports = VectorTileSource;
+export default VectorTileSource;

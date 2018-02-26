@@ -1,6 +1,6 @@
 // @flow
 
-const util = require('./util');
+import util from './util';
 
 type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
@@ -154,8 +154,11 @@ class Evented {
     }
 }
 
-module.exports = {
+const exported = {
     Event,
     ErrorEvent,
     Evented
 };
+
+export default exported;
+export { Event, ErrorEvent, Evented };

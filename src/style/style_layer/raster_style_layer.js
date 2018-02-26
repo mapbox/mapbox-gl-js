@@ -1,13 +1,9 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const properties = require('./raster_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
+import properties from './raster_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type {PaintProps} from './raster_style_layer_properties';
 
@@ -21,4 +17,4 @@ class RasterStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = RasterStyleLayer;
+export default RasterStyleLayer;

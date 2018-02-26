@@ -1,25 +1,23 @@
 // @flow
 
-const util = require('../util/util');
-const deserializeBucket = require('../data/bucket').deserialize;
-const FeatureIndex = require('../data/feature_index');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const GeoJSONFeature = require('../util/vectortile_to_geojson');
-const featureFilter = require('../style-spec/feature_filter');
-const CollisionIndex = require('../symbol/collision_index');
-const SymbolBucket = require('../data/bucket/symbol_bucket');
-const {
-    RasterBoundsArray,
-    CollisionBoxArray
-} = require('../data/array_types');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const EXTENT = require('../data/extent');
-const Point = require('@mapbox/point-geometry');
-const Texture = require('../render/texture');
-const {SegmentVector} = require('../data/segment');
-const {TriangleIndexArray} = require('../data/index_array_type');
-const browser = require('../util/browser');
+import util from '../util/util';
+
+import { deserialize as deserializeBucket } from '../data/bucket';
+import FeatureIndex from '../data/feature_index';
+import vt from '@mapbox/vector-tile';
+import Protobuf from 'pbf';
+import GeoJSONFeature from '../util/vectortile_to_geojson';
+import featureFilter from '../style-spec/feature_filter';
+import CollisionIndex from '../symbol/collision_index';
+import SymbolBucket from '../data/bucket/symbol_bucket';
+import { RasterBoundsArray, CollisionBoxArray } from '../data/array_types';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import EXTENT from '../data/extent';
+import Point from '@mapbox/point-geometry';
+import Texture from '../render/texture';
+import { SegmentVector } from '../data/segment';
+import { TriangleIndexArray } from '../data/index_array_type';
+import browser from '../util/browser';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -43,8 +41,8 @@ export type TileState =
     | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
     | 'unloaded'  // Tile data has been deleted.
     | 'errored'   // Tile data was not loaded because of an error.
-    | 'expired';  /* Tile data was previously loaded, but has expired per its
-                   * HTTP headers and is in the process of refreshing. */
+    | 'expired';/* Tile data was previously loaded, but has expired per its
+* HTTP headers and is in the process of refreshing. */
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -432,4 +430,4 @@ class Tile {
     }
 }
 
-module.exports = Tile;
+export default Tile;

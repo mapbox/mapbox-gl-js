@@ -1,6 +1,6 @@
 // @flow
 
-const { CompoundExpression } = require('./compound_expression');
+import { CompoundExpression } from './compound_expression';
 
 import type { Expression } from './expression.js';
 
@@ -37,7 +37,10 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
     return result;
 }
 
-module.exports = {
+const exported = {
     isFeatureConstant,
-    isGlobalPropertyConstant,
+    isGlobalPropertyConstant
 };
+
+export default exported;
+export { isFeatureConstant, isGlobalPropertyConstant };

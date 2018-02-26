@@ -1,12 +1,13 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const util = require('../util/util');
-const {Evented} = require('../util/evented');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const browser = require('../util/browser');
-const {OverscaledTileID} = require('./tile_id');
-const RasterTileSource = require('./raster_tile_source');
+import ajax from '../util/ajax';
+
+import util from '../util/util';
+import { Evented } from '../util/evented';
+import { normalizeTileURL as normalizeURL } from '../util/mapbox';
+import browser from '../util/browser';
+import { OverscaledTileID } from './tile_id';
+import RasterTileSource from './raster_tile_source';
 
 import type {Source} from './source';
 import type Dispatcher from '../util/dispatcher';
@@ -131,4 +132,4 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
 }
 
-module.exports = RasterDEMTileSource;
+export default RasterDEMTileSource;

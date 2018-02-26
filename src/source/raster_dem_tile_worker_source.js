@@ -1,6 +1,6 @@
 // @flow
 
-const {DEMData} = require('../data/dem_data');
+import { DEMData } from '../data/dem_data';
 
 import type Actor from '../util/actor';
 import type {
@@ -43,4 +43,4 @@ class RasterDEMTileWorkerSource {
     }
 }
 
-module.exports = RasterDEMTileWorkerSource;
+export default RasterDEMTileWorkerSource;

@@ -69,7 +69,7 @@ export interface Bucket {
     destroy(): void;
 }
 
-module.exports = {
+const exported = {
     deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
         const output = {};
 
@@ -98,3 +98,9 @@ module.exports = {
         return output;
     }
 };
+
+export default exported;
+
+export const {
+    deserialize
+} = exported;

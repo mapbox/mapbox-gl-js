@@ -1,6 +1,6 @@
 // @flow
 
-const util = require('../../util/util');
+import util from '../../util/util';
 
 import type Map from '../map';
 
@@ -158,4 +158,4 @@ function easeOut(t) {
     return t * (2 - t);
 }
 
-module.exports = KeyboardHandler;
+export default KeyboardHandler;

@@ -1,6 +1,6 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
+import Point from '@mapbox/point-geometry';
 
 import type {PossiblyEvaluatedPropertyValue} from "./properties";
 import type StyleLayer from '../style/style_layer';
@@ -48,8 +48,11 @@ function translate(queryGeometry: Array<Array<Point>>,
     return translated;
 }
 
-module.exports = {
+const exported = {
     getMaximumPaintValue,
     translateDistance,
     translate
 };
+
+export default exported;
+export { getMaximumPaintValue, translateDistance, translate };

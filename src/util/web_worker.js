@@ -1,6 +1,6 @@
 // @flow
 
-const Worker = require('../source/worker');
+import Worker from '../source/worker';
 
 import type {WorkerSource} from '../source/worker_source';
 
@@ -67,7 +67,7 @@ class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
     importScripts() {}
 }
 
-module.exports = function (): WorkerInterface {
+export default function (): WorkerInterface {
     const parentListeners = [],
         workerListeners = [],
         parentBus = new MessageBus(workerListeners, parentListeners),

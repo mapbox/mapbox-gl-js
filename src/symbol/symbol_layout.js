@@ -1,19 +1,20 @@
 // @flow
 
-const Anchor = require('./anchor');
-const getAnchors = require('./get_anchors');
-const clipLine = require('./clip_line');
-const OpacityState = require('./opacity_state');
-const {shapeText, shapeIcon, WritingMode} = require('./shaping');
-const {getGlyphQuads, getIconQuads} = require('./quads');
-const CollisionFeature = require('./collision_feature');
-const util = require('../util/util');
-const scriptDetection = require('../util/script_detection');
-const findPoleOfInaccessibility = require('../util/find_pole_of_inaccessibility');
-const classifyRings = require('../util/classify_rings');
-const EXTENT = require('../data/extent');
-const SymbolBucket = require('../data/bucket/symbol_bucket');
-const EvaluationParameters = require('../style/evaluation_parameters');
+import Anchor from './anchor';
+
+import getAnchors from './get_anchors';
+import clipLine from './clip_line';
+import OpacityState from './opacity_state';
+import { shapeText, shapeIcon, WritingMode } from './shaping';
+import { getGlyphQuads, getIconQuads } from './quads';
+import CollisionFeature from './collision_feature';
+import util from '../util/util';
+import scriptDetection from '../util/script_detection';
+import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility';
+import classifyRings from '../util/classify_rings';
+import EXTENT from '../data/extent';
+import SymbolBucket from '../data/bucket/symbol_bucket';
+import EvaluationParameters from '../style/evaluation_parameters';
 
 import type {Shaping, PositionedIcon} from './shaping';
 import type {CollisionBoxArray} from '../data/array_types';
@@ -25,11 +26,14 @@ import type {ImagePosition} from '../render/image_atlas';
 import type {GlyphPosition} from '../render/glyph_atlas';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
 
-const Point = require('@mapbox/point-geometry');
+import Point from '@mapbox/point-geometry';
 
-module.exports = {
+const exported = {
     performSymbolLayout
 };
+
+export default exported;
+export { performSymbolLayout };
 
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
 // `icon-size` at up to three:

@@ -1,11 +1,12 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const window = require('../../util/window');
-const browser = require('../../util/browser');
-const {Event} = require('../../util/evented');
-const assert = require('assert');
+import DOM from '../../util/dom';
+
+import util from '../../util/util';
+import window from '../../util/window';
+import browser from '../../util/browser';
+import { Event } from '../../util/evented';
+import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -324,4 +325,4 @@ class DragRotateHandler {
     }
 }
 
-module.exports = DragRotateHandler;
+export default DragRotateHandler;

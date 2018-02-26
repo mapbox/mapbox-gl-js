@@ -1,13 +1,9 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const properties = require('./background_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
+import properties from './background_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type {PaintProps} from './background_style_layer_properties';
 
@@ -21,4 +17,4 @@ class BackgroundStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = BackgroundStyleLayer;
+export default BackgroundStyleLayer;

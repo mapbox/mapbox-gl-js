@@ -1,14 +1,14 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const intersectionTests = require('../util/intersection_tests');
+import Point from '@mapbox/point-geometry';
 
-const Grid = require('./grid_index');
-const glmatrix = require('@mapbox/gl-matrix');
+import intersectionTests from '../util/intersection_tests';
+import Grid from './grid_index';
+import glmatrix from '@mapbox/gl-matrix';
 
 const mat4 = glmatrix.mat4;
 
-const projection = require('../symbol/projection');
+import projection from '../symbol/projection';
 
 import type Transform from '../geo/transform';
 import type {OverscaledTileID} from '../source/tile_id';
@@ -399,4 +399,4 @@ function markCollisionCircleUsed(collisionCircles: Array<number>, index: number,
     collisionCircles[index + 4] = used ? 1 : 0;
 }
 
-module.exports = CollisionIndex;
+export default CollisionIndex;

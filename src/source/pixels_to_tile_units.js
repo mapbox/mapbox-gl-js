@@ -1,6 +1,6 @@
 // @flow
 
-const EXTENT = require('../data/extent');
+import EXTENT from '../data/extent';
 
 import type {OverscaledTileID} from './tile_id';
 
@@ -16,6 +16,6 @@ import type {OverscaledTileID} from './tile_id';
  * @returns value in tile units
  * @private
  */
-module.exports = function(tile: {tileID: OverscaledTileID, tileSize: number}, pixelValue: number, z: number): number {
+export default function(tile: {tileID: OverscaledTileID, tileSize: number}, pixelValue: number, z: number): number {
     return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.tileID.overscaledZ)));
 };

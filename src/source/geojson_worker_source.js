@@ -1,15 +1,15 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const perf = require('../util/performance');
-const rewind = require('geojson-rewind');
-const GeoJSONWrapper = require('./geojson_wrapper');
-const vtpbf = require('vt-pbf');
-const supercluster = require('supercluster');
-const geojsonvt = require('geojson-vt');
-const assert = require('assert');
+import ajax from '../util/ajax';
 
-const VectorTileWorkerSource = require('./vector_tile_worker_source');
+import perf from '../util/performance';
+import rewind from 'geojson-rewind';
+import GeoJSONWrapper from './geojson_wrapper';
+import vtpbf from 'vt-pbf';
+import supercluster from 'supercluster';
+import geojsonvt from 'geojson-vt';
+import assert from 'assert';
+import VectorTileWorkerSource from './vector_tile_worker_source';
 
 import type {
     WorkerTileParameters,
@@ -271,4 +271,4 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 }
 
-module.exports = GeoJSONWorkerSource;
+export default GeoJSONWorkerSource;

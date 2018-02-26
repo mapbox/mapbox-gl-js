@@ -1,6 +1,6 @@
 // @flow
 
-const util = require('../util/util');
+import util from '../util/util';
 
 import type Dispatcher from '../util/dispatcher';
 import type {Event, Evented} from '../util/evented';
@@ -77,14 +77,22 @@ export interface Source {
     +prepare?: () => void;
 }
 
+import '../source/vector_tile_source';
+import '../source/raster_tile_source';
+import '../source/raster_dem_tile_source';
+import '../source/geojson_source';
+import '../source/video_source';
+import '../source/image_source';
+import '../source/canvas_source';
+
 const sourceTypes = {
-    'vector': require('../source/vector_tile_source'),
-    'raster': require('../source/raster_tile_source'),
-    'raster-dem': require('../source/raster_dem_tile_source'),
-    'geojson': require('../source/geojson_source'),
-    'video': require('../source/video_source'),
-    'image': require('../source/image_source'),
-    'canvas': require('../source/canvas_source')
+    'vector',
+    'raster',
+    'raster-dem',
+    'geojson',
+    'video',
+    'image',
+    'canvas'
 };
 
 /*
@@ -97,7 +105,7 @@ const sourceTypes = {
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-exports.create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+export const create = function(id: string, specification: SourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
     const source = new sourceTypes[specification.type](id, (specification: any), dispatcher, eventedParent);
 
     if (source.id !== id) {
@@ -108,11 +116,11 @@ exports.create = function(id: string, specification: SourceSpecification, dispat
     return source;
 };
 
-exports.getType = function (name: string) {
+export const getType = function (name: string) {
     return sourceTypes[name];
 };
 
-exports.setType = function (name: string, type: Class<Source>) {
+export const setType = function (name: string, type: Class<Source>) {
     sourceTypes[name] = type;
 };
 

@@ -1,59 +1,58 @@
 // @flow
 
-const supported = require('@mapbox/mapbox-gl-supported');
-const browser = require('./util/browser');
-const version: string = require('../package.json').version;
-const Map = require('./ui/map');
-const NavigationControl = require('./ui/control/navigation_control');
-const GeolocateControl = require('./ui/control/geolocate_control');
-const AttributionControl = require('./ui/control/attribution_control');
-const ScaleControl = require('./ui/control/scale_control');
-const FullscreenControl = require('./ui/control/fullscreen_control');
-const Popup = require('./ui/popup');
-const Marker = require('./ui/marker');
-const Style = require('./style/style');
-const LngLat = require('./geo/lng_lat');
-const LngLatBounds = require('./geo/lng_lat_bounds');
-const Point = require('@mapbox/point-geometry');
-const config = require('./util/config');
-const rtlTextPlugin = require('./source/rtl_text_plugin');
+import supported from '@mapbox/mapbox-gl-supported';
 
-module.exports = {
-    version,
-    supported,
+import browser from './util/browser';
+import { version } from '../package.json';
+import Map from './ui/map';
+import NavigationControl from './ui/control/navigation_control';
+import GeolocateControl from './ui/control/geolocate_control';
+import AttributionControl from './ui/control/attribution_control';
+import ScaleControl from './ui/control/scale_control';
+import FullscreenControl from './ui/control/fullscreen_control';
+import Popup from './ui/popup';
+import Marker from './ui/marker';
+import Style from './style/style';
+import LngLat from './geo/lng_lat';
+import LngLatBounds from './geo/lng_lat_bounds';
+import Point from '@mapbox/point-geometry';
+import config from './util/config';
+import rtlTextPlugin from './source/rtl_text_plugin';
 
-    workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
-    setRTLTextPlugin: rtlTextPlugin.setRTLTextPlugin,
+const exported = {
+ version,
+ supported,
+ workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
+ setRTLTextPlugin: rtlTextPlugin.setRTLTextPlugin,
+ Map,
+ NavigationControl,
+ GeolocateControl,
+ AttributionControl,
+ ScaleControl,
+ FullscreenControl,
+ Popup,
+ Marker,
+ Style,
+ LngLat,
+ LngLatBounds,
+ Point,
+ config,
 
-    Map,
-    NavigationControl,
-    GeolocateControl,
-    AttributionControl,
-    ScaleControl,
-    FullscreenControl,
-    Popup,
-    Marker,
-    Style,
-    LngLat,
-    LngLatBounds,
-    Point,
-    config,
+ /**
+  * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
+  *
+  * @var {string} accessToken
+  * @example
+  * mapboxgl.accessToken = myAccessToken;
+  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
+  */
+ get accessToken() {
+     return config.ACCESS_TOKEN;
+ },
 
-    /**
-     * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
-     *
-     * @var {string} accessToken
-     * @example
-     * mapboxgl.accessToken = myAccessToken;
-     * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
-     */
-    get accessToken() {
-        return config.ACCESS_TOKEN;
-    },
-
-    set accessToken(token: string) {
-        config.ACCESS_TOKEN = token;
-    }
+ set accessToken(token: string) {
+     config.ACCESS_TOKEN = token;
+ }
 };
 
 /**
@@ -88,3 +87,13 @@ module.exports = {
  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.1.1/mapbox-gl-rtl-text.js');
  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
+
+export default exported;
+export { version, supported, Map, NavigationControl, GeolocateControl, AttributionControl, ScaleControl, FullscreenControl, Popup, Marker, Style, LngLat, LngLatBounds, Point, config };
+
+export const {
+ workerCount,
+ setRTLTextPlugin,
+ accessToken,
+ accessToken
+} = exported;

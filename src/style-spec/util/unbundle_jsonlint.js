@@ -15,5 +15,5 @@ function deepUnbundle(value) {
     return unbundle(value);
 }
 
-module.exports = unbundle;
-module.exports.deep = deepUnbundle;
+export default unbundle;
+export const deep = deepUnbundle;

@@ -1,14 +1,15 @@
 // @flow
 
-const LngLat = require('./lng_lat'),
-    Point = require('@mapbox/point-geometry'),
-    Coordinate = require('./coordinate'),
-    util = require('../util/util'),
-    interp = require('../style-spec/util/interpolate').number,
-    tileCover = require('../util/tile_cover'),
-    {CanonicalTileID, UnwrappedTileID} = require('../source/tile_id'),
-    EXTENT = require('../data/extent'),
-    glmatrix = require('@mapbox/gl-matrix');
+import LngLat from './lng_lat';
+
+import Point from '@mapbox/point-geometry';
+import Coordinate from './coordinate';
+import util from '../util/util';
+import { number as interp } from '../style-spec/util/interpolate';
+import tileCover from '../util/tile_cover';
+import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
+import EXTENT from '../data/extent';
+import glmatrix from '@mapbox/gl-matrix';
 
 const vec4 = glmatrix.vec4,
     mat4 = glmatrix.mat4,
@@ -571,4 +572,4 @@ class Transform {
     }
 }
 
-module.exports = Transform;
+export default Transform;

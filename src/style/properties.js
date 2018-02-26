@@ -1,11 +1,12 @@
 // @flow
 
-const assert = require('assert');
-const {clone, extend, easeCubicInOut} = require('../util/util');
-const interpolate = require('../style-spec/util/interpolate');
-const {normalizePropertyExpression} = require('../style-spec/expression');
-const Color = require('../style-spec/util/color');
-const {register} = require('../util/web_worker_transfer');
+import assert from 'assert';
+
+import { clone, extend, easeCubicInOut } from '../util/util';
+import interpolate from '../style-spec/util/interpolate';
+import { normalizePropertyExpression } from '../style-spec/expression';
+import Color from '../style-spec/util/color';
+import { register } from '../util/web_worker_transfer';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
@@ -679,7 +680,7 @@ register('DataConstantProperty', DataConstantProperty);
 register('CrossFadedProperty', CrossFadedProperty);
 register('HeatmapColorProperty', HeatmapColorProperty);
 
-module.exports = {
+const exported = {
     PropertyValue,
     Transitionable,
     Transitioning,
@@ -692,3 +693,6 @@ module.exports = {
     HeatmapColorProperty,
     Properties
 };
+
+export default exported;
+export { PropertyValue, Transitionable, Transitioning, Layout, PossiblyEvaluatedPropertyValue, PossiblyEvaluated, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty, Properties };

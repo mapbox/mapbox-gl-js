@@ -1,9 +1,9 @@
 
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
-const parseCSSColor = require('csscolorparser').parseCSSColor;
+import ValidationError from '../error/validation_error';
+import getType from '../util/get_type';
+import { parseCSSColor } from 'csscolorparser';
 
-module.exports = function validateColor(options) {
+export default function validateColor(options) {
     const key = options.key;
     const value = options.value;
     const type = getType(value);

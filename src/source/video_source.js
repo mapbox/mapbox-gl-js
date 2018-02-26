@@ -1,12 +1,13 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const ImageSource = require('./image_source');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const VertexArrayObject = require('../render/vertex_array_object');
-const Texture = require('../render/texture');
-const {ErrorEvent} = require('../util/evented');
-const ResourceType = require('../util/ajax').ResourceType;
+import ajax from '../util/ajax';
+
+import ImageSource from './image_source';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
+import { ErrorEvent } from '../util/evented';
+import { ResourceType } from '../util/ajax';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -169,4 +170,4 @@ class VideoSource extends ImageSource {
     }
 }
 
-module.exports = VideoSource;
+export default VideoSource;

@@ -1,6 +1,6 @@
 // @flow
 
-const RuntimeError = require('./runtime_error');
+import RuntimeError from './runtime_error';
 
 import type { Expression } from './expression';
 
@@ -35,4 +35,9 @@ function findStopLessThanOrEqualTo(stops: Array<number>, input: number) {
     return Math.max(currentIndex - 1, 0);
 }
 
-module.exports = {findStopLessThanOrEqualTo};
+const exported = {
+    findStopLessThanOrEqualTo
+};
+
+export default exported;
+export { findStopLessThanOrEqualTo };

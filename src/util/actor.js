@@ -1,7 +1,8 @@
 // @flow
 
-const util = require('./util');
-const {serialize, deserialize} = require('./web_worker_transfer');
+import util from './util';
+
+import { serialize, deserialize } from './web_worker_transfer';
 
 import type {Transferable} from '../types/transferable';
 
@@ -100,4 +101,4 @@ class Actor {
     }
 }
 
-module.exports = Actor;
+export default Actor;

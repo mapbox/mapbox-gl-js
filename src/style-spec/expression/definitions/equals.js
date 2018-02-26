@@ -1,10 +1,8 @@
 // @flow
 
-const {
-    ValueType,
-    BooleanType,
-} = require('../types');
-const {toString} = require('../types');
+import { ValueType, BooleanType } from '../types';
+
+import { toString } from '../types';
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';
@@ -79,7 +77,14 @@ function makeComparison(compare) {
     };
 }
 
-module.exports = {
+const exported = {
     Equals: makeComparison((lhs, rhs) => lhs === rhs),
     NotEquals: makeComparison((lhs, rhs) => lhs !== rhs)
 };
+
+export default exported;
+
+export const {
+    Equals,
+    NotEquals
+} = exported;

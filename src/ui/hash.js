@@ -1,8 +1,9 @@
 // @flow
 
-const util = require('../util/util');
-const window = require('../util/window');
-const throttle = require('../util/throttle');
+import util from '../util/util';
+
+import window from '../util/window';
+import throttle from '../util/throttle';
 
 import type Map from './map';
 
@@ -96,4 +97,4 @@ class Hash {
 
 }
 
-module.exports = Hash;
+export default Hash;

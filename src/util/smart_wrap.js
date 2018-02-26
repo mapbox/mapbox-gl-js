@@ -1,6 +1,6 @@
 // @flow
 
-const LngLat = require('../geo/lng_lat');
+import LngLat from '../geo/lng_lat';
 
 import type Point from '@mapbox/point-geometry';
 import type Transform from '../geo/transform';
@@ -20,7 +20,7 @@ import type Transform from '../geo/transform';
  *
  * @private
  */
-module.exports = function(lngLat: LngLat, priorPos: ?Point, transform: Transform): LngLat {
+export default function(lngLat: LngLat, priorPos: ?Point, transform: Transform): LngLat {
     lngLat = new LngLat(lngLat.lng, lngLat.lat);
 
     // First, try shifting one world in either direction, and see if either is closer to the

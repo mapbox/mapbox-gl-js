@@ -1,8 +1,9 @@
 // @flow
 
-const UnitBezier = require('@mapbox/unitbezier');
-const Coordinate = require('../geo/coordinate');
-const Point = require('@mapbox/point-geometry');
+import UnitBezier from '@mapbox/unitbezier';
+
+import Coordinate from '../geo/coordinate';
+import Point from '@mapbox/point-geometry';
 
 import type {Callback} from '../types/callback';
 
@@ -18,7 +19,7 @@ import type {Callback} from '../types/callback';
  *
  * @private
  */
-exports.easeCubicInOut = function(t: number): number {
+export const easeCubicInOut = function(t: number): number {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
     const t2 = t * t,
@@ -36,7 +37,7 @@ exports.easeCubicInOut = function(t: number): number {
  * @param p2y control point 2 y coordinate
  * @private
  */
-exports.bezier = function(p1x: number, p1y: number, p2x: number, p2y: number): (t: number) => number {
+export const bezier = function(p1x: number, p1y: number, p2x: number, p2y: number): (t: number) => number {
     const bezier = new UnitBezier(p1x, p1y, p2x, p2y);
     return function(t: number) {
         return bezier.solve(t);
@@ -49,7 +50,7 @@ exports.bezier = function(p1x: number, p1y: number, p2x: number, p2y: number): (
  *
  * @private
  */
-exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
+export const ease = bezier(0.25, 0.1, 0.25, 1);
 
 /**
  * constrain n to the given range via min + max
@@ -60,7 +61,7 @@ exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
  * @returns the clamped value
  * @private
  */
-exports.clamp = function (n: number, min: number, max: number): number {
+export const clamp = function (n: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, n));
 };
 
@@ -73,7 +74,7 @@ exports.clamp = function (n: number, min: number, max: number): number {
  * @returns constrained number
  * @private
  */
-exports.wrap = function (n: number, min: number, max: number): number {
+export const wrap = function (n: number, min: number, max: number): number {
     const d = max - min;
     const w = ((n - min) % d + d) % d + min;
     return (w === min) ? max : w;
@@ -89,7 +90,7 @@ exports.wrap = function (n: number, min: number, max: number): number {
  * called with an array, containing the results of each async call.
  * @private
  */
-exports.asyncAll = function<Item, Result> (
+export const asyncAll = function<Item, Result> (
     array: Array<Item>,
     fn: (item: Item, fnCallback: Callback<Result>) => void,
     callback: Callback<Array<Result>>
@@ -113,7 +114,7 @@ exports.asyncAll = function<Item, Result> (
  *
  * @private
  */
-exports.values = function<T>(obj: {[key: string]: T}): Array<T> {
+export const values = function<T>(obj: {[key: string]: T}): Array<T> {
     const result = [];
     for (const k in obj) {
         result.push(obj[k]);
@@ -128,7 +129,7 @@ exports.values = function<T>(obj: {[key: string]: T}): Array<T> {
  * @returns keys difference
  * @private
  */
-exports.keysDifference = function<S, T>(obj: {[key: string]: S}, other: {[key: string]: T}): Array<string> {
+export const keysDifference = function<S, T>(obj: {[key: string]: S}, other: {[key: string]: T}): Array<string> {
     const difference = [];
     for (const i in obj) {
         if (!(i in other)) {
@@ -148,7 +149,7 @@ exports.keysDifference = function<S, T>(obj: {[key: string]: S}, other: {[key: s
  * @param sources sources from which properties are pulled
  * @private
  */
-exports.extend = function (dest: Object, ...sources: Array<?Object>): Object {
+export const extend = function (dest: Object, ...sources: Array<?Object>): Object {
     for (const src of sources) {
         for (const k in src) {
             dest[k] = src[k];
@@ -171,7 +172,7 @@ exports.extend = function (dest: Object, ...sources: Array<?Object>): Object {
  * // justName = { name: 'Charlie' }
  * @private
  */
-exports.pick = function (src: Object, properties: Array<string>): Object {
+export const pick = function (src: Object, properties: Array<string>): Object {
     const result = {};
     for (let i = 0; i < properties.length; i++) {
         const k = properties[i];
@@ -191,7 +192,7 @@ let id = 1;
  * @returns unique numeric id.
  * @private
  */
-exports.uniqueId = function (): number {
+export const uniqueId = function (): number {
     return id++;
 };
 
@@ -216,7 +217,7 @@ exports.uniqueId = function (): number {
  * setTimeout(myClass.ontimer, 100);
  * @private
  */
-exports.bindAll = function(fns: Array<string>, context: Object): void {
+export const bindAll = function(fns: Array<string>, context: Object): void {
     fns.forEach((fn) => {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
@@ -229,7 +230,7 @@ exports.bindAll = function(fns: Array<string>, context: Object): void {
  * @returns centerpoint
  * @private
  */
-exports.getCoordinatesCenter = function(coords: Array<Coordinate>): Coordinate {
+export const getCoordinatesCenter = function(coords: Array<Coordinate>): Coordinate {
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -255,7 +256,7 @@ exports.getCoordinatesCenter = function(coords: Array<Coordinate>): Coordinate {
  *
  * @private
  */
-exports.endsWith = function(string: string, suffix: string): boolean {
+export const endsWith = function(string: string, suffix: string): boolean {
     return string.indexOf(suffix, string.length - suffix.length) !== -1;
 };
 
@@ -265,7 +266,7 @@ exports.endsWith = function(string: string, suffix: string): boolean {
  *
  * @private
  */
-exports.mapObject = function(input: Object, iterator: Function, context?: Object): Object {
+export const mapObject = function(input: Object, iterator: Function, context?: Object): Object {
     const output = {};
     for (const key in input) {
         output[key] = iterator.call(context || this, input[key], key, input);
@@ -278,7 +279,7 @@ exports.mapObject = function(input: Object, iterator: Function, context?: Object
  *
  * @private
  */
-exports.filterObject = function(input: Object, iterator: Function, context?: Object): Object {
+export const filterObject = function(input: Object, iterator: Function, context?: Object): Object {
     const output = {};
     for (const key in input) {
         if (iterator.call(context || this, input[key], key, input)) {
@@ -288,18 +289,18 @@ exports.filterObject = function(input: Object, iterator: Function, context?: Obj
     return output;
 };
 
-exports.deepEqual = require('../style-spec/util/deep_equal');
+export const deepEqual = require('../style-spec/util/deep_equal');
 
 /**
  * Deeply clones two objects.
  *
  * @private
  */
-exports.clone = function<T>(input: T): T {
+export const clone = function<T>(input: T): T {
     if (Array.isArray(input)) {
         return input.map(exports.clone);
     } else if (typeof input === 'object' && input) {
-        return ((exports.mapObject(input, exports.clone): any): T);
+        return mapObject(input, exports.clone): any): T;
     } else {
         return input;
     }
@@ -310,7 +311,7 @@ exports.clone = function<T>(input: T): T {
  *
  * @private
  */
-exports.arraysIntersect = function<T>(a: Array<T>, b: Array<T>): boolean {
+export const arraysIntersect = function<T>(a: Array<T>, b: Array<T>): boolean {
     for (let l = 0; l < a.length; l++) {
         if (b.indexOf(a[l]) >= 0) return true;
     }
@@ -324,7 +325,8 @@ exports.arraysIntersect = function<T>(a: Array<T>, b: Array<T>): boolean {
  * @private
  */
 const warnOnceHistory: {[key: string]: boolean} = {};
-exports.warnOnce = function(message: string): void {
+
+export const warnOnce = function(message: string): void {
     if (!warnOnceHistory[message]) {
         // console isn't defined in some WebWorkers, see #2558
         if (typeof console !== "undefined") console.warn(message);
@@ -339,7 +341,7 @@ exports.warnOnce = function(message: string): void {
  * @returns true for a counter clockwise set of points
  */
 // http://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
-exports.isCounterClockwise = function(a: Point, b: Point, c: Point): boolean {
+export const isCounterClockwise = function(a: Point, b: Point, c: Point): boolean {
     return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
 };
 
@@ -351,7 +353,7 @@ exports.isCounterClockwise = function(a: Point, b: Point, c: Point): boolean {
  * @private
  * @param ring Exterior or interior ring
  */
-exports.calculateSignedArea = function(ring: Array<Point>): number {
+export const calculateSignedArea = function(ring: Array<Point>): number {
     let sum = 0;
     for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
         p1 = ring[i];
@@ -368,7 +370,7 @@ exports.calculateSignedArea = function(ring: Array<Point>): number {
  * @param points array of points
  * @return true if the points are a closed polygon
  */
-exports.isClosedPolygon = function(points: Array<Point>): boolean {
+export const isClosedPolygon = function(points: Array<Point>): boolean {
     // If it is 2 points that are the same then it is a point
     // If it is 3 points with start and end the same then it is a line
     if (points.length < 4)
@@ -383,7 +385,7 @@ exports.isClosedPolygon = function(points: Array<Point>): boolean {
     }
 
     // polygon simplification can produce polygons with zero area and more than 3 points
-    return (Math.abs(exports.calculateSignedArea(points)) > 0.01);
+    return Math.abs(calculateSignedArea(points)) > 0.01;
 };
 
 /**
@@ -394,7 +396,7 @@ exports.isClosedPolygon = function(points: Array<Point>): boolean {
  * @return cartesian coordinates in [x, y, z]
  */
 
-exports.sphericalToCartesian = function([r, azimuthal, polar]: [number, number, number]): {x: number, y: number, z: number} {
+export const sphericalToCartesian = function([r, azimuthal, polar]: [number, number, number]): {x: number, y: number, z: number} {
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here
     azimuthal += 90;
@@ -418,7 +420,7 @@ exports.sphericalToCartesian = function([r, azimuthal, polar]: [number, number, 
  * @return object containing parsed header info.
  */
 
-exports.parseCacheControl = function(cacheControl: string): Object {
+export const parseCacheControl = function(cacheControl: string): Object {
     // Taken from [Wreck](https://github.com/hapijs/wreck)
     const re = /(?:^|(?:\s*\,\s*))([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)(?:\=(?:([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)|(?:\"((?:[^"\\]|\\.)*)\")))?/g;
 

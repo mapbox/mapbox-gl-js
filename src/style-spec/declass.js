@@ -1,7 +1,7 @@
 
-const extend = require('./util/extend');
+import extend from './util/extend';
 
-module.exports = declassStyle;
+export default declassStyle;
 
 /**
  * Returns a new style with the given 'paint classes' merged into each layer's

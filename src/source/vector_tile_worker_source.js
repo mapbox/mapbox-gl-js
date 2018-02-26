@@ -1,11 +1,12 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const WorkerTile = require('./worker_tile');
-const util = require('../util/util');
-const perf = require('../util/performance');
+import ajax from '../util/ajax';
+
+import vt from '@mapbox/vector-tile';
+import Protobuf from 'pbf';
+import WorkerTile from './worker_tile';
+import util from '../util/util';
+import perf from '../util/performance';
 
 import type {
     WorkerSource,
@@ -197,4 +198,4 @@ class VectorTileWorkerSource implements WorkerSource {
     }
 }
 
-module.exports = VectorTileWorkerSource;
+export default VectorTileWorkerSource;

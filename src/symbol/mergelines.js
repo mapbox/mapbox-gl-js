@@ -2,7 +2,7 @@
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 
-module.exports = function (features: Array<SymbolFeature>) {
+export default function (features: Array<SymbolFeature>) {
     const leftIndex: {[string]: number} = {};
     const rightIndex: {[string]: number} = {};
     const mergedFeatures = [];

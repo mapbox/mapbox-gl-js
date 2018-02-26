@@ -1,12 +1,15 @@
 // @flow
 
-const Color = require('./color');
+import Color from './color';
 
-module.exports = {
+const exported = {
     number,
     color,
     array
 };
+
+export default exported;
+export { number, color, array };
 
 function number(a: number, b: number, t: number) {
     return (a * (1 - t)) + (b * t);

@@ -1,2 +1,2 @@
 
-module.exports = require('./v8.json');
+export default require('./v8.json');

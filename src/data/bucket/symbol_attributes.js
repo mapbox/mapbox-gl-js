@@ -1,6 +1,7 @@
 // @flow
 
-const {createLayout} = require('../../util/struct_array');
+import { createLayout } from '../../util/struct_array';
+
 import type {StructArrayLayout} from '../../util/struct_array';
 
 const symbolLayoutAttributes = createLayout([
@@ -85,4 +86,14 @@ const symbolAttributes: {[string]: StructArrayLayout} = {
     ])
 };
 
-module.exports = symbolAttributes;
+export default symbolAttributes;
+export { symbolLayoutAttributes, dynamicLayoutAttributes, placementOpacityAttributes, collisionVertexAttributes };
+
+export const {
+    collisionBox,
+    collisionBoxLayout,
+    collisionCircleLayout,
+    placement,
+    glyphOffset,
+    lineVertex
+} = symbolAttributes;

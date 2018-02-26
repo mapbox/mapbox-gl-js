@@ -1,7 +1,8 @@
 // @flow
 
-const { NumberType } = require('../types');
-const { findStopLessThanOrEqualTo } = require("../stops");
+import { NumberType } from '../types';
+
+import { findStopLessThanOrEqualTo } from '../stops';
 
 import type { Stops } from '../stops';
 import type { Expression } from '../expression';
@@ -109,4 +110,4 @@ class Step implements Expression {
     }
 }
 
-module.exports = Step;
+export default Step;

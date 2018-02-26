@@ -1,8 +1,8 @@
 
-const ValidationError = require('../error/validation_error');
-const unbundle = require('../util/unbundle_jsonlint');
+import ValidationError from '../error/validation_error';
+import unbundle from '../util/unbundle_jsonlint';
 
-module.exports = function validateEnum(options) {
+export default function validateEnum(options) {
     const key = options.key;
     const value = options.value;
     const valueSpec = options.valueSpec;

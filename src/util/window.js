@@ -1,9 +1,10 @@
 // @flow
 
-const jsdom = require('jsdom');
-const gl = require('gl');
-const sinon = require('sinon');
-const util = require('./util');
+import jsdom from 'jsdom';
+
+import gl from 'gl';
+import sinon from 'sinon';
+import util from './util';
 
 function restore(): Window {
     // Remove previous window from module.exports
@@ -63,4 +64,4 @@ function restore(): Window {
     return window;
 }
 
-module.exports = restore();
+export default restore();

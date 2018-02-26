@@ -1,11 +1,11 @@
 
-const validate = require('./validate');
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
-const {isFunction} = require('../function');
-const unbundle = require('../util/unbundle_jsonlint');
+import validate from './validate';
+import ValidationError from '../error/validation_error';
+import getType from '../util/get_type';
+import { isFunction } from '../function';
+import unbundle from '../util/unbundle_jsonlint';
 
-module.exports = function validateProperty(options, propertyType) {
+export default function validateProperty(options, propertyType) {
     const key = options.key;
     const style = options.style;
     const styleSpec = options.styleSpec;

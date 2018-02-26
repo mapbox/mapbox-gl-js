@@ -1,17 +1,11 @@
 // @flow
 
-const assert = require('assert');
-const {
-    ObjectType,
-    ValueType,
-    StringType,
-    NumberType,
-    BooleanType
-} = require('../types');
+import assert from 'assert';
 
-const RuntimeError = require('../runtime_error');
-const {checkSubtype, toString} = require('../types');
-const {typeOf} = require('../values');
+import { ObjectType, ValueType, StringType, NumberType, BooleanType } from '../types';
+import RuntimeError from '../runtime_error';
+import { checkSubtype, toString } from '../types';
+import { typeOf } from '../values';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -77,4 +71,4 @@ class Assertion implements Expression {
     }
 }
 
-module.exports = Assertion;
+export default Assertion;

@@ -1,16 +1,12 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const FillExtrusionBucket = require('../../data/bucket/fill_extrusion_bucket');
-const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
-const {translateDistance, translate} = require('../query_utils');
-const properties = require('./fill_extrusion_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
+import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
+import { multiPolygonIntersectsMultiPolygon } from '../../util/intersection_tests';
+import { translateDistance, translate } from '../query_utils';
+import properties from './fill_extrusion_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
@@ -61,4 +57,4 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = FillExtrusionStyleLayer;
+export default FillExtrusionStyleLayer;

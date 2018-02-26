@@ -1,5 +1,5 @@
 // @flow
-const Color = require('../style-spec/util/color');
+import Color from '../style-spec/util/color';
 
 import type {BlendFuncType, ColorMaskType} from './types';
 
@@ -31,4 +31,11 @@ ColorMode.disabled = new ColorMode(ColorMode.Replace, Color.transparent, [false,
 ColorMode.unblended = new ColorMode(ColorMode.Replace, Color.transparent, [true, true, true, true]);
 ColorMode.alphaBlended = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 
-module.exports = ColorMode;
+export default ColorMode;
+
+export const {
+    Replace,
+    disabled,
+    unblended,
+    alphaBlended
+} = ColorMode;

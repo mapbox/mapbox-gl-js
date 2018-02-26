@@ -1,10 +1,11 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const {mat4, vec4} = require('@mapbox/gl-matrix');
-const symbolSize = require('./symbol_size');
-const {addDynamicAttributes} = require('../data/bucket/symbol_bucket');
-const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
+import Point from '@mapbox/point-geometry';
+
+import { mat4, vec4 } from '@mapbox/gl-matrix';
+import symbolSize from './symbol_size';
+import { addDynamicAttributes } from '../data/bucket/symbol_bucket';
+import { layout as symbolLayoutProperties } from '../style/style_layer/symbol_style_layer_properties';
 
 import type Painter from '../render/painter';
 import type Transform from '../geo/transform';
@@ -14,9 +15,9 @@ import type {
     SymbolLineVertexArray,
     SymbolDynamicLayoutArray
 } from '../data/array_types';
-const WritingMode = require('../symbol/shaping').WritingMode;
+import { WritingMode } from '../symbol/shaping';
 
-module.exports = {
+const exported = {
     updateLineLabels,
     getLabelPlaneMatrix,
     getGlCoordMatrix,
@@ -24,6 +25,9 @@ module.exports = {
     placeFirstAndLastGlyph,
     xyTransformMat4
 };
+
+export default exported;
+export { updateLineLabels, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, xyTransformMat4 };
 
 /*
  * # Overview of coordinate spaces

@@ -7,4 +7,4 @@ function ValidationError(key, value, message) {
     }
 }
 
-module.exports = ValidationError;
+export default ValidationError;

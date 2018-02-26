@@ -1,25 +1,30 @@
 // @flow
 
-const {
-    MapMouseEvent,
-    MapTouchEvent,
-    MapWheelEvent
-} = require('../ui/events');
-const DOM = require('../util/dom');
+import { MapMouseEvent, MapTouchEvent, MapWheelEvent } from '../ui/events';
+
+import DOM from '../util/dom';
 
 import type Map from './map';
 
+import scrollZoom from './handler/scroll_zoom';
+import boxZoom from './handler/box_zoom';
+import dragRotate from './handler/drag_rotate';
+import dragPan from './handler/drag_pan';
+import keyboard from './handler/keyboard';
+import doubleClickZoom from './handler/dblclick_zoom';
+import touchZoomRotate from './handler/touch_zoom_rotate';
+
 const handlers = {
-    scrollZoom: require('./handler/scroll_zoom'),
-    boxZoom: require('./handler/box_zoom'),
-    dragRotate: require('./handler/drag_rotate'),
-    dragPan: require('./handler/drag_pan'),
-    keyboard: require('./handler/keyboard'),
-    doubleClickZoom: require('./handler/dblclick_zoom'),
-    touchZoomRotate: require('./handler/touch_zoom_rotate')
+    scrollZoom,
+    boxZoom,
+    dragRotate,
+    dragPan,
+    keyboard,
+    doubleClickZoom,
+    touchZoomRotate
 };
 
-module.exports = function bindHandlers(map: Map, options: {}) {
+export default function bindHandlers(map: Map, options: {}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;

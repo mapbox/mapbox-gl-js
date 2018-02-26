@@ -1,10 +1,11 @@
 // @flow
 
-const DOM = require('../util/dom');
-const LngLat = require('../geo/lng_lat');
-const Point = require('@mapbox/point-geometry');
-const smartWrap = require('../util/smart_wrap');
-const {bindAll} = require('../util/util');
+import DOM from '../util/dom';
+
+import LngLat from '../geo/lng_lat';
+import Point from '@mapbox/point-geometry';
+import smartWrap from '../util/smart_wrap';
+import { bindAll } from '../util/util';
 
 import type Map from './map';
 import type Popup from './popup';
@@ -318,4 +319,4 @@ class Marker {
     }
 }
 
-module.exports = Marker;
+export default Marker;

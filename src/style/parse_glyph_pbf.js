@@ -1,7 +1,8 @@
 // @flow
 
-const {AlphaImage} = require('../util/image');
-const Protobuf = require('pbf');
+import { AlphaImage } from '../util/image';
+
+import Protobuf from 'pbf';
 const border = 3;
 
 import type {StyleGlyph} from './style_glyph';
@@ -36,8 +37,8 @@ function readGlyph(tag: number, glyph: Object, pbf: Protobuf) {
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
 
-module.exports = function (data: ArrayBuffer | Uint8Array): Array<StyleGlyph> {
+export default function (data: ArrayBuffer | Uint8Array): Array<StyleGlyph> {
     return new Protobuf(data).readFields(readFontstacks, []);
 };
 
-module.exports.GLYPH_PBF_BORDER = border;
+export const GLYPH_PBF_BORDER = border;

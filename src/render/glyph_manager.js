@@ -1,10 +1,11 @@
 // @flow
 
-const loadGlyphRange = require('../style/load_glyph_range');
-const TinySDF = require('@mapbox/tiny-sdf');
-const isChar = require('../util/is_char_in_unicode_block');
-const {asyncAll} = require('../util/util');
-const {AlphaImage} = require('../util/image');
+import loadGlyphRange from '../style/load_glyph_range';
+
+import TinySDF from '@mapbox/tiny-sdf';
+import isChar from '../util/is_char_in_unicode_block';
+import { asyncAll } from '../util/util';
+import { AlphaImage } from '../util/image';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {RequestTransformFunction} from '../ui/map';
@@ -150,4 +151,4 @@ class GlyphManager {
     }
 }
 
-module.exports = GlyphManager;
+export default GlyphManager;

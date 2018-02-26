@@ -1,6 +1,4 @@
-// @flow
-
-module.exports = resolveTokens;
+export default resolveTokens;
 
 /**
  * Replace tokens in a string template with values in an object

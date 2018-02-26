@@ -1,12 +1,13 @@
 // @flow
 
-const Scope = require('./scope');
-const {checkSubtype} = require('./types');
-const ParsingError = require('./parsing_error');
-const Literal = require('./definitions/literal');
-const Assertion = require('./definitions/assertion');
-const ArrayAssertion = require('./definitions/array');
-const Coercion = require('./definitions/coercion');
+import Scope from './scope';
+
+import { checkSubtype } from './types';
+import ParsingError from './parsing_error';
+import Literal from './definitions/literal';
+import Assertion from './definitions/assertion';
+import ArrayAssertion from './definitions/array';
+import Coercion from './definitions/coercion';
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
@@ -177,7 +178,7 @@ class ParsingContext {
     }
 }
 
-module.exports = ParsingContext;
+export default ParsingContext;
 
 function isConstant(expression: Expression) {
     // requires within function body to workaround circular dependency

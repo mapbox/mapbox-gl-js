@@ -1,8 +1,9 @@
 // @flow
 
-const browser = require('../util/browser');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const DepthMode = require('../gl/depth_mode');
+import browser from '../util/browser';
+
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -10,7 +11,7 @@ import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
+export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
 
     const opacity = layer.paint.get('line-opacity');

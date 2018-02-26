@@ -92,7 +92,7 @@ function checkSubtype(expected: Type, t: Type): ?string {
     return `Expected ${toString(expected)} but found ${toString(t)} instead.`;
 }
 
-module.exports = {
+const exported = {
     NullType,
     NumberType,
     StringType,
@@ -105,3 +105,6 @@ module.exports = {
     toString,
     checkSubtype
 };
+
+export default exported;
+export { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, array, ErrorType, toString, checkSubtype };

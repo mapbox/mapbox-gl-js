@@ -1,12 +1,13 @@
 // @flow
 
-const util = require('../util/util');
-const {Event, Evented} = require('../util/evented');
-const DOM = require('../util/dom');
-const LngLat = require('../geo/lng_lat');
-const Point = require('@mapbox/point-geometry');
-const window = require('../util/window');
-const smartWrap = require('../util/smart_wrap');
+import util from '../util/util';
+
+import { Event, Evented } from '../util/evented';
+import DOM from '../util/dom';
+import LngLat from '../geo/lng_lat';
+import Point from '@mapbox/point-geometry';
+import window from '../util/window';
+import smartWrap from '../util/smart_wrap';
 
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -378,4 +379,4 @@ function normalizeOffset(offset: ?Offset) {
     }
 }
 
-module.exports = Popup;
+export default Popup;

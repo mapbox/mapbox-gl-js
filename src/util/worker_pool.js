@@ -1,7 +1,8 @@
 // @flow
 
-const assert = require('assert');
-const WebWorker = require('./web_worker');
+import assert from 'assert';
+
+import WebWorker from './web_worker';
 
 import type {WorkerInterface} from './web_worker';
 
@@ -46,4 +47,4 @@ class WorkerPool {
     }
 }
 
-module.exports = WorkerPool;
+export default WorkerPool;

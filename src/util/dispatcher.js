@@ -1,7 +1,8 @@
 // @flow
 
-const util = require('./util');
-const Actor = require('./actor');
+import util from './util';
+
+import Actor from './actor';
 
 import type WorkerPool from './worker_pool';
 
@@ -63,4 +64,4 @@ class Dispatcher {
     }
 }
 
-module.exports = Dispatcher;
+export default Dispatcher;

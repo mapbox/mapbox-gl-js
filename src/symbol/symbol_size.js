@@ -1,17 +1,21 @@
 // @flow
 
-const {normalizePropertyExpression} = require('../style-spec/expression');
-const interpolate = require('../style-spec/util/interpolate');
-const util = require('../util/util');
+import { normalizePropertyExpression } from '../style-spec/expression';
+
+import interpolate from '../style-spec/util/interpolate';
+import util from '../util/util';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
 
-module.exports = {
+const exported = {
     getSizeData,
     evaluateSizeForFeature,
     evaluateSizeForZoom
 };
+
+export default exported;
+export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom };
 
 export type SizeData = {
     functionType: 'constant',

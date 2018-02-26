@@ -27,4 +27,8 @@ class StencilMode {
 
 StencilMode.disabled = new StencilMode({ func: ALWAYS, mask: 0 }, 0, 0, KEEP, KEEP, KEEP);
 
-module.exports = StencilMode;
+export default StencilMode;
+
+export const {
+    disabled
+} = StencilMode;

@@ -1,7 +1,8 @@
 // @flow
 
-const config = require('./config');
-const browser = require('./browser');
+import config from './config';
+
+import browser from './browser';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 
@@ -37,23 +38,23 @@ function isMapboxURL(url: string) {
     return url.indexOf('mapbox:') === 0;
 }
 
-exports.isMapboxURL = isMapboxURL;
+export { isMapboxURL };
 
-exports.normalizeStyleURL = function(url: string, accessToken?: string): string {
+export const normalizeStyleURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeGlyphsURL = function(url: string, accessToken?: string): string {
+export const normalizeGlyphsURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSourceURL = function(url: string, accessToken?: string): string {
+export const normalizeSourceURL = function(url: string, accessToken?: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
     urlObject.path = `/v4/${urlObject.authority}.json`;
@@ -63,7 +64,7 @@ exports.normalizeSourceURL = function(url: string, accessToken?: string): string
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
+export const normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken?: string): string {
     const urlObject = parseUrl(url);
     if (!isMapboxURL(url)) {
         urlObject.path += `${format}${extension}`;
@@ -75,7 +76,7 @@ exports.normalizeSpriteURL = function(url: string, format: string, extension: st
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
+export const normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);

@@ -1,8 +1,8 @@
 
-const getType = require('../util/get_type');
-const ValidationError = require('../error/validation_error');
+import getType from '../util/get_type';
+import ValidationError from '../error/validation_error';
 
-module.exports = function validateNumber(options) {
+export default function validateNumber(options) {
     const key = options.key;
     const value = options.value;
     const valueSpec = options.valueSpec;

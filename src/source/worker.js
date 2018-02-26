@@ -1,14 +1,13 @@
 // @flow
 
-const Actor = require('../util/actor');
-const StyleLayerIndex = require('../style/style_layer_index');
+import Actor from '../util/actor';
 
-const VectorTileWorkerSource = require('./vector_tile_worker_source');
-const RasterDEMTileWorkerSource = require('./raster_dem_tile_worker_source');
-const GeoJSONWorkerSource = require('./geojson_worker_source');
-const assert = require('assert');
-
-const globalRTLTextPlugin = require('./rtl_text_plugin');
+import StyleLayerIndex from '../style/style_layer_index';
+import VectorTileWorkerSource from './vector_tile_worker_source';
+import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
+import GeoJSONWorkerSource from './geojson_worker_source';
+import assert from 'assert';
+import globalRTLTextPlugin from './rtl_text_plugin';
 
 import type {
     WorkerSource,
@@ -191,6 +190,6 @@ class Worker {
     }
 }
 
-module.exports = function createWorker(self: WorkerGlobalScopeInterface) {
+export default function createWorker(self: WorkerGlobalScopeInterface) {
     return new Worker(self);
 };

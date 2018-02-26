@@ -1,8 +1,8 @@
 
-const extend = require('../util/extend');
-const unbundle = require('../util/unbundle_jsonlint');
-const {isExpression} = require('../expression');
-const {isFunction} = require('../function');
+import extend from '../util/extend';
+import unbundle from '../util/unbundle_jsonlint';
+import { isExpression } from '../expression';
+import { isFunction } from '../function';
 
 // Main recursive validation function. Tracks:
 //
@@ -14,7 +14,7 @@ const {isFunction} = require('../function');
 // - valueSpec: current spec being evaluated. Tracks value.
 // - styleSpec: current full spec being evaluated.
 
-module.exports = function validate(options) {
+export default function validate(options) {
 
     const validateFunction = require('./validate_function');
     const validateExpression = require('./validate_expression');

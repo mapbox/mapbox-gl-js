@@ -1,7 +1,8 @@
 // @flow
 
-const util = require('../util/util');
-const EXTENT = require('./extent');
+import util from '../util/util';
+
+import EXTENT from './extent';
 
 import type Point from '@mapbox/point-geometry';
 
@@ -24,7 +25,7 @@ const bounds = createBounds(16);
  * @param {VectorTileFeature} feature
  * @private
  */
-module.exports = function loadGeometry(feature: VectorTileFeature): Array<Array<Point>> {
+export default function loadGeometry(feature: VectorTileFeature): Array<Array<Point>> {
     const scale = EXTENT / feature.extent;
     const geometry = feature.loadGeometry();
     for (let r = 0; r < geometry.length; r++) {

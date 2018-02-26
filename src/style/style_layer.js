@@ -1,17 +1,12 @@
 // @flow
 
 
-const util = require('../util/util');
-const styleSpec = require('../style-spec/reference/latest');
-const validateStyle = require('./validate_style');
-const {Evented} = require('../util/evented');
+import util from '../util/util';
 
-const {
-    Layout,
-    Transitionable,
-    Transitioning,
-    Properties
-} = require('./properties');
+import styleSpec from '../style-spec/reference/latest';
+import validateStyle from './validate_style';
+import { Evented } from '../util/evented';
+import { Layout, Transitionable, Transitioning, Properties } from './properties';
 
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
@@ -206,18 +201,32 @@ class StyleLayer extends Evented {
     }
 }
 
-module.exports = StyleLayer;
+export default StyleLayer;
+
+export const {
+    create
+} = StyleLayer;
+
+import './style_layer/circle_style_layer';
+import './style_layer/heatmap_style_layer';
+import './style_layer/hillshade_style_layer';
+import './style_layer/fill_style_layer';
+import './style_layer/fill_extrusion_style_layer';
+import './style_layer/line_style_layer';
+import './style_layer/symbol_style_layer';
+import './style_layer/background_style_layer';
+import './style_layer/raster_style_layer';
 
 const subclasses = {
-    'circle': require('./style_layer/circle_style_layer'),
-    'heatmap': require('./style_layer/heatmap_style_layer'),
-    'hillshade': require('./style_layer/hillshade_style_layer'),
-    'fill': require('./style_layer/fill_style_layer'),
-    'fill-extrusion': require('./style_layer/fill_extrusion_style_layer'),
-    'line': require('./style_layer/line_style_layer'),
-    'symbol': require('./style_layer/symbol_style_layer'),
-    'background': require('./style_layer/background_style_layer'),
-    'raster': require('./style_layer/raster_style_layer')
+    'circle',
+    'heatmap',
+    'hillshade',
+    'fill',
+    'fill-extrusion',
+    'line',
+    'symbol',
+    'background',
+    'raster'
 };
 
 StyleLayer.create = function(layer: LayerSpecification) {

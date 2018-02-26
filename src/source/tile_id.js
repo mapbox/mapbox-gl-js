@@ -1,9 +1,10 @@
 // @flow
 
-const WhooTS = require('@mapbox/whoots-js');
-const assert = require('assert');
-const {register} = require('../util/web_worker_transfer');
-const Coordinate = require('../geo/coordinate');
+import WhooTS from '@mapbox/whoots-js';
+
+import assert from 'assert';
+import { register } from '../util/web_worker_transfer';
+import Coordinate from '../geo/coordinate';
 
 class CanonicalTileID {
     z: number;
@@ -158,8 +159,11 @@ function getQuadkey(z, x, y) {
 register('CanonicalTileID', CanonicalTileID);
 register('OverscaledTileID', OverscaledTileID, {omit: ['posMatrix']});
 
-module.exports = {
+const exported = {
     CanonicalTileID: CanonicalTileID,
     OverscaledTileID: OverscaledTileID,
     UnwrappedTileID: UnwrappedTileID
 };
+
+export default exported;
+export { CanonicalTileID, OverscaledTileID, UnwrappedTileID };

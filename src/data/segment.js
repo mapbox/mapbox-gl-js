@@ -1,7 +1,8 @@
 // @flow
 
-const {warnOnce} = require('../util/util');
-const {register} = require('../util/web_worker_transfer');
+import { warnOnce } from '../util/util';
+
+import { register } from '../util/web_worker_transfer';
 
 import type VertexArrayObject from '../render/vertex_array_object';
 import type {StructArray} from '../util/struct_array';
@@ -53,7 +54,7 @@ class SegmentVector {
 
 register('SegmentVector', SegmentVector);
 
-module.exports = {
+const exported = {
     SegmentVector,
 
     /**
@@ -64,3 +65,6 @@ module.exports = {
      */
     MAX_VERTEX_ARRAY_LENGTH: MAX_VERTEX_ARRAY_LENGTH
 };
+
+export default exported;
+export { SegmentVector, MAX_VERTEX_ARRAY_LENGTH };

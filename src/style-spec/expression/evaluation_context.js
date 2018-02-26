@@ -1,8 +1,9 @@
 // @flow
 
-const assert = require('assert');
-const Scope = require('./scope');
-const {Color} = require('./values');
+import assert from 'assert';
+
+import Scope from './scope';
+import { Color } from './values';
 
 import type { Feature, GlobalProperties } from './index';
 import type { Expression } from './expression';
@@ -51,4 +52,4 @@ class EvaluationContext {
     }
 }
 
-module.exports = EvaluationContext;
+export default EvaluationContext;

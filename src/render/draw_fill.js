@@ -1,8 +1,9 @@
 // @flow
 
-const pattern = require('./pattern');
-const Color = require('../style-spec/util/color');
-const DepthMode = require('../gl/depth_mode');
+import pattern from './pattern';
+
+import Color from '../style-spec/util/color';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -11,7 +12,7 @@ import type FillBucket from '../data/bucket/fill_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {CrossFaded} from '../style/cross_faded';
 
-module.exports = drawFill;
+export default drawFill;
 
 function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('fill-color');
