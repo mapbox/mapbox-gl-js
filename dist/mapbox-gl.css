@@ -434,11 +434,12 @@ a.mapboxgl-ctrl-logo {
     border-radius: 50%;
     border: 2px solid #fff;
     content: '';
-    height: 15px;
+    height: 19px;
     left: -2px;
     position: absolute;
     top: -2px;
-    width: 15px;
+    width: 19px;
+    box-sizing: border-box;
 }
 
 @-webkit-keyframes mapboxgl-user-location-dot-pulse {
