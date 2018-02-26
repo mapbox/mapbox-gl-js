@@ -603,3 +603,81 @@ test('DragRotateHandler does not begin a drag if preventDefault is called on the
     map.remove();
     t.end();
 });
+
+['rotatestart', 'rotate'].forEach(event => {
+    test(`DragRotateHandler can be disabled on ${event} (#2419)`, (t) => {
+        const map = createMap();
+
+        map.on(event, () => map.dragRotate.disable());
+
+        const rotatestart = t.spy();
+        const rotate      = t.spy();
+        const rotateend   = t.spy();
+
+        map.on('rotatestart', rotatestart);
+        map.on('rotate',      rotate);
+        map.on('rotateend',   rotateend);
+
+        simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+        map._updateCamera();
+
+        simulate.mousemove(map.getCanvas(), {buttons: 2});
+        map._updateCamera();
+
+        t.equal(rotatestart.callCount, 1);
+        t.equal(rotate.callCount, event === 'rotatestart' ? 0 : 1);
+        t.equal(rotateend.callCount, 1);
+        t.equal(map.isMoving(), false);
+        t.equal(map.dragRotate.isEnabled(), false);
+
+        simulate.mouseup(map.getCanvas(), {buttons: 0, button: 2});
+        map._updateCamera();
+
+        t.equal(rotatestart.callCount, 1);
+        t.equal(rotate.callCount, event === 'rotatestart' ? 0 : 1);
+        t.equal(rotateend.callCount, 1);
+        t.equal(map.isMoving(), false);
+        t.equal(map.dragRotate.isEnabled(), false);
+
+        map.remove();
+        t.end();
+    });
+});
+
+test(`DragRotateHandler can be disabled after mousedown (#2419)`, (t) => {
+    const map = createMap();
+
+    const rotatestart = t.spy();
+    const rotate      = t.spy();
+    const rotateend   = t.spy();
+
+    map.on('rotatestart', rotatestart);
+    map.on('rotate',      rotate);
+    map.on('rotateend',   rotateend);
+
+    simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    map._updateCamera();
+
+    map.dragRotate.disable();
+
+    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    map._updateCamera();
+
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(map.isMoving(), false);
+    t.equal(map.dragRotate.isEnabled(), false);
+
+    simulate.mouseup(map.getCanvas(), {buttons: 0, button: 2});
+    map._updateCamera();
+
+    t.equal(rotatestart.callCount, 0);
+    t.equal(rotate.callCount, 0);
+    t.equal(rotateend.callCount, 0);
+    t.equal(map.isMoving(), false);
+    t.equal(map.dragRotate.isEnabled(), false);
+
+    map.remove();
+    t.end();
+});

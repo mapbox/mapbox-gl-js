@@ -5,6 +5,7 @@ const util = require('../../util/util');
 const window = require('../../util/window');
 const browser = require('../../util/browser');
 const {Event} = require('../../util/evented');
+const assert = require('assert');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -22,8 +23,7 @@ const inertiaLinearity = 0.25,
 class DragRotateHandler {
     _map: Map;
     _el: HTMLElement;
-    _enabled: boolean;
-    _active: boolean;
+    _state: 'disabled' | 'enabled' | 'pending' | 'active';
     _button: 'right' | 'left';
     _eventButton: number;
     _bearingSnap: number;
@@ -51,6 +51,7 @@ class DragRotateHandler {
     }) {
         this._map = map;
         this._el = options.element || map.getCanvasContainer();
+        this._state = 'disabled';
         this._button = options.button || 'right';
         this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
@@ -69,7 +70,7 @@ class DragRotateHandler {
      * @returns {boolean} `true` if the "drag to rotate" interaction is enabled.
      */
     isEnabled() {
-        return !!this._enabled;
+        return this._state !== 'disabled';
     }
 
     /**
@@ -78,7 +79,7 @@ class DragRotateHandler {
      * @returns {boolean} `true` if the "drag to rotate" interaction is active.
      */
     isActive() {
-        return !!this._active;
+        return this._state === 'active';
     }
 
     /**
@@ -89,7 +90,7 @@ class DragRotateHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-        this._enabled = true;
+        this._state = 'enabled';
     }
 
     /**
@@ -100,11 +101,29 @@ class DragRotateHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._enabled = false;
+        switch (this._state) {
+        case 'active':
+            this._state = 'disabled';
+            this._unbind();
+            this._deactivate();
+            this._fireEvent('rotateend');
+            if (this._pitchWithRotate) {
+                this._fireEvent('pitchend');
+            }
+            this._fireEvent('moveend');
+            break;
+        case 'pending':
+            this._state = 'disabled';
+            this._unbind();
+            break;
+        default:
+            this._state = 'disabled';
+            break;
+        }
     }
 
     onMouseDown(e: MouseEvent) {
-        if (!this.isEnabled() || this.isActive()) return;
+        if (this._state !== 'enabled') return;
 
         if (this._button === 'right') {
             this._eventButton = DOM.mouseButton(e);
@@ -128,7 +147,7 @@ class DragRotateHandler {
         // isn't in focus, dragging will continue even though the mouse is no longer pressed.
         window.addEventListener('blur', this._onBlur);
 
-        this._active = false;
+        this._state = 'pending';
         this._inertia = [[browser.now(), this._map.getBearing()]];
         this._previousPos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
@@ -140,8 +159,8 @@ class DragRotateHandler {
         this._lastMoveEvent = e;
         this._pos = DOM.mousePos(this._el, e);
 
-        if (!this.isActive()) {
-            this._active = true;
+        if (this._state === 'pending') {
+            this._state = 'active';
             this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
             if (this._pitchWithRotate) {
@@ -183,28 +202,59 @@ class DragRotateHandler {
 
     _onMouseUp(e: MouseEvent) {
         if (DOM.mouseButton(e) !== this._eventButton) return;
-        this._finish(e);
+        switch (this._state) {
+        case 'active':
+            this._state = 'enabled';
+            DOM.suppressClick();
+            this._unbind();
+            this._deactivate();
+            this._inertialRotate(e);
+            break;
+        case 'pending':
+            this._state = 'enabled';
+            this._unbind();
+            break;
+        default:
+            assert(false);
+            break;
+        }
     }
 
     _onBlur(e: FocusEvent) {
-        this._finish(e);
+        switch (this._state) {
+        case 'active':
+            this._state = 'enabled';
+            this._unbind();
+            this._deactivate();
+            this._fireEvent('rotateend', e);
+            if (this._pitchWithRotate) {
+                this._fireEvent('pitchend', e);
+            }
+            this._fireEvent('moveend', e);
+            break;
+        case 'pending':
+            this._state = 'enabled';
+            this._unbind();
+            break;
+        default:
+            assert(false);
+            break;
+        }
     }
 
-    _finish(e: MouseEvent | FocusEvent) {
+    _unbind() {
         window.document.removeEventListener('mousemove', this._onMouseMove, {capture: true});
         window.document.removeEventListener('mouseup', this._onMouseUp);
         window.removeEventListener('blur', this._onBlur);
-
         DOM.enableDrag();
+    }
 
-        if (!this.isActive()) return;
-
-        this._active = false;
+    _deactivate() {
         delete this._lastMoveEvent;
         delete this._previousPos;
+    }
 
-        DOM.suppressClick();
-
+    _inertialRotate(e: MouseEvent) {
         this._fireEvent('rotateend', e);
         this._drainInertiaBuffer();
 

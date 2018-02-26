@@ -516,3 +516,81 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.remove();
     t.end();
 });
+
+['dragstart', 'drag'].forEach(event => {
+    test(`DragPanHandler can be disabled on ${event} (#2419)`, (t) => {
+        const map = createMap();
+
+        map.on(event, () => map.dragPan.disable());
+
+        const dragstart = t.spy();
+        const drag      = t.spy();
+        const dragend   = t.spy();
+
+        map.on('dragstart', dragstart);
+        map.on('drag',      drag);
+        map.on('dragend',   dragend);
+
+        simulate.mousedown(map.getCanvas());
+        map._updateCamera();
+
+        simulate.mousemove(map.getCanvas());
+        map._updateCamera();
+
+        t.equal(dragstart.callCount, 1);
+        t.equal(drag.callCount, event === 'dragstart' ? 0 : 1);
+        t.equal(dragend.callCount, 1);
+        t.equal(map.isMoving(), false);
+        t.equal(map.dragPan.isEnabled(), false);
+
+        simulate.mouseup(map.getCanvas());
+        map._updateCamera();
+
+        t.equal(dragstart.callCount, 1);
+        t.equal(drag.callCount, event === 'dragstart' ? 0 : 1);
+        t.equal(dragend.callCount, 1);
+        t.equal(map.isMoving(), false);
+        t.equal(map.dragPan.isEnabled(), false);
+
+        map.remove();
+        t.end();
+    });
+});
+
+test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
+    const map = createMap();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas());
+    map._updateCamera();
+
+    map.dragPan.disable();
+
+    simulate.mousemove(map.getCanvas());
+    map._updateCamera();
+
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+    t.equal(map.isMoving(), false);
+    t.equal(map.dragPan.isEnabled(), false);
+
+    simulate.mouseup(map.getCanvas());
+    map._updateCamera();
+
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+    t.equal(map.isMoving(), false);
+    t.equal(map.dragPan.isEnabled(), false);
+
+    map.remove();
+    t.end();
+});
