@@ -93,7 +93,6 @@ class ScrollZoomHandler {
      */
     enable(options: any) {
         if (this.isEnabled()) return;
-        this._el.addEventListener('wheel', this._onWheel, false);
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
     }
@@ -106,11 +105,12 @@ class ScrollZoomHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._el.removeEventListener('wheel', this._onWheel);
         this._enabled = false;
     }
 
-    _onWheel(e: WheelEvent) {
+    onWheel(e: WheelEvent) {
+        if (!this.isEnabled()) return;
+
         let value = e.deltaY;
 
         // Firefox doubles the values on retina screens...

@@ -166,6 +166,54 @@ class MapTouchEvent extends Event {
     }
 }
 
+
+/**
+ * `MapWheelEvent` is the event type for the `wheel` map event.
+ * @extends {Object}
+ */
+class MapWheelEvent extends Event {
+    /**
+     * The event type.
+     */
+    type: 'wheel';
+
+    /**
+     * The `Map` object that fired the event.
+     */
+    map: Map;
+
+    /**
+     * The DOM event which caused the map event.
+     */
+    originalEvent: WheelEvent;
+
+    /**
+     * Prevents subsequent default processing of the event by the map.
+     *
+     * Calling this method will prevent the the behavior of {@link ScrollZoomHandler}.
+     */
+    preventDefault() {
+        this._defaultPrevented = true;
+    }
+
+    /**
+     * `true` if `preventDefault` has been called.
+     */
+    get defaultPrevented(): boolean {
+        return this._defaultPrevented;
+    }
+
+    _defaultPrevented: boolean;
+
+    /**
+     * @private
+     */
+    constructor(type: string, map: Map, originalEvent: WheelEvent) {
+        super(type, { originalEvent });
+        this._defaultPrevented = false;
+    }
+}
+
 /**
  * @typedef {Object} MapBoxZoomEvent
  * @property {MouseEvent} originalEvent
@@ -338,6 +386,16 @@ export type MapEvent =
      * @property {MapMouseEvent} data
      */
     | 'contextmenu'
+
+    /**
+     * Fired when a [`wheel`](https://developer.mozilla.org/en-US/docs/Web/Events/wheel) event occurs within the map.
+     *
+     * @event wheel
+     * @memberof Map
+     * @instance
+     * @property {MapWheelEvent} data
+     */
+    | 'wheel'
 
     /**
      * Fired when a [`touchstart`](https://developer.mozilla.org/en-US/docs/Web/Events/touchstart) event occurs within the map.
@@ -729,5 +787,6 @@ export type MapEvent =
 
 module.exports = {
     MapMouseEvent,
-    MapTouchEvent
+    MapTouchEvent,
+    MapWheelEvent
 };
