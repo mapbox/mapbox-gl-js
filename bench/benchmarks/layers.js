@@ -1,7 +1,7 @@
 
-const Benchmark = require('../lib/benchmark');
-const createMap = require('../lib/create_map');
-const style = require('../data/empty.json');
+import Benchmark from '../lib/benchmark';
+import createMap from '../lib/create_map';
+import style from '../data/empty.json';
 
 function generateLayers(layer) {
     const generated = [];

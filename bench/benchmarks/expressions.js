@@ -1,11 +1,12 @@
 // @flow
 
-const Benchmark = require('../lib/benchmark');
-const accessToken = require('../lib/access_token');
-const spec = require('../../src/style-spec/reference/latest');
-const convertFunction = require('../../src/style-spec/function/convert');
-const {isFunction, createFunction} = require('../../src/style-spec/function');
-const {createPropertyExpression} = require('../../src/style-spec/expression');
+import Benchmark from '../lib/benchmark';
+
+import accessToken from '../lib/access_token';
+import spec from '../../src/style-spec/reference/latest';
+import convertFunction from '../../src/style-spec/function/convert';
+import { isFunction, createFunction } from '../../src/style-spec/function';
+import { createPropertyExpression } from '../../src/style-spec/expression';
 
 import type {StylePropertySpecification} from '../../src/style-spec/style-spec';
 import type {StylePropertyExpression} from '../../src/style-spec/expression';

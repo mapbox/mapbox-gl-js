@@ -1,13 +1,8 @@
-const React = require('react');
-const ReactDOM = require('react-dom');
-const d3 = require('d3');
-const Axis = require('./lib/axis');
-const {
-    summaryStatistics,
-    regression,
-    kde,
-    probabilitiesOfSuperiority
-} = require('./lib/statistics');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import d3 from 'd3';
+import Axis from './lib/axis';
+import { summaryStatistics, regression, kde, probabilitiesOfSuperiority } from './lib/statistics';
 
 const versionColor = d3.scaleOrdinal(['#1b9e77', '#7570b3', '#d95f02']);
 const formatSample = d3.format(".3r");

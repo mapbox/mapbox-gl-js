@@ -1,8 +1,8 @@
 
-const Benchmark = require('../lib/benchmark');
-const accessToken = require('../lib/access_token');
-const StyleLayer = require('../../src/style/style_layer');
-const deref = require('../../src/style-spec/deref');
+import Benchmark from '../lib/benchmark';
+import accessToken from '../lib/access_token';
+import StyleLayer from '../../src/style/style_layer';
+import deref from '../../src/style-spec/deref';
 
 module.exports = class StyleLayerCreate extends Benchmark {
     setup() {

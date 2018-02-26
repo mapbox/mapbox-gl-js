@@ -1,8 +1,9 @@
 // @flow
 
-const Benchmark = require('../lib/benchmark');
-const createFilter = require('../../src/style-spec/feature_filter');
-const filters = require('../data/filters.json');
+import Benchmark from '../lib/benchmark';
+
+import createFilter from '../../src/style-spec/feature_filter';
+import filters from '../data/filters.json';
 
 module.exports = class FilterCreate extends Benchmark {
     bench() {

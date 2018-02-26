@@ -1,7 +1,8 @@
 // @flow
 
-const Layout = require('./layout');
-const {OverscaledTileID} = require('../../src/source/tile_id');
+import Layout from './layout';
+
+import { OverscaledTileID } from '../../src/source/tile_id';
 
 const LAYER_COUNT = 2;
 

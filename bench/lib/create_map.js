@@ -1,7 +1,8 @@
 // @flow
 
-const Map = require('../../src/ui/map');
-const browser = require('../../src/util/browser');
+import Map from '../../src/ui/map';
+
+import browser from '../../src/util/browser';
 
 module.exports = function (options: any): Promise<Map> {
     return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-const React = require('react');
+import React from 'react';
 
 function identity(x) {
     return x;
