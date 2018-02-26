@@ -61,8 +61,9 @@ function onUp(e) {
     coordinates.innerHTML = 'Longitude: ' + coords.lng + '<br />Latitude: ' + coords.lat;
     canvas.style.cursor = '';
 
-    // Unbind mouse events
+    // Unbind mouse/touch events
     map.off('mousemove', onMove);
+    map.off('touchmove', onMove);
 }
 
 map.on('load', function() {
@@ -102,6 +103,16 @@ map.on('load', function() {
 
         map.on('mousemove', onMove);
         map.once('mouseup', onUp);
+    });
+
+    map.on('touchstart', 'point', function(e) {
+        if (e.points.length !== 1) return;
+
+        // Prevent the default map drag behavior.
+        e.preventDefault();
+
+        map.on('touchmove', onMove);
+        map.once('touchend', onUp);
     });
 });
 </script>
