@@ -1,5 +1,5 @@
 {
-  "expression": ["regex", ["get", "r"], ["get", "s"]],
+  "expression": ["regex-match", ["get", "r"], ["get", "s"]],
   "inputs": [
     [{}, {"properties": {"r": ".*", "s": "some string"}}],
     [{}, {"properties": {"r": "me stri", "s": "some string"}}],
@@ -19,6 +19,6 @@
         ["some string", "some"],
         ["some string", "some", "string"]
     ],
-    "serialized": ["regex", ["get", "r"], ["get", "s"]]
+    "serialized": ["regex-match", ["get", "r"], ["get", "s"]]
   }
 }

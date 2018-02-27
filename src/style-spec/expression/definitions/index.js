@@ -534,8 +534,7 @@ CompoundExpression.register(expressions, {
         varargs(StringType),
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
     ],
-
-    'regex': {
+    'regex-match': {
         type: array(StringType),
         overloads: [
             [
