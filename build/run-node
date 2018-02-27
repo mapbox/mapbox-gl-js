@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+node -r ./build/flow-remove-types -r @std/esm ${@}

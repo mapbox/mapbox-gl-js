@@ -2,12 +2,6 @@
 
 const fs = require('fs');
 
-require = require('@std/esm')(module, {
-    cjs: true,
-    esm: 'js',
-    sourceMap: true
-});
-
 const ejs = require('ejs');
 const spec = require('../src/style-spec/reference/v8');
 const Color = require('../src/style-spec/util/color');

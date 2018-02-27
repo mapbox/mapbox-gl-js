@@ -12,12 +12,6 @@
 
 const fs = require('fs');
 
-require = require('@std/esm')(module, {
-    cjs: true,
-    esm: 'js',
-    sourceMap: true
-});
-
 const ejs = require('ejs');
 const util = require('../src/util/util');
 const {createLayout, viewTypes} = require('../src/util/struct_array');

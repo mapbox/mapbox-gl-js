@@ -137,6 +137,11 @@
     "./src/util/window.js": "./src/util/browser/window.js",
     "./src/util/web_worker.js": "./src/util/browser/web_worker.js"
   },
+  "@std/esm": {
+    "cjs": true,
+    "esm": "js",
+    "sourceCache": true
+  },
   "scripts": {
     "build-dev": "browserify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
     "watch-dev": "watchify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
@@ -170,7 +175,7 @@
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
     "remove-flow-types": "flow-remove-types -i node_modules -d src_untyped src",
-    "codegen": "node -r ./build/flow-remove-types build/generate-style-code.js && node -r ./build/flow-remove-types build/generate-struct-arrays.js"
+    "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [
     "build/",
