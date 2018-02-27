@@ -84,6 +84,7 @@
     "npm-run-all": "^4.0.1",
     "nyc": "^10.1.2",
     "object.entries": "^1.0.4",
+    "pirates": "^3.0.2",
     "pngjs": "^3.0.0",
     "prismjs": "^1.8.1",
     "prop-types": "^15.6.0",
