@@ -1,0 +1,24 @@
+{
+  "expression": ["regex-replace", ["get", "r"], ["get", "n"], ["get", "s"]],
+  "inputs": [
+    [{}, {"properties": {"r": "ome", "n": "uch a", "s": "some string"}}],
+    [{}, {"properties": {"r": "some string", "n": "other text", "s": "some string"}}],
+    [{}, {"properties": {"r": "ME", "n": "ch a", "s": "some string"}}],
+    [{}, {"properties": {"r": "string", "n": "text", "s": "some string"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+        "such a string",
+        "other text",
+        "some string",
+        "some text"
+    ],
+    "serialized": ["regex-replace", ["get", "r"], ["get", "n"], ["get", "s"]]
+  }
+}

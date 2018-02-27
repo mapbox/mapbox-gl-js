@@ -1,0 +1,24 @@
+{
+  "expression": ["regex-test", ["get", "r"], ["get", "s"]],
+  "inputs": [
+    [{}, {"properties": {"r": ".*", "s": "some string"}}],
+    [{}, {"properties": {"r": "(.*) string", "s": "some string"}}],
+    [{}, {"properties": {"r": "NO.*MATCH", "s": "some string"}}],
+    [{}, {"properties": {"r": "SOME string", "s": "some string"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+        true,
+        true,
+        false,
+        false
+    ],
+    "serialized": ["regex-test", ["get", "r"], ["get", "s"]]
+  }
+}

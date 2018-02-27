@@ -534,6 +534,30 @@ CompoundExpression.register(expressions, {
         varargs(StringType),
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
     ],
+    'regex-test': {
+        type: BooleanType,
+        overloads: [
+            [
+                [StringType, StringType],
+                (ctx, [r, s]) => RegExp(r.evaluate(ctx)).test(s.evaluate(ctx))
+            ], [
+                [StringType, StringType, StringType],
+                (ctx, [r, f, s]) => RegExp(r.evaluate(ctx), f.evaluate(ctx)).test(s.evaluate(ctx))
+            ]
+        ]
+    },
+    'regex-replace': {
+        type: StringType,
+        overloads: [
+            [
+                [StringType, StringType, StringType],
+                (ctx, [r, n, s]) => s.evaluate(ctx).replace(RegExp(r.evaluate(ctx)), n.evaluate(ctx))
+            ], [
+                [StringType, StringType, StringType, StringType],
+                (ctx, [r, f, n, s]) => s.evaluate(ctx).replace(RegExp(r.evaluate(ctx), f.evaluate(ctx)), n.evaluate(ctx))
+            ]
+        ]
+    },
     'regex-match': {
         type: array(StringType),
         overloads: [
