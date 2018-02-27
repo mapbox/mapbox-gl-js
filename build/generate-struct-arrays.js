@@ -231,6 +231,7 @@ ${layouts.map(structArrayLayoutJs).join('\n')}
 ${arraysWithStructAccessors.map(structArrayJs).join('\n')}
 
 export {
+    ${layouts.map(layout => layout.className).join(',\n    ')},
     ${[...arrayTypeEntries].join(',\n    ')}
 };`);
 

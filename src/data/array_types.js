@@ -14,7 +14,7 @@ import Point from '@mapbox/point-geometry';
  *
  * @private
  */
-export class StructArrayLayout2i4 extends StructArray {
+class StructArrayLayout2i4 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -44,7 +44,7 @@ register('StructArrayLayout2i4', StructArrayLayout2i4);
  *
  * @private
  */
-export class StructArrayLayout4i8 extends StructArray {
+class StructArrayLayout4i8 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -77,7 +77,7 @@ register('StructArrayLayout4i8', StructArrayLayout4i8);
  *
  * @private
  */
-export class StructArrayLayout2i4i12 extends StructArray {
+class StructArrayLayout2i4i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -112,7 +112,7 @@ register('StructArrayLayout2i4i12', StructArrayLayout2i4i12);
  *
  * @private
  */
-export class StructArrayLayout4i4ub12 extends StructArray {
+class StructArrayLayout4i4ub12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -150,7 +150,7 @@ register('StructArrayLayout4i4ub12', StructArrayLayout4i4ub12);
  *
  * @private
  */
-export class StructArrayLayout4i4ui16 extends StructArray {
+class StructArrayLayout4i4ui16 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -188,7 +188,7 @@ register('StructArrayLayout4i4ui16', StructArrayLayout4i4ui16);
  *
  * @private
  */
-export class StructArrayLayout3f12 extends StructArray {
+class StructArrayLayout3f12 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -219,7 +219,7 @@ register('StructArrayLayout3f12', StructArrayLayout3f12);
  *
  * @private
  */
-export class StructArrayLayout1ul4 extends StructArray {
+class StructArrayLayout1ul4 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
 
@@ -251,7 +251,7 @@ register('StructArrayLayout1ul4', StructArrayLayout1ul4);
  *
  * @private
  */
-export class StructArrayLayout6i1ul2ui2i24 extends StructArray {
+class StructArrayLayout6i1ul2ui2i24 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint32: Uint32Array;
@@ -297,7 +297,7 @@ register('StructArrayLayout6i1ul2ui2i24', StructArrayLayout6i1ul2ui2i24);
  *
  * @private
  */
-export class StructArrayLayout2i2i2i12 extends StructArray {
+class StructArrayLayout2i2i2i12 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -331,7 +331,7 @@ register('StructArrayLayout2i2i2i12', StructArrayLayout2i2i2i12);
  *
  * @private
  */
-export class StructArrayLayout2ub4 extends StructArray {
+class StructArrayLayout2ub4 extends StructArray {
     uint8: Uint8Array;
 
     _refreshViews() {
@@ -364,7 +364,7 @@ register('StructArrayLayout2ub4', StructArrayLayout2ub4);
  *
  * @private
  */
-export class StructArrayLayout2i2ui3ul3ui2f2ub40 extends StructArray {
+class StructArrayLayout2i2ui3ul3ui2f2ub40 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
     uint16: Uint16Array;
@@ -414,7 +414,7 @@ register('StructArrayLayout2i2ui3ul3ui2f2ub40', StructArrayLayout2i2ui3ul3ui2f2u
  *
  * @private
  */
-export class StructArrayLayout1f4 extends StructArray {
+class StructArrayLayout1f4 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -443,7 +443,7 @@ register('StructArrayLayout1f4', StructArrayLayout1f4);
  *
  * @private
  */
-export class StructArrayLayout3i6 extends StructArray {
+class StructArrayLayout3i6 extends StructArray {
     uint8: Uint8Array;
     int16: Int16Array;
 
@@ -475,7 +475,7 @@ register('StructArrayLayout3i6', StructArrayLayout3i6);
  *
  * @private
  */
-export class StructArrayLayout1ul2ui8 extends StructArray {
+class StructArrayLayout1ul2ui8 extends StructArray {
     uint8: Uint8Array;
     uint32: Uint32Array;
     uint16: Uint16Array;
@@ -509,7 +509,7 @@ register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
  *
  * @private
  */
-export class StructArrayLayout3ui6 extends StructArray {
+class StructArrayLayout3ui6 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -540,7 +540,7 @@ register('StructArrayLayout3ui6', StructArrayLayout3ui6);
  *
  * @private
  */
-export class StructArrayLayout2ui4 extends StructArray {
+class StructArrayLayout2ui4 extends StructArray {
     uint8: Uint8Array;
     uint16: Uint16Array;
 
@@ -570,7 +570,7 @@ register('StructArrayLayout2ui4', StructArrayLayout2ui4);
  *
  * @private
  */
-export class StructArrayLayout2f8 extends StructArray {
+class StructArrayLayout2f8 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -600,7 +600,7 @@ register('StructArrayLayout2f8', StructArrayLayout2f8);
  *
  * @private
  */
-export class StructArrayLayout4f16 extends StructArray {
+class StructArrayLayout4f16 extends StructArray {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -855,6 +855,24 @@ register('FeatureIndexArray', FeatureIndexArray);
 
 
 export {
+    StructArrayLayout2i4,
+    StructArrayLayout4i8,
+    StructArrayLayout2i4i12,
+    StructArrayLayout4i4ub12,
+    StructArrayLayout4i4ui16,
+    StructArrayLayout3f12,
+    StructArrayLayout1ul4,
+    StructArrayLayout6i1ul2ui2i24,
+    StructArrayLayout2i2i2i12,
+    StructArrayLayout2ub4,
+    StructArrayLayout2i2ui3ul3ui2f2ub40,
+    StructArrayLayout1f4,
+    StructArrayLayout3i6,
+    StructArrayLayout1ul2ui8,
+    StructArrayLayout3ui6,
+    StructArrayLayout2ui4,
+    StructArrayLayout2f8,
+    StructArrayLayout4f16,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout4i8 as RasterBoundsArray,
     StructArrayLayout2i4 as CircleLayoutArray,
