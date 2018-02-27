@@ -28,6 +28,7 @@ const Step = require('./step');
 const Interpolate = require('./interpolate');
 const Coalesce = require('./coalesce');
 const {Equals, NotEquals} = require('./equals');
+const Length = require('./length');
 
 import type { ExpressionRegistry } from '../expression';
 
@@ -41,6 +42,7 @@ const expressions: ExpressionRegistry = {
     'case': Case,
     'coalesce': Coalesce,
     'interpolate': Interpolate,
+    'length': Length,
     'let': Let,
     'literal': Literal,
     'match': Match,
@@ -70,10 +72,6 @@ function has(key, obj) {
 function get(key, obj) {
     const v = obj[key];
     return typeof v === 'undefined' ? null : v;
-}
-
-function length(ctx, [v]) {
-    return v.evaluate(ctx).length;
 }
 
 function lt(ctx, [a, b]) { return a.evaluate(ctx) < b.evaluate(ctx); }
@@ -144,18 +142,6 @@ CompoundExpression.register(expressions, {
         [NumberType, NumberType, NumberType, NumberType],
         rgba
     ],
-    'length': {
-        type: NumberType,
-        overloads: [
-            [
-                [StringType],
-                length
-            ], [
-                [array(ValueType)],
-                length
-            ]
-        ]
-    },
     'has': {
         type: BooleanType,
         overloads: [

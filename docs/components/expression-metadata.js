@@ -156,6 +156,10 @@ const types = {
             'stop_input_n: number, stop_output_n: OutputType, ...'
         ]
     }],
+    length: [{
+        type: 'number',
+        parameters: ['string | array | value']
+    }],
     let: [{
         type: 'OutputType',
         parameters: [{ repeat: ['string (alphanumeric literal)', 'any']}, 'OutputType']
