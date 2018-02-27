@@ -1,11 +1,11 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const util = require('../../../../src/util/util');
-const window = require('../../../../src/util/window');
-const Map = require('../../../../src/ui/map');
-const DOM = require('../../../../src/util/dom');
-const simulate = require('mapbox-gl-js-test/simulate_interaction');
+import { test } from 'mapbox-gl-js-test';
+import util from '../../../../src/util/util';
+import window from '../../../../src/util/window';
+import Map from '../../../../src/ui/map';
+import DOM from '../../../../src/util/dom';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap(options) {
     return new Map(util.extend({ container: DOM.create('div', '', window.document.body) }, options));

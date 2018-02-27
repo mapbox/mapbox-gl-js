@@ -1,8 +1,8 @@
 // @flow
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const {StructArrayLayout3i6, FeatureIndexArray} = require('../../../src/data/array_types');
+import { test } from 'mapbox-gl-js-test';
+import { StructArrayLayout3i6, FeatureIndexArray } from '../../../src/data/array_types';
 
 test('StructArray', (t) => {
     class TestArray extends StructArrayLayout3i6 {}

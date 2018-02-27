@@ -1,12 +1,12 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const window = require('../../../src/util/window');
-const Map = require('../../../src/ui/map');
-const Marker = require('../../../src/ui/marker');
-const Popup = require('../../../src/ui/popup');
-const LngLat = require('../../../src/geo/lng_lat');
-const Point = require('@mapbox/point-geometry');
+import { test } from 'mapbox-gl-js-test';
+import window from '../../../src/util/window';
+import Map from '../../../src/ui/map';
+import Marker from '../../../src/ui/marker';
+import Popup from '../../../src/ui/popup';
+import LngLat from '../../../src/geo/lng_lat';
+import Point from '@mapbox/point-geometry';
 
 function createMap() {
     const container = window.document.createElement('div');

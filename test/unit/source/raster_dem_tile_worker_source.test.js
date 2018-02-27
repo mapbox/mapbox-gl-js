@@ -1,9 +1,9 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const RasterDEMTileWorkerSource = require('../../../src/source/raster_dem_tile_worker_source');
-const StyleLayerIndex = require('../../../src/style/style_layer_index');
-const {DEMData} = require('../../../src/data/dem_data');
+import { test } from 'mapbox-gl-js-test';
+import RasterDEMTileWorkerSource from '../../../src/source/raster_dem_tile_worker_source';
+import StyleLayerIndex from '../../../src/style/style_layer_index';
+import { DEMData } from '../../../src/data/dem_data';
 
 test('loadTile', (t) => {
     t.test('loads DEM tile', (t) => {

@@ -1,10 +1,9 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-
-const getIconQuads = require('../../../src/symbol/quads').getIconQuads;
-const Anchor = require('../../../src/symbol/anchor');
-const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
+import { test } from 'mapbox-gl-js-test';
+import { getIconQuads } from '../../../src/symbol/quads';
+import Anchor from '../../../src/symbol/anchor';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 
 function createLayer(layer) {
     const result = new SymbolStyleLayer(layer);

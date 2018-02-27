@@ -1,10 +1,10 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const mapbox = require('../../../src/util/mapbox');
-const config = require('../../../src/util/config');
-const browser = require('../../../src/util/browser');
-const window = require('../../../src/util/window');
+import { test } from 'mapbox-gl-js-test';
+import mapbox from '../../../src/util/mapbox';
+import config from '../../../src/util/config';
+import browser from '../../../src/util/browser';
+import window from '../../../src/util/window';
 
 test("mapbox", (t) => {
     const mapboxSource = 'mapbox://user.map';

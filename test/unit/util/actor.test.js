@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
-const Actor = require('../../../src/util/actor');
+import { test } from 'mapbox-gl-js-test';
+import proxyquire from 'proxyquire';
+import Actor from '../../../src/util/actor';
 
 test('Actor', (t) => {
     t.test('forwards resopnses to correct callback', (t) => {

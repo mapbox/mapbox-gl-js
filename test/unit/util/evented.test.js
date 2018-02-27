@@ -1,7 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const {Event, Evented} = require('../../../src/util/evented');
+import { test } from 'mapbox-gl-js-test';
+import { Event, Evented } from '../../../src/util/evented';
 
 test('Evented', (t) => {
 

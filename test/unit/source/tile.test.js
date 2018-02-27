@@ -1,17 +1,17 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const Tile = require('../../../src/source/tile');
-const GeoJSONWrapper = require('../../../src/source/geojson_wrapper');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
-const fs = require('fs');
-const path = require('path');
-const vtpbf = require('vt-pbf');
-const FeatureIndex = require('../../../src/data/feature_index');
-const {CollisionBoxArray} = require('../../../src/data/array_types');
-const util = require('../../../src/util/util');
-const Context = require('../../../src/gl/context');
-const {serialize} = require('../../../src/util/web_worker_transfer');
+import { test } from 'mapbox-gl-js-test';
+import Tile from '../../../src/source/tile';
+import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import fs from 'fs';
+import path from 'path';
+import vtpbf from 'vt-pbf';
+import FeatureIndex from '../../../src/data/feature_index';
+import { CollisionBoxArray } from '../../../src/data/array_types';
+import util from '../../../src/util/util';
+import Context from '../../../src/gl/context';
+import { serialize } from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
     const features = [{

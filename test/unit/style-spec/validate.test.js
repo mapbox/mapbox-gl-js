@@ -1,11 +1,11 @@
 /* global process, __dirname */
 'use strict';
 
-const t = require('mapbox-gl-js-test').test,
-    glob = require('glob'),
-    fs = require('fs'),
-    path = require('path'),
-    validate = require('../../../src/style-spec/validate_style');
+import { test as t } from 'mapbox-gl-js-test';
+import glob from 'glob';
+import fs from 'fs';
+import path from 'path';
+import validate from '../../../src/style-spec/validate_style';
 
 const UPDATE = !!process.env.UPDATE;
 
@@ -23,7 +23,7 @@ glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
 
 const fixtures = glob.sync(`${__dirname}/fixture/*.input.json`);
 const style = JSON.parse(fs.readFileSync(fixtures[0]));
-const reference = require('../../../src/style-spec/reference/latest');
+import reference from '../../../src/style-spec/reference/latest';
 
 t('validate.parsed exists', (t) => {
     t.equal(typeof validate.parsed, 'function');

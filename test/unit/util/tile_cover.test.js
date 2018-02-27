@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const tileCover = require('../../../src/util/tile_cover');
-const {OverscaledTileID} = require('../../../src/source/tile_id');
+import { test } from 'mapbox-gl-js-test';
+import tileCover from '../../../src/util/tile_cover';
+import { OverscaledTileID } from '../../../src/source/tile_id';
 
 test('tileCover', (t) => {
 

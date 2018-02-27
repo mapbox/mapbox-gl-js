@@ -1,7 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const {createPropertyExpression} = require('../../../src/style-spec/expression');
+import { test } from 'mapbox-gl-js-test';
+import { createPropertyExpression } from '../../../src/style-spec/expression';
 
 test('createPropertyExpression', (t) => {
     test('prohibits piecewise-constant properties from using an "interpolate" expression', (t) => {

@@ -2,8 +2,8 @@
 
 'use strict';
 
-const {test} = require('mapbox-gl-js-test');
-const proxyquire = require('proxyquire');
+import { test } from 'mapbox-gl-js-test';
+import proxyquire from 'proxyquire';
 
 test('loadGlyphRange', (t) => {
     const transform = t.stub().callsFake((url) => ({url}));

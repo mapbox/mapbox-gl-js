@@ -1,8 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-
-const GridIndex = require('../../../src/symbol/grid_index');
+import { test } from 'mapbox-gl-js-test';
+import GridIndex from '../../../src/symbol/grid_index';
 
 test('GridIndex', (t) => {
 

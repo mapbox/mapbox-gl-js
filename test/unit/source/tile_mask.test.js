@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const updateTileMasks = require('../../../src/render/tile_mask');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
+import { test } from 'mapbox-gl-js-test';
+import updateTileMasks from '../../../src/render/tile_mask';
+import { OverscaledTileID } from '../../../src/source/tile_id';
 
 
 test('computeTileMasks', (t) => {

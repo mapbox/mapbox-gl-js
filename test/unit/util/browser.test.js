@@ -1,7 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const browser = require('../../../src/util/browser');
+import { test } from 'mapbox-gl-js-test';
+import browser from '../../../src/util/browser';
 
 test('browser', (t) => {
     t.test('frame', (t) => {

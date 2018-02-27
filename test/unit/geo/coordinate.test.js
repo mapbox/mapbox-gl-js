@@ -1,7 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const Coordinate = require('../../../src/geo/coordinate');
+import { test } from 'mapbox-gl-js-test';
+import Coordinate from '../../../src/geo/coordinate';
 
 test('Coordinate', (t) => {
     t.test('#constructor', (t) => {

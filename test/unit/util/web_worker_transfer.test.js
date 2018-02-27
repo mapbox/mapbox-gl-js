@@ -2,12 +2,9 @@
 
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const {register, serialize, deserialize} = require('../../../src/util/web_worker_transfer');
-
-/*::
+import { test } from 'mapbox-gl-js-test';
+import { register, serialize, deserialize } from '../../../src/util/web_worker_transfer';
 import type {Serialized} from '../../../src/util/web_worker_transfer';
-*/
 
 test('round trip', (t) => {
     class Foo {

@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const Point = require('@mapbox/point-geometry');
-const getAnchors = require('../../../src/symbol/get_anchors');
+import { test } from 'mapbox-gl-js-test';
+import Point from '@mapbox/point-geometry';
+import getAnchors from '../../../src/symbol/get_anchors';
 
 const TILE_EXTENT = 4096;
 

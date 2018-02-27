@@ -1,12 +1,12 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const ImageSource = require('../../../src/source/image_source');
-const {Evented} = require('../../../src/util/evented');
-const Transform = require('../../../src/geo/transform');
-const util = require('../../../src/util/util');
-const ajax = require('../../../src/util/ajax');
-const browser = require('../../../src/util/browser');
+import { test } from 'mapbox-gl-js-test';
+import ImageSource from '../../../src/source/image_source';
+import { Evented } from '../../../src/util/evented';
+import Transform from '../../../src/geo/transform';
+import util from '../../../src/util/util';
+import ajax from '../../../src/util/ajax';
+import browser from '../../../src/util/browser';
 
 function createSource(options) {
     options = util.extend({

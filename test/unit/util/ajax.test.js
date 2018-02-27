@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const ajax = require('../../../src/util/ajax');
-const window = require('../../../src/util/window');
+import { test } from 'mapbox-gl-js-test';
+import ajax from '../../../src/util/ajax';
+import window from '../../../src/util/window';
 
 test('ajax', (t) => {
     t.beforeEach(callback => {

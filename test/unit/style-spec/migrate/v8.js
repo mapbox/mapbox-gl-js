@@ -1,7 +1,7 @@
 'use strict';
 
-const t = require('mapbox-gl-js-test').test,
-    migrate = require('../../../../src/style-spec/migrate/v8');
+import { test as t } from 'mapbox-gl-js-test';
+import migrate from '../../../../src/style-spec/migrate/v8';
 
 t('split text-font', (t) => {
     const input = {

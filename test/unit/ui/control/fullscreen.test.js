@@ -1,9 +1,9 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const window = require('../../../../src/util/window');
-const Map = require('../../../../src/ui/map');
-const FullscreenControl = require('../../../../src/ui/control/fullscreen_control');
+import { test } from 'mapbox-gl-js-test';
+import window from '../../../../src/util/window';
+import Map from '../../../../src/ui/map';
+import FullscreenControl from '../../../../src/ui/control/fullscreen_control';
 
 function createMap() {
     const container = window.document.createElement('div');

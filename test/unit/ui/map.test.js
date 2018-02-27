@@ -1,15 +1,14 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const util = require('../../../src/util/util');
-const window = require('../../../src/util/window');
-const Map = require('../../../src/ui/map');
-const LngLat = require('../../../src/geo/lng_lat');
-const Tile = require('../../../src/source/tile');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
-const {Event, ErrorEvent} = require('../../../src/util/evented');
-
-const fixed = require('mapbox-gl-js-test/fixed');
+import { test } from 'mapbox-gl-js-test';
+import util from '../../../src/util/util';
+import window from '../../../src/util/window';
+import Map from '../../../src/ui/map';
+import LngLat from '../../../src/geo/lng_lat';
+import Tile from '../../../src/source/tile';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import { Event, ErrorEvent } from '../../../src/util/evented';
+import fixed from 'mapbox-gl-js-test/fixed';
 const fixedNum = fixed.Num;
 const fixedLngLat = fixed.LngLat;
 const fixedCoord = fixed.Coord;

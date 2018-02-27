@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const Worker = require('../../../src/source/worker');
-const window = require('../../../src/util/window');
+import { test } from 'mapbox-gl-js-test';
+import Worker from '../../../src/source/worker';
+import window from '../../../src/util/window';
 
 const _self = {
     addEventListener: function() {}

@@ -1,10 +1,10 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const window = require('../../../../src/util/window');
-const Map = require('../../../../src/ui/map');
-const config = require('../../../../src/util/config');
-const AttributionControl = require('../../../../src/ui/control/attribution_control');
+import { test } from 'mapbox-gl-js-test';
+import window from '../../../../src/util/window';
+import Map from '../../../../src/ui/map';
+import config from '../../../../src/util/config';
+import AttributionControl from '../../../../src/ui/control/attribution_control';
 
 function createMap() {
     const container = window.document.createElement('div');

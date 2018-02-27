@@ -2,8 +2,8 @@
 
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const Color = require('../../../src/style-spec/util/color');
+import { test } from 'mapbox-gl-js-test';
+import Color from '../../../src/style-spec/util/color';
 
 test('Color.parse', (t) => {
     t.deepEqual(Color.parse('red'), new Color(1, 0, 0, 1));

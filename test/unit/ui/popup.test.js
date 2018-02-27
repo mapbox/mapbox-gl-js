@@ -1,12 +1,12 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const window = require('../../../src/util/window');
-const Map = require('../../../src/ui/map');
-const Popup = require('../../../src/ui/popup');
-const LngLat = require('../../../src/geo/lng_lat');
-const Point = require('@mapbox/point-geometry');
-const simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
+import { test } from 'mapbox-gl-js-test';
+import window from '../../../src/util/window';
+import Map from '../../../src/ui/map';
+import Popup from '../../../src/ui/popup';
+import LngLat from '../../../src/geo/lng_lat';
+import Point from '@mapbox/point-geometry';
+import { click as simulateClick } from 'mapbox-gl-js-test/simulate_interaction';
 
 const containerWidth = 512;
 const containerHeight = 512;

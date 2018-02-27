@@ -1,7 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
+import { test } from 'mapbox-gl-js-test';
+import proxyquire from 'proxyquire';
 
 const filterTests = (isEvalSupported) => (t) => {
     const filter = proxyquire('../../../src/style-spec/feature_filter', {

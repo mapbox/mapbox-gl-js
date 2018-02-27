@@ -1,13 +1,13 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const test = require('mapbox-gl-js-test').test;
-const VectorTileWorkerSource = require('../../../src/source/vector_tile_worker_source');
-const StyleLayerIndex = require('../../../src/style/style_layer_index');
-const perf = require('../../../src/util/performance');
+import fs from 'fs';
+import path from 'path';
+import vt from '@mapbox/vector-tile';
+import Protobuf from 'pbf';
+import { test } from 'mapbox-gl-js-test';
+import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_source';
+import StyleLayerIndex from '../../../src/style/style_layer_index';
+import perf from '../../../src/util/performance';
 
 test('abortTile', (t) => {
     t.test('aborts pending request', (t) => {

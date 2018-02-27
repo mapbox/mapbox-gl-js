@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const LngLat = require('../../../src/geo/lng_lat');
-const LngLatBounds = require('../../../src/geo/lng_lat_bounds');
+import { test } from 'mapbox-gl-js-test';
+import LngLat from '../../../src/geo/lng_lat';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds';
 
 test('LngLatBounds', (t) => {
     t.test('#constructor', (t) => {

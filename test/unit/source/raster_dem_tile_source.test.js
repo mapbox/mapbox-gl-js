@@ -1,8 +1,8 @@
 'use strict';
-const test = require('mapbox-gl-js-test').test;
-const RasterDEMTileSource = require('../../../src/source/raster_dem_tile_source');
-const window = require('../../../src/util/window');
-const {OverscaledTileID} = require('../../../src/source/tile_id');
+import { test } from 'mapbox-gl-js-test';
+import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
+import window from '../../../src/util/window';
+import { OverscaledTileID } from '../../../src/source/tile_id';
 
 function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, { send: function() {} }, options.eventedParent);

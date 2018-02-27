@@ -1,10 +1,12 @@
 'use strict';
+
 // @flow
 
-const test = require('mapbox-gl-js-test').test;
-const Coordinate = require('../../../src/geo/coordinate');
-const util = require('../../../src/util/util');
-const Point = require('@mapbox/point-geometry');
+import { test } from 'mapbox-gl-js-test';
+
+import Coordinate from '../../../src/geo/coordinate';
+import util from '../../../src/util/util';
+import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');

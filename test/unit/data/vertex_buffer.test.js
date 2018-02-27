@@ -1,9 +1,9 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const VertexBuffer = require('../../../src/gl/vertex_buffer');
-const {StructArrayLayout3i6} = require('../../../src/data/array_types');
-const Context = require('../../../src/gl/context');
+import { test } from 'mapbox-gl-js-test';
+import VertexBuffer from '../../../src/gl/vertex_buffer';
+import { StructArrayLayout3i6 } from '../../../src/data/array_types';
+import Context from '../../../src/gl/context';
 
 test('VertexBuffer', (t) => {
     class TestArray extends StructArrayLayout3i6 {}

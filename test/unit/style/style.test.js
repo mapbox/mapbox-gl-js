@@ -1,17 +1,17 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
-const Style = require('../../../src/style/style');
-const SourceCache = require('../../../src/source/source_cache');
-const StyleLayer = require('../../../src/style/style_layer');
-const Transform = require('../../../src/geo/transform');
-const util = require('../../../src/util/util');
-const {Event, Evented} = require('../../../src/util/evented');
-const window = require('../../../src/util/window');
-const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
-const ajax = require('../../../src/util/ajax');
-const browser = require('../../../src/util/browser');
+import { test } from 'mapbox-gl-js-test';
+import proxyquire from 'proxyquire';
+import Style from '../../../src/style/style';
+import SourceCache from '../../../src/source/source_cache';
+import StyleLayer from '../../../src/style/style_layer';
+import Transform from '../../../src/geo/transform';
+import util from '../../../src/util/util';
+import { Event, Evented } from '../../../src/util/evented';
+import window from '../../../src/util/window';
+import rtlTextPlugin from '../../../src/source/rtl_text_plugin';
+import ajax from '../../../src/util/ajax';
+import browser from '../../../src/util/browser';
 
 function createStyleJSON(properties) {
     return util.extend({

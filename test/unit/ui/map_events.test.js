@@ -1,9 +1,9 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const Map = require('../../../src/ui/map');
-const window = require('../../../src/util/window');
-const simulate = require('mapbox-gl-js-test/simulate_interaction');
+import { test } from 'mapbox-gl-js-test';
+import Map from '../../../src/ui/map';
+import window from '../../../src/util/window';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap() {
     return new Map({

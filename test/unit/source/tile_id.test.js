@@ -1,7 +1,7 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const {CanonicalTileID, OverscaledTileID} = require('../../../src/source/tile_id');
+import { test } from 'mapbox-gl-js-test';
+import { CanonicalTileID, OverscaledTileID } from '../../../src/source/tile_id';
 
 test('CanonicalTileID', (t) => {
     t.test('#constructor', (t) => {

@@ -1,9 +1,9 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
-const Dispatcher = require('../../../src/util/dispatcher');
-const WebWorker = require('../../../src/util/web_worker');
+import { test } from 'mapbox-gl-js-test';
+import proxyquire from 'proxyquire';
+import Dispatcher from '../../../src/util/dispatcher';
+import WebWorker from '../../../src/util/web_worker';
 
 test('Dispatcher', (t) => {
     t.test('requests and releases workers from pool', (t) => {

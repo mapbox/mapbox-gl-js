@@ -2,10 +2,10 @@
 
 'use strict';
 
-const {test} = require('mapbox-gl-js-test');
-const proxyquire = require('proxyquire');
-const parseGlyphPBF = require('../../../src/style/parse_glyph_pbf');
-const fs = require('fs');
+import { test } from 'mapbox-gl-js-test';
+import proxyquire from 'proxyquire';
+import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
+import fs from 'fs';
 
 const glyphs = {};
 for (const glyph of parseGlyphPBF(fs.readFileSync('./test/fixtures/0-255.pbf'))) {

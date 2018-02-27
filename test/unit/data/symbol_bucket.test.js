@@ -1,21 +1,21 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const fs = require('fs');
-const path = require('path');
-const Protobuf = require('pbf');
-const VectorTile = require('@mapbox/vector-tile').VectorTile;
-const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
-const {CollisionBoxArray} = require('../../../src/data/array_types');
-const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
-const util = require('../../../src/util/util');
-const featureFilter = require('../../../src/style-spec/feature_filter');
-const {performSymbolLayout} = require('../../../src/symbol/symbol_layout');
-const Placement = require('../../../src/symbol/placement');
-const Transform = require('../../../src/geo/transform');
-const {OverscaledTileID} = require('../../../src/source/tile_id');
-const Tile = require('../../../src/source/tile');
-const CrossTileSymbolIndex = require('../../../src/symbol/cross_tile_symbol_index');
+import { test } from 'mapbox-gl-js-test';
+import fs from 'fs';
+import path from 'path';
+import Protobuf from 'pbf';
+import { VectorTile } from '@mapbox/vector-tile';
+import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
+import { CollisionBoxArray } from '../../../src/data/array_types';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
+import util from '../../../src/util/util';
+import featureFilter from '../../../src/style-spec/feature_filter';
+import { performSymbolLayout } from '../../../src/symbol/symbol_layout';
+import Placement from '../../../src/symbol/placement';
+import Transform from '../../../src/geo/transform';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import Tile from '../../../src/source/tile';
+import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

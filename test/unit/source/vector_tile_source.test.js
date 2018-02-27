@@ -1,10 +1,10 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const VectorTileSource = require('../../../src/source/vector_tile_source');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
-const window = require('../../../src/util/window');
-const {Evented} = require('../../../src/util/evented');
+import { test } from 'mapbox-gl-js-test';
+import VectorTileSource from '../../../src/source/vector_tile_source';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import window from '../../../src/util/window';
+import { Evented } from '../../../src/util/evented';
 
 function createSource(options, transformCallback) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);

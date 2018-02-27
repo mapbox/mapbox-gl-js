@@ -1,8 +1,8 @@
 'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const {createFunction} = require('../../../src/style-spec/function');
-const Color = require('../../../src/style-spec/util/color');
+import { test } from 'mapbox-gl-js-test';
+import { createFunction } from '../../../src/style-spec/function';
+import Color from '../../../src/style-spec/util/color';
 
 test('binary search', (t) => {
     t.test('will eventually terminate.', (t) => {
