@@ -48,7 +48,7 @@
     "webworkify": "^1.5.0"
   },
   "devDependencies": {
-    "@mapbox/batfish": "^0.13.3",
+    "@mapbox/batfish": "^1.0.4",
     "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
     "@std/esm": "^0.21.7",
