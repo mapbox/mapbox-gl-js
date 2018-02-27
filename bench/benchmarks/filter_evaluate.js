@@ -6,7 +6,7 @@ import createFilter from '../../src/style-spec/feature_filter';
 import filters from '../data/filters.json';
 import assert from 'assert';
 
-module.exports = class FilterEvaluate extends Benchmark {
+export default class FilterEvaluate extends Benchmark {
     setup() {
         return fetch('/bench/data/785.vector.pbf')
             .then(response => response.arrayBuffer())

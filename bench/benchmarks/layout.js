@@ -16,7 +16,7 @@ import { normalizeStyleURL, normalizeSourceURL, normalizeTileURL } from '../../s
 import type {TileJSON} from '../../src/types/tilejson';
 
 // Note: this class is extended in turn by the LayoutDDS benchmark.
-module.exports = class Layout extends Benchmark {
+export default class Layout extends Benchmark {
     glyphs: Object;
     icons: Object;
     workerTile: WorkerTile;
@@ -130,4 +130,4 @@ module.exports = class Layout extends Benchmark {
 
         return promise;
     }
-};
+}

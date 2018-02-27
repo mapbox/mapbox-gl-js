@@ -103,7 +103,7 @@ class ExpressionEvaluate extends ExpressionBenchmark {
     }
 }
 
-module.exports = [
+export default [
     FunctionCreate,
     FunctionConvert,
     FunctionEvaluate,

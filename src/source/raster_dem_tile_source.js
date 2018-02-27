@@ -7,6 +7,8 @@ import { normalizeTileURL as normalizeURL } from '../util/mapbox';
 import browser from '../util/browser';
 import { OverscaledTileID } from './tile_id';
 import RasterTileSource from './raster_tile_source';
+// ensure DEMData is registered for worker transfer on main thread:
+import '../data/dem_data';
 
 import type {Source} from './source';
 import type Dispatcher from '../util/dispatcher';

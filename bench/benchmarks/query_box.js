@@ -6,7 +6,7 @@ const width = 1024;
 const height = 768;
 const zooms = [4, 8, 11, 13, 15, 17];
 
-module.exports = class QueryBox extends Benchmark {
+export default class QueryBox extends Benchmark {
     setup() {
         return Promise.all(zooms.map(zoom => {
             return createMap({

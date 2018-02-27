@@ -82,4 +82,4 @@ class Axis extends React.Component {
     }
 }
 
-module.exports = Axis;
+export default Axis;

@@ -17,7 +17,7 @@ for (let x = 0; x < d; x++) {
     }
 }
 
-module.exports = class QueryPoint extends Benchmark {
+export default class QueryPoint extends Benchmark {
     setup() {
         return Promise.all(zooms.map(zoom => {
             return createMap({

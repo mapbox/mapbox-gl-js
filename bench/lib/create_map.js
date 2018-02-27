@@ -4,7 +4,7 @@ import Map from '../../src/ui/map';
 
 import browser from '../../src/util/browser';
 
-module.exports = function (options: any): Promise<Map> {
+export default function (options: any): Promise<Map> {
     return new Promise((resolve, reject) => {
         const container = document.createElement('div');
         container.style.width = `${options.width || 512}px`;
