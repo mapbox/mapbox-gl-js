@@ -7,8 +7,7 @@ import LeftNav from '../components/left_nav';
 import TopNav from '../components/top_nav';
 import {highlightJavascript, highlightJSON, highlightMarkup} from '../components/prism_highlight';
 import entries from 'object.entries';
-
-const ref = require('../../src/style-spec/reference/latest');
+import ref from '../../src/style-spec/reference/latest';
 
 const meta = {
     title: 'Mapbox Style Specification',
