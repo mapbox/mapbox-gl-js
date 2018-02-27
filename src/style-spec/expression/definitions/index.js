@@ -543,14 +543,14 @@ CompoundExpression.register(expressions, {
                 (ctx, [r, s]) => {
                     const m = RegExp(r.evaluate(ctx)).exec(s.evaluate(ctx));
                     /* Slice will make a new array without the extra attributes of the match object */
-                    return (m !== null)? m.slice(): null;
+                    return (m !== null) ? m.slice() : null;
                 }
             ], [
                 [StringType, StringType, StringType],
                 (ctx, [r, f, s]) => {
                     const m = RegExp(r.evaluate(ctx), f.evaluate(ctx)).exec(s.evaluate(ctx));
                     /* Slice will make a new array without the extra attributes of the match object */
-                    return (m !== null)? m.slice(): null;
+                    return (m !== null) ? m.slice() : null;
                 }
             ]
         ]
