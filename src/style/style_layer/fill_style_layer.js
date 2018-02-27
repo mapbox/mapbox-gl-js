@@ -29,7 +29,8 @@ class FillStyleLayer extends StyleLayer {
     recalculate(parameters: EvaluationParameters) {
         this.paint = this._transitioningPaint.possiblyEvaluate(parameters);
 
-        if (this._transitionablePaint.getValue('fill-outline-color') === undefined) {
+        const outlineColor = this.paint._values['fill-outline-color'];
+        if (outlineColor.value.kind === 'constant' && outlineColor.value.value === undefined) {
             this.paint._values['fill-outline-color'] = this.paint._values['fill-color'];
         }
     }
