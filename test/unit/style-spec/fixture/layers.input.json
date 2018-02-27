@@ -8,6 +8,10 @@
     "raster": {
       "type": "raster",
       "url": "mapbox://mapbox.mapbox-satellite"
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {}
     }
   },
   "layers": [
@@ -99,6 +103,34 @@
       "source": "vector",
       "source-layer": "source-layer",
       "interactive": true
+    },
+    {
+      "id": "line-gradient-bad",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "paint": {
+        "line-gradient": [
+          "interpolate",
+          ["linear"],
+          ["line-progress"],
+          0, "#000000"
+        ]
+      }
+    },
+    {
+      "id": "line-gradient-good",
+      "type": "line",
+      "source": "geojson",
+      "source-layer": "source-layer",
+      "paint": {
+        "line-gradient": [
+          "interpolate",
+          ["linear"],
+          ["line-progress"],
+          0, "#000000"
+        ]
+      }
     }
   ]
 }

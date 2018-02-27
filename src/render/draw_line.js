@@ -5,7 +5,6 @@ import browser from '../util/browser';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import DepthMode from '../gl/depth_mode';
 import Texture from './texture';
-import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -113,16 +112,14 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         }
     }
 
-    const hasGradient = !!layer.paint.get('line-gradient');
-
-    context.setStencilMode(hasGradient ? StencilMode.disabled : painter.stencilModeForClipping(coord));
+    context.setStencilMode(painter.stencilModeForClipping(coord));
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
 
     gl.uniform1f(program.uniforms.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
 
-    if (hasGradient) {
+    if (layer.paint.get('line-gradient')) {
         context.activeTexture.set(gl.TEXTURE0);
 
         let gradientTexture = layer.gradientTexture;

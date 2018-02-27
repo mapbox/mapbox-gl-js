@@ -68,6 +68,8 @@ export default function validateLayer(options) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id}" must specify a "source-layer"`));
             } else if (sourceType === 'raster-dem' && type !== 'hillshade') {
                 errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
+            } else if (sourceType !== 'geojson' && type === 'line' && layer.paint && layer.paint['line-gradient']) {
+                errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires a GeoJSON source`));
             }
         }
     }
