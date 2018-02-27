@@ -91,7 +91,7 @@ class ParsingContext {
                     // When we expect a Color but have a String or Value, we
                     // can wrap it in "to-color" coercion.
                     // Otherwise, we do static type-checking.
-                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean') && actual.kind === 'value') {
+                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object') && actual.kind === 'value') {
                         if (!options.omitTypeAnnotations) {
                             parsed = new Assertion(expected, [parsed]);
                         }
