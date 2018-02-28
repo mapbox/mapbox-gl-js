@@ -51,6 +51,8 @@ export type StylePropertySpecification = {
 };
 
 import v8 from './reference/v8.json';
+export {v8};
+
 import latest from './reference/latest';
 import format from './format';
 import migrate from './migrate';
@@ -67,7 +69,6 @@ import convertFunction from './function/convert';
 import validate from './validate_style';
 
 export const exported = {
-    v8,
     latest,
     format,
     migrate,
