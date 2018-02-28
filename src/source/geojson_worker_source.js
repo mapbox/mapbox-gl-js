@@ -52,7 +52,7 @@ function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataC
 
     const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
 
-    // Encode the geojson-vt tile into binary vector tile form form.  This
+    // Encode the geojson-vt tile into binary vector tile form.  This
     // is a convenience that allows `FeatureIndex` to operate the same way
     // across `VectorTileSource` and `GeoJSONSource` data.
     let pbf = vtpbf(geojsonWrapper);
