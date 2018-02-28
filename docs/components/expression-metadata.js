@@ -1,6 +1,6 @@
 import ref from '../../src/style-spec/reference/latest';
 import { toString } from '../../src/style-spec/expression/types';
-import { CompoundExpression } from '../../src/style-spec/expression/compound_expression';
+import CompoundExpression from '../../src/style-spec/expression/compound_expression';
 
 // registers compound expressions
 import '../../src/style-spec/expression/definitions/index';

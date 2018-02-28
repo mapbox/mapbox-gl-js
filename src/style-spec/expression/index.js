@@ -6,7 +6,7 @@ import extend from '../util/extend';
 import ParsingError from './parsing_error';
 import ParsingContext from './parsing_context';
 import EvaluationContext from './evaluation_context';
-import { CompoundExpression } from './compound_expression';
+import CompoundExpression from './compound_expression';
 import Step from './definitions/step';
 import Interpolate from './definitions/interpolate';
 import Coalesce from './definitions/coalesce';

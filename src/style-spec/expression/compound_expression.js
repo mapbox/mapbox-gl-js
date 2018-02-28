@@ -10,7 +10,7 @@ import type { Expression, ExpressionRegistry } from './expression';
 import type { Type } from './types';
 import type { Value } from './values';
 
-type Varargs = {| type: Type |};
+export type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;
 type Evaluate = (EvaluationContext, Array<Expression>) => Value;
 type Definition = [Type, Signature, Evaluate] |
@@ -134,10 +134,6 @@ class CompoundExpression implements Expression {
     }
 }
 
-function varargs(type: Type): Varargs {
-    return { type };
-}
-
 function stringifySignature(signature: Signature): string {
     if (Array.isArray(signature)) {
         return `(${signature.map(toString).join(', ')})`;
@@ -146,11 +142,4 @@ function stringifySignature(signature: Signature): string {
     }
 }
 
-const exported = {
-    CompoundExpression,
-    varargs
-};
-
-export default exported;
-export { CompoundExpression, varargs };
-
+export default CompoundExpression;

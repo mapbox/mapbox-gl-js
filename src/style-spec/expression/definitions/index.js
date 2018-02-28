@@ -3,7 +3,7 @@
 import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, array, toString } from '../types';
 
 import { typeOf, Color, validateRGBA } from '../values';
-import { CompoundExpression, varargs } from '../compound_expression';
+import CompoundExpression from '../compound_expression';
 import RuntimeError from '../runtime_error';
 import Let from './let';
 import Var from './var';
@@ -20,6 +20,8 @@ import Coalesce from './coalesce';
 import { Equals, NotEquals } from './equals';
 import Length from './length';
 
+import type { Type } from '../types';
+import type { Varargs } from '../compound_expression';
 import type { ExpressionRegistry } from '../expression';
 
 const expressions: ExpressionRegistry = {
@@ -82,6 +84,9 @@ function binarySearch(v, a, i, j) {
     return false;
 }
 
+function varargs(type: Type): Varargs {
+    return { type };
+}
 
 CompoundExpression.register(expressions, {
     'error': [

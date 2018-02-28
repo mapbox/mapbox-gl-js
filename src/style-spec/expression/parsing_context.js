@@ -9,7 +9,7 @@ import Assertion from './definitions/assertion';
 import ArrayAssertion from './definitions/array';
 import Coercion from './definitions/coercion';
 import EvaluationContext from './evaluation_context';
-import {CompoundExpression} from './compound_expression';
+import CompoundExpression from './compound_expression';
 import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
 import Var from './definitions/var';
 
