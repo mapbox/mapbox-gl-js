@@ -3,10 +3,10 @@
 import ValidationError from '../error/validation_error';
 
 import { createExpression, createPropertyExpression } from '../expression';
-import unbundle from '../util/unbundle_jsonlint';
+import { deepUnbundle } from '../util/unbundle_jsonlint';
 
 export default function validateExpression(options: any) {
-    const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(unbundle.deep(options.value), options.valueSpec);
+    const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
     if (expression.result === 'error') {
         return expression.value.map((error) => {
             return new ValidationError(`${options.key}${error.key}`, options.value, error.message);

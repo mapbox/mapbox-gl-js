@@ -1,8 +1,10 @@
 import { test } from 'mapbox-gl-js-test';
 import Light from '../../../src/style/light';
-import { light as spec } from '../../../src/style-spec/reference/latest';
+import styleSpec from '../../../src/style-spec/reference/latest';
 import Color from '../../../src/style-spec/util/color';
 import { sphericalToCartesian } from '../../../src/util/util';
+
+const spec = styleSpec.light;
 
 test('Light with defaults', (t) => {
     const light = new Light({});

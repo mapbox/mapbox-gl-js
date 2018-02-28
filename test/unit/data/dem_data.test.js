@@ -1,5 +1,4 @@
 import { test } from 'mapbox-gl-js-test';
-import util from '../../../src/util/util';
 import { DEMData, Level } from '../../../src/data/dem_data';
 import { RGBAImage } from '../../../src/util/image';
 import { serialize, deserialize } from '../../../src/util/web_worker_transfer';
@@ -78,13 +77,13 @@ test('DEMData', (t) => {
 
     t.test('loadFromImage with invalid encoding', (t) => {
         const dem = new DEMData(0, 1);
-        t.stub(util, 'warnOnce');
+        t.stub(console, 'warn');
         t.false(dem.loaded);
         t.equal(dem.uid, 0);
 
         dem.loadFromImage({width: 4, height: 4, data: new Uint8ClampedArray(4 * 4 * 4)}, "derp");
-        t.ok(util.warnOnce.calledOnce);
-        t.ok(util.warnOnce.getCall(0).calledWithMatch(/"derp" is not a valid encoding type/));
+        t.ok(console.warn.calledOnce);
+        t.ok(console.warn.getCall(0).calledWithMatch(/"derp" is not a valid encoding type/));
         t.end();
     });
 

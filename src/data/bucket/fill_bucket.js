@@ -3,7 +3,7 @@
 import { FillLayoutArray } from '../array_types';
 
 import { members as layoutAttributes } from './fill_attributes';
-import { SegmentVector } from '../segment';
+import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
 import { LineIndexArray, TriangleIndexArray } from '../index_array_type';
 import loadGeometry from '../load_geometry';

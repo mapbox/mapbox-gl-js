@@ -6,7 +6,6 @@ import { VectorTile } from '@mapbox/vector-tile';
 import SymbolBucket from '../../../src/data/bucket/symbol_bucket';
 import { CollisionBoxArray } from '../../../src/data/array_types';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
-import util from '../../../src/util/util';
 import featureFilter from '../../../src/style-spec/feature_filter';
 import { performSymbolLayout } from '../../../src/symbol/symbol_layout';
 import Placement from '../../../src/symbol/placement';
@@ -83,7 +82,7 @@ test('SymbolBucket', (t) => {
 });
 
 test('SymbolBucket integer overflow', (t) => {
-    t.stub(util, 'warnOnce');
+    t.stub(console, 'warn');
     t.stub(SymbolBucket, 'MAX_GLYPHS').value(5);
 
     const bucket = bucketSetup();
@@ -93,7 +92,7 @@ test('SymbolBucket integer overflow', (t) => {
     const fakeGlyph = { rect: { w: 10, h: 10 }, metrics: { left: 10, top: 10, advance: 10 } };
     performSymbolLayout(bucket, stacks, { 'Test': {97: fakeGlyph, 98: fakeGlyph, 99: fakeGlyph, 100: fakeGlyph, 101: fakeGlyph, 102: fakeGlyph} });
 
-    t.ok(util.warnOnce.calledOnce);
-    t.ok(util.warnOnce.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
+    t.ok(console.warn.calledOnce);
+    t.ok(console.warn.getCall(0).calledWithMatch(/Too many glyphs being rendered in a tile./));
     t.end();
 });

@@ -1,25 +1,41 @@
 import { test } from 'mapbox-gl-js-test';
-import proxyquire from 'proxyquire';
+import fs from 'fs';
+import path from 'path';
+import window from '../../../src/util/window';
+import loadGlyphRange from '../../../src/style/load_glyph_range';
 
 test('loadGlyphRange', (t) => {
-    const transform = t.stub().callsFake((url) => ({url}));
-    const data = {};
-    const getArrayBuffer = t.stub().yields(null, {data});
-    const parseGlyphPBF = t.stub().returns([]);
+    window.useFakeXMLHttpRequest();
 
-    const loadGlyphRange = proxyquire('../../../src/style/load_glyph_range', {
-        '../util/ajax': {getArrayBuffer},
-        './parse_glyph_pbf': parseGlyphPBF
+    t.tearDown(() => {
+        window.restore();
     });
 
-    loadGlyphRange('Arial Unicode MS', 0, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf', transform, (err) => {
+    const transform = t.stub().callsFake((url) => ({url}));
+
+    let request;
+    window.XMLHttpRequest.onCreate = (req) => { request = req; };
+
+    loadGlyphRange('Arial Unicode MS', 0, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf', transform, (err, result) => {
         t.ifError(err);
         t.ok(transform.calledOnce);
         t.deepEqual(transform.getCall(0).args, ['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
-        t.ok(getArrayBuffer.calledOnce);
-        t.deepEqual(getArrayBuffer.getCall(0).args[0], {url: 'https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf'});
-        t.ok(parseGlyphPBF.calledOnce);
-        t.deepEqual(parseGlyphPBF.getCall(0).args, [data]);
+
+        t.equal(Object.keys(result).length, 223);
+        for (const id in result) {
+            t.equal(result[id].id, Number(id));
+            t.ok(result[id].metrics);
+            t.equal(typeof result[id].metrics.width, 'number');
+            t.equal(typeof result[id].metrics.height, 'number');
+            t.equal(typeof result[id].metrics.top, 'number');
+            t.equal(typeof result[id].metrics.advance, 'number');
+        }
         t.end();
     });
+
+    t.equal(request.url, 'https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf');
+    request.setStatus(200);
+    request.response = fs.readFileSync(path.join(__dirname, '../../fixtures/0-255.pbf'));
+    request.onload();
+
 });

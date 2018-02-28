@@ -3,7 +3,12 @@
 import { endsWith, filterObject } from '../util/util';
 
 import styleSpec from '../style-spec/reference/latest';
-import validateStyle, {emitValidationErrors} from './validate_style';
+import {
+    validateStyle,
+    validateLayoutProperty,
+    validatePaintProperty,
+    emitValidationErrors
+} from './validate_style';
 import { Evented } from '../util/evented';
 import { Layout, Transitionable, Transitioning, Properties } from './properties';
 
@@ -90,7 +95,7 @@ class StyleLayer extends Evented {
     setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
-            if (this._validate(validateStyle.layoutProperty, key, name, value, options)) {
+            if (this._validate(validateLayoutProperty, key, name, value, options)) {
                 return;
             }
         }
@@ -114,7 +119,7 @@ class StyleLayer extends Evented {
     setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.paint.${name}`;
-            if (this._validate(validateStyle.paintProperty, key, name, value, options)) {
+            if (this._validate(validatePaintProperty, key, name, value, options)) {
                 return;
             }
         }

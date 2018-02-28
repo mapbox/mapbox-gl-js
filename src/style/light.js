@@ -4,7 +4,11 @@ import styleSpec from '../style-spec/reference/latest';
 
 import { endsWith, extend } from '../util/util';
 import { Evented } from '../util/evented';
-import validateStyle, {emitValidationErrors} from './validate_style';
+import {
+    validateStyle,
+    validateLight,
+    emitValidationErrors
+} from './validate_style';
 import { sphericalToCartesian } from '../util/util';
 import Color from '../style-spec/util/color';
 import interpolate from '../style-spec/util/interpolate';
@@ -82,7 +86,7 @@ class Light extends Evented {
     }
 
     setLight(options?: LightSpecification) {
-        if (this._validate(validateStyle.light, options)) {
+        if (this._validate(validateLight, options)) {
             return;
         }
 

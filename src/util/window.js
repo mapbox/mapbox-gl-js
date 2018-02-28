@@ -6,12 +6,17 @@ import gl from 'gl';
 import sinon from 'sinon';
 import { extend } from './util';
 
-const exported = restore();
-export default exported;
+const { window: _window } = new jsdom.JSDOM('', {
+    virtualConsole: new jsdom.VirtualConsole().sendTo(console)
+});
+
+restore();
+
+export default _window;
 
 function restore(): Window {
     // Remove previous window from exported object
-    const previousWindow = exported;
+    const previousWindow = _window;
     if (previousWindow.close) previousWindow.close();
     for (const key in previousWindow) {
         if (previousWindow.hasOwnProperty(key)) {
@@ -62,7 +67,7 @@ function restore(): Window {
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
     window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
-    extend(exported, window);
+    extend(_window, window);
 
     return window;
 }

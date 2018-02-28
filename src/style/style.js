@@ -15,7 +15,7 @@ import { getJSON, ResourceType } from '../util/ajax';
 import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
-import validateStyle, { emitValidationErrors } from './validate_style';
+import { validateStyle, emitValidationErrors } from './validate_style';
 import { getType as getSourceType } from '../source/source';
 import { setType as setSourceType } from '../source/source';
 import { queryRenderedFeatures, querySourceFeatures } from '../source/query_features';
@@ -100,6 +100,11 @@ class Style extends Evented {
     placement: Placement;
     z: number;
 
+    // exposed to allow stubbing by unit tests
+    static getSourceType: typeof getSourceType;
+    static setSourceType: typeof setSourceType;
+    static registerForPluginAvailability: typeof registerForPluginAvailability;
+
     constructor(map: Map, options: StyleOptions = {}) {
         super();
 
@@ -119,7 +124,7 @@ class Style extends Evented {
         this._resetUpdates();
 
         const self = this;
-        this._rtlTextPluginCallback = registerForPluginAvailability((args) => {
+        this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
             self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.errorCallback);
             for (const id in self.sourceCaches) {
                 self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
@@ -182,7 +187,7 @@ class Style extends Evented {
     }
 
     _load(json: StyleSpecification, validate: boolean) {
-        if (validate && validateStyle.emitErrors(this, validateStyle(json))) {
+        if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
         }
 
@@ -382,7 +387,7 @@ class Style extends Evented {
     setState(nextState: StyleSpecification) {
         this._checkLoaded();
 
-        if (validateStyle.emitErrors(this, validateStyle(nextState))) return false;
+        if (emitValidationErrors(this, validateStyle(nextState))) return false;
 
         nextState = clone(nextState);
         nextState.layers = deref(nextState.layers);
@@ -840,11 +845,11 @@ class Style extends Evented {
     }
 
     addSourceType(name: string, SourceType: Class<Source>, callback: Callback<void>) {
-        if (getSourceType(name)) {
+        if (Style.getSourceType(name)) {
             return callback(new Error(`A source type called "${name}" already exists.`));
         }
 
-        setSourceType(name, SourceType);
+        Style.setSourceType(name, SourceType);
 
         if (!SourceType.workerSourceURL) {
             return callback(null, null);
@@ -1004,5 +1009,9 @@ class Style extends Evented {
         this.glyphManager.getGlyphs(params.stacks, callback);
     }
 }
+
+Style.getSourceType = getSourceType;
+Style.setSourceType = setSourceType;
+Style.registerForPluginAvailability = registerForPluginAvailability;
 
 export default Style;

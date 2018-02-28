@@ -6,7 +6,7 @@ import GeolocateControl from '../../../../src/ui/control/geolocate_control';
 // window and navigator globals need to be set for mock-geolocation
 global.window = {};
 global.navigator = {};
-import geolocation from 'mock-geolocation';
+const geolocation = require('mock-geolocation');
 geolocation.use();
 
 // assign the mock geolocation to window

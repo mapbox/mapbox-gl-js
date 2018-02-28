@@ -1,5 +1,5 @@
 import { test } from 'mapbox-gl-js-test';
-import util from '../../../src/util/util';
+import { extend } from '../../../src/util/util';
 import window from '../../../src/util/window';
 import Map from '../../../src/ui/map';
 import LngLat from '../../../src/geo/lng_lat';
@@ -16,7 +16,7 @@ function createMap(options, callback) {
     Object.defineProperty(container, 'offsetWidth', {value: 200, configurable: true});
     Object.defineProperty(container, 'offsetHeight', {value: 200, configurable: true});
 
-    const map = new Map(util.extend({
+    const map = new Map(extend({
         container: container,
         interactive: false,
         attributionControl: false,
@@ -330,7 +330,7 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.addSource('geojson', createStyleSource());
-                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
                     sources: {geojson: createStyleSource()}
                 }));
                 t.end();
@@ -360,7 +360,7 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.addLayer(layer);
-                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
                     layers: [layer]
                 }));
                 t.end();
@@ -380,7 +380,7 @@ test('Map', (t) => {
             map.on('load', () => {
                 map.addSource('fill', source);
                 map.addLayer(layer);
-                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
                     sources: { fill: source },
                     layers: [layer]
                 }));
@@ -420,7 +420,7 @@ test('Map', (t) => {
 
     t.test('#moveLayer', (t) => {
         const map = createMap({
-            style: util.extend(createStyle(), {
+            style: extend(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',
@@ -459,7 +459,7 @@ test('Map', (t) => {
             'source-layer': 'sourceLayer'
         };
         const map = createMap({
-            style: util.extend(createStyle(), {
+            style: extend(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',
@@ -1267,7 +1267,7 @@ test('Map', (t) => {
 
     t.test('#removeLayer restores Map#loaded() to true', (t) => {
         const map = createMap({
-            style: util.extend(createStyle(), {
+            style: extend(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',

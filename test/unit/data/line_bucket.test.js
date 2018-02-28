@@ -98,6 +98,8 @@ test('LineBucket', (t) => {
 });
 
 test('LineBucket segmentation', (t) => {
+    t.stub(console, 'warn');
+
     // Stub MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
     t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
@@ -130,6 +132,8 @@ test('LineBucket segmentation', (t) => {
         primitiveOffset: 18,
         primitiveLength: 254
     }]);
+
+    t.equal(console.warn.callCount, 1);
 
     t.end();
 });

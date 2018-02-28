@@ -1,6 +1,6 @@
 
 import ValidationError from '../error/validation_error';
-import unbundle from '../util/unbundle_jsonlint';
+import { unbundle } from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateFilter from './validate_filter';
 import validatePaintProperty from './validate_paint_property';

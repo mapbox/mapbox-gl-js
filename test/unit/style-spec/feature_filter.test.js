@@ -1,11 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
-import proxyquire from 'proxyquire';
+import filter from '../../../src/style-spec/feature_filter';
 
-const filterTests = (isEvalSupported) => (t) => {
-    const filter = proxyquire('../../../src/style-spec/feature_filter', {
-        '../util/eval_support': isEvalSupported
-    });
-
+test('filter', (t) => {
     t.test('expression, zoom', (t) => {
         const f = filter(['>=', ['number', ['get', 'x']], ['zoom']]);
         t.equal(f({zoom: 1}, {properties: {x: 0}}), false);
@@ -499,7 +495,4 @@ const filterTests = (isEvalSupported) => (t) => {
     });
 
     t.end();
-};
-
-test('filter - eval supported', filterTests(true));
-test('filter - eval not supported', filterTests(false));
+});

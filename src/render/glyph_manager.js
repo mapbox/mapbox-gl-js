@@ -24,6 +24,10 @@ class GlyphManager {
     entries: {[string]: Entry};
     url: ?string;
 
+    // exposed as statics to enable stubbing in unit tests
+    static loadGlyphRange: typeof loadGlyphRange;
+    static TinySDF: Class<TinySDF>;
+
     constructor(requestTransform: RequestTransformFunction, localIdeographFontFamily: ?string) {
         this.requestTransform = requestTransform;
         this.localIdeographFontFamily = localIdeographFontFamily;
@@ -73,7 +77,7 @@ class GlyphManager {
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];
-                loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
+                GlyphManager.loadGlyphRange(stack, range, (this.url: any), this.requestTransform,
                     (err, response: ?{[number]: StyleGlyph | null}) => {
                         if (response) {
                             for (const id in response) {
@@ -134,7 +138,7 @@ class GlyphManager {
             } else if (/light/i.test(stack)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, family, fontWeight);
+            tinySDF = entry.tinySDF = new GlyphManager.TinySDF(24, 3, 8, .25, family, fontWeight);
         }
 
         return {
@@ -150,5 +154,8 @@ class GlyphManager {
         };
     }
 }
+
+GlyphManager.loadGlyphRange = loadGlyphRange;
+GlyphManager.TinySDF = TinySDF;
 
 export default GlyphManager;

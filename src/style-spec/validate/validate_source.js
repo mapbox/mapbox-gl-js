@@ -1,6 +1,6 @@
 
 import ValidationError from '../error/validation_error';
-import unbundle from '../util/unbundle_jsonlint';
+import { unbundle } from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
 

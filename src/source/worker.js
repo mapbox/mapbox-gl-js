@@ -190,6 +190,10 @@ export default class Worker {
     }
 }
 
-/* global self */
-new Worker(self);
+/* global self, WorkerGlobalScope */
+if (typeof WorkerGlobalScope !== 'undefined' &&
+    typeof self !== 'undefined' &&
+    self instanceof WorkerGlobalScope) {
+    new Worker(self);
+}
 

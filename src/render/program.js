@@ -8,7 +8,7 @@ import { ProgramConfiguration } from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
 import Context from '../gl/context';
 
-import type {SegmentVector} from '../data/segment';
+import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 

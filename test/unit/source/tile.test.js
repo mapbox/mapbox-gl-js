@@ -7,7 +7,7 @@ import path from 'path';
 import vtpbf from 'vt-pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import { CollisionBoxArray } from '../../../src/data/array_types';
-import util from '../../../src/util/util';
+import { extend } from '../../../src/util/util';
 import Context from '../../../src/gl/context';
 import { serialize } from '../../../src/util/web_worker_transfer';
 
@@ -307,7 +307,7 @@ function createRawTileData() {
 
 function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
-    return util.extend({
+    return extend({
         collisionBoxArray: serialize(collisionBoxArray),
         featureIndex: serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1))),
         buckets: []

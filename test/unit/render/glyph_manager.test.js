@@ -1,6 +1,6 @@
 import { test } from 'mapbox-gl-js-test';
-import proxyquire from 'proxyquire';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
+import GlyphManager from '../../../src/render/glyph_manager';
 import fs from 'fs';
 
 const glyphs = {};
@@ -10,14 +10,12 @@ for (const glyph of parseGlyphPBF(fs.readFileSync('./test/fixtures/0-255.pbf')))
 
 test('GlyphManager requests 0-255 PBF', (t) => {
     const identityTransform = (url) => ({url});
-    const GlyphManager = proxyquire('../../../src/render/glyph_manager', {
-        '../style/load_glyph_range': (stack, range, urlTemplate, transform, callback) => {
-            t.equal(stack, 'Arial Unicode MS');
-            t.equal(range, 0);
-            t.equal(urlTemplate, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf');
-            t.equal(transform, identityTransform);
-            setImmediate(() => callback(null, glyphs));
-        }
+    t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
+        t.equal(stack, 'Arial Unicode MS');
+        t.equal(range, 0);
+        t.equal(urlTemplate, 'https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+        t.equal(transform, identityTransform);
+        setImmediate(() => callback(null, glyphs));
     });
 
     const manager = new GlyphManager(identityTransform);
@@ -31,10 +29,8 @@ test('GlyphManager requests 0-255 PBF', (t) => {
 });
 
 test('GlyphManager requests remote CJK PBF', (t) => {
-    const GlyphManager = proxyquire('../../../src/render/glyph_manager', {
-        '../style/load_glyph_range': (stack, range, urlTemplate, transform, callback) => {
-            setImmediate(() => callback(null, glyphs));
-        }
+    t.stub(GlyphManager, 'loadGlyphRange').callsFake((stack, range, urlTemplate, transform, callback) => {
+        setImmediate(() => callback(null, glyphs));
     });
 
     const manager = new GlyphManager((url) => ({url}));
@@ -48,10 +44,10 @@ test('GlyphManager requests remote CJK PBF', (t) => {
 });
 
 test('GlyphManager generates CJK PBF locally', (t) => {
-    const GlyphManager = proxyquire('../../../src/render/glyph_manager', {
-        '@mapbox/tiny-sdf': class {
-            // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
-            draw() { return new Uint8ClampedArray(900); }
+    t.stub(GlyphManager, 'TinySDF').value(class {
+        // Return empty 30x30 bitmap (24 fontsize + 3 * 2 buffer)
+        draw() {
+            return new Uint8ClampedArray(900);
         }
     });
 

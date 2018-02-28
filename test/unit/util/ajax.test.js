@@ -1,5 +1,8 @@
 import { test } from 'mapbox-gl-js-test';
-import ajax from '../../../src/util/ajax';
+import {
+    getArrayBuffer,
+    getJSON
+} from '../../../src/util/ajax';
 import window from '../../../src/util/window';
 
 test('ajax', (t) => {
@@ -17,7 +20,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'image/png'}, '');
         });
-        ajax.getArrayBuffer({ url:'' }, (error) => {
+        getArrayBuffer({ url:'' }, (error) => {
             t.pass('called getArrayBuffer');
             t.ok(error, 'should error when the status is 200 without content.');
             t.end();
@@ -29,7 +32,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
         });
-        ajax.getArrayBuffer({ url:'' }, (error) => {
+        getArrayBuffer({ url:'' }, (error) => {
             t.equal(error.status, 404);
             t.end();
         });
@@ -40,7 +43,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'application/json'}, '{"foo": "bar"}');
         });
-        ajax.getJSON({ url:'' }, (error, body) => {
+        getJSON({ url:'' }, (error, body) => {
             t.error(error);
             t.deepEqual(body, {foo: 'bar'});
             t.end();
@@ -52,7 +55,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(200, {'Content-Type': 'application/json'}, 'how do i even');
         });
-        ajax.getJSON({ url:'' }, (error) => {
+        getJSON({ url:'' }, (error) => {
             t.ok(error);
             t.end();
         });
@@ -63,7 +66,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(404);
         });
-        ajax.getJSON({ url:'' }, (error) => {
+        getJSON({ url:'' }, (error) => {
             t.equal(error.status, 404);
             t.end();
         });

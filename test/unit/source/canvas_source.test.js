@@ -2,7 +2,7 @@ import { test } from 'mapbox-gl-js-test';
 import CanvasSource from '../../../src/source/canvas_source';
 import Transform from '../../../src/geo/transform';
 import { Event, Evented } from '../../../src/util/evented';
-import util from '../../../src/util/util';
+import { extend } from '../../../src/util/util';
 import window from '../../../src/util/window';
 
 function createSource(options) {
@@ -12,7 +12,7 @@ function createSource(options) {
     c.width = 20;
     c.height = 20;
 
-    options = util.extend({
+    options = extend({
         canvas: 'id',
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);

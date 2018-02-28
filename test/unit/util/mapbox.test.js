@@ -1,5 +1,5 @@
 import { test } from 'mapbox-gl-js-test';
-import mapbox from '../../../src/util/mapbox';
+import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
 import browser from '../../../src/util/browser';
 import window from '../../../src/util/window';

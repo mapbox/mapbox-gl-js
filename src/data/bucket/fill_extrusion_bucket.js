@@ -3,7 +3,7 @@
 import { FillExtrusionLayoutArray } from '../array_types';
 
 import { members as layoutAttributes } from './fill_extrusion_attributes';
-import { SegmentVector, MAX_VERTEX_ARRAY_LENGTH } from '../segment';
+import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray } from '../index_array_type';
 import loadGeometry from '../load_geometry';
@@ -127,7 +127,7 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
-                            if (segment.vertexLength + 4 > MAX_VERTEX_ARRAY_LENGTH) {
+                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
 
@@ -155,7 +155,7 @@ class FillExtrusionBucket implements Bucket {
                 }
             }
 
-            if (segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
+            if (segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                 segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 

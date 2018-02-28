@@ -1,17 +1,15 @@
 import { test } from 'mapbox-gl-js-test';
-import proxyquire from 'proxyquire';
 import Actor from '../../../src/util/actor';
+import WebWorker from '../../../src/util/web_worker';
 
 test('Actor', (t) => {
     t.test('forwards resopnses to correct callback', (t) => {
-        const WebWorker = proxyquire('../../../src/util/web_worker', {
-            '../source/worker': function Worker(self) {
-                this.self = self;
-                this.actor = new Actor(self, this);
-                this.test = function (mapId, params, callback) {
-                    setTimeout(callback, 0, null, params);
-                };
-            }
+        t.stub(WebWorker, 'Worker').callsFake(function Worker(self) {
+            this.self = self;
+            this.actor = new Actor(self, this);
+            this.test = function (mapId, params, callback) {
+                setTimeout(callback, 0, null, params);
+            };
         });
 
         const worker = new WebWorker();
@@ -33,12 +31,11 @@ test('Actor', (t) => {
     t.test('targets worker-initiated messages to correct map instance', (t) => {
         let workerActor;
 
-        const WebWorker = proxyquire('../../../src/util/web_worker', {
-            '../source/worker': function Worker(self) {
-                this.self = self;
-                this.actor = workerActor = new Actor(self, this);
-            }
+        t.stub(WebWorker, 'Worker').callsFake(function Worker(self) {
+            this.self = self;
+            this.actor = workerActor = new Actor(self, this);
         });
+
         const worker = new WebWorker();
 
         new Actor(worker, {

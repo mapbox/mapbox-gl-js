@@ -17,6 +17,9 @@ class Dispatcher {
     currentActor: number;
     id: number;
 
+    // exposed to allow stubbing in unit tests
+    static Actor: Class<Actor>;
+
     constructor(workerPool: WorkerPool, parent: any) {
         this.workerPool = workerPool;
         this.actors = [];
@@ -25,7 +28,7 @@ class Dispatcher {
         const workers = this.workerPool.acquire(this.id);
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
-            const actor = new Actor(worker, parent, this.id);
+            const actor = new Dispatcher.Actor(worker, parent, this.id);
             actor.name = `Worker ${i}`;
             this.actors.push(actor);
         }
@@ -62,5 +65,7 @@ class Dispatcher {
         this.workerPool.release(this.id);
     }
 }
+
+Dispatcher.Actor = Actor;
 
 export default Dispatcher;

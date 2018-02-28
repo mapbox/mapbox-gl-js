@@ -186,6 +186,10 @@ function serialize(input: mixed, transferables?: Array<Transferable>): Serialize
                     property :
                     serialize(property, transferables);
             }
+
+            if (input instanceof Error) {
+                properties.message = input.message;
+            }
         }
 
         return {name, properties};

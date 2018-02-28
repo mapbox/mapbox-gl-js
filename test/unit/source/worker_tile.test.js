@@ -3,7 +3,6 @@ import WorkerTile from '../../../src/source/worker_tile';
 import Wrapper from '../../../src/source/geojson_wrapper';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import StyleLayerIndex from '../../../src/style/style_layer_index';
-import util from '../../../src/util/util';
 
 function createWorkerTile() {
     return new WorkerTile({
@@ -88,12 +87,12 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', (t)
         }
     };
 
-    t.stub(util, 'warnOnce');
+    t.stub(console, 'warn');
 
     const tile = createWorkerTile();
     tile.parse(data, layerIndex, {}, (err) => {
         t.ifError(err);
-        t.ok(util.warnOnce.calledWithMatch(/does not use vector tile spec v2/));
+        t.ok(console.warn.calledWithMatch(/does not use vector tile spec v2/));
         t.end();
     });
 });

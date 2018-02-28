@@ -1,11 +1,10 @@
 import { test } from 'mapbox-gl-js-test';
-import proxyquire from 'proxyquire';
+import mapboxgl from '../../../src';
+import WorkerPool from '../../../src/util/worker_pool';
 
 test('WorkerPool', (t) => {
     t.test('#acquire', (t) => {
-        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../': { workerCount: 4 }
-        });
+        t.stub(mapboxgl, 'workerCount').value(4);
 
         const pool = new WorkerPool();
 
@@ -22,9 +21,7 @@ test('WorkerPool', (t) => {
 
     t.test('#release', (t) => {
         let workersTerminated = 0;
-        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../': { workerCount: 4 }
-        });
+        t.stub(mapboxgl, 'workerCount').value(4);
 
         const pool = new WorkerPool();
         pool.acquire('map-1');

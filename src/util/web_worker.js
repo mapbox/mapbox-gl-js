@@ -67,7 +67,7 @@ class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
     importScripts() {}
 }
 
-export default function (): WorkerInterface {
+export default function WebWorker(): WorkerInterface {
     const parentListeners = [],
         workerListeners = [],
         parentBus = new MessageBus(workerListeners, parentListeners),
@@ -76,7 +76,10 @@ export default function (): WorkerInterface {
     parentBus.target = workerBus;
     workerBus.target = parentBus;
 
-    new Worker(workerBus);
+    new WebWorker.Worker(workerBus);
 
     return parentBus;
-};
+}
+
+// expose to allow stubbing in unit tests
+WebWorker.Worker = Worker;

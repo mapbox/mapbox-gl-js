@@ -1,8 +1,43 @@
 
 import extend from '../util/extend';
-import unbundle from '../util/unbundle_jsonlint';
+import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
 import { isExpression } from '../expression';
 import { isFunction } from '../function';
+
+import validateFunction from './validate_function';
+import validateExpression from './validate_expression';
+import validateObject from './validate_object';
+import validateArray from './validate_array';
+import validateBoolean from './validate_boolean';
+import validateNumber from './validate_number';
+import validateColor from './validate_color';
+import validateConstants from './validate_constants';
+import validateEnum from './validate_enum';
+import validateFilter from './validate_filter';
+import validateLayer from './validate_layer';
+import validateSource from './validate_source';
+import validateLight from './validate_light';
+import validateString from './validate_string';
+
+const VALIDATORS = {
+    '*': function() {
+        return [];
+    },
+    'array': validateArray,
+    'boolean': validateBoolean,
+    'number': validateNumber,
+    'color': validateColor,
+    'constants': validateConstants,
+    'enum': validateEnum,
+    'filter': validateFilter,
+    'function': validateFunction,
+    'layer': validateLayer,
+    'object': validateObject,
+    'source': validateSource,
+    'light': validateLight,
+    'string': validateString
+};
+
 
 // Main recursive validation function. Tracks:
 //
@@ -15,29 +50,6 @@ import { isFunction } from '../function';
 // - styleSpec: current full spec being evaluated.
 
 export default function validate(options) {
-
-    const validateFunction = require('./validate_function');
-    const validateExpression = require('./validate_expression');
-    const validateObject = require('./validate_object');
-    const VALIDATORS = {
-        '*': function() {
-            return [];
-        },
-        'array': require('./validate_array'),
-        'boolean': require('./validate_boolean'),
-        'number': require('./validate_number'),
-        'color': require('./validate_color'),
-        'constants': require('./validate_constants'),
-        'enum': require('./validate_enum'),
-        'filter': require('./validate_filter'),
-        'function': require('./validate_function'),
-        'layer': require('./validate_layer'),
-        'object': require('./validate_object'),
-        'source': require('./validate_source'),
-        'light': require('./validate_light'),
-        'string': require('./validate_string')
-    };
-
     const value = options.value;
     const valueSpec = options.valueSpec;
     const styleSpec = options.styleSpec;
@@ -45,7 +57,7 @@ export default function validate(options) {
     if (valueSpec.function && isFunction(unbundle(value))) {
         return validateFunction(options);
 
-    } else if (valueSpec.function && isExpression(unbundle.deep(value))) {
+    } else if (valueSpec.function && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {

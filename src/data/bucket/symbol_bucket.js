@@ -4,7 +4,7 @@ import { symbolLayoutAttributes, collisionVertexAttributes, collisionBoxLayout, 
 
 import { SymbolLayoutArray, SymbolDynamicLayoutArray, SymbolOpacityArray, CollisionBoxLayoutArray, CollisionCircleLayoutArray, CollisionVertexArray, PlacedSymbolArray, GlyphOffsetArray, SymbolLineVertexArray } from '../array_types';
 import Point from '@mapbox/point-geometry';
-import { SegmentVector } from '../segment';
+import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
 import { TriangleIndexArray, LineIndexArray } from '../index_array_type';
 import transformText from '../../symbol/transform_text';

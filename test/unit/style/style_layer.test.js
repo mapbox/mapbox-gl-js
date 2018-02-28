@@ -1,12 +1,12 @@
 import { test } from 'mapbox-gl-js-test';
-import StyleLayer from '../../../src/style/style_layer';
+import createStyleLayer from '../../../src/style/create_style_layer';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
-import util from '../../../src/util/util';
+import { extend } from '../../../src/util/util';
 import Color from '../../../src/style-spec/util/color';
 
 test('StyleLayer', (t) => {
     t.test('instantiates the correct subclass', (t) => {
-        const layer = StyleLayer.create({type: 'fill'});
+        const layer = createStyleLayer({type: 'fill'});
 
         t.ok(layer instanceof FillStyleLayer);
         t.end();
@@ -17,7 +17,7 @@ test('StyleLayer', (t) => {
 
 test('StyleLayer#setPaintProperty', (t) => {
     t.test('sets new property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background"
         });
@@ -29,7 +29,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('updates property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background",
             "paint": {
@@ -44,7 +44,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('unsets value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background",
             "paint": {
@@ -66,7 +66,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('preserves existing transition', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background",
             "paint": {
@@ -84,7 +84,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('sets transition', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background",
             "paint": {
@@ -99,7 +99,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('emits on an invalid property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background"
         });
@@ -113,7 +113,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('emits on an invalid transition property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background"
         });
@@ -128,7 +128,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('can unset fill-outline-color #2886', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             id: 'building',
             type: 'fill',
             source: 'streets',
@@ -151,7 +151,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('can transition fill-outline-color from undefined to a value #3657', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             id: 'building',
             type: 'fill',
             source: 'streets',
@@ -182,7 +182,7 @@ test('StyleLayer#setPaintProperty', (t) => {
     });
 
     t.test('sets null property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "background",
             "type": "background"
         });
@@ -198,7 +198,7 @@ test('StyleLayer#setPaintProperty', (t) => {
 
 test('StyleLayer#setLayoutProperty', (t) => {
     t.test('sets new property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol"
         });
@@ -210,7 +210,7 @@ test('StyleLayer#setLayoutProperty', (t) => {
     });
 
     t.test('emits on an invalid property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol"
         });
@@ -223,7 +223,7 @@ test('StyleLayer#setLayoutProperty', (t) => {
     });
 
     t.test('updates property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol",
             "layout": {
@@ -238,7 +238,7 @@ test('StyleLayer#setLayoutProperty', (t) => {
     });
 
     t.test('unsets property value', (t) => {
-        const layer = StyleLayer.create({
+        const layer = createStyleLayer({
             "id": "symbol",
             "type": "symbol",
             "layout": {
@@ -260,7 +260,7 @@ test('StyleLayer#setLayoutProperty', (t) => {
 test('StyleLayer#serialize', (t) => {
 
     function createSymbolLayer(layer) {
-        return util.extend({
+        return extend({
             id: 'symbol',
             type: 'symbol',
             paint: {
@@ -274,7 +274,7 @@ test('StyleLayer#serialize', (t) => {
 
     t.test('serializes layers', (t) => {
         t.deepEqual(
-            StyleLayer.create(createSymbolLayer()).serialize(),
+            createStyleLayer(createSymbolLayer()).serialize(),
             createSymbolLayer()
         );
         t.end();
@@ -289,14 +289,14 @@ test('StyleLayer#serialize', (t) => {
         };
 
         t.deepEqual(
-            StyleLayer.create(createSymbolLayer({ paint: layerPaint })).serialize().paint,
+            createStyleLayer(createSymbolLayer({ paint: layerPaint })).serialize().paint,
             layerPaint
         );
         t.end();
     });
 
     t.test('serializes added paint properties', (t) => {
-        const layer = StyleLayer.create(createSymbolLayer());
+        const layer = createStyleLayer(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
         t.equal(layer.serialize().paint['text-halo-color'], 'orange');
@@ -306,7 +306,7 @@ test('StyleLayer#serialize', (t) => {
     });
 
     t.test('serializes added layout properties', (t) => {
-        const layer = StyleLayer.create(createSymbolLayer());
+        const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
         t.equal(layer.serialize().layout['text-transform'], 'uppercase');
@@ -321,7 +321,7 @@ test('StyleLayer#serialize', (t) => {
 test('StyleLayer#serialize', (t) => {
 
     function createSymbolLayer(layer) {
-        return util.extend({
+        return extend({
             id: 'symbol',
             type: 'symbol',
             paint: {
@@ -335,7 +335,7 @@ test('StyleLayer#serialize', (t) => {
 
     t.test('serializes layers', (t) => {
         t.deepEqual(
-            StyleLayer.create(createSymbolLayer()).serialize(),
+            createStyleLayer(createSymbolLayer()).serialize(),
             createSymbolLayer()
         );
         t.end();
@@ -350,14 +350,14 @@ test('StyleLayer#serialize', (t) => {
         };
 
         t.deepEqual(
-            StyleLayer.create(createSymbolLayer({ paint: layerPaint })).serialize().paint,
+            createStyleLayer(createSymbolLayer({ paint: layerPaint })).serialize().paint,
             layerPaint
         );
         t.end();
     });
 
     t.test('serializes added paint properties', (t) => {
-        const layer = StyleLayer.create(createSymbolLayer());
+        const layer = createStyleLayer(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
         t.equal(layer.serialize().paint['text-halo-color'], 'orange');
@@ -367,7 +367,7 @@ test('StyleLayer#serialize', (t) => {
     });
 
     t.test('serializes added layout properties', (t) => {
-        const layer = StyleLayer.create(createSymbolLayer());
+        const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
         t.equal(layer.serialize().layout['text-transform'], 'uppercase');

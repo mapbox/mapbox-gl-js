@@ -88,7 +88,6 @@
     "pngjs": "^3.0.0",
     "prismjs": "^1.8.1",
     "prop-types": "^15.6.0",
-    "proxyquire": "^1.7.9",
     "raw-loader": "^0.5.1",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",

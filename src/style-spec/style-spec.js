@@ -68,7 +68,7 @@ import convertFunction from './function/convert';
 
 import validate from './validate_style';
 
-export const exported = {
+const exported = {
     latest,
     format,
     migrate,
@@ -82,6 +82,8 @@ export const exported = {
     function: styleFunction,
     validate
 };
+
+export default exported;
 
 exported.function.convertFunction = convertFunction;
 

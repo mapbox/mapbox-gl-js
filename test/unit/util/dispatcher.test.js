@@ -1,7 +1,8 @@
 import { test } from 'mapbox-gl-js-test';
-import proxyquire from 'proxyquire';
 import Dispatcher from '../../../src/util/dispatcher';
 import WebWorker from '../../../src/util/web_worker';
+import WorkerPool from '../../../src/util/worker_pool';
+import mapboxgl from '../../../src/';
 
 test('Dispatcher', (t) => {
     t.test('requests and releases workers from pool', (t) => {
@@ -27,13 +28,10 @@ test('Dispatcher', (t) => {
     });
 
     t.test('creates Actors with unique map id', (t) => {
-        const Dispatcher = proxyquire('../../../src/util/dispatcher', {'./actor': Actor });
-        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../': { workerCount: 1 }
-        });
-
         const ids = [];
         function Actor (target, parent, mapId) { ids.push(mapId); }
+        t.stub(Dispatcher, 'Actor').callsFake(Actor);
+        t.stub(mapboxgl, 'workerCount').value(1);
 
         const workerPool = new WorkerPool();
         const dispatchers = [new Dispatcher(workerPool, {}), new Dispatcher(workerPool, {})];
@@ -43,14 +41,12 @@ test('Dispatcher', (t) => {
     });
 
     t.test('#remove destroys actors', (t) => {
-        const Dispatcher = proxyquire('../../../src/util/dispatcher', {'./actor': Actor });
         const actorsRemoved = [];
         function Actor() {
             this.remove = function() { actorsRemoved.push(this); };
         }
-        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../': { workerCount: 4 }
-        });
+        t.stub(Dispatcher, 'Actor').callsFake(Actor);
+        t.stub(mapboxgl, 'workerCount').value(4);
 
         const workerPool = new WorkerPool();
         const dispatcher = new Dispatcher(workerPool, {});

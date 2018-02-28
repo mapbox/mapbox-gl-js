@@ -5,7 +5,7 @@ import validate from './validate';
 import validateObject from './validate_object';
 import validateArray from './validate_array';
 import validateNumber from './validate_number';
-import unbundle from '../util/unbundle_jsonlint';
+import { unbundle } from '../util/unbundle_jsonlint';
 
 export default function validateFunction(options) {
     const functionValueSpec = options.valueSpec;

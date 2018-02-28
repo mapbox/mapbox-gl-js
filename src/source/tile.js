@@ -14,7 +14,7 @@ import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import EXTENT from '../data/extent';
 import Point from '@mapbox/point-geometry';
 import Texture from '../render/texture';
-import { SegmentVector } from '../data/segment';
+import SegmentVector from '../data/segment';
 import { TriangleIndexArray } from '../data/index_array_type';
 import browser from '../util/browser';
 
