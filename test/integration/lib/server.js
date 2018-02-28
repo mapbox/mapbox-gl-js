@@ -7,7 +7,11 @@ const colors = require('chalk');
 const fs = require('fs');
 
 module.exports = function () {
-    const server = http.createServer(st({path: path.join(__dirname, '..')}));
+    const integrationPath = st({path: path.join(__dirname, '..'), url: '/'});
+    const nodeModulesPath = st({path: path.join(__dirname, '../../../node_modules'), url: '/node_modules'});
+    const server = http.createServer((req, res) => {
+        return nodeModulesPath(req, res, () => { return integrationPath(req, res); });
+    });
 
     function localURL(url) {
         return url.replace(/^local:\/\//, 'http://localhost:2900/');

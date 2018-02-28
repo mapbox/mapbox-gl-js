@@ -5,6 +5,7 @@
   "license": "BSD",
   "main": "index.js",
   "dependencies": {
+    "@mapbox/mvt-fixtures": "^3.2.0",
     "chalk": "^2.3.0",
     "d3-queue": "^3.0.3",
     "diff": "^3.0.0",

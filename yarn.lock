@@ -141,6 +141,7 @@
 "@mapbox/mapbox-gl-test-suite@file:test/integration":
   version "0.0.0"
   dependencies:
+    "@mapbox/mvt-fixtures" "^3.2.0"
     chalk "^2.3.0"
     d3-queue "^3.0.3"
     diff "^3.0.0"
@@ -152,6 +153,16 @@
     pngjs "^3.0.0"
     shuffle-seed "^1.1.6"
     st "^1.1.0"
+
+"@mapbox/mvt-fixtures@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/mvt-fixtures/-/mvt-fixtures-3.2.0.tgz#9312bfe1437f889cbc65a9d56efac02bbcb9a91d"
+  dependencies:
+    "@mapbox/sphericalmercator" "^1.0.5"
+    "@mapbox/vector-tile" "^1.3.0"
+    d3-queue "^3.0.7"
+    pbf "^3.0.5"
+    protocol-buffers-schema "^3.3.1"
 
 "@mapbox/point-geometry@0.1.0", "@mapbox/point-geometry@^0.1.0", "@mapbox/point-geometry@~0.1.0":
   version "0.1.0"
@@ -180,6 +191,10 @@
 "@mapbox/shelf-pack@^3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@mapbox/shelf-pack/-/shelf-pack-3.1.0.tgz#1edea9c0bf6715b217171ba60646c201af520f6a"
+
+"@mapbox/sphericalmercator@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@mapbox/sphericalmercator/-/sphericalmercator-1.0.5.tgz#70237b9774095ed1cfdbcea7a8fd1fc82b2691f2"
 
 "@mapbox/tiny-sdf@^1.1.0":
   version "1.1.0"
@@ -2870,7 +2885,7 @@ d3-quadtree@1, d3-quadtree@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/d3-quadtree/-/d3-quadtree-1.0.3.tgz#ac7987e3e23fe805a990f28e1b50d38fcb822438"
 
-d3-queue@3.0.7, d3-queue@^3.0.3:
+d3-queue@3.0.7, d3-queue@^3.0.3, d3-queue@^3.0.7:
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/d3-queue/-/d3-queue-3.0.7.tgz#c93a2e54b417c0959129d7d73f6cf7d4292e7618"
 
@@ -7971,6 +7986,10 @@ property-information@^3.0.0, property-information@^3.1.0:
 protocol-buffers-schema@^2.0.2:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/protocol-buffers-schema/-/protocol-buffers-schema-2.2.0.tgz#d29c6cd73fb655978fb6989691180db844119f61"
+
+protocol-buffers-schema@^3.3.1:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/protocol-buffers-schema/-/protocol-buffers-schema-3.3.2.tgz#00434f608b4e8df54c59e070efeefc37fb4bb859"
 
 protocols@^1.1.0, protocols@^1.4.0:
   version "1.4.5"
