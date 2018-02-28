@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import interpolate from '../../../src/style-spec/util/interpolate';
 import Color from '../../../src/style-spec/util/color';

@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import SourceCache from '../../../src/source/source_cache';
 import Source from '../../../src/source/source';

@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import colorSpaces from '../../../../src/style-spec/util/color_spaces';
 import Color from '../../../../src/style-spec/util/color';

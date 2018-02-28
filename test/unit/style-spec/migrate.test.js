@@ -1,6 +1,3 @@
-/* global process, __dirname */
-'use strict';
-
 import { test as t } from 'mapbox-gl-js-test';
 import fs from 'fs';
 import glob from 'glob';

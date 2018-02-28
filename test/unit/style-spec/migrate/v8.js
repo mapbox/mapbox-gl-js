@@ -1,5 +1,3 @@
-'use strict';
-
 import { test as t } from 'mapbox-gl-js-test';
 import migrate from '../../../../src/style-spec/migrate/v8';
 

@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import Camera from '../../../src/ui/camera';
 import Transform from '../../../src/geo/transform';

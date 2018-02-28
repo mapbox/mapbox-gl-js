@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';

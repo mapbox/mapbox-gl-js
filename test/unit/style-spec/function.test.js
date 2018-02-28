@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import { createFunction } from '../../../src/style-spec/function';
 import Color from '../../../src/style-spec/util/color';

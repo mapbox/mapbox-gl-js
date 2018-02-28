@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import QueryFeatures from '../../../src/source/query_features.js';
 import SourceCache from '../../../src/source/source_cache.js';

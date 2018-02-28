@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import Coordinate from '../../../src/geo/coordinate';
 

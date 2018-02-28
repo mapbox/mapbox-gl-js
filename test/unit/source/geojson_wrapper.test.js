@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import Wrapper from '../../../src/source/geojson_wrapper';
 

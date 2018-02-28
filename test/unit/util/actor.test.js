@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import proxyquire from 'proxyquire';
 import Actor from '../../../src/util/actor';

@@ -1,5 +1,3 @@
-'use strict';
-
 // @flow
 
 import { test } from 'mapbox-gl-js-test';

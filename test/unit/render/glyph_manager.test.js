@@ -1,7 +1,3 @@
-// @flow
-
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import proxyquire from 'proxyquire';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';

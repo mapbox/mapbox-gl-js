@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import VertexBuffer from '../../../src/gl/vertex_buffer';
 import { StructArrayLayout3i6 } from '../../../src/data/array_types';

@@ -1,4 +1,3 @@
-'use strict';
 import { test } from 'mapbox-gl-js-test';
 import VectorTileSource from '../../../../src/source/vector_tile_source';
 import window from '../../../../src/util/window';

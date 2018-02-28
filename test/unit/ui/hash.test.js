@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import Hash from '../../../src/ui/hash';
 import window from '../../../src/util/window';

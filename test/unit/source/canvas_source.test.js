@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import CanvasSource from '../../../src/source/canvas_source';
 import Transform from '../../../src/geo/transform';

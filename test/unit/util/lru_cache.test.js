@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import LRUCache from '../../../src/util/lru_cache';
 

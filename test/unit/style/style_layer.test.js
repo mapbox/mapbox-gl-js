@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import StyleLayer from '../../../src/style/style_layer';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';

@@ -1,5 +1,3 @@
-'use strict';
-
 import fs from 'fs';
 import path from 'path';
 import vt from '@mapbox/vector-tile';

@@ -1,5 +1,3 @@
-'use strict';
-
 import { test as t } from 'mapbox-gl-js-test';
 import group from '../../../src/style-spec/group_by_layout';
 

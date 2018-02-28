@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import { CanonicalTileID, OverscaledTileID } from '../../../src/source/tile_id';
 

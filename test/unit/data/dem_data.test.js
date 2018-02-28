@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import util from '../../../src/util/util';
 import { DEMData, Level } from '../../../src/data/dem_data';

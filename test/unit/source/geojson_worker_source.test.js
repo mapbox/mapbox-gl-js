@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import GeoJSONWorkerSource from '../../../src/source/geojson_worker_source';
 import StyleLayerIndex from '../../../src/style/style_layer_index';

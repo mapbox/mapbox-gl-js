@@ -1,5 +1,3 @@
-'use strict';
-
 import { test } from 'mapbox-gl-js-test';
 import Point from '@mapbox/point-geometry';
 import checkMaxAngle from '../../../src/symbol/check_max_angle';

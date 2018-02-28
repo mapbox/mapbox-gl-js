@@ -1,4 +1,3 @@
-'use strict';
 import { test } from 'mapbox-gl-js-test';
 import RasterTileSource from '../../../src/source/raster_tile_source';
 import window from '../../../src/util/window';
