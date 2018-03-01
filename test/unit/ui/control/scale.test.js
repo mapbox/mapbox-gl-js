@@ -40,8 +40,13 @@ test('ScaleControl should change unit of distance after calling setUnit', (t) =>
     const scale = new ScaleControl();
     map.addControl(scale);
 
-    t.equal(scale.options.unit, 'metric');
+    let unit = map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale')[0].innerHTML.match(/[a-zA-Z]+|[0-9]+/g)[1];
+
+    t.equal(unit, 'km');
+
     scale.setUnit('imperial');
-    t.equal(scale.options.unit, 'imperial');
+    unit = map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-scale')[0].innerHTML.match(/[a-zA-Z]+|[0-9]+/g)[1];
+
+    t.equal(unit, 'mi');
     t.end();
 });
