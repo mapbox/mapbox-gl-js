@@ -6,6 +6,7 @@ const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
 const VertexArrayObject = require('../render/vertex_array_object');
 const Texture = require('../render/texture');
 const {ErrorEvent} = require('../util/evented');
+const ResourceType = require('../util/ajax').ResourceType;
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -61,9 +62,13 @@ class VideoSource extends ImageSource {
 
     load() {
         const options = this.options;
-        this.urls = options.urls;
 
-        ajax.getVideo(options.urls, (err, video) => {
+        this.urls = [];
+        for (const url of options.urls) {
+            this.urls.push(this.map._transformRequest(url, ResourceType.Source).url);
+        }
+
+        ajax.getVideo(this.urls, (err, video) => {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (video) {
