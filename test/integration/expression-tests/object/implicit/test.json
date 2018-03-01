@@ -15,6 +15,6 @@
       0,
       {"error": "Expected value to be of type object, but found string instead."}
     ],
-    "serialized": ["get", "b", ["get", "a"]]
+    "serialized": ["get", "b", ["object", ["get", "a"]]]
   }
 }
