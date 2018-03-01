@@ -5,19 +5,20 @@ import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-function createMap() {
+function createMap(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
     return new Map({ container: DOM.create('div', '', window.document.body) });
 }
 
 test('Map#isZooming returns false by default', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     t.equal(map.isZooming(), false);
     map.remove();
     t.end();
 });
 
 test('Map#isZooming returns true during a camera zoom animation', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('zoomstart', () => {
         t.equal(map.isZooming(), true);
@@ -33,7 +34,7 @@ test('Map#isZooming returns true during a camera zoom animation', (t) => {
 });
 
 test('Map#isZooming returns true when scroll zooming', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('zoomstart', () => {
         t.equal(map.isZooming(), true);
@@ -56,7 +57,7 @@ test('Map#isZooming returns true when scroll zooming', (t) => {
 });
 
 test('Map#isZooming returns true when double-click zooming', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('zoomstart', () => {
         t.equal(map.isZooming(), true);
