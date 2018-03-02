@@ -120,8 +120,8 @@ class TouchZoomRotateHandler {
         this._gestureIntent = undefined;
         this._inertia = [];
 
-        window.document.addEventListener('touchmove', this._onMove, false);
-        window.document.addEventListener('touchend', this._onEnd, false);
+        DOM.addEventListener(window.document, 'touchmove', this._onMove, {passive: false});
+        DOM.addEventListener(window.document, 'touchend', this._onEnd);
     }
 
     _getTouchEventData(e: TouchEvent) {
@@ -196,8 +196,8 @@ class TouchZoomRotateHandler {
     }
 
     _onEnd(e: TouchEvent) {
-        window.document.removeEventListener('touchmove', this._onMove);
-        window.document.removeEventListener('touchend', this._onEnd);
+        DOM.removeEventListener(window.document, 'touchmove', this._onMove, {passive: false});
+        DOM.removeEventListener(window.document, 'touchend', this._onEnd);
 
         const gestureIntent = this._gestureIntent;
         const startScale = this._startScale;
