@@ -1,6 +1,8 @@
 'use strict';
 
-require('flow-remove-types/register');
+require('../build/flow-remove-types.js');
+require = require("@std/esm")(module, true);
+
 const expressionSuite = require('./integration').expression;
 const { createPropertyExpression } = require('../src/style-spec/expression');
 const { toString } = require('../src/style-spec/expression/types');
