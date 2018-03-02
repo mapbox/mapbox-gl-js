@@ -1,3 +1,4 @@
+
 import flowRemoveTypes from 'flow-remove-types';
 import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
@@ -12,9 +13,12 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 
 const production = process.env.BUILD === 'production';
 
+// Common set of plugins/transformations shared across different rollup
+// builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
+
 export const plugins = () => [
     sourcemaps(),
-    flow(), // setting {pretty: true} works around https://github.com/leebyron/rollup-plugin-flow/issues/5
+    flow(),
     minifyStyleSpec(),
     json(),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
