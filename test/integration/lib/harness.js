@@ -71,6 +71,9 @@ module.exports = function (directory, implementation, options, run) {
         if (!shouldRunTest(group, test)) return;
 
         const style = require(path.join(directory, group, test, fixtureFilename));
+
+        server.localizeURLs(style);
+
         const id = `${path.basename(directory)}/${group}/${test}`;
         const ignored = ignores[id];
 

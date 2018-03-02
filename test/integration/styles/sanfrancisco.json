@@ -8,7 +8,7 @@
     "sources": {
         "mapbox": {
             "type": "vector",
-            "tiles": [ "local://node_modules/%40mapbox/mvt-fixtures/real-world/sanfrancisco/{z}-{x}-{y}.mvt" ]
+            "tiles": [ "local://mvt-fixtures/real-world/sanfrancisco/{z}-{x}-{y}.mvt" ]
         }
     },
     "sprite": "mapbox://sprites/mapbox/basic-v9",

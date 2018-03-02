@@ -5,7 +5,7 @@
       "width": 512,
       "height": 512,
       "operations": [
-        ["setStyle", "local://styles/sanfrancisco"],
+        ["setStyle", "local://styles/sanfrancisco.json"],
         ["setZoom", 15 ],
         ["setCenter", [-122.448635, 37.7669995] ],
         ["wait"]

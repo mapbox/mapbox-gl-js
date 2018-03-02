@@ -36,37 +36,12 @@ module.exports = function(style, options, _callback) {
     Object.defineProperty(container, 'offsetWidth', {value: options.width});
     Object.defineProperty(container, 'offsetHeight', {value: options.height});
 
-    // Transforms remote URLs into local ones.
-    function transformRequestFn(url, resourceType) {
-        if (url.startsWith("local")) {
-            url = url.replace(/^local:\/\//, 'http://localhost:2900/');
-        }
-
-        switch (resourceType) {
-        case "Style":
-            url = `${url.replace(/^https:\/\/api.mapbox.com\/styles\/v1\/mapbox/, 'http://localhost:2900/node_modules/mapbox-gl-styles/styles')}.json`;
-            break;
-        case "Source":
-            url = url.replace(/^https:\/\/api.mapbox.com\/v4/, 'http://localhost:2900/tilesets');
-            break;
-        case "SpriteJSON":
-        case "SpriteImage":
-            url = url.replace(/^https:\/\/api.mapbox.com\/styles\/v1/, 'http://localhost:2900/sprites');
-            break;
-        case "Glyphs":
-            url = url.replace(/^https:\/\/api.mapbox.com\/fonts\/v1/, 'http://localhost:2900/glyphs');
-        }
-
-        return { url };
-    }
-
     // We are self-hosting test files.
     config.REQUIRE_ACCESS_TOKEN = false;
 
     const map = new Map({
         container: container,
         style: style,
-        transformRequest: transformRequestFn,
         classes: options.classes,
         interactive: false,
         attributionControl: false,
