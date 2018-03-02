@@ -42,8 +42,12 @@ class At implements Expression {
         const index = ((this.index.evaluate(ctx): any): number);
         const array = ((this.input.evaluate(ctx): any): Array<Value>);
 
-        if (index < 0 || index >= array.length) {
-            throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length}.`);
+        if (index < 0) {
+            throw new RuntimeError(`Array index out of bounds: ${index} < 0.`);
+        }
+
+        if (index >= array.length) {
+            throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length - 1}.`);
         }
 
         if (index !== Math.floor(index)) {
