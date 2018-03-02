@@ -429,11 +429,12 @@ class Tile {
         for (const i in this.buckets) {
             const bucket = this.buckets[i];
             // Buckets are grouped by common source-layer
-            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '';
-            const sourceLayer = this.vtLayers._geojsonTileLayer || this.vtLayers[sourceLayerId];
-            if (!sourceLayer) return;
+            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
+            const sourceLayer = this.vtLayers[sourceLayerId];
+            const sourceLayerStates = states[sourceLayerId];
+            if (!sourceLayer || Object.keys(sourceLayerStates).length === 0) return;
 
-            bucket.update(states, sourceLayer);
+            bucket.update(sourceLayerStates, sourceLayer);
         }
     }
 }

@@ -38,7 +38,8 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     // Merge state from SourceCache into the results
     for (const layerID in result) {
         result[layerID].forEach((feature) => {
-            feature.state = sourceCache.getFeatureState(feature.id);
+            const state = sourceCache.getFeatureState(feature.id, null, feature.layer['source-layer']);
+            if (Object.keys(state).length) feature.state = state;
         });
     }
     return result;

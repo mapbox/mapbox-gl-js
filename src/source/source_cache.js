@@ -170,18 +170,9 @@ class SourceCache extends Evented {
         if  (this._source.prepare) {
             this._source.prepare();
         }
-        let hasChanges = false;
-        const changedFeatureStates: FeatureStates = {};
-        if (this._stateChanges && Object.keys(this._stateChanges).length) {
-            console.time('coalesce_state');
-            for (const id in this._stateChanges) {
-                this._state[id] = util.extend({}, this._state[id], this._stateChanges[id]);
-                changedFeatureStates[id] = this._state[id];
-                hasChanges = true;
-            }
-            this._stateChanges = {};
-            console.timeEnd('coalesce_state');
-        }
+
+        const changedFeatureStates = this._coalesceFeatureStates();
+        const hasChanges = Object.keys(changedFeatureStates).length > 0;
 
         for (const i in this._tiles) {
             if (hasChanges) this._tiles[i].updateFeatureState(changedFeatureStates);
@@ -808,22 +799,45 @@ class SourceCache extends Evented {
     }
 
     setFeatureState(feature: string, key: string, value: string, sourceLayer?: string) {
-        const id = sourceLayer ? `${sourceLayer}_${feature}` : feature;
-        if (!this._stateChanges[id]) {
-            this._stateChanges[id] = {};
+        sourceLayer = sourceLayer || '_geojsonTileLayer';
+        if (!this._stateChanges[sourceLayer]) {
+            this._stateChanges[sourceLayer] = {};
         }
-        this._stateChanges[id][key] = value;
+        if (!this._stateChanges[sourceLayer][feature]) {
+            this._stateChanges[sourceLayer][feature] = {};
+        }
+        this._stateChanges[sourceLayer][feature][key] = value;
     }
 
     getFeatureState(feature: string, key?: string, sourceLayer?: string) {
-        const id = sourceLayer ? `${sourceLayer}_${feature}` : feature;
+        sourceLayer = sourceLayer || '_geojsonTileLayer';
+        const base = this._state[sourceLayer] || {};
+        const changes = this._stateChanges[sourceLayer] || {};
+
         if (!key) {
-            return util.extend({}, this._state[id], this._stateChanges[id]);
+            return util.extend({}, base[feature], changes[feature]);
         }
-        if (this._stateChanges[id]) {
-            return this._stateChanges[id][key];
+        if (changes[feature]) {
+            return changes[feature][key];
         }
-        return this._state[id][key];
+        if (base[feature]) {
+            return base[feature][key];
+        }
+    }
+
+    _coalesceFeatureStates(): FeatureStates {
+        const changes: FeatureStates = {};
+        for (const sourceLayer in this._stateChanges) {
+            this._state[sourceLayer]  = this._state[sourceLayer] || {};
+            const layerStates = {};
+            for (const id in this._stateChanges[sourceLayer]) {
+                this._state[sourceLayer][id] = util.extend({}, this._state[sourceLayer][id], this._stateChanges[sourceLayer][id]);
+                layerStates[id] = this._state[sourceLayer][id];
+            }
+            changes[sourceLayer] = layerStates;
+        }
+        this._stateChanges = {};
+        return changes;
     }
 }
 
