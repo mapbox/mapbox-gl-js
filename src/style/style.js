@@ -766,22 +766,20 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
-    setFeatureState(feature: string, key: string, value: any, source: string, sourceLayer: string) {
+    setFeatureState(source: string, feature: string, key: string, value: any, sourceLayer?: string) {
         if (this.sourceCaches[source] === undefined) {
             throw new Error('There is no source with this ID');
         }
 
         const sourceCache = this.sourceCaches[source];
-
         sourceCache.setFeatureState(feature, key, value, sourceLayer);
     }
 
-    getFeatureState(feature: string, key: string, source: string, sourceLayer: string) {
+    getFeatureState(source: string, feature: string, key?: string, sourceLayer?: string) {
         if (this.sourceCaches[source] === undefined) {
             throw new Error('There is no source with this ID');
         }
         const sourceCache = this.sourceCaches[source];
-
         return sourceCache.getFeatureState(feature, key, sourceLayer);
     }
 

@@ -807,7 +807,7 @@ class SourceCache extends Evented {
         return false;
     }
 
-    setFeatureState(feature: string, key: string, value: string, sourceLayer: string) {
+    setFeatureState(feature: string, key: string, value: string, sourceLayer?: string) {
         const id = sourceLayer ? `${sourceLayer}_${feature}` : feature;
         if (!this._stateChanges[id]) {
             this._stateChanges[id] = {};
@@ -815,8 +815,11 @@ class SourceCache extends Evented {
         this._stateChanges[id][key] = value;
     }
 
-    getFeatureState(feature: string, key: string, sourceLayer: string) {
+    getFeatureState(feature: string, key?: string, sourceLayer?: string) {
         const id = sourceLayer ? `${sourceLayer}_${feature}` : feature;
+        if (!key) {
+            return util.extend({}, this._state[id], this._stateChanges[id]);
+        }
         if (this._stateChanges[id]) {
             return this._stateChanges[id][key];
         }

@@ -1375,29 +1375,29 @@ class Map extends Camera {
     /**
      * Sets state values on a feature, given a source and [optional]source-layer.
      * 
-     * @param {string} feature The unique feature identifier from the source data.
-     * @param {string} state The name of the state to be set.
-     * @param {string | number | boolean} value The value to be set.
      * @param {string} source The source identifier for the feature.
+     * @param {string} feature The unique feature identifier from the source data.
+     * @param {string} key The name of the state to be set.
+     * @param {string | number | boolean} value The value to be set.
      * @param {string} sourceLayer (optional) The source-layer identifier for Vector Tile sources.
      */
-    setFeatureState(feature: string, key: string, value: any, source: string, sourceLayer: string) {
-        this.style.setFeatureState(feature, key, value, source, sourceLayer);
+    setFeatureState(source: string, feature: string, key: string, value: any, sourceLayer?: string) {
+        this.style.setFeatureState(source, feature, key, value, sourceLayer);
         this._rerender();
     }
 
     /**
      * Gets the state of a feature, given a source and [optional]source-layer.
      * 
-     * @param {string} feature The unique feature identifier from the source data.
-     * @param {string} state The name of the state to be set.
      * @param {string} source The source identifier for the feature.
+     * @param {string} feature The unique feature identifier from the source data.
+     * @param {string} key (optional) The name of the state. When null, all state values are returned.
      * @param {string} sourceLayer (optional) The source-layer identifier for Vector Tile sources.
      * 
-     * @returns The value of the specified feature's state.
+     * @returns The value of the specified specified state or all states.
      */
-    getFeatureState(feature: string, key: string, source: string, sourceLayer: string): any {
-        return this.style.getFeatureState(feature, key, source, sourceLayer);
+    getFeatureState(source: string, feature: string, key?: string, sourceLayer?: string): any {
+        return this.style.getFeatureState(source, feature, key, sourceLayer);
     }
 
     /**
