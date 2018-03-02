@@ -722,7 +722,7 @@ class Map extends Camera {
 
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects)
+     * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
      * representing visible features that satisfy the query parameters.
      *
      * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
@@ -737,7 +737,7 @@ class Map extends Camera {
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
-     * [feature objects](http://geojson.org/geojson-spec.html#feature-objects).
+     * [feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
@@ -867,7 +867,7 @@ class Map extends Camera {
 
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects)
+     * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
      * representing features within the specified vector tile or GeoJSON source that satisfy the query parameters.
      *
      * @param {string} sourceID The ID of the vector tile or GeoJSON source to query.
@@ -878,7 +878,7 @@ class Map extends Camera {
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects).
+     * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * In contrast to {@link Map#queryRenderedFeatures}, this function
      * returns all features matching the query parameters,
