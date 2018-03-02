@@ -5,7 +5,7 @@
       "width": 512,
       "height": 512,
       "operations": [
-        ["setStyle", "local://styles/nepal"],
+        ["setStyle", "local://styles/nepal.json"],
         ["setZoom", 13 ],
         ["setCenter", [85.48805250000001, 28.115547] ],
         ["wait"]

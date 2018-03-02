@@ -5,7 +5,7 @@
       "width": 512,
       "height": 512,
       "operations": [
-        ["setStyle", "local://styles/chicago"],
+        ["setStyle", "local://styles/chicago.json"],
         ["setZoom", 13 ],
         ["setCenter", [-87.6942445, 41.8703965] ],
         ["wait"]
