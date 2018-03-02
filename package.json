@@ -42,7 +42,7 @@
     "tinyqueue": "^1.1.0",
     "unassertify": "^2.0.0",
     "unflowify": "^1.0.0",
-    "vt-pbf": "^3.0.1",
+    "vt-pbf": "3.0.1",
     "webworkify": "^1.5.0"
   },
   "devDependencies": {
