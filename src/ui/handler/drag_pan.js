@@ -112,8 +112,8 @@ class DragPanHandler {
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        window.document.addEventListener('mousemove', this._onMove, {capture: true});
-        window.document.addEventListener('mouseup', this._onMouseUp);
+        DOM.addEventListener(window.document, 'mousemove', this._onMove, {capture: true});
+        DOM.addEventListener(window.document, 'mouseup', this._onMouseUp);
 
         this._start(e);
     }
@@ -127,8 +127,8 @@ class DragPanHandler {
         // window-level event listeners give us the best shot at capturing events that
         // fall outside the map canvas element. Use `{capture: true}` for the move event
         // to prevent map move events from being fired during a drag.
-        window.document.addEventListener('touchmove', this._onMove, {capture: true});
-        window.document.addEventListener('touchend', this._onTouchEnd);
+        DOM.addEventListener(window.document, 'touchmove', this._onMove, {capture: true, passive: false});
+        DOM.addEventListener(window.document, 'touchend', this._onTouchEnd);
 
         this._start(e);
     }
@@ -236,11 +236,11 @@ class DragPanHandler {
     }
 
     _unbind() {
-        window.document.removeEventListener('touchmove', this._onMove, {capture: true});
-        window.document.removeEventListener('touchend', this._onTouchEnd);
-        window.document.removeEventListener('mousemove', this._onMove, {capture: true});
-        window.document.removeEventListener('mouseup', this._onMouseUp);
-        window.removeEventListener('blur', this._onBlur);
+        DOM.removeEventListener(window.document, 'touchmove', this._onMove, {capture: true, passive: false});
+        DOM.removeEventListener(window.document, 'touchend', this._onTouchEnd);
+        DOM.removeEventListener(window.document, 'mousemove', this._onMove, {capture: true});
+        DOM.removeEventListener(window.document, 'mouseup', this._onMouseUp);
+        DOM.removeEventListener(window, 'blur', this._onBlur);
     }
 
     _deactivate() {

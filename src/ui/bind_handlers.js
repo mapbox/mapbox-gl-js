@@ -5,6 +5,7 @@ const {
     MapTouchEvent,
     MapWheelEvent
 } = require('../ui/events');
+const DOM = require('../util/dom');
 
 import type Map from './map';
 
@@ -30,19 +31,19 @@ module.exports = function bindHandlers(map: Map, options: {}) {
         }
     }
 
-    el.addEventListener('mouseout', onMouseOut, false);
-    el.addEventListener('mousedown', onMouseDown, false);
-    el.addEventListener('mouseup', onMouseUp, false);
-    el.addEventListener('mousemove', onMouseMove, false);
-    el.addEventListener('mouseover', onMouseOver, false);
-    el.addEventListener('touchstart', onTouchStart, false);
-    el.addEventListener('touchend', onTouchEnd, false);
-    el.addEventListener('touchmove', onTouchMove, false);
-    el.addEventListener('touchcancel', onTouchCancel, false);
-    el.addEventListener('click', onClick, false);
-    el.addEventListener('dblclick', onDblClick, false);
-    el.addEventListener('contextmenu', onContextMenu, false);
-    el.addEventListener('wheel', onWheel, false);
+    DOM.addEventListener(el, 'mouseout', onMouseOut);
+    DOM.addEventListener(el, 'mousedown', onMouseDown);
+    DOM.addEventListener(el, 'mouseup', onMouseUp);
+    DOM.addEventListener(el, 'mousemove', onMouseMove);
+    DOM.addEventListener(el, 'mouseover', onMouseOver);
+    DOM.addEventListener(el, 'touchstart', onTouchStart, {passive: false});
+    DOM.addEventListener(el, 'touchmove', onTouchMove, {passive: true}); // `passive: true` because onTouchMove only sends a map event.
+    DOM.addEventListener(el, 'touchend', onTouchEnd);                    // The real action is in DragPanHandler and TouchZoomRotateHandler.
+    DOM.addEventListener(el, 'touchcancel', onTouchCancel);
+    DOM.addEventListener(el, 'click', onClick);
+    DOM.addEventListener(el, 'dblclick', onDblClick);
+    DOM.addEventListener(el, 'contextmenu', onContextMenu);
+    DOM.addEventListener(el, 'wheel', onWheel, {passive: false});
 
     function onMouseDown(e: MouseEvent) {
         mouseDown = true;
