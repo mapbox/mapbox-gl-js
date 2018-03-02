@@ -117,6 +117,7 @@ class ImageManager {
     _notify(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         const response = {};
 
+        const missingIds = []
         for (const id of ids) {
             const image = this.images[id];
             if (image) {
@@ -126,10 +127,16 @@ class ImageManager {
                     pixelRatio: image.pixelRatio,
                     sdf: image.sdf
                 };
+            } else {
+                missingIds.push(id)
             }
         }
 
-        callback(null, response);
+        let err;
+        if (missingIds.length) {
+            err = `The following images have not been added to the map: ${missingIds.join(", ")}`
+        }
+        callback(err, response);
     }
 
     // Pattern stuff
