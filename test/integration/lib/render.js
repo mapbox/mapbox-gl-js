@@ -142,6 +142,16 @@ exports.run = function (implementation, ignores, render) {
                 height: params.height * params.pixelRatio
             });
 
+            // PNG data must be unassociated (not premultiplied)
+            for (let i = 0; i < data.length; i++) {
+                const a = data[i * 4 + 3] / 255;
+                if (a !== 0) {
+                    data[i * 4 + 0] /= a;
+                    data[i * 4 + 1] /= a;
+                    data[i * 4 + 2] /= a;
+                }
+            }
+
             png.data = data;
 
             // there may be multiple expected images, covering different platforms
