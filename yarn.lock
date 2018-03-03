@@ -10493,7 +10493,7 @@ vm-browserify@0.0.4, vm-browserify@~0.0.1:
   dependencies:
     indexof "0.0.1"
 
-vt-pbf@3.0.1:
+vt-pbf@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/vt-pbf/-/vt-pbf-3.0.1.tgz#ff7ef598464da443a03dece7b6bca12998a64338"
   dependencies:
