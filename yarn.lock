@@ -204,9 +204,9 @@
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@mapbox/unitbezier/-/unitbezier-0.0.0.tgz#15651bd553a67b8581fb398810c98ad86a34524e"
 
-"@mapbox/vector-tile@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/vector-tile/-/vector-tile-1.3.0.tgz#c495f972525befccefcd838f45ffa37ef3b70fe8"
+"@mapbox/vector-tile@^1.3.0", "@mapbox/vector-tile@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@mapbox/vector-tile/-/vector-tile-1.3.1.tgz#d3a74c90402d06e89ec66de49ec817ff53409666"
   dependencies:
     "@mapbox/point-geometry" "~0.1.0"
 
@@ -10493,7 +10493,7 @@ vm-browserify@0.0.4, vm-browserify@~0.0.1:
   dependencies:
     indexof "0.0.1"
 
-vt-pbf@3.0.1:
+vt-pbf@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/vt-pbf/-/vt-pbf-3.0.1.tgz#ff7ef598464da443a03dece7b6bca12998a64338"
   dependencies:
