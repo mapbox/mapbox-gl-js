@@ -19,7 +19,7 @@
     "@mapbox/shelf-pack": "^3.1.0",
     "@mapbox/tiny-sdf": "^1.1.0",
     "@mapbox/unitbezier": "^0.0.0",
-    "@mapbox/vector-tile": "^1.3.0",
+    "@mapbox/vector-tile": "^1.3.1",
     "@mapbox/whoots-js": "^3.0.0",
     "brfs": "^1.4.4",
     "bubleify": "^0.7.0",
