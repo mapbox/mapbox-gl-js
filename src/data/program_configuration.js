@@ -29,13 +29,16 @@ function packColor(color: Color): [number, number] {
 
 /**
  *  `Binder` is the interface definition for the strategies for constructing,
- *  uploading, and binding paint property data as GLSL attributes.
+ *  uploading, and binding paint property data as GLSL attributes. Most style-
+ *  spec properties have a 1:1 relationship to shader attribute/uniforms, but
+ *  some require multliple values per feature to be passed to the GPU, and in
+ *  those cases we bind multiple attributes/uniforms.
  *
  *  It has three implementations, one for each of the three strategies we use:
  *
  *  * For _constant_ properties -- those whose value is a constant, or the constant
  *    result of evaluating a camera expression at a particular camera position -- we
- *    don't need a vertex buffer, and instead use a uniform.
+ *    don't need a vertex attribute buffer, and instead use a uniform.
  *  * For data expressions, we use a vertex buffer with a single attribute value,
  *    the evaluated result of the source function for the given feature.
  *  * For composite expressions, we use a vertex buffer with two attributes: min and
@@ -68,19 +71,19 @@ interface Binder<T> {
 
 class ConstantBinder<T> implements Binder<T> {
     value: T;
-    name: string;
+    names: Array<string>;
     type: string;
     statistics: { max: number };
 
-    constructor(value: T, name: string, type: string) {
+    constructor(value: T, names: Array<string>, type: string) {
         this.value = value;
-        this.name = name;
+        this.names = names;
         this.type = type;
         this.statistics = { max: -Infinity };
     }
 
     defines() {
-        return [`#define HAS_UNIFORM_u_${this.name}`];
+        return this.names.map((name) => { return `#define HAS_UNIFORM_u_${name}`; });
     }
 
     populatePaintArray() {}
@@ -93,17 +96,19 @@ class ConstantBinder<T> implements Binder<T> {
                 currentValue: PossiblyEvaluatedPropertyValue<T>) {
         const value: any = currentValue.constantOr(this.value);
         const gl = context.gl;
-        if (this.type === 'color') {
-            gl.uniform4f(program.uniforms[`u_${this.name}`], value.r, value.g, value.b, value.a);
-        } else {
-            gl.uniform1f(program.uniforms[`u_${this.name}`], value);
-        }
+        this.names.forEach((name)=>{
+            if (this.type === 'color') {
+                gl.uniform4f(program.uniforms[`u_${name}`], value.r, value.g, value.b, value.a);
+            } else {
+                gl.uniform1f(program.uniforms[`u_${name}`], value);
+            }
+        });
     }
 }
 
 class SourceExpressionBinder<T> implements Binder<T> {
     expression: SourceExpression;
-    name: string;
+    names: Array<string>;
     type: string;
     statistics: { max: number };
 
@@ -111,18 +116,20 @@ class SourceExpressionBinder<T> implements Binder<T> {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: ?VertexBuffer;
 
-    constructor(expression: SourceExpression, name: string, type: string) {
+    constructor(expression: SourceExpression, names: Array<string>, type: string, layout: () => StructArray) {
         this.expression = expression;
-        this.name = name;
+        this.names = names;
         this.type = type;
         this.statistics = { max: -Infinity };
-        const PaintVertexArray = type === 'color' ? StructArrayLayout2f8 : StructArrayLayout1f4;
-        this.paintVertexAttributes = [{
-            name: `a_${name}`,
-            type: 'Float32',
-            components: type === 'color' ? 2 : 1,
-            offset: 0
-        }];
+        const PaintVertexArray = layout;
+        this.paintVertexAttributes = names.map((name)=> {
+            return {
+                name: `a_${name}`,
+                type: 'Float32',
+                components: type === 'color' ? 2 : 1,
+                offset: 0
+            };
+        });
         this.paintVertexArray = new PaintVertexArray();
     }
 
@@ -137,7 +144,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         paintArray.reserve(length);
 
         const value = this.expression.evaluate({zoom: 0}, feature);
-
+        // figure out how to design this for atypical paint properties with multiple attributes
         if (this.type === 'color') {
             const color = packColor(value);
             for (let i = start; i < length; i++) {
@@ -165,13 +172,13 @@ class SourceExpressionBinder<T> implements Binder<T> {
     }
 
     setUniforms(context: Context, program: Program) {
-        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], 0);
+        context.gl.uniform1f(program.uniforms[`a_${this.names[0]}_t`], 0);
     }
 }
 
 class CompositeExpressionBinder<T> implements Binder<T> {
     expression: CompositeExpression;
-    name: string;
+    names: Array<string>;
     type: string;
     useIntegerZoom: boolean;
     zoom: number;
@@ -181,20 +188,22 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: ?VertexBuffer;
 
-    constructor(expression: CompositeExpression, name: string, type: string, useIntegerZoom: boolean, zoom: number) {
+    constructor(expression: CompositeExpression, names: Array<string>, type: string, useIntegerZoom: boolean, zoom: number, layout: () => StructArray) {
         this.expression = expression;
-        this.name = name;
+        this.names = names;
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
         this.statistics = { max: -Infinity };
-        const PaintVertexArray = type === 'color' ? StructArrayLayout4f16 : StructArrayLayout2f8;
-        this.paintVertexAttributes = [{
-            name: `a_${name}`,
-            type: 'Float32',
-            components: type === 'color' ? 4 : 2,
-            offset: 0
-        }];
+        const PaintVertexArray = layout;
+        this.paintVertexAttributes = names.map((name) => {
+            return {
+                name: `a_${name}`,
+                type: 'Float32',
+                components: type === 'color' ? 4 : 2,
+                offset: 0
+            };
+        });
         this.paintVertexArray = new PaintVertexArray();
     }
 
@@ -211,6 +220,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         const min = this.expression.evaluate({zoom: this.zoom    }, feature);
         const max = this.expression.evaluate({zoom: this.zoom + 1}, feature);
 
+        // figure out how to design this for atypical paint properties with multiple attributes
         if (this.type === 'color') {
             const minColor = packColor(min);
             const maxColor = packColor(max);
@@ -247,7 +257,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     }
 
     setUniforms(context: Context, program: Program, globals: GlobalProperties) {
-        context.gl.uniform1f(program.uniforms[`a_${this.name}_t`], this.interpolationFactor(globals.zoom));
+        context.gl.uniform1f(program.uniforms[`a_${this.names[0]}_t`], this.interpolationFactor(globals.zoom));
     }
 }
 
@@ -295,19 +305,20 @@ class ProgramConfiguration {
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !value.property.specification['property-function']) {
                 continue;
             }
-            const name = paintAttributeName(property, layer.type);
+            const names = paintAttributeName(property, layer.type);
             const type = value.property.specification.type;
             const useIntegerZoom = value.property.useIntegerZoom;
-
             if (value.value.kind === 'constant') {
-                self.binders[property] = new ConstantBinder(value.value, name, type);
-                keys.push(`/u_${name}`);
+                self.binders[property] = new ConstantBinder(value.value, names, type);
+                keys.push(`/u_${property}`);
             } else if (value.value.kind === 'source') {
-                self.binders[property] = new SourceExpressionBinder(value.value, name, type);
-                keys.push(`/a_${name}`);
+                const structArrayLayout = layoutType(property, type, 'source');
+                self.binders[property] = new SourceExpressionBinder(value.value, names, type, structArrayLayout);
+                keys.push(`/a_${property}`);
             } else {
-                self.binders[property] = new CompositeExpressionBinder(value.value, name, type, useIntegerZoom, zoom);
-                keys.push(`/z_${name}`);
+                const structArrayLayout = layoutType(property, type, 'composite');
+                self.binders[property] = new CompositeExpressionBinder(value.value, names, type, useIntegerZoom, zoom, structArrayLayout);
+                keys.push(`/z_${property}`);
             }
         }
 
@@ -415,8 +426,25 @@ function paintAttributeName(property, type) {
         'icon-halo-width': 'halo_width',
         'line-gap-width': 'gapwidth'
     };
-    return attributeNameExceptions[property] ||
-        property.replace(`${type}-`, '').replace(/-/g, '_');
+    return [attributeNameExceptions[property] ||
+        property.replace(`${type}-`, '').replace(/-/g, '_')];
+}
+
+function layoutType(property, type, binderType) {
+    const propertyExceptions = {};
+    const defaultLayouts = {
+        'color': {
+            'source': StructArrayLayout2f8,
+            'composite': StructArrayLayout4f16
+        },
+        'number': {
+            'source': StructArrayLayout1f4,
+            'composite': StructArrayLayout2f8
+        }
+    };
+
+    return propertyExceptions[property] && propertyExceptions[property][binderType] ||
+        defaultLayouts[type][binderType];
 }
 
 register('ConstantBinder', ConstantBinder);
