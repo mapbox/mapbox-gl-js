@@ -705,15 +705,15 @@ class SourceCache extends Evented {
             const tile = this._tiles[ids[i]];
             const tileID = tile.tileID;
             const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
-            const additionalRadius = tile.additionalRadius * EXTENT / tile.tileSize / scale;
+            const queryPadding = tile.queryPadding * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
                 coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),
                 coordinateToTilePoint(tileID, new Coordinate(maxX, maxY, z))
             ];
 
-            if (tileSpaceBounds[0].x - additionalRadius < EXTENT && tileSpaceBounds[0].y - additionalRadius < EXTENT &&
-                tileSpaceBounds[1].x + additionalRadius >= 0 && tileSpaceBounds[1].y + additionalRadius >= 0) {
+            if (tileSpaceBounds[0].x - queryPadding < EXTENT && tileSpaceBounds[0].y - queryPadding < EXTENT &&
+                tileSpaceBounds[1].x + queryPadding >= 0 && tileSpaceBounds[1].y + queryPadding >= 0) {
 
                 const tileSpaceQueryGeometry = [];
                 for (let j = 0; j < queryGeometry.length; j++) {

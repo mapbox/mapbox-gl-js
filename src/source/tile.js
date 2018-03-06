@@ -91,7 +91,7 @@ class Tile {
     refreshedUponExpiration: boolean;
     reloadCallback: any;
     resourceTiming: ?Array<PerformanceResourceTiming>;
-    additionalRadius: number;
+    queryPadding: number;
 
     /**
      * @param {OverscaledTileID} tileID
@@ -104,7 +104,7 @@ class Tile {
         this.tileSize = size;
         this.buckets = {};
         this.expirationTime = null;
-        this.additionalRadius = 0;
+        this.queryPadding = 0;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -168,10 +168,10 @@ class Tile {
             }
         }
 
-        this.additionalRadius = 0;
+        this.queryPadding = 0;
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            this.additionalRadius = Math.max(this.additionalRadius, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
+            this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
         }
 
         if (data.iconAtlasImage) {
@@ -266,7 +266,7 @@ class Tile {
             tileSize: this.tileSize,
             bearing: bearing,
             params: params,
-            additionalRadius: this.additionalRadius,
+            queryPadding: this.queryPadding,
             collisionBoxArray: this.collisionBoxArray,
             sourceID: sourceID,
             collisionIndex: collisionIndex,

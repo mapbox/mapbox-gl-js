@@ -25,7 +25,7 @@ type QueryParameters = {
     bearing: number,
     tileSize: number,
     queryGeometry: Array<Array<Point>>,
-    additionalRadius: number,
+    queryPadding: number,
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
@@ -98,7 +98,7 @@ class FeatureIndex {
             filter = featureFilter(params.filter);
 
         const queryGeometry = args.queryGeometry;
-        const additionalRadius = args.additionalRadius * pixelsToTileUnits;
+        const queryPadding = args.queryPadding * pixelsToTileUnits;
 
         let minX = Infinity;
         let minY = Infinity;
@@ -115,7 +115,7 @@ class FeatureIndex {
             }
         }
 
-        const matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
+        const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
         matching.sort(topDownFeatureComparator);
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
