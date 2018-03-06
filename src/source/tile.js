@@ -242,6 +242,9 @@ class Tile {
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
                           bearing: number,
+                          cameraToCenterDistance: number,
+                          pitchScaleFactor: number,
+                          posMatrix: Float32Array,
                           sourceID: string,
                           collisionIndex: ?CollisionIndex): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         if (!this.featureIndex || !this.collisionBoxArray)
@@ -265,8 +268,10 @@ class Tile {
             scale: scale,
             tileSize: this.tileSize,
             bearing: bearing,
+            cameraToCenterDistance: cameraToCenterDistance,
+            posMatrix: posMatrix,
             params: params,
-            queryPadding: this.queryPadding,
+            queryPadding: this.queryPadding * pitchScaleFactor,
             collisionBoxArray: this.collisionBoxArray,
             sourceID: sourceID,
             collisionIndex: collisionIndex,
