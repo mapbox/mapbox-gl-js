@@ -75,7 +75,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
             imagePosB = painter.imageManager.getPattern(image.to);
             if (!imagePosA || !imagePosB) return;
 
-            gl.uniform2f(program.uniforms.u_pattern_size_a, imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosB.displaySize[1]);
+            gl.uniform2f(program.uniforms.u_pattern_size_a, imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosA.displaySize[1]);
             gl.uniform2f(program.uniforms.u_pattern_size_b, imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]);
 
             const {width, height} = painter.imageManager.getPixelSize();
