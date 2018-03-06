@@ -16,6 +16,7 @@ import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
+import type Transform from '../../geo/transform';
 
 class FillStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -47,12 +48,12 @@ class FillStyleLayer extends StyleLayer {
                            feature: VectorTileFeature,
                            geometry: Array<Array<Point>>,
                            zoom: number,
-                           bearing: number,
+                           transform: Transform,
                            pixelsToTileUnits: number): boolean {
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('fill-translate'),
             this.paint.get('fill-translate-anchor'),
-            bearing, pixelsToTileUnits);
+            transform.angle, pixelsToTileUnits);
         return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 }

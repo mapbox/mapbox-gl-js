@@ -17,14 +17,14 @@ import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type {CollisionBoxArray} from './array_types';
+import type Transform from '../geo/transform';
 
 const {FeatureIndexArray} = require('./array_types');
 
 type QueryParameters = {
     scale: number,
-    bearing: number,
-    cameraToCenterDistance: number,
     posMatrix: Float32Array,
+    transform: Transform,
     tileSize: number,
     queryGeometry: Array<Array<Point>>,
     queryPadding: number,
@@ -119,13 +119,13 @@ class FeatureIndex {
 
         const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
         matching.sort(topDownFeatureComparator);
-        this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, args.cameraToCenterDistance, args.posMatrix);
+        this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
 
         const matchingSymbols = args.collisionIndex ?
             args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, args.tileSize / EXTENT, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
             [];
         matchingSymbols.sort();
-        this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, args.cameraToCenterDistance, args.posMatrix);
+        this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
 
         return result;
     }
@@ -138,10 +138,9 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
-        bearing: number,
         pixelsToTileUnits: number,
-        cameraToCenterDistance: number,
-        posMatrix: Float32Array
+        posMatrix: Float32Array,
+        transform: Transform
     ) {
         let previousIndex;
         for (let k = 0; k < matching.length; k++) {
@@ -179,7 +178,7 @@ class FeatureIndex {
                     if (!geometry) {
                         geometry = loadGeometry(feature);
                     }
-                    if (!styleLayer.queryIntersectsFeature(queryGeometry, feature, geometry, this.z, bearing, pixelsToTileUnits, cameraToCenterDistance, posMatrix)) {
+                    if (!styleLayer.queryIntersectsFeature(queryGeometry, feature, geometry, this.z, transform, pixelsToTileUnits, posMatrix)) {
                         continue;
                     }
                 }

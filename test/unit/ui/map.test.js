@@ -871,8 +871,7 @@ test('Map', (t) => {
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.deepEqual(args[0].map(c => fixedCoord(c)), [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
                 t.deepEqual(args[1], {}); // params
-                t.deepEqual(args[2], 0); // bearing
-                t.deepEqual(args[3], 0); // zoom
+                t.deepEqual(args[2], map.transform); // transform
                 t.deepEqual(output, []);
 
                 t.end();

@@ -1838,8 +1838,10 @@ test('Style#query*Features', (t) => {
 
     let style;
     let onError;
+    let transform;
 
     t.beforeEach((callback) => {
+        transform = new Transform();
         style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1862,13 +1864,13 @@ test('Style#query*Features', (t) => {
     });
 
     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
+        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
         t.end();
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
+        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
         t.end();
     });
