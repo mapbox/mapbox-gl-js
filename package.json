@@ -22,7 +22,6 @@
     "@mapbox/vector-tile": "^1.3.1",
     "@mapbox/whoots-js": "^3.0.0",
     "brfs": "^1.4.4",
-    "bubleify": "^0.7.0",
     "csscolorparser": "~1.0.2",
     "earcut": "^2.1.3",
     "geojson-rewind": "^0.3.0",
@@ -31,7 +30,6 @@
     "grid-index": "^1.0.0",
     "jsonlint-lines-primitives": "~1.6.0",
     "minimist": "0.0.8",
-    "package-json-versionify": "^1.0.2",
     "pbf": "^3.0.5",
     "quickselect": "^1.0.0",
     "rollup-plugin-json": "^2.3.0",
@@ -42,10 +40,7 @@
     "supercluster": "^2.3.0",
     "through2": "^2.0.3",
     "tinyqueue": "^1.1.0",
-    "unassertify": "^2.0.0",
-    "unflowify": "^1.0.0",
-    "vt-pbf": "^3.0.1",
-    "webworkify": "^1.5.0"
+    "vt-pbf": "^3.0.1"
   },
   "devDependencies": {
     "@mapbox/batfish": "^1.0.4",
@@ -54,13 +49,11 @@
     "@std/esm": "^0.21.7",
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
-    "browserify": "^14.0.0",
+    "browserify": "^16.1.0",
     "coveralls": "^2.11.8",
     "d3": "^4.12.0",
-    "derequire": "^2.0.6",
     "documentation": "5.3.3",
     "ejs": "^2.5.7",
-    "envify": "^4.0.0",
     "eslint": "4.1.1",
     "eslint-config-mourner": "^2.0.0",
     "eslint-plugin-flowtype": "^2.34.0",
@@ -79,7 +72,6 @@
     "jsdom": "^11.6.2",
     "json-stringify-pretty-compact": "^1.0.4",
     "lodash": "^4.16.0",
-    "minifyify": "^7.0.1",
     "mock-geolocation": "^1.0.11",
     "npm-run-all": "^4.0.1",
     "nyc": "^10.1.2",
@@ -109,28 +101,7 @@
     "st": "^1.2.0",
     "stylelint": "^8.4.0",
     "stylelint-config-standard": "^18.0.0",
-    "tap": "^10.3.0",
-    "watchify": "^3.7.0"
-  },
-  "browserify": {
-    "transform": [
-      "unflowify",
-      [
-        "bubleify",
-        {
-          "bubleError": true,
-          "transforms": {
-            "dangerousForOf": true
-          },
-          "objectAssign": "Object.assign"
-        }
-      ],
-      "package-json-versionify",
-      "unassertify",
-      "brfs",
-      "./build/minifyify_style_spec",
-      "./build/strictify"
-    ]
+    "tap": "^10.3.0"
   },
   "browser": {
     "./src/util/window.js": "./src/util/browser/window.js",
@@ -142,11 +113,10 @@
     "sourceCache": true
   },
   "scripts": {
-    "build-dev": "browserify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
-    "watch-dev": "watchify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
-    "build-min": "browserify src/index.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl | derequire > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
-    "build-rollup": "rollup -c",
-    "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
+    "build-dev": "rollup -c --environment BUILD:dev && build/run-tap --no-coverage test/build/dev.test.js",
+    "watch-dev": "rollup -c --environment BUILD:dev --watch",
+    "build-min": "rollup -c --environment BUILD:production && build/run-tap --no-coverage test/build/min.test.js",
+    "build-token": "node build/generate-access-token-script.js",
     "build-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks.js",
     "build-benchmarks-view": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks_view.js",
     "watch-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks.js --watch",
@@ -165,7 +135,7 @@
     "test": "run-s lint lint-css test-flow test-unit",
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/{render,query}-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "test-unit": "tap --reporter classic --no-coverage test/unit",
+    "test-unit": "build/run-tap --reporter classic --no-coverage test/unit",
     "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-expressions": "node test/expression.test.js",

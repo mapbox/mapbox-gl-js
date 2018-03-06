@@ -1,5 +1,6 @@
 // @flow
 
+import assert from 'assert';
 import supported from '@mapbox/mapbox-gl-supported';
 
 import browser from './util/browser';
@@ -91,3 +92,6 @@ const exported = {
  */
 
 export default exported;
+
+// canary assert: used to confirm that asserts have been removed from production build
+assert(true, 'canary assert');
