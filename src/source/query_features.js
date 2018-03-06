@@ -12,7 +12,8 @@ exports.rendered = function(sourceCache: SourceCache,
                             zoom: number,
                             bearing: number,
                             collisionIndex: ?CollisionIndex) {
-    const tilesIn = sourceCache.tilesIn(queryGeometry);
+    const pitchScaleFactor = sourceCache.transform.getPitchScaleFactor();
+    const tilesIn = sourceCache.tilesIn(queryGeometry, pitchScaleFactor);
 
     tilesIn.sort(sortTilesIn);
 
@@ -26,6 +27,9 @@ exports.rendered = function(sourceCache: SourceCache,
                 tileIn.scale,
                 params,
                 bearing,
+                sourceCache.transform.cameraToCenterDistance,
+                pitchScaleFactor,
+                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()),
                 sourceCache.id,
                 collisionIndex)
         });

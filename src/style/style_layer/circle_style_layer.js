@@ -2,9 +2,10 @@
 
 const StyleLayer = require('../style_layer');
 const CircleBucket = require('../../data/bucket/circle_bucket');
-const {multiPolygonIntersectsBufferedMultiPoint} = require('../../util/intersection_tests');
+const {multiPolygonIntersectsBufferedPoint} = require('../../util/intersection_tests');
 const {getMaximumPaintValue, translateDistance, translate} = require('../query_utils');
 const properties = require('./circle_style_layer_properties');
+const {vec4} = require('@mapbox/gl-matrix');
 
 const {
     Transitionable,
@@ -41,14 +42,31 @@ class CircleStyleLayer extends StyleLayer {
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            bearing: number,
-                           pixelsToTileUnits: number): boolean {
+                           pixelsToTileUnits: number,
+                           cameraToCenterDistance: number,
+                           posMatrix: Float32Array): boolean {
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
             bearing, pixelsToTileUnits);
         const radius = this.paint.get('circle-radius').evaluate(feature) * pixelsToTileUnits;
         const stroke = this.paint.get('circle-stroke-width').evaluate(feature) * pixelsToTileUnits;
-        return multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, radius + stroke);
+        const size  = radius + stroke;
+
+        for (const ring of geometry) {
+            for (const point of ring) {
+                let adjustedSize = size;
+
+                if (this.paint.get('circle-pitch-scale') === 'viewport') {
+                    const projectedCenter = vec4.transformMat4([], [point.x, point.y, 0, 1], posMatrix);
+                    adjustedSize *= projectedCenter[3] / cameraToCenterDistance;
+                }
+
+                if (multiPolygonIntersectsBufferedPoint(translatedPolygon, point, adjustedSize)) return true;
+            }
+        }
+
+        return false;
     }
 }
 

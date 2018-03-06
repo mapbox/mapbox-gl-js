@@ -49,7 +49,9 @@ class StyleLayer extends Evented {
                               geometry: Array<Array<Point>>,
                               zoom: number,
                               bearing: number,
-                              pixelsToTileUnits: number) => boolean;
+                              pixelsToTileUnits: number,
+                              cameraToCenterDistance: number,
+                              posMatrix: Float32Array) => boolean;
 
     constructor(layer: LayerSpecification, properties: {layout?: Properties<*>, paint: Properties<*>}) {
         super();
