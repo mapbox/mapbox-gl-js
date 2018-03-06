@@ -796,7 +796,7 @@ class Style extends Evented {
         return features;
     }
 
-    queryRenderedFeatures(queryGeometry: any, params: any, zoom: number, bearing: number) {
+    queryRenderedFeatures(queryGeometry: any, params: any, transform: Transform) {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter);
         }
@@ -821,7 +821,7 @@ class Style extends Evented {
         const sourceResults = [];
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, zoom, bearing, this.placement ? this.placement.collisionIndex : null);
+            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, transform, this.placement ? this.placement.collisionIndex : null);
             sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);

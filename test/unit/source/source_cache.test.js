@@ -1171,7 +1171,7 @@ test('SourceCache#tilesIn', (t) => {
                 const tiles = sourceCache.tilesIn([
                     new Coordinate(0.5, 0.25, 1),
                     new Coordinate(1.5, 0.75, 1)
-                ]);
+                ], 1);
 
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });
@@ -1222,7 +1222,7 @@ test('SourceCache#tilesIn', (t) => {
                 const tiles = sourceCache.tilesIn([
                     new Coordinate(0.5, 0.25, 1),
                     new Coordinate(1.5, 0.75, 1)
-                ]);
+                ], 1);
 
                 tiles.sort((a, b) => { return a.tile.tileID.canonical.x - b.tile.tileID.canonical.x; });
                 tiles.forEach((result) => { delete result.tile.uid; });

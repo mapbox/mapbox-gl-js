@@ -845,8 +845,7 @@ class Map extends Camera {
         return this.style.queryRenderedFeatures(
             this._makeQueryGeometry(geometry),
             options,
-            this.transform.zoom,
-            this.transform.angle
+            this.transform
         );
 
         function isPointLike(input) {

@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "queryGeometry": [
+        292,
+        35
+      ]
+    }
+  },
+  "center": [
+      -92.3780691249957,
+      -20
+  ],
+  "zoom": 2,
+  "pitch": 60,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+          "type": "FeatureCollection",
+          "features": [{
+              "type": "Feature",
+              "geometry": {
+                  "type": "Point",
+                  "coordinates": [-84.333565, 33.925575]
+              }
+          }]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "road",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-pitch-alignment": "viewport",
+        "circle-pitch-scale": "map",
+        "circle-radius": 20
+      }
+    }
+  ]
+}

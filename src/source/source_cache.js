@@ -682,7 +682,7 @@ class SourceCache extends Evented {
      * @param queryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      */
-    tilesIn(queryGeometry: Array<Coordinate>, pitchScaleFactor: number) {
+    tilesIn(queryGeometry: Array<Coordinate>, maxPitchScaleFactor: number) {
         const tileResults = [];
         const ids = this.getIds();
 
@@ -705,7 +705,7 @@ class SourceCache extends Evented {
             const tile = this._tiles[ids[i]];
             const tileID = tile.tileID;
             const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
-            const queryPadding = pitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
+            const queryPadding = maxPitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
                 coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),

@@ -3,11 +3,13 @@
 const test = require('mapbox-gl-js-test').test;
 const QueryFeatures = require('../../../src/source/query_features.js');
 const SourceCache = require('../../../src/source/source_cache.js');
+const Transform = require('../../../src/geo/transform.js');
 
 test('QueryFeatures#rendered', (t) => {
     t.test('returns empty object if source returns no tiles', (t) => {
-        const mockSourceCache = { tilesIn: function () { return []; } };
-        const result = QueryFeatures.rendered(mockSourceCache);
+        const mockSourceCache = { tilesIn: function () { return []; }};
+        const transform = new Transform();
+        const result = QueryFeatures.rendered(mockSourceCache, undefined, undefined, undefined, transform);
         t.deepEqual(result, []);
         t.end();
     });
