@@ -8,7 +8,7 @@ import TopNav from './top_nav';
 import {highlightMarkup} from './prism_highlight';
 import supported from '@mapbox/mapbox-gl-supported';
 import {copy} from 'execcommand-copy';
-import examples from '@mapbox/batfish/data/examples';
+import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
 import entries from 'object.entries';
 
 const tags = {
