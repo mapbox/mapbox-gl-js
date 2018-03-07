@@ -19,7 +19,7 @@ import type {
     CompositeExpression
 } from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
-import type {FeatureStates} from '../source/source_cache';
+import type {FeatureStates} from '../source/source_state';
 
 type FeaturePaintBufferMap = {
     [feature_id: string]: {
@@ -393,15 +393,16 @@ export default class ProgramConfiguration {
             const pos = this._idMap[id];
 
             if (pos) {
-                const feature = vtLayer.feature(pos.index);
+                const feature: any = vtLayer.feature(pos.index);
                 feature.state = featureStates[id];
 
                 for (const property in this.binders) {
                     const binder: Binder<any> = this.binders[property];
-                    if (binder.expression && binder.expression.isStateDependent === true) {
+                    if (binder instanceof ConstantBinder) continue;
+                    if ((binder: any).expression.isStateDependent === true) {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
-                        binder.expression = value.value;
+                        (binder: any).expression = value.value;
                         binder.updatePaintArray(pos.start, pos.length, feature);
                         dirty = true;
                     }

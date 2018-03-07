@@ -26,7 +26,7 @@ import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
-import type {FeatureStates} from '../../source/source_cache';
+import type {FeatureStates} from '../../source/source_state';
 
 const FACTOR = Math.pow(2, 13);
 
@@ -98,7 +98,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     uploadPending() {
-        return !this.uploaded || this.change;
+        return !this.uploaded || this.changed;
     }
 
     upload(context: Context) {

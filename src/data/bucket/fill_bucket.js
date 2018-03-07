@@ -25,7 +25,7 @@ import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
-import type {FeatureStates} from '../../source/source_cache';
+import type {FeatureStates} from '../../source/source_state';
 
 class FillBucket implements Bucket {
     index: number;

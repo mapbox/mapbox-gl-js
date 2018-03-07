@@ -13,6 +13,7 @@ import Point from '@mapbox/point-geometry';
 import browser from '../util/browser';
 import { OverscaledTileID } from './tile_id';
 import assert from 'assert';
+import SourceFeatureState from './source_state';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -21,8 +22,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
-
-export type FeatureStates = {[feature_id: string]: {[string]: string | number | boolean}};
+import type {LayerFeatureStates} from './source_state';
 
 /**
  * `SourceCache` is responsible for
@@ -56,8 +56,7 @@ class SourceCache extends Evented {
     transform: Transform;
     _isIdRenderable: (id: number) => boolean;
     used: boolean;
-    _state: FeatureStates;
-    _stateChanges: FeatureStates;
+    _state: SourceFeatureState
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -98,8 +97,7 @@ class SourceCache extends Evented {
         this._isIdRenderable = this._isIdRenderable.bind(this);
 
         this._coveredTiles = {};
-        this._state = {};
-        this._stateChanges = {};
+        this._state = new SourceFeatureState();
     }
 
     onAdd(map: Map) {
@@ -171,7 +169,7 @@ class SourceCache extends Evented {
             this._source.prepare();
         }
 
-        const changedFeatureStates = this._coalesceFeatureStates();
+        const changedFeatureStates: LayerFeatureStates = this._state.coalesceChanges();
         const hasChanges = Object.keys(changedFeatureStates).length > 0;
 
         for (const i in this._tiles) {
@@ -261,9 +259,8 @@ class SourceCache extends Evented {
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
 
-        if (this._state) {
-            tile.updateFeatureState(this._state);
-        }
+
+        tile.updateFeatureState(this._state.state);
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -637,9 +634,7 @@ class SourceCache extends Evented {
             this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
-            if (this._state) {
-                tile.updateFeatureState(this._state);
-            }
+            tile.updateFeatureState(this._state.state);
             if (this._cacheTimers[tileID.key]) {
                 clearTimeout(this._cacheTimers[tileID.key]);
                 delete this._cacheTimers[tileID.key];
@@ -801,45 +796,11 @@ class SourceCache extends Evented {
     }
 
     setFeatureState(feature: string, key: string, value: string, sourceLayer?: string) {
-        sourceLayer = sourceLayer || '_geojsonTileLayer';
-        if (!this._stateChanges[sourceLayer]) {
-            this._stateChanges[sourceLayer] = {};
-        }
-        if (!this._stateChanges[sourceLayer][feature]) {
-            this._stateChanges[sourceLayer][feature] = {};
-        }
-        this._stateChanges[sourceLayer][feature][key] = value;
+        this._state.setState(feature, key, value, sourceLayer || '_geojsonTileLayer');
     }
 
     getFeatureState(feature: string, key?: string, sourceLayer?: string) {
-        sourceLayer = sourceLayer || '_geojsonTileLayer';
-        const base = this._state[sourceLayer] || {};
-        const changes = this._stateChanges[sourceLayer] || {};
-
-        if (!key) {
-            return util.extend({}, base[feature], changes[feature]);
-        }
-        if (changes[feature]) {
-            return changes[feature][key];
-        }
-        if (base[feature]) {
-            return base[feature][key];
-        }
-    }
-
-    _coalesceFeatureStates(): FeatureStates {
-        const changes: FeatureStates = {};
-        for (const sourceLayer in this._stateChanges) {
-            this._state[sourceLayer]  = this._state[sourceLayer] || {};
-            const layerStates = {};
-            for (const id in this._stateChanges[sourceLayer]) {
-                this._state[sourceLayer][id] = util.extend({}, this._state[sourceLayer][id], this._stateChanges[sourceLayer][id]);
-                layerStates[id] = this._state[sourceLayer][id];
-            }
-            changes[sourceLayer] = layerStates;
-        }
-        this._stateChanges = {};
-        return changes;
+        return this._state.getState(feature, key, sourceLayer || '_geojsonTileLayer');
     }
 }
 

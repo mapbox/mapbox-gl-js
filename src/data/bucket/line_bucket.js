@@ -25,7 +25,7 @@ import type {Segment} from '../segment';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import type {FeatureStates} from '../../source/source_cache';
+import type {FeatureStates} from '../../source/source_state';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -142,7 +142,7 @@ class LineBucket implements Bucket {
     }
 
     uploadPending() {
-        return !this.uploaded || this.change;
+        return !this.uploaded || this.changed;
     }
 
     upload(context: Context) {

@@ -5,7 +5,7 @@ import type Style from '../style/style';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
-import type {FeatureStates} from '../source/source_cache';
+import type {FeatureStates} from '../source/source_state';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,

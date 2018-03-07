@@ -34,7 +34,7 @@ import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
-import type {FeatureStates} from '../../source/source_cache';
+import type {FeatureStates} from '../../source/source_state';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -157,15 +157,17 @@ class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
-    upload(context: Context, dynamicIndexBuffer: boolean) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
+    upload(context: Context, dynamicIndexBuffer: boolean, update?: boolean) {
+        if (!update) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
+            this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
+            this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
+            // This is a performance hack so that we can write to opacityVertexArray with uint32s
+            // even though the shaders read uint8s
+            this.opacityVertexBuffer.itemSize = 1;
+        }
         this.programConfigurations.upload(context);
-        this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
-        this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
-        // This is a performance hack so that we can write to opacityVertexArray with uint32s
-        // even though the shaders read uint8s
-        this.opacityVertexBuffer.itemSize = 1;
     }
 
     destroy() {
@@ -327,8 +329,8 @@ class SymbolBucket implements Bucket {
 
                 if ((value.value.kind === 'source' || value.value.kind === 'composite') &&
                     value.value.isStateDependent) {
-                    if (/^text/.test(property.name)) this.stateDependentText = true;
-                    else if (/^icon/.test(property.name)) this.stateDependentIcon = true;
+                    if (/^text/.test(property)) this.stateDependentText = true;
+                    else if (/^icon/.test(property)) this.stateDependentIcon = true;
                 }
             }
         });
@@ -445,8 +447,8 @@ class SymbolBucket implements Bucket {
             this.collisionBox.upload(context);
             this.collisionCircle.upload(context);
         }
-        this.text.upload(context, this.sortFeaturesByY);
-        this.icon.upload(context, this.sortFeaturesByY);
+        this.text.upload(context, this.sortFeaturesByY, this.uploaded && this.changed);
+        this.icon.upload(context, this.sortFeaturesByY, this.uploaded && this.changed);
         this.uploaded = true;
         this.changed = false;
     }
