@@ -9,12 +9,49 @@
   "zoom": 2,
   "sources": {
     "gradient": {
-      "type": "vector",
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}-gradient.vector.pbf"
-      ],
-      "maxzoom": 6,
-      "tileSize": 512
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1,
+              8
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              1,
+              -8
+            ],
+            [
+              -8,
+              -1
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              -1
+            ],
+            [
+              -1,
+              -4
+            ],
+            [
+              -2,
+              0
+            ]
+          ]
+        }
+      },
+      "lineMetrics": true
     }
   },
   "layers": [
@@ -22,7 +59,6 @@
       "id": "line",
       "type": "line",
       "source": "gradient",
-      "source-layer": "line",
       "layout": {
         "line-cap": "round",
         "line-join": "round"

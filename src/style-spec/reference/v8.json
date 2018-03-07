@@ -335,6 +335,11 @@
     "clusterMaxZoom": {
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+    },
+    "lineMetrics": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to calculate line distance metrics. This is required for line layers that specify `line-gradient` values."
     }
   },
   "source_video": {
@@ -3241,7 +3246,7 @@
     },
     "line-gradient": {
       "type": "color",
-      "doc": "Defines a gradient with which to color a line feature. Can only be used with GeoJSON sources.",
+      "doc": "Defines a gradient with which to color a line feature. Can only be used with GeoJSON sources that specify `\"lineMetrics\": true`.",
       "function": "interpolated",
       "zoom-function": false,
       "property-function": false,
@@ -3252,6 +3257,12 @@
         },
         {
           "!": "line-pattern"
+        },
+        {
+          "source": "geojson",
+          "has": {
+            "lineMetrics": true
+          }
         }
       ],
       "sdk-support": {
