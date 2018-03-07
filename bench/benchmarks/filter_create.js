@@ -11,4 +11,4 @@ export default class FilterCreate extends Benchmark {
             createFilter(filter.filter);
         }
     }
-};
+}

@@ -43,4 +43,4 @@ export default class QueryPoint extends Benchmark {
             map.remove();
         }
     }
-};
+}

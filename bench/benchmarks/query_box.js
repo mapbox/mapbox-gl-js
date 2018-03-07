@@ -30,4 +30,4 @@ export default class QueryBox extends Benchmark {
             map.remove();
         }
     }
-};
+}

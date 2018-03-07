@@ -13,4 +13,4 @@ export default class StyleValidate extends Benchmark {
     bench() {
         validateStyle(this.json);
     }
-};
+}

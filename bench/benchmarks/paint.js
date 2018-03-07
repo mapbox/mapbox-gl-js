@@ -34,4 +34,4 @@ export default class Paint extends Benchmark {
             map.remove();
         }
     }
-};
+}

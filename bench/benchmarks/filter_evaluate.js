@@ -46,4 +46,4 @@ export default class FilterEvaluate extends Benchmark {
             }
         }
     }
-};
+}

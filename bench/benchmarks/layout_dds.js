@@ -93,4 +93,4 @@ export default class LayoutDDS extends Layout {
 
         return Promise.resolve(style);
     }
-};
+}

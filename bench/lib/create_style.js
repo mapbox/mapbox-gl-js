@@ -19,4 +19,4 @@ export default function (styleJSON: StyleSpecification): Promise<Style> {
             .on('style.load', () => resolve(style))
             .on('error', reject);
     });
-};
+}

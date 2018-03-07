@@ -34,4 +34,4 @@ export default function (options: any): Promise<Map> {
             .on('error', (e) => reject(e.error))
             .on('remove', () => container.remove());
     });
-};
+}

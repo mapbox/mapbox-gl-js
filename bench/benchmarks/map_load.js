@@ -12,4 +12,4 @@ export default class MapLoad extends Benchmark {
             }
         }).then(map => map.remove());
     }
-};
+}

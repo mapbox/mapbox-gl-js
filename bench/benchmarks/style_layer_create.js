@@ -16,4 +16,4 @@ export default class StyleLayerCreate extends Benchmark {
             createStyleLayer(layer);
         }
     }
-};
+}
