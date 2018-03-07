@@ -5,12 +5,12 @@
  Throttle the given function to run at most every period milliseconds.
  * @private
  */
-module.exports = function throttle(fn: () => void, time: number): () => number {
+module.exports = function throttle(fn: () => void, time: number): () => TimeoutID {
     let pending = false;
-    let timerId = 0;
+    let timerId: TimeoutID = (0: any);
 
     const later = () => {
-        timerId = 0;
+        timerId = (0: any);
         if (pending) {
             fn();
             timerId = setTimeout(later, time);
