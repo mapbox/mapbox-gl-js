@@ -780,7 +780,3 @@ function isRasterType(type) {
 
 export default SourceCache;
 
-export const {
-    maxOverzooming,
-    maxUnderzooming
-} = SourceCache;

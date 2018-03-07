@@ -49,4 +49,4 @@ export default function(baseURL: string,
             callback(null, result);
         }
     }
-};
+}

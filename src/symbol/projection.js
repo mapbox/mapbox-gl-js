@@ -3,7 +3,7 @@
 import Point from '@mapbox/point-geometry';
 
 import { mat4, vec4 } from '@mapbox/gl-matrix';
-import symbolSize from './symbol_size';
+import * as symbolSize from './symbol_size';
 import { addDynamicAttributes } from '../data/bucket/symbol_bucket';
 import properties from '../style/style_layer/symbol_style_layer_properties';
 const symbolLayoutProperties = properties.layout;
@@ -18,16 +18,6 @@ import type {
 } from '../data/array_types';
 import { WritingMode } from '../symbol/shaping';
 
-const exported = {
-    updateLineLabels,
-    getLabelPlaneMatrix,
-    getGlCoordMatrix,
-    project,
-    placeFirstAndLastGlyph,
-    xyTransformMat4
-};
-
-export default exported;
 export { updateLineLabels, getLabelPlaneMatrix, getGlCoordMatrix, project, placeFirstAndLastGlyph, xyTransformMat4 };
 
 /*

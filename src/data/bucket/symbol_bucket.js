@@ -693,7 +693,3 @@ SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 
 export default SymbolBucket;
 export { addDynamicAttributes };
-
-export const {
-    MAX_GLYPHS
-} = SymbolBucket;

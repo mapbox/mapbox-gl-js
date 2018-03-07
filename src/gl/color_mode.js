@@ -32,10 +32,3 @@ ColorMode.unblended = new ColorMode(ColorMode.Replace, Color.transparent, [true,
 ColorMode.alphaBlended = new ColorMode([ONE, ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
 
 export default ColorMode;
-
-export const {
-    Replace,
-    disabled,
-    unblended,
-    alphaBlended
-} = ColorMode;

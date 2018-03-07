@@ -59,4 +59,4 @@ export default function validateProperty(options, propertyType) {
         expressionContext: 'property',
         propertyKey
     }));
-};
+}

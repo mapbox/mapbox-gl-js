@@ -2,16 +2,15 @@
 
 import styleSpec from '../style-spec/reference/latest';
 
-import { endsWith, extend } from '../util/util';
+import { endsWith, extend, sphericalToCartesian } from '../util/util';
 import { Evented } from '../util/evented';
 import {
     validateStyle,
     validateLight,
     emitValidationErrors
 } from './validate_style';
-import { sphericalToCartesian } from '../util/util';
 import Color from '../style-spec/util/color';
-import interpolate from '../style-spec/util/interpolate';
+import { number as interpolate } from '../style-spec/util/interpolate';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type EvaluationParameters from './evaluation_parameters';
@@ -43,9 +42,9 @@ class LightPositionProperty implements Property<[number, number, number], LightP
 
     interpolate(a: LightPosition, b: LightPosition, t: number): LightPosition {
         return {
-            x: interpolate.number(a.x, b.x, t),
-            y: interpolate.number(a.y, b.y, t),
-            z: interpolate.number(a.z, b.z, t),
+            x: interpolate(a.x, b.x, t),
+            y: interpolate(a.y, b.y, t),
+            z: interpolate(a.z, b.z, t),
         };
     }
 }

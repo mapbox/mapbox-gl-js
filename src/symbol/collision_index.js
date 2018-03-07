@@ -2,13 +2,13 @@
 
 import Point from '@mapbox/point-geometry';
 
-import intersectionTests from '../util/intersection_tests';
+import * as intersectionTests from '../util/intersection_tests';
 import Grid from './grid_index';
 import glmatrix from '@mapbox/gl-matrix';
 
 const mat4 = glmatrix.mat4;
 
-import projection from '../symbol/projection';
+import * as projection from '../symbol/projection';
 
 import type Transform from '../geo/transform';
 import type {OverscaledTileID} from '../source/tile_id';

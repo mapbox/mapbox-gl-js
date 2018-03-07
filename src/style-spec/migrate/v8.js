@@ -262,4 +262,4 @@ export default function(style) {
     style.layers = style.layers.concat(symbolLayers);
 
     return style;
-};
+}

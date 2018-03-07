@@ -1,9 +1,9 @@
 
-import colorSpaces from '../util/color_spaces';
+import * as colorSpaces from '../util/color_spaces';
 import Color from '../util/color';
 import extend from '../util/extend';
 import getType from '../util/get_type';
-import interpolate from '../util/interpolate';
+import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
 
 function isFunction(value) {
@@ -37,7 +37,7 @@ function createFunction(parameters, propertySpec) {
         }
     }
 
-    if (parameters.colorSpace && parameters.colorSpace !== 'rgb' && !colorSpaces[parameters.colorSpace]) {
+    if (parameters.colorSpace && parameters.colorSpace !== 'rgb' && !colorSpaces[parameters.colorSpace]) { // eslint-disable-line import/namespace
         throw new Error(`Unknown color space: ${parameters.colorSpace}`);
     }
 
@@ -166,10 +166,10 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
     const outputLower = parameters.stops[index][1];
     const outputUpper = parameters.stops[index + 1][1];
-    let interp = interpolate[propertySpec.type] || identityFunction;
+    let interp = interpolate[propertySpec.type] || identityFunction; // eslint-disable-line import/namespace
 
     if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
-        const colorspace = colorSpaces[parameters.colorSpace];
+        const colorspace = colorSpaces[parameters.colorSpace]; // eslint-disable-line import/namespace
         interp = (a, b) => colorspace.reverse(colorspace.interpolate(colorspace.forward(a), colorspace.forward(b), t));
     }
 

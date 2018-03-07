@@ -10,4 +10,4 @@ export default function validateConstants(options) {
     } else {
         return [];
     }
-};
+}

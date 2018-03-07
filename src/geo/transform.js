@@ -5,7 +5,7 @@ import LngLat from './lng_lat';
 import Point from '@mapbox/point-geometry';
 import Coordinate from './coordinate';
 import { wrap, clamp } from '../util/util';
-import { number as interp } from '../style-spec/util/interpolate';
+import {number as interpolate} from '../style-spec/util/interpolate';
 import tileCover from '../util/tile_cover';
 import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
 import EXTENT from '../data/extent';
@@ -388,8 +388,8 @@ class Transform {
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
         return new Coordinate(
-            interp(x0, x1, t) / this.tileSize,
-            interp(y0, y1, t) / this.tileSize,
+            interpolate(x0, x1, t) / this.tileSize,
+            interpolate(y0, y1, t) / this.tileSize,
             this.zoom)._zoomTo(zoom);
     }
 

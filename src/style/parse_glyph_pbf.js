@@ -39,6 +39,6 @@ function readGlyph(tag: number, glyph: Object, pbf: Protobuf) {
 
 export default function (data: ArrayBuffer | Uint8Array): Array<StyleGlyph> {
     return new Protobuf(data).readFields(readFontstacks, []);
-};
+}
 
 export const GLYPH_PBF_BORDER = border;

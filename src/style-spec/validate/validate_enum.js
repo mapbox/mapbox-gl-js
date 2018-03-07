@@ -18,4 +18,4 @@ export default function validateEnum(options) {
         }
     }
     return errors;
-};
+}

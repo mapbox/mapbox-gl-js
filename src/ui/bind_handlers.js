@@ -180,4 +180,4 @@ export default function bindHandlers(map: Map, options: {}) {
 
         map.scrollZoom.onWheel(e);
     }
-};
+}

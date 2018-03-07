@@ -79,4 +79,4 @@ export default function (features: Array<SymbolFeature>) {
     }
 
     return mergedFeatures.filter((f) => f.geometry);
-};
+}

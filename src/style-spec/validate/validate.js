@@ -68,4 +68,4 @@ export default function validate(options) {
             valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
         }));
     }
-};
+}

@@ -44,4 +44,4 @@ export default function validateLight(options) {
     }
 
     return errors;
-};
+}

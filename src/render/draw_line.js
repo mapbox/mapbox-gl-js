@@ -47,7 +47,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         prevTileZoom = tile.tileID.overscaledZ;
         firstTile = false;
     }
-};
+}
 
 function drawLineTile(program, painter, tile, bucket, layer, coord, programConfiguration, programChanged, tileRatioChanged) {
     const context = painter.context;

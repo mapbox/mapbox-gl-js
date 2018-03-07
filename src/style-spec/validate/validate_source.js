@@ -82,4 +82,4 @@ export default function validateSource(options) {
             styleSpec: styleSpec
         });
     }
-};
+}

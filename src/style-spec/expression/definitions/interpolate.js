@@ -2,7 +2,7 @@
 
 import UnitBezier from '@mapbox/unitbezier';
 
-import interpolate from '../../util/interpolate';
+import * as interpolate from '../../util/interpolate';
 import { toString, NumberType } from '../types';
 import { findStopLessThanOrEqualTo } from '../stops';
 
@@ -165,7 +165,7 @@ class Interpolate implements Expression {
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
-        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t);
+        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t); // eslint-disable-line import/namespace
     }
 
     eachChild(fn: (Expression) => void) {

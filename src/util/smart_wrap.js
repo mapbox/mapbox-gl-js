@@ -52,4 +52,4 @@ export default function(lngLat: LngLat, priorPos: ?Point, transform: Transform):
     }
 
     return lngLat;
-};
+}

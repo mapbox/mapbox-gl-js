@@ -16,7 +16,7 @@ export default function validateFilter(options) {
     } else {
         return validateNonExpressionFilter(options);
     }
-};
+}
 
 function validateNonExpressionFilter(options) {
     const value = options.value;

@@ -27,9 +27,3 @@ DepthMode.ReadWrite = true;
 DepthMode.disabled = new DepthMode(ALWAYS, DepthMode.ReadOnly, [0, 1]);
 
 export default DepthMode;
-
-export const {
-    ReadOnly,
-    ReadWrite,
-    disabled
-} = DepthMode;

@@ -76,7 +76,7 @@ export default function (polygonRings: Array<Array<Point>>, precision?: number =
     }
 
     return bestCell.p;
-};
+}
 
 function compareMax(a, b) {
     return b.max - a.max;

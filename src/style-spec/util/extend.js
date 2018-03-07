@@ -6,4 +6,4 @@ export default function (output, ...inputs) {
         }
     }
     return output;
-};
+}

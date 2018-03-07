@@ -3,8 +3,8 @@
 import CollisionIndex from './collision_index';
 
 import EXTENT from '../data/extent';
-import symbolSize from './symbol_size';
-import projection from './projection';
+import * as symbolSize from './symbol_size';
+import * as projection from './projection';
 import properties from '../style/style_layer/symbol_style_layer_properties';
 const symbolLayoutProperties = properties.layout;
 import assert from 'assert';

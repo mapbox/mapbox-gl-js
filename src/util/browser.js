@@ -52,14 +52,6 @@ const exported = {
 };
 
 export default exported;
-export { now };
-export const {
-    frame,
-    cancelFrame,
-    getImageData,
-    hardwareConcurrency,
-    devicePixelRatio
-} = exported;
 
 if (window.document) {
     const webpImgTest = window.document.createElement('img');

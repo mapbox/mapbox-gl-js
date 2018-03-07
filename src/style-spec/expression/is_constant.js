@@ -37,10 +37,4 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
     return result;
 }
 
-const exported = {
-    isFeatureConstant,
-    isGlobalPropertyConstant
-};
-
-export default exported;
 export { isFeatureConstant, isGlobalPropertyConstant };

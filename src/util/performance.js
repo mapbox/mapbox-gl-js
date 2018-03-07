@@ -10,7 +10,3 @@ const exported = {
 };
 
 export default exported;
-
-export const {
-    getEntriesByName
-} = exported;

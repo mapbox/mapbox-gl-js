@@ -17,4 +17,4 @@ export default function validateColor(options) {
     }
 
     return [];
-};
+}

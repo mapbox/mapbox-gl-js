@@ -14,4 +14,4 @@ export default function getGlobalWorkerPool () {
         globalWorkerPool = new WorkerPool();
     }
     return globalWorkerPool;
-};
+}

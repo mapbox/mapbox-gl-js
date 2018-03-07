@@ -787,9 +787,9 @@ export type MapEvent =
     | 'style.load';
 
 const exported = {
- MapMouseEvent,
- MapTouchEvent,
- MapWheelEvent
+    MapMouseEvent,
+    MapTouchEvent,
+    MapWheelEvent
 };
 
 export default exported;

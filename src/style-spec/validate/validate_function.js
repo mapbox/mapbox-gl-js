@@ -194,4 +194,4 @@ export default function validateFunction(options) {
             styleSpec: options.styleSpec
         });
     }
-};
+}

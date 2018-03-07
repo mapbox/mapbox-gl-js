@@ -2,9 +2,16 @@
 
 import assert from 'assert';
 
-import { ObjectType, ValueType, StringType, NumberType, BooleanType } from '../types';
+import {
+    ObjectType,
+    ValueType,
+    StringType,
+    NumberType,
+    BooleanType,
+    checkSubtype,
+    toString
+} from '../types';
 import RuntimeError from '../runtime_error';
-import { checkSubtype, toString } from '../types';
 import { typeOf } from '../values';
 
 import type { Expression } from '../expression';

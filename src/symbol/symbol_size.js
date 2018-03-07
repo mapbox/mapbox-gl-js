@@ -2,19 +2,12 @@
 
 import { normalizePropertyExpression } from '../style-spec/expression';
 
-import interpolate from '../style-spec/util/interpolate';
+import { number as interpolate } from '../style-spec/util/interpolate';
 import { clamp } from '../util/util';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
 
-const exported = {
-    getSizeData,
-    evaluateSizeForFeature,
-    evaluateSizeForZoom
-};
-
-export default exported;
 export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom };
 
 export type SizeData = {
@@ -96,7 +89,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
     if (sizeData.functionType === 'source') {
         return symbol.lowerSize / 10;
     } else if (sizeData.functionType === 'composite') {
-        return interpolate.number(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
+        return interpolate(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
     } else {
         return part.uSize;
     }

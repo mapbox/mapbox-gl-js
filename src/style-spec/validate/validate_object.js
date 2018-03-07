@@ -58,4 +58,4 @@ export default function validateObject(options) {
     }
 
     return errors;
-};
+}

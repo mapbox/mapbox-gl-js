@@ -12,7 +12,7 @@ import Interpolate from './definitions/interpolate';
 import Coalesce from './definitions/coalesce';
 import Let from './definitions/let';
 import definitions from './definitions';
-import isConstant from './is_constant';
+import * as isConstant from './is_constant';
 import RuntimeError from './runtime_error';
 import { success, error } from '../util/result';
 

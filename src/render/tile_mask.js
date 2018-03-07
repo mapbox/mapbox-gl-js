@@ -5,7 +5,7 @@ import { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
 import type Tile from './../source/tile';
 import type Context from '../gl/context';
 
-export type Mask = {
+type Mask = {
     [number]: CanonicalTileID
 };
 
@@ -75,7 +75,7 @@ export default function(renderableTiles: Array<Tile>, context: Context) {
         computeTileMasks(tile.tileID.wrapped(), tile.tileID, childArray, new OverscaledTileID(0, tile.tileID.wrap + 1, 0, 0, 0), mask);
         tile.setMask(mask, context);
     }
-};
+}
 
 function computeTileMasks(rootTile: OverscaledTileID, ref: OverscaledTileID, childArray: Array<Tile>, lowerBound: OverscaledTileID, mask: Mask) {
     // If the reference or any of its children is found in the list, we need to recurse.

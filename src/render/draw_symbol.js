@@ -3,8 +3,8 @@
 import drawCollisionDebug from './draw_collision_debug';
 
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
-import symbolProjection from '../symbol/projection';
-import symbolSize from '../symbol/symbol_size';
+import * as symbolProjection from '../symbol/projection';
+import * as symbolSize from '../symbol/symbol_size';
 import { mat4 } from '@mapbox/gl-matrix';
 const identityMat4 = mat4.identity(new Float32Array(16));
 import properties from '../style/style_layer/symbol_style_layer_properties';

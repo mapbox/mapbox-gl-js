@@ -1,13 +1,12 @@
 // @flow
 
-import { getVideo } from '../util/ajax';
+import { getVideo, ResourceType } from '../util/ajax';
 
 import ImageSource from './image_source';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import VertexArrayObject from '../render/vertex_array_object';
 import Texture from '../render/texture';
 import { ErrorEvent } from '../util/evented';
-import { ResourceType } from '../util/ajax';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';

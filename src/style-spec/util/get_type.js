@@ -13,4 +13,4 @@ export default function getType(val) {
     } else {
         return typeof val;
     }
-};
+}

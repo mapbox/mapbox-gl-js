@@ -28,7 +28,3 @@ class StencilMode {
 StencilMode.disabled = new StencilMode({ func: ALWAYS, mask: 0 }, 0, 0, KEEP, KEEP, KEEP);
 
 export default StencilMode;
-
-export const {
-    disabled
-} = StencilMode;

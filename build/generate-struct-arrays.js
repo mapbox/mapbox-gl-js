@@ -215,8 +215,7 @@ fs.writeFileSync('src/data/array_types.js',
 // @flow
 
 import assert from 'assert';
-import {StructArray} from '../util/struct_array';
-import {Struct} from '../util/struct_array';
+import {Struct, StructArray} from '../util/struct_array';
 import {register} from '../util/web_worker_transfer';
 import Point from '@mapbox/point-geometry';
 

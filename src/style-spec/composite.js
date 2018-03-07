@@ -47,4 +47,4 @@ export default function (style) {
     });
 
     return style;
-};
+}

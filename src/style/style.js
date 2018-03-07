@@ -16,8 +16,10 @@ import { isMapboxURL, normalizeStyleURL } from '../util/mapbox';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
 import { validateStyle, emitValidationErrors } from './validate_style';
-import { getType as getSourceType } from '../source/source';
-import { setType as setSourceType } from '../source/source';
+import {
+    getType as getSourceType,
+    setType as setSourceType
+} from '../source/source';
 import { queryRenderedFeatures, querySourceFeatures } from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import GeoJSONSource from '../source/geojson_source';

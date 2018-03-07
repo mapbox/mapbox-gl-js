@@ -16,13 +16,6 @@ const WritingMode = {
     horizontalOnly: 3
 };
 
-const exported = {
-    shapeText,
-    shapeIcon,
-    WritingMode
-};
-
-export default exported;
 export { shapeText, shapeIcon, WritingMode };
 
 // The position of a glyph relative to the text's anchor point.

@@ -13,9 +13,3 @@ const config: Config = {
 };
 
 export default config;
-
-export const {
-  API_URL,
-  REQUIRE_ACCESS_TOKEN,
-  ACCESS_TOKEN
-} = config;

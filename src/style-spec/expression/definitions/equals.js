@@ -1,8 +1,6 @@
 // @flow
 
-import { ValueType, BooleanType } from '../types';
-
-import { toString } from '../types';
+import { toString, ValueType, BooleanType } from '../types';
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';

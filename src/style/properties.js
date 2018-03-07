@@ -3,7 +3,7 @@
 import assert from 'assert';
 
 import { clone, extend, easeCubicInOut } from '../util/util';
-import interpolate from '../style-spec/util/interpolate';
+import * as interpolate from '../style-spec/util/interpolate';
 import { normalizePropertyExpression } from '../style-spec/expression';
 import Color from '../style-spec/util/color';
 import { register } from '../util/web_worker_transfer';
