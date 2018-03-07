@@ -1,4 +1,4 @@
-'use strict';
+/* eslint-disable import/unambiguous,no-global-assign */
 
 require('./stub_loader');
 require('../build/flow-remove-types.js');

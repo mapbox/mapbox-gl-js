@@ -3,7 +3,7 @@ import {PNG} from 'pngjs';
 import request from 'request';
 // we're using a require hook to load this file instead of src/util/ajax.js,
 // so we import browser module as if it were in an adjacent file
-import browser from './browser';
+import browser from './browser'; // eslint-disable-line import/no-unresolved
 const cache = {};
 
 /**

@@ -1,4 +1,5 @@
-'use strict';
+
+/* eslint-disable import/unambiguous, no-global-assign */
 
 require('../build/flow-remove-types.js');
 require = require("@std/esm")(module, true);

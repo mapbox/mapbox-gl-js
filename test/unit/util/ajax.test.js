@@ -77,7 +77,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(401);
         });
-        ajax.getJSON({ url:'' }, (error) => {
+        getJSON({ url:'' }, (error) => {
             t.equal(error.status, 401);
             t.equal(error.message, "Unauthorized");
             t.end();
@@ -89,7 +89,7 @@ test('ajax', (t) => {
         window.server.respondWith(request => {
             request.respond(401);
         });
-        ajax.getJSON({ url:'api.mapbox.com' }, (error) => {
+        getJSON({ url:'api.mapbox.com' }, (error) => {
             t.equal(error.status, 401);
             t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens");
             t.end();

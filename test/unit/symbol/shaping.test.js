@@ -1,7 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
 import fs from 'fs';
 import path from 'path';
-import shaping from '../../../src/symbol/shaping';
+import * as shaping from '../../../src/symbol/shaping';
 const WritingMode = shaping.WritingMode;
 
 let UPDATE = false;

@@ -1,13 +1,15 @@
 // @flow
+
 import { test } from 'mapbox-gl-js-test';
 import { register, serialize, deserialize } from '../../../src/util/web_worker_transfer';
-import type {Serialized} from '../../../src/util/web_worker_transfer';
+
+import type { Serialized } from '../../../src/util/web_worker_transfer';
 
 test('round trip', (t) => {
     class Foo {
-        /*:: n: number;*/
-        /*:: buffer: ArrayBuffer;*/
-        /*:: _cached: ?number;*/
+        n: number;
+        buffer: ArrayBuffer;
+        _cached: ?number;
 
         constructor(n) {
             this.n = n;
@@ -30,7 +32,7 @@ test('round trip', (t) => {
     const transferables = [];
     const deserialized = deserialize(serialize(foo, transferables));
     t.assert(deserialized instanceof Foo);
-    const bar/*: Foo*/ = (deserialized/*: any*/);
+    const bar: Foo = (deserialized: any);
 
     t.assert(foo !== bar);
     t.assert(bar.constructor === Foo);
@@ -54,19 +56,19 @@ test('anonymous class', (t) => {
 
 test('custom serialization', (t) => {
     class Bar {
-        /*:: id: string; */
-        /*:: _deserialized: boolean; */
+        id: string;
+        _deserialized: boolean;
         constructor(id) {
             this.id = id;
             this._deserialized = false;
         }
 
-        static serialize(b/*: Bar*/)/*: Serialized*/ {
+        static serialize(b: Bar): Serialized {
             return `custom serialization,${b.id}`;
         }
 
-        static deserialize(input/*: Serialized*/)/*: Bar*/ {
-            const b = new Bar((input/*: any*/).split(',')[1]);
+        static deserialize(input: Serialized): Bar {
+            const b = new Bar((input: any).split(',')[1]);
             b._deserialized = true;
             return b;
         }
@@ -79,7 +81,7 @@ test('custom serialization', (t) => {
 
     const deserialized = deserialize(serialize(bar));
     t.assert(deserialized instanceof Bar);
-    const bar2/*: Bar*/ = (deserialized/*: any*/);
+    const bar2: Bar = (deserialized: any);
     t.equal(bar2.id, bar.id);
     t.assert(bar2._deserialized);
     t.end();
