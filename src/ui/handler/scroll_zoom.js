@@ -36,8 +36,8 @@ class ScrollZoomHandler {
     _aroundPoint: Point;
     _type: 'wheel' | 'trackpad' | null;
     _lastValue: number;
-    _timeout: ?number; // used for delayed-handling of a single wheel movement
-    _finishTimeout: ?number; // used to delay final '{move,zoom}end' events
+    _timeout: ?TimeoutID; // used for delayed-handling of a single wheel movement
+    _finishTimeout: ?TimeoutID; // used to delay final '{move,zoom}end' events
 
     _lastWheelEvent: any;
     _lastWheelEventTime: number;
@@ -175,7 +175,9 @@ class ScrollZoomHandler {
         this._active = true;
         this._map.fire(new Event('movestart', {originalEvent: e}));
         this._map.fire(new Event('zoomstart', {originalEvent: e}));
-        clearTimeout(this._finishTimeout);
+        if (this._finishTimeout) {
+            clearTimeout(this._finishTimeout);
+        }
 
         const pos = DOM.mousePos(this._el, e);
 

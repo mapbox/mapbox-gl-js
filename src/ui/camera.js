@@ -71,7 +71,7 @@ class Camera extends Evented {
     _pitching: boolean;
 
     _bearingSnap: number;
-    _onEaseEnd: number;
+    _onEaseEnd: TimeoutID;
     _easeStart: number;
     _isEasing: boolean;
     _easeOptions: {duration: number, easing: (number) => number};

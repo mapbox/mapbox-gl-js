@@ -43,8 +43,8 @@ class SourceCache extends Evented {
     _sourceErrored: boolean;
     _tiles: {[any]: Tile};
     _cache: Cache<Tile>;
-    _timers: {[any]: number};
-    _cacheTimers: {[any]: number};
+    _timers: {[any]: TimeoutID};
+    _cacheTimers: {[any]: TimeoutID};
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;

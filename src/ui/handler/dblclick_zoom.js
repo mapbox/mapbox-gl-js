@@ -13,7 +13,7 @@ class DoubleClickZoomHandler {
     _map: Map;
     _enabled: boolean;
     _active: boolean;
-    _tapped: ?number;
+    _tapped: ?TimeoutID;
 
     /**
      * @private

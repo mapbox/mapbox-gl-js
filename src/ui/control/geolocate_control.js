@@ -84,7 +84,7 @@ class GeolocateControl extends Evented {
     _dotElement: HTMLElement;
     _geolocateButton: HTMLElement;
     _geolocationWatchID: number;
-    _timeoutId: ?number;
+    _timeoutId: ?TimeoutID;
     _watchState: string;
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
