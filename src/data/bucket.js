@@ -55,6 +55,7 @@ export type IndexedFeature = {
 export interface Bucket {
     layerIds: Array<string>;
     +layers: Array<any>;
+    +stateDependentLayers: Array<any>;
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
     update(states: FeatureStates, vtLayer: VectorTileLayer): void;
@@ -92,7 +93,7 @@ export function deserialize(input: Array<Bucket>, style: Style): {[string]: Buck
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
         (bucket: any).layers = layers;
-
+        (bucket: any).stateDependentLayers = layers.filter((l) => l.isStateDependent());
         for (const layer of layers) {
             output[layer.id] = bucket;
         }

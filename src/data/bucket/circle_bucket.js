@@ -45,7 +45,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     overscaling: number;
     layerIds: Array<string>;
     layers: Array<Layer>;
-    stateDependent: boolean;
+    stateDependentLayers: Array<Layer>;
 
     layoutVertexArray: CircleLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -64,7 +64,6 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
-        this.stateDependent = this.layers[0].isStateDependent();
 
         this.layoutVertexArray = new CircleLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -83,8 +82,8 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
-        if (!this.stateDependent) return;
-        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
+        if (!this.stateDependentLayers.length) return;
+        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers);
     }
 
     isEmpty() {
