@@ -12,6 +12,11 @@
     "geojson": {
       "type": "geojson",
       "data": {}
+    },
+    "lineMetrics": {
+      "type": "geojson",
+      "data": {},
+      "lineMetrics": true
     }
   },
   "layers": [
@@ -119,9 +124,23 @@
       }
     },
     {
-      "id": "line-gradient-good",
+      "id": "line-gradient-missing-lineMetrics",
       "type": "line",
       "source": "geojson",
+      "source-layer": "source-layer",
+      "paint": {
+        "line-gradient": [
+          "interpolate",
+          ["linear"],
+          ["line-progress"],
+          0, "#000000"
+        ]
+      }
+    },
+    {
+      "id": "line-gradient-good",
+      "type": "line",
+      "source": "lineMetrics",
       "source-layer": "source-layer",
       "paint": {
         "line-gradient": [

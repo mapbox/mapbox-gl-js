@@ -621,7 +621,7 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
 
 /**
  * An implementation of `Property` for `heatmap-color` and `line-gradient`. Interpolation is a no-op, and
- * evaluation returns a value in order to indicate its presence, but the real
+ * evaluation returns a boolean value in order to indicate its presence, but the real
  * evaluation happens in StyleLayer classes.
  *
  * @private
@@ -635,7 +635,7 @@ export class ColorRampProperty implements Property<Color, boolean> {
     }
 
     possiblyEvaluate(value: PropertyValue<Color, boolean>, parameters: EvaluationParameters): boolean {
-        return !!value.expression.evaluate(parameters);  // ?
+        return !!value.expression.evaluate(parameters);
     }
 
     interpolate(): boolean { return false; }

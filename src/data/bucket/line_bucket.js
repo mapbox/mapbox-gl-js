@@ -461,7 +461,7 @@ class LineBucket implements Bucket {
         const indexArray = this.indexArray;
 
         if (distancesForScaling) {
-            // Scale line from tile units to [0, 2^15)
+            // For gradient lines, scale distance from tile units to [0, 2^15)
             distance = scaleDistance(distance, distancesForScaling);
         }
 
@@ -502,7 +502,7 @@ class LineBucket implements Bucket {
      * This adds a pie slice triangle near a join to simulate round joins
      *
      * @param currentVertex the line vertex to add buffer vertices for
-     * @param distance the distance from the beggining of the line to the vertex
+     * @param distance the distance from the beginning of the line to the vertex
      * @param extrude the offset of the new vertex from the currentVertex
      * @param lineTurnsLeft whether the line is turning left or right at this angle
      * @private
@@ -534,10 +534,33 @@ class LineBucket implements Bucket {
     }
 }
 
+/**
+ * Knowing the ratio of the full linestring covered by this tiled feature, as well
+ * as the total distance (in tile units) of this tiled feature, and the distance
+ * (in tile units) of the current vertex, we can determine the relative distance
+ * of this vertex along the full linestring feature and scale it to [0, 2^15)
+ *
+ * @param {number} tileDistance the distance from the beginning of the tiled line to this vertex
+ * @param {Object} stats
+ * @param {number} stats.start the ratio (0-1) along a full original linestring feature of the start of this tiled line feature
+ * @param {number} stats.end the ratio (0-1) along a full original linestring feature of the end of this tiled line feature
+ * @param {number} stats.tileTotal the total distance, in tile units, of this tiled line feature
+ *
+ * @private
+ */
 function scaleDistance(tileDistance: number, stats: Object) {
     return ((tileDistance / stats.tileTotal) * (stats.end - stats.start) + stats.start) * (MAX_LINE_DISTANCE - 1);
 }
 
+/**
+ * Calculate the total distance, in tile units, of this tiled line feature
+ *
+ * @param {Array<Point>} vertices the full geometry of this tiled line feature
+ * @param {number} first the index in the vertices array representing the first vertex we should consider
+ * @param {number} len the count of vertices we should consider from `first`
+ *
+ * @private
+ */
 function calculateFullDistance(vertices: Array<Point>, first: number, len: number) {
     let currentVertex, nextVertex;
     let total = 0;
