@@ -64,7 +64,11 @@
     "line": 95
   },
   {
-    "message": "layers[15]: layer \"line-gradient-bad\" specifies a line-gradient, which requires a GeoJSON source",
+    "message": "layers[15]: layer \"line-gradient-bad\" specifies a line-gradient, which requires a GeoJSON source with `lineMetrics` enabled.",
     "line": 107
+  },
+  {
+    "message": "layers[16]: layer \"line-gradient-good\" specifies a line-gradient, which requires a GeoJSON source with `lineMetrics` enabled.",
+    "line": 121
   }
 ]
