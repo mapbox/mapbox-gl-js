@@ -18,17 +18,17 @@ test('BoxZoomHandler fires boxzoomstart and boxzoomend events at appropriate tim
     map.on('boxzoomend',   boxzoomend);
 
     simulate.mousedown(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(boxzoomstart.callCount, 0);
     t.equal(boxzoomend.callCount, 0);
 
     simulate.mousemove(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(boxzoomstart.callCount, 1);
     t.equal(boxzoomend.callCount, 0);
 
     simulate.mouseup(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(boxzoomstart.callCount, 1);
     t.equal(boxzoomend.callCount, 1);
 
@@ -57,17 +57,17 @@ test('BoxZoomHandler avoids conflicts with DragPanHandler when disabled and reen
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(boxzoomstart.callCount, 0);
     t.equal(boxzoomend.callCount, 0);
 
     simulate.mousemove(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(boxzoomstart.callCount, 1);
     t.equal(boxzoomend.callCount, 0);
 
     simulate.mouseup(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(boxzoomstart.callCount, 1);
     t.equal(boxzoomend.callCount, 1);
 
@@ -91,13 +91,13 @@ test('BoxZoomHandler does not begin a box zoom if preventDefault is called on th
     map.on('boxzoomend',   boxzoomend);
 
     simulate.mousedown(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas(), {shiftKey: true, clientX: 5, clientY: 5});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(boxzoomstart.callCount, 0);
     t.equal(boxzoomend.callCount, 0);

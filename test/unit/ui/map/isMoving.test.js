@@ -46,13 +46,13 @@ test('Map#isMoving returns true when drag panning', (t) => {
     });
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });
 
 test('Map#isMoving returns true when drag rotating', (t) => {
@@ -69,13 +69,13 @@ test('Map#isMoving returns true when drag rotating', (t) => {
     });
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas(), {buttons: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });
 
 test('Map#isMoving returns true when scroll zooming', (t) => {
@@ -96,10 +96,10 @@ test('Map#isMoving returns true when scroll zooming', (t) => {
     browserNow.callsFake(() => now);
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     now += 400;
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });
 
 test('Map#isMoving returns true when drag panning and scroll zooming interleave', (t) => {
@@ -116,7 +116,7 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     map.on('zoomend', () => {
         t.equal(map.isMoving(), true);
         simulate.mouseup(map.getCanvas());
-        map._updateCamera();
+        map._renderTaskQueue.run();
     });
 
     map.on('dragend', () => {
@@ -129,18 +129,18 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     // pair is nested within a dragstart/dragend pair.
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     const browserNow = t.stub(browser, 'now');
     let now = 0;
     browserNow.callsFake(() => now);
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     now += 400;
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });

@@ -45,11 +45,11 @@ test('Map#isRotating returns true when drag rotating', (t) => {
     });
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas(), {buttons: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });

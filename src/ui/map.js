@@ -23,6 +23,7 @@ import isSupported from '@mapbox/mapbox-gl-supported';
 import { RGBAImage } from '../util/image';
 import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
+import TaskQueue from '../util/task_queue';
 
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
@@ -37,6 +38,7 @@ import type DragPanHandler from './handler/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
+import type {TaskID} from '../util/task_queue';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -243,6 +245,7 @@ class Map extends Camera {
     _fadeDuration: number;
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
+    _renderTaskQueue: TaskQueue;
 
     scrollZoom: ScrollZoomHandler;
     boxZoom: BoxZoomHandler;
@@ -272,6 +275,7 @@ class Map extends Camera {
         this._fadeDuration = options.fadeDuration;
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
+        this._renderTaskQueue = new TaskQueue();
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -1495,6 +1499,21 @@ class Map extends Camera {
     }
 
     /**
+     * Request that the given callback be executed during the next render
+     * frame.  Schedule a render frame if one is not already scheduled.
+     * @returns An id that can be used to cancel the callback
+     * @private
+     */
+    _requestRenderFrame(callback: () => void): TaskID {
+        this._update();
+        return this._renderTaskQueue.add(callback);
+    }
+
+    _cancelRenderFrame(id: TaskID) {
+        this._renderTaskQueue.remove(id);
+    }
+
+    /**
      * Call when a (re-)render of the map is required:
      * - The style has changed (`setPaintProperty()`, etc.)
      * - Source data has changed (e.g. tiles have finished loading)
@@ -1505,7 +1524,7 @@ class Map extends Camera {
      * @private
      */
     _render() {
-        this._updateCamera();
+        this._renderTaskQueue.run();
 
         let crossFading = false;
 
@@ -1589,6 +1608,7 @@ class Map extends Camera {
     remove() {
         if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
+        this._renderTaskQueue.clear();
         this._frameId = null;
         this.setStyle(null);
         if (typeof window !== 'undefined') {

@@ -49,10 +49,10 @@ test('Map#isZooming returns true when scroll zooming', (t) => {
     t.stub(browser, 'now').callsFake(() => now);
 
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     now += 400;
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });
 
 test('Map#isZooming returns true when double-click zooming', (t) => {
@@ -72,8 +72,8 @@ test('Map#isZooming returns true when double-click zooming', (t) => {
     t.stub(browser, 'now').callsFake(() => now);
 
     simulate.dblclick(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     now += 500;
-    map._updateCamera();
+    map._renderTaskQueue.run();
 });

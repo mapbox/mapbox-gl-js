@@ -9,7 +9,7 @@ import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
-import type Transform from '../../geo/transform';
+import type {TaskID} from '../../util/task_queue';
 
 const inertiaLinearity = 0.3,
     inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
@@ -28,6 +28,7 @@ class DragPanHandler {
     _previousPos: Point;
     _inertia: Array<[number, Point]>;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
+    _frameId: ?TaskID;
 
     /**
      * @private
@@ -159,17 +160,21 @@ class DragPanHandler {
             this._fireEvent('movestart', e);
         }
 
-        this._map._startAnimation(this._onDragFrame);
+        if (!this._frameId) {
+            this._frameId = this._map._requestRenderFrame(this._onDragFrame);
+        }
     }
 
     /**
      * Called in each render frame while dragging is happening.
      * @private
      */
-    _onDragFrame(tr: Transform) {
+    _onDragFrame() {
+        this._frameId = null;
+
         const e = this._lastMoveEvent;
         if (!e) return;
-
+        const tr = this._map.transform;
         tr.setLocationAtPoint(tr.pointLocation(this._previousPos), this._pos);
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
@@ -244,6 +249,10 @@ class DragPanHandler {
     }
 
     _deactivate() {
+        if (this._frameId) {
+            this._map._cancelRenderFrame(this._frameId);
+            this._frameId = null;
+        }
         delete this._lastMoveEvent;
         delete this._previousPos;
         delete this._pos;

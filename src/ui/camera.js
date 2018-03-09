@@ -1,6 +1,14 @@
 // @flow
 
-import { extend, deepEqual, warnOnce, clamp, wrap, ease as defaultEasing } from '../util/util';
+import {
+    bindAll,
+    extend,
+    deepEqual,
+    warnOnce,
+    clamp,
+    wrap,
+    ease as defaultEasing
+} from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
 import LngLat from '../geo/lng_lat';
@@ -11,6 +19,7 @@ import { Event, Evented } from '../util/evented';
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
+import type {TaskID} from '../util/task_queue';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -71,14 +80,16 @@ class Camera extends Evented {
     _pitching: boolean;
 
     _bearingSnap: number;
-    _onEaseEnd: TimeoutID;
+    _easeEndTimeoutID: TimeoutID;
     _easeStart: number;
-    _isEasing: boolean;
     _easeOptions: {duration: number, easing: (number) => number};
 
-    _onFrame: (Transform) => void;
-    _finishFn: () => void;
-    +_update: () => void;
+    _onEaseFrame: (number) => void;
+    _onEaseEnd: () => void;
+    _easeFrameId: ?TaskID;
+
+    +_requestRenderFrame: (() => void) => TaskID;
+    +_cancelRenderFrame: (TaskID) => void;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
@@ -86,6 +97,8 @@ class Camera extends Evented {
         this._zooming = false;
         this.transform = transform;
         this._bearingSnap = options.bearingSnap;
+
+        bindAll(['_renderFrameCallback'], this);
     }
 
     /**
@@ -572,7 +585,7 @@ class Camera extends Evented {
 
         this._prepareEase(eventData, options.noMoveStart);
 
-        clearTimeout(this._onEaseEnd);
+        clearTimeout(this._easeEndTimeoutID);
 
         this._ease((k) => {
             if (this._zooming) {
@@ -601,7 +614,7 @@ class Camera extends Evented {
 
         }, () => {
             if (options.delayEndEvents) {
-                this._onEaseEnd = setTimeout(() => this._afterEase(eventData), options.delayEndEvents);
+                this._easeEndTimeoutID = setTimeout(() => this._afterEase(eventData), options.delayEndEvents);
             } else {
                 this._afterEase(eventData);
             }
@@ -859,7 +872,7 @@ class Camera extends Evented {
     }
 
     isEasing() {
-        return !!this._isEasing;
+        return !!this._easeFrameId;
     }
 
     /**
@@ -869,8 +882,19 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     stop(): this {
-        if (this._onFrame) {
-            this._finishAnimation();
+        if (this._easeFrameId) {
+            this._cancelRenderFrame(this._easeFrameId);
+            delete this._easeFrameId;
+            delete this._onEaseFrame;
+        }
+
+        if (this._onEaseEnd) {
+            // The _onEaseEnd function might emit events which trigger new
+            // animation, which sets a new _onEaseEnd. Ensure we don't delete
+            // it unintentionally.
+            const onEaseEnd = this._onEaseEnd;
+            delete this._onEaseEnd;
+            onEaseEnd.call(this);
         }
         return this;
     }
@@ -883,52 +907,22 @@ class Camera extends Evented {
             finish();
         } else {
             this._easeStart = browser.now();
-            this._isEasing = true;
             this._easeOptions = options;
-            this._startAnimation((_) => {
-                const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
-                frame(this._easeOptions.easing(t));
-                if (t === 1) this.stop();
-            }, () => {
-                this._isEasing = false;
-                finish();
-            });
+            this._onEaseFrame = frame;
+            this._onEaseEnd = finish;
+            this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
         }
     }
 
-    /*
-     * Should be called at the top of the render loop to update camera position
-     * and orientation before they're read by any rendering logic.
-     */
-    _updateCamera() {
-        if (this._onFrame) {
-            this._onFrame(this.transform);
+    // Callback for map._requestRenderFrame
+    _renderFrameCallback() {
+        const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
+        this._onEaseFrame(this._easeOptions.easing(t));
+        if (t < 1) {
+            this._easeFrameId = this._requestRenderFrame(this._renderFrameCallback);
+        } else {
+            this.stop();
         }
-    }
-
-    /*
-     * Start the camera animation using the given onFrame callback.
-     *
-     * @param onFrame A callback responsible for updating the transform to reflect the desired camera position and orientation, and also for firing any relevant camera movement events.
-     * @param finish A callback that is called when this animation is stopped (i.e., when `Camera#stop()` is called).
-     */
-    _startAnimation(onFrame: (Transform) => void,
-                    finish: () => void = () => {}): this {
-        this.stop();
-        this._onFrame = onFrame;
-        this._finishFn = finish;
-        this._update();
-        return this;
-    }
-
-    _finishAnimation() {
-        delete this._onFrame;
-        // The finish function might emit events which trigger new animation,
-        // which sets a new _finishFn. Ensure we don't delete it
-        // unintentionally.
-        const finish = this._finishFn;
-        delete this._finishFn;
-        finish.call(this);
     }
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly

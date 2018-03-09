@@ -20,19 +20,19 @@ test('DragPanHandler fires dragstart, drag, and dragend events at appropriate ti
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 1);
@@ -53,19 +53,19 @@ test('DragPanHandler captures mousemove events during a mouse-triggered drag (re
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(window.document.body);
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 1);
@@ -86,19 +86,19 @@ test('DragPanHandler fires dragstart, drag, and dragend events at appropriate ti
     map.on('dragend',   dragend);
 
     simulate.touchstart(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.touchmove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.touchend(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 1);
@@ -119,19 +119,19 @@ test('DragPanHandler captures touchmove events during a mouse-triggered drag (re
     map.on('dragend',   dragend);
 
     simulate.touchstart(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.touchmove(window.document.body);
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.touchend(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 1);
@@ -147,13 +147,13 @@ test('DragPanHandler prevents mousemove events from firing during a drag (#1555)
     map.on('mousemove', mousemove);
 
     simulate.mousedown(map.getCanvasContainer());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvasContainer());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvasContainer());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.ok(mousemove.notCalled);
 
@@ -168,10 +168,10 @@ test('DragPanHandler ends a mouse-triggered drag if the window blurs', (t) => {
     map.on('dragend', dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.blur(window);
     t.equal(dragend.callCount, 1);
@@ -187,10 +187,10 @@ test('DragPanHandler ends a touch-triggered drag if the window blurs', (t) => {
     map.on('dragend', dragend);
 
     simulate.touchstart(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchmove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.blur(window);
     t.equal(dragend.callCount, 1);
@@ -201,16 +201,18 @@ test('DragPanHandler ends a touch-triggered drag if the window blurs', (t) => {
 
 test('DragPanHandler requests a new render frame after each mousemove event', (t) => {
     const map = createMap();
-    const update = t.spy(map, '_update');
+    const requestFrame = t.spy(map, '_requestRenderFrame');
 
     simulate.mousedown(map.getCanvas());
     simulate.mousemove(map.getCanvas());
-    t.ok(update.callCount > 0);
+    t.ok(requestFrame.callCount > 0);
+
+    map._renderTaskQueue.run();
 
     // https://github.com/mapbox/mapbox-gl-js/issues/6063
-    update.reset();
+    requestFrame.reset();
     simulate.mousemove(map.getCanvas());
-    t.equal(update.callCount, 1);
+    t.equal(requestFrame.callCount, 1);
 
     map.remove();
     t.end();
@@ -229,31 +231,32 @@ test('DragPanHandler can interleave with another handler', (t) => {
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
-    // simulates another handler taking over
-    map.stop();
+    // simulate a scroll zoom
+    simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 0);
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 1);
@@ -276,19 +279,19 @@ test('DragPanHandler can interleave with another handler', (t) => {
         map.on('dragend',   dragend);
 
         simulate.mousedown(map.getCanvas(), {[`${modifier}Key`]: true});
-        map._updateCamera();
+        map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
 
         simulate.mousemove(map.getCanvas(), {[`${modifier}Key`]: true});
-        map._updateCamera();
+        map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
 
         simulate.mouseup(map.getCanvas(), {[`${modifier}Key`]: true});
-        map._updateCamera();
+        map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
@@ -310,19 +313,19 @@ test('DragPanHandler can interleave with another handler', (t) => {
         map.on('dragend',   dragend);
 
         simulate.mousedown(map.getCanvas());
-        map._updateCamera();
+        map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
 
         simulate.mouseup(map.getCanvas(), {[`${modifier}Key`]: true});
-        map._updateCamera();
+        map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
 
         simulate.mousemove(map.getCanvas());
-        map._updateCamera();
+        map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
@@ -345,19 +348,19 @@ test('DragPanHandler does not begin a drag on right button mousedown', (t) => {
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(map.getCanvas(), {buttons: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
@@ -379,37 +382,37 @@ test('DragPanHandler does not end a drag on right button mouseup', (t) => {
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 0);
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
     t.equal(dragend.callCount, 1);
@@ -432,13 +435,13 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the mo
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -462,13 +465,13 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.on('dragend',   dragend);
 
     simulate.touchstart(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchmove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -499,13 +502,13 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.on('dragend',   dragend);
 
     simulate.touchstart(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchmove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -530,10 +533,10 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
         map.on('dragend',   dragend);
 
         simulate.mousedown(map.getCanvas());
-        map._updateCamera();
+        map._renderTaskQueue.run();
 
         simulate.mousemove(map.getCanvas());
-        map._updateCamera();
+        map._renderTaskQueue.run();
 
         t.equal(dragstart.callCount, 1);
         t.equal(drag.callCount, event === 'dragstart' ? 0 : 1);
@@ -542,7 +545,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
         t.equal(map.dragPan.isEnabled(), false);
 
         simulate.mouseup(map.getCanvas());
-        map._updateCamera();
+        map._renderTaskQueue.run();
 
         t.equal(dragstart.callCount, 1);
         t.equal(drag.callCount, event === 'dragstart' ? 0 : 1);
@@ -567,12 +570,12 @@ test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
     map.on('dragend',   dragend);
 
     simulate.mousedown(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     map.dragPan.disable();
 
     simulate.mousemove(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -581,7 +584,7 @@ test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
     t.equal(map.dragPan.isEnabled(), false);
 
     simulate.mouseup(map.getCanvas());
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);

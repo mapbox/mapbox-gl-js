@@ -20,25 +20,25 @@ test('TouchZoomRotateHandler fires zoomstart, zoom, and zoomend events at approp
     map.on('zoomend',   zoomend);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 5}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(zoomstart.callCount, 0);
     t.equal(zoom.callCount, 0);
     t.equal(zoomend.callCount, 0);
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: -10}, {clientX: 0, clientY: 10}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(zoomstart.callCount, 1);
     t.equal(zoom.callCount, 1);
     t.equal(zoomend.callCount, 0);
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 5}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(zoomstart.callCount, 1);
     t.equal(zoom.callCount, 2);
     t.equal(zoomend.callCount, 0);
 
     simulate.touchend(map.getCanvas(), {touches: []});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(zoomstart.callCount, 1);
     t.equal(zoom.callCount, 2);
     t.equal(zoomend.callCount, 1);
@@ -59,25 +59,25 @@ test('TouchZoomRotateHandler fires rotatestart, rotate, and rotateend events at 
     map.on('rotateend',   rotateend);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 5}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(rotatestart.callCount, 0);
     t.equal(rotate.callCount, 0);
     t.equal(rotateend.callCount, 0);
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: -5, clientY: 0}, {clientX: 5, clientY: 0}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 1);
     t.equal(rotateend.callCount, 0);
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: -5}, {clientX: 0, clientY: 5}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 0);
 
     simulate.touchend(map.getCanvas(), {touches: []});
-    map._updateCamera();
+    map._renderTaskQueue.run();
     t.equal(rotatestart.callCount, 1);
     t.equal(rotate.callCount, 2);
     t.equal(rotateend.callCount, 1);
@@ -95,13 +95,13 @@ test('TouchZoomRotateHandler does not begin a gesture if preventDefault is calle
     map.on('move', move);
 
     simulate.touchstart(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 5, clientY: 0}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchmove(map.getCanvas(), {touches: [{clientX: 0, clientY: 0}, {clientX: 0, clientY: 5}]});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas(), {touches: []});
-    map._updateCamera();
+    map._renderTaskQueue.run();
 
     t.equal(move.callCount, 0);
 

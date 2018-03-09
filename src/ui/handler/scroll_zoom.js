@@ -11,7 +11,7 @@ import { Event } from '../../util/evented';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
-import type Transform from '../../geo/transform';
+import type {TaskID} from '../../util/task_queue';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -48,6 +48,8 @@ class ScrollZoomHandler {
     _delta: number;
     _easing: (number) => number;
     _prevEase: {start: number, duration: number, easing: (number) => number};
+
+    _frameId: ?TaskID;
 
     /**
      * @private
@@ -173,6 +175,11 @@ class ScrollZoomHandler {
     _start(e: any) {
         if (!this._delta) return;
 
+        if (this._frameId) {
+            this._map._cancelRenderFrame(this._frameId);
+            this._frameId = null;
+        }
+
         this._active = true;
         this._map.fire(new Event('movestart', {originalEvent: e}));
         this._map.fire(new Event('zoomstart', {originalEvent: e}));
@@ -184,11 +191,16 @@ class ScrollZoomHandler {
 
         this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
         this._aroundPoint = this._map.transform.locationPoint(this._around);
-        this._map._startAnimation(this._onScrollFrame, this._onScrollFinished);
+        if (!this._frameId) {
+            this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+        }
     }
 
-    _onScrollFrame(tr: Transform) {
+    _onScrollFrame() {
+        this._frameId = null;
+
         if (!this.isActive()) return;
+        const tr = this._map.transform;
 
         // if we've had scroll events since the last render frame, consume the
         // accumulated delta, and update the target zoom level accordingly
@@ -216,30 +228,36 @@ class ScrollZoomHandler {
             this._delta = 0;
         }
 
+        let finished = false;
         if (this._type === 'wheel') {
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = this._easing(t);
             tr.zoom = interpolate(this._startZoom, this._targetZoom, k);
-            if (t === 1) this._map.stop();
+            if (t < 1) {
+                if (!this._frameId) {
+                    this._frameId = this._map._requestRenderFrame(this._onScrollFrame);
+                }
+            } else {
+                finished = true;
+            }
         } else {
             tr.zoom = this._targetZoom;
-            this._map.stop();
+            finished = true;
         }
 
         tr.setLocationAtPoint(this._around, this._aroundPoint);
 
         this._map.fire(new Event('move', {originalEvent: this._lastWheelEvent}));
         this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
-    }
 
-    _onScrollFinished() {
-        if (!this.isActive()) return;
-        this._active = false;
-        this._finishTimeout = setTimeout(() => {
-            this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
-            this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
-            delete this._targetZoom;
-        }, 200);
+        if (finished) {
+            this._active = false;
+            this._finishTimeout = setTimeout(() => {
+                this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
+                this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
+                delete this._targetZoom;
+            }, 200);
+        }
     }
 
     _smoothOutEasing(duration: number) {

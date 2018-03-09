@@ -10,7 +10,7 @@ import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
-import type Transform from '../../geo/transform';
+import type {TaskID} from '../../util/task_queue';
 
 const inertiaLinearity = 0.25,
     inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
@@ -35,6 +35,7 @@ class DragRotateHandler {
     _previousPos: Point;
     _inertia: Array<[number, number]>;
     _center: Point;
+    _frameId: ?TaskID;
 
     /**
      * @param {Map} map The Mapbox GL JS map to add the handler to.
@@ -169,12 +170,17 @@ class DragRotateHandler {
             }
         }
 
-        this._map._startAnimation(this._onDragFrame);
+        if (!this._frameId) {
+            this._frameId = this._map._requestRenderFrame(this._onDragFrame);
+        }
     }
 
-    _onDragFrame(tr: Transform) {
+    _onDragFrame() {
+        this._frameId = null;
+
         const e = this._lastMoveEvent;
         if (!e) return;
+        const tr = this._map.transform;
 
         const p1 = this._previousPos,
             p2 = this._pos,
@@ -251,6 +257,10 @@ class DragRotateHandler {
     }
 
     _deactivate() {
+        if (this._frameId) {
+            this._map._cancelRenderFrame(this._frameId);
+            this._frameId = null;
+        }
         delete this._lastMoveEvent;
         delete this._previousPos;
     }
