@@ -25,10 +25,8 @@ const config = [{
     output: {
         file: 'bench/benchmarks_generated.js',
         format: 'umd',
-        sourcemap: 'inline'
-    },
-    plugins: [sourcemaps()],
-    intro: `
+        sourcemap: 'inline',
+        intro: `
 let shared, worker;
 function define(_, module) {
 if (!shared) {
@@ -45,6 +43,8 @@ if (!shared) {
 }
 }
 `
+    },
+    plugins: [sourcemaps()],
 }];
 
 export default config;

@@ -30,10 +30,8 @@ const config = [{
         name: 'mapboxgl',
         file: outputFile,
         format: 'umd',
-        sourcemap: production ? true : 'inline'
-    },
-    plugins: [sourcemaps()],
-    intro: `
+        sourcemap: production ? true : 'inline',
+        intro: `
 let shared, worker, mapboxgl;
 // define gets called three times: one for each chunk. we rely on the order
 // they're imported to know which is which
@@ -51,6 +49,8 @@ if (!shared) {
     mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
 }
 }`
+    },
+    plugins: [sourcemaps()],
 }];
 
 export default config
