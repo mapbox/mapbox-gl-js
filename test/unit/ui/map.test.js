@@ -1215,6 +1215,62 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#setFeatureState', (t) => {
+        t.test('sets state', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState('geojson', '12345', 'hover', true, 'source-layer');
+                t.equal(map.getFeatureState('geojson', '12345', 'hover', 'source-layer'), true);
+                t.equal(map.getFeatureState('geojson', '12345', 'hover'), undefined);
+                t.end();
+            });
+        });
+        t.test('throw before loaded', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            t.throws(() => {
+                map.setFeatureState('geojson', '12345', 'hover', true);
+            }, Error, /load/i);
+
+            t.end();
+        });
+        t.test('fires an error if source not found', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /source/);
+                    t.end();
+                });
+                map.setFeatureState('vector', '12345', 'hover', true);
+            });
+        });
+
+        t.end();
+    });
+
     t.test('error event', (t) => {
         t.test('logs errors to console when it has NO listeners', (t) => {
             const map = createMap();

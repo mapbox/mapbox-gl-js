@@ -89,6 +89,24 @@ test('SourceCache#addTile', (t) => {
         sourceCache._addTile(tileID);
     });
 
+    t.test('updates feature state on added uncached tile', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+        let updateFeaturesSpy;
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                sourceCache.on('data', () => {
+                    t.equal(updateFeaturesSpy.getCalls().length, 1);
+                    t.end();
+                });
+                updateFeaturesSpy = t.spy(tile, 'updateFeatureState');
+                tile.state = 'loaded';
+                callback();
+            }
+        });
+        sourceCache.onAdd();
+        sourceCache._addTile(tileID);
+    });
+
     t.test('uses cached tile', (t) => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         let load = 0,
@@ -112,6 +130,32 @@ test('SourceCache#addTile', (t) => {
 
         t.equal(load, 1);
         t.equal(add, 1);
+
+        t.end();
+    });
+
+    t.test('updates feature state on cached tile', (t) => {
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'loaded';
+                callback();
+            }
+        });
+
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
+
+        const tile = sourceCache._addTile(tileID);
+        const updateFeaturesSpy = t.spy(tile, 'updateFeatureState');
+
+        sourceCache._removeTile(tileID.key);
+        sourceCache._addTile(tileID);
+
+        t.equal(updateFeaturesSpy.getCalls().length, 1);
 
         t.end();
     });

@@ -767,19 +767,30 @@ class Style extends Evented {
     }
 
     setFeatureState(source: string, feature: string, key: string, value: any, sourceLayer?: string) {
-        if (this.sourceCaches[source] === undefined) {
-            throw new Error('There is no source with this ID');
+        this._checkLoaded();
+        const sourceCache = this.sourceCaches[source];
+
+        if (sourceCache === undefined) {
+            this.fire('error', {
+                error: new Error(`The source '${source}' does not exist in the map's style.`)
+            });
+            return;
         }
 
-        const sourceCache = this.sourceCaches[source];
         sourceCache.setFeatureState(feature, key, value, sourceLayer);
     }
 
     getFeatureState(source: string, feature: string, key?: string, sourceLayer?: string) {
-        if (this.sourceCaches[source] === undefined) {
-            throw new Error('There is no source with this ID');
-        }
+        this._checkLoaded();
         const sourceCache = this.sourceCaches[source];
+
+        if (sourceCache === undefined) {
+            this.fire('error', {
+                error: new Error(`The source '${source}' does not exist in the map's style.`)
+            });
+            return;
+        }
+
         return sourceCache.getFeatureState(feature, key, sourceLayer);
     }
 
