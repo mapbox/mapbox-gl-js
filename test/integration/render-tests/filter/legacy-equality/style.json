@@ -2,39 +2,54 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
-      "height": 512
+      "width": 64,
+      "height": 64
     }
   },
-  "zoom": 1,
   "sources": {
-    "places": {
+    "circles": {
       "type": "geojson",
-      "data": "local://data/places.geojson"
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "position": "right"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                8,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "position": "left"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -8,
+                0
+              ]
+            }
+          }
+        ]
+      }
     }
   },
-  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
-      "id": "background",
-      "type": "background",
+      "id": "circles",
+      "filter": ["==", "position", "left"],
+      "type": "circle",
+      "source": "circles",
       "paint": {
-        "background-color": "#fff"
-      }
-    },
-    {
-      "id": "places",
-      "type": "symbol",
-      "source": "places",
-      "filter": ["==", "featureclass", "waterfall"],
-      "layout": {
-        "text-field": "{name}",
-        "text-font": [
-          "Open Sans Semibold",
-          "Arial Unicode MS Bold"
-        ],
-        "text-size": 12,
-        "text-allow-overlap": true
+        "circle-radius": 7
       }
     }
   ]
