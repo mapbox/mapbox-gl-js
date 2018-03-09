@@ -1,0 +1,41 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "zoom": 1,
+  "sources": {
+    "places": {
+      "type": "geojson",
+      "data": "local://data/places.geojson"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#fff"
+      }
+    },
+    {
+      "id": "places",
+      "type": "symbol",
+      "source": "places",
+      "filter": ["==", ["get", "featureclass"], "waterfall"],
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12,
+        "text-allow-overlap": true
+      }
+    }
+  ]
+}
