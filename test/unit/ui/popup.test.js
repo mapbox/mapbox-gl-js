@@ -97,6 +97,21 @@ test('Popup fires close event when removed', (t) => {
     t.end();
 });
 
+
+test('Popup fires open event when added', (t) => {
+    const map = createMap();
+    const onOpen = t.spy();
+
+    new Popup()
+        .setText("Test")
+        .setLngLat([0, 0])
+        .on('open', onOpen)
+        .addTo(map);
+
+    t.ok(onOpen.called);
+    t.end();
+});
+
 test('Popup content can be set via setText', (t) => {
     const map = createMap();
 
