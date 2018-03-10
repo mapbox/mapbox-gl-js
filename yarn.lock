@@ -183,6 +183,10 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@mapbox/query-selector-contains-node/-/query-selector-contains-node-1.0.0.tgz#b5e1fdbaa0f7e627dc7eeeb625619f09ba2cca0c"
 
+"@mapbox/rollup@0.57.0-await.upstream.pr2035":
+  version "0.57.0-await.upstream.pr2035"
+  resolved "https://registry.yarnpkg.com/@mapbox/rollup/-/rollup-0.57.0-await.upstream.pr2035.tgz#94d040c7599a2b8fc97715c6e6787bae4ece0049"
+
 "@mapbox/scroll-restorer@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@mapbox/scroll-restorer/-/scroll-restorer-1.0.0.tgz#a4eb70a4266612d8e638ff8857c295d57c1c8ead"
@@ -8650,10 +8654,6 @@ rollup-pluginutils@^2.0.1:
   dependencies:
     estree-walker "^0.3.0"
     micromatch "^2.3.11"
-
-rollup@^0.56.3:
-  version "0.56.3"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-0.56.3.tgz#7900695531afa1badd3235f285cc4aa0d49ce254"
 
 run-async@^2.2.0:
   version "2.3.0"
