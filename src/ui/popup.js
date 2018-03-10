@@ -95,6 +95,18 @@ class Popup extends Evented {
             this._map.on('click', this._onClickClose);
         }
         this._update();
+
+        /**
+         * Fired when the popup is opened manually or programatically.
+         *
+         * @event open
+         * @memberof Popup
+         * @instance
+         * @type {Object}
+         * @property {Popup} popup object that was opened
+         */
+        this.fire(new Event('open'));
+
         return this;
     }
 
