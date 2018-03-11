@@ -1,3 +1,5 @@
+// @flow
+
 import { test } from 'mapbox-gl-js-test';
 import fs from 'fs';
 import path from 'path';
@@ -21,17 +23,24 @@ test('loadGlyphRange', (t) => {
         t.ok(transform.calledOnce);
         t.deepEqual(transform.getCall(0).args, ['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
 
+        if (!result) return t.fail(); // appease flow
+
         t.equal(Object.keys(result).length, 223);
-        for (const id in result) {
-            t.equal(result[id].id, Number(id));
-            t.ok(result[id].metrics);
-            t.equal(typeof result[id].metrics.width, 'number');
-            t.equal(typeof result[id].metrics.height, 'number');
-            t.equal(typeof result[id].metrics.top, 'number');
-            t.equal(typeof result[id].metrics.advance, 'number');
+        for (const key in result) {
+            const id = Number(key);
+            const glyph = result[id];
+            if (!glyph) return t.fail(); // appease flow
+            t.equal(glyph.id, Number(id));
+            t.ok(glyph.metrics);
+            t.equal(typeof glyph.metrics.width, 'number');
+            t.equal(typeof glyph.metrics.height, 'number');
+            t.equal(typeof glyph.metrics.top, 'number');
+            t.equal(typeof glyph.metrics.advance, 'number');
         }
         t.end();
     });
+
+    if (!request) return t.fail(); // appease flow
 
     t.equal(request.url, 'https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf');
     request.setStatus(200);

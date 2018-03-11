@@ -186,7 +186,6 @@ class ParsingContext {
 export default ParsingContext;
 
 function isConstant(expression: Expression) {
-    // requires within function body to workaround circular dependency
     if (expression instanceof Var) {
         return false;
     } else if (expression instanceof CompoundExpression && expression.name === 'error') {
