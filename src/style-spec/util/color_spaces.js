@@ -1,7 +1,8 @@
 // @flow
 
-const Color = require('./color');
-const interpolateNumber = require('./interpolate').number;
+import Color from './color';
+
+import {number as interpolateNumber} from './interpolate';
 
 type LABColor = {
     l: number,
@@ -125,15 +126,14 @@ function interpolateHcl(from: HCLColor, to: HCLColor, t: number) {
     };
 }
 
-module.exports = {
-    lab: {
-        forward: rgbToLab,
-        reverse: labToRgb,
-        interpolate: interpolateLab
-    },
-    hcl: {
-        forward: rgbToHcl,
-        reverse: hclToRgb,
-        interpolate: interpolateHcl
-    }
+export const lab = {
+    forward: rgbToLab,
+    reverse: labToRgb,
+    interpolate: interpolateLab
+};
+
+export const hcl = {
+    forward: rgbToHcl,
+    reverse: hclToRgb,
+    interpolate: interpolateHcl
 };

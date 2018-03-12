@@ -1,17 +1,14 @@
 // @flow
 
-const {normalizePropertyExpression} = require('../style-spec/expression');
-const interpolate = require('../style-spec/util/interpolate');
-const util = require('../util/util');
+import { normalizePropertyExpression } from '../style-spec/expression';
+
+import { number as interpolate } from '../style-spec/util/interpolate';
+import { clamp } from '../util/util';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
 
-module.exports = {
-    getSizeData,
-    evaluateSizeForFeature,
-    evaluateSizeForZoom
-};
+export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom };
 
 export type SizeData = {
     functionType: 'constant',
@@ -92,7 +89,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
     if (sizeData.functionType === 'source') {
         return symbol.lowerSize / 10;
     } else if (sizeData.functionType === 'composite') {
-        return interpolate.number(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
+        return interpolate(symbol.lowerSize / 10, symbol.upperSize / 10, part.uSizeT);
     } else {
         return part.uSize;
     }
@@ -118,9 +115,11 @@ function evaluateSizeForZoom(sizeData: SizeData, currentZoom: number, property: 
         // between the camera function values at a pair of zoom stops covering
         // [tileZoom, tileZoom + 1] in order to be consistent with this
         // restriction on composite functions
-        const t = util.clamp(
+        const t = clamp(
             expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max),
-            0, 1);
+            0,
+            1
+        );
 
         return {
             uSizeT: 0,
@@ -131,7 +130,11 @@ function evaluateSizeForZoom(sizeData: SizeData, currentZoom: number, property: 
         const expression = ((normalizePropertyExpression(propertyValue, property.specification): any): CompositeExpression);
 
         return {
-            uSizeT: util.clamp(expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max), 0, 1),
+            uSizeT: clamp(
+                expression.interpolationFactor(currentZoom, zoomRange.min, zoomRange.max),
+                0,
+                1
+            ),
             uSize: 0
         };
     }

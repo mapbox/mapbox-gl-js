@@ -1,4 +1,3 @@
 // @flow
-
 /* eslint-env browser */
-module.exports = (self: Window);
+export default (self: Window);

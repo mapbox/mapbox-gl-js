@@ -14,4 +14,4 @@ class RuntimeError {
     }
 }
 
-module.exports = RuntimeError;
+export default RuntimeError;

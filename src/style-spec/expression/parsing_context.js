@@ -1,12 +1,18 @@
 // @flow
 
-const Scope = require('./scope');
-const {checkSubtype} = require('./types');
-const ParsingError = require('./parsing_error');
-const Literal = require('./definitions/literal');
-const Assertion = require('./definitions/assertion');
-const ArrayAssertion = require('./definitions/array');
-const Coercion = require('./definitions/coercion');
+import Scope from './scope';
+
+import { checkSubtype } from './types';
+import ParsingError from './parsing_error';
+import Literal from './definitions/literal';
+import Assertion from './definitions/assertion';
+import ArrayAssertion from './definitions/array';
+import Coercion from './definitions/coercion';
+import EvaluationContext from './evaluation_context';
+import CompoundExpression from './compound_expression';
+import {isGlobalPropertyConstant, isFeatureConstant} from './is_constant';
+import Var from './definitions/var';
+
 
 import type {Expression, ExpressionRegistry} from './expression';
 import type {Type} from './types';
@@ -112,7 +118,7 @@ class ParsingContext {
                 // it immediately and replace it with a literal value in the
                 // parsed/compiled result.
                 if (!(parsed instanceof Literal) && isConstant(parsed)) {
-                    const ec = new (require('./evaluation_context'))();
+                    const ec = new EvaluationContext();
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
                     } catch (e) {
@@ -177,14 +183,9 @@ class ParsingContext {
     }
 }
 
-module.exports = ParsingContext;
+export default ParsingContext;
 
 function isConstant(expression: Expression) {
-    // requires within function body to workaround circular dependency
-    const {CompoundExpression} = require('./compound_expression');
-    const {isGlobalPropertyConstant, isFeatureConstant} = require('./is_constant');
-    const Var = require('./definitions/var');
-
     if (expression instanceof Var) {
         return false;
     } else if (expression instanceof CompoundExpression && expression.name === 'error') {

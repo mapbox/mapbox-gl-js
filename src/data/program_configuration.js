@@ -1,23 +1,22 @@
 // @flow
 
-import type {GlobalProperties} from "../style-spec/expression/index";
-
-const packUint8ToFloat = require('../shaders/encode_attribute').packUint8ToFloat;
-const Color = require('../style-spec/util/color');
-const {register} = require('../util/web_worker_transfer');
-const {PossiblyEvaluatedPropertyValue} = require('../style/properties');
-const {
-    StructArrayLayout1f4,
-    StructArrayLayout2f8,
-    StructArrayLayout4f16
-} = require('./array_types');
+import { packUint8ToFloat } from '../shaders/encode_attribute';
+import Color from '../style-spec/util/color';
+import { register } from '../util/web_worker_transfer';
+import { PossiblyEvaluatedPropertyValue } from '../style/properties';
+import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {StructArray, StructArrayMember} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type Program from '../render/program';
-import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
+import type {
+    Feature,
+    GlobalProperties,
+    SourceExpression,
+    CompositeExpression
+} from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 
 function packColor(color: Color): [number, number] {
@@ -425,7 +424,10 @@ register('CompositeExpressionBinder', CompositeExpressionBinder);
 register('ProgramConfiguration', ProgramConfiguration, {omit: ['_buffers']});
 register('ProgramConfigurationSet', ProgramConfigurationSet);
 
-module.exports = {
+const exported = {
     ProgramConfiguration,
     ProgramConfigurationSet
 };
+
+export default exported;
+export { ProgramConfiguration, ProgramConfigurationSet };

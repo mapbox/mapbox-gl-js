@@ -1,10 +1,11 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const LngLatBounds = require('../../geo/lng_lat_bounds');
-const util = require('../../util/util');
-const window = require('../../util/window');
-const {Event} = require('../../util/evented');
+import DOM from '../../util/dom';
+
+import LngLatBounds from '../../geo/lng_lat_bounds';
+import { bindAll } from '../../util/util';
+import window from '../../util/window';
+import { Event } from '../../util/evented';
 
 import type Map from '../map';
 
@@ -29,7 +30,7 @@ class BoxZoomHandler {
         this._el = map.getCanvasContainer();
         this._container = map.getContainer();
 
-        util.bindAll([
+        bindAll([
             '_onMouseMove',
             '_onMouseUp',
             '_onKeyDown'
@@ -161,4 +162,4 @@ class BoxZoomHandler {
     }
 }
 
-module.exports = BoxZoomHandler;
+export default BoxZoomHandler;

@@ -1,8 +1,7 @@
 'use strict';
 
-require('flow-remove-types/register');
-
 const fs = require('fs');
+
 const ejs = require('ejs');
 const spec = require('../src/style-spec/reference/v8');
 const Color = require('../src/style-spec/util/color');

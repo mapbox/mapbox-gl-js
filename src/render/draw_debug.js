@@ -1,19 +1,20 @@
 // @flow
 
-const browser = require('../util/browser');
-const mat4 = require('@mapbox/gl-matrix').mat4;
-const EXTENT = require('../data/extent');
-const VertexArrayObject = require('./vertex_array_object');
-const {PosArray} = require('../data/array_types');
-const posAttributes = require('../data/pos_attributes');
-const DepthMode = require('../gl/depth_mode');
-const StencilMode = require('../gl/stencil_mode');
+import browser from '../util/browser';
+
+import { mat4 } from '@mapbox/gl-matrix';
+import EXTENT from '../data/extent';
+import VertexArrayObject from './vertex_array_object';
+import { PosArray } from '../data/array_types';
+import posAttributes from '../data/pos_attributes';
+import DepthMode from '../gl/depth_mode';
+import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = drawDebug;
+export default drawDebug;
 
 function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {

@@ -1,6 +1,6 @@
 // @flow
 
-const util = require('../../util/util');
+import { bindAll } from '../../util/util';
 
 import type Map from '../map';
 
@@ -34,7 +34,7 @@ class KeyboardHandler {
         this._map = map;
         this._el = map.getCanvasContainer();
 
-        util.bindAll([
+        bindAll([
             '_onKeyDown'
         ], this);
     }
@@ -158,4 +158,4 @@ function easeOut(t) {
     return t * (2 - t);
 }
 
-module.exports = KeyboardHandler;
+export default KeyboardHandler;

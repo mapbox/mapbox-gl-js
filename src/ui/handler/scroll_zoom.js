@@ -1,12 +1,13 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const browser = require('../../util/browser');
-const window = require('../../util/window');
-const interpolate = require('../../style-spec/util/interpolate').number;
-const LngLat = require('../../geo/lng_lat');
-const {Event} = require('../../util/evented');
+import DOM from '../../util/dom';
+
+import { ease as _ease, bindAll, bezier } from '../../util/util';
+import browser from '../../util/browser';
+import window from '../../util/window';
+import { number as interpolate } from '../../style-spec/util/interpolate';
+import LngLat from '../../geo/lng_lat';
+import { Event } from '../../util/evented';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
@@ -57,7 +58,7 @@ class ScrollZoomHandler {
 
         this._delta = 0;
 
-        util.bindAll([
+        bindAll([
             '_onWheel',
             '_onTimeout',
             '_onScrollFrame',
@@ -242,7 +243,7 @@ class ScrollZoomHandler {
     }
 
     _smoothOutEasing(duration: number) {
-        let easing = util.ease;
+        let easing = _ease;
 
         if (this._prevEase) {
             const ease = this._prevEase,
@@ -253,7 +254,7 @@ class ScrollZoomHandler {
                 x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01,
                 y = Math.sqrt(0.27 * 0.27 - x * x);
 
-            easing = util.bezier(x, y, 0.25, 1);
+            easing = bezier(x, y, 0.25, 1);
         }
 
         this._prevEase = {
@@ -266,4 +267,4 @@ class ScrollZoomHandler {
     }
 }
 
-module.exports = ScrollZoomHandler;
+export default ScrollZoomHandler;

@@ -1,12 +1,14 @@
 // @flow
 
-const CollisionIndex = require('./collision_index');
-const EXTENT = require('../data/extent');
-const symbolSize = require('./symbol_size');
-const projection = require('./projection');
-const symbolLayoutProperties = require('../style/style_layer/symbol_style_layer_properties').layout;
-const assert = require('assert');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+import CollisionIndex from './collision_index';
+
+import EXTENT from '../data/extent';
+import * as symbolSize from './symbol_size';
+import * as projection from './projection';
+import properties from '../style/style_layer/symbol_style_layer_properties';
+const symbolLayoutProperties = properties.layout;
+import assert from 'assert';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
 import type Transform from '../geo/transform';
 import type StyleLayer from '../style/style_layer';
@@ -416,4 +418,4 @@ function packOpacity(opacityState: OpacityState): number {
         opacityBits * shift1 + targetBit;
 }
 
-module.exports = Placement;
+export default Placement;

@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const util = require('../../../src/util/util');
-const StyleLayerIndex = require('../../../src/style/style_layer_index');
+import { test } from 'mapbox-gl-js-test';
+import { mapObject } from '../../../src/util/util';
+import StyleLayerIndex from '../../../src/style/style_layer_index';
 
 test('StyleLayerIndex#replace', (t) => {
     const index = new StyleLayerIndex([
@@ -62,8 +60,8 @@ test('StyleLayerIndex#familiesBySource', (t) => {
         { id: '6', type: 'background' }
     ]);
 
-    const ids = util.mapObject(index.familiesBySource, (bySource) => {
-        return util.mapObject(bySource, (families) => {
+    const ids = mapObject(index.familiesBySource, (bySource) => {
+        return mapObject(bySource, (families) => {
             return families.map((family) => {
                 return family.map((layer) => layer.id);
             });

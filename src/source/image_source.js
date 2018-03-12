@@ -1,17 +1,18 @@
 // @flow
 
-const util = require('../util/util');
-const {CanonicalTileID} = require('./tile_id');
-const LngLat = require('../geo/lng_lat');
-const Point = require('@mapbox/point-geometry');
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const ajax = require('../util/ajax');
-const browser = require('../util/browser');
-const EXTENT = require('../data/extent');
-const {RasterBoundsArray} = require('../data/array_types');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const VertexArrayObject = require('../render/vertex_array_object');
-const Texture = require('../render/texture');
+import { getCoordinatesCenter } from '../util/util';
+
+import { CanonicalTileID } from './tile_id';
+import LngLat from '../geo/lng_lat';
+import Point from '@mapbox/point-geometry';
+import { Event, ErrorEvent, Evented } from '../util/evented';
+import { getImage, ResourceType } from '../util/ajax';
+import browser from '../util/browser';
+import EXTENT from '../data/extent';
+import { RasterBoundsArray } from '../data/array_types';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -96,7 +97,7 @@ class ImageSource extends Evented implements Source {
 
         this.url = this.options.url;
 
-        ajax.getImage(this.map._transformRequest(this.url, ajax.ResourceType.Image), (err, image) => {
+        getImage(this.map._transformRequest(this.url, ResourceType.Image), (err, image) => {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (image) {
@@ -143,7 +144,7 @@ class ImageSource extends Evented implements Source {
 
         // Compute the coordinates of the tile we'll use to hold this image's
         // render data
-        const centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+        const centerCoord = this.centerCoord = getCoordinatesCenter(cornerZ0Coords);
         // `column` and `row` may be fractional; round them down so that they
         // represent integer tile coordinates
         centerCoord.column = Math.floor(centerCoord.column);
@@ -239,4 +240,4 @@ class ImageSource extends Evented implements Source {
     }
 }
 
-module.exports = ImageSource;
+export default ImageSource;

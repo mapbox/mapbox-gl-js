@@ -1,11 +1,12 @@
 // @flow
 
-const Layout = require('./layout');
-const {OverscaledTileID} = require('../../src/source/tile_id');
+import Layout from './layout';
+
+import { OverscaledTileID } from '../../src/source/tile_id';
 
 const LAYER_COUNT = 2;
 
-module.exports = class LayoutDDS extends Layout {
+export default class LayoutDDS extends Layout {
     tileIDs(): Array<OverscaledTileID> {
         return [
             new OverscaledTileID(15, 0, 15, 9373, 12535)
@@ -92,4 +93,4 @@ module.exports = class LayoutDDS extends Layout {
 
         return Promise.resolve(style);
     }
-};
+}

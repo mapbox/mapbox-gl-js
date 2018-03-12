@@ -1,4 +1,4 @@
-const React = require('react');
+import React from 'react';
 
 function identity(x) {
     return x;
@@ -82,4 +82,4 @@ class Axis extends React.Component {
     }
 }
 
-module.exports = Axis;
+export default Axis;

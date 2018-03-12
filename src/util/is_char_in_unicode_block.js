@@ -288,4 +288,4 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Supplementary Private Use Area-B': (char) => char >= 0x100000 && char <= 0x10FFFF,
 };
 
-module.exports = unicodeBlockLookup;
+export default unicodeBlockLookup;

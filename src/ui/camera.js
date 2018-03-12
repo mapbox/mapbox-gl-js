@@ -1,12 +1,12 @@
 // @flow
 
-const util = require('../util/util');
-const interpolate = require('../style-spec/util/interpolate').number;
-const browser = require('../util/browser');
-const LngLat = require('../geo/lng_lat');
-const LngLatBounds = require('../geo/lng_lat_bounds');
-const Point = require('@mapbox/point-geometry');
-const {Event, Evented} = require('../util/evented');
+import { extend, deepEqual, warnOnce, clamp, wrap, ease as defaultEasing } from '../util/util';
+import { number as interpolate } from '../style-spec/util/interpolate';
+import browser from '../util/browser';
+import LngLat from '../geo/lng_lat';
+import LngLatBounds from '../geo/lng_lat_bounds';
+import Point from '@mapbox/point-geometry';
+import { Event, Evented } from '../util/evented';
 
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -127,7 +127,7 @@ class Camera extends Evented {
      */
     panBy(offset: PointLike, options?: AnimationOptions, eventData?: Object) {
         offset = Point.convert(offset).mult(-1);
-        return this.panTo(this.transform.center, util.extend({offset}, options), eventData);
+        return this.panTo(this.transform.center, extend({offset}, options), eventData);
     }
 
     /**
@@ -142,7 +142,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: Object) {
-        return this.easeTo(util.extend({
+        return this.easeTo(extend({
             center: lnglat
         }, options), eventData);
     }
@@ -193,7 +193,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     zoomTo(zoom: number, options: ? AnimationOptions, eventData?: Object) {
-        return this.easeTo(util.extend({
+        return this.easeTo(extend({
             zoom: zoom
         }, options), eventData);
     }
@@ -280,7 +280,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     rotateTo(bearing: number, options?: AnimationOptions, eventData?: Object) {
-        return this.easeTo(util.extend({
+        return this.easeTo(extend({
             bearing: bearing
         }, options), eventData);
     }
@@ -296,7 +296,7 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     resetNorth(options?: AnimationOptions, eventData?: Object) {
-        this.rotateTo(0, util.extend({duration: 1000}, options), eventData);
+        this.rotateTo(0, extend({duration: 1000}, options), eventData);
         return this;
     }
 
@@ -371,7 +371,7 @@ class Camera extends Evented {
      */
     fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
 
-        options = util.extend({
+        options = extend({
             padding: {
                 top: 0,
                 bottom: 0,
@@ -391,12 +391,14 @@ class Camera extends Evented {
                 left: p
             };
         }
-        if (!util.deepEqual(Object.keys(options.padding).sort((a, b) => {
+        if (!deepEqual(Object.keys(options.padding).sort((a, b) => {
             if (a < b) return -1;
             if (a > b) return 1;
             return 0;
         }), ["bottom", "left", "right", "top"])) {
-            util.warnOnce("options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'");
+            warnOnce(
+                "options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'"
+            );
             return this;
         }
 
@@ -420,7 +422,9 @@ class Camera extends Evented {
             scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
 
         if (scaleY < 0 || scaleX < 0) {
-            util.warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
+            warnOnce(
+                'Map cannot fit within canvas with the given bounds, padding, and/or offset.'
+            );
             return this;
         }
 
@@ -529,10 +533,10 @@ class Camera extends Evented {
     easeTo(options: CameraOptions & AnimationOptions & {delayEndEvents?: number}, eventData?: Object) {
         this.stop();
 
-        options = util.extend({
+        options = extend({
             offset: [0, 0],
             duration: 500,
-            easing: util.ease
+            easing: defaultEasing
         }, options);
 
         if (options.animate === false) options.duration = 0;
@@ -712,7 +716,7 @@ class Camera extends Evented {
      * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options, eventData?: Object) {
+    flyTo(options: Object, eventData?: Object) {
         // This method implements an “optimal path” animation, as detailed in:
         //
         // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
@@ -723,11 +727,11 @@ class Camera extends Evented {
 
         this.stop();
 
-        options = util.extend({
+        options = extend({
             offset: [0, 0],
             speed: 1.2,
             curve: 1.42,
-            easing: util.ease
+            easing: defaultEasing
         }, options);
 
         const tr = this.transform,
@@ -735,7 +739,7 @@ class Camera extends Evented {
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        const zoom = 'zoom' in options ? util.clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
+        const zoom = 'zoom' in options ? clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
 
@@ -759,7 +763,7 @@ class Camera extends Evented {
             u1 = delta.mag();
 
         if ('minZoom' in options) {
-            const minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
+            const minZoom = clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
             // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
             // scale.
             const wMax = w0 / tr.zoomScale(minZoom - startZoom);
@@ -929,7 +933,7 @@ class Camera extends Evented {
 
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
     _normalizeBearing(bearing: number, currentBearing: number) {
-        bearing = util.wrap(bearing, -180, 180);
+        bearing = wrap(bearing, -180, 180);
         const diff = Math.abs(bearing - currentBearing);
         if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
         if (Math.abs(bearing + 360 - currentBearing) < diff) bearing += 360;
@@ -949,4 +953,4 @@ class Camera extends Evented {
     }
 }
 
-module.exports = Camera;
+export default Camera;

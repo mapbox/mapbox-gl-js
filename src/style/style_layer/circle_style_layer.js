@@ -1,21 +1,16 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const CircleBucket = require('../../data/bucket/circle_bucket');
-const {multiPolygonIntersectsBufferedPoint} = require('../../util/intersection_tests');
-const {getMaximumPaintValue, translateDistance, translate} = require('../query_utils');
-const properties = require('./circle_style_layer_properties');
-const {vec4} = require('@mapbox/gl-matrix');
-const Point = require('@mapbox/point-geometry');
+import StyleLayer from '../style_layer';
+
+import CircleBucket from '../../data/bucket/circle_bucket';
+import { multiPolygonIntersectsBufferedPoint } from '../../util/intersection_tests';
+import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
+import properties from './circle_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
+import {vec4} from '@mapbox/gl-matrix';
+import Point from '@mapbox/point-geometry';
 
 import type Transform from '../../geo/transform';
-
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
-
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './circle_style_layer_properties';
 
@@ -98,4 +93,4 @@ function projectQueryGeometry(queryGeometry: Array<Array<Point>>, posMatrix: Flo
     });
 }
 
-module.exports = CircleStyleLayer;
+export default CircleStyleLayer;

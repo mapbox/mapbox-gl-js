@@ -1,7 +1,8 @@
 // @flow
 
-const ShelfPack = require('@mapbox/shelf-pack');
-const {AlphaImage} = require('../util/image');
+import ShelfPack from '@mapbox/shelf-pack';
+
+import { AlphaImage } from '../util/image';
 
 import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
@@ -70,6 +71,9 @@ function makeGlyphAtlas(stacks: {[string]: {[number]: ?StyleGlyph}}): GlyphAtlas
     return {image, positions};
 }
 
-module.exports = {
+const exported = {
     makeGlyphAtlas
 };
+
+export default exported;
+export { makeGlyphAtlas };

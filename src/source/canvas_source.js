@@ -1,11 +1,12 @@
 // @flow
 
-const ImageSource = require('./image_source');
-const window = require('../util/window');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const VertexArrayObject = require('../render/vertex_array_object');
-const Texture = require('../render/texture');
-const {ErrorEvent} = require('../util/evented');
+import ImageSource from './image_source';
+
+import window from '../util/window';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
+import { ErrorEvent } from '../util/evented';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -195,4 +196,4 @@ class CanvasSource extends ImageSource {
     }
 }
 
-module.exports = CanvasSource;
+export default CanvasSource;

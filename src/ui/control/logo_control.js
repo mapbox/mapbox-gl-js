@@ -1,7 +1,8 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
+import DOM from '../../util/dom';
+
+import { bindAll } from '../../util/util';
 
 import type Map from '../map';
 
@@ -19,7 +20,7 @@ class LogoControl {
     _container: HTMLElement;
 
     constructor() {
-        util.bindAll(['_updateLogo'], this);
+        bindAll(['_updateLogo'], this);
     }
 
     onAdd(map: Map) {
@@ -69,4 +70,4 @@ class LogoControl {
 }
 
 
-module.exports = LogoControl;
+export default LogoControl;

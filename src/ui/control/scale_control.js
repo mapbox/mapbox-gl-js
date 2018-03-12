@@ -1,7 +1,8 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
+import DOM from '../../util/dom';
+
+import { extend, bindAll } from '../../util/util';
 
 import type Map from '../map';
 
@@ -32,9 +33,9 @@ class ScaleControl {
     options: any;
 
     constructor(options: any) {
-        this.options = util.extend({}, defaultOptions, options);
+        this.options = extend({}, defaultOptions, options);
 
-        util.bindAll([
+        bindAll([
             '_onMove',
             'setUnit'
         ], this);
@@ -75,7 +76,7 @@ class ScaleControl {
     }
 }
 
-module.exports = ScaleControl;
+export default ScaleControl;
 
 function updateScale(map, container, options) {
     // A horizontal scale is imagined to be present at center of the map

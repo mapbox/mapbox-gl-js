@@ -10,4 +10,4 @@ class ParsingError extends Error {
     }
 }
 
-module.exports = ParsingError;
+export default ParsingError;

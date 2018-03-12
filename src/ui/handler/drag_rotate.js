@@ -1,18 +1,19 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const window = require('../../util/window');
-const browser = require('../../util/browser');
-const {Event} = require('../../util/evented');
-const assert = require('assert');
+import DOM from '../../util/dom';
+
+import { bezier, bindAll } from '../../util/util';
+import window from '../../util/window';
+import browser from '../../util/browser';
+import { Event } from '../../util/evented';
+import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 import type Transform from '../../geo/transform';
 
 const inertiaLinearity = 0.25,
-    inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
+    inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 180, // deg/s
     inertiaDeceleration = 720; // deg/s^2
 
@@ -56,7 +57,7 @@ class DragRotateHandler {
         this._bearingSnap = options.bearingSnap || 0;
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
-        util.bindAll([
+        bindAll([
             '_onMouseMove',
             '_onMouseUp',
             '_onBlur',
@@ -324,4 +325,4 @@ class DragRotateHandler {
     }
 }
 
-module.exports = DragRotateHandler;
+export default DragRotateHandler;

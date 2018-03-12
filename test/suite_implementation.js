@@ -1,16 +1,12 @@
-'use strict';
-
-const ajax =  require('../src/util/ajax');
-const request = require('request');
-const PNG = require('pngjs').PNG;
-const Map = require('../src/ui/map');
-const config = require('../src/util/config');
-const window = require('../src/util/window');
-const browser = require('../src/util/browser');
-const rtlTextPlugin = require('../src/source/rtl_text_plugin');
-const rtlText = require('@mapbox/mapbox-gl-rtl-text');
-const fs = require('fs');
-const path = require('path');
+import {PNG} from 'pngjs';
+import Map from '../src/ui/map';
+import config from '../src/util/config';
+import window from '../src/util/window';
+import browser from '../src/util/browser';
+import {plugin as rtlTextPlugin} from '../src/source/rtl_text_plugin';
+import rtlText from '@mapbox/mapbox-gl-rtl-text';
+import fs from 'fs';
+import path from 'path';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
@@ -149,83 +145,4 @@ module.exports = function(style, options, _callback) {
             applyOperations(map, operations.slice(1), callback);
         }
     }
-};
-
-const cache = {};
-
-function cached(data, callback) {
-    setImmediate(() => {
-        callback(null, data);
-    });
-}
-
-ajax.getJSON = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request(url, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            let data;
-            try {
-                data = JSON.parse(body);
-            } catch (err) {
-                return callback(err);
-            }
-            cache[url] = data;
-            callback(null, data);
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
-    });
-};
-
-ajax.getArrayBuffer = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request({ url, encoding: null }, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            cache[url] = {data: body};
-            callback(null, {data: body});
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
-    });
-};
-
-ajax.getImage = function({ url }, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request({ url, encoding: null }, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, (err, png) => {
-                if (err) return callback(err);
-                cache[url] = png;
-                callback(null, png);
-            });
-        } else {
-            callback(error || {status: response.statusCode});
-        }
-    });
-};
-
-browser.getImageData = function({width, height, data}) {
-    return {width, height, data: new Uint8Array(data)};
-};
-
-// Hack: since node doesn't have any good video codec modules, just grab a png with
-// the first frame and fake the video API.
-ajax.getVideo = function(urls, callback) {
-    return request({ url: urls[0], encoding: null }, (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, (err, png) => {
-                if (err) return callback(err);
-                callback(null, {
-                    readyState: 4, // HAVE_ENOUGH_DATA
-                    addEventListener: function() {},
-                    play: function() {},
-                    width: png.width,
-                    height: png.height,
-                    data: png.data
-                });
-            });
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
-    });
 };

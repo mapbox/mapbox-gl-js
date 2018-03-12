@@ -1,24 +1,31 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const window = require('./window');
-const assert = require('assert');
+import Point from '@mapbox/point-geometry';
 
-exports.create = function (tagName: *, className?: string, container?: HTMLElement) {
+import window from './window';
+import assert from 'assert';
+
+const DOM = {};
+export default DOM;
+
+DOM.create = function (tagName: *, className?: string, container?: HTMLElement) {
     const el = window.document.createElement(tagName);
     if (className) el.className = className;
     if (container) container.appendChild(el);
     return el;
 };
 
-exports.createNS = function (namespaceURI: string, tagName: string) {
+DOM.createNS = function (namespaceURI: string, tagName: string) {
     const el = window.document.createElementNS(namespaceURI, tagName);
     return el;
 };
 
-const docStyle = (window.document.documentElement: any).style;
+const docStyle = window.document ?
+    (window.document.documentElement: any).style :
+    null;
 
 function testProp(props) {
+    if (!docStyle) return null;
     for (let i = 0; i < props.length; i++) {
         if (props[i] in docStyle) {
             return props[i];
@@ -29,20 +36,23 @@ function testProp(props) {
 
 const selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']);
 let userSelect;
-exports.disableDrag = function () {
-    if (selectProp) {
+
+DOM.disableDrag = function () {
+    if (docStyle && selectProp) {
         userSelect = docStyle[selectProp];
         docStyle[selectProp] = 'none';
     }
 };
-exports.enableDrag = function () {
-    if (selectProp) {
+
+DOM.enableDrag = function () {
+    if (docStyle && selectProp) {
         docStyle[selectProp] = userSelect;
     }
 };
 
 const transformProp = testProp(['transform', 'WebkitTransform']);
-exports.setTransform = function(el: HTMLElement, value: string) {
+
+DOM.setTransform = function(el: HTMLElement, value: string) {
     (el.style: any)[transformProp] = value;
 };
 
@@ -61,7 +71,7 @@ try {
     passiveSupported = false;
 }
 
-exports.addEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
+DOM.addEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
     if ('passive' in options && passiveSupported) {
         target.addEventListener(type, callback, (options: any));
     } else {
@@ -69,7 +79,7 @@ exports.addEventListener = function(target: *, type: *, callback: *, options: {p
     }
 };
 
-exports.removeEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
+DOM.removeEventListener = function(target: *, type: *, callback: *, options: {passive?: boolean, capture?: boolean} = {}) {
     if ('passive' in options && passiveSupported) {
         target.removeEventListener(type, callback, (options: any));
     } else {
@@ -84,14 +94,14 @@ const suppressClick: MouseEventListener = function (e) {
     window.removeEventListener('click', suppressClick, true);
 };
 
-exports.suppressClick = function() {
+DOM.suppressClick = function() {
     window.addEventListener('click', suppressClick, true);
     window.setTimeout(() => {
         window.removeEventListener('click', suppressClick, true);
     }, 0);
 };
 
-exports.mousePos = function (el: HTMLElement, e: any) {
+DOM.mousePos = function (el: HTMLElement, e: any) {
     const rect = el.getBoundingClientRect();
     e = e.touches ? e.touches[0] : e;
     return new Point(
@@ -100,7 +110,7 @@ exports.mousePos = function (el: HTMLElement, e: any) {
     );
 };
 
-exports.touchPos = function (el: HTMLElement, e: any) {
+DOM.touchPos = function (el: HTMLElement, e: any) {
     const rect = el.getBoundingClientRect(),
         points = [];
     const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
@@ -113,7 +123,7 @@ exports.touchPos = function (el: HTMLElement, e: any) {
     return points;
 };
 
-exports.mouseButton = function (e: MouseEvent) {
+DOM.mouseButton = function (e: MouseEvent) {
     assert(e.type === 'mousedown' || e.type === 'mouseup');
     if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
         window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
@@ -125,7 +135,7 @@ exports.mouseButton = function (e: MouseEvent) {
     return e.button;
 };
 
-exports.remove = function(node: HTMLElement) {
+DOM.remove = function(node: HTMLElement) {
     if (node.parentNode) {
         node.parentNode.removeChild(node);
     }

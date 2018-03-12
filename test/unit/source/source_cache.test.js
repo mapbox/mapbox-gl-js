@@ -1,16 +1,14 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const SourceCache = require('../../../src/source/source_cache');
-const Source = require('../../../src/source/source');
-const Tile = require('../../../src/source/tile');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
-const Transform = require('../../../src/geo/transform');
-const LngLat = require('../../../src/geo/lng_lat');
-const Coordinate = require('../../../src/geo/coordinate');
-const {Event, ErrorEvent, Evented} = require('../../../src/util/evented');
-const util = require('../../../src/util/util');
-const browser = require('../../../src/util/browser');
+import { test } from 'mapbox-gl-js-test';
+import SourceCache from '../../../src/source/source_cache';
+import {setType} from '../../../src/source/source';
+import Tile from '../../../src/source/tile';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import Transform from '../../../src/geo/transform';
+import LngLat from '../../../src/geo/lng_lat';
+import Coordinate from '../../../src/geo/coordinate';
+import { Event, ErrorEvent, Evented } from '../../../src/util/evented';
+import { extend } from '../../../src/util/util';
+import browser from '../../../src/util/browser';
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
@@ -22,7 +20,7 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
             this.id = id;
             this.minzoom = 0;
             this.maxzoom = 22;
-            util.extend(this, sourceOptions);
+            extend(this, sourceOptions);
             this.setEventedParent(eventedParent);
             if (sourceOptions.hasTile) {
                 this.hasTile = sourceOptions.hasTile;
@@ -53,10 +51,10 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
     return source;
 }
 
-Source.setType('mock-source-type', MockSourceType);
+setType('mock-source-type', MockSourceType);
 
 function createSourceCache(options, used) {
-    const sc = new SourceCache('id', util.extend({
+    const sc = new SourceCache('id', extend({
         tileSize: 512,
         minzoom: 0,
         maxzoom: 14,

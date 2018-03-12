@@ -1,15 +1,12 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const util = require('../../../src/util/util');
-const window = require('../../../src/util/window');
-const Map = require('../../../src/ui/map');
-const LngLat = require('../../../src/geo/lng_lat');
-const Tile = require('../../../src/source/tile');
-const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
-const {Event, ErrorEvent} = require('../../../src/util/evented');
-
-const fixed = require('mapbox-gl-js-test/fixed');
+import { test } from 'mapbox-gl-js-test';
+import { extend } from '../../../src/util/util';
+import window from '../../../src/util/window';
+import Map from '../../../src/ui/map';
+import LngLat from '../../../src/geo/lng_lat';
+import Tile from '../../../src/source/tile';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import { Event, ErrorEvent } from '../../../src/util/evented';
+import fixed from 'mapbox-gl-js-test/fixed';
 const fixedNum = fixed.Num;
 const fixedLngLat = fixed.LngLat;
 const fixedCoord = fixed.Coord;
@@ -19,7 +16,7 @@ function createMap(options, callback) {
     Object.defineProperty(container, 'offsetWidth', {value: 200, configurable: true});
     Object.defineProperty(container, 'offsetHeight', {value: 200, configurable: true});
 
-    const map = new Map(util.extend({
+    const map = new Map(extend({
         container: container,
         interactive: false,
         attributionControl: false,
@@ -333,7 +330,7 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.addSource('geojson', createStyleSource());
-                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
                     sources: {geojson: createStyleSource()}
                 }));
                 t.end();
@@ -363,7 +360,7 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.addLayer(layer);
-                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
                     layers: [layer]
                 }));
                 t.end();
@@ -383,7 +380,7 @@ test('Map', (t) => {
             map.on('load', () => {
                 map.addSource('fill', source);
                 map.addLayer(layer);
-                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
                     sources: { fill: source },
                     layers: [layer]
                 }));
@@ -423,7 +420,7 @@ test('Map', (t) => {
 
     t.test('#moveLayer', (t) => {
         const map = createMap({
-            style: util.extend(createStyle(), {
+            style: extend(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',
@@ -462,7 +459,7 @@ test('Map', (t) => {
             'source-layer': 'sourceLayer'
         };
         const map = createMap({
-            style: util.extend(createStyle(), {
+            style: extend(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',
@@ -1270,7 +1267,7 @@ test('Map', (t) => {
 
     t.test('#removeLayer restores Map#loaded() to true', (t) => {
         const map = createMap({
-            style: util.extend(createStyle(), {
+            style: extend(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',

@@ -1,12 +1,9 @@
 // @flow
 
-const {
-    NumberType,
-    toString
-} = require('../types');
-const {typeOf} = require('../values');
+import { NumberType, toString } from '../types';
 
-const RuntimeError = require('../runtime_error');
+import { typeOf } from '../values';
+import RuntimeError from '../runtime_error';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -55,4 +52,4 @@ class Length implements Expression {
     }
 }
 
-module.exports = Length;
+export default Length;

@@ -1,8 +1,8 @@
 // @flow
 
-const util = require('../util/util');
-const window = require('../util/window');
-const throttle = require('../util/throttle');
+import { bindAll } from '../util/util';
+import window from '../util/window';
+import throttle from '../util/throttle';
 
 import type Map from './map';
 
@@ -17,7 +17,7 @@ class Hash {
     _updateHash: () => TimeoutID;
 
     constructor() {
-        util.bindAll([
+        bindAll([
             '_onHashChange',
             '_updateHash'
         ], this);
@@ -96,4 +96,4 @@ class Hash {
 
 }
 
-module.exports = Hash;
+export default Hash;

@@ -1,18 +1,18 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const window = require('../../util/window');
-const browser = require('../../util/browser');
-const {Event} = require('../../util/evented');
-const assert = require('assert');
+import DOM from '../../util/dom';
+import { bezier, bindAll } from '../../util/util';
+import window from '../../util/window';
+import browser from '../../util/browser';
+import { Event } from '../../util/evented';
+import assert from 'assert';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 import type Transform from '../../geo/transform';
 
 const inertiaLinearity = 0.3,
-    inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
+    inertiaEasing = bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 1400, // px/s
     inertiaDeceleration = 2500; // px/s^2
 
@@ -37,7 +37,7 @@ class DragPanHandler {
         this._el = map.getCanvasContainer();
         this._state = 'disabled';
 
-        util.bindAll([
+        bindAll([
             '_onMove',
             '_onMouseUp',
             '_onTouchEnd',
@@ -301,4 +301,4 @@ class DragPanHandler {
     }
 }
 
-module.exports = DragPanHandler;
+export default DragPanHandler;

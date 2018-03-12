@@ -1,22 +1,15 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
+import Point from '@mapbox/point-geometry';
 
-const StyleLayer = require('../style_layer');
-const LineBucket = require('../../data/bucket/line_bucket');
-const {multiPolygonIntersectsBufferedMultiLine} = require('../../util/intersection_tests');
-const {getMaximumPaintValue, translateDistance, translate} = require('../query_utils');
-const properties = require('./line_style_layer_properties');
-const {extend} = require('../../util/util');
-const EvaluationParameters = require('../evaluation_parameters');
-
-const {
-    Transitionable,
-    Transitioning,
-    Layout,
-    PossiblyEvaluated,
-    DataDrivenProperty
-} = require('../properties');
+import StyleLayer from '../style_layer';
+import LineBucket from '../../data/bucket/line_bucket';
+import { multiPolygonIntersectsBufferedMultiLine } from '../../util/intersection_tests';
+import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
+import properties from './line_style_layer_properties';
+import { extend } from '../../util/util';
+import EvaluationParameters from '../evaluation_parameters';
+import { Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty } from '../properties';
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
@@ -97,7 +90,7 @@ class LineStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = LineStyleLayer;
+export default LineStyleLayer;
 
 function getLineWidth(lineWidth, lineGapWidth) {
     if (lineGapWidth > 0) {

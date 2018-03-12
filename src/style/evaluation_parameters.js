@@ -1,6 +1,6 @@
 // @flow
 
-const ZoomHistory = require('./zoom_history');
+import ZoomHistory from './zoom_history';
 
 class EvaluationParameters {
     zoom: number;
@@ -34,4 +34,4 @@ class EvaluationParameters {
     }
 }
 
-module.exports = EvaluationParameters;
+export default EvaluationParameters;

@@ -1,17 +1,16 @@
 // @flow
 
+import { endsWith, filterObject } from '../util/util';
 
-const util = require('../util/util');
-const styleSpec = require('../style-spec/reference/latest');
-const validateStyle = require('./validate_style');
-const {Evented} = require('../util/evented');
-
-const {
-    Layout,
-    Transitionable,
-    Transitioning,
-    Properties
-} = require('./properties');
+import styleSpec from '../style-spec/reference/latest';
+import {
+    validateStyle,
+    validateLayoutProperty,
+    validatePaintProperty,
+    emitValidationErrors
+} from './validate_style';
+import { Evented } from '../util/evented';
+import { Layout, Transitionable, Transitioning, Properties } from './properties';
 
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
@@ -23,8 +22,6 @@ import type Transform from '../geo/transform';
 const TRANSITION_SUFFIX = '-transition';
 
 class StyleLayer extends Evented {
-    static create: (layer: LayerSpecification) => StyleLayer;
-
     id: string;
     metadata: mixed;
     type: string;
@@ -98,7 +95,7 @@ class StyleLayer extends Evented {
     setLayoutProperty(name: string, value: mixed, options: {validate: boolean}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.layout.${name}`;
-            if (this._validate(validateStyle.layoutProperty, key, name, value, options)) {
+            if (this._validate(validateLayoutProperty, key, name, value, options)) {
                 return;
             }
         }
@@ -112,7 +109,7 @@ class StyleLayer extends Evented {
     }
 
     getPaintProperty(name: string) {
-        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+        if (endsWith(name, TRANSITION_SUFFIX)) {
             return this._transitionablePaint.getTransition(name.slice(0, -TRANSITION_SUFFIX.length));
         } else {
             return this._transitionablePaint.getValue(name);
@@ -122,12 +119,12 @@ class StyleLayer extends Evented {
     setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
         if (value !== null && value !== undefined) {
             const key = `layers.${this.id}.paint.${name}`;
-            if (this._validate(validateStyle.paintProperty, key, name, value, options)) {
+            if (this._validate(validatePaintProperty, key, name, value, options)) {
                 return;
             }
         }
 
-        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+        if (endsWith(name, TRANSITION_SUFFIX)) {
             this._transitionablePaint.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), (value: any) || undefined);
         } else {
             this._transitionablePaint.setValue(name, value);
@@ -175,7 +172,7 @@ class StyleLayer extends Evented {
             output.layout.visibility = 'none';
         }
 
-        return util.filterObject(output, (value, key) => {
+        return filterObject(output, (value, key) => {
             return value !== undefined &&
                 !(key === 'layout' && !Object.keys(value).length) &&
                 !(key === 'paint' && !Object.keys(value).length);
@@ -186,7 +183,7 @@ class StyleLayer extends Evented {
         if (options && options.validate === false) {
             return false;
         }
-        return validateStyle.emitErrors(this, validate.call(validateStyle, {
+        return emitValidationErrors(this, validate.call(validateStyle, {
             key: key,
             layerType: this.type,
             objectKey: name,
@@ -206,20 +203,6 @@ class StyleLayer extends Evented {
     }
 }
 
-module.exports = StyleLayer;
+export default StyleLayer;
 
-const subclasses = {
-    'circle': require('./style_layer/circle_style_layer'),
-    'heatmap': require('./style_layer/heatmap_style_layer'),
-    'hillshade': require('./style_layer/hillshade_style_layer'),
-    'fill': require('./style_layer/fill_style_layer'),
-    'fill-extrusion': require('./style_layer/fill_extrusion_style_layer'),
-    'line': require('./style_layer/line_style_layer'),
-    'symbol': require('./style_layer/symbol_style_layer'),
-    'background': require('./style_layer/background_style_layer'),
-    'raster': require('./style_layer/raster_style_layer')
-};
 
-StyleLayer.create = function(layer: LayerSpecification) {
-    return new subclasses[layer.type](layer);
-};

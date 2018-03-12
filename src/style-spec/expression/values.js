@@ -1,18 +1,9 @@
 // @flow
 
-const assert = require('assert');
-const Color = require('../util/color');
+import assert from 'assert';
 
-const {
-    NullType,
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    ObjectType,
-    ValueType,
-    array
-} = require('./types');
+import Color from '../util/color';
+import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, array } from './types';
 
 import type { Type } from './types';
 
@@ -101,9 +92,12 @@ function typeOf(value: Value): Type {
     }
 }
 
-module.exports = {
+const exported = {
     Color,
     validateRGBA,
     isValue,
     typeOf
 };
+
+export default exported;
+export { Color, validateRGBA, isValue, typeOf };

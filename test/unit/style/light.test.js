@@ -1,10 +1,10 @@
-'use strict';
+import { test } from 'mapbox-gl-js-test';
+import Light from '../../../src/style/light';
+import styleSpec from '../../../src/style-spec/reference/latest';
+import Color from '../../../src/style-spec/util/color';
+import { sphericalToCartesian } from '../../../src/util/util';
 
-const test = require('mapbox-gl-js-test').test;
-const Light = require('../../../src/style/light');
-const spec = require('../../../src/style-spec/reference/latest').light;
-const Color = require('../../../src/style-spec/util/color');
-const {sphericalToCartesian} = require('../../../src/util/util');
+const spec = styleSpec.light;
 
 test('Light with defaults', (t) => {
     const light = new Light({});

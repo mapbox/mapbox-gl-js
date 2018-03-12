@@ -1,11 +1,12 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const WorkerTile = require('./worker_tile');
-const util = require('../util/util');
-const perf = require('../util/performance');
+import {getArrayBuffer} from '../util/ajax';
+
+import vt from '@mapbox/vector-tile';
+import Protobuf from 'pbf';
+import WorkerTile from './worker_tile';
+import { extend } from '../util/util';
+import perf from '../util/performance';
 
 import type {
     WorkerSource,
@@ -42,7 +43,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
+    const xhr = getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {
@@ -127,7 +128,7 @@ class VectorTileWorkerSource implements WorkerSource {
                 if (err || !result) return callback(err);
 
                 // Transferring a copy of rawTileData because the worker needs to retain its copy.
-                callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
+                callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
             });
 
             this.loaded = this.loaded || {};
@@ -197,4 +198,4 @@ class VectorTileWorkerSource implements WorkerSource {
     }
 }
 
-module.exports = VectorTileWorkerSource;
+export default VectorTileWorkerSource;

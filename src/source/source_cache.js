@@ -1,17 +1,18 @@
 // @flow
 
-const createSource = require('./source').create;
-const Tile = require('./tile');
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const Cache = require('../util/lru_cache');
-const Coordinate = require('../geo/coordinate');
-const util = require('../util/util');
-const EXTENT = require('../data/extent');
-const Context = require('../gl/context');
-const Point = require('@mapbox/point-geometry');
-const browser = require('../util/browser');
-const {OverscaledTileID} = require('./tile_id');
-const assert = require('assert');
+import { create as createSource } from './source';
+
+import Tile from './tile';
+import { Event, ErrorEvent, Evented } from '../util/evented';
+import Cache from '../util/lru_cache';
+import Coordinate from '../geo/coordinate';
+import { keysDifference } from '../util/util';
+import EXTENT from '../data/extent';
+import Context from '../gl/context';
+import Point from '@mapbox/point-geometry';
+import browser from '../util/browser';
+import { OverscaledTileID } from './tile_id';
+import assert from 'assert';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -472,7 +473,7 @@ class SourceCache extends Evented {
             retain[fadedParent] = parentsForFading[fadedParent];
         }
         // Remove the tiles we don't need anymore.
-        const remove = util.keysDifference(this._tiles, retain);
+        const remove = keysDifference(this._tiles, retain);
         for (let i = 0; i < remove.length; i++) {
             this._removeTile(remove[i]);
         }
@@ -777,4 +778,5 @@ function isRasterType(type) {
     return type === 'raster' || type === 'image' || type === 'video';
 }
 
-module.exports = SourceCache;
+export default SourceCache;
+

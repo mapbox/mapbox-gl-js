@@ -1,6 +1,6 @@
 // @flow
 
-const assert = require('assert');
+import assert from 'assert';
 
 import type Program from './program';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -160,4 +160,4 @@ class VertexArrayObject {
     }
 }
 
-module.exports = VertexArrayObject;
+export default VertexArrayObject;

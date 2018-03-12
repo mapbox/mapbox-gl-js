@@ -1,7 +1,8 @@
 // @flow
 
-const assert = require('assert');
-const {register} = require('./web_worker_transfer');
+import assert from 'assert';
+
+import { register } from './web_worker_transfer';
 
 export type Size = {
     width: number,
@@ -126,7 +127,10 @@ class RGBAImage {
 register('AlphaImage', AlphaImage);
 register('RGBAImage', RGBAImage);
 
-module.exports = {
+const exported = {
     AlphaImage,
     RGBAImage
 };
+
+export default exported;
+export { AlphaImage, RGBAImage };

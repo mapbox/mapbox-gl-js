@@ -1,12 +1,13 @@
 // @flow
 
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const util = require('../util/util');
-const loadTileJSON = require('./load_tilejson');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const TileBounds = require('./tile_bounds');
-const ResourceType = require('../util/ajax').ResourceType;
-const browser = require('../util/browser');
+import { Event, ErrorEvent, Evented } from '../util/evented';
+
+import { extend, pick } from '../util/util';
+import loadTileJSON from './load_tilejson';
+import { normalizeTileURL as normalizeURL } from '../util/mapbox';
+import TileBounds from './tile_bounds';
+import { ResourceType } from '../util/ajax';
+import browser from '../util/browser';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -47,8 +48,8 @@ class VectorTileSource extends Evented implements Source {
         this.reparseOverscaled = true;
         this.isTileClipped = true;
 
-        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-        this._options = util.extend({ type: 'vector' }, options);
+        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = extend({ type: 'vector' }, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
 
@@ -66,7 +67,7 @@ class VectorTileSource extends Evented implements Source {
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                util.extend(this, tileJSON);
+                extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
@@ -88,7 +89,7 @@ class VectorTileSource extends Evented implements Source {
     }
 
     serialize() {
-        return util.extend({}, this._options);
+        return extend({}, this._options);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
@@ -154,4 +155,4 @@ class VectorTileSource extends Evented implements Source {
     }
 }
 
-module.exports = VectorTileSource;
+export default VectorTileSource;

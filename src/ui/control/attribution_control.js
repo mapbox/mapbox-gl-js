@@ -1,8 +1,9 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const config = require('../../util/config');
+import DOM from '../../util/dom';
+
+import { bindAll } from '../../util/util';
+import config from '../../util/config';
 
 import type Map from '../map';
 
@@ -29,7 +30,7 @@ class AttributionControl {
     constructor(options: any) {
         this.options = options;
 
-        util.bindAll([
+        bindAll([
             '_updateEditLink',
             '_updateData',
             '_updateCompact'
@@ -151,4 +152,4 @@ class AttributionControl {
 
 }
 
-module.exports = AttributionControl;
+export default AttributionControl;

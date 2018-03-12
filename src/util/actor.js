@@ -1,7 +1,7 @@
 // @flow
 
-const util = require('./util');
-const {serialize, deserialize} = require('./web_worker_transfer');
+import { bindAll } from './util';
+import { serialize, deserialize } from './web_worker_transfer';
 
 import type {Transferable} from '../types/transferable';
 
@@ -30,7 +30,7 @@ class Actor {
         this.mapId = mapId;
         this.callbacks = {};
         this.callbackID = 0;
-        util.bindAll(['receive'], this);
+        bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -100,4 +100,4 @@ class Actor {
     }
 }
 
-module.exports = Actor;
+export default Actor;

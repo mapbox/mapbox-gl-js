@@ -1,11 +1,12 @@
 // @flow
 
-const {Event, ErrorEvent, Evented} = require('../util/evented');
-const util = require('../util/util');
-const window = require('../util/window');
-const EXTENT = require('../data/extent');
-const ResourceType = require('../util/ajax').ResourceType;
-const browser = require('../util/browser');
+import { Event, ErrorEvent, Evented } from '../util/evented';
+
+import { extend } from '../util/util';
+import window from '../util/window';
+import EXTENT from '../data/extent';
+import { ResourceType } from '../util/ajax';
+import browser from '../util/browser';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -102,7 +103,7 @@ class GeoJSONSource extends Evented implements Source {
         this.setEventedParent(eventedParent);
 
         this._data = (options.data: any);
-        this._options = util.extend({}, options);
+        this._options = extend({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
         this._resourceTiming = [];
@@ -116,7 +117,7 @@ class GeoJSONSource extends Evented implements Source {
         // so that it can load/parse/index the geojson data
         // extending with `options.workerOptions` helps to make it easy for
         // third-party sources to hack/reuse GeoJSONSource.
-        this.workerOptions = util.extend({
+        this.workerOptions = extend({
             source: this.id,
             cluster: options.cluster || false,
             geojsonVtOptions: {
@@ -192,7 +193,7 @@ class GeoJSONSource extends Evented implements Source {
      * using geojson-vt or supercluster as appropriate.
      */
     _updateWorkerData(callback: Function) {
-        const options = util.extend({}, this.workerOptions);
+        const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
             options.request = this.map._transformRequest(resolveURL(data), ResourceType.Source);
@@ -273,7 +274,7 @@ class GeoJSONSource extends Evented implements Source {
     }
 
     serialize() {
-        return util.extend({}, this._options, {
+        return extend({}, this._options, {
             type: this.type,
             data: this._data
         });
@@ -290,4 +291,4 @@ function resolveURL(url) {
     return a.href;
 }
 
-module.exports = GeoJSONSource;
+export default GeoJSONSource;

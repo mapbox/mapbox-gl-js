@@ -1,7 +1,8 @@
 // @flow
 
-const Color = require('../style-spec/util/color');
-const util = require('../util/util');
+import Color from '../style-spec/util/color';
+
+import { clamp } from '../util/util';
 
 import type Context from './context';
 import type {
@@ -368,7 +369,7 @@ class LineWidth implements Value<number> {
 
     set(v: number): void {
         const range = this.context.lineWidthRange;
-        const clamped = util.clamp(v, range[0], range[1]);
+        const clamped = clamp(v, range[0], range[1]);
         if (this.current !== clamped) {
             this.context.gl.lineWidth(clamped);
             this.current = v;
@@ -630,7 +631,7 @@ class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Va
     }
 }
 
-module.exports = {
+const exported = {
     ClearColor,
     ClearDepth,
     ClearStencil,
@@ -658,7 +659,9 @@ module.exports = {
     BindVertexArrayOES,
     PixelStoreUnpack,
     PixelStoreUnpackPremultiplyAlpha,
-
     ColorAttachment,
-    DepthAttachment,
+    DepthAttachment
 };
+
+export default exported;
+export { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, LineWidth, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, ColorAttachment, DepthAttachment };

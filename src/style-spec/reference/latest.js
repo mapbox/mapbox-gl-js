@@ -1,2 +1,3 @@
 
-module.exports = require('./v8.json');
+import spec from './v8.json';
+export default spec;

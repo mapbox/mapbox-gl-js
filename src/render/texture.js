@@ -1,6 +1,7 @@
 // @flow
 
-const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData} = require('../util/window');
+import window from '../util/window';
+const { HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData } = window;
 
 import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
@@ -96,4 +97,4 @@ class Texture {
     }
 }
 
-module.exports = Texture;
+export default Texture;

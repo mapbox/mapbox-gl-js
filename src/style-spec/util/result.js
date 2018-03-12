@@ -18,7 +18,10 @@ function error<T, E>(value: E): Result<T, E> {
     return { result: 'error', value };
 }
 
-module.exports = {
+const exported = {
     success,
     error
 };
+
+export default exported;
+export { success, error };

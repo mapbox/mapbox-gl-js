@@ -179,4 +179,4 @@ class CollisionFeature {
     }
 }
 
-module.exports = CollisionFeature;
+export default CollisionFeature;

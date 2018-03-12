@@ -1,5 +1,7 @@
 // @flow
 
+/* eslint-disable import/unambiguous */
+
 const fs = require('fs');
 
 // readFileSync calls must be written out long-form for brfs.

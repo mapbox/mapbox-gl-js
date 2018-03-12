@@ -1,7 +1,8 @@
 // @flow
 
-const util = require('../util/util');
-const EXTENT = require('./extent');
+import { warnOnce } from '../util/util';
+
+import EXTENT from './extent';
 
 import type Point from '@mapbox/point-geometry';
 
@@ -24,7 +25,7 @@ const bounds = createBounds(16);
  * @param {VectorTileFeature} feature
  * @private
  */
-module.exports = function loadGeometry(feature: VectorTileFeature): Array<Array<Point>> {
+export default function loadGeometry(feature: VectorTileFeature): Array<Array<Point>> {
     const scale = EXTENT / feature.extent;
     const geometry = feature.loadGeometry();
     for (let r = 0; r < geometry.length; r++) {
@@ -37,9 +38,9 @@ module.exports = function loadGeometry(feature: VectorTileFeature): Array<Array<
             point.y = Math.round(point.y * scale);
 
             if (point.x < bounds.min || point.x > bounds.max || point.y < bounds.min || point.y > bounds.max) {
-                util.warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
+                warnOnce('Geometry exceeds allowed extent, reduce your vector tile buffer size');
             }
         }
     }
     return geometry;
-};
+}

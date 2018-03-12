@@ -1,38 +1,22 @@
 // @flow
 
-const {
-    symbolLayoutAttributes,
-    collisionVertexAttributes,
-    collisionBoxLayout,
-    collisionCircleLayout,
-    dynamicLayoutAttributes
-} = require('./symbol_attributes');
+import { symbolLayoutAttributes, collisionVertexAttributes, collisionBoxLayout, collisionCircleLayout, dynamicLayoutAttributes } from './symbol_attributes';
 
-const {
-    SymbolLayoutArray,
-    SymbolDynamicLayoutArray,
-    SymbolOpacityArray,
-    CollisionBoxLayoutArray,
-    CollisionCircleLayoutArray,
-    CollisionVertexArray,
-    PlacedSymbolArray,
-    GlyphOffsetArray,
-    SymbolLineVertexArray
-} = require('../array_types');
-
-const Point = require('@mapbox/point-geometry');
-const {SegmentVector} = require('../segment');
-const {ProgramConfigurationSet} = require('../program_configuration');
-const {TriangleIndexArray, LineIndexArray} = require('../index_array_type');
-const transformText = require('../../symbol/transform_text');
-const mergeLines = require('../../symbol/mergelines');
-const scriptDetection = require('../../util/script_detection');
-const loadGeometry = require('../load_geometry');
-const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
-const verticalizePunctuation = require('../../util/verticalize_punctuation');
-const Anchor = require('../../symbol/anchor');
-const {getSizeData} = require('../../symbol/symbol_size');
-const {register} = require('../../util/web_worker_transfer');
+import { SymbolLayoutArray, SymbolDynamicLayoutArray, SymbolOpacityArray, CollisionBoxLayoutArray, CollisionCircleLayoutArray, CollisionVertexArray, PlacedSymbolArray, GlyphOffsetArray, SymbolLineVertexArray } from '../array_types';
+import Point from '@mapbox/point-geometry';
+import SegmentVector from '../segment';
+import { ProgramConfigurationSet } from '../program_configuration';
+import { TriangleIndexArray, LineIndexArray } from '../index_array_type';
+import transformText from '../../symbol/transform_text';
+import mergeLines from '../../symbol/mergelines';
+import {allowsVerticalWritingMode} from '../../util/script_detection';
+import loadGeometry from '../load_geometry';
+import mvt from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
+import Anchor from '../../symbol/anchor';
+import { getSizeData } from '../../symbol/symbol_size';
+import { register } from '../../util/web_worker_transfer';
 
 import type {Feature as ExpressionFeature} from '../../style-spec/expression';
 import type {
@@ -394,11 +378,11 @@ class SymbolBucket implements Bucket {
                 const fontStack = textFont.evaluate(feature).join(',');
                 const stack = stacks[fontStack] = stacks[fontStack] || {};
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
-                const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(text);
+                const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text);
                 for (let i = 0; i < text.length; i++) {
                     stack[text.charCodeAt(i)] = true;
-                    if (textAlongLine && allowsVerticalWritingMode) {
-                        const verticalChar = verticalizePunctuation.lookup[text.charAt(i)];
+                    if (textAlongLine && doesAllowVerticalWritingMode) {
+                        const verticalChar = verticalizedCharacterMap[text.charAt(i)];
                         if (verticalChar) {
                             stack[verticalChar.charCodeAt(0)] = true;
                         }
@@ -707,4 +691,5 @@ SymbolBucket.MAX_GLYPHS = 65535;
 
 SymbolBucket.addDynamicAttributes = addDynamicAttributes;
 
-module.exports = SymbolBucket;
+export default SymbolBucket;
+export { addDynamicAttributes };

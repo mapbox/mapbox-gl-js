@@ -1,12 +1,13 @@
 // @flow
 
-const mat4 = require('@mapbox/gl-matrix').mat4;
-const Texture = require('./texture');
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
-const Color = require('../style-spec/util/color');
-const DepthMode = require('../gl/depth_mode');
-const StencilMode = require('../gl/stencil_mode');
-const ColorMode = require('../gl/color_mode');
+import { mat4 } from '@mapbox/gl-matrix';
+
+import Texture from './texture';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
+import Color from '../style-spec/util/color';
+import DepthMode from '../gl/depth_mode';
+import StencilMode from '../gl/stencil_mode';
+import ColorMode from '../gl/color_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -14,7 +15,7 @@ import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = drawHeatmap;
+export default drawHeatmap;
 
 function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapStyleLayer, coords: Array<OverscaledTileID>) {
     if (layer.paint.get('heatmap-opacity') === 0) {
