@@ -218,7 +218,7 @@ const navigation = [
                 "title": "Function"
             },
             {
-                "title": "Filter"
+                "title": "Filter (deprecated syntax)"
             }
         ]
     }
@@ -291,6 +291,8 @@ class Item extends React.Component {
             return <span> <a href='#layers'>layer{plural && 's'}</a></span>;
         case 'array':
             return <span> <a href='#types-array'>array</a>{spec.value && <span> of {this.type(typeof spec.value === 'string' ? {type: spec.value} : spec.value, true)}</span>}</span>;
+        case 'filter':
+            return <span> <a href='#expressions'>expression{plural && 's'}</a></span>;
         default:
             return <span> <a href={`#types-${spec.type}`}>{spec.type}{plural && 's'}</a></span>;
         }
@@ -1739,8 +1741,8 @@ export default class extends React.Component {
 
                                 <div className='pad2'>
                                     <a id='other-filter' className='anchor'></a>
-                                    <h3 className='space-bottom1'><a href='#other-filter' title='link to filter'>Filter</a></h3>
-                                    <p>A filter selects specific features from a layer. A filter is defined using any boolean <a href="#types-expression">expression</a>. In previous versions of the style specification, filters were defined using the deprecated syntax documented below:</p>
+                                    <h3 className='space-bottom1'><a href='#other-filter' title='link to filter'>Filter (deprecated syntax)</a></h3>
+                                    <p>In previous versions of the style specification, <a href="#layer-filter">filters</a> were defined using the deprecated syntax documented below. Though filters defined with this syntax will continue to work, we recommend using the more flexible <a href="#expressions">expression</a> syntax instead. Expression syntax and the deprecated syntax below cannot be mixed in a single filter definition.</p>
 
                                     <div className='col12 clearfix space-bottom2'>
 
