@@ -28,16 +28,19 @@
     cursor: grabbing;
 }
 
-.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate {
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate,
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate .mapboxgl-canvas {
     -ms-touch-action: pan-x pan-y;
     touch-action: pan-x pan-y;
 }
 
-.mapboxgl-canvas-container.mapboxgl-touch-drag-pan {
+.mapboxgl-canvas-container.mapboxgl-touch-drag-pan,
+.mapboxgl-canvas-container.mapboxgl-touch-drag-pan .mapboxgl-canvas {
     -ms-touch-action: pinch-zoom;
 }
 
-.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate.mapboxgl-touch-drag-pan {
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate.mapboxgl-touch-drag-pan,
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate.mapboxgl-touch-drag-pan .mapboxgl-canvas {
     -ms-touch-action: none;
     touch-action: none;
 }
