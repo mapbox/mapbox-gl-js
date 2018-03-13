@@ -9,7 +9,7 @@
  */
 class LRUCache<T> {
     max: number;
-    data: {[key: string]: T};
+    data: {[key: string]: Array<T>};
     order: Array<string>;
     onRemove: (element: T) => void;
     /**
@@ -30,7 +30,9 @@ class LRUCache<T> {
      */
     reset() {
         for (const key in this.data) {
-            this.onRemove(this.data[key]);
+            for (const removedData of this.data[key]) {
+                this.onRemove(removedData);
+            }
         }
 
         this.data = {};
@@ -50,20 +52,15 @@ class LRUCache<T> {
      * @private
      */
     add(key: string, data: T) {
+        if (this.data[key] === undefined) {
+            this.data[key] = [];
+        }
+        this.data[key].push(data);
+        this.order.push(key);
 
-        if (this.has(key)) {
-            this.order.splice(this.order.indexOf(key), 1);
-            this.data[key] = data;
-            this.order.push(key);
-
-        } else {
-            this.data[key] = data;
-            this.order.push(key);
-
-            if (this.order.length > this.max) {
-                const removedData = this.getAndRemove(this.order[0]);
-                if (removedData) this.onRemove(removedData);
-            }
+        if (this.order.length > this.max) {
+            const removedData = this.getAndRemove(this.order[0]);
+            if (removedData) this.onRemove(removedData);
         }
 
         return this;
@@ -101,9 +98,11 @@ class LRUCache<T> {
     getAndRemove(key: string): ?T {
         if (!this.has(key)) { return null; }
 
-        const data = this.data[key];
+        const data = this.data[key].shift();
 
-        delete this.data[key];
+        if (this.data[key].length === 0) {
+            delete this.data[key];
+        }
         this.order.splice(this.order.indexOf(key), 1);
 
         return data;
@@ -120,7 +119,7 @@ class LRUCache<T> {
     get(key: string): ?T {
         if (!this.has(key)) { return null; }
 
-        const data = this.data[key];
+        const data = this.data[key][0];
         return data;
     }
 
@@ -134,8 +133,10 @@ class LRUCache<T> {
     remove(key: string) {
         if (!this.has(key)) { return this; }
 
-        const data = this.data[key];
-        delete this.data[key];
+        const data = this.data[key].pop();
+        if (this.data[key].length === 0) {
+            delete this.data[key];
+        }
         this.onRemove(data);
         this.order.splice(this.order.indexOf(key), 1);
 
