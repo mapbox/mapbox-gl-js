@@ -1121,10 +1121,10 @@ export default class extends React.Component {
                                 <div className='pad2 keyline-bottom'>
                                     <a id='types-string' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-string' title='link to string'>String</a></h3>
-                                    <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
+                                    <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes.</p>
                                     {highlightJSON(`
                                         {
-                                            "text-field": "{MY_FIELD}"
+                                            "icon-image": "marker"
                                         }`)}
                                 </div>
 
