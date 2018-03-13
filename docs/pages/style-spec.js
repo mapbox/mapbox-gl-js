@@ -1810,8 +1810,8 @@ export default class extends React.Component {
                                             and <code>"!in"</code> operators.</li>
                                     </ul>
                                     <p>
-                                        A <var>value</var> (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a
-                                        <a href="#string">string</a>, <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare
+                                        A <var>value</var> (and <var>v0</var>, ..., <var>vn</var> for set operators) must be
+                                        a <a href="#string">string</a>, <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare
                                         the property value against.
                                     </p>
 
