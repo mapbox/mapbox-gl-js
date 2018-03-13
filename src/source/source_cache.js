@@ -570,8 +570,10 @@ class SourceCache extends Evented {
             return tile;
 
 
-        tile = this._cache.getAndRemove((tileID.key: any));
+        tile = this._cache.getAndRemove((tileID.wrapped().key: any));
         if (tile) {
+            // set the tileID because the cached tile could have had a different wrap value
+            tile.tileID = tileID;
             if (this._cacheTimers[tileID.key]) {
                 clearTimeout(this._cacheTimers[tileID.key]);
                 delete this._cacheTimers[tileID.key];
