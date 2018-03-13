@@ -1103,7 +1103,7 @@ export default class extends React.Component {
                                     <a id='types-color' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-color' title='link to color'>Color</a></h3>
                                     <p>
-                                        Colors are written as JSON strings in a variety of permitted formats: HTML-style hex values, rgb, rgba, hsl, and hsla. Predefined HTML colors names, like <code>yellow</code> and <code>blue</code>, are also permitted.
+                                        The <code>color</code> type represents a color in the <a href="https://en.wikipedia.org/wiki/SRGB">sRGB color space</a>. Colors are written as JSON strings in a variety of permitted formats: HTML-style hex values, rgb, rgba, hsl, and hsla. Predefined HTML colors names, like <code>yellow</code> and <code>blue</code>, are also permitted.
                                     </p>
                                     {highlightJSON(`
                                         {
