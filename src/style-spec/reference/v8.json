@@ -2033,255 +2033,570 @@
     "values": {
       "let": {
         "doc": "Binds expressions to named variables, which can then be referenced in the result expression using [\"var\", \"variable_name\"].",
-        "group": "Variable binding"
+        "group": "Variable binding",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "var": {
         "doc": "References variable bound using \"let\".",
-        "group": "Variable binding"
+        "group": "Variable binding",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "literal": {
         "doc": "Provides a literal array or object value.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "array": {
         "doc": "Asserts that the input is an array (optionally with a specific item type and length).  If, when the input expression is evaluated, it is not of the asserted type, then this assertion will cause the whole expression to be aborted.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "at": {
         "doc": "Retrieves an item from an array.",
-        "group": "Lookup"
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
         "case": {
         "doc": "Selects the first output whose corresponding test condition evaluates to true.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "match": {
         "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The `input` can be any string or number expression (e.g. `[\"get\", \"building_type\"]`). Each label can either be a single literal value or an array of values.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "coalesce": {
         "doc": "Evaluates each expression in turn until the first non-null value is obtained, and returns that value.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "step": {
         "doc": "Produces discrete, stepped results by evaluating a piecewise-constant function defined by pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. Returns the output value of the stop just less than the input, or the first input if the input is less than the first stop.",
-        "group": "Ramps, scales, curves"
+        "group": "Ramps, scales, curves",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.42.0"
+          }
+        }
       },
       "interpolate": {
         "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y1, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points.",
-        "group": "Ramps, scales, curves"
+        "group": "Ramps, scales, curves",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.42.0"
+          }
+        }
       },
       "ln2": {
         "doc": "Returns mathematical constant ln(2).",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "pi": {
         "doc": "Returns the mathematical constant pi.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "e": {
         "doc": "Returns the mathematical constant e.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "typeof": {
         "doc": "Returns a string describing the type of the given value.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "string": {
         "doc": "Asserts that the input value is a string. If multiple values are provided, each one is evaluated in order until a string value is obtained. If none of the inputs are strings, the expression is an error.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "number": {
         "doc": "Asserts that the input value is a number. If multiple values are provided, each one is evaluated in order until a number value is obtained. If none of the inputs are numbers, the expression is an error.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "boolean": {
         "doc": "Asserts that the input value is a boolean. If multiple values are provided, each one is evaluated in order until a boolean value is obtained. If none of the inputs are booleans, the expression is an error.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "object": {
         "doc": "Asserts that the input value is an object. If it is not, the expression is an error.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "to-string": {
         "doc": "Converts the input value to a string. If the input is `null`, the result is `\"null\"`. If the input is a boolean, the result is `\"true\"` or `\"false\"`. If the input is a number, it is converted to a string as specified by the [\"NumberToString\" algorithm](https://tc39.github.io/ecma262/#sec-tostring-applied-to-the-number-type) of the ECMAScript Language Specification. If the input is a color, it is converted to a string of the form `\"rgba(r,g,b,a)\"`, where `r`, `g`, and `b` are numerals ranging from 0 to 255, and `a` ranges from 0 to 1. Otherwise, the input is converted to a string in the format specified by the [`JSON.stringify`](https://tc39.github.io/ecma262/#sec-json.stringify) function of the ECMAScript Language Specification.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "to-number": {
         "doc": "Converts the input value to a number, if possible. If the input is `null` or `false`, the result is 0. If the input is `true`, the result is 1. If the input is a string, it is converted to a number as specified by the [\"ToNumber Applied to the String Type\" algorithm](https://tc39.github.io/ecma262/#sec-tonumber-applied-to-the-string-type) of the ECMAScript Language Specification. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained. If none of the inputs can be converted, the expression is an error.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "to-boolean": {
         "doc": "Converts the input value to a boolean. The result is `false` when then input is an empty string, 0, `false`, `null`, or `NaN`; otherwise it is `true`.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "to-rgba": {
         "doc": "Returns a four-element array containing the input color's red, green, blue, and alpha components, in that order.",
-        "group": "Color"
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "to-color": {
         "doc": "Converts the input value to a color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained. If none of the inputs can be converted, the expression is an error.",
-        "group": "Types"
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "rgb": {
         "doc": "Creates a color value from red, green, and blue components, which must range between 0 and 255, and an alpha component of 1. If any component is out of range, the expression is an error.",
-        "group": "Color"
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "rgba": {
         "doc": "Creates a color value from red, green, blue components, which must range between 0 and 255, and an alpha component which must range between 0 and 1. If any component is out of range, the expression is an error.",
-        "group": "Color"
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "get": {
         "doc": "Retrieves a property value from the current feature's properties, or from another object if a second argument is provided. Returns null if the requested property is missing.",
-        "group": "Lookup"
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "has": {
         "doc": "Tests for the presence of an property value in the current feature's properties, or from another object if a second argument is provided.",
-        "group": "Lookup"
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "length": {
         "doc": "Gets the length of an array or string.",
-        "group": "Lookup"
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "properties": {
         "doc": "Gets the feature properties object.  Note that in some cases, it may be more efficient to use [\"get\", \"property_name\"] directly.",
-        "group": "Feature data"
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "geometry-type": {
         "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon.",
-        "group": "Feature data"
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "id": {
         "doc": "Gets the feature's id, if it has one.",
-        "group": "Feature data"
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "zoom": {
         "doc": "Gets the current zoom level.  Note that in style layout and paint properties, [\"zoom\"] may only appear as the input to a top-level \"step\" or \"interpolate\" expression.",
-        "group": "Zoom"
+        "group": "Zoom",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "heatmap-density": {
         "doc": "Gets the kernel density estimation of a pixel in a heatmap layer, which is a relative measure of how many data points are crowded around a particular pixel. Can only be used in the `heatmap-color` property.",
-        "group": "Heatmap"
+        "group": "Heatmap",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "+": {
         "doc": "Returns the sum of the inputs.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "*": {
         "doc": "Returns the product of the inputs.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "-": {
         "doc": "For two inputs, returns the result of subtracting the second input from the first. For a single input, returns the result of subtracting it from 0.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "/": {
         "doc": "Returns the result of floating point division of the first input by the second.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "%": {
         "doc": "Returns the remainder after integer division of the first input by the second.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "^": {
         "doc": "Returns the result of raising the first input to the power specified by the second.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "sqrt": {
         "doc": "Returns the square root of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.42.0"
+          }
+        }
       },
       "log10": {
         "doc": "Returns the base-ten logarithm of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "ln": {
         "doc": "Returns the natural logarithm of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "log2": {
         "doc": "Returns the base-two logarithm of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "sin": {
         "doc": "Returns the sine of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "cos": {
         "doc": "Returns the cosine of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "tan": {
         "doc": "Returns the tangent of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "asin": {
         "doc": "Returns the arcsine of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "acos": {
         "doc": "Returns the arccosine of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "atan": {
         "doc": "Returns the arctangent of the input.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "min": {
         "doc": "Returns the minimum value of the inputs.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "max": {
         "doc": "Returns the maximum value of the inputs.",
-        "group": "Math"
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "==": {
         "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "!=": {
         "doc": "Returns `true` if the input values are not equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       ">": {
         "doc": "Returns `true` if the first input is strictly greater than the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "<": {
         "doc": "Returns `true` if the first input is strictly less than the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       ">=": {
         "doc": "Returns `true` if the first input is greater than or equal to the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "<=": {
         "doc": "Returns `true` if the first input is less than or equal to the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "all": {
         "doc": "Returns `true` if all the inputs are `true`, `false` otherwise. The inputs are evaluated in order, and evaluation is short-circuiting: once an input expression evaluates to `false`, the result is `false` and no further input expressions are evaluated.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "any": {
         "doc": "Returns `true` if any of the inputs are `true`, `false` otherwise. The inputs are evaluated in order, and evaluation is short-circuiting: once an input expression evaluates to `true`, the result is `true` and no further input expressions are evaluated.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "!": {
         "doc": "Logical negation. Returns `true` if the input is `false`, and `false` if the input is `true`.",
-        "group": "Decision"
+        "group": "Decision",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "upcase": {
         "doc": "Returns the input string converted to uppercase. Follows the Unicode Default Case Conversion algorithm and the locale-insensitive case mappings in the Unicode Character Database.",
-        "group": "String"
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "downcase": {
         "doc": "Returns the input string converted to lowercase. Follows the Unicode Default Case Conversion algorithm and the locale-insensitive case mappings in the Unicode Character Database.",
-        "group": "String"
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       },
       "concat": {
         "doc": "Returns a string consisting of the concatenation of the inputs.",
-        "group": "String"
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.41.0"
+          }
+        }
       }
     }
   },
