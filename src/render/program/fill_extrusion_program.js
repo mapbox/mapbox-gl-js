@@ -6,6 +6,7 @@ import {
     Uniform1f,
     Uniform2f,
     Uniform3f,
+    Uniform4f,
     UniformMatrix4f
 } from '../uniform_binding';
 
@@ -15,9 +16,10 @@ import { extend } from '../../util/util';
 import type Context from '../../gl/context';
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
-import type {CrossFaded} from '../../style/cross_faded';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters';
+import type Tile from '../../source/tile';
 
 export type FillExtrusionUniformsType = {|
     'u_matrix': UniformMatrix4f,
@@ -33,20 +35,12 @@ export type FillExtrusionPatternUniformsType = {|
     'u_lightcolor': Uniform3f,
     'u_height_factor': Uniform1f,
     // pattern uniforms:
-    'u_image': Uniform1i,
-    'u_pattern_tl_a': Uniform2f,
-    'u_pattern_br_a': Uniform2f,
-    'u_pattern_tl_b': Uniform2f,
-    'u_pattern_br_b': Uniform2f,
     'u_texsize': Uniform2f,
-    'u_mix': Uniform1f,
-    'u_pattern_size_a': Uniform2f,
-    'u_pattern_size_b': Uniform2f,
-    'u_scale_a': Uniform1f,
-    'u_scale_b': Uniform1f,
+    'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_tile_units_to_pixels': Uniform1f
+    'u_scale': Uniform4f,
+    'u_fade': Uniform1f
 |};
 
 export type ExtrusionTextureUniformsType = {|
@@ -69,20 +63,13 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3f(context, locations.u_lightcolor),
     'u_height_factor': new Uniform1f(context, locations.u_height_factor),
+    // pattern uniforms
     'u_image': new Uniform1i(context, locations.u_image),
-    'u_pattern_tl_a': new Uniform2f(context, locations.u_pattern_tl_a),
-    'u_pattern_br_a': new Uniform2f(context, locations.u_pattern_br_a),
-    'u_pattern_tl_b': new Uniform2f(context, locations.u_pattern_tl_b),
-    'u_pattern_br_b': new Uniform2f(context, locations.u_pattern_br_b),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_mix': new Uniform1f(context, locations.u_mix),
-    'u_pattern_size_a': new Uniform2f(context, locations.u_pattern_size_a),
-    'u_pattern_size_b': new Uniform2f(context, locations.u_pattern_size_b),
-    'u_scale_a': new Uniform1f(context, locations.u_scale_a),
-    'u_scale_b': new Uniform1f(context, locations.u_scale_b),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_tile_units_to_pixels': new Uniform1f(context, locations.u_tile_units_to_pixels)
+    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_fade': new Uniform1f(context, locations.u_fade)
 });
 
 const extrusionTextureUniforms = (context: Context, locations: UniformLocations): ExtrusionTextureUniformsType => ({
@@ -119,11 +106,11 @@ const fillExtrusionPatternUniformValues = (
     matrix: Float32Array,
     painter: Painter,
     coord: OverscaledTileID,
-    image: CrossFaded<string>,
-    tile: {tileID: OverscaledTileID, tileSize: number}
+    crossfade: CrossfadeParameters,
+    tile: Tile
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     return extend(fillExtrusionUniformValues(matrix, painter),
-        patternUniformValues(image, painter, tile),
+        patternUniformValues(crossfade, painter, tile),
         {
             'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
         });

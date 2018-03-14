@@ -52,7 +52,7 @@ import type Tile from '../source/tile';
 import type {OverscaledTileID} from '../source/tile_id';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
-import type {CrossFaded} from '../style/cross_faded';
+import type {CrossFaded} from '../style/properties';
 import type LineAtlas from './line_atlas';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';

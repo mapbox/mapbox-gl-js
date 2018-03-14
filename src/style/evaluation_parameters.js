@@ -6,6 +6,12 @@ import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
 
 import type {TransitionSpecification} from '../style-spec/types';
 
+export type CrossfadeParameters = {
+    fromScale: number,
+    toScale: number,
+    t: number
+};
+
 class EvaluationParameters {
     zoom: number;
     now: number;
@@ -40,6 +46,16 @@ class EvaluationParameters {
         } else {
             return Math.min((this.now - this.zoomHistory.lastIntegerZoomTime) / this.fadeDuration, 1);
         }
+    }
+
+    getCrossfadeParameters(): CrossfadeParameters {
+        const z = this.zoom;
+        const fraction = z - Math.floor(z);
+        const t = this.crossFadingFactor();
+
+        return z > this.zoomHistory.lastIntegerZoom ?
+            { fromScale: 2, toScale: 1, t: fraction + (1 - fraction) * t } :
+            { fromScale: 0.5, toScale: 1, t: 1 - (1 - t) * fraction };
     }
 }
 

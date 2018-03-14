@@ -44,7 +44,6 @@ class Program<Us: UniformBindings> {
 
         const fragmentSource = defines.concat(shaders.prelude.fragmentSource, source.fragmentSource).join('\n');
         const vertexSource = defines.concat(shaders.prelude.vertexSource, source.vertexSource).join('\n');
-
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);

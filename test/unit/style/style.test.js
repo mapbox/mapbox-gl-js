@@ -4,7 +4,6 @@ import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
-import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import { extend } from '../../../src/util/util';
 import { Event, Evented } from '../../../src/util/evented';
 import window from '../../../src/util/window';
@@ -1778,7 +1777,7 @@ test('Style#queryRenderedFeatures', (t) => {
         style.sourceCaches.mapbox.transform = transform;
         style.sourceCaches.other.transform = transform;
 
-        style.update(new EvaluationParameters(0));
+        style.update(0);
         style._updateSources(transform);
 
         t.test('returns feature type', (t) => {

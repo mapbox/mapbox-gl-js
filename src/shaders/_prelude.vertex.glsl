@@ -48,7 +48,7 @@ float unpack_mix_vec2(const vec2 packedValue, const float t) {
 }
 
 // Unpack a pair of paint values and interpolate between them.
-vec4 unpack_mix_vec4(const vec4 packedColors, const float t) {
+vec4 unpack_mix_color(const vec4 packedColors, const float t) {
     vec4 minColor = decode_color(vec2(packedColors[0], packedColors[1]));
     vec4 maxColor = decode_color(vec2(packedColors[2], packedColors[3]));
     return mix(minColor, maxColor, t);

@@ -23,7 +23,8 @@ import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
 import type DEMData from '../data/dem_data';
-import type {RGBAImage, AlphaImage} from '../util/image';
+import type {AlphaImage} from '../util/image';
+import type ImageAtlas from '../render/image_atlas';
 import type Mask from '../render/tile_mask';
 import type Context from '../gl/context';
 import type IndexBuffer from '../gl/index_buffer';
@@ -59,8 +60,8 @@ class Tile {
     buckets: {[string]: Bucket};
     latestFeatureIndex: ?FeatureIndex;
     latestRawTileData: ?ArrayBuffer;
-    iconAtlasImage: ?RGBAImage;
-    iconAtlasTexture: Texture;
+    imageAtlas: ?ImageAtlas;
+    imageAtlasTexture: Texture;
     glyphAtlasImage: ?AlphaImage;
     glyphAtlasTexture: Texture;
     expirationTime: any;
@@ -188,8 +189,8 @@ class Tile {
             this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
         }
 
-        if (data.iconAtlasImage) {
-            this.iconAtlasImage = data.iconAtlasImage;
+        if (data.imageAtlas) {
+            this.imageAtlas = data.imageAtlas;
         }
         if (data.glyphAtlasImage) {
             this.glyphAtlasImage = data.glyphAtlasImage;
@@ -207,9 +208,14 @@ class Tile {
         }
         this.buckets = {};
 
-        if (this.iconAtlasTexture) {
-            this.iconAtlasTexture.destroy();
+        if (this.imageAtlasTexture) {
+            this.imageAtlasTexture.destroy();
         }
+
+        if (this.imageAtlas) {
+            this.imageAtlas = null;
+        }
+
         if (this.glyphAtlasTexture) {
             this.glyphAtlasTexture.destroy();
         }
@@ -237,10 +243,9 @@ class Tile {
         }
 
         const gl = context.gl;
-
-        if (this.iconAtlasImage) {
-            this.iconAtlasTexture = new Texture(context, this.iconAtlasImage, gl.RGBA);
-            this.iconAtlasImage = null;
+        if (this.imageAtlas && !this.imageAtlas.uploaded) {
+            this.imageAtlasTexture = new Texture(context, this.imageAtlas.image, gl.RGBA);
+            this.imageAtlas.uploaded = true;
         }
 
         if (this.glyphAtlasImage) {
@@ -365,6 +370,10 @@ class Tile {
         return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
     }
 
+    patternsLoaded() {
+        return this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
+    }
+
     setExpiryData(data: any) {
         const prior = this.expirationTime;
 
@@ -442,7 +451,7 @@ class Tile {
             const sourceLayerStates = states[sourceLayerId];
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
-            bucket.update(sourceLayerStates, sourceLayer);
+            bucket.update(sourceLayerStates, sourceLayer, this.imageAtlas && this.imageAtlas.patternPositions || {});
             if (painter && painter.style) {
                 this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
             }

@@ -181,6 +181,54 @@ register('StructArrayLayout4i4ub12', StructArrayLayout4i4ub12);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Uint16[8]
+ *
+ * @private
+ */
+class StructArrayLayout8ui16 extends StructArray {
+    uint8: Uint8Array;
+    uint16: Uint16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        const o2 = i * 8;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
+        return i;
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const o2 = i * 8;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
+        return i;
+    }
+}
+
+StructArrayLayout8ui16.prototype.bytesPerElement = 16;
+register('StructArrayLayout8ui16', StructArrayLayout8ui16);
+
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Int16[4]
  * [8]: Uint16[4]
  *
@@ -1187,6 +1235,7 @@ export {
     StructArrayLayout4i8,
     StructArrayLayout2i4i12,
     StructArrayLayout4i4ub12,
+    StructArrayLayout8ui16,
     StructArrayLayout4i4ui16,
     StructArrayLayout3f12,
     StructArrayLayout1ul4,
@@ -1210,6 +1259,7 @@ export {
     StructArrayLayout2i4i12 as FillExtrusionLayoutArray,
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout4i4ub12 as LineLayoutArray,
+    StructArrayLayout8ui16 as PatternLayoutArray,
     StructArrayLayout4i4ui16 as SymbolLayoutArray,
     StructArrayLayout3f12 as SymbolDynamicLayoutArray,
     StructArrayLayout1ul4 as SymbolOpacityArray,

@@ -5,6 +5,7 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
+    Uniform4f,
     UniformMatrix4f
 } from '../uniform_binding';
 import { extend } from '../../util/util';
@@ -12,8 +13,8 @@ import { extend } from '../../util/util';
 import type Painter from '../painter';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type Context from '../../gl/context';
-import type {CrossFaded} from '../../style/cross_faded';
-import type {OverscaledTileID} from '../../source/tile_id';
+import type {CrossfadeParameters} from '../../style/evaluation_parameters';
+import type Tile from '../../source/tile';
 
 export type FillUniformsType = {|
     'u_matrix': UniformMatrix4f
@@ -27,40 +28,24 @@ export type FillOutlineUniformsType = {|
 export type FillPatternUniformsType = {|
     'u_matrix': UniformMatrix4f,
     // pattern uniforms:
-    'u_image': Uniform1i,
-    'u_pattern_tl_a': Uniform2f,
-    'u_pattern_br_a': Uniform2f,
-    'u_pattern_tl_b': Uniform2f,
-    'u_pattern_br_b': Uniform2f,
     'u_texsize': Uniform2f,
-    'u_mix': Uniform1f,
-    'u_pattern_size_a': Uniform2f,
-    'u_pattern_size_b': Uniform2f,
-    'u_scale_a': Uniform1f,
-    'u_scale_b': Uniform1f,
+    'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_tile_units_to_pixels': Uniform1f
+    'u_scale': Uniform4f,
+    'u_fade': Uniform1f
 |};
 
 export type FillOutlinePatternUniformsType = {|
     'u_matrix': UniformMatrix4f,
     'u_world': Uniform2f,
     // pattern uniforms:
-    'u_image': Uniform1i,
-    'u_pattern_tl_a': Uniform2f,
-    'u_pattern_br_a': Uniform2f,
-    'u_pattern_tl_b': Uniform2f,
-    'u_pattern_br_b': Uniform2f,
     'u_texsize': Uniform2f,
-    'u_mix': Uniform1f,
-    'u_pattern_size_a': Uniform2f,
-    'u_pattern_size_b': Uniform2f,
-    'u_scale_a': Uniform1f,
-    'u_scale_b': Uniform1f,
+    'u_image': Uniform1i,
     'u_pixel_coord_upper': Uniform2f,
     'u_pixel_coord_lower': Uniform2f,
-    'u_tile_units_to_pixels': Uniform1f
+    'u_scale': Uniform4f,
+    'u_fade': Uniform1f
 |};
 
 const fillUniforms = (context: Context, locations: UniformLocations): FillUniformsType => ({
@@ -70,19 +55,12 @@ const fillUniforms = (context: Context, locations: UniformLocations): FillUnifor
 const fillPatternUniforms = (context: Context, locations: UniformLocations): FillPatternUniformsType => ({
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_image': new Uniform1i(context, locations.u_image),
-    'u_pattern_tl_a': new Uniform2f(context, locations.u_pattern_tl_a),
-    'u_pattern_br_a': new Uniform2f(context, locations.u_pattern_br_a),
-    'u_pattern_tl_b': new Uniform2f(context, locations.u_pattern_tl_b),
-    'u_pattern_br_b': new Uniform2f(context, locations.u_pattern_br_b),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_mix': new Uniform1f(context, locations.u_mix),
-    'u_pattern_size_a': new Uniform2f(context, locations.u_pattern_size_a),
-    'u_pattern_size_b': new Uniform2f(context, locations.u_pattern_size_b),
-    'u_scale_a': new Uniform1f(context, locations.u_scale_a),
-    'u_scale_b': new Uniform1f(context, locations.u_scale_b),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_tile_units_to_pixels': new Uniform1f(context, locations.u_tile_units_to_pixels)
+    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_fade': new Uniform1f(context, locations.u_fade)
+
 });
 
 const fillOutlineUniforms = (context: Context, locations: UniformLocations): FillOutlineUniformsType => ({
@@ -94,19 +72,11 @@ const fillOutlinePatternUniforms = (context: Context, locations: UniformLocation
     'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
     'u_world': new Uniform2f(context, locations.u_world),
     'u_image': new Uniform1i(context, locations.u_image),
-    'u_pattern_tl_a': new Uniform2f(context, locations.u_pattern_tl_a),
-    'u_pattern_br_a': new Uniform2f(context, locations.u_pattern_br_a),
-    'u_pattern_tl_b': new Uniform2f(context, locations.u_pattern_tl_b),
-    'u_pattern_br_b': new Uniform2f(context, locations.u_pattern_br_b),
     'u_texsize': new Uniform2f(context, locations.u_texsize),
-    'u_mix': new Uniform1f(context, locations.u_mix),
-    'u_pattern_size_a': new Uniform2f(context, locations.u_pattern_size_a),
-    'u_pattern_size_b': new Uniform2f(context, locations.u_pattern_size_b),
-    'u_scale_a': new Uniform1f(context, locations.u_scale_a),
-    'u_scale_b': new Uniform1f(context, locations.u_scale_b),
     'u_pixel_coord_upper': new Uniform2f(context, locations.u_pixel_coord_upper),
     'u_pixel_coord_lower': new Uniform2f(context, locations.u_pixel_coord_lower),
-    'u_tile_units_to_pixels': new Uniform1f(context, locations.u_tile_units_to_pixels)
+    'u_scale': new Uniform4f(context, locations.u_scale),
+    'u_fade': new Uniform1f(context, locations.u_fade)
 });
 
 const fillUniformValues = (matrix: Float32Array): UniformValues<FillUniformsType> => ({
@@ -116,11 +86,11 @@ const fillUniformValues = (matrix: Float32Array): UniformValues<FillUniformsType
 const fillPatternUniformValues = (
     matrix: Float32Array,
     painter: Painter,
-    image: CrossFaded<string>,
-    tile: {tileID: OverscaledTileID, tileSize: number}
+    crossfade: CrossfadeParameters,
+    tile: Tile
 ): UniformValues<FillPatternUniformsType> => extend(
     fillUniformValues(matrix),
-    patternUniformValues(image, painter, tile)
+    patternUniformValues(crossfade, painter, tile)
 );
 
 const fillOutlineUniformValues = (
@@ -134,11 +104,11 @@ const fillOutlineUniformValues = (
 const fillOutlinePatternUniformValues = (
     matrix: Float32Array,
     painter: Painter,
-    image: CrossFaded<string>,
-    tile: {tileID: OverscaledTileID, tileSize: number},
+    crossfade: CrossfadeParameters,
+    tile: Tile,
     drawingBufferSize: [number, number]
 ): UniformValues<FillOutlinePatternUniformsType> => extend(
-    fillPatternUniformValues(matrix, painter, image, tile),
+    fillPatternUniformValues(matrix, painter, crossfade, tile),
     {
         'u_world': drawingBufferSize
     }
