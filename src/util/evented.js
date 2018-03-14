@@ -19,7 +19,7 @@ function _removeEventListener(type: string, listener: Listener, listenerList: Li
     }
 }
 
-class Event {
+export class Event {
     +type: string;
 
     constructor(type: string, data: Object = {}) {
@@ -28,7 +28,7 @@ class Event {
     }
 }
 
-class ErrorEvent extends Event {
+export class ErrorEvent extends Event {
     constructor(error: Error, data: Object = {}) {
         super('error', extend({error}, data));
     }
@@ -39,7 +39,7 @@ class ErrorEvent extends Event {
  *
  * @mixin Evented
  */
-class Evented {
+export class Evented {
     _listeners: Listeners;
     _oneTimeListeners: Listeners;
     _eventedParent: ?Evented;
@@ -156,12 +156,3 @@ class Evented {
         return this;
     }
 }
-
-const exported = {
-    Event,
-    ErrorEvent,
-    Evented
-};
-
-export default exported;
-export { Event, ErrorEvent, Evented };

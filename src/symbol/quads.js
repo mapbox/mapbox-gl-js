@@ -10,14 +10,6 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
 
-const exported = {
-    getIconQuads,
-    getGlyphQuads
-};
-
-export default exported;
-export { getIconQuads, getGlyphQuads };
-
 /**
  * A textured quad for rendering a single icon or glyph.
  *
@@ -50,7 +42,7 @@ export type SymbolQuad = {
  * Create the quads used for rendering an icon.
  * @private
  */
-function getIconQuads(anchor: Anchor,
+export function getIconQuads(anchor: Anchor,
                       shapedIcon: PositionedIcon,
                       layer: SymbolStyleLayer,
                       alongLine: boolean,
@@ -123,7 +115,7 @@ function getIconQuads(anchor: Anchor,
  * Create the quads used for rendering a text label.
  * @private
  */
-function getGlyphQuads(anchor: Anchor,
+export function getGlyphQuads(anchor: Anchor,
                        shaping: Shaping,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,

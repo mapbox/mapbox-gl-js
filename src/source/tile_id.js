@@ -6,7 +6,7 @@ import assert from 'assert';
 import { register } from '../util/web_worker_transfer';
 import Coordinate from '../geo/coordinate';
 
-class CanonicalTileID {
+export class CanonicalTileID {
     z: number;
     x: number;
     y: number;
@@ -41,7 +41,7 @@ class CanonicalTileID {
     }
 }
 
-class UnwrappedTileID {
+export class UnwrappedTileID {
     wrap: number;
     canonical: CanonicalTileID;
     key: number;
@@ -53,7 +53,7 @@ class UnwrappedTileID {
     }
 }
 
-class OverscaledTileID {
+export class OverscaledTileID {
     overscaledZ: number;
     wrap: number;
     canonical: CanonicalTileID;
@@ -158,12 +158,3 @@ function getQuadkey(z, x, y) {
 
 register('CanonicalTileID', CanonicalTileID);
 register('OverscaledTileID', OverscaledTileID, {omit: ['posMatrix']});
-
-const exported = {
-    CanonicalTileID: CanonicalTileID,
-    OverscaledTileID: OverscaledTileID,
-    UnwrappedTileID: UnwrappedTileID
-};
-
-export default exported;
-export { CanonicalTileID, OverscaledTileID, UnwrappedTileID };

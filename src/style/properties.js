@@ -82,7 +82,7 @@ export interface Property<T, R> {
  *
  *  @private
  */
-class PropertyValue<T, R> {
+export class PropertyValue<T, R> {
     property: Property<T, R>;
     value: PropertyValueSpecification<T> | void;
     expression: StylePropertyExpression;
@@ -158,7 +158,7 @@ type TransitionablePropertyValues<Props: Object>
  *
  * @private
  */
-class Transitionable<Props: Object> {
+export class Transitionable<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitionablePropertyValues<Props>;
 
@@ -300,7 +300,7 @@ type TransitioningPropertyValues<Props: Object>
  *
  * @private
  */
-class Transitioning<Props: Object> {
+export class Transitioning<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitioningPropertyValues<Props>;
 
@@ -349,7 +349,7 @@ type PropertyValues<Props: Object>
  *
  * @private
  */
-class Layout<Props: Object> {
+export class Layout<Props: Object> {
     _properties: Properties<Props>;
     _values: PropertyValues<Props>;
 
@@ -422,7 +422,7 @@ type PossiblyEvaluatedValue<T> =
  *
  * @private
  */
-class PossiblyEvaluatedPropertyValue<T> {
+export class PossiblyEvaluatedPropertyValue<T> {
     property: DataDrivenProperty<T>;
     value: PossiblyEvaluatedValue<T>;
     globals: GlobalProperties;
@@ -475,7 +475,7 @@ type PossiblyEvaluatedPropertyValues<Props: Object>
  * given layer type.
  * @private
  */
-class PossiblyEvaluated<Props: Object> {
+export class PossiblyEvaluated<Props: Object> {
     _properties: Properties<Props>;
     _values: PossiblyEvaluatedPropertyValues<Props>;
 
@@ -496,7 +496,7 @@ class PossiblyEvaluated<Props: Object> {
  *
  * @private
  */
-class DataConstantProperty<T> implements Property<T, T> {
+export class DataConstantProperty<T> implements Property<T, T> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -525,7 +525,7 @@ class DataConstantProperty<T> implements Property<T, T> {
  *
  * @private
  */
-class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
+export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -582,7 +582,7 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
  *
  * @private
  */
-class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
+export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -625,7 +625,7 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
  *
  * @private
  */
-class HeatmapColorProperty implements Property<Color, void> {
+export class HeatmapColorProperty implements Property<Color, void> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -647,7 +647,7 @@ class HeatmapColorProperty implements Property<Color, void> {
  *
  * @private
  */
-class Properties<Props: Object> {
+export class Properties<Props: Object> {
     properties: Props;
     defaultPropertyValues: PropertyValues<Props>;
     defaultTransitionablePropertyValues: TransitionablePropertyValues<Props>;
@@ -679,20 +679,3 @@ register('DataDrivenProperty', DataDrivenProperty);
 register('DataConstantProperty', DataConstantProperty);
 register('CrossFadedProperty', CrossFadedProperty);
 register('HeatmapColorProperty', HeatmapColorProperty);
-
-const exported = {
-    PropertyValue,
-    Transitionable,
-    Transitioning,
-    Layout,
-    PossiblyEvaluatedPropertyValue,
-    PossiblyEvaluated,
-    DataConstantProperty,
-    DataDrivenProperty,
-    CrossFadedProperty,
-    HeatmapColorProperty,
-    Properties
-};
-
-export default exported;
-export { PropertyValue, Transitionable, Transitioning, Layout, PossiblyEvaluatedPropertyValue, PossiblyEvaluated, DataConstantProperty, DataDrivenProperty, CrossFadedProperty, HeatmapColorProperty, Properties };

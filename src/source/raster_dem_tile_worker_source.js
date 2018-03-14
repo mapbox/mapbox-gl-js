@@ -1,6 +1,6 @@
 // @flow
 
-import { DEMData } from '../data/dem_data';
+import DEMData from '../data/dem_data';
 
 import type Actor from '../util/actor';
 import type {

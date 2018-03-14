@@ -11,7 +11,7 @@ import VertexArrayObject from './vertex_array_object';
 import { RasterBoundsArray, PosArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import posAttributes from '../data/pos_attributes';
-import { ProgramConfiguration } from '../data/program_configuration';
+import ProgramConfiguration from '../data/program_configuration';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import shaders from '../shaders';
 import Program from './program';

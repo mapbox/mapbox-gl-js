@@ -7,7 +7,7 @@ import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, V
 
 import type { Type } from './types';
 
-function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
+export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     if (!(
         typeof r === 'number' && r >= 0 && r <= 255 &&
         typeof g === 'number' && g >= 0 && g <= 255 &&
@@ -28,7 +28,7 @@ function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
 
 export type Value = null | string | boolean | number | Color | $ReadOnlyArray<Value> | { +[string]: Value }
 
-function isValue(mixed: mixed): boolean {
+export function isValue(mixed: mixed): boolean {
     if (mixed === null) {
         return true;
     } else if (typeof mixed === 'string') {
@@ -58,7 +58,7 @@ function isValue(mixed: mixed): boolean {
     }
 }
 
-function typeOf(value: Value): Type {
+export function typeOf(value: Value): Type {
     if (value === null) {
         return NullType;
     } else if (typeof value === 'string') {
@@ -92,12 +92,4 @@ function typeOf(value: Value): Type {
     }
 }
 
-const exported = {
-    Color,
-    validateRGBA,
-    isValue,
-    typeOf
-};
-
-export default exported;
-export { Color, validateRGBA, isValue, typeOf };
+export {Color};

@@ -7,7 +7,7 @@ import type StyleLayer from '../style/style_layer';
 import type CircleBucket from '../data/bucket/circle_bucket';
 import type LineBucket from '../data/bucket/line_bucket';
 
-function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket<*> | LineBucket): number {
+export function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket<*> | LineBucket): number {
     const value = ((layer.paint: any).get(property): PossiblyEvaluatedPropertyValue<any>).value;
     if (value.kind === 'constant') {
         return value.value;
@@ -17,11 +17,11 @@ function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: Circl
     }
 }
 
-function translateDistance(translate: [number, number]) {
+export function translateDistance(translate: [number, number]) {
     return Math.sqrt(translate[0] * translate[0] + translate[1] * translate[1]);
 }
 
-function translate(queryGeometry: Array<Array<Point>>,
+export function translate(queryGeometry: Array<Array<Point>>,
                    translate: [number, number],
                    translateAnchor: 'viewport' | 'map',
                    bearing: number,
@@ -47,12 +47,3 @@ function translate(queryGeometry: Array<Array<Point>>,
     }
     return translated;
 }
-
-const exported = {
-    getMaximumPaintValue,
-    translateDistance,
-    translate
-};
-
-export default exported;
-export { getMaximumPaintValue, translateDistance, translate };

@@ -6,7 +6,7 @@ import type {OverscaledTileID} from './tile_id';
 import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
 import type {CollisionBoxArray} from '../data/array_types';
-import type {DEMData} from '../data/dem_data';
+import type DEMData from '../data/dem_data';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 
 export type TileParameters = {
