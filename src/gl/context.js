@@ -172,7 +172,7 @@ class Context {
     }
 
     setStencilMode(stencilMode: $ReadOnly<StencilMode>) {
-        if (stencilMode.func === this.gl.ALWAYS && !stencilMode.mask) {
+        if (stencilMode.test.func === this.gl.ALWAYS && !stencilMode.mask) {
             this.stencilTest.set(false);
         } else {
             this.stencilTest.set(true);
