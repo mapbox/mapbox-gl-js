@@ -1,7 +1,7 @@
 import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
-import {plugins as basePlugins} from '../build/rollup_plugins';
+import {plugins as basePlugins} from '../../build/rollup_plugins';
 
 const plugins = () => basePlugins().concat(
     replace({
@@ -13,22 +13,22 @@ const plugins = () => basePlugins().concat(
 );
 
 const config = [{
-    input: ['bench/benchmarks.js', 'src/source/worker.js'],
+    input: [`bench/versions/benchmarks.js`, 'src/source/worker.js'],
     output: {
-        dir: 'rollup/build/benchmarks',
+        dir: 'rollup/build/benchmarks/versions',
         format: 'amd',
         sourcemap: 'inline',
-        chunkFileNames: 'shared.js'
+        chunkFileNames: 'chunk1.js'
     },
     experimentalCodeSplitting: true,
     plugins: plugins()
 }, {
     input: 'rollup/benchmarks.js',
     output: {
-        file: 'bench/benchmarks_generated.js',
+        file: 'bench/versions/benchmarks_generated.js',
         format: 'umd',
         sourcemap: 'inline',
-        intro: fs.readFileSync(require.resolve('../rollup/bundle_prelude.js'), 'utf8')
+        intro: fs.readFileSync(require.resolve('../../rollup/bundle_prelude.js'), 'utf8')
     },
     treeshake: false,
     indent: false,
@@ -36,4 +36,3 @@ const config = [{
 }];
 
 export default config;
-

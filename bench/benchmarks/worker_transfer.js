@@ -12,6 +12,12 @@ export default class WorkerTransfer extends Benchmark {
     payloadTiles: Array<any>;
     payloadJSON: Array<any>;
     worker: Worker;
+    style: string;
+
+    constructor(style: string) {
+        super();
+        this.style = style;
+    }
 
     setup(): Promise<void> {
         const src = `
@@ -29,7 +35,7 @@ export default class WorkerTransfer extends Benchmark {
             new OverscaledTileID(13, 0, 13, 2412, 3079)
         ];
 
-        return fetchStyle(`mapbox://styles/mapbox/streets-v9`)
+        return fetchStyle(this.style)
             .then((styleJSON) => {
                 this.parser = new TileParser(styleJSON, 'composite');
                 return this.parser.setup();
