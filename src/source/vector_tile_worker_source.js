@@ -147,22 +147,20 @@ class VectorTileWorkerSource implements WorkerSource {
             const workerTile = loaded[uid];
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
 
+            const done = (err, data) => {
+                const reloadCallback = workerTile.reloadCallback;
+                if (reloadCallback) {
+                    delete workerTile.reloadCallback;
+                    workerTile.parse(workerTile.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
+                }
+                callback(err, data);
+            };
+
             if (workerTile.status === 'parsing') {
-                workerTile.reloadCallback = callback;
+                workerTile.reloadCallback = done;
             } else if (workerTile.status === 'done') {
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done.bind(workerTile));
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done);
             }
-
-        }
-
-        function done(err, data) {
-            if (this.reloadCallback) {
-                const reloadCallback = this.reloadCallback;
-                delete this.reloadCallback;
-                this.parse(this.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
-            }
-
-            callback(err, data);
         }
     }
 
