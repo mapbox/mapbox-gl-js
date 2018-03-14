@@ -4,7 +4,7 @@ import browser from '../util/browser';
 
 import shaders from '../shaders';
 import assert from 'assert';
-import { ProgramConfiguration } from '../data/program_configuration';
+import ProgramConfiguration from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
 import Context from '../gl/context';
 

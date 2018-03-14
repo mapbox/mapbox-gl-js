@@ -4,7 +4,7 @@ import { RGBAImage } from '../util/image';
 import { warnOnce, clamp } from '../util/util';
 import { register } from '../util/web_worker_transfer';
 
-class Level {
+export class Level {
     dim: number;
     border: number;
     stride: number;
@@ -44,7 +44,7 @@ register('Level', Level);
 // surrounding pixel values to compute the slope at that pixel, and we cannot accurately calculate the slope at pixels on a
 // tile's edge without backfilling from neighboring tiles.
 
-class DEMData {
+export default class DEMData {
     uid: string;
     scale: number;
     level: Level;
@@ -163,12 +163,3 @@ class DEMData {
 }
 
 register('DEMData', DEMData);
-
-const exported = {
-    DEMData,
-    Level
-};
-
-export default exported;
-export { DEMData, Level };
-

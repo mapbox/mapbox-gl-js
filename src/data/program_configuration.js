@@ -270,7 +270,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
  *
  * @private
  */
-class ProgramConfiguration {
+export default class ProgramConfiguration {
     binders: { [string]: Binder<any> };
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
@@ -365,7 +365,7 @@ class ProgramConfiguration {
     }
 }
 
-class ProgramConfigurationSet<Layer: TypedStyleLayer> {
+export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
     programConfigurations: {[string]: ProgramConfiguration};
 
     constructor(layoutAttributes: Array<StructArrayMember>, layers: $ReadOnlyArray<Layer>, zoom: number, filterProperties: (string) => boolean = () => true) {
@@ -423,11 +423,3 @@ register('SourceExpressionBinder', SourceExpressionBinder);
 register('CompositeExpressionBinder', CompositeExpressionBinder);
 register('ProgramConfiguration', ProgramConfiguration, {omit: ['_buffers']});
 register('ProgramConfigurationSet', ProgramConfigurationSet);
-
-const exported = {
-    ProgramConfiguration,
-    ProgramConfigurationSet
-};
-
-export default exported;
-export { ProgramConfiguration, ProgramConfigurationSet };

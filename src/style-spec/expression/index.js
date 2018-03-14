@@ -34,7 +34,7 @@ export type GlobalProperties = {
     heatmapDensity?: number
 };
 
-class StyleExpression {
+export class StyleExpression {
     expression: Expression;
 
     _evaluator: EvaluationContext;
@@ -54,7 +54,7 @@ class StyleExpression {
     }
 }
 
-class StyleExpressionWithErrorHandling extends StyleExpression {
+export class StyleExpressionWithErrorHandling extends StyleExpression {
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
     _enumValues: {[string]: any};
@@ -99,7 +99,7 @@ class StyleExpressionWithErrorHandling extends StyleExpression {
     }
 }
 
-function isExpression(expression: mixed) {
+export function isExpression(expression: mixed) {
     return Array.isArray(expression) && expression.length > 0 &&
         typeof expression[0] === 'string' && expression[0] in definitions;
 }
@@ -113,7 +113,7 @@ function isExpression(expression: mixed) {
  *
  * @private
  */
-function createExpression(expression: mixed,
+export function createExpression(expression: mixed,
                           propertySpec: StylePropertySpecification,
                           options: {handleErrors?: boolean} = {}): Result<StyleExpression, Array<ParsingError>> {
     const parser = new ParsingContext(definitions, [], getExpectedType(propertySpec));
@@ -130,7 +130,7 @@ function createExpression(expression: mixed,
     }
 }
 
-class ZoomConstantExpression<Kind> {
+export class ZoomConstantExpression<Kind> {
     kind: Kind;
     _styleExpression: StyleExpression;
     constructor(kind: Kind, expression: StyleExpression) {
@@ -142,7 +142,7 @@ class ZoomConstantExpression<Kind> {
     }
 }
 
-class ZoomDependentExpression<Kind> {
+export class ZoomDependentExpression<Kind> {
     kind: Kind;
     zoomStops: Array<number>;
 
@@ -201,7 +201,7 @@ export type StylePropertyExpression =
     | CameraExpression
     | CompositeExpression;
 
-function createPropertyExpression(expression: mixed,
+export function createPropertyExpression(expression: mixed,
                                   propertySpec: StylePropertySpecification,
                                   options: {handleErrors?: boolean} = {}): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, options);
@@ -246,7 +246,7 @@ import { Color } from './values';
 
 // serialization wrapper for old-style stop functions normalized to the
 // expression interface
-class StylePropertyFunction<T> {
+export class StylePropertyFunction<T> {
     _parameters: PropertyValueSpecification<T>;
     _specification: StylePropertySpecification;
 
@@ -273,7 +273,7 @@ class StylePropertyFunction<T> {
     }
 }
 
-function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification): StylePropertyExpression {
+export function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, specification: StylePropertySpecification): StylePropertyExpression {
     if (isFunction(value)) {
         return (new StylePropertyFunction(value, specification): any);
 
@@ -296,21 +296,6 @@ function normalizePropertyExpression<T>(value: PropertyValueSpecification<T>, sp
         };
     }
 }
-
-const exported = {
-    StyleExpression,
-    StyleExpressionWithErrorHandling,
-    isExpression,
-    createExpression,
-    createPropertyExpression,
-    normalizePropertyExpression,
-    ZoomConstantExpression,
-    ZoomDependentExpression,
-    StylePropertyFunction
-};
-
-export default exported;
-export { StyleExpression, StyleExpressionWithErrorHandling, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction };
 
 // Zoom-dependent expressions may only use ["zoom"] as the input to a top-level "step" or "interpolate"
 // expression (collectively referred to as a "curve"). The curve may be wrapped in one or more "let" or

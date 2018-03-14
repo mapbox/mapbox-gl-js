@@ -23,7 +23,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
 import type {WorkerTileResult} from './worker_source';
-import type {DEMData} from '../data/dem_data';
+import type DEMData from '../data/dem_data';
 import type {RGBAImage, AlphaImage} from '../util/image';
 import type Mask from '../render/tile_mask';
 import type Context from '../gl/context';

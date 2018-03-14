@@ -6,7 +6,7 @@ import getType from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
 
-function isFunction(value) {
+export function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -14,7 +14,7 @@ function identityFunction(x) {
     return x;
 }
 
-function createFunction(parameters, propertySpec) {
+export function createFunction(parameters, propertySpec) {
     const isColor = propertySpec.type === 'color';
     const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
@@ -277,11 +277,3 @@ function interpolationFactor(input, base, lowerValue, upperValue) {
         return (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
     }
 }
-
-const exported = {
-    createFunction,
-    isFunction
-};
-
-export default exported;
-export { createFunction, isFunction };

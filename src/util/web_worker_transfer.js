@@ -53,7 +53,7 @@ const registry: Registry = {};
  *
  * @private
  */
-function register<T: any>(name: string, klass: Class<T>, options: RegisterOptions<T> = {}) {
+export function register<T: any>(name: string, klass: Class<T>, options: RegisterOptions<T> = {}) {
     assert(!registry[name], `${name} is already registered.`);
     (Object.defineProperty: any)(klass, '_classRegistryKey', {
         value: name,
@@ -113,7 +113,7 @@ for (const name in expressions) {
  *
  * @private
  */
-function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
+export function serialize(input: mixed, transferables?: Array<Transferable>): Serialized {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
@@ -198,7 +198,7 @@ function serialize(input: mixed, transferables?: Array<Transferable>): Serialize
     throw new Error(`can't serialize object of type ${typeof input}`);
 }
 
-function deserialize(input: Serialized): mixed {
+export function deserialize(input: Serialized): mixed {
     if (input === null ||
         input === undefined ||
         typeof input === 'boolean' ||
@@ -246,12 +246,3 @@ function deserialize(input: Serialized): mixed {
 
     throw new Error(`can't deserialize object of type ${typeof input}`);
 }
-
-const exported = {
-    register,
-    serialize,
-    deserialize
-};
-
-export default exported;
-export { register, serialize, deserialize };

@@ -14,7 +14,7 @@ import type LngLatBounds from '../geo/lng_lat_bounds';
  * `MapMouseEvent` is the event type for mouse-related map events.
  * @extends {Object}
  */
-class MapMouseEvent extends Event {
+export class MapMouseEvent extends Event {
     /**
      * The event type.
      */
@@ -89,7 +89,7 @@ class MapMouseEvent extends Event {
  * `MapTouchEvent` is the event type for touch-related map events.
  * @extends {Object}
  */
-class MapTouchEvent extends Event {
+export class MapTouchEvent extends Event {
     /**
      * The event type.
      */
@@ -172,7 +172,7 @@ class MapTouchEvent extends Event {
  * `MapWheelEvent` is the event type for the `wheel` map event.
  * @extends {Object}
  */
-class MapWheelEvent extends Event {
+export class MapWheelEvent extends Event {
     /**
      * The event type.
      */
@@ -785,12 +785,3 @@ export type MapEvent =
      * @private
      */
     | 'style.load';
-
-const exported = {
-    MapMouseEvent,
-    MapTouchEvent,
-    MapWheelEvent
-};
-
-export default exported;
-export { MapMouseEvent, MapTouchEvent, MapWheelEvent };

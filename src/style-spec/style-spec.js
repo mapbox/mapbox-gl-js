@@ -60,10 +60,10 @@ import composite from './composite';
 import diff from './diff';
 import ValidationError from './error/validation_error';
 import ParsingError from './error/parsing_error';
-import expression from './expression';
+import { StyleExpression, StyleExpressionWithErrorHandling, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction } from './expression';
 import featureFilter from './feature_filter';
 import Color from './util/color';
-import styleFunction from './function';
+import { createFunction, isFunction } from './function';
 import convertFunction from './function/convert';
 
 import validate from './validate_style';
@@ -76,16 +76,28 @@ const exported = {
     diff,
     ValidationError,
     ParsingError,
-    expression,
+    expression: {
+        StyleExpression,
+        StyleExpressionWithErrorHandling,
+        isExpression,
+        createExpression,
+        createPropertyExpression,
+        normalizePropertyExpression,
+        ZoomConstantExpression,
+        ZoomDependentExpression,
+        StylePropertyFunction
+    },
     featureFilter,
     Color,
-    function: styleFunction,
+    function: {
+        convertFunction,
+        createFunction,
+        isFunction
+    },
     validate
 };
 
 export default exported;
-
-exported.function.convertFunction = convertFunction;
 
 validate.parsed = validate;
 validate.latest = validate;

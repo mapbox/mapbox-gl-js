@@ -31,13 +31,6 @@ import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
 
 import Point from '@mapbox/point-geometry';
 
-const exported = {
-    performSymbolLayout
-};
-
-export default exported;
-export { performSymbolLayout };
-
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
 // `icon-size` at up to three:
 //
@@ -60,7 +53,7 @@ type Sizes = {
     compositeIconSizes: [PossiblyEvaluatedPropertyValue<number>, PossiblyEvaluatedPropertyValue<number>], // (5)
 };
 
-function performSymbolLayout(bucket: SymbolBucket,
+export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: {[string]: {[number]: ?StyleGlyph}},
                              glyphPositions: {[string]: {[number]: GlyphPosition}},
                              imageMap: {[string]: StyleImage},

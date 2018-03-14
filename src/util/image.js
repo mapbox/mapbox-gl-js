@@ -78,7 +78,7 @@ function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size,
     return dstImg;
 }
 
-class AlphaImage {
+export class AlphaImage {
     width: number;
     height: number;
     data: Uint8Array | Uint8ClampedArray;
@@ -102,7 +102,7 @@ class AlphaImage {
 
 // Not premultiplied, because ImageData is not premultiplied.
 // UNPACK_PREMULTIPLY_ALPHA_WEBGL must be used when uploading to a texture.
-class RGBAImage {
+export class RGBAImage {
     width: number;
     height: number;
     data: Uint8Array | Uint8ClampedArray;
@@ -126,11 +126,3 @@ class RGBAImage {
 
 register('AlphaImage', AlphaImage);
 register('RGBAImage', RGBAImage);
-
-const exported = {
-    AlphaImage,
-    RGBAImage
-};
-
-export default exported;
-export { AlphaImage, RGBAImage };
