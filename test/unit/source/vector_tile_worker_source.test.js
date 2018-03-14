@@ -51,6 +51,107 @@ test('VectorTileWorkerSource#removeTile removes loaded tile', (t) => {
     t.end();
 });
 
+test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', (t) => {
+    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const parse = t.spy();
+
+    source.loaded = {
+        '0': {
+            status: 'done',
+            parse
+        }
+    };
+
+    const callback = t.spy();
+    source.reloadTile({ uid: 0 }, callback);
+    t.equal(parse.callCount, 1);
+
+    parse.firstCall.args[3]();
+    t.equal(callback.callCount, 1);
+
+    t.end();
+});
+
+test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', (t) => {
+    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const parse = t.spy();
+
+    source.loaded = {
+        '0': {
+            status: 'done',
+            parse
+        }
+    };
+
+    const callback1 = t.spy();
+    const callback2 = t.spy();
+    source.reloadTile({ uid: 0 }, callback1);
+    t.equal(parse.callCount, 1);
+
+    source.loaded[0].status = 'parsing';
+    source.reloadTile({ uid: 0 }, callback2);
+    t.equal(parse.callCount, 1);
+
+    parse.firstCall.args[3]();
+    t.equal(parse.callCount, 2);
+    t.equal(callback1.callCount, 1);
+    t.equal(callback2.callCount, 0);
+
+    parse.secondCall.args[3]();
+    t.equal(callback1.callCount, 1);
+    t.equal(callback2.callCount, 1);
+
+    t.end();
+});
+
+test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', (t) => {
+    // https://github.com/mapbox/mapbox-gl-js/issues/6308
+    const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
+    const parse = t.spy();
+
+    source.loaded = {
+        '0': {
+            status: 'done',
+            parse
+        }
+    };
+
+    const callback1 = t.spy();
+    const callback2 = t.spy();
+    const callback3 = t.spy();
+    source.reloadTile({ uid: 0 }, callback1);
+    t.equal(parse.callCount, 1);
+
+    source.loaded[0].status = 'parsing';
+    source.reloadTile({ uid: 0 }, callback2);
+    t.equal(parse.callCount, 1);
+
+    parse.firstCall.args[3]();
+    t.equal(parse.callCount, 2);
+    t.equal(callback1.callCount, 1);
+    t.equal(callback2.callCount, 0);
+    t.equal(callback3.callCount, 0);
+
+    source.reloadTile({ uid: 0 }, callback3);
+    t.equal(parse.callCount, 2);
+    t.equal(callback1.callCount, 1);
+    t.equal(callback2.callCount, 0);
+    t.equal(callback3.callCount, 0);
+
+    parse.secondCall.args[3]();
+    t.equal(parse.callCount, 3);
+    t.equal(callback1.callCount, 1);
+    t.equal(callback2.callCount, 1);
+    t.equal(callback3.callCount, 0);
+
+    parse.thirdCall.args[3]();
+    t.equal(callback1.callCount, 1);
+    t.equal(callback2.callCount, 1);
+    t.equal(callback3.callCount, 1);
+
+    t.end();
+});
+
 test('VectorTileWorkerSource provides resource timing information', (t) => {
     const rawTileData = fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 
