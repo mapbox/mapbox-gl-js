@@ -3,13 +3,12 @@
 import ShelfPack from '@mapbox/shelf-pack';
 
 import { RGBAImage } from '../util/image';
-import { imagePosition } from './image_atlas';
+import { ImagePosition } from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
 
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
-import type {ImagePosition} from './image_atlas';
 import type {Bin} from '@mapbox/shelf-pack';
 import type {Callback} from '../types/callback';
 
@@ -181,7 +180,7 @@ class ImageManager {
 
         this.dirty = true;
 
-        const position = imagePosition(bin, image);
+        const position = new ImagePosition(bin, image);
         this.patterns[id] = { bin, position };
         return position;
     }

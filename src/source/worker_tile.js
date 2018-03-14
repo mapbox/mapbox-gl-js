@@ -8,8 +8,8 @@ import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import { warnOnce, mapObject, values } from '../util/util';
 import assert from 'assert';
-import { makeImageAtlas } from '../render/image_atlas';
-import { makeGlyphAtlas } from '../render/glyph_atlas';
+import ImageAtlas from '../render/image_atlas';
+import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
 import { OverscaledTileID } from './tile_id';
 
@@ -152,8 +152,8 @@ class WorkerTile {
             if (error) {
                 return callback(error);
             } else if (glyphMap && imageMap) {
-                const glyphAtlas = makeGlyphAtlas(glyphMap);
-                const imageAtlas = makeImageAtlas(imageMap);
+                const glyphAtlas = new GlyphAtlas(glyphMap);
+                const imageAtlas = new ImageAtlas(imageMap);
 
                 for (const key in buckets) {
                     const bucket = buckets[key];
