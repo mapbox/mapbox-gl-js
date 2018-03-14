@@ -20,6 +20,7 @@ import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {Formatted} from '../../style-spec/expression/definitions/formatted';
 
+
 import type {
     Bucket,
     BucketParameters,
@@ -35,6 +36,7 @@ import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
 import type {FeatureStates} from '../../source/source_state';
+import type {ImagePosition} from '../../render/image_atlas';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -245,6 +247,7 @@ class SymbolBucket implements Bucket {
     iconsNeedLinear: boolean;
     bucketInstanceId: number;
     justReloaded: boolean;
+    hasPattern: boolean;
 
     textSizeData: SizeData;
     iconSizeData: SizeData;
@@ -279,6 +282,7 @@ class SymbolBucket implements Bucket {
         this.index = options.index;
         this.pixelRatio = options.pixelRatio;
         this.sourceLayerIndex = options.sourceLayerIndex;
+        this.hasPattern = false;
 
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
@@ -403,10 +407,10 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, imagePositions: {[string]: ImagePosition}) {
         if (!this.stateDependentLayers.length) return;
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers, imagePositions);
     }
 
     isEmpty() {
@@ -515,7 +519,7 @@ class SymbolBucket implements Bucket {
             lineOffset[0], lineOffset[1],
             writingMode, (false: any));
 
-        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index);
+        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index, {});
     }
 
     _addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchorX: number, anchorY: number, extrude: Point) {

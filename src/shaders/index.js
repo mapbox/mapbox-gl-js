@@ -143,6 +143,8 @@ uniform ${precision} ${type} u_${name};
 
     program.vertexSource = program.vertexSource.replace(re, (match: string, operation: string, precision: string, type: string, name: string) => {
         const attrType = type === 'float' ? 'vec2' : 'vec4';
+        const unpackType = name.match(/color/) ? 'color' : attrType;
+
         if (fragmentPragmas[name]) {
             if (operation === 'define') {
                 return `
@@ -155,13 +157,24 @@ uniform ${precision} ${type} u_${name};
 #endif
 `;
             } else /* if (operation === 'initialize') */ {
-                return `
+                if (unpackType === 'vec4') {
+                    // vec4 attributes are only used for cross-faded properties, and are not packed
+                    return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${name} = unpack_mix_${attrType}(a_${name}, a_${name}_t);
+    ${name} = a_${name};
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
 `;
+                } else {
+                    return `
+#ifndef HAS_UNIFORM_u_${name}
+    ${name} = unpack_mix_${unpackType}(a_${name}, a_${name}_t);
+#else
+    ${precision} ${type} ${name} = u_${name};
+#endif
+`;
+                }
             }
         } else {
             if (operation === 'define') {
@@ -174,13 +187,24 @@ uniform ${precision} ${type} u_${name};
 #endif
 `;
             } else /* if (operation === 'initialize') */ {
-                return `
+                if (unpackType === 'vec4') {
+                    // vec4 attributes are only used for cross-faded properties, and are not packed
+                    return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = unpack_mix_${attrType}(a_${name}, a_${name}_t);
+    ${precision} ${type} ${name} = a_${name};
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
 `;
+                } else /* */{
+                    return `
+#ifndef HAS_UNIFORM_u_${name}
+    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, a_${name}_t);
+#else
+    ${precision} ${type} ${name} = u_${name};
+#endif
+`;
+                }
             }
         }
     });

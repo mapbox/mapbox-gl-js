@@ -107,10 +107,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             const iconScaled = layer.layout.get('icon-size').constantOr(0) !== 1 || bucket.iconsNeedLinear;
             const iconTransformed = pitchWithMap || tr.pitch !== 0;
 
-            tile.iconAtlasTexture.bind(isSDF || painter.options.rotating || painter.options.zooming || iconScaled || iconTransformed ?
+            tile.imageAtlasTexture.bind(isSDF || painter.options.rotating || painter.options.zooming || iconScaled || iconTransformed ?
                 gl.LINEAR : gl.NEAREST, gl.CLAMP_TO_EDGE);
 
-            texSize = tile.iconAtlasTexture.size;
+            texSize = tile.imageAtlasTexture.size;
         }
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);

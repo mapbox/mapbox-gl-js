@@ -15,7 +15,6 @@
             "id": "fill",
             "type": "fill",
             "source": "mapbox",
-            "source-layer": "road",
             "paint": {
               "fill-pattern": "marker"
             }
@@ -38,7 +37,6 @@
             "id": "road",
             "type": "line",
             "source": "mapbox",
-            "source-layer": "road",
             "paint": {
               "line-width": 20,
               "line-pattern": "generic_icon"
@@ -52,20 +50,75 @@
 
     }
   },
-  "center": [
-    13.418056,
-    52.499167
-  ],
-  "zoom": 17,
-  "sources": {
-    "mapbox": {
-      "type": "vector",
-      "maxzoom": 14,
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.mvt"
-      ]
-    }
-  },
+"zoom": 11,
+ "sources": {
+     "mapbox": {
+       "type": "geojson",
+       "maxzoom": 10,
+       "data": {
+         "type": "FeatureCollection",
+         "features": [
+           {
+             "type": "Feature",
+             "properties": {
+               "class": "street"
+             },
+             "geometry": {
+               "type": "LineString",
+               "coordinates": [
+                 [
+                   10,
+                   -0.01
+                 ],
+                 [
+                   -10,
+                   -0.01
+                 ]
+               ]
+             }
+           },
+           {
+             "type": "Feature",
+             "properties": {
+               "class": "path"
+             },
+             "geometry": {
+               "type": "LineString",
+               "coordinates": [
+                 [
+                   -10,
+                   0
+                 ],
+                 [
+                   10,
+                   0
+                 ]
+               ]
+             }
+           },
+           {
+             "type": "Feature",
+             "properties": {
+               "class": "street"
+             },
+             "geometry": {
+               "type": "LineString",
+               "coordinates": [
+                 [
+                   -10,
+                   0.01
+                 ],
+                 [
+                   10,
+                   0.01
+                 ]
+               ]
+             }
+           }
+         ]
+       }
+     }
+   },
   "sprite": "local://sprites/emerald",
   "layers": [
     {

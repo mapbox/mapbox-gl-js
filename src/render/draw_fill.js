@@ -27,7 +27,8 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     const colorMode = painter.colorModeForRenderPass();
 
-    const pass = (!layer.paint.get('fill-pattern') &&
+    const pattern = layer.paint.get('fill-pattern');
+    const pass = (!pattern.constantOr((1: any)) &&
         color.constantOr(Color.transparent).a === 1 &&
         opacity.constantOr(0) === 1) ? 'opaque' : 'translucent';
 
@@ -58,9 +59,9 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, isOutline) {
     const gl = painter.context.gl;
 
-    const image = layer.paint.get('fill-pattern');
-    if (painter.isPatternMissing(image)) return;
-
+    const patternProperty = layer.paint.get('fill-pattern');
+    const image = patternProperty && patternProperty.constantOr((1: any));
+    const crossfade = layer.getCrossfadeParameters();
     let drawMode, programName, uniformValues, indexBuffer, segments;
 
     if (!isOutline) {
@@ -71,18 +72,30 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         drawMode = gl.LINES;
     }
 
-    if (image) {
-        painter.context.activeTexture.set(gl.TEXTURE0);
-        painter.imageManager.bind(painter.context);
-    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
+        if (image && !tile.patternsLoaded()) continue;
+
+
         const bucket: ?FillBucket = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram(programName, programConfiguration);
+
+        if (image) {
+            painter.context.activeTexture.set(gl.TEXTURE0);
+            tile.imageAtlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            programConfiguration.updatePatternPaintBuffers(crossfade);
+        }
+
+        const constantPattern = patternProperty.constantOr(null);
+        if (constantPattern && tile.imageAtlas) {
+            const posTo = tile.imageAtlas.patternPositions[constantPattern.to];
+            const posFrom = tile.imageAtlas.patternPositions[constantPattern.from];
+            if (posTo && posFrom) programConfiguration.setConstantPatternPositions(posTo, posFrom);
+        }
 
         const tileMatrix = painter.translatePosMatrix(coord.posMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
@@ -91,14 +104,14 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             indexBuffer = bucket.indexBuffer;
             segments = bucket.segments;
             uniformValues = image ?
-                fillPatternUniformValues(tileMatrix, painter, image, tile) :
+                fillPatternUniformValues(tileMatrix, painter, crossfade, tile) :
                 fillUniformValues(tileMatrix);
         } else {
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
             const drawingBufferSize = [gl.drawingBufferWidth, gl.drawingBufferHeight];
             uniformValues = (programName === 'fillOutlinePattern' && image) ?
-                fillOutlinePatternUniformValues(tileMatrix, painter, image, tile, drawingBufferSize) :
+                fillOutlinePatternUniformValues(tileMatrix, painter, crossfade, tile, drawingBufferSize) :
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
 
