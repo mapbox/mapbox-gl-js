@@ -14,7 +14,7 @@ const plugins = () => basePlugins().concat(
 const config = [{
     input: ['bench/benchmarks.js', 'src/source/worker.js'],
     output: {
-        dir: 'rollup/build',
+        dir: 'rollup/build/benchmarks',
         format: 'amd',
         sourcemap: 'inline'
     },
