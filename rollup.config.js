@@ -15,7 +15,7 @@ const config = [{
     // sources as strings, etc.
     input: ['src/index.js', 'src/source/worker.js'],
     output: {
-        dir: 'rollup/build',
+        dir: 'rollup/build/mapboxgl',
         format: 'amd',
         sourcemap: 'inline'
     },

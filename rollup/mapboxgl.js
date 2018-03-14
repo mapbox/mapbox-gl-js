@@ -14,7 +14,7 @@ define(['exports'], function (exports) {
     // names rewritten to avoid collisions, etc.)
 })
 */
-import './build/chunk1';
+import './build/mapboxgl/chunk1';
 
 // Worker and its unique dependencies, i.e.:
 /*
@@ -29,7 +29,7 @@ define(['./chunk1.js'], function (__chunk1__js) {
 // it gets stringified, together with the chunk1 wrapper (using
 // Function.toString()), and the resulting string of code is made into a
 // Blob URL that gets used by the main module to create the web workers.
-import './build/worker';
+import './build/mapboxgl/worker';
 
 // Main module and its unique dependencies
 /*
@@ -42,6 +42,6 @@ define(['./chunk1.js'], function (__chunk1__js) {
     //  Returns the actual mapboxgl (i.e. src/index.js)
 });
 */
-import './build/index';
+import './build/mapboxgl/index';
 
 export default mapboxgl;

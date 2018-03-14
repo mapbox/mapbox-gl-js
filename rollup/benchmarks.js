@@ -1,4 +1,4 @@
-import './build/chunk1';
-import './build/worker';
-import './build/benchmarks';
+import './build/benchmarks/chunk1';
+import './build/benchmarks/worker';
+import './build/benchmarks/benchmarks';
 
