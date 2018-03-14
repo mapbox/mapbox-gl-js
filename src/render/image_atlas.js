@@ -16,7 +16,7 @@ type Rect = {
     h: number
 };
 
-class ImagePosition {
+export class ImagePosition {
     paddedRect: Rect;
     pixelRatio: number;
 
@@ -47,7 +47,7 @@ class ImagePosition {
     }
 }
 
-class ImageAtlas {
+export default class ImageAtlas {
     image: RGBAImage;
     positions: {[string]: ImagePosition};
 
@@ -96,10 +96,3 @@ class ImageAtlas {
 register('ImagePosition', ImagePosition);
 register('ImageAtlas', ImageAtlas);
 
-const exported = {
-    ImagePosition,
-    ImageAtlas
-};
-
-export default exported;
-export { ImagePosition, ImageAtlas };

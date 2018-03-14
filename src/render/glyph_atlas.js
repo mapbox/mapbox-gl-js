@@ -21,7 +21,7 @@ export type GlyphPosition = {
     metrics: GlyphMetrics
 };
 
-class GlyphAtlas {
+export default class GlyphAtlas {
     image: AlphaImage;
     positions: { [string]: { [number]: GlyphPosition } };
 
@@ -74,9 +74,3 @@ class GlyphAtlas {
 }
 
 register('GlyphAtlas', GlyphAtlas);
-const exported = {
-    GlyphAtlas
-};
-
-export default exported;
-export { GlyphAtlas };

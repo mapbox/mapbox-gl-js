@@ -8,8 +8,8 @@ import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import { warnOnce, mapObject, values } from '../util/util';
 import assert from 'assert';
-import { ImageAtlas } from '../render/image_atlas';
-import { GlyphAtlas } from '../render/glyph_atlas';
+import ImageAtlas from '../render/image_atlas';
+import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
 import { OverscaledTileID } from './tile_id';
 
