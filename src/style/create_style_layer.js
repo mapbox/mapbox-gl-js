@@ -5,6 +5,7 @@ import heatmap from './style_layer/heatmap_style_layer';
 import hillshade from './style_layer/hillshade_style_layer';
 import fill from './style_layer/fill_style_layer';
 import fillExtrusion from './style_layer/fill_extrusion_style_layer';
+import customWebgl from './style_layer/custom_webgl_layer';
 import line from './style_layer/line_style_layer';
 import symbol from './style_layer/symbol_style_layer';
 import background from './style_layer/background_style_layer';
@@ -16,6 +17,7 @@ const subclasses = {
     hillshade,
     fill,
     'fill-extrusion': fillExtrusion,
+    'custom-webgl': customWebgl,
     line,
     symbol,
     background,
