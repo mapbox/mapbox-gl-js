@@ -6,16 +6,25 @@ import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
 import { bindAll } from '../util/util';
+import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
 
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
 import type {MapMouseEvent} from './events';
 
+type Options = {
+    offset?: PointLike,
+    anchor?: Anchor
+};
+
 /**
  * Creates a marker component
  * @param element DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
  * @param options
+ * @param options.anchor A string indicating the Marker's location relative to the coordinate set via {@link Marker#setLngLat}.
+ *   Options are `'middle'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+ *   The default is `'middle'`.
  * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
@@ -23,16 +32,19 @@ import type {MapMouseEvent} from './events';
  *   .addTo(map);
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
-class Marker {
+export default class Marker {
     _map: Map;
+    _anchor: Anchor;
     _offset: Point;
     _element: HTMLElement;
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
 
-    constructor(element: ?HTMLElement, options?: {offset: PointLike}) {
+    constructor(element: ?HTMLElement, options?: Options) {
         bindAll(['_update', '_onMapClick'], this);
+
+        this._anchor = options && options.anchor || 'middle';
 
         if (!element) {
             element = DOM.create('div');
@@ -134,23 +146,14 @@ class Marker {
             // the y value of the center of the shadow ellipse relative to the svg top left is "shadow transform translate-y (29.0) + ellipse cy (5.80029008)"
             // offset to the svg center "height (41 / 2)" gives (29.0 + 5.80029008) - (41 / 2) and rounded for an integer pixel offset gives 14
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
-            const defaultMarkerOffset = [0, -14];
-            if (!(options && options.offset)) {
-                if (!options) {
-                    options = {
-                        offset: defaultMarkerOffset
-                    };
-                } else {
-                    options.offset = defaultMarkerOffset;
-                }
-            }
+            this._offset = Point.convert(options && options.offset || [0, -14]);
+        } else {
+            this._offset = Point.convert(options && options.offset || [0, 0]);
         }
 
-        this._offset = Point.convert(options && options.offset || [0, 0]);
-
         element.classList.add('mapboxgl-marker');
-        this._element = element;
 
+        this._element = element;
         this._popup = null;
     }
 
@@ -296,7 +299,8 @@ class Marker {
             this._pos = this._pos.round();
         }
 
-        DOM.setTransform(this._element, `translate(-50%, -50%) translate(${this._pos.x}px, ${this._pos.y}px)`);
+        DOM.setTransform(this._element, `${anchorTranslate[this._anchor]} translate(${this._pos.x}px, ${this._pos.y}px)`);
+        applyAnchorClass(this._element, this._anchor, 'marker');
     }
 
     /**
@@ -318,5 +322,3 @@ class Marker {
         return this;
     }
 }
-
-export default Marker;
