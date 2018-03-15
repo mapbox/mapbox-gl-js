@@ -6,6 +6,8 @@ import LngLat from '../../../src/geo/lng_lat';
 import Tile from '../../../src/source/tile';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import { Event, ErrorEvent } from '../../../src/util/evented';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
+
 import fixed from 'mapbox-gl-js-test/fixed';
 const fixedNum = fixed.Num;
 const fixedLngLat = fixed.LngLat;
@@ -1294,6 +1296,50 @@ test('Map', (t) => {
                 }
             });
         });
+    });
+
+    t.test('stops camera animation on mousedown when interactive', (t) => {
+        const map = createMap({interactive: true});
+        map.flyTo({ center: [200, 0], duration: 100 });
+
+        simulate.mousedown(map.getCanvasContainer());
+        t.equal(map.isEasing(), false);
+
+        map.remove();
+        t.end();
+    });
+
+    t.test('continues camera animation on mousedown when non-interactive', (t) => {
+        const map = createMap({interactive: false});
+        map.flyTo({ center: [200, 0], duration: 100 });
+
+        simulate.mousedown(map.getCanvasContainer());
+        t.equal(map.isEasing(), true);
+
+        map.remove();
+        t.end();
+    });
+
+    t.test('stops camera animation on touchstart when interactive', (t) => {
+        const map = createMap({interactive: true});
+        map.flyTo({ center: [200, 0], duration: 100 });
+
+        simulate.touchstart(map.getCanvasContainer());
+        t.equal(map.isEasing(), false);
+
+        map.remove();
+        t.end();
+    });
+
+    t.test('continues camera animation on touchstart when non-interactive', (t) => {
+        const map = createMap({interactive: false});
+        map.flyTo({ center: [200, 0], duration: 100 });
+
+        simulate.touchstart(map.getCanvasContainer());
+        t.equal(map.isEasing(), true);
+
+        map.remove();
+        t.end();
     });
 
     t.end();
