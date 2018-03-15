@@ -7,6 +7,7 @@ import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import window from '../util/window';
 import smartWrap from '../util/smart_wrap';
+import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
 
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -16,7 +17,6 @@ const defaultOptions = {
     closeOnClick: true
 };
 
-export type Anchor = 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type Offset = number | PointLike | {[Anchor]: PointLike};
 
 export type PopupOptions = {
@@ -66,7 +66,7 @@ export type PopupOptions = {
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  */
-class Popup extends Evented {
+export default class Popup extends Evented {
     _map: Map;
     options: PopupOptions;
     _content: HTMLElement;
@@ -276,54 +276,39 @@ class Popup extends Evented {
 
         const pos = this._pos = this._map.project(this._lngLat);
 
-        let anchor = this.options.anchor;
+        let anchor: Anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
 
         if (!anchor) {
-            const width = this._container.offsetWidth,
-                height = this._container.offsetHeight;
+            const width = this._container.offsetWidth;
+            const height = this._container.offsetHeight;
+            let anchorComponents;
 
             if (pos.y + offset.bottom.y < height) {
-                anchor = ['top'];
+                anchorComponents = ['top'];
             } else if (pos.y > this._map.transform.height - height) {
-                anchor = ['bottom'];
+                anchorComponents = ['bottom'];
             } else {
-                anchor = [];
+                anchorComponents = [];
             }
 
             if (pos.x < width / 2) {
-                anchor.push('left');
+                anchorComponents.push('left');
             } else if (pos.x > this._map.transform.width - width / 2) {
-                anchor.push('right');
+                anchorComponents.push('right');
             }
 
-            if (anchor.length === 0) {
+            if (anchorComponents.length === 0) {
                 anchor = 'bottom';
             } else {
-                anchor = anchor.join('-');
+                anchor = (anchorComponents.join('-'): any);
             }
         }
 
         const offsetedPos = pos.add(offset[anchor]).round();
 
-        const anchorTranslate = {
-            'top': 'translate(-50%,0)',
-            'top-left': 'translate(0,0)',
-            'top-right': 'translate(-100%,0)',
-            'bottom': 'translate(-50%,-100%)',
-            'bottom-left': 'translate(0,-100%)',
-            'bottom-right': 'translate(-100%,-100%)',
-            'left': 'translate(0,-50%)',
-            'right': 'translate(-100%,-50%)'
-        };
-
-        const classList = this._container.classList;
-        for (const key in anchorTranslate) {
-            classList.remove(`mapboxgl-popup-anchor-${key}`);
-        }
-        classList.add(`mapboxgl-popup-anchor-${anchor}`);
-
         DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+        applyAnchorClass(this._container, anchor, 'popup');
     }
 
     _onClickClose() {
@@ -339,6 +324,7 @@ function normalizeOffset(offset: ?Offset) {
         // input specifies a radius from which to calculate offsets at all positions
         const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
         return {
+            'middle': new Point(0, 0),
             'top': new Point(0, offset),
             'top-left': new Point(cornerOffset, cornerOffset),
             'top-right': new Point(-cornerOffset, cornerOffset),
@@ -353,6 +339,7 @@ function normalizeOffset(offset: ?Offset) {
         // input specifies a single offset to be applied to all positions
         const convertedOffset = Point.convert(offset);
         return {
+            'middle': convertedOffset,
             'top': convertedOffset,
             'top-left': convertedOffset,
             'top-right': convertedOffset,
@@ -366,6 +353,7 @@ function normalizeOffset(offset: ?Offset) {
     } else {
         // input specifies an offset per position
         return {
+            'middle': Point.convert(offset['middle'] || [0, 0]),
             'top': Point.convert(offset['top'] || [0, 0]),
             'top-left': Point.convert(offset['top-left'] || [0, 0]),
             'top-right': Point.convert(offset['top-right'] || [0, 0]),
@@ -377,5 +365,3 @@ function normalizeOffset(offset: ?Offset) {
         };
     }
 }
-
-export default Popup;

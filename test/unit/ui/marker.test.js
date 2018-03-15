@@ -112,3 +112,29 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
     map.remove();
     t.end();
 });
+
+test('Marker anchor defaults to middle', (t) => {
+    const map = createMap();
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.ok(marker.getElement().classList.contains('mapboxgl-marker-anchor-middle'));
+    t.match(marker.getElement().style.transform, /translate\(-50%,-50%\)/);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker anchors as specified by the anchor option', (t) => {
+    const map = createMap();
+    const marker = new Marker(null, {anchor: 'top'})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.ok(marker.getElement().classList.contains('mapboxgl-marker-anchor-top'));
+    t.match(marker.getElement().style.transform, /translate\(-50%,0\)/);
+
+    map.remove();
+    t.end();
+});
