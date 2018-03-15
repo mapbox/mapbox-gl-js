@@ -1,7 +1,6 @@
 // @flow
 
 import { Event, Evented } from '../../util/evented';
-
 import DOM from '../../util/dom';
 import window from '../../util/window';
 import { extend, bindAll } from '../../util/util';
@@ -10,10 +9,19 @@ import LngLat from '../../geo/lng_lat';
 import Marker from '../marker';
 
 import type Map from '../map';
+import type { AnimationOptions, CameraOptions } from '../camera';
 
-const defaultOptions = {
+type Options = {
+    positionOptions?: PositionOptions,
+    fitBoundsOptions?: AnimationOptions & CameraOptions,
+    trackUserLocation?: boolean,
+    showUserLocation?: boolean
+};
+
+const defaultOptions: Options = {
     positionOptions: {
         enableHighAccuracy: false,
+        maximumAge: 0,
         timeout: 6000 /* 6 sec */
     },
     fitBoundsOptions: {
@@ -80,7 +88,7 @@ function checkGeolocationSupport(callback) {
  */
 class GeolocateControl extends Evented {
     _map: Map;
-    options: any;
+    options: Options;
     _container: HTMLElement;
     _dotElement: HTMLElement;
     _geolocateButton: HTMLElement;
@@ -90,7 +98,7 @@ class GeolocateControl extends Evented {
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
 
-    constructor(options: any) {
+    constructor(options: Options) {
         super();
         this.options = extend({}, defaultOptions, options);
 

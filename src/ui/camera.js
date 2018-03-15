@@ -25,7 +25,7 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
  * @property {number} pitch The desired pitch, in degrees.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  */
-type CameraOptions = {
+export type CameraOptions = {
     center?: LngLatLike,
     zoom?: number,
     bearing?: number,
@@ -45,7 +45,7 @@ type CameraOptions = {
  * @property {PointLike} offset of the target center relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
  */
-type AnimationOptions = {
+export type AnimationOptions = {
     duration?: number,
     easing?: (number) => number,
     offset?: PointLike,

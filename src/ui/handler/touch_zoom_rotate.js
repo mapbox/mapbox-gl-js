@@ -1,7 +1,6 @@
 // @flow
 
 import DOM from '../../util/dom';
-
 import { bezier, bindAll } from '../../util/util';
 import window from '../../util/window';
 import browser from '../../util/browser';
@@ -69,11 +68,11 @@ class TouchZoomRotateHandler {
      * @example
      *   map.touchZoomRotate.enable({ around: 'center' });
      */
-    enable(options: any) {
+    enable(options: ?{around?: 'center'}) {
         if (this.isEnabled()) return;
         this._el.classList.add('mapboxgl-touch-zoom-rotate');
         this._enabled = true;
-        this._aroundCenter = options && options.around === 'center';
+        this._aroundCenter = !!options && options.around === 'center';
     }
 
     /**
