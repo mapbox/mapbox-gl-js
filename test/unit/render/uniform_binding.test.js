@@ -50,23 +50,6 @@ test('Uniform1f', (t) => {
     t.end();
 });
 
-test('Uniform1f: force set', (t) => {
-    t.plan(3);
-
-    const context = {
-        gl: {
-            uniform1f: () => { t.ok(true, 'sets value when unique'); }
-        }
-    };
-
-    const u = new Uniform1f(context);
-
-    u.set(0, 1);
-    t.equal(u.current, 1, 'correctly set value');
-    u.set(0, 1, true);
-    t.end();
-});
-
 test('Uniform2fv', (t) => {
     t.plan(4);
 
