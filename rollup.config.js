@@ -50,7 +50,13 @@ if (!shared) {
 }
 }`
     },
-    plugins: [sourcemaps()],
+    treeshake: false,
+    indent: false,
+    plugins: [
+        // Ingest the sourcemaps produced in the first step of the build.
+        // This is the only reason we use Rollup for this second pass
+        sourcemaps()
+    ],
 }];
 
 export default config

@@ -8,7 +8,6 @@ import json from 'rollup-plugin-json';
 import browserifyPlugin from 'rollup-plugin-browserify-transform';
 import brfs from 'brfs';
 import uglify from 'rollup-plugin-uglify';
-import sourcemaps from 'rollup-plugin-sourcemaps';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 
 const production = process.env.BUILD === 'production';
@@ -17,7 +16,6 @@ const production = process.env.BUILD === 'production';
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
 export const plugins = () => [
-    sourcemaps(),
     flow(),
     minifyStyleSpec(),
     json(),
