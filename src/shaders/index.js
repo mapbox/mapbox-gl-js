@@ -1,11 +1,11 @@
 // @flow
 
-/* eslint-disable import/unambiguous */
-
 const fs = require('fs');
 
-// readFileSync calls must be written out long-form for brfs.
-/* eslint-disable prefer-template, no-path-concat */
+// We use brfs, a browserify transform, to inline shader sources during bundling. As a result:
+// - readFileSync calls must be written out long-form
+// - this module must use CommonJS rather than ES2015 syntax
+/* eslint-disable prefer-template, no-path-concat, import/unambiguous */
 
 const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     prelude: {
