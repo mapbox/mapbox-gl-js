@@ -1,13 +1,11 @@
-
 import flowRemoveTypes from 'flow-remove-types';
 import buble from 'rollup-plugin-buble';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from 'rollup-plugin-json';
-import browserifyPlugin from 'rollup-plugin-browserify-transform';
-import brfs from 'brfs';
 import uglify from 'rollup-plugin-uglify';
+import string from 'rollup-plugin-string';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 
 const production = process.env.BUILD === 'production';
@@ -17,6 +15,7 @@ const production = process.env.BUILD === 'production';
 
 export const plugins = () => [
     flow(),
+    string({include: './src/shaders/*.glsl'}),
     minifyStyleSpec(),
     json(),
     buble({transforms: {dangerousForOf: true}, objectAssign: "Object.assign"}),
@@ -24,9 +23,6 @@ export const plugins = () => [
     resolve({
         browser: true,
         preferBuiltins: false
-    }),
-    browserifyPlugin(brfs, {
-        include: 'src/shaders/index.js'
     }),
     commonjs({
         namedExports: {

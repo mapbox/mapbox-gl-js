@@ -1,112 +1,156 @@
 // @flow
 
-const fs = require('fs');
-
-// We use brfs, a browserify transform, to inline shader sources during bundling. As a result:
-// - readFileSync calls must be written out long-form
-// - this module must use CommonJS rather than ES2015 syntax
-/* eslint-disable prefer-template, no-path-concat, import/unambiguous */
+import preludeFrag from './_prelude.fragment.glsl';
+import preludeVert from './_prelude.vertex.glsl';
+import backgroundFrag from './background.fragment.glsl';
+import backgroundVert from './background.vertex.glsl';
+import backgroundPatternFrag from './background_pattern.fragment.glsl';
+import backgroundPatternVert from './background_pattern.vertex.glsl';
+import circleFrag from './circle.fragment.glsl';
+import circleVert from './circle.vertex.glsl';
+import clippingMaskFrag from './clipping_mask.fragment.glsl';
+import clippingMaskVert from './clipping_mask.vertex.glsl';
+import heatmapFrag from './heatmap.fragment.glsl';
+import heatmapVert from './heatmap.vertex.glsl';
+import heatmapTextureFrag from './heatmap_texture.fragment.glsl';
+import heatmapTextureVert from './heatmap_texture.vertex.glsl';
+import collisionBoxFrag from './collision_box.fragment.glsl';
+import collisionBoxVert from './collision_box.vertex.glsl';
+import collisionCircleFrag from './collision_circle.fragment.glsl';
+import collisionCircleVert from './collision_circle.vertex.glsl';
+import debugFrag from './debug.fragment.glsl';
+import debugVert from './debug.vertex.glsl';
+import fillFrag from './fill.fragment.glsl';
+import fillVert from './fill.vertex.glsl';
+import fillOutlineFrag from './fill_outline.fragment.glsl';
+import fillOutlineVert from './fill_outline.vertex.glsl';
+import fillOutlinePatternFrag from './fill_outline_pattern.fragment.glsl';
+import fillOutlinePatternVert from './fill_outline_pattern.vertex.glsl';
+import fillPatternFrag from './fill_pattern.fragment.glsl';
+import fillPatternVert from './fill_pattern.vertex.glsl';
+import fillExtrusionFrag from './fill_extrusion.fragment.glsl';
+import fillExtrusionVert from './fill_extrusion.vertex.glsl';
+import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
+import fillExtrusionPatternVert from './fill_extrusion_pattern.vertex.glsl';
+import extrusionTextureFrag from './extrusion_texture.fragment.glsl';
+import extrusionTextureVert from './extrusion_texture.vertex.glsl';
+import hillshadePrepareFrag from './hillshade_prepare.fragment.glsl';
+import hillshadePrepareVert from './hillshade_prepare.vertex.glsl';
+import hillshadeFrag from './hillshade.fragment.glsl';
+import hillshadeVert from './hillshade.vertex.glsl';
+import lineFrag from './line.fragment.glsl';
+import lineVert from './line.vertex.glsl';
+import linePatternFrag from './line_pattern.fragment.glsl';
+import linePatternVert from './line_pattern.vertex.glsl';
+import lineSDFFrag from './line_sdf.fragment.glsl';
+import lineSDFVert from './line_sdf.vertex.glsl';
+import rasterFrag from './raster.fragment.glsl';
+import rasterVert from './raster.vertex.glsl';
+import symbolIconFrag from './symbol_icon.fragment.glsl';
+import symbolIconVert from './symbol_icon.vertex.glsl';
+import symbolSDFFrag from './symbol_sdf.fragment.glsl';
+import symbolSDFVert from './symbol_sdf.vertex.glsl';
 
 const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     prelude: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/_prelude.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/_prelude.vertex.glsl', 'utf8')
+        fragmentSource: preludeFrag,
+        vertexSource: preludeVert
     },
     background: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/background.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/background.vertex.glsl', 'utf8')
+        fragmentSource: backgroundFrag,
+        vertexSource: backgroundVert
     },
     backgroundPattern: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/background_pattern.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/background_pattern.vertex.glsl', 'utf8')
+        fragmentSource: backgroundPatternFrag,
+        vertexSource: backgroundPatternVert
     },
     circle: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/circle.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/circle.vertex.glsl', 'utf8')
+        fragmentSource: circleFrag,
+        vertexSource: circleVert
     },
     clippingMask: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/clipping_mask.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/clipping_mask.vertex.glsl', 'utf8')
+        fragmentSource: clippingMaskFrag,
+        vertexSource: clippingMaskVert
     },
     heatmap: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/heatmap.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/heatmap.vertex.glsl', 'utf8')
+        fragmentSource: heatmapFrag,
+        vertexSource: heatmapVert
     },
     heatmapTexture: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/heatmap_texture.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/heatmap_texture.vertex.glsl', 'utf8')
+        fragmentSource: heatmapTextureFrag,
+        vertexSource: heatmapTextureVert
     },
     collisionBox: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/collision_box.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/collision_box.vertex.glsl', 'utf8')
+        fragmentSource: collisionBoxFrag,
+        vertexSource: collisionBoxVert
     },
     collisionCircle: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/collision_circle.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/collision_circle.vertex.glsl', 'utf8')
+        fragmentSource: collisionCircleFrag,
+        vertexSource: collisionCircleVert
     },
     debug: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/debug.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/debug.vertex.glsl', 'utf8')
+        fragmentSource: debugFrag,
+        vertexSource: debugVert
     },
     fill: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/fill.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/fill.vertex.glsl', 'utf8')
+        fragmentSource: fillFrag,
+        vertexSource: fillVert
     },
     fillOutline: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/fill_outline.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/fill_outline.vertex.glsl', 'utf8')
+        fragmentSource: fillOutlineFrag,
+        vertexSource: fillOutlineVert
     },
     fillOutlinePattern: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/fill_outline_pattern.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/fill_outline_pattern.vertex.glsl', 'utf8')
+        fragmentSource: fillOutlinePatternFrag,
+        vertexSource: fillOutlinePatternVert
     },
     fillPattern: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/fill_pattern.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/fill_pattern.vertex.glsl', 'utf8')
+        fragmentSource: fillPatternFrag,
+        vertexSource: fillPatternVert
     },
     fillExtrusion: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/fill_extrusion.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/fill_extrusion.vertex.glsl', 'utf8')
+        fragmentSource: fillExtrusionFrag,
+        vertexSource: fillExtrusionVert
     },
     fillExtrusionPattern: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/fill_extrusion_pattern.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/fill_extrusion_pattern.vertex.glsl', 'utf8')
+        fragmentSource: fillExtrusionPatternFrag,
+        vertexSource: fillExtrusionPatternVert
     },
     extrusionTexture: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/extrusion_texture.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/extrusion_texture.vertex.glsl', 'utf8')
+        fragmentSource: extrusionTextureFrag,
+        vertexSource: extrusionTextureVert
     },
     hillshadePrepare: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/hillshade_prepare.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/hillshade_prepare.vertex.glsl', 'utf8')
+        fragmentSource: hillshadePrepareFrag,
+        vertexSource: hillshadePrepareVert
     },
     hillshade: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/hillshade.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/hillshade.vertex.glsl', 'utf8')
+        fragmentSource: hillshadeFrag,
+        vertexSource: hillshadeVert
     },
     line: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/line.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/line.vertex.glsl', 'utf8')
+        fragmentSource: lineFrag,
+        vertexSource: lineVert
     },
     linePattern: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_pattern.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/line_pattern.vertex.glsl', 'utf8')
+        fragmentSource: linePatternFrag,
+        vertexSource: linePatternVert
     },
     lineSDF: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_sdf.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/line_sdf.vertex.glsl', 'utf8')
+        fragmentSource: lineSDFFrag,
+        vertexSource: lineSDFVert
     },
     raster: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/raster.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/raster.vertex.glsl', 'utf8')
+        fragmentSource: rasterFrag,
+        vertexSource: rasterVert
     },
     symbolIcon: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/symbol_icon.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/symbol_icon.vertex.glsl', 'utf8')
+        fragmentSource: symbolIconFrag,
+        vertexSource: symbolIconVert
     },
     symbolSDF: {
-        fragmentSource: fs.readFileSync(__dirname + '/../shaders/symbol_sdf.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/symbol_sdf.vertex.glsl', 'utf8')
+        fragmentSource: symbolSDFFrag,
+        vertexSource: symbolSDFVert
     }
 };
 
@@ -182,4 +226,4 @@ uniform ${precision} ${type} u_${name};
     });
 }
 
-module.exports = shaders;
+export default shaders;
