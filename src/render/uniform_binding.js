@@ -14,6 +14,7 @@ export type BinderUniformTypes = any;
 
 class Uniform<T> {
     context: Context;
+    location: ?WebGLUniformLocation;
     current: ?T;
 
     constructor(context: Context) {
@@ -22,54 +23,60 @@ class Uniform<T> {
 }
 
 class Uniform1i extends Uniform<number> {
-    set(location: WebGLUniformLocation, v: number, invalidate: boolean = false): void {
-        if (invalidate || this.current !== v) {
+    set(location: WebGLUniformLocation, v: number): void {
+        if (this.current !== v || this.location !== location) {
             this.current = v;
+            this.location = location;
             this.context.gl.uniform1i(location, v);
         }
     }
 }
 
 class Uniform1f extends Uniform<number> {
-    set(location: WebGLUniformLocation, v: number, invalidate: boolean = false): void {
-        if (invalidate || this.current !== v) {
+    set(location: WebGLUniformLocation, v: number): void {
+        if (this.current !== v || this.location !== location) {
             this.current = v;
+            this.location = location;
             this.context.gl.uniform1f(location, v);
         }
     }
 }
 
 class Uniform2fv extends Uniform<[number, number]> {
-    set(location: WebGLUniformLocation, v: [number, number], invalidate: boolean = false): void {
+    set(location: WebGLUniformLocation, v: [number, number]): void {
         const c = this.current;
-        if (invalidate || !c || v[0] !== c[0] || v[1] !== c[1]) {
+        if (!c || v[0] !== c[0] || v[1] !== c[1] || this.location !== location) {
             this.current = v;
+            this.location = location;
             this.context.gl.uniform2f(location, v[0], v[1]);
         }
     }
 }
 
 class Uniform3fv extends Uniform<[number, number, number]> {
-    set(location: WebGLUniformLocation, v: [number, number, number], invalidate: boolean = false): void {
+    set(location: WebGLUniformLocation, v: [number, number, number]): void {
         const c = this.current;
-        if (invalidate || !c || v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2]) {
+        if (!c || v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || this.location !== location) {
             this.current = v;
+            this.location = location;
             this.context.gl.uniform3f(location, v[0], v[1], v[2]);
         }
     }
 }
 
 class Uniform4fv extends Uniform<[number, number, number, number] | Color> {
-    set(location: WebGLUniformLocation, v: [number, number, number, number] | Color, invalidate: boolean = false): void {
+    set(location: WebGLUniformLocation, v: [number, number, number, number] | Color): void {
         const c = this.current;
         if (v instanceof Color && (!c || c instanceof Color)) {
-            if (invalidate || !c || v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a) {
+            if (!c || v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a || this.location !== location) {
                 this.current = v;
+                this.location = location;
                 this.context.gl.uniform4f(location, v.r, v.g, v.b, v.a);
             }
         } else if (Array.isArray(v) && (!c || Array.isArray(c))) {
-            if (invalidate || !c || v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3]) {
+            if (!c || v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3] || this.location !== location) {
                 this.current = v;
+                this.location = location;
                 this.context.gl.uniform4f(location, v[0], v[1], v[2], v[3]);
             }
         }
@@ -77,10 +84,10 @@ class Uniform4fv extends Uniform<[number, number, number, number] | Color> {
 }
 
 class UniformMatrix4fv extends Uniform<Float32Array> {
-    set(location: WebGLUniformLocation, v: Float32Array, invalidate: boolean = false): void {
-        let diff = !this.current || invalidate;
+    set(location: WebGLUniformLocation, v: Float32Array): void {
+        let diff = !this.current || this.location !== location;
 
-        if (!invalidate && this.current) {
+        if (!diff && this.current) {
             for (let i = 0; i < 16; i++) {
                 if (v[i] !== this.current[i]) {
                     diff = true;
@@ -91,6 +98,7 @@ class UniformMatrix4fv extends Uniform<Float32Array> {
 
         if (diff) {
             this.current = v;
+            this.location = location;
             this.context.gl.uniformMatrix4fv(location, false, v);
         }
     }

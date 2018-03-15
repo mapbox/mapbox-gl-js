@@ -7,6 +7,7 @@ import assert from 'assert';
 import { ProgramConfiguration } from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
 import Context from '../gl/context';
+import { Uniforms } from './uniform_binding';
 
 import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -14,7 +15,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type DepthMode from '../gl/depth_mode';
 import type StencilMode from '../gl/stencil_mode';
 import type ColorMode from '../gl/color_mode';
-import type {Uniforms, UniformBindings, UniformValues, UniformLocations, BinderUniformTypes} from './uniform_binding';
+import type {UniformBindings, UniformValues, UniformLocations, BinderUniformTypes} from './uniform_binding';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -92,6 +93,7 @@ class Program<Us: UniformBindings> {
         }
 
         this.fixedUniforms = fixedUniforms(context);
+        this.binderUniforms = new Uniforms({});
     }
 
     draw(context: Context,
@@ -118,9 +120,7 @@ class Program<Us: UniformBindings> {
 
         this.fixedUniforms.set(this.uniforms, uniformValues);
         if (configuration) {
-            const invalidate = this.configuration && this.configuration !== configuration;
-            configuration.setUniforms(context, this, currentProperties, {zoom: (zoom: any)}, invalidate);
-            this.configuration = configuration;
+            configuration.setUniforms(context, this, currentProperties, {zoom: (zoom: any)});
         }
 
         const primitiveSize = {
