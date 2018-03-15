@@ -1,13 +1,17 @@
 // @flow
 
 import DOM from '../../util/dom';
-
 import { extend, bindAll } from '../../util/util';
 import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
 
-const defaultOptions = {
+type Options = {
+    showCompass?: boolean,
+    showZoom?: boolean
+};
+
+const defaultOptions: Options = {
     showCompass: true,
     showZoom: true
 };
@@ -27,7 +31,7 @@ const defaultOptions = {
  */
 class NavigationControl {
     _map: Map;
-    options: any;
+    options: Options;
     _container: HTMLElement;
     _zoomInButton: HTMLElement;
     _zoomOutButton: HTMLElement;
@@ -35,7 +39,7 @@ class NavigationControl {
     _compassArrow: HTMLElement;
     _handler: DragRotateHandler;
 
-    constructor(options: any) {
+    constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');

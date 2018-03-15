@@ -1,12 +1,18 @@
 // @flow
 
 import DOM from '../../util/dom';
-
 import { extend, bindAll } from '../../util/util';
 
 import type Map from '../map';
 
-const defaultOptions = {
+type Unit = 'imperial' | 'metric' | 'nautical';
+
+type Options = {
+    maxWidth?: number,
+    unit?: Unit;
+};
+
+const defaultOptions: Options = {
     maxWidth: 100,
     unit: 'metric'
 };
@@ -30,9 +36,9 @@ const defaultOptions = {
 class ScaleControl {
     _map: Map;
     _container: HTMLElement;
-    options: any;
+    options: Options;
 
-    constructor(options: any) {
+    constructor(options: Options) {
         this.options = extend({}, defaultOptions, options);
 
         bindAll([
@@ -68,9 +74,9 @@ class ScaleControl {
     /**
      * Set the scale's unit of the distance
      *
-     * @param {string} unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
+     * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
      */
-    setUnit(unit: string) {
+    setUnit(unit: Unit) {
         this.options.unit = unit;
         updateScale(this._map, this._container, this.options);
     }
