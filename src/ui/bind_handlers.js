@@ -1,11 +1,8 @@
 // @flow
 
 import { MapMouseEvent, MapTouchEvent, MapWheelEvent } from '../ui/events';
-
 import DOM from '../util/dom';
-
 import type Map from './map';
-
 import scrollZoom from './handler/scroll_zoom';
 import boxZoom from './handler/box_zoom';
 import dragRotate from './handler/drag_rotate';
@@ -60,7 +57,7 @@ export default function bindHandlers(map: Map, options: {}) {
             return;
         }
 
-        if (!map.doubleClickZoom.isActive()) {
+        if (options.interactive && !map.doubleClickZoom.isActive()) {
             map.stop();
         }
 
@@ -120,7 +117,9 @@ export default function bindHandlers(map: Map, options: {}) {
             return;
         }
 
-        map.stop();
+        if (options.interactive) {
+            map.stop();
+        }
 
         if (!map.boxZoom.isActive() && !map.dragRotate.isActive()) {
             map.dragPan.onTouchStart(e);
