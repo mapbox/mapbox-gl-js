@@ -1,3 +1,17 @@
+## master
+
+### ⚠️ Breaking changes
+
+* `Evented` is no longer publicly exported, and `Evented#fire` and `Evented#listens` are now private. If you are writing a class that needs event emitting functionality, consider using [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) or similar libraries instead.
+
+## 0.44.1
+
+### 🐛 Bug fixes
+
+* Fix bug causing features from symbol layers to be omitted from `map.queryRenderedFeatures()` [#6074](https://github.com/mapbox/mapbox-gl-js/issues/6074)
+* Fix error triggered by simultaneous scroll-zooming and drag-panning. [#6106](https://github.com/mapbox/mapbox-gl-js/issues/6106)
+* Fix bug wherein drag-panning failed to resume after a brief pause [#6063](https://github.com/mapbox/mapbox-gl-js/issues/6063)
+
 ## 0.44.0
 
 ### ✨ Features and improvements

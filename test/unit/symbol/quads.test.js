@@ -1,10 +1,7 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-
-const getIconQuads = require('../../../src/symbol/quads').getIconQuads;
-const Anchor = require('../../../src/symbol/anchor');
-const SymbolStyleLayer = require('../../../src/style/style_layer/symbol_style_layer');
+import { test } from 'mapbox-gl-js-test';
+import { getIconQuads } from '../../../src/symbol/quads';
+import Anchor from '../../../src/symbol/anchor';
+import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 
 function createLayer(layer) {
     const result = new SymbolStyleLayer(layer);
@@ -20,7 +17,7 @@ function createShapedIcon() {
         right: 8,
         image: {
             pixelRatio: 1,
-            textureRect: { x: 1, y: 1, w: 15, h: 11}
+            paddedRect: { x: 0, y: 0, w: 17, h: 13}
         }
     };
 }
@@ -75,7 +72,7 @@ test('getIconQuads text-fit', (t) => {
             right: 10,
             image: {
                 pixelRatio: 1,
-                textureRect: {  x: 1, y: 1, w: 20, h: 20 }
+                paddedRect: {  x: 0, y: 0, w: 22, h: 22 }
             }
         };
     }

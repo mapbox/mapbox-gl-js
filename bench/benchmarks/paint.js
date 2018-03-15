@@ -1,12 +1,12 @@
 
-const Benchmark = require('../lib/benchmark');
-const createMap = require('../lib/create_map');
+import Benchmark from '../lib/benchmark';
+import createMap from '../lib/create_map';
 
 const width = 1024;
 const height = 768;
 const zooms = [4, 8, 11, 13, 15, 17];
 
-module.exports = class Paint extends Benchmark {
+export default class Paint extends Benchmark {
     setup() {
         return Promise.all(zooms.map(zoom => {
             return createMap({
@@ -34,4 +34,4 @@ module.exports = class Paint extends Benchmark {
             map.remove();
         }
     }
-};
+}

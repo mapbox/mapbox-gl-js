@@ -1,17 +1,18 @@
 // @flow
 
-const createSource = require('./source').create;
-const Tile = require('./tile');
-const Evented = require('../util/evented');
-const Cache = require('../util/lru_cache');
-const Coordinate = require('../geo/coordinate');
-const util = require('../util/util');
-const EXTENT = require('../data/extent');
-const Context = require('../gl/context');
-const Point = require('@mapbox/point-geometry');
-const browser = require('../util/browser');
-const {OverscaledTileID} = require('./tile_id');
-const assert = require('assert');
+import { create as createSource } from './source';
+
+import Tile from './tile';
+import { Event, ErrorEvent, Evented } from '../util/evented';
+import Cache from '../util/lru_cache';
+import Coordinate from '../geo/coordinate';
+import { keysDifference } from '../util/util';
+import EXTENT from '../data/extent';
+import Context from '../gl/context';
+import Point from '@mapbox/point-geometry';
+import browser from '../util/browser';
+import { OverscaledTileID } from './tile_id';
+import assert from 'assert';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -43,8 +44,8 @@ class SourceCache extends Evented {
     _sourceErrored: boolean;
     _tiles: {[any]: Tile};
     _cache: Cache<Tile>;
-    _timers: {[any]: number};
-    _cacheTimers: {[any]: number};
+    _timers: {[any]: TimeoutID};
+    _cacheTimers: {[any]: TimeoutID};
     _maxTileCacheSize: ?number;
     _paused: boolean;
     _shouldReloadOnResume: boolean;
@@ -235,7 +236,7 @@ class SourceCache extends Evented {
     _tileLoaded(tile: Tile, id: string | number, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
-            if (err.status !== 404) this._source.fire('error', {tile: tile, error: err});
+            if (err.status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
             else this.update(this.transform);
             return;
@@ -245,7 +246,7 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
-        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.tileID});
+        this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -472,7 +473,7 @@ class SourceCache extends Evented {
             retain[fadedParent] = parentsForFading[fadedParent];
         }
         // Remove the tiles we don't need anymore.
-        const remove = util.keysDifference(this._tiles, retain);
+        const remove = keysDifference(this._tiles, retain);
         for (let i = 0; i < remove.length; i++) {
             this._removeTile(remove[i]);
         }
@@ -589,7 +590,7 @@ class SourceCache extends Evented {
 
         tile.uses++;
         this._tiles[tileID.key] = tile;
-        if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.tileID, dataType: 'source'});
+        if (!cached) this._source.fire(new Event('dataloading', {tile: tile, coord: tile.tileID, dataType: 'source'}));
 
         return tile;
     }
@@ -682,7 +683,7 @@ class SourceCache extends Evented {
      * @param queryGeometry coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      */
-    tilesIn(queryGeometry: Array<Coordinate>) {
+    tilesIn(queryGeometry: Array<Coordinate>, maxPitchScaleFactor: number) {
         const tileResults = [];
         const ids = this.getIds();
 
@@ -704,14 +705,16 @@ class SourceCache extends Evented {
         for (let i = 0; i < ids.length; i++) {
             const tile = this._tiles[ids[i]];
             const tileID = tile.tileID;
+            const scale = Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ);
+            const queryPadding = maxPitchScaleFactor * tile.queryPadding * EXTENT / tile.tileSize / scale;
 
             const tileSpaceBounds = [
                 coordinateToTilePoint(tileID, new Coordinate(minX, minY, z)),
                 coordinateToTilePoint(tileID, new Coordinate(maxX, maxY, z))
             ];
 
-            if (tileSpaceBounds[0].x < EXTENT && tileSpaceBounds[0].y < EXTENT &&
-                tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
+            if (tileSpaceBounds[0].x - queryPadding < EXTENT && tileSpaceBounds[0].y - queryPadding < EXTENT &&
+                tileSpaceBounds[1].x + queryPadding >= 0 && tileSpaceBounds[1].y + queryPadding >= 0) {
 
                 const tileSpaceQueryGeometry = [];
                 for (let j = 0; j < queryGeometry.length; j++) {
@@ -722,7 +725,7 @@ class SourceCache extends Evented {
                     tile: tile,
                     tileID: tileID,
                     queryGeometry: [tileSpaceQueryGeometry],
-                    scale: Math.pow(2, this.transform.zoom - tile.tileID.overscaledZ)
+                    scale: scale
                 });
             }
         }
@@ -775,4 +778,5 @@ function isRasterType(type) {
     return type === 'raster' || type === 'image' || type === 'video';
 }
 
-module.exports = SourceCache;
+export default SourceCache;
+

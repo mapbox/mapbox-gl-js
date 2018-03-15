@@ -1,14 +1,15 @@
 // @flow
 
-const LngLat = require('./lng_lat'),
-    Point = require('@mapbox/point-geometry'),
-    Coordinate = require('./coordinate'),
-    util = require('../util/util'),
-    interp = require('../style-spec/util/interpolate').number,
-    tileCover = require('../util/tile_cover'),
-    {CanonicalTileID, UnwrappedTileID} = require('../source/tile_id'),
-    EXTENT = require('../data/extent'),
-    glmatrix = require('@mapbox/gl-matrix');
+import LngLat from './lng_lat';
+
+import Point from '@mapbox/point-geometry';
+import Coordinate from './coordinate';
+import { wrap, clamp } from '../util/util';
+import {number as interpolate} from '../style-spec/util/interpolate';
+import tileCover from '../util/tile_cover';
+import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
+import EXTENT from '../data/extent';
+import glmatrix from '@mapbox/gl-matrix';
 
 const vec4 = glmatrix.vec4,
     mat4 = glmatrix.mat4,
@@ -99,19 +100,26 @@ class Transform {
         this.zoom = Math.min(this.zoom, zoom);
     }
 
-    get renderWorldCopies(): boolean {
-        return this._renderWorldCopies;
+    get renderWorldCopies(): boolean { return this._renderWorldCopies; }
+    set renderWorldCopies(renderWorldCopies?: ?boolean) {
+        if (renderWorldCopies === undefined) {
+            renderWorldCopies = true;
+        } else if (renderWorldCopies === null) {
+            renderWorldCopies = false;
+        }
+
+        this._renderWorldCopies = renderWorldCopies;
     }
 
     get worldSize(): number {
         return this.tileSize * this.scale;
     }
 
-    get centerPoint() {
+    get centerPoint(): Point {
         return this.size._div(2);
     }
 
-    get size() {
+    get size(): Point {
         return new Point(this.width, this.height);
     }
 
@@ -119,7 +127,7 @@ class Transform {
         return -this.angle / Math.PI * 180;
     }
     set bearing(bearing: number) {
-        const b = -util.wrap(bearing, -180, 180) * Math.PI / 180;
+        const b = -wrap(bearing, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -134,7 +142,7 @@ class Transform {
         return this._pitch / Math.PI * 180;
     }
     set pitch(pitch: number) {
-        const p = util.clamp(pitch, 0, 60) / 180 * Math.PI;
+        const p = clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;
@@ -268,7 +276,7 @@ class Transform {
             this.latY(lnglat.lat));
     }
 
-    unproject(point) {
+    unproject(point: Point): LngLat {
         return new LngLat(
             this.xLng(point.x),
             this.yLat(point.y));
@@ -277,7 +285,7 @@ class Transform {
     get x(): number { return this.lngX(this.center.lng); }
     get y(): number { return this.latY(this.center.lat); }
 
-    get point() { return new Point(this.x, this.y); }
+    get point(): Point { return new Point(this.x, this.y); }
 
     /**
      * latitude to absolute x coord
@@ -295,10 +303,10 @@ class Transform {
         return (180 - y) * this.worldSize / 360;
     }
 
-    xLng(x) {
+    xLng(x: number) {
         return x * 360 / this.worldSize - 180;
     }
-    yLat(y) {
+    yLat(y: number) {
         const y2 = 180 - y * 360 / this.worldSize;
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     }
@@ -347,7 +355,7 @@ class Transform {
      * @param {Coordinate} coord
      * @returns {LngLat} lnglat
      */
-    coordinateLocation(coord) {
+    coordinateLocation(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
         return new LngLat(
             this.xLng(zoomedCoord.column * this.tileSize),
@@ -380,8 +388,8 @@ class Transform {
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
         return new Coordinate(
-            interp(x0, x1, t) / this.tileSize,
-            interp(y0, y1, t) / this.tileSize,
+            interpolate(x0, x1, t) / this.tileSize,
+            interpolate(y0, y1, t) / this.tileSize,
             this.zoom)._zoomTo(zoom);
     }
 
@@ -390,7 +398,7 @@ class Transform {
      * @param {Coordinate} coord
      * @returns {Point} screen point
      */
-    coordinatePoint(coord) {
+    coordinatePoint(coord: Coordinate) {
         const zoomedCoord = coord.zoomTo(this.zoom);
         const p = [zoomedCoord.column * this.tileSize, zoomedCoord.row * this.tileSize, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
@@ -552,6 +560,16 @@ class Transform {
         this._posMatrixCache = {};
         this._alignedPosMatrixCache = {};
     }
+
+    maxPitchScaleFactor() {
+        // calcMatrices hasn't run yet
+        if (!this.pixelMatrixInverse) return 1;
+
+        const coord = this.pointCoordinate(new Point(0, 0)).zoomTo(this.zoom);
+        const p = [coord.column * this.tileSize, coord.row * this.tileSize, 0, 1];
+        const topPoint = vec4.transformMat4(p, p, this.pixelMatrix);
+        return topPoint[3] / this.cameraToCenterDistance;
+    }
 }
 
-module.exports = Transform;
+export default Transform;

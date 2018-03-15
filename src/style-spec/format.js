@@ -1,6 +1,6 @@
 
-const reference = require('./reference/latest.js');
-const sortObject = require('sort-object');
+import reference from './reference/latest.js';
+import sortObject from 'sort-object';
 
 function sameOrderAs(reference) {
     const keyOrder = {};
@@ -51,4 +51,4 @@ function format(style, space) {
     return JSON.stringify(style, null, space);
 }
 
-module.exports = format;
+export default format;

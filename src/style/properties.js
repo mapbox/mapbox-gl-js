@@ -1,11 +1,12 @@
 // @flow
 
-const assert = require('assert');
-const {clone, extend, easeCubicInOut} = require('../util/util');
-const interpolate = require('../style-spec/util/interpolate');
-const {normalizePropertyExpression} = require('../style-spec/expression');
-const Color = require('../style-spec/util/color');
-const {register} = require('../util/web_worker_transfer');
+import assert from 'assert';
+
+import { clone, extend, easeCubicInOut } from '../util/util';
+import * as interpolate from '../style-spec/util/interpolate';
+import { normalizePropertyExpression } from '../style-spec/expression';
+import Color from '../style-spec/util/color';
+import { register } from '../util/web_worker_transfer';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
@@ -81,7 +82,7 @@ export interface Property<T, R> {
  *
  *  @private
  */
-class PropertyValue<T, R> {
+export class PropertyValue<T, R> {
     property: Property<T, R>;
     value: PropertyValueSpecification<T> | void;
     expression: StylePropertyExpression;
@@ -157,7 +158,7 @@ type TransitionablePropertyValues<Props: Object>
  *
  * @private
  */
-class Transitionable<Props: Object> {
+export class Transitionable<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitionablePropertyValues<Props>;
 
@@ -299,7 +300,7 @@ type TransitioningPropertyValues<Props: Object>
  *
  * @private
  */
-class Transitioning<Props: Object> {
+export class Transitioning<Props: Object> {
     _properties: Properties<Props>;
     _values: TransitioningPropertyValues<Props>;
 
@@ -348,7 +349,7 @@ type PropertyValues<Props: Object>
  *
  * @private
  */
-class Layout<Props: Object> {
+export class Layout<Props: Object> {
     _properties: Properties<Props>;
     _values: PropertyValues<Props>;
 
@@ -421,7 +422,7 @@ type PossiblyEvaluatedValue<T> =
  *
  * @private
  */
-class PossiblyEvaluatedPropertyValue<T> {
+export class PossiblyEvaluatedPropertyValue<T> {
     property: DataDrivenProperty<T>;
     value: PossiblyEvaluatedValue<T>;
     globals: GlobalProperties;
@@ -472,8 +473,9 @@ type PossiblyEvaluatedPropertyValues<Props: Object>
 /**
  * `PossiblyEvaluated` stores a map of all (property name, `R`) pairs for paint or layout properties of a
  * given layer type.
+ * @private
  */
-class PossiblyEvaluated<Props: Object> {
+export class PossiblyEvaluated<Props: Object> {
     _properties: Properties<Props>;
     _values: PossiblyEvaluatedPropertyValues<Props>;
 
@@ -494,7 +496,7 @@ class PossiblyEvaluated<Props: Object> {
  *
  * @private
  */
-class DataConstantProperty<T> implements Property<T, T> {
+export class DataConstantProperty<T> implements Property<T, T> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -523,7 +525,7 @@ class DataConstantProperty<T> implements Property<T, T> {
  *
  * @private
  */
-class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
+export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -546,9 +548,16 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
             return a;
         }
 
-        // Special case hack solely for fill-outline-color.
-        if (a.value.value === undefined || b.value.value === undefined)
-            return (undefined: any);
+        // Special case hack solely for fill-outline-color. The undefined value is subsequently handled in
+        // FillStyleLayer#recalculate, which sets fill-outline-color to the fill-color value if the former
+        // is a PossiblyEvaluatedPropertyValue containing a constant undefined value. In addition to the
+        // return value here, the other source of a PossiblyEvaluatedPropertyValue containing a constant
+        // undefined value is the "default value" for fill-outline-color held in
+        // `Properties#defaultPossiblyEvaluatedValues`, which serves as the prototype of
+        // `PossiblyEvaluated#_values`.
+        if (a.value.value === undefined || b.value.value === undefined) {
+            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: (undefined: any)}, a.globals);
+        }
 
         const interp: ?(a: T, b: T, t: number) => T = (interpolate: any)[this.specification.type];
         if (interp) {
@@ -573,7 +582,7 @@ class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValu
  *
  * @private
  */
-class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
+export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -616,7 +625,7 @@ class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
  *
  * @private
  */
-class HeatmapColorProperty implements Property<Color, void> {
+export class HeatmapColorProperty implements Property<Color, void> {
     specification: StylePropertySpecification;
 
     constructor(specification: StylePropertySpecification) {
@@ -638,7 +647,7 @@ class HeatmapColorProperty implements Property<Color, void> {
  *
  * @private
  */
-class Properties<Props: Object> {
+export class Properties<Props: Object> {
     properties: Props;
     defaultPropertyValues: PropertyValues<Props>;
     defaultTransitionablePropertyValues: TransitionablePropertyValues<Props>;
@@ -670,17 +679,3 @@ register('DataDrivenProperty', DataDrivenProperty);
 register('DataConstantProperty', DataConstantProperty);
 register('CrossFadedProperty', CrossFadedProperty);
 register('HeatmapColorProperty', HeatmapColorProperty);
-
-module.exports = {
-    PropertyValue,
-    Transitionable,
-    Transitioning,
-    Layout,
-    PossiblyEvaluatedPropertyValue,
-    PossiblyEvaluated,
-    DataConstantProperty,
-    DataDrivenProperty,
-    CrossFadedProperty,
-    HeatmapColorProperty,
-    Properties
-};

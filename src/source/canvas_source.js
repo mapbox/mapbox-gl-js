@@ -1,19 +1,21 @@
 // @flow
 
-const ImageSource = require('./image_source');
-const window = require('../util/window');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const VertexArrayObject = require('../render/vertex_array_object');
-const Texture = require('../render/texture');
+import ImageSource from './image_source';
+
+import window from '../util/window';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
+import { ErrorEvent } from '../util/evented';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Evented} from '../util/evented';
 
 /**
  * A data source containing the contents of an HTML canvas.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
- * @interface CanvasSource
+ *
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -49,6 +51,9 @@ class CanvasSource extends ImageSource {
     pause: () => void;
     _playing: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.options = options;
@@ -75,7 +80,7 @@ class CanvasSource extends ImageSource {
         this.height = this.canvas.height;
 
         if (this._hasInvalidDimensions()) {
-            this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
+            this.fire(new ErrorEvent(new Error('Canvas dimensions cannot be less than or equal to zero.')));
             return;
         }
 
@@ -191,4 +196,4 @@ class CanvasSource extends ImageSource {
     }
 }
 
-module.exports = CanvasSource;
+export default CanvasSource;

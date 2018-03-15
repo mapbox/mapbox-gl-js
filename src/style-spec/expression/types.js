@@ -26,16 +26,16 @@ export type ArrayType = {
     N: ?number
 }
 
-const NullType = { kind: 'null' };
-const NumberType = { kind: 'number' };
-const StringType = { kind: 'string' };
-const BooleanType = { kind: 'boolean' };
-const ColorType = { kind: 'color' };
-const ObjectType = { kind: 'object' };
-const ValueType = { kind: 'value' };
-const ErrorType = { kind: 'error' };
+export const NullType = { kind: 'null' };
+export const NumberType = { kind: 'number' };
+export const StringType = { kind: 'string' };
+export const BooleanType = { kind: 'boolean' };
+export const ColorType = { kind: 'color' };
+export const ObjectType = { kind: 'object' };
+export const ValueType = { kind: 'value' };
+export const ErrorType = { kind: 'error' };
 
-function array(itemType: Type, N: ?number): ArrayType {
+export function array(itemType: Type, N: ?number): ArrayType {
     return {
         kind: 'array',
         itemType,
@@ -43,7 +43,7 @@ function array(itemType: Type, N: ?number): ArrayType {
     };
 }
 
-function toString(type: Type): string {
+export function toString(type: Type): string {
     if (type.kind === 'array') {
         const itemType = toString(type.itemType);
         return typeof type.N === 'number' ?
@@ -69,7 +69,7 @@ const valueMemberTypes = [
  * error message.
  * @private
  */
-function checkSubtype(expected: Type, t: Type): ?string {
+export function checkSubtype(expected: Type, t: Type): ?string {
     if (t.kind === 'error') {
         // Error is a subtype of every type
         return null;
@@ -91,17 +91,3 @@ function checkSubtype(expected: Type, t: Type): ?string {
 
     return `Expected ${toString(expected)} but found ${toString(t)} instead.`;
 }
-
-module.exports = {
-    NullType,
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    ObjectType,
-    ValueType,
-    array,
-    ErrorType,
-    toString,
-    checkSubtype
-};

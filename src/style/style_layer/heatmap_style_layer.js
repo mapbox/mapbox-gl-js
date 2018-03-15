@@ -1,15 +1,11 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const HeatmapBucket = require('../../data/bucket/heatmap_bucket');
-const RGBAImage = require('../../util/image').RGBAImage;
-const properties = require('./heatmap_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
+import HeatmapBucket from '../../data/bucket/heatmap_bucket';
+import { RGBAImage } from '../../util/image';
+import properties from './heatmap_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type Texture from '../../render/texture';
 import type Framebuffer from '../../gl/framebuffer';
@@ -80,4 +76,4 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = HeatmapStyleLayer;
+export default HeatmapStyleLayer;

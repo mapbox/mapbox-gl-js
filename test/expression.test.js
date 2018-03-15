@@ -1,6 +1,9 @@
-'use strict';
 
-require('flow-remove-types/register');
+/* eslint-disable import/unambiguous, no-global-assign */
+
+require('../build/flow-remove-types.js');
+require = require("@std/esm")(module, true);
+
 const expressionSuite = require('./integration').expression;
 const { createPropertyExpression } = require('../src/style-spec/expression');
 const { toString } = require('../src/style-spec/expression/types');
@@ -13,7 +16,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 }
 
 expressionSuite.run('js', { ignores, tests }, (fixture) => {
-    const spec = fixture.propertySpec || {};
+    const spec = Object.assign({}, fixture.propertySpec);
     spec['function'] = true;
     spec['property-function'] = true;
 
@@ -39,8 +42,8 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
         outputs,
         compiled: {
             result: 'success',
-            isZoomConstant: expression.kind === 'constant' || expression.kind === 'source',
             isFeatureConstant: expression.kind === 'constant' || expression.kind === 'camera',
+            isZoomConstant: expression.kind === 'constant' || expression.kind === 'source',
             type: toString(type)
         }
     };

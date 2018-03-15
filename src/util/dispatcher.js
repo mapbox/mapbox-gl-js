@@ -1,7 +1,7 @@
 // @flow
 
-const util = require('./util');
-const Actor = require('./actor');
+import { uniqueId, asyncAll } from './util';
+import Actor from './actor';
 
 import type WorkerPool from './worker_pool';
 
@@ -9,7 +9,6 @@ import type WorkerPool from './worker_pool';
  * Responsible for sending messages from a {@link Source} to an associated
  * {@link WorkerSource}.
  *
- * @interface Dispatcher
  * @private
  */
 class Dispatcher {
@@ -18,15 +17,18 @@ class Dispatcher {
     currentActor: number;
     id: number;
 
+    // exposed to allow stubbing in unit tests
+    static Actor: Class<Actor>;
+
     constructor(workerPool: WorkerPool, parent: any) {
         this.workerPool = workerPool;
         this.actors = [];
         this.currentActor = 0;
-        this.id = util.uniqueId();
+        this.id = uniqueId();
         const workers = this.workerPool.acquire(this.id);
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
-            const actor = new Actor(worker, parent, this.id);
+            const actor = new Dispatcher.Actor(worker, parent, this.id);
             actor.name = `Worker ${i}`;
             this.actors.push(actor);
         }
@@ -37,7 +39,7 @@ class Dispatcher {
      */
     broadcast(type: string, data: mixed, cb?: Function) {
         cb = cb || function () {};
-        util.asyncAll(this.actors, (actor, done) => {
+        asyncAll(this.actors, (actor, done) => {
             actor.send(type, data, done);
         }, cb);
     }
@@ -64,4 +66,6 @@ class Dispatcher {
     }
 }
 
-module.exports = Dispatcher;
+Dispatcher.Actor = Actor;
+
+export default Dispatcher;

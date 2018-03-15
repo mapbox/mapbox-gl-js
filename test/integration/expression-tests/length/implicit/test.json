@@ -1,0 +1,24 @@
+{
+  "expression": ["length", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": "a string"}}],
+    [{}, {"properties": {"x": []}}],
+    [{}, {"properties": {"x": 0}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      8,
+      0,
+      {
+        "error": "Expected value to be of type string or array, but found number instead."
+      }
+    ],
+    "serialized": ["length", ["get", "x"]]
+  }
+}

@@ -1,31 +1,34 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const loadGeometry = require('./load_geometry');
-const EXTENT = require('./extent');
-const featureFilter = require('../style-spec/feature_filter');
-const Grid = require('grid-index');
-const DictionaryCoder = require('../util/dictionary_coder');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const GeoJSONFeature = require('../util/vectortile_to_geojson');
-const arraysIntersect = require('../util/util').arraysIntersect;
-const {OverscaledTileID} = require('../source/tile_id');
-const {register} = require('../util/web_worker_transfer');
+import Point from '@mapbox/point-geometry';
+
+import loadGeometry from './load_geometry';
+import EXTENT from './extent';
+import featureFilter from '../style-spec/feature_filter';
+import Grid from 'grid-index';
+import DictionaryCoder from '../util/dictionary_coder';
+import vt from '@mapbox/vector-tile';
+import Protobuf from 'pbf';
+import GeoJSONFeature from '../util/vectortile_to_geojson';
+import { arraysIntersect } from '../util/util';
+import { OverscaledTileID } from '../source/tile_id';
+import { register } from '../util/web_worker_transfer';
 
 import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type {CollisionBoxArray} from './array_types';
+import type Transform from '../geo/transform';
 
-const {FeatureIndexArray} = require('./array_types');
+import { FeatureIndexArray } from './array_types';
 
 type QueryParameters = {
     scale: number,
-    bearing: number,
+    posMatrix: Float32Array,
+    transform: Transform,
     tileSize: number,
     queryGeometry: Array<Array<Point>>,
-    additionalRadius: number,
+    queryPadding: number,
     params: {
         filter: FilterSpecification,
         layers: Array<string>,
@@ -33,7 +36,7 @@ type QueryParameters = {
     collisionBoxArray: CollisionBoxArray,
     sourceID: string,
     bucketInstanceIds: { [number]: boolean },
-    collisionIndex: CollisionIndex
+    collisionIndex: ?CollisionIndex
 }
 
 class FeatureIndex {
@@ -50,8 +53,6 @@ class FeatureIndex {
 
     vtLayers: {[string]: VectorTileLayer};
     sourceLayerCoder: DictionaryCoder;
-
-    collisionIndex: CollisionIndex;
 
     constructor(tileID: OverscaledTileID,
                 overscaling: number,
@@ -100,7 +101,7 @@ class FeatureIndex {
             filter = featureFilter(params.filter);
 
         const queryGeometry = args.queryGeometry;
-        const additionalRadius = args.additionalRadius * pixelsToTileUnits;
+        const queryPadding = args.queryPadding * pixelsToTileUnits;
 
         let minX = Infinity;
         let minY = Infinity;
@@ -117,15 +118,15 @@ class FeatureIndex {
             }
         }
 
-        const matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
+        const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
         matching.sort(topDownFeatureComparator);
-        this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
+        this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
 
         const matchingSymbols = args.collisionIndex ?
-            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, EXTENT / args.tileSize, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
+            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, args.tileSize / EXTENT, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
             [];
         matchingSymbols.sort();
-        this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
+        this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
 
         return result;
     }
@@ -138,8 +139,9 @@ class FeatureIndex {
         filter: FeatureFilter,
         filterLayerIDs: Array<string>,
         styleLayers: {[string]: StyleLayer},
-        bearing: number,
-        pixelsToTileUnits: number
+        pixelsToTileUnits: number,
+        posMatrix: Float32Array,
+        transform: Transform
     ) {
         let previousIndex;
         for (let k = 0; k < matching.length; k++) {
@@ -177,7 +179,7 @@ class FeatureIndex {
                     if (!geometry) {
                         geometry = loadGeometry(feature);
                     }
-                    if (!styleLayer.queryIntersectsFeature(queryGeometry, feature, geometry, this.z, bearing, pixelsToTileUnits)) {
+                    if (!styleLayer.queryIntersectsFeature(queryGeometry, feature, geometry, this.z, transform, pixelsToTileUnits, posMatrix)) {
                         continue;
                     }
                 }
@@ -207,10 +209,10 @@ class FeatureIndex {
 register(
     'FeatureIndex',
     FeatureIndex,
-    { omit: ['rawTileData', 'sourceLayerCoder', 'collisionIndex'] }
+    { omit: ['rawTileData', 'sourceLayerCoder'] }
 );
 
-module.exports = FeatureIndex;
+export default FeatureIndex;
 
 function topDownFeatureComparator(a, b) {
     return b - a;

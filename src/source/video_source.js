@@ -1,19 +1,21 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const ImageSource = require('./image_source');
-const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
-const VertexArrayObject = require('../render/vertex_array_object');
-const Texture = require('../render/texture');
+import { getVideo, ResourceType } from '../util/ajax';
+
+import ImageSource from './image_source';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
+import { ErrorEvent } from '../util/evented';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Evented} from '../util/evented';
 
 /**
  * A data source containing video.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
- * @interface VideoSource
+ *
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -48,6 +50,9 @@ class VideoSource extends ImageSource {
     video: HTMLVideoElement;
     roundZoom: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: VideoSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;
@@ -57,11 +62,15 @@ class VideoSource extends ImageSource {
 
     load() {
         const options = this.options;
-        this.urls = options.urls;
 
-        ajax.getVideo(options.urls, (err, video) => {
+        this.urls = [];
+        for (const url of options.urls) {
+            this.urls.push(this.map._transformRequest(url, ResourceType.Source).url);
+        }
+
+        getVideo(this.urls, (err, video) => {
             if (err) {
-                this.fire('error', {error: err});
+                this.fire(new ErrorEvent(err));
             } else if (video) {
                 this.video = video;
                 this.video.loop = true;
@@ -160,4 +169,4 @@ class VideoSource extends ImageSource {
     }
 }
 
-module.exports = VideoSource;
+export default VideoSource;

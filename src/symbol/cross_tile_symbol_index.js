@@ -1,10 +1,9 @@
 // @flow
 
-const EXTENT = require('../data/extent');
+import EXTENT from '../data/extent';
 
 import type {OverscaledTileID} from '../source/tile_id';
-import type {SymbolInstance} from '../data/bucket/symbol_bucket';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type SymbolBucket, {SymbolInstance} from '../data/bucket/symbol_bucket';
 import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
 
@@ -263,4 +262,4 @@ class CrossTileSymbolIndex {
     }
 }
 
-module.exports = CrossTileSymbolIndex;
+export default CrossTileSymbolIndex;

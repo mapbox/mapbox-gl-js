@@ -4,7 +4,7 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type CustomWebGLLayer from '../style/style_layer/custom_webgl_layer';
 
-module.exports = drawCustomWebGL;
+export default drawCustomWebGL;
 
 function drawCustomWebGL(painter: Painter, sourceCache: SourceCache, layer: CustomWebGLLayer) {
     if (painter.renderPass !== 'translucent') return;

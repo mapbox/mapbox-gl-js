@@ -1,7 +1,8 @@
 // @flow
 
-const assert = require('assert');
-const {register} = require('./web_worker_transfer');
+import assert from 'assert';
+
+import { register } from './web_worker_transfer';
 
 export type Size = {
     width: number,
@@ -77,7 +78,7 @@ function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size,
     return dstImg;
 }
 
-class AlphaImage {
+export class AlphaImage {
     width: number;
     height: number;
     data: Uint8Array | Uint8ClampedArray;
@@ -101,7 +102,7 @@ class AlphaImage {
 
 // Not premultiplied, because ImageData is not premultiplied.
 // UNPACK_PREMULTIPLY_ALPHA_WEBGL must be used when uploading to a texture.
-class RGBAImage {
+export class RGBAImage {
     width: number;
     height: number;
     data: Uint8Array | Uint8ClampedArray;
@@ -125,8 +126,3 @@ class RGBAImage {
 
 register('AlphaImage', AlphaImage);
 register('RGBAImage', RGBAImage);
-
-module.exports = {
-    AlphaImage,
-    RGBAImage
-};

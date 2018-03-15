@@ -1,9 +1,7 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const fs = require('fs');
-const path = require('path');
-const shaping = require('../../../src/symbol/shaping');
+import { test } from 'mapbox-gl-js-test';
+import fs from 'fs';
+import path from 'path';
+import * as shaping from '../../../src/symbol/shaping';
 const WritingMode = shaping.WritingMode;
 
 let UPDATE = false;

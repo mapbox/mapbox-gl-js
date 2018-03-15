@@ -1,6 +1,8 @@
-'use strict';
+/* eslint-disable import/unambiguous,no-global-assign */
 
-require('flow-remove-types/register');
+require('./stub_loader');
+require('../build/flow-remove-types.js');
+require = require("@std/esm")(module, true);
 
 const querySuite = require('./integration').query;
 const suiteImplementation = require('./suite_implementation');

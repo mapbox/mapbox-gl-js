@@ -2,15 +2,15 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
     HeatmapColorProperty
-} = require('../properties');
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -126,4 +126,4 @@ const paint: Properties<PaintProps> = new Properties({
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
 });
 
-module.exports = { paint, layout };
+export default { paint, layout };

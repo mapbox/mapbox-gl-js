@@ -1,15 +1,16 @@
 // @flow
 
-const { toString } = require('./types');
-const ParsingContext = require('./parsing_context');
-const EvaluationContext = require('./evaluation_context');
-const assert = require('assert');
+import { toString } from './types';
+
+import ParsingContext from './parsing_context';
+import EvaluationContext from './evaluation_context';
+import assert from 'assert';
 
 import type { Expression, ExpressionRegistry } from './expression';
 import type { Type } from './types';
 import type { Value } from './values';
 
-type Varargs = {| type: Type |};
+export type Varargs = {| type: Type |};
 type Signature = Array<Type> | Varargs;
 type Evaluate = (EvaluationContext, Array<Expression>) => Value;
 type Definition = [Type, Signature, Evaluate] |
@@ -133,10 +134,6 @@ class CompoundExpression implements Expression {
     }
 }
 
-function varargs(type: Type): Varargs {
-    return { type };
-}
-
 function stringifySignature(signature: Signature): string {
     if (Array.isArray(signature)) {
         return `(${signature.map(toString).join(', ')})`;
@@ -145,8 +142,4 @@ function stringifySignature(signature: Signature): string {
     }
 }
 
-module.exports = {
-    CompoundExpression,
-    varargs
-};
-
+export default CompoundExpression;

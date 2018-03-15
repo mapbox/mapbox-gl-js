@@ -1,16 +1,10 @@
 // @flow
 
-const {isCounterClockwise} = require('./util');
+import { isCounterClockwise } from './util';
 
 import type Point from '@mapbox/point-geometry';
 
-module.exports = {
-    multiPolygonIntersectsBufferedMultiPoint,
-    multiPolygonIntersectsMultiPolygon,
-    multiPolygonIntersectsBufferedMultiLine,
-    polygonIntersectsPolygon,
-    distToSegmentSquared
-};
+export { multiPolygonIntersectsBufferedPoint, multiPolygonIntersectsBufferedMultiPoint, multiPolygonIntersectsMultiPolygon, multiPolygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared };
 
 type Line = Array<Point>;
 type MultiLine = Array<Line>;
@@ -32,16 +26,20 @@ function polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon) {
     return false;
 }
 
-function multiPolygonIntersectsBufferedMultiPoint(multiPolygon: MultiPolygon, rings: Array<Ring>, radius: number) {
+function multiPolygonIntersectsBufferedPoint(multiPolygon: MultiPolygon, point: Point, radius: number) {
     for (let j = 0; j < multiPolygon.length; j++) {
         const polygon = multiPolygon[j];
-        for (let i = 0; i < rings.length; i++) {
-            const ring = rings[i];
-            for (let k = 0; k < ring.length; k++) {
-                const point = ring[k];
-                if (polygonContainsPoint(polygon, point)) return true;
-                if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
-            }
+        if (polygonContainsPoint(polygon, point)) return true;
+        if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
+    }
+    return false;
+}
+
+function multiPolygonIntersectsBufferedMultiPoint(multiPolygon: MultiPolygon, rings: Array<Ring>, radius: number) {
+    for (let i = 0; i < rings.length; i++) {
+        const ring = rings[i];
+        for (let k = 0; k < ring.length; k++) {
+            if (multiPolygonIntersectsBufferedPoint(multiPolygon, ring[k], radius)) return true;
         }
     }
     return false;

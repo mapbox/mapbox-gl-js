@@ -1,7 +1,8 @@
 // @flow
 
-const browser = require('../util/browser');
-const Placement = require('../symbol/placement');
+import browser from '../util/browser';
+
+import Placement from '../symbol/placement';
 
 import type Transform from '../geo/transform';
 import type StyleLayer from './style_layer';
@@ -89,6 +90,11 @@ class PauseablePlacement {
 
         this._done = true;
     }
+
+    commit(previousPlacement: ?Placement, now: number) {
+        this.placement.commit(previousPlacement, now);
+        return this.placement;
+    }
 }
 
-module.exports = PauseablePlacement;
+export default PauseablePlacement;

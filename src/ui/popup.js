@@ -1,12 +1,12 @@
 // @flow
 
-const util = require('../util/util');
-const Evented = require('../util/evented');
-const DOM = require('../util/dom');
-const LngLat = require('../geo/lng_lat');
-const Point = require('@mapbox/point-geometry');
-const window = require('../util/window');
-const smartWrap = require('../util/smart_wrap');
+import { extend, bindAll } from '../util/util';
+import { Event, Evented } from '../util/evented';
+import DOM from '../util/dom';
+import LngLat from '../geo/lng_lat';
+import Point from '@mapbox/point-geometry';
+import window from '../util/window';
+import smartWrap from '../util/smart_wrap';
 
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -78,8 +78,8 @@ class Popup extends Evented {
 
     constructor(options: PopupOptions) {
         super();
-        this.options = util.extend(Object.create(defaultOptions), options);
-        util.bindAll(['_update', '_onClickClose'], this);
+        this.options = extend(Object.create(defaultOptions), options);
+        bindAll(['_update', '_onClickClose'], this);
     }
 
     /**
@@ -95,6 +95,18 @@ class Popup extends Evented {
             this._map.on('click', this._onClickClose);
         }
         this._update();
+
+        /**
+         * Fired when the popup is opened manually or programatically.
+         *
+         * @event open
+         * @memberof Popup
+         * @instance
+         * @type {Object}
+         * @property {Popup} popup object that was opened
+         */
+        this.fire(new Event('open'));
+
         return this;
     }
 
@@ -138,7 +150,7 @@ class Popup extends Evented {
          * @type {Object}
          * @property {Popup} popup object that was closed
          */
-        this.fire('close');
+        this.fire(new Event('close'));
 
         return this;
     }
@@ -366,4 +378,4 @@ function normalizeOffset(offset: ?Offset) {
     }
 }
 
-module.exports = Popup;
+export default Popup;

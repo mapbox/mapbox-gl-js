@@ -7,7 +7,7 @@
             "debug": true,
             "collisionDebug": true,
             "operations": [
-              ["setStyle", "local://../../node_modules/mapbox-gl-styles/styles/basic-v9.json"],
+              ["setStyle", "local://mapbox-gl-styles/styles/basic-v9.json"],
               ["wait"],
               ["setZoom", 11.1],
               ["sleep", 3000]

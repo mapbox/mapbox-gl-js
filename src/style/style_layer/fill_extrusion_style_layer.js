@@ -1,21 +1,18 @@
 // @flow
 
-const StyleLayer = require('../style_layer');
-const FillExtrusionBucket = require('../../data/bucket/fill_extrusion_bucket');
-const {multiPolygonIntersectsMultiPolygon} = require('../../util/intersection_tests');
-const {translateDistance, translate} = require('../query_utils');
-const properties = require('./fill_extrusion_style_layer_properties');
+import StyleLayer from '../style_layer';
 
-const {
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated
-} = require('../properties');
+import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
+import { multiPolygonIntersectsMultiPolygon } from '../../util/intersection_tests';
+import { translateDistance, translate } from '../query_utils';
+import properties from './fill_extrusion_style_layer_properties';
+import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Framebuffer from '../../gl/framebuffer';
+import type Transform from '../../geo/transform';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -39,12 +36,12 @@ class FillExtrusionStyleLayer extends StyleLayer {
                            feature: VectorTileFeature,
                            geometry: Array<Array<Point>>,
                            zoom: number,
-                           bearing: number,
+                           transform: Transform,
                            pixelsToTileUnits: number): boolean {
         const translatedPolygon = translate(queryGeometry,
             this.paint.get('fill-extrusion-translate'),
             this.paint.get('fill-extrusion-translate-anchor'),
-            bearing, pixelsToTileUnits);
+            transform.angle, pixelsToTileUnits);
         return multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 
@@ -60,4 +57,4 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 }
 
-module.exports = FillExtrusionStyleLayer;
+export default FillExtrusionStyleLayer;

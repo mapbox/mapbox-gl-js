@@ -1,22 +1,13 @@
 // @flow
 
-const assert = require('assert');
-const Color = require('../util/color');
+import assert from 'assert';
 
-const {
-    NullType,
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    ObjectType,
-    ValueType,
-    array
-} = require('./types');
+import Color from '../util/color';
+import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, array } from './types';
 
 import type { Type } from './types';
 
-function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
+export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     if (!(
         typeof r === 'number' && r >= 0 && r <= 255 &&
         typeof g === 'number' && g >= 0 && g <= 255 &&
@@ -37,7 +28,7 @@ function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
 
 export type Value = null | string | boolean | number | Color | $ReadOnlyArray<Value> | { +[string]: Value }
 
-function isValue(mixed: mixed): boolean {
+export function isValue(mixed: mixed): boolean {
     if (mixed === null) {
         return true;
     } else if (typeof mixed === 'string') {
@@ -67,7 +58,7 @@ function isValue(mixed: mixed): boolean {
     }
 }
 
-function typeOf(value: Value): Type {
+export function typeOf(value: Value): Type {
     if (value === null) {
         return NullType;
     } else if (typeof value === 'string') {
@@ -101,9 +92,4 @@ function typeOf(value: Value): Type {
     }
 }
 
-module.exports = {
-    Color,
-    validateRGBA,
-    isValue,
-    typeOf
-};
+export {Color};

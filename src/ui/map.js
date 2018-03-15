@@ -1,31 +1,28 @@
 // @flow
 
-const util = require('../util/util');
-const browser = require('../util/browser');
-const window = require('../util/window');
-const {HTMLImageElement, HTMLElement} = require('../util/window');
-const DOM = require('../util/dom');
-const ajax = require('../util/ajax');
+import { extend, bindAll, warnOnce } from '../util/util';
 
-const Style = require('../style/style');
-const EvaluationParameters = require('../style/evaluation_parameters');
-const Painter = require('../render/painter');
-
-const Transform = require('../geo/transform');
-const Hash = require('./hash');
-
-const bindHandlers = require('./bind_handlers');
-
-const Camera = require('./camera');
-const LngLat = require('../geo/lng_lat');
-const LngLatBounds = require('../geo/lng_lat_bounds');
-const Point = require('@mapbox/point-geometry');
-const AttributionControl = require('./control/attribution_control');
-const LogoControl = require('./control/logo_control');
-const isSupported = require('@mapbox/mapbox-gl-supported');
-const {RGBAImage} = require('../util/image');
-
-require('./events'); // Pull in for documentation.js
+import browser from '../util/browser';
+import window from '../util/window';
+const { HTMLImageElement, HTMLElement } = window;
+import DOM from '../util/dom';
+import { getImage, ResourceType } from '../util/ajax';
+import Style from '../style/style';
+import EvaluationParameters from '../style/evaluation_parameters';
+import Painter from '../render/painter';
+import Transform from '../geo/transform';
+import Hash from './hash';
+import bindHandlers from './bind_handlers';
+import Camera from './camera';
+import LngLat from '../geo/lng_lat';
+import LngLatBounds from '../geo/lng_lat_bounds';
+import Point from '@mapbox/point-geometry';
+import AttributionControl from './control/attribution_control';
+import LogoControl from './control/logo_control';
+import isSupported from '@mapbox/mapbox-gl-supported';
+import { RGBAImage } from '../util/image';
+import { Event, ErrorEvent } from '../util/evented';
+import { MapMouseEvent } from './events';
 
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
@@ -52,7 +49,7 @@ type IControl = {
 }
 /* eslint-enable no-use-before-define */
 
-type ResourceTypeEnum = $Keys<typeof ajax.ResourceType>;
+type ResourceTypeEnum = $Keys<typeof ResourceType>;
 export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
 
 type MapOptions = {
@@ -256,7 +253,7 @@ class Map extends Camera {
     touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
-        options = util.extend({}, defaultOptions, options);
+        options = extend({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than minZoom`);
@@ -296,7 +293,7 @@ class Map extends Camera {
             this.setMaxBounds(options.maxBounds);
         }
 
-        util.bindAll([
+        bindAll([
             '_onWindowOnline',
             '_onWindowResize',
             '_contextLost',
@@ -404,10 +401,10 @@ class Map extends Camera {
         this.painter.resize(width, height);
 
         return this
-            .fire('movestart')
-            .fire('move')
-            .fire('resize')
-            .fire('moveend');
+            .fire(new Event('movestart'))
+            .fire(new Event('move'))
+            .fire(new Event('resize'))
+            .fire(new Event('moveend'));
     }
 
     /**
@@ -530,6 +527,27 @@ class Map extends Camera {
     }
 
     /**
+     * Returns the state of renderWorldCopies.
+     *
+     * @returns {boolean} renderWorldCopies
+     */
+    getRenderWorldCopies() { return this.transform.renderWorldCopies; }
+
+    /**
+     * Sets the state of renderWorldCopies.
+     *
+     * @param {boolean} renderWorldCopies If `true`, multiple copies of the world will be rendered, when zoomed out. `undefined` is treated as `true`, `null` is treated as `false`.
+     * @returns {Map} `this`
+     */
+    setRenderWorldCopies(renderWorldCopies?: ?boolean) {
+
+        this.transform.renderWorldCopies = renderWorldCopies;
+        this._update();
+
+        return this;
+    }
+
+    /**
      * Returns the map's maximum allowable zoom level.
      *
      * @returns {number} maxZoom
@@ -557,6 +575,32 @@ class Map extends Camera {
      */
     unproject(point: PointLike) {
         return this.transform.pointLocation(Point.convert(point));
+    }
+
+    /**
+     * Returns true if the map is panning, zooming, rotating, or pitching due to a camera animation or user gesture.
+     */
+    isMoving(): boolean {
+        return this._moving ||
+            this.dragPan.isActive() ||
+            this.dragRotate.isActive() ||
+            this.scrollZoom.isActive();
+    }
+
+    /**
+     * Returns true if the map is zooming due to a camera animation or user gesture.
+     */
+    isZooming(): boolean {
+        return this._zooming ||
+            this.scrollZoom.isActive();
+    }
+
+    /**
+     * Returns true if the map is rotating due to a camera animation or user gesture.
+     */
+    isRotating(): boolean {
+        return this._rotating ||
+            this.dragRotate.isActive();
     }
 
     /**
@@ -602,7 +646,7 @@ class Map extends Camera {
                         mousein = false;
                     } else if (!mousein) {
                         mousein = true;
-                        listener.call(this, util.extend({features}, e, {type}));
+                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
                     }
                 };
                 const mouseout = () => {
@@ -617,13 +661,13 @@ class Map extends Camera {
                         mousein = true;
                     } else if (mousein) {
                         mousein = false;
-                        listener.call(this, util.extend({}, e, {type}));
+                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                     }
                 };
                 const mouseout = (e) => {
                     if (mousein) {
                         mousein = false;
-                        listener.call(this, util.extend({}, e, {type}));
+                        listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
                     }
                 };
                 return {layer, listener, delegates: {mousemove, mouseout}};
@@ -631,7 +675,10 @@ class Map extends Camera {
                 const delegate = (e) => {
                     const features = this.getLayer(layer) ? this.queryRenderedFeatures(e.point, {layers: [layer]}) : [];
                     if (features.length) {
-                        listener.call(this, util.extend({features}, e));
+                        // Here we need to mutate the original event, so that preventDefault works as expected.
+                        e.features = features;
+                        listener.call(this, e);
+                        delete e.features;
                     }
                 };
                 return {layer, listener, delegates: {[type]: delegate}};
@@ -795,8 +842,7 @@ class Map extends Camera {
         return this.style.queryRenderedFeatures(
             this._makeQueryGeometry(geometry),
             options,
-            this.transform.zoom,
-            this.transform.angle
+            this.transform
         );
 
         function isPointLike(input) {
@@ -897,7 +943,9 @@ class Map extends Camera {
                 }
                 return this;
             } catch (e) {
-                util.warnOnce(`Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`);
+                warnOnce(
+                    `Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`
+                );
             }
         }
 
@@ -941,7 +989,7 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the style is fully loaded.
      */
     isStyleLoaded() {
-        if (!this.style) return util.warnOnce('There is no style added to the map.');
+        if (!this.style) return warnOnce('There is no style added to the map.');
         return this.style.loaded();
     }
 
@@ -972,9 +1020,7 @@ class Map extends Camera {
     isSourceLoaded(id: string) {
         const source = this.style && this.style.sourceCaches[id];
         if (source === undefined) {
-            this.fire('error', {
-                error: new Error(`There is no source with ID '${id}'`)
-            });
+            this.fire(new ErrorEvent(new Error(`There is no source with ID '${id}'`)));
             return;
         }
         return source.loaded();
@@ -1060,9 +1106,9 @@ class Map extends Camera {
             const {width, height, data} = browser.getImageData(image);
             this.style.addImage(id, { data: new RGBAImage({width, height}, data), pixelRatio, sdf });
         } else if (image.width === undefined || image.height === undefined) {
-            return this.fire('error', {error: new Error(
+            return this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, ' +
-                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')});
+                'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
             const {width, height, data} = image;
             this.style.addImage(id, { data: new RGBAImage({width, height}, data.slice(0)), pixelRatio, sdf });
@@ -1076,9 +1122,7 @@ class Map extends Camera {
      */
     hasImage(id: string): boolean {
         if (!id) {
-            this.fire('error', {
-                error: new Error('Missing required image id')
-            });
+            this.fire(new ErrorEvent(new Error('Missing required image id')));
             return false;
         }
 
@@ -1103,7 +1147,7 @@ class Map extends Camera {
      * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Function) {
-        ajax.getImage(this._transformRequest(url, ajax.ResourceType.Image), callback);
+        getImage(this._transformRequest(url, ResourceType.Image), callback);
     }
 
     /**
@@ -1384,7 +1428,7 @@ class Map extends Camera {
     }
 
     _setupPainter() {
-        const attributes = util.extend({
+        const attributes = extend({
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer
         }, isSupported.webGLContextAttributes);
@@ -1393,27 +1437,27 @@ class Map extends Camera {
             this._canvas.getContext('experimental-webgl', attributes);
 
         if (!gl) {
-            this.fire('error', { error: new Error('Failed to initialize WebGL') });
+            this.fire(new ErrorEvent(new Error('Failed to initialize WebGL')));
             return;
         }
 
         this.painter = new Painter(gl, this.transform);
     }
 
-    _contextLost(event: Event) {
+    _contextLost(event: *) {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
             this._frameId = null;
         }
-        this.fire('webglcontextlost', {originalEvent: event});
+        this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
-    _contextRestored(event: Event) {
+    _contextRestored(event: *) {
         this._setupPainter();
         this.resize();
         this._update();
-        this.fire('webglcontextrestored', {originalEvent: event});
+        this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
     /**
@@ -1505,16 +1549,16 @@ class Map extends Camera {
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
-            rotating: this.rotating,
-            zooming: this.zooming,
+            rotating: this.isRotating(),
+            zooming: this.isZooming(),
             fadeDuration: this._fadeDuration
         });
 
-        this.fire('render');
+        this.fire(new Event('render'));
 
         if (this.loaded() && !this._loaded) {
             this._loaded = true;
-            this.fire('load');
+            this.fire(new Event('load'));
         }
 
         if (this.style && (this.style.hasTransitions() || crossFading)) {
@@ -1557,7 +1601,7 @@ class Map extends Camera {
         removeNode(this._controlContainer);
         removeNode(this._missingCSSContainer);
         this._container.classList.remove('mapboxgl-map');
-        this.fire('remove');
+        this.fire(new Event('remove'));
     }
 
     _rerender() {
@@ -1667,15 +1711,15 @@ class Map extends Camera {
 
     _onData(event: MapDataEvent) {
         this._update(event.dataType === 'style');
-        this.fire(`${event.dataType}data`, event);
+        this.fire(new Event(`${event.dataType}data`, event));
     }
 
     _onDataLoading(event: MapDataEvent) {
-        this.fire(`${event.dataType}dataloading`, event);
+        this.fire(new Event(`${event.dataType}dataloading`, event));
     }
 }
 
-module.exports = Map;
+export default Map;
 
 function removeNode(node) {
     if (node.parentNode) {

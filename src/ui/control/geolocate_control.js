@@ -1,12 +1,13 @@
 // @flow
 
-const Evented = require('../../util/evented');
-const DOM = require('../../util/dom');
-const window = require('../../util/window');
-const util = require('../../util/util');
-const assert = require('assert');
-const LngLat = require('../../geo/lng_lat');
-const Marker = require('../marker');
+import { Event, Evented } from '../../util/evented';
+
+import DOM from '../../util/dom';
+import window from '../../util/window';
+import { extend, bindAll } from '../../util/util';
+import assert from 'assert';
+import LngLat from '../../geo/lng_lat';
+import Marker from '../marker';
 
 import type Map from '../map';
 
@@ -84,16 +85,16 @@ class GeolocateControl extends Evented {
     _dotElement: HTMLElement;
     _geolocateButton: HTMLElement;
     _geolocationWatchID: number;
-    _timeoutId: ?number;
+    _timeoutId: ?TimeoutID;
     _watchState: string;
     _lastKnownPosition: any;
     _userLocationDotMarker: Marker;
 
     constructor(options: any) {
         super();
-        this.options = util.extend({}, defaultOptions, options);
+        this.options = extend({}, defaultOptions, options);
 
-        util.bindAll([
+        bindAll([
             '_onSuccess',
             '_onError',
             '_finish',
@@ -170,7 +171,7 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire('geolocate', position);
+        this.fire(new Event('geolocate', position));
         this._finish();
     }
 
@@ -238,7 +239,7 @@ class GeolocateControl extends Evented {
             this._dotElement.classList.add('mapboxgl-user-location-dot-stale');
         }
 
-        this.fire('error', error);
+        this.fire(new Event('error', error));
 
         this._finish();
     }
@@ -283,7 +284,7 @@ class GeolocateControl extends Evented {
                     this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
                     this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
 
-                    this.fire('trackuserlocationend');
+                    this.fire(new Event('trackuserlocationend'));
                 }
             });
         }
@@ -297,7 +298,7 @@ class GeolocateControl extends Evented {
                 // turn on the Geolocate Control
                 this._watchState = 'WAITING_ACTIVE';
 
-                this.fire('trackuserlocationstart');
+                this.fire(new Event('trackuserlocationstart'));
                 break;
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -311,7 +312,7 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
                 this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
 
-                this.fire('trackuserlocationend');
+                this.fire(new Event('trackuserlocationend'));
                 break;
             case 'BACKGROUND':
                 this._watchState = 'ACTIVE_LOCK';
@@ -319,7 +320,7 @@ class GeolocateControl extends Evented {
                 // set camera to last known location
                 if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
 
-                this.fire('trackuserlocationstart');
+                this.fire(new Event('trackuserlocationstart'));
                 break;
             default:
                 assert(false, `Unexpected watchState ${this._watchState}`);
@@ -387,7 +388,7 @@ class GeolocateControl extends Evented {
     }
 }
 
-module.exports = GeolocateControl;
+export default GeolocateControl;
 
 /* Geolocate Control Watch States
  * This is the private state of the control.

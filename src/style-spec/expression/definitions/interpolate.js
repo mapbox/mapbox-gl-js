@@ -1,9 +1,10 @@
 // @flow
 
-const UnitBezier = require('@mapbox/unitbezier');
-const interpolate = require('../../util/interpolate');
-const { toString, NumberType } = require('../types');
-const { findStopLessThanOrEqualTo } = require("../stops");
+import UnitBezier from '@mapbox/unitbezier';
+
+import * as interpolate from '../../util/interpolate';
+import { toString, NumberType } from '../types';
+import { findStopLessThanOrEqualTo } from '../stops';
 
 import type { Stops } from '../stops';
 import type { Expression } from '../expression';
@@ -164,7 +165,7 @@ class Interpolate implements Expression {
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
-        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t);
+        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t); // eslint-disable-line import/namespace
     }
 
     eachChild(fn: (Expression) => void) {
@@ -227,4 +228,4 @@ function exponentialInterpolation(input, base, lowerValue, upperValue) {
     }
 }
 
-module.exports = Interpolate;
+export default Interpolate;

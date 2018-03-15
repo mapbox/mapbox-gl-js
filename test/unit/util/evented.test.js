@@ -1,7 +1,5 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Evented = require('../../../src/util/evented');
+import { test } from 'mapbox-gl-js-test';
+import { Event, Evented } from '../../../src/util/evented';
 
 test('Evented', (t) => {
 
@@ -9,8 +7,8 @@ test('Evented', (t) => {
         const evented = new Evented();
         const listener = t.spy();
         evented.on('a', listener);
-        evented.fire('a');
-        evented.fire('a');
+        evented.fire(new Event('a'));
+        evented.fire(new Event('a'));
         t.ok(listener.calledTwice);
         t.end();
     });
@@ -19,8 +17,8 @@ test('Evented', (t) => {
         const evented = new Evented();
         const listener = t.spy();
         evented.once('a', listener);
-        evented.fire('a');
-        evented.fire('a');
+        evented.fire(new Event('a'));
+        evented.fire(new Event('a'));
         t.ok(listener.calledOnce);
         t.notOk(evented.listens('a'));
         t.end();
@@ -31,7 +29,7 @@ test('Evented', (t) => {
         evented.on('a', (data) => {
             t.equal(data.foo, 'bar');
         });
-        evented.fire('a', {foo: 'bar'});
+        evented.fire(new Event('a', {foo: 'bar'}));
         t.end();
     });
 
@@ -40,7 +38,7 @@ test('Evented', (t) => {
         evented.on('a', (data) => {
             t.equal(data.target, evented);
         });
-        evented.fire('a');
+        evented.fire(new Event('a'));
         t.end();
     });
 
@@ -49,7 +47,7 @@ test('Evented', (t) => {
         evented.on('a', (data) => {
             t.deepEqual(data.type, 'a');
         });
-        evented.fire('a');
+        evented.fire(new Event('a'));
         t.end();
     });
 
@@ -58,7 +56,7 @@ test('Evented', (t) => {
         const listener = t.spy();
         evented.on('a', listener);
         evented.off('a', listener);
-        evented.fire('a');
+        evented.fire(new Event('a'));
         t.ok(listener.notCalled);
         t.end();
     });
@@ -68,7 +66,7 @@ test('Evented', (t) => {
         const listener = t.spy();
         evented.once('a', listener);
         evented.off('a', listener);
-        evented.fire('a');
+        evented.fire(new Event('a'));
         t.ok(listener.notCalled);
         t.end();
     });
@@ -78,9 +76,9 @@ test('Evented', (t) => {
         const listener = t.spy();
         evented.once('a', () => {
             listener();
-            evented.fire('a');
+            evented.fire(new Event('a'));
         });
-        evented.fire('a');
+        evented.fire(new Event('a'));
         t.ok(listener.calledOnce);
         t.end();
     });
@@ -107,7 +105,7 @@ test('Evented', (t) => {
         evented.on('a', () => {
             evented.on('a', t.fail.bind(t));
         });
-        evented.fire('a');
+        evented.fire(new Event('a'));
         t.end();
     });
 
@@ -119,8 +117,8 @@ test('Evented', (t) => {
             const eventedSink = new Evented();
             eventedSource.setEventedParent(eventedSink);
             eventedSink.on('a', listener);
-            eventedSource.fire('a');
-            eventedSource.fire('a');
+            eventedSource.fire(new Event('a'));
+            eventedSource.fire(new Event('a'));
             t.ok(listener.calledTwice);
             t.end();
         });
@@ -132,7 +130,7 @@ test('Evented', (t) => {
             eventedSink.on('a', (data) => {
                 t.equal(data.foo, 'bar');
             });
-            eventedSource.fire('a', {foo: 'bar'});
+            eventedSource.fire(new Event('a', {foo: 'bar'}));
             t.end();
         });
 
@@ -143,7 +141,7 @@ test('Evented', (t) => {
             eventedSink.on('a', (data) => {
                 t.equal(data.foz, 'baz');
             });
-            eventedSource.fire('a', {foo: 'bar'});
+            eventedSource.fire(new Event('a', {foo: 'bar'}));
             t.end();
         });
 
@@ -154,7 +152,7 @@ test('Evented', (t) => {
             eventedSink.on('a', (data) => {
                 t.equal(data.foz, 'baz');
             });
-            eventedSource.fire('a', {foo: 'bar'});
+            eventedSource.fire(new Event('a', {foo: 'bar'}));
             t.end();
         });
 
@@ -166,7 +164,7 @@ test('Evented', (t) => {
             eventedSink.on('a', (data) => {
                 t.equal(data.target, eventedSource);
             });
-            eventedSource.fire('a');
+            eventedSource.fire(new Event('a'));
             t.end();
         });
 
@@ -177,7 +175,7 @@ test('Evented', (t) => {
             eventedSink.on('a', listener);
             eventedSource.setEventedParent(eventedSink);
             eventedSource.setEventedParent(null);
-            eventedSource.fire('a');
+            eventedSource.fire(new Event('a'));
             t.ok(listener.notCalled);
             t.end();
         });
@@ -198,9 +196,9 @@ test('Evented', (t) => {
             let i = 0;
             eventedSource.setEventedParent(eventedParent, () => i++);
             eventedSource.on('a', () => {});
-            eventedSource.fire('a');
+            eventedSource.fire(new Event('a'));
             t.equal(i, 1);
-            eventedSource.fire('a');
+            eventedSource.fire(new Event('a'));
             t.equal(i, 2);
             t.end();
         });

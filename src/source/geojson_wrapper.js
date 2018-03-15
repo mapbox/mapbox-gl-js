@@ -1,8 +1,10 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const toGeoJSON = require('@mapbox/vector-tile').VectorTileFeature.prototype.toGeoJSON;
-const EXTENT = require('../data/extent');
+import Point from '@mapbox/point-geometry';
+
+import mvt from '@mapbox/vector-tile';
+const toGeoJSON = mvt.VectorTileFeature.prototype.toGeoJSON;
+import EXTENT from '../data/extent';
 
 // The feature type used by geojson-vt and supercluster. Should be extracted to
 // global type and used in module definitions for those two modules.
@@ -89,4 +91,4 @@ class GeoJSONWrapper implements VectorTile, VectorTileLayer {
     }
 }
 
-module.exports = GeoJSONWrapper;
+export default GeoJSONWrapper;

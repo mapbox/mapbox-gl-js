@@ -1,9 +1,9 @@
-const ref = require('../../src/style-spec/reference/latest');
-const toString = require('../../src/style-spec/expression/types').toString;
-const CompoundExpression = require('../../src/style-spec/expression/compound_expression').CompoundExpression;
+import ref from '../../src/style-spec/reference/latest';
+import { toString } from '../../src/style-spec/expression/types';
+import CompoundExpression from '../../src/style-spec/expression/compound_expression';
 
 // registers compound expressions
-require('../../src/style-spec/expression/definitions/index');
+import '../../src/style-spec/expression/definitions/index';
 
 const types = {
     '==': [{
@@ -155,6 +155,10 @@ const types = {
             'stop_input_1: number, stop_output_1: OutputType',
             'stop_input_n: number, stop_output_n: OutputType, ...'
         ]
+    }],
+    length: [{
+        type: 'number',
+        parameters: ['string | array | value']
     }],
     let: [{
         type: 'OutputType',

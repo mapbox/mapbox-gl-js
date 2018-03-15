@@ -2,12 +2,13 @@
   "expression": ["length", ["string", ["get", "x"]]],
   "inputs": [[{}, {"properties": {"x": "a string"}}]],
   "expected": {
-    "outputs": [8],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": false,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [8],
+    "serialized": ["length", ["string", ["get", "x"]]]
   }
 }

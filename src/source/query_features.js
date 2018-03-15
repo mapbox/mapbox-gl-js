@@ -4,15 +4,16 @@ import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type Coordinate from '../geo/coordinate';
 import type CollisionIndex from '../symbol/collision_index';
+import type Transform from '../geo/transform';
 
-exports.rendered = function(sourceCache: SourceCache,
+export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Coordinate>,
                             params: { filter: FilterSpecification, layers: Array<string> },
-                            zoom: number,
-                            bearing: number,
-                            collisionIndex: CollisionIndex) {
-    const tilesIn = sourceCache.tilesIn(queryGeometry);
+                            transform: Transform,
+                            collisionIndex: ?CollisionIndex) {
+    const maxPitchScaleFactor = transform.maxPitchScaleFactor();
+    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor);
 
     tilesIn.sort(sortTilesIn);
 
@@ -25,16 +26,18 @@ exports.rendered = function(sourceCache: SourceCache,
                 tileIn.queryGeometry,
                 tileIn.scale,
                 params,
-                bearing,
+                transform,
+                maxPitchScaleFactor,
+                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()),
                 sourceCache.id,
                 collisionIndex)
         });
     }
 
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
-};
+}
 
-exports.source = function(sourceCache: SourceCache, params: any) {
+export function querySourceFeatures(sourceCache: SourceCache, params: any) {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });
@@ -52,7 +55,7 @@ exports.source = function(sourceCache: SourceCache, params: any) {
     }
 
     return result;
-};
+}
 
 function sortTilesIn(a, b) {
     const idA = a.tileID;

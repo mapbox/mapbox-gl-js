@@ -1,14 +1,19 @@
 // @flow
 
-const glMatrix = require('@mapbox/gl-matrix');
-const pattern = require('./pattern');
-const Texture = require('./texture');
-const Color = require('../style-spec/util/color');
-const DepthMode = require('../gl/depth_mode');
+import glMatrix from '@mapbox/gl-matrix';
+
+import {
+    isPatternMissing,
+    setPatternUniforms,
+    prepare as preparePattern
+} from './pattern';
+import Texture from './texture';
+import Color from '../style-spec/util/color';
+import DepthMode from '../gl/depth_mode';
 const mat3 = glMatrix.mat3;
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
-const StencilMode = require('../gl/stencil_mode');
+import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -16,7 +21,7 @@ import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_st
 import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = draw;
+export default draw;
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     if (layer.paint.get('fill-extrusion-opacity') === 0) {
@@ -115,9 +120,9 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first) {
     }
 
     if (image) {
-        if (pattern.isPatternMissing(image, painter)) return;
-        pattern.prepare(image, painter, program);
-        pattern.setTile(tile, painter, program);
+        if (isPatternMissing(image, painter)) return;
+        preparePattern(image, painter, program);
+        setPatternUniforms(tile, painter, program);
         gl.uniform1f(program.uniforms.u_height_factor, -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8);
     }
 

@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "width": 514,
-      "height": 64
+      "height": 64,
+      "description": "Contains two expected images (for ubyte-based rendering and half-float-based); one of them should pass depending on platform."
     }
   },
   "center": [

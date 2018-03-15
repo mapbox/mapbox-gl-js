@@ -1,6 +1,6 @@
 // @flow
 
-const WorkerPool = require('./worker_pool');
+import WorkerPool from './worker_pool';
 
 let globalWorkerPool;
 
@@ -9,9 +9,9 @@ let globalWorkerPool;
  * to be shared across each Map
  * @private
  */
-module.exports = function getGlobalWorkerPool () {
+export default function getGlobalWorkerPool () {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
     }
     return globalWorkerPool;
-};
+}

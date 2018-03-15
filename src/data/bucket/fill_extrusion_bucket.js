@@ -1,17 +1,18 @@
 // @flow
 
-const {FillExtrusionLayoutArray} = require('../array_types');
-const layoutAttributes = require('./fill_extrusion_attributes').members;
-const {SegmentVector, MAX_VERTEX_ARRAY_LENGTH} = require('../segment');
-const {ProgramConfigurationSet} = require('../program_configuration');
-const {TriangleIndexArray} = require('../index_array_type');
-const loadGeometry = require('../load_geometry');
-const EXTENT = require('../extent');
-const earcut = require('earcut');
-const classifyRings = require('../../util/classify_rings');
-const assert = require('assert');
+import { FillExtrusionLayoutArray } from '../array_types';
+
+import { members as layoutAttributes } from './fill_extrusion_attributes';
+import SegmentVector from '../segment';
+import { ProgramConfigurationSet } from '../program_configuration';
+import { TriangleIndexArray } from '../index_array_type';
+import loadGeometry from '../load_geometry';
+import EXTENT from '../extent';
+import earcut from 'earcut';
+import classifyRings from '../../util/classify_rings';
+import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
-const {register} = require('../../util/web_worker_transfer');
+import { register } from '../../util/web_worker_transfer';
 
 import type {
     Bucket,
@@ -126,7 +127,7 @@ class FillExtrusionBucket implements Bucket {
                         const p2 = ring[p - 1];
 
                         if (!isBoundaryEdge(p1, p2)) {
-                            if (segment.vertexLength + 4 > MAX_VERTEX_ARRAY_LENGTH) {
+                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                                 segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                             }
 
@@ -154,7 +155,7 @@ class FillExtrusionBucket implements Bucket {
                 }
             }
 
-            if (segment.vertexLength + numVertices > MAX_VERTEX_ARRAY_LENGTH) {
+            if (segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
                 segment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
             }
 
@@ -201,7 +202,7 @@ class FillExtrusionBucket implements Bucket {
 
 register('FillExtrusionBucket', FillExtrusionBucket, {omit: ['layers']});
 
-module.exports = FillExtrusionBucket;
+export default FillExtrusionBucket;
 
 function isBoundaryEdge(p1, p2) {
     return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||

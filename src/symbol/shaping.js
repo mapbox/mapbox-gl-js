@@ -1,8 +1,11 @@
 // @flow
 
-const scriptDetection = require('../util/script_detection');
-const verticalizePunctuation = require('../util/verticalize_punctuation');
-const rtlTextPlugin = require('../source/rtl_text_plugin');
+import {
+    charHasUprightVerticalOrientation,
+    charAllowsIdeographicBreaking
+} from '../util/script_detection';
+import verticalizePunctuation from '../util/verticalize_punctuation';
+import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
 
 import type {StyleGlyph} from '../style/style_glyph';
 import type {ImagePosition} from '../render/image_atlas';
@@ -13,11 +16,7 @@ const WritingMode = {
     horizontalOnly: 3
 };
 
-module.exports = {
-    shapeText,
-    shapeIcon,
-    WritingMode
-};
+export { shapeText, shapeIcon, WritingMode };
 
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
@@ -250,7 +249,7 @@ function determineLineBreaks(logicalInput: string,
         // surrounding spaces.
         if ((i < logicalInput.length - 1) &&
             (breakable[codePoint] ||
-                scriptDetection.charAllowsIdeographicBreaking(codePoint))) {
+                charAllowsIdeographicBreaking(codePoint))) {
 
             potentialLineBreaks.push(
                 evaluateBreak(
@@ -342,7 +341,7 @@ function shapeLines(shaping: Shaping,
 
             if (!glyph) continue;
 
-            if (!scriptDetection.charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
+            if (!charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
                 positionedGlyphs.push({glyph: codePoint, x, y, vertical: false});
                 x += glyph.metrics.advance + spacing;
             } else {

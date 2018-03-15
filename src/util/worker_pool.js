@@ -1,9 +1,11 @@
 // @flow
 
-const assert = require('assert');
-const WebWorker = require('./web_worker');
+import assert from 'assert';
+
+import WebWorker from './web_worker';
 
 import type {WorkerInterface} from './web_worker';
+import mapboxgl from '../';
 
 /**
  * Constructs a worker pool.
@@ -19,10 +21,9 @@ class WorkerPool {
 
     acquire(mapId: number) {
         if (!this.workers) {
-            // Lazily look up the value of mapboxgl.workerCount.  This allows
-            // client code a chance to set it while circumventing cyclic
-            // dependency problems
-            const workerCount = require('../').workerCount;
+            // Lazily look up the value of mapboxgl.workerCount so that
+            // client code has had a chance to set it.
+            const workerCount = mapboxgl.workerCount;
             assert(typeof workerCount === 'number' && workerCount < Infinity);
 
             this.workers = [];
@@ -46,4 +47,4 @@ class WorkerPool {
     }
 }
 
-module.exports = WorkerPool;
+export default WorkerPool;

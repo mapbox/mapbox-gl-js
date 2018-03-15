@@ -1,15 +1,13 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const browser = require('../../../../src/util/browser');
-const util = require('../../../../src/util/util');
-const window = require('../../../../src/util/window');
-const Map = require('../../../../src/ui/map');
-const DOM = require('../../../../src/util/dom');
-const simulate = require('mapbox-gl-js-test/simulate_interaction');
+import { test } from 'mapbox-gl-js-test';
+import browser from '../../../../src/util/browser';
+import { extend } from '../../../../src/util/util';
+import window from '../../../../src/util/window';
+import Map from '../../../../src/ui/map';
+import DOM from '../../../../src/util/dom';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap(options) {
-    return new Map(util.extend({
+    return new Map(extend({
         container: DOM.create('div', '', window.document.body),
         style: {
             "version": 8,
@@ -19,11 +17,7 @@ function createMap(options) {
     }, options));
 }
 
-// magic deltaY value that indicates the event is from a mouse wheel
-// (rather than a trackpad)
-const magicWheelZoomDelta = 4.000244140625;
-
-test('ScrollZoomHandler zooms in response to wheel events', (t) => {
+test('ScrollZoomHandler', (t) => {
     const browserNow = t.stub(browser, 'now');
     let now = 1555555555555;
     browserNow.callsFake(() => now);
@@ -35,7 +29,7 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         // simulate a single 'wheel' event
         const startZoom = map.getZoom();
 
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -magicWheelZoomDelta});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
         map._updateCamera();
 
         now += 400;
@@ -68,7 +62,7 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         const startZoom = map.getZoom();
 
         const events = [
-            [2, {type: 'wheel', deltaY: -magicWheelZoomDelta}],
+            [2, {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta}],
             [7, {type: 'wheel', deltaY: -41}],
             [30, {type: 'wheel', deltaY: -169}],
             [1, {type: 'wheel', deltaY: -801}],
@@ -119,6 +113,22 @@ test('ScrollZoomHandler zooms in response to wheel events', (t) => {
         t.end();
     });
 
+    test('does not zoom if preventDefault is called on the wheel event', (t) => {
+        const map = createMap();
+
+        map.on('wheel', e => e.preventDefault());
+
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
+        map._updateCamera();
+
+        now += 400;
+        map._updateCamera();
+
+        t.equal(map.getZoom(), 0);
+
+        map.remove();
+        t.end();
+    });
+
     t.end();
 });
-

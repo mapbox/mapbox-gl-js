@@ -37,4 +37,4 @@ class Var implements Expression {
     }
 }
 
-module.exports = Var;
+export default Var;

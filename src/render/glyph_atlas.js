@@ -1,7 +1,9 @@
 // @flow
 
-const ShelfPack = require('@mapbox/shelf-pack');
-const {AlphaImage} = require('../util/image');
+import ShelfPack from '@mapbox/shelf-pack';
+
+import { AlphaImage } from '../util/image';
+import { register } from '../util/web_worker_transfer';
 
 import type {GlyphMetrics, StyleGlyph} from '../style/style_glyph';
 
@@ -19,57 +21,56 @@ export type GlyphPosition = {
     metrics: GlyphMetrics
 };
 
-export type GlyphAtlas = {
-    image: AlphaImage,
-    positions: {[string]: {[number]: GlyphPosition}}
-};
+export default class GlyphAtlas {
+    image: AlphaImage;
+    positions: { [string]: { [number]: GlyphPosition } };
 
-function makeGlyphAtlas(stacks: {[string]: {[number]: ?StyleGlyph}}): GlyphAtlas {
-    const image = new AlphaImage({width: 0, height: 0});
-    const positions = {};
+    constructor(stacks: { [string]: { [number]: ?StyleGlyph } }) {
+        const image = new AlphaImage({width: 0, height: 0});
+        const positions = {};
 
-    const pack = new ShelfPack(0, 0, {autoResize: true});
+        const pack = new ShelfPack(0, 0, {autoResize: true});
 
-    for (const stack in stacks) {
-        const glyphs = stacks[stack];
-        const stackPositions = positions[stack] = {};
+        for (const stack in stacks) {
+            const glyphs = stacks[stack];
+            const stackPositions = positions[stack] = {};
 
-        for (const id in glyphs) {
-            const src = glyphs[+id];
-            if (src && src.bitmap.width !== 0 && src.bitmap.height !== 0) {
-                const bin = pack.packOne(
-                    src.bitmap.width + 2 * padding,
-                    src.bitmap.height + 2 * padding);
+            for (const id in glyphs) {
+                const src = glyphs[+id];
+                if (src && src.bitmap.width !== 0 && src.bitmap.height !== 0) {
+                    const bin = pack.packOne(
+                        src.bitmap.width + 2 * padding,
+                        src.bitmap.height + 2 * padding);
 
-                image.resize({
-                    width: pack.w,
-                    height: pack.h
-                });
+                    image.resize({
+                        width: pack.w,
+                        height: pack.h
+                    });
 
-                AlphaImage.copy(
-                    src.bitmap,
-                    image,
-                    { x: 0, y: 0 },
-                    {
-                        x: bin.x + padding,
-                        y: bin.y + padding
-                    },
-                    src.bitmap);
+                    AlphaImage.copy(
+                        src.bitmap,
+                        image,
+                        {x: 0, y: 0},
+                        {
+                            x: bin.x + padding,
+                            y: bin.y + padding
+                        },
+                        src.bitmap);
 
-                stackPositions[id] = { rect: bin, metrics: src.metrics };
+                    stackPositions[id] = {rect: bin, metrics: src.metrics};
+                }
             }
         }
+
+        pack.shrink();
+        image.resize({
+            width: pack.w,
+            height: pack.h
+        });
+
+        this.image = image;
+        this.positions = positions;
     }
-
-    pack.shrink();
-    image.resize({
-        width: pack.w,
-        height: pack.h
-    });
-
-    return {image, positions};
 }
 
-module.exports = {
-    makeGlyphAtlas
-};
+register('GlyphAtlas', GlyphAtlas);

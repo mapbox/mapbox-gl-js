@@ -1,9 +1,10 @@
 // @flow
 
-const Coordinate = require('../geo/coordinate');
-const {OverscaledTileID} = require('../source/tile_id');
+import Coordinate from '../geo/coordinate';
 
-module.exports = tileCover;
+import { OverscaledTileID } from '../source/tile_id';
+
+export default tileCover;
 
 function tileCover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
         actualZ: number, renderWorldCopies: boolean | void) {

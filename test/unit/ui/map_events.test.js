@@ -1,9 +1,7 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Map = require('../../../src/ui/map');
-const window = require('../../../src/util/window');
-const simulate = require('mapbox-gl-js-test/simulate_interaction');
+import { test } from 'mapbox-gl-js-test';
+import Map from '../../../src/ui/map';
+import window from '../../../src/util/window';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap() {
     return new Map({
@@ -529,4 +527,19 @@ test('Map#off distinguishes distinct listeners', (t) => {
         t.ok(spy.notCalled);
         t.end();
     });
+});
+
+test(`Map#on mousedown can have default behavior prevented and still fire subsequent click event`, (t) => {
+    const map = createMap();
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const click = t.spy();
+    map.on('click', click);
+
+    simulate.click(map.getCanvas());
+    t.ok(click.callCount, 1);
+
+    map.remove();
+    t.end();
 });

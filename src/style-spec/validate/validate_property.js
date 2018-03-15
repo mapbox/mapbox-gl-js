@@ -1,11 +1,11 @@
 
-const validate = require('./validate');
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
-const {isFunction} = require('../function');
-const unbundle = require('../util/unbundle_jsonlint');
+import validate from './validate';
+import ValidationError from '../error/validation_error';
+import getType from '../util/get_type';
+import { isFunction } from '../function';
+import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
 
-module.exports = function validateProperty(options, propertyType) {
+export default function validateProperty(options, propertyType) {
     const key = options.key;
     const style = options.style;
     const styleSpec = options.styleSpec;
@@ -45,7 +45,7 @@ module.exports = function validateProperty(options, propertyType) {
         if (propertyKey === 'text-field' && style && !style.glyphs) {
             errors.push(new ValidationError(key, value, 'use of "text-field" requires a style "glyphs" property'));
         }
-        if (propertyKey === 'text-font' && isFunction(unbundle.deep(value)) && unbundle(value.type) === 'identity') {
+        if (propertyKey === 'text-font' && isFunction(deepUnbundle(value)) && unbundle(value.type) === 'identity') {
             errors.push(new ValidationError(key, value, '"text-font" does not support identity functions'));
         }
     }
@@ -59,4 +59,4 @@ module.exports = function validateProperty(options, propertyType) {
         expressionContext: 'property',
         propertyKey
     }));
-};
+}

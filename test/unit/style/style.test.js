@@ -1,20 +1,23 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
-const Style = require('../../../src/style/style');
-const SourceCache = require('../../../src/source/source_cache');
-const StyleLayer = require('../../../src/style/style_layer');
-const Transform = require('../../../src/geo/transform');
-const util = require('../../../src/util/util');
-const Evented = require('../../../src/util/evented');
-const window = require('../../../src/util/window');
-const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
-const ajax = require('../../../src/util/ajax');
-const browser = require('../../../src/util/browser');
+import { test } from 'mapbox-gl-js-test';
+import assert from 'assert';
+import Style from '../../../src/style/style';
+import SourceCache from '../../../src/source/source_cache';
+import StyleLayer from '../../../src/style/style_layer';
+import Transform from '../../../src/geo/transform';
+import EvaluationParameters from '../../../src/style/evaluation_parameters';
+import { extend } from '../../../src/util/util';
+import { Event, Evented } from '../../../src/util/evented';
+import window from '../../../src/util/window';
+import {
+    setRTLTextPlugin,
+    clearRTLTextPlugin,
+    evented as rtlTextPluginEvented
+} from '../../../src/source/rtl_text_plugin';
+import browser from '../../../src/util/browser';
+import { OverscaledTileID } from '../../../src/source/tile_id';
 
 function createStyleJSON(properties) {
-    return util.extend({
+    return extend({
         "version": 8,
         "sources": {},
         "layers": []
@@ -59,33 +62,29 @@ test('Style', (t) => {
     });
 
     t.test('registers plugin listener', (t) => {
-        rtlTextPlugin.clearRTLTextPlugin();
-        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
-        window.useFakeXMLHttpRequest();
-        window.server.respondWith('/plugin.js', "doesn't matter");
-        rtlTextPlugin.setRTLTextPlugin("/plugin.js");
-        t.spy(rtlTextPlugin, 'registerForPluginAvailability');
+        clearRTLTextPlugin();
+
+        t.spy(Style, 'registerForPluginAvailability');
 
         const style = new Style(new StubMap());
         t.spy(style.dispatcher, 'broadcast');
-        t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
+        t.ok(Style.registerForPluginAvailability.calledOnce);
 
-        window.server.respond();
-        t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin', "data:text/javascript;base64,abc"));
+        setRTLTextPlugin("some bogus url");
+        t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin', "some bogus url"));
         t.end();
     });
 
     t.test('loads plugin immediately if already registered', (t) => {
-        rtlTextPlugin.clearRTLTextPlugin();
-        t.stub(rtlTextPlugin, 'createBlobURL').returns("data:text/javascript;base64,abc");
+        clearRTLTextPlugin();
         window.useFakeXMLHttpRequest();
         window.server.respondWith('/plugin.js', "doesn't matter");
         let firstError = true;
-        rtlTextPlugin.setRTLTextPlugin("/plugin.js", (error) => {
+        setRTLTextPlugin("/plugin.js", (error) => {
             // Getting this error message shows the bogus URL was succesfully passed to the worker
             // We'll get the error from all workers, only pay attention to the first one
             if (firstError) {
-                t.deepEquals(error, new Error('RTL Text Plugin failed to import scripts from data:text/javascript;base64,abc'));
+                t.equals(error.message, 'RTL Text Plugin failed to import scripts from /plugin.js');
                 t.end();
                 firstError = false;
             }
@@ -199,16 +198,37 @@ test('Style#loadJSON', (t) => {
 
     t.test('fires "data" when the sprite finishes loading', (t) => {
         window.useFakeXMLHttpRequest();
-        window.server.respondWith('http://example.com/sprite.json', '{}');
 
-        // Stubbing rather than using a fake response because we need to bypass several Web APIs that
-        // aren't supported by jsdom:
-        //
+        // Stubbing to bypass Web APIs that supported by jsdom:
         // * `URL.createObjectURL` in ajax.getImage (https://github.com/tmpvar/jsdom/issues/1721)
         // * `canvas.getContext('2d')` in browser.getImageData
-        //
-        t.stub(ajax, 'getImage').yields(null, new window.Image());
+        t.stub(window.URL, 'revokeObjectURL');
         t.stub(browser, 'getImageData');
+        // stub Image so we can invoke 'onload'
+        // https://github.com/jsdom/jsdom/commit/58a7028d0d5b6aacc5b435daee9fd8f9eacbb14c
+        const img = {};
+        t.stub(window, 'Image').returns(img);
+        // stub this manually because sinon does not stub non-existent methods
+        assert(!window.URL.createObjectURL);
+        window.URL.createObjectURL = () => 'blob:';
+        t.tearDown(() => delete window.URL.createObjectURL);
+
+        // fake the image request (sinon doesn't allow non-string data for
+        // server.respondWith, so we do so manually)
+        const requests = [];
+        window.XMLHttpRequest.onCreate = req => { requests.push(req); };
+        const respond = () => {
+            let req = requests.find(req => req.url === 'http://example.com/sprite.png');
+            req.setStatus(200);
+            req.response = new ArrayBuffer(8);
+            req.onload();
+            img.onload();
+
+            req = requests.find(req => req.url === 'http://example.com/sprite.json');
+            req.setStatus(200);
+            req.response = '{}';
+            req.onload();
+        };
 
         const style = new Style(new StubMap());
 
@@ -218,6 +238,8 @@ test('Style#loadJSON', (t) => {
             "layers": [],
             "sprite": "http://example.com/sprite"
         });
+
+        style.once('error', (e) => t.error(e));
 
         style.once('data', (e) => {
             t.equal(e.target, style);
@@ -229,7 +251,7 @@ test('Style#loadJSON', (t) => {
                 t.end();
             });
 
-            window.server.respond();
+            respond();
         });
     });
 
@@ -253,7 +275,7 @@ test('Style#loadJSON', (t) => {
             t.end();
         });
 
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -303,7 +325,7 @@ test('Style#loadJSON', (t) => {
             t.end();
         });
 
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             "sprite": "http://example.com/sprites/bright-v8"
         }));
     });
@@ -359,7 +381,7 @@ test('Style#loadJSON', (t) => {
         });
 
         style.on('style.load', () => {
-            style._layers.background.fire('error', {mapbox: true});
+            style._layers.background.fire(new Event('error', {mapbox: true}));
         });
     });
 
@@ -383,7 +405,6 @@ test('Style#_remove', (t) => {
     });
 
     t.test('deregisters plugin listener', (t) => {
-        t.spy(rtlTextPlugin, 'registerForPluginAvailability');
         const style = new Style(new StubMap());
         style.loadJSON(createStyleJSON());
         t.spy(style.dispatcher, 'broadcast');
@@ -391,7 +412,7 @@ test('Style#_remove', (t) => {
         style.on('style.load', () => {
             style._remove();
 
-            rtlTextPlugin.evented.fire('pluginAvailable');
+            rtlTextPluginEvented.fire(new Event('pluginAvailable'));
             t.notOk(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
             t.end();
         });
@@ -641,8 +662,8 @@ test('Style#addSource', (t) => {
             });
 
             style.addSource('source-id', source); // fires data twice
-            style.sourceCaches['source-id'].fire('error');
-            style.sourceCaches['source-id'].fire('data');
+            style.sourceCaches['source-id'].fire(new Event('error'));
+            style.sourceCaches['source-id'].fire(new Event('data'));
         });
     });
 
@@ -752,8 +773,8 @@ test('Style#removeSource', (t) => {
 
             style.on('data', () => { t.ok(false); });
             style.on('error', () => { t.ok(false); });
-            source.fire('data');
-            source.fire('error');
+            source.fire(new Event('data'));
+            source.fire(new Event('error'));
 
             t.end();
         });
@@ -805,7 +826,7 @@ test('Style#addLayer', (t) => {
                 id: 'background',
                 type: 'background'
             });
-            style._layers.background.fire('error', {mapbox: true});
+            style._layers.background.fire(new Event('error', {mapbox: true}));
         });
     });
 
@@ -880,7 +901,7 @@ test('Style#addLayer', (t) => {
 
     t.test('reloads source', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -907,7 +928,7 @@ test('Style#addLayer', (t) => {
 
     t.test('#3895 reloads source (instead of clearing) if adding this layer with the same type, immediately after removing it', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -944,7 +965,7 @@ test('Style#addLayer', (t) => {
 
     t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -997,15 +1018,13 @@ test('Style#addLayer', (t) => {
         const layer = {id: 'background', type: 'background'};
 
         style.on('error', (e) => {
-            t.deepEqual(e.layer, {id: 'background'});
-            t.notOk(/duplicate/.match(e.error.message));
+            t.match(e.error, /already exists/);
             t.end();
         });
 
         style.on('style.load', () => {
             style.addLayer(layer);
             style.addLayer(layer);
-            t.end();
         });
     });
 
@@ -1073,7 +1092,7 @@ test('Style#addLayer', (t) => {
 
     t.test('fires an error on non-existant source layer', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             sources: {
                 dummy: {
                     type: 'geojson',
@@ -1143,7 +1162,7 @@ test('Style#removeLayer', (t) => {
             // Bind a listener to prevent fallback Evented error reporting.
             layer.on('error', () => {});
 
-            layer.fire('error', {mapbox: true});
+            layer.fire(new Event('error', {mapbox: true}));
             t.end();
         });
     });
@@ -1260,7 +1279,7 @@ test('Style#moveLayer', (t) => {
 test('Style#setPaintProperty', (t) => {
     t.test('#4738 postpones source reload until layers have been broadcast to workers', (t) => {
         const style = new Style(new StubMap());
-        style.loadJSON(util.extend(createStyleJSON(), {
+        style.loadJSON(extend(createStyleJSON(), {
             "sources": {
                 "geojson": {
                     "type": "geojson",
@@ -1624,61 +1643,61 @@ test('Style#setLayerZoomRange', (t) => {
 });
 
 test('Style#queryRenderedFeatures', (t) => {
-    let style; // eslint-disable-line prefer-const
-    const Style = proxyquire('../../../src/style/style', {
-        '../source/query_features': {
-            rendered: function(source, layers, queryGeom, params) {
-                if (source.id !== 'mapbox') {
-                    return [];
+    const style = new Style(new StubMap());
+    const transform = new Transform();
+    transform.resize(512, 512);
+
+    function queryMapboxFeatures(layers, queryGeom, scale, params) {
+        const features = {
+            'land': [{
+                type: 'Feature',
+                layer: style._layers.land.serialize(),
+                geometry: {
+                    type: 'Polygon'
                 }
-
-                const features = {
-                    'land': [{
-                        type: 'Feature',
-                        layer: style._layers.land.serialize(),
-                        geometry: {
-                            type: 'Polygon'
-                        }
-                    }, {
-                        type: 'Feature',
-                        layer: style._layers.land.serialize(),
-                        geometry: {
-                            type: 'Point'
-                        }
-                    }],
-                    'landref': [{
-                        type: 'Feature',
-                        layer: style._layers.landref.serialize(),
-                        geometry: {
-                            type: 'Line'
-                        }
-                    }]
-                };
-
-                if (params.layers) {
-                    for (const l in features) {
-                        if (params.layers.indexOf(l) < 0) {
-                            delete features[l];
-                        }
-                    }
+            }, {
+                type: 'Feature',
+                layer: style._layers.land.serialize(),
+                geometry: {
+                    type: 'Point'
                 }
+            }],
+            'landref': [{
+                type: 'Feature',
+                layer: style._layers.landref.serialize(),
+                geometry: {
+                    type: 'Line'
+                }
+            }]
+        };
 
-                return features;
+        // format result to shape of tile.queryRenderedFeatures result
+        for (const layer in features) {
+            features[layer] = features[layer].map((feature, featureIndex) =>
+                ({ feature, featureIndex }));
+        }
+
+        if (params.layers) {
+            for (const l in features) {
+                if (params.layers.indexOf(l) < 0) {
+                    delete features[l];
+                }
             }
         }
-    });
 
-    style = new Style(new StubMap());
+        return features;
+    }
+
     style.loadJSON({
         "version": 8,
         "sources": {
             "mapbox": {
-                "type": "vector",
-                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+                "type": "geojson",
+                "data": { type: "FeatureCollection", features: [] }
             },
             "other": {
-                "type": "vector",
-                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+                "type": "geojson",
+                "data": { type: "FeatureCollection", features: [] }
             }
         },
         "layers": [{
@@ -1719,45 +1738,61 @@ test('Style#queryRenderedFeatures', (t) => {
     });
 
     style.on('style.load', () => {
-        style.update(0, 0);
+        style.sourceCaches.mapbox.tilesIn = () => {
+            return [{
+                tile: { queryRenderedFeatures: queryMapboxFeatures },
+                tileID: new OverscaledTileID(0, 0, 0, 0, 0),
+                queryGeometry: [],
+                scale: 1
+            }];
+        };
+        style.sourceCaches.other.tilesIn = () => {
+            return [];
+        };
+
+        style.sourceCaches.mapbox.transform = transform;
+        style.sourceCaches.other.transform = transform;
+
+        style.update(new EvaluationParameters(0));
+        style._updateSources(transform);
 
         t.test('returns feature type', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
             t.equal(results[0].geometry.type, 'Line');
             t.end();
         });
 
         t.test('filters by `layers` option', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, transform);
             t.equal(results.length, 2);
             t.end();
         });
 
         t.test('checks type of `layers` option', (t) => {
             let errors = 0;
-            t.stub(style, 'fire').callsFake((type, data) => {
-                if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
+            t.stub(style, 'fire').callsFake((event) => {
+                if (event.error && event.error.message.includes('parameters.layers must be an Array.')) errors++;
             });
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'}, transform);
             t.equals(errors, 1);
             t.end();
         });
 
         t.test('includes layout properties', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
             const layout = results[0].layer.layout;
             t.deepEqual(layout['line-cap'], 'round');
             t.end();
         });
 
         t.test('includes paint properties', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
             t.deepEqual(results[2].layer.paint['line-color'], 'red');
             t.end();
         });
 
         t.test('includes metadata', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, transform);
 
             const layer = results[1].layer;
             t.equal(layer.metadata.something, 'else');
@@ -1766,23 +1801,23 @@ test('Style#queryRenderedFeatures', (t) => {
         });
 
         t.test('include multiple layers', (t) => {
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, transform);
             t.equals(results.length, 3);
             t.end();
         });
 
         t.test('does not query sources not implicated by `layers` parameter', (t) => {
             style.sourceCaches.mapbox.queryRenderedFeatures = function() { t.fail(); };
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']});
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']}, transform);
             t.end();
         });
 
         t.test('fires an error if layer included in params does not exist on the style', (t) => {
             let errors = 0;
-            t.stub(style, 'fire').callsFake((type, data) => {
-                if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
+            t.stub(style, 'fire').callsFake((event) => {
+                if (event.error && event.error.message.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
-            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']}, transform);
             t.equals(errors, 1);
             t.equals(results.length, 0);
             t.end();
@@ -1822,7 +1857,7 @@ test('Style defers expensive methods', (t) => {
 
         style.update({});
 
-        t.ok(style.fire.calledWith('data'), 'a data event was fired');
+        t.equal(style.fire.args[0][0].type, 'data', 'a data event was fired');
 
         // called per source
         t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
@@ -1843,8 +1878,10 @@ test('Style#query*Features', (t) => {
 
     let style;
     let onError;
+    let transform;
 
     t.beforeEach((callback) => {
+        transform = new Transform();
         style = new Style(new StubMap());
         style.loadJSON({
             "version": 8,
@@ -1867,13 +1904,13 @@ test('Style#query*Features', (t) => {
     });
 
     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
+        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
         t.end();
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
+        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
         t.end();
     });
@@ -1883,11 +1920,10 @@ test('Style#query*Features', (t) => {
 
 test('Style#addSourceType', (t) => {
     const _types = { 'existing': function () {} };
-    const Style = proxyquire('../../../src/style/style', {
-        '../source/source': {
-            getType: function (name) { return _types[name]; },
-            setType: function (name, create) { _types[name] = create; }
-        }
+
+    t.stub(Style, 'getSourceType').callsFake(name => _types[name]);
+    t.stub(Style, 'setSourceType').callsFake((name, create) => {
+        _types[name] = create;
     });
 
     t.test('adds factory function', (t) => {

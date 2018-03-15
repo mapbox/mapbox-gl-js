@@ -1,17 +1,17 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const LngLatBounds = require('../../geo/lng_lat_bounds');
-const util = require('../../util/util');
-const window = require('../../util/window');
+import DOM from '../../util/dom';
+
+import LngLatBounds from '../../geo/lng_lat_bounds';
+import { bindAll } from '../../util/util';
+import window from '../../util/window';
+import { Event } from '../../util/evented';
 
 import type Map from '../map';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
  * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 class BoxZoomHandler {
     _map: Map;
@@ -22,13 +22,15 @@ class BoxZoomHandler {
     _startPos: any;
     _box: HTMLElement;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._container = map.getContainer();
 
-        util.bindAll([
-            '_onMouseDown',
+        bindAll([
             '_onMouseMove',
             '_onMouseUp',
             '_onKeyDown'
@@ -61,14 +63,6 @@ class BoxZoomHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-
-        // the event listeners for the DragPanHandler have to fire _after_ the event listener for BoxZoomHandler in order,
-        // for the DragPanHandler's check on map.boxZoom.isActive() to tell whether or not to ignore a keydown event
-        // so this makes sure the firing order is preserved if the BoxZoomHandler is enabled after the DragPanHandler.
-        if (this._map.dragPan) this._map.dragPan.disable();
-        this._el.addEventListener('mousedown', this._onMouseDown, false);
-        if (this._map.dragPan) this._map.dragPan.enable();
-
         this._enabled = true;
     }
 
@@ -80,11 +74,11 @@ class BoxZoomHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._el.removeEventListener('mousedown', this._onMouseDown);
         this._enabled = false;
     }
 
-    _onMouseDown(e: MouseEvent) {
+    onMouseDown(e: MouseEvent) {
+        if (!this.isEnabled()) return;
         if (!(e.shiftKey && e.button === 0)) return;
 
         window.document.addEventListener('mousemove', this._onMouseMove, false);
@@ -128,12 +122,14 @@ class BoxZoomHandler {
 
         this._finish();
 
+        DOM.suppressClick();
+
         if (p0.x === p1.x && p0.y === p1.y) {
             this._fireEvent('boxzoomcancel', e);
         } else {
             this._map
                 .fitBounds(bounds, {linear: true})
-                .fire('boxzoomend', { originalEvent: e, boxZoomBounds: bounds });
+                .fire(new Event('boxzoomend', { originalEvent: e, boxZoomBounds: bounds }));
         }
     }
 
@@ -161,9 +157,9 @@ class BoxZoomHandler {
         DOM.enableDrag();
     }
 
-    _fireEvent(type: string, e: Event) {
-        return this._map.fire(type, { originalEvent: e });
+    _fireEvent(type: string, e: *) {
+        return this._map.fire(new Event(type, { originalEvent: e }));
     }
 }
 
-module.exports = BoxZoomHandler;
+export default BoxZoomHandler;

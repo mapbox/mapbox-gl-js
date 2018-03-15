@@ -1,7 +1,7 @@
 // @flow
 
-const util = require('./util');
-const {serialize, deserialize} = require('./web_worker_transfer');
+import { bindAll } from './util';
+import { serialize, deserialize } from './web_worker_transfer';
 
 import type {Transferable} from '../types/transferable';
 
@@ -30,7 +30,7 @@ class Actor {
         this.mapId = mapId;
         this.callbacks = {};
         this.callbackID = 0;
-        util.bindAll(['receive'], this);
+        bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
     }
 
@@ -69,7 +69,7 @@ class Actor {
                 sourceMapId: this.mapId,
                 type: '<response>',
                 id: String(id),
-                error: err ? String(err) : null,
+                error: err ? serialize(err) : null,
                 data: serialize(data, buffers)
             }, buffers);
         };
@@ -78,7 +78,7 @@ class Actor {
             callback = this.callbacks[data.id];
             delete this.callbacks[data.id];
             if (callback && data.error) {
-                callback(new Error(data.error));
+                callback(deserialize(data.error));
             } else if (callback) {
                 callback(null, deserialize(data.data));
             }
@@ -100,4 +100,4 @@ class Actor {
     }
 }
 
-module.exports = Actor;
+export default Actor;

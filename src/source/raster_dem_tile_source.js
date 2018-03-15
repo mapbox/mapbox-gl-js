@@ -1,12 +1,14 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const util = require('../util/util');
-const Evented = require('../util/evented');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const browser = require('../util/browser');
-const {OverscaledTileID} = require('./tile_id');
-const RasterTileSource = require('./raster_tile_source');
+import { getImage, ResourceType } from '../util/ajax';
+import { extend } from '../util/util';
+import { Evented } from '../util/evented';
+import { normalizeTileURL as normalizeURL } from '../util/mapbox';
+import browser from '../util/browser';
+import { OverscaledTileID } from './tile_id';
+import RasterTileSource from './raster_tile_source';
+// ensure DEMData is registered for worker transfer on main thread:
+import '../data/dem_data';
 
 import type {Source} from './source';
 import type Dispatcher from '../util/dispatcher';
@@ -15,11 +17,14 @@ import type {Callback} from '../types/callback';
 
 
 class RasterDEMTileSource extends RasterTileSource implements Source {
+    encoding: "mapbox" | "terrarium";
+
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
-        this._options = util.extend({}, options);
+        this._options = extend({}, options);
+        this.encoding = options.encoding || "mapbox";
     }
 
     serialize() {
@@ -29,12 +34,13 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
             tileSize: this.tileSize,
             tiles: this.tiles,
             bounds: this.bounds,
+            encoding: this.encoding
         };
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
         const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
-        tile.request = ajax.getImage(this.map._transformRequest(url, ajax.ResourceType.Tile), imageLoaded.bind(this));
+        tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
         function imageLoaded(err, img) {
@@ -55,7 +61,8 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
                     uid: tile.uid,
                     coord: tile.tileID,
                     source: this.id,
-                    rawImageData: rawImageData
+                    rawImageData: rawImageData,
+                    encoding: this.encoding
                 };
 
                 if (!tile.workerID || tile.state === 'expired') {
@@ -126,4 +133,4 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
 
 }
 
-module.exports = RasterDEMTileSource;
+export default RasterDEMTileSource;

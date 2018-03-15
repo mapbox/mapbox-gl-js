@@ -1,7 +1,8 @@
 // @flow
 
-const Style = require('../../src/style/style');
-const Evented = require('../../src/util/evented');
+import Style from '../../src/style/style';
+
+import { Evented } from '../../src/util/evented';
 
 class StubMap extends Evented {
     _transformRequest(url) {
@@ -9,7 +10,7 @@ class StubMap extends Evented {
     }
 }
 
-module.exports = function (styleJSON: StyleSpecification): Promise<Style> {
+export default function (styleJSON: StyleSpecification): Promise<Style> {
     return new Promise((resolve, reject) => {
         const style = new Style((new StubMap(): any));
         style.loadJSON(styleJSON);
@@ -18,4 +19,4 @@ module.exports = function (styleJSON: StyleSpecification): Promise<Style> {
             .on('style.load', () => resolve(style))
             .on('error', reject);
     });
-};
+}

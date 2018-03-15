@@ -1,11 +1,10 @@
 // @flow
 
-const WebWorkify = require('webworkify');
-const window = require('../window');
-const workerURL = window.URL.createObjectURL(new WebWorkify(require('../../source/worker'), {bare: true}));
+import window from '../window';
+import mapboxgl from '../../';
 
 import type {WorkerInterface} from '../web_worker';
 
-module.exports = function (): WorkerInterface {
-    return (new window.Worker(workerURL): any);
-};
+export default function (): WorkerInterface {
+    return (new window.Worker(mapboxgl.workerUrl): any);
+}

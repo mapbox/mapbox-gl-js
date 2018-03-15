@@ -1,14 +1,16 @@
 // @flow
 
-const {LineLayoutArray} = require('../array_types');
-const layoutAttributes = require('./line_attributes').members;
-const {SegmentVector} = require('../segment');
-const {ProgramConfigurationSet} = require('../program_configuration');
-const {TriangleIndexArray} = require('../index_array_type');
-const loadGeometry = require('../load_geometry');
-const EXTENT = require('../extent');
-const vectorTileFeatureTypes = require('@mapbox/vector-tile').VectorTileFeature.types;
-const {register} = require('../../util/web_worker_transfer');
+import { LineLayoutArray } from '../array_types';
+
+import { members as layoutAttributes } from './line_attributes';
+import SegmentVector from '../segment';
+import { ProgramConfigurationSet } from '../program_configuration';
+import { TriangleIndexArray } from '../index_array_type';
+import loadGeometry from '../load_geometry';
+import EXTENT from '../extent';
+import mvt from '@mapbox/vector-tile';
+const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
+import { register } from '../../util/web_worker_transfer';
 
 import type {
     Bucket,
@@ -510,4 +512,4 @@ class LineBucket implements Bucket {
 
 register('LineBucket', LineBucket, {omit: ['layers']});
 
-module.exports = LineBucket;
+export default LineBucket;

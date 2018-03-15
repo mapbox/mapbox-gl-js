@@ -1,0 +1,20 @@
+{
+  "expression": ["get", "b", ["get", "a"]],
+  "inputs": [
+    [{}, {"properties": {"a": {"b": 0}}}],
+    [{}, {"properties": {"a": "not"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "value"
+    },
+    "outputs": [
+      0,
+      {"error": "Expected value to be of type object, but found string instead."}
+    ],
+    "serialized": ["get", "b", ["object", ["get", "a"]]]
+  }
+}

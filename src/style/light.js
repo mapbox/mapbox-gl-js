@@ -1,23 +1,21 @@
 // @flow
 
-const styleSpec = require('../style-spec/reference/latest');
-const util = require('../util/util');
-const Evented = require('../util/evented');
-const validateStyle = require('./validate_style');
-const {sphericalToCartesian} = require('../util/util');
-const Color = require('../style-spec/util/color');
-const interpolate = require('../style-spec/util/interpolate');
+import styleSpec from '../style-spec/reference/latest';
+
+import { endsWith, extend, sphericalToCartesian } from '../util/util';
+import { Evented } from '../util/evented';
+import {
+    validateStyle,
+    validateLight,
+    emitValidationErrors
+} from './validate_style';
+import Color from '../style-spec/util/color';
+import { number as interpolate } from '../style-spec/util/interpolate';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type EvaluationParameters from './evaluation_parameters';
 
-const {
-    Properties,
-    Transitionable,
-    Transitioning,
-    PossiblyEvaluated,
-    DataConstantProperty
-} = require('./properties');
+import { Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty } from './properties';
 
 import type {
     Property,
@@ -44,9 +42,9 @@ class LightPositionProperty implements Property<[number, number, number], LightP
 
     interpolate(a: LightPosition, b: LightPosition, t: number): LightPosition {
         return {
-            x: interpolate.number(a.x, b.x, t),
-            y: interpolate.number(a.y, b.y, t),
-            z: interpolate.number(a.z, b.z, t),
+            x: interpolate(a.x, b.x, t),
+            y: interpolate(a.y, b.y, t),
+            z: interpolate(a.z, b.z, t),
         };
     }
 }
@@ -87,13 +85,13 @@ class Light extends Evented {
     }
 
     setLight(options?: LightSpecification) {
-        if (this._validate(validateStyle.light, options)) {
+        if (this._validate(validateLight, options)) {
             return;
         }
 
         for (const name in options) {
             const value = options[name];
-            if (util.endsWith(name, TRANSITION_SUFFIX)) {
+            if (endsWith(name, TRANSITION_SUFFIX)) {
                 this._transitionable.setTransition(name.slice(0, -TRANSITION_SUFFIX.length), value);
             } else {
                 this._transitionable.setValue(name, value);
@@ -113,8 +111,8 @@ class Light extends Evented {
         this.properties = this._transitioning.possiblyEvaluate(parameters);
     }
 
-    _validate(validate, value: mixed) {
-        return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
+    _validate(validate: Function, value: mixed) {
+        return emitValidationErrors(this, validate.call(validateStyle, extend({
             value: value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},
@@ -123,4 +121,4 @@ class Light extends Evented {
     }
 }
 
-module.exports = Light;
+export default Light;

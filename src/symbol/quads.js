@@ -1,18 +1,14 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const {GLYPH_PBF_BORDER} = require('../style/parse_glyph_pbf');
+import Point from '@mapbox/point-geometry';
+
+import { GLYPH_PBF_BORDER } from '../style/parse_glyph_pbf';
 
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
-
-module.exports = {
-    getIconQuads,
-    getGlyphQuads
-};
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -46,7 +42,7 @@ export type SymbolQuad = {
  * Create the quads used for rendering an icon.
  * @private
  */
-function getIconQuads(anchor: Anchor,
+export function getIconQuads(anchor: Anchor,
                       shapedIcon: PositionedIcon,
                       layer: SymbolStyleLayer,
                       alongLine: boolean,
@@ -112,21 +108,14 @@ function getIconQuads(anchor: Anchor,
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    const textureRect = {
-        x: image.textureRect.x - border,
-        y: image.textureRect.y - border,
-        w: image.textureRect.w + border * 2,
-        h: image.textureRect.h + border * 2
-    };
-
-    return [{tl, tr, bl, br, tex: textureRect, writingMode: undefined, glyphOffset: [0, 0]}];
+    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0]}];
 }
 
 /**
  * Create the quads used for rendering a text label.
  * @private
  */
-function getGlyphQuads(anchor: Anchor,
+export function getGlyphQuads(anchor: Anchor,
                        shaping: Shaping,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,

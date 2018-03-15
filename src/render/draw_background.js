@@ -1,14 +1,19 @@
 // @flow
 
-const pattern = require('./pattern');
-const StencilMode = require('../gl/stencil_mode');
-const DepthMode = require('../gl/depth_mode');
+import {
+    isPatternMissing,
+    setPatternUniforms,
+    prepare as preparePattern
+} from './pattern';
+
+import StencilMode from '../gl/stencil_mode';
+import DepthMode from '../gl/depth_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type BackgroundStyleLayer from '../style/style_layer/background_style_layer';
 
-module.exports = drawBackground;
+export default drawBackground;
 
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer) {
     const color = layer.paint.get('background-color');
@@ -31,9 +36,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     let program;
     if (image) {
-        if (pattern.isPatternMissing(image, painter)) return;
+        if (isPatternMissing(image, painter)) return;
         program = painter.useProgram('backgroundPattern');
-        pattern.prepare(image, painter, program);
+        preparePattern(image, painter, program);
         painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer, []);
     } else {
         program = painter.useProgram('background');
@@ -46,7 +51,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     for (const tileID of tileIDs) {
         if (image) {
-            pattern.setTile({tileID, tileSize}, painter, program);
+            setPatternUniforms({tileID, tileSize}, painter, program);
         }
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.transform.calculatePosMatrix(tileID.toUnwrapped()));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);

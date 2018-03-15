@@ -2,12 +2,13 @@
   "expression": ["all", ["<", ["max"], 0], ["==", 0, ["/", 1, ["max"]]]],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [true],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "boolean"
-    }
+    },
+    "outputs": [true],
+    "serialized": true
   }
 }

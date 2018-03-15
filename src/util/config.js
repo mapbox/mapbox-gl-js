@@ -12,4 +12,4 @@ const config: Config = {
     ACCESS_TOKEN: null
 };
 
-module.exports = config;
+export default config;

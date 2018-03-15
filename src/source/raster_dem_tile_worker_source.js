@@ -1,6 +1,6 @@
 // @flow
 
-const {DEMData} = require('../data/dem_data');
+import DEMData from '../data/dem_data';
 
 import type Actor from '../util/actor';
 import type {
@@ -21,11 +21,12 @@ class RasterDEMTileWorkerSource {
     }
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        const uid = params.uid;
+        const uid = params.uid,
+            encoding = params.encoding;
 
         const dem = new DEMData(uid);
         this.loading[uid] = dem;
-        dem.loadFromImage(params.rawImageData);
+        dem.loadFromImage(params.rawImageData, encoding);
         delete this.loading[uid];
 
         this.loaded = this.loaded || {};
@@ -42,4 +43,4 @@ class RasterDEMTileWorkerSource {
     }
 }
 
-module.exports = RasterDEMTileWorkerSource;
+export default RasterDEMTileWorkerSource;

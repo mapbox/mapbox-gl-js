@@ -2,12 +2,13 @@
   "expression": ["e"],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [2.718281828459045],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [2.71828],
+    "serialized": 2.718281828459045
   }
 }

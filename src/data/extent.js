@@ -16,4 +16,4 @@
  * @private
  * @readonly
  */
-module.exports = 8192;
+export default 8192;

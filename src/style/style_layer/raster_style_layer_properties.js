@@ -2,15 +2,15 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
     HeatmapColorProperty
-} = require('../properties');
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -35,4 +35,4 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
 });
 
-module.exports = { paint };
+export default { paint };

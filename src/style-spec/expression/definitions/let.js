@@ -63,4 +63,4 @@ class Let implements Expression {
     }
 }
 
-module.exports = Let;
+export default Let;

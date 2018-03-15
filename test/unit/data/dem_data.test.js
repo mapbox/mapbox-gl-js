@@ -1,9 +1,7 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const {DEMData, Level} = require('../../../src/data/dem_data');
-const {RGBAImage} = require('../../../src/util/image');
-const {serialize, deserialize} = require('../../../src/util/web_worker_transfer');
+import { test } from 'mapbox-gl-js-test';
+import DEMData, { Level } from '../../../src/data/dem_data';
+import { RGBAImage } from '../../../src/util/image';
+import { serialize, deserialize } from '../../../src/util/web_worker_transfer';
 
 function createMockImage(height, width) {
     const pixels = new Uint8Array(height * width * 4);
@@ -48,7 +46,7 @@ test('Level', (t)=>{
 });
 
 
-test('DEMData constructor', (t) => {
+test('DEMData', (t) => {
     t.test('constructor', (t) => {
         const dem = new DEMData(0, 1);
         t.false(dem.loaded);
@@ -74,6 +72,18 @@ test('DEMData constructor', (t) => {
         t.equal(dem.level.dim, 16);
         t.equal(dem.level.border, 8);
 
+        t.end();
+    });
+
+    t.test('loadFromImage with invalid encoding', (t) => {
+        const dem = new DEMData(0, 1);
+        t.stub(console, 'warn');
+        t.false(dem.loaded);
+        t.equal(dem.uid, 0);
+
+        dem.loadFromImage({width: 4, height: 4, data: new Uint8ClampedArray(4 * 4 * 4)}, "derp");
+        t.ok(console.warn.calledOnce);
+        t.ok(console.warn.getCall(0).calledWithMatch(/"derp" is not a valid encoding type/));
         t.end();
     });
 

@@ -1,8 +1,9 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const DragRotateHandler = require('../handler/drag_rotate');
+import DOM from '../../util/dom';
+
+import { extend, bindAll } from '../../util/util';
+import DragRotateHandler from '../handler/drag_rotate';
 
 import type Map from '../map';
 
@@ -35,7 +36,7 @@ class NavigationControl {
     _handler: DragRotateHandler;
 
     constructor(options: any) {
-        this.options = util.extend({}, defaultOptions, options);
+        this.options = extend({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
         this._container.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -45,7 +46,7 @@ class NavigationControl {
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-zoom-out', 'Zoom Out', () => this._map.zoomOut());
         }
         if (this.options.showCompass) {
-            util.bindAll([
+            bindAll([
                 '_rotateCompassArrow'
             ], this);
             this._compass = this._createButton('mapboxgl-ctrl-icon mapboxgl-ctrl-compass', 'Reset North', () => this._map.resetNorth());
@@ -89,4 +90,4 @@ class NavigationControl {
     }
 }
 
-module.exports = NavigationControl;
+export default NavigationControl;

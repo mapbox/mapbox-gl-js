@@ -7,12 +7,18 @@
   ],
   "inputs": [[{}, {}]],
   "expected": {
-    "outputs": [3],
     "compiled": {
       "result": "success",
-      "isZoomConstant": true,
       "isFeatureConstant": true,
+      "isZoomConstant": true,
       "type": "number"
-    }
+    },
+    "outputs": [3],
+    "serialized": [
+      "let",
+      "a",
+      1,
+      ["let", "b", ["+", 1, ["var", "a"]], ["+", ["var", "a"], ["var", "b"]]]
+    ]
   }
 }

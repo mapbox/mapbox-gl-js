@@ -1,4 +1,7 @@
 {
+  "parserOptions": {
+    "sourceType": "script",
+  },
   "plugins": [
     "node"
   ],

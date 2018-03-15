@@ -1,11 +1,9 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const CanvasSource = require('../../../src/source/canvas_source');
-const Transform = require('../../../src/geo/transform');
-const Evented = require('../../../src/util/evented');
-const util = require('../../../src/util/util');
-const window = require('../../../src/util/window');
+import { test } from 'mapbox-gl-js-test';
+import CanvasSource from '../../../src/source/canvas_source';
+import Transform from '../../../src/geo/transform';
+import { Event, Evented } from '../../../src/util/evented';
+import { extend } from '../../../src/util/util';
+import window from '../../../src/util/window';
 
 function createSource(options) {
     window.useFakeHTMLCanvasGetContext();
@@ -14,7 +12,7 @@ function createSource(options) {
     c.width = 20;
     c.height = 20;
 
-    options = util.extend({
+    options = extend({
         canvas: 'id',
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
@@ -33,7 +31,7 @@ class StubMap extends Evented {
     }
 
     _rerender() {
-        this.fire('rerender');
+        this.fire(new Event('rerender'));
     }
 }
 

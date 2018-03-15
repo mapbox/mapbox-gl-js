@@ -2,15 +2,15 @@
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
     HeatmapColorProperty
-} = require('../properties');
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
@@ -20,4 +20,4 @@ export type PaintProps = {};
 const paint: Properties<PaintProps> = new Properties({
 });
 
-module.exports = { paint };
+export default { paint };

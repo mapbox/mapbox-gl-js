@@ -1,16 +1,17 @@
 // @flow
 
-const FeatureIndex = require('../data/feature_index');
-const {performSymbolLayout} = require('../symbol/symbol_layout');
-const {CollisionBoxArray} = require('../data/array_types');
-const DictionaryCoder = require('../util/dictionary_coder');
-const SymbolBucket = require('../data/bucket/symbol_bucket');
-const util = require('../util/util');
-const assert = require('assert');
-const {makeImageAtlas} = require('../render/image_atlas');
-const {makeGlyphAtlas} = require('../render/glyph_atlas');
-const EvaluationParameters = require('../style/evaluation_parameters');
-const {OverscaledTileID} = require('./tile_id');
+import FeatureIndex from '../data/feature_index';
+
+import { performSymbolLayout } from '../symbol/symbol_layout';
+import { CollisionBoxArray } from '../data/array_types';
+import DictionaryCoder from '../util/dictionary_coder';
+import SymbolBucket from '../data/bucket/symbol_bucket';
+import { warnOnce, mapObject, values } from '../util/util';
+import assert from 'assert';
+import ImageAtlas from '../render/image_atlas';
+import GlyphAtlas from '../render/glyph_atlas';
+import EvaluationParameters from '../style/evaluation_parameters';
+import { OverscaledTileID } from './tile_id';
 
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -80,7 +81,7 @@ class WorkerTile {
             }
 
             if (sourceLayer.version === 1) {
-                util.warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
+                warnOnce(`Vector tile source "${this.source}" layer "${sourceLayerId}" ` +
                     `does not use vector tile spec v2 and therefore may have some rendering errors.`);
             }
 
@@ -119,7 +120,7 @@ class WorkerTile {
         let glyphMap: ?{[string]: {[number]: ?StyleGlyph}};
         let imageMap: ?{[string]: StyleImage};
 
-        const stacks = util.mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
+        const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
         if (Object.keys(stacks).length) {
             actor.send('getGlyphs', {uid: this.uid, stacks}, (err, result) => {
                 if (!error) {
@@ -151,8 +152,8 @@ class WorkerTile {
             if (error) {
                 return callback(error);
             } else if (glyphMap && imageMap) {
-                const glyphAtlas = makeGlyphAtlas(glyphMap);
-                const imageAtlas = makeImageAtlas(imageMap);
+                const glyphAtlas = new GlyphAtlas(glyphMap);
+                const imageAtlas = new ImageAtlas(imageMap);
 
                 for (const key in buckets) {
                     const bucket = buckets[key];
@@ -165,7 +166,7 @@ class WorkerTile {
                 this.status = 'done';
 
                 callback(null, {
-                    buckets: util.values(buckets).filter(b => !b.isEmpty()),
+                    buckets: values(buckets).filter(b => !b.isEmpty()),
                     featureIndex,
                     collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
@@ -184,4 +185,4 @@ function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     }
 }
 
-module.exports = WorkerTile;
+export default WorkerTile;
