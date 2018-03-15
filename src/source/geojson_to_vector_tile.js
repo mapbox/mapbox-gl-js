@@ -5,10 +5,10 @@ const geojsonvt = require('geojson-vt');
 const GeoJSONWrapper = require('./geojson_wrapper');
 const supercluster = require('supercluster');
 const superclusterUtil = require('../util/superclusterUtil');
-const TileCoord = require('../source/tile_coord');
+const CanonicalTileID = require('../source/tile_id');
 const util = require('../util/util');
 
-module.exports = function(data: any, options: VectorSourceSpecification, tileSize: number, zoom: number, tileCoord: TileCoord) {
+module.exports = function(data: any, options: VectorSourceSpecification, tileSize: number, tileID: CanonicalTileID) {
     const scale = EXTENT / tileSize;
     const aggregateByKeys = superclusterUtil.sanitizedAggregateByKeys(options);
     let index;
@@ -26,11 +26,11 @@ module.exports = function(data: any, options: VectorSourceSpecification, tileSiz
     }
 
     if (options.cluster) {
-        index = getSuperCluterIndex(data, options, zoom, scale);
+        index = getSuperCluterIndex(data, options, tileID.canonical.z, scale);
     } else {
-        index = getGeojsonVTIndex(data, options, zoom, scale);
+        index = getGeojsonVTIndex(data, options, tileID.canonical.z, scale);
     }
-    const geoJSONTile = index.getTile(zoom, tileCoord.x, tileCoord.y);
+    const geoJSONTile = index.getTile(tileID.canonical.z, tileID.canonical.x, tileID.canonical.y);
     const geojsonWrappedVectorTile = new GeoJSONWrapper(geoJSONTile ? geoJSONTile.features : []);
 
     return {

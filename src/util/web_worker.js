@@ -49,8 +49,12 @@ class MessageBus implements WorkerInterface, WorkerGlobalScopeInterface {
 
     postMessage(data: Object) {
         setImmediate(() => {
-            for (const listener of this.postListeners) {
-                listener({data: data, target: this.target});
+            try {
+                for (const listener of this.postListeners) {
+                    listener({data: data, target: this.target});
+                }
+            } catch (e) {
+                console.error(e);
             }
         });
     }

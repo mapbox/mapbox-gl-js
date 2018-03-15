@@ -20,8 +20,8 @@ import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
  * @typedef {Object} CameraOptions
  * @property {LngLatLike} center The desired center.
  * @property {number} zoom The desired zoom level.
- * @property {number} bearing The desired bearing, in degrees counter-clockwise from north. A `bearing` of 90° orients the map
- * so that east is up.
+ * @property {number} bearing The desired bearing, in degrees. The bearing is the compass direction that
+ * is "up"; for example, a bearing of 90° orients the map so that east is up.
  * @property {number} pitch The desired pitch, in degrees.
  * @property {LngLatLike} around If `zoom` is specified, `around` determines the point around which the zoom is centered.
  */
@@ -72,9 +72,13 @@ class Camera extends Evented {
 
     _bearingSnap: number;
     _onEaseEnd: number;
-    _abortFn: any;
-    _finishFn: any;
-    _prevEase: any;
+    _easeStart: number;
+    _isEasing: boolean;
+    _easeOptions: {duration: number, easing: (number) => number};
+
+    _onFrame: (Transform) => void;
+    _finishFn: () => void;
+    +_update: () => void;
 
     constructor(transform: Transform, options: {bearingSnap: number}) {
         super();
@@ -232,19 +236,23 @@ class Camera extends Evented {
     }
 
     /**
-     * Returns the map's current bearing (rotation).
+     * Returns the map's current bearing. The bearing is the compass direction that is \"up\"; for example, a bearing
+     * of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @returns The map's current bearing, measured in degrees counter-clockwise from north.
+     * @returns The map's current bearing.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
 
     /**
-     * Sets the maps' bearing (rotation). Equivalent to `jumpTo({bearing: bearing})`.
+     * Sets the map's bearing (rotation). The bearing is the compass direction that is \"up\"; for example, a bearing
+     * of 90° orients the map so that east is up.
+     *
+     * Equivalent to `jumpTo({bearing: bearing})`.
      *
      * @memberof Map#
-     * @param bearing The bearing to set, measured in degrees counter-clockwise from north.
+     * @param bearing The desired bearing.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
@@ -259,10 +267,11 @@ class Camera extends Evented {
     }
 
     /**
-     * Rotates the map to the specified bearing, with an animated transition.
+     * Rotates the map to the specified bearing, with an animated transition. The bearing is the compass direction
+     * that is \"up\"; for example, a bearing of 90° orients the map so that east is up.
      *
      * @memberof Map#
-     * @param bearing The bearing to rotate the map to, measured in degrees counter-clockwise from north.
+     * @param bearing The desired bearing.
      * @param options
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
@@ -276,7 +285,7 @@ class Camera extends Evented {
     }
 
     /**
-     * Rotates the map to a bearing of 0 (due north), with an animated transition.
+     * Rotates the map so that north is up (0° bearing), with an animated transition.
      *
      * @memberof Map#
      * @param options
@@ -291,7 +300,8 @@ class Camera extends Evented {
     }
 
     /**
-     * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (i.e. within the `bearingSnap` threshold).
+     * Snaps the map so that north is up (0° bearing), if the current bearing is close enough to it (i.e. within the
+     * `bearingSnap` threshold).
      *
      * @memberof Map#
      * @param options
@@ -524,10 +534,6 @@ class Camera extends Evented {
 
         if (options.animate === false) options.duration = 0;
 
-        if (options.smoothEasing && options.duration !== 0) {
-            options.easing = this._smoothOutEasing(options.duration);
-        }
-
         const tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
@@ -561,7 +567,7 @@ class Camera extends Evented {
 
         clearTimeout(this._onEaseEnd);
 
-        this._ease(function (k) {
+        this._ease((k) => {
             if (this.zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
@@ -588,9 +594,9 @@ class Camera extends Evented {
 
         }, () => {
             if (options.delayEndEvents) {
-                this._onEaseEnd = setTimeout(() => this._easeToEnd(eventData), options.delayEndEvents);
+                this._onEaseEnd = setTimeout(() => this._afterEase(eventData), options.delayEndEvents);
             } else {
-                this._easeToEnd(eventData);
+                this._afterEase(eventData);
             }
         }, options);
 
@@ -624,7 +630,7 @@ class Camera extends Evented {
         }
     }
 
-    _easeToEnd(eventData?: Object) {
+    _afterEase(eventData?: Object) {
         const wasZooming = this.zooming;
         const wasPitching = this.pitching;
         this.moving = false;
@@ -815,7 +821,7 @@ class Camera extends Evented {
 
         this._prepareEase(eventData, false);
 
-        this._ease(function (k) {
+        this._ease((k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
             const scale = 1 / w(s);
@@ -833,13 +839,13 @@ class Camera extends Evented {
 
             this._fireMoveEvents(eventData);
 
-        }, () => this._easeToEnd(eventData), options);
+        }, () => this._afterEase(eventData), options);
 
         return this;
     }
 
     isEasing() {
-        return !!this._abortFn;
+        return !!this._isEasing;
     }
 
     /**
@@ -858,10 +864,9 @@ class Camera extends Evented {
      * @memberof Map#
      * @returns {Map} `this`
      */
-    stop(): * {
-        if (this._abortFn) {
-            this._abortFn();
-            this._finishEase();
+    stop(): this {
+        if (this._onFrame) {
+            this._finishAnimation();
         }
         return this;
     }
@@ -869,19 +874,54 @@ class Camera extends Evented {
     _ease(frame: (number) => void,
           finish: () => void,
           options: {animate: boolean, duration: number, easing: (number) => number}) {
-        this._finishFn = finish;
-        this._abortFn = browser.timed(function (t) {
-            frame.call(this, options.easing(t));
-            if (t === 1) {
-                this._finishEase();
-            }
-        }, options.animate === false ? 0 : options.duration, this);
+        if (options.animate === false || options.duration === 0) {
+            frame(1);
+            finish();
+        } else {
+            this._easeStart = browser.now();
+            this._isEasing = true;
+            this._easeOptions = options;
+            this._startAnimation((_) => {
+                const t = Math.min((browser.now() - this._easeStart) / this._easeOptions.duration, 1);
+                frame(this._easeOptions.easing(t));
+                if (t === 1) this.stop();
+            }, () => {
+                this._isEasing = false;
+                finish();
+            });
+        }
     }
 
-    _finishEase() {
-        delete this._abortFn;
-        // The finish function might emit events which trigger new eases, which
-        // set a new _finishFn. Ensure we don't delete it unintentionally.
+    /*
+     * Should be called at the top of the render loop to update camera position
+     * and orientation before they're read by any rendering logic.
+     */
+    _updateCamera() {
+        if (this._onFrame) {
+            this._onFrame(this.transform);
+        }
+    }
+
+    /*
+     * Start the camera animation using the given onFrame callback.
+     *
+     * @param onFrame A callback responsible for updating the transform to reflect the desired camera position and orientation, and also for firing any relevant camera movement events.
+     * @param finish A callback that is called when this animation is stopped (i.e., when `Camera#stop()` is called).
+     */
+    _startAnimation(onFrame: (Transform) => void,
+                    finish: () => void = () => {}): this {
+        this.stop();
+        this._onFrame = onFrame;
+        this._finishFn = finish;
+        this._update();
+        return this;
+    }
+
+    _finishAnimation() {
+        delete this._onFrame;
+        // The finish function might emit events which trigger new animation,
+        // which sets a new _finishFn. Ensure we don't delete it
+        // unintentionally.
         const finish = this._finishFn;
         delete this._finishFn;
         finish.call(this);
@@ -906,31 +946,6 @@ class Camera extends Evented {
         center.lng +=
             delta > 180 ? -360 :
             delta < -180 ? 360 : 0;
-    }
-
-    // only used on mouse-wheel zoom to smooth out animation
-    _smoothOutEasing(duration: number) {
-        let easing = util.ease;
-
-        if (this._prevEase) {
-            const ease = this._prevEase,
-                t = (Date.now() - ease.start) / ease.duration,
-                speed = ease.easing(t + 0.01) - ease.easing(t),
-
-                // Quick hack to make new bezier that is continuous with last
-                x = 0.27 / Math.sqrt(speed * speed + 0.0001) * 0.01,
-                y = Math.sqrt(0.27 * 0.27 - x * x);
-
-            easing = util.bezier(x, y, 0.25, 1);
-        }
-
-        this._prevEase = {
-            start: (new Date()).getTime(),
-            duration: duration,
-            easing: easing
-        };
-
-        return easing;
     }
 }
 

@@ -9,14 +9,18 @@ test('convertFunction', (t) => {
             stops: [
                 [0, 'my name is {name}.'],
                 [1, '{a} {b} {c}'],
-                [2, 'no tokens']
+                [2, 'no tokens'],
+                [3, '{one_token}'],
+                [4, '{leading} token'],
+                [5, 'trailing {token}']
             ]
         };
 
         const expression = convertFunction(functionValue, {
             type: 'string',
-            function: 'piecewise-constant'
-        }, 'text-field');
+            function: 'piecewise-constant',
+            tokens: true
+        });
         t.deepEqual(expression, [
             'step',
             ['zoom'],
@@ -36,7 +40,13 @@ test('convertFunction', (t) => {
                 ['to-string', ['get', 'c']]
             ],
             2,
-            'no tokens'
+            'no tokens',
+            3,
+            ['to-string', ['get', 'one_token']],
+            4,
+            ['concat', ['to-string', ['get', 'leading']], ' token'],
+            5,
+            ['concat', 'trailing ', ['to-string', ['get', 'token']]]
         ]);
 
         t.end();
@@ -55,7 +65,7 @@ test('convertFunction', (t) => {
         const expression = convertFunction(functionValue, {
             type: 'string',
             function: 'piecewise-constant'
-        }, 'text-field');
+        });
         t.deepEqual(expression, [
             'step',
             ['zoom'],
@@ -82,7 +92,7 @@ test('convertFunction', (t) => {
         const expression = convertFunction(functionValue, {
             type: 'number',
             function: 'interpolated'
-        }, 'text-size');
+        });
         t.deepEqual(expression, [
             'interpolate',
             ['exponential', 1],

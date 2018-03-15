@@ -33,7 +33,7 @@
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "doc": "Default bearing, in degrees clockwise from true north.  The style bearing will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "doc": "Default bearing, in degrees. The bearing is the compass direction that is \"up\"; for example, a bearing of 90° orients the map so that east is up. This value will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
       "example": 29
     },
     "pitch": {
@@ -108,6 +108,7 @@
   "source": [
     "source_vector",
     "source_raster",
+    "source_raster_dem",
     "source_geojson",
     "source_video",
     "source_image",
@@ -178,7 +179,7 @@
       "type": "enum",
       "values": {
         "raster": {
-          "doc": "A raster tile source."
+            "doc": "A raster tile source."
         }
       },
       "doc": "The type of the source."
@@ -227,6 +228,58 @@
       },
       "default": "xyz",
       "doc": "Influences the y direction of the tile coordinates. The global-mercator (aka Spherical Mercator) profile is assumed."
+    },
+    "attribution": {
+      "type": "string",
+      "doc": "Contains an attribution to be displayed when the map is shown to a user."
+    },
+    "*": {
+      "type": "*",
+      "doc": "Other keys to configure the data source."
+    }
+  },
+  "source_raster_dem": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "raster-dem": {
+            "doc": "A raster DEM source using Mapbox Terrain RGB"
+        }
+      },
+      "doc": "The type of the source."
+    },
+    "url": {
+      "type": "string",
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+    },
+    "tiles": {
+      "type": "array",
+      "value": "string",
+      "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
+    },
+    "bounds": {
+      "type": "array",
+      "value": "number",
+      "length": 4,
+      "default": [-180, -85.0511, 180, 85.0511],
+      "doc": "An array containing the longitude and latitude of the southwest and northeast corners of the source's bounding box in the following order: `[sw.lng, sw.lat, ne.lng, ne.lat]`. When this property is included in a source, no tiles outside of the given bounds are requested by Mapbox GL."
+    },
+    "minzoom": {
+      "type": "number",
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels."
+    },
+    "tileSize": {
+      "type": "number",
+      "default": 512,
+      "units": "pixels",
+      "doc": "The minimum visual size to display tiles for this layer. Only configurable for raster layers."
     },
     "attribution": {
       "type": "string",
@@ -470,6 +523,14 @@
             }
           }
         },
+        "hillshade": {
+          "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB tiles",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.43.0"
+            }
+          }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -482,7 +543,8 @@
           }
         }
       },
-      "doc": "Rendering type of this layer."
+      "doc": "Rendering type of this layer.",
+      "required": true
     },
     "metadata": {
       "type": "*",
@@ -500,13 +562,13 @@
       "type": "number",
       "minimum": 0,
       "maximum": 24,
-      "doc": "The minimum zoom level on which the layer gets parsed and appears on."
+      "doc": "The minimum zoom level for the layer. At zoom levels less than the minzoom, the layer will be hidden."
     },
     "maxzoom": {
       "type": "number",
       "minimum": 0,
       "maximum": 24,
-      "doc": "The maximum zoom level on which the layer gets parsed and appears on."
+      "doc": "The maximum zoom level for the layer. At zoom levels equal to or greater than the maxzoom, the layer will be hidden."
     },
     "filter": {
       "type": "filter",
@@ -529,6 +591,7 @@
     "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
+    "layout_hillshade",
     "layout_background"
   ],
   "layout_background": {
@@ -1028,7 +1091,7 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Name of image in sprite to use for drawing an image background. A string with `{tokens}` replaced, referencing the data property to pull from. (`{token}` replacement is only supported for literal `icon-image` values; not for property functions.)",
+      "doc": "Name of image in sprite to use for drawing an image background. Within literal values and zoom functions, property names enclosed in curly brackets (e.g. `{token}`) are replaced with the value of the named property. Expressions and property functions do not support this syntax; for equivalent functionality in expressions, use the [`concat`](#expressions-concat) and [`get`](#expressions-get) operators.",
       "tokens": true,
       "sdk-support": {
         "basic functionality": {
@@ -1121,7 +1184,6 @@
     "icon-offset": {
       "type": "array",
       "value": "number",
-      "units": "pixels multiplied by the value of \"icon-size\"",
       "length": 2,
       "default": [
         0,
@@ -1130,7 +1192,7 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
+      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. Each component is multiplied by the value of `icon-size` to obtain the final offset in pixels. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
       "requires": [
         "icon-image"
       ],
@@ -1312,7 +1374,7 @@
       "property-function": true,
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like `{field_name}`. (`{token}` replacement is only supported for literal `text-field` values; not for property functions.)",
+      "doc": "Value to use for a text label. Within literal values and zoom functions, property names enclosed in curly brackets (e.g. `{token}`) are replaced with the value of the named property. Expressions and property functions do not support this syntax; for equivalent functionality in expressions, use the [`concat`](#expressions-concat) and [`get`](#expressions-get) operators.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -1333,6 +1395,7 @@
       "value": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
       "doc": "Font stack to use for displaying text.",
       "requires": [
@@ -1806,6 +1869,27 @@
       }
     }
   },
+  "layout_hillshade": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.43.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
   "filter": {
     "type": "array",
     "value": "*",
@@ -1991,7 +2075,7 @@
         "group": "Ramps, scales, curves"
       },
       "interpolate": {
-        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y2, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points.",
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). The `input` may be any numeric expression (e.g., `[\"get\", \"population\"]`). Stop inputs must be numeric literals in strictly ascending order. The output type must be `number`, `array<number>`, or `color`.\n\nInterpolation types:\n- `[\"linear\"]`: interpolates linearly between the pair of stops just less than and just greater than the input.\n- `[\"exponential\", base]`: interpolates exponentially between the stops just less than and just greater than the input. `base` controls the rate at which the output increases: higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.\n- `[\"cubic-bezier\", x1, y1, x2, y2]`: interpolates using the cubic bezier curve defined by the given control points.",
         "group": "Ramps, scales, curves"
       },
       "ln2": {
@@ -2159,11 +2243,11 @@
         "group": "Math"
       },
       "==": {
-        "doc": "Returns `true` if the input values are equal, `false` otherwise. The inputs must be numbers, strings, or booleans, and both of the same type.",
+        "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision"
       },
       "!=": {
-        "doc": "Returns `true` if the input values are not equal, `false` otherwise. The inputs must be numbers, strings, or booleans, and both of the same type.",
+        "doc": "Returns `true` if the input values are not equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision"
       },
       ">": {
@@ -2300,6 +2384,7 @@
     "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
+    "paint_hillshade",
     "paint_background"
   ],
   "paint_fill": {
@@ -3151,7 +3236,7 @@
       "minimum": 1,
       "function": "interpolated",
       "zoom-function": true,
-      "property-function": false,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed.",
@@ -3213,7 +3298,7 @@
       "function": "interpolated",
       "zoom-function": false,
       "property-function": false,
-      "transition": true,
+      "transition": false,
       "sdk-support": {
         "basic functionality": {
           "js": "0.41.0"
@@ -3742,7 +3827,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
-      "transition": true,
+      "transition": false,
       "units": "milliseconds",
       "doc": "Fade duration when a new tile is added.",
       "sdk-support": {
@@ -3755,6 +3840,67 @@
         "data-driven styling": {}
       }
     }
+  },
+  "paint_hillshade": {
+      "hillshade-illumination-direction": {
+        "type": "number",
+        "default": 335,
+        "minimum": 0,
+        "maximum": 359,
+        "doc": "The direction of the light source used to generate the hillshading with 0 as the top of the viewport if `hillshade-illumination-anchor` is set to `viewport` and due north if `hillshade-illumination-anchor` is set to `map`.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": false
+      },
+      "hillshade-illumination-anchor": {
+        "type": "enum",
+        "function": "piecewise-constant",
+        "zoom-function": true,
+        "values": {
+          "map": {
+              "doc": "The hillshade illumination is relative to the north direction."
+          },
+          "viewport": {
+              "doc": "The hillshade illumination is relative to the top of the viewport."
+          }
+        },
+        "default": "viewport",
+        "doc": "Direction of light source when map is rotated."
+      },
+      "hillshade-exaggeration": {
+        "type": "number",
+        "doc": "Intensity of the hillshade",
+        "default": 0.5,
+        "minimum": 0,
+        "maximum": 1,
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-shadow-color": {
+        "type": "color",
+        "default": "#000000",
+        "doc": "The shading color of areas that face away from the light source.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-highlight-color": {
+        "type": "color",
+        "default": "#FFFFFF",
+        "doc": "The shading color of areas that faces towards the light source.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      },
+      "hillshade-accent-color": {
+        "type": "color",
+        "default": "#000000",
+        "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
+        "function": "interpolated",
+        "zoom-function": true,
+        "transition": true
+      }
   },
   "paint_background": {
     "background-color": {

@@ -2,12 +2,12 @@
   "expression": ["boolean", ["all", false, ["case", true, true, true]]],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [false],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "boolean"
-    },
-    "outputs": [false]
+    }
   }
 }

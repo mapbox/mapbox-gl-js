@@ -1,9 +1,13 @@
+// @flow
+
 const assert = require('assert');
 const extend = require('../util/extend');
 
+import type {StylePropertySpecification} from '../style-spec';
+
 module.exports = convertFunction;
 
-function convertFunction(parameters, propertySpec, name) {
+function convertFunction(parameters: PropertyValueSpecification<any>, propertySpec: StylePropertySpecification) {
     let expression;
 
     parameters = extend({}, parameters);
@@ -23,7 +27,7 @@ function convertFunction(parameters, propertySpec, name) {
         const zoomDependent = zoomAndFeatureDependent || !featureDependent;
 
         const stops = parameters.stops.map((stop) => {
-            if (!featureDependent && (name === 'icon-image' || name === 'text-field') && typeof stop[1] === 'string') {
+            if (!featureDependent && propertySpec.tokens && typeof stop[1] === 'string') {
                 return [stop[0], convertTokenString(stop[1])];
 
             }
@@ -51,15 +55,14 @@ function convertFunction(parameters, propertySpec, name) {
 
 function convertIdentityFunction(parameters, propertySpec, defaultExpression) {
     const get = ['get', parameters.property];
-    const type = propertySpec.type;
 
-    if (type === 'color') {
+    if (propertySpec.type === 'color') {
         return parameters.default === undefined ? get : ['to-color', get, parameters.default];
-    } else if (type === 'array' && typeof propertySpec.length === 'number') {
+    } else if (propertySpec.type === 'array' && typeof propertySpec.length === 'number') {
         return ['array', propertySpec.value, propertySpec.length, get];
-    } else if (type === 'array') {
+    } else if (propertySpec.type === 'array') {
         return ['array', propertySpec.value, get];
-    } else if (type === 'enum') {
+    } else if (propertySpec.type === 'enum') {
         return [
             'let',
             'property_value', ['string', get],
@@ -258,6 +261,8 @@ function convertTokenString(s) {
 
     if (pos < s.length) {
         result.push(s.slice(pos));
+    } else if (result.length === 2) {
+        return result[1];
     }
 
     return result;

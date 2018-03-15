@@ -2,12 +2,12 @@
   "expression": ["/", 10, 5],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [2],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [2]
+    }
   }
 }

@@ -5,6 +5,7 @@ const shaders = require('../shaders');
 const assert = require('assert');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const VertexArrayObject = require('./vertex_array_object');
+const Context = require('../gl/context');
 
 import type {SegmentVector} from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -15,17 +16,16 @@ export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'TRIANGLES'>;
 
 class Program {
-    gl: WebGLRenderingContext;
     program: WebGLProgram;
     uniforms: {[string]: WebGLUniformLocation};
     attributes: {[string]: number};
     numAttributes: number;
 
-    constructor(gl: WebGLRenderingContext,
+    constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
                 showOverdrawInspector: boolean) {
-        this.gl = gl;
+        const gl = context.gl;
         this.program = gl.createProgram();
 
         const defines = configuration.defines().concat(
@@ -53,7 +53,7 @@ class Program {
         // ProgramInterface so that we don't dynamically link an unused
         // attribute at position 0, which can cause rendering to fail for an
         // entire layer (see #4607, #4728)
-        const layoutAttributes = configuration.interface ? configuration.interface.layoutAttributes : [];
+        const layoutAttributes = configuration.layoutAttributes || [];
         for (let i = 0; i < layoutAttributes.length; i++) {
             gl.bindAttribLocation(this.program, i, layoutAttributes[i].name);
         }
@@ -82,7 +82,7 @@ class Program {
         }
     }
 
-    draw(gl: WebGLRenderingContext,
+    draw(context: Context,
          drawMode: DrawMode,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
@@ -92,6 +92,8 @@ class Program {
          dynamicLayoutBuffer: ?VertexBuffer,
          dynamicLayoutBuffer2: ?VertexBuffer) {
 
+        const gl = context.gl;
+
         const primitiveSize = {
             [gl.LINES]: 2,
             [gl.TRIANGLES]: 3
@@ -99,14 +101,14 @@ class Program {
 
         for (const segment of segments.get()) {
             const vaos = segment.vaos || (segment.vaos = {});
-            const vao = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
+            const vao: VertexArrayObject = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
 
             vao.bind(
-                gl,
+                context,
                 this,
                 layoutVertexBuffer,
+                configuration ? configuration.getPaintVertexBuffers() : [],
                 indexBuffer,
-                configuration && configuration.paintVertexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer,
                 dynamicLayoutBuffer2

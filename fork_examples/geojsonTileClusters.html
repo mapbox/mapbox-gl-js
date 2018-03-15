@@ -115,15 +115,16 @@
 
       if (clickedOnFeatures.length > 0) {
         var tileCoordinate = map.transform.locationCoordinate(event.lngLat);
-        tileCoordinate.row = Math.floor(tileCoordinate.row);
-        tileCoordinate.column = Math.floor(tileCoordinate.column);
-        tileCoordinate.zoom = Math.floor(tileCoordinate.zoom);
 
+        var tileID = {
+          x: Math.floor(tileCoordinate.column),
+          y: Math.floor(tileCoordinate.row),
+          z: Math.floor(tileCoordinate.zoom)
+        }
         var clusterId = clickedOnFeatures[0].properties.cluster_id;
 
-        map.getSource('vectorDataSource').getLeaves(tileCoordinate, clusterId, map.getZoom(), 1000, 0, function(err, leaves) {
-          console.log('error is', err);
-          console.log('leaves are', leaves);
+        map.getSource('vectorDataSource').getLeaves(tileID, clusterId, 1000, 0, function(result) {
+          console.log('result is', result);
         });
       };
     });

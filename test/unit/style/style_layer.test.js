@@ -56,7 +56,7 @@ test('StyleLayer#setPaintProperty', (t) => {
         });
 
         layer.setPaintProperty('background-color', null);
-        layer.updatePaintTransitions({transition: false});
+        layer.updateTransitions({});
         layer.recalculate({zoom: 0, zoomHistory: {}});
 
         t.deepEqual(layer.paint.get('background-color'), new Color(0, 0, 0, 1));
@@ -140,12 +140,12 @@ test('StyleLayer#setPaintProperty', (t) => {
         });
 
         layer.setPaintProperty('fill-outline-color', '#f00');
-        layer.updatePaintTransitions({transition: false});
+        layer.updateTransitions({});
         layer.recalculate({zoom: 0, zoomHistory: {}});
         t.deepEqual(layer.paint.get('fill-outline-color').value, {kind: 'constant', value: new Color(1, 0, 0, 1)});
 
         layer.setPaintProperty('fill-outline-color', undefined);
-        layer.updatePaintTransitions({transition: false});
+        layer.updateTransitions({});
         layer.recalculate({zoom: 0, zoomHistory: {}});
         t.deepEqual(layer.paint.get('fill-outline-color').value, {kind: 'constant', value: new Color(0, 0, 1, 1)});
 
@@ -165,17 +165,17 @@ test('StyleLayer#setPaintProperty', (t) => {
         // setup: set and then unset fill-outline-color so that, when we then try
         // to re-set it, StyleTransition#calculate() attempts interpolation
         layer.setPaintProperty('fill-outline-color', '#f00');
-        layer.updatePaintTransitions({transition: true});
+        layer.updateTransitions({});
         layer.recalculate({zoom: 0, zoomHistory: {}});
 
         layer.setPaintProperty('fill-outline-color', undefined);
-        layer.updatePaintTransitions({transition: true});
+        layer.updateTransitions({});
         layer.recalculate({zoom: 0, zoomHistory: {}});
 
         // re-set fill-outline-color and get its value, triggering the attempt
         // to interpolate between undefined and #f00
         layer.setPaintProperty('fill-outline-color', '#f00');
-        layer.updatePaintTransitions({transition: true});
+        layer.updateTransitions({});
         layer.recalculate({zoom: 0, zoomHistory: {}});
 
         layer.paint.get('fill-outline-color');

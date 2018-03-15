@@ -1,6 +1,7 @@
 // @flow
 
 const {warnOnce} = require('../util/util');
+const {register} = require('../util/web_worker_transfer');
 
 import type VertexArrayObject from '../render/vertex_array_object';
 import type {StructArray} from '../util/struct_array';
@@ -49,6 +50,8 @@ class SegmentVector {
         }
     }
 }
+
+register('SegmentVector', SegmentVector);
 
 module.exports = {
     SegmentVector,

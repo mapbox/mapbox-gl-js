@@ -10,9 +10,21 @@ const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/_prelude.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/_prelude.vertex.glsl', 'utf8')
     },
+    background: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/background.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/background.vertex.glsl', 'utf8')
+    },
+    backgroundPattern: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/background_pattern.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/background_pattern.vertex.glsl', 'utf8')
+    },
     circle: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/circle.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/circle.vertex.glsl', 'utf8')
+    },
+    clippingMask: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/clipping_mask.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/clipping_mask.vertex.glsl', 'utf8')
     },
     heatmap: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/heatmap.fragment.glsl', 'utf8'),
@@ -61,6 +73,14 @@ const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     extrusionTexture: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/extrusion_texture.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/extrusion_texture.vertex.glsl', 'utf8')
+    },
+    hillshadePrepare: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/hillshade_prepare.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/hillshade_prepare.vertex.glsl', 'utf8')
+    },
+    hillshade: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/hillshade.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/hillshade.vertex.glsl', 'utf8')
     },
     line: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line.fragment.glsl', 'utf8'),

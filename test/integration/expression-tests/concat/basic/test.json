@@ -2,12 +2,12 @@
   "expression": ["concat", "a", "b", "c"],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": ["abc"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "string"
-    },
-    "outputs": ["abc"]
+    }
   }
 }

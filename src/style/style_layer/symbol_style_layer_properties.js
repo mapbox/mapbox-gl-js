@@ -1,4 +1,4 @@
-// This file is generated. Edit build/generate-style-code.js, then run `node build/generate-style-code.js`.
+// This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
 // @flow
 /* eslint-disable */
 
@@ -35,7 +35,7 @@ export type LayoutProps = {|
     "text-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-field": DataDrivenProperty<string>,
-    "text-font": DataConstantProperty<Array<string>>,
+    "text-font": DataDrivenProperty<Array<string>>,
     "text-size": DataDrivenProperty<number>,
     "text-max-width": DataDrivenProperty<number>,
     "text-line-height": DataConstantProperty<number>,
@@ -74,7 +74,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-pitch-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["text-pitch-alignment"]),
     "text-rotation-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["text-rotation-alignment"]),
     "text-field": new DataDrivenProperty(styleSpec["layout_symbol"]["text-field"]),
-    "text-font": new DataConstantProperty(styleSpec["layout_symbol"]["text-font"]),
+    "text-font": new DataDrivenProperty(styleSpec["layout_symbol"]["text-font"]),
     "text-size": new DataDrivenProperty(styleSpec["layout_symbol"]["text-size"]),
     "text-max-width": new DataDrivenProperty(styleSpec["layout_symbol"]["text-max-width"]),
     "text-line-height": new DataConstantProperty(styleSpec["layout_symbol"]["text-line-height"]),

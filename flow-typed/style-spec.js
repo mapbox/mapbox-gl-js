@@ -94,6 +94,17 @@ declare type RasterSourceSpecification = {
     "attribution"?: string
 }
 
+declare type RasterDEMSourceSpecification = {
+    "type": "raster-dem",
+    "url"?: string,
+    "tiles"?: Array<string>,
+    "bounds"?: [number, number, number, number],
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "tileSize"?: number,
+    "attribution"?: string
+}
+
 declare type GeojsonSourceSpecification = {|
     "type": "geojson",
     "data"?: mixed,
@@ -127,6 +138,7 @@ declare type CanvasSourceSpecification = {|
 declare type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
+    | RasterDEMSourceSpecification
     | GeojsonSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification
@@ -215,7 +227,7 @@ declare type SymbolLayerSpecification = {|
         "text-pitch-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "text-rotation-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "text-field"?: DataDrivenPropertyValueSpecification<string>,
-        "text-font"?: PropertyValueSpecification<Array<string>>,
+        "text-font"?: DataDrivenPropertyValueSpecification<Array<string>>,
         "text-size"?: DataDrivenPropertyValueSpecification<number>,
         "text-max-width"?: DataDrivenPropertyValueSpecification<number>,
         "text-line-height"?: PropertyValueSpecification<number>,
@@ -291,10 +303,10 @@ declare type HeatmapLayerSpecification = {|
         "visibility"?: "visible" | "none"
     |},
     "paint"?: {|
-        "heatmap-radius"?: PropertyValueSpecification<number>,
+        "heatmap-radius"?: DataDrivenPropertyValueSpecification<number>,
         "heatmap-weight"?: DataDrivenPropertyValueSpecification<number>,
         "heatmap-intensity"?: PropertyValueSpecification<number>,
-        "heatmap-color"?: PropertyValueSpecification<ColorSpecification>,
+        "heatmap-color"?: ExpressionSpecification,
         "heatmap-opacity"?: PropertyValueSpecification<number>
     |}
 |}
@@ -345,6 +357,28 @@ declare type RasterLayerSpecification = {|
     |}
 |}
 
+declare type HillshadeLayerSpecification = {|
+    "id": string,
+    "type": "hillshade",
+    "metadata"?: mixed,
+    "source": string,
+    "source-layer"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {|
+        "visibility"?: "visible" | "none"
+    |},
+    "paint"?: {|
+        "hillshade-illumination-direction"?: PropertyValueSpecification<number>,
+        "hillshade-illumination-anchor"?: PropertyValueSpecification<"map" | "viewport">,
+        "hillshade-exaggeration"?: PropertyValueSpecification<number>,
+        "hillshade-shadow-color"?: PropertyValueSpecification<ColorSpecification>,
+        "hillshade-highlight-color"?: PropertyValueSpecification<ColorSpecification>,
+        "hillshade-accent-color"?: PropertyValueSpecification<ColorSpecification>
+    |}
+|}
+
 declare type BackgroundLayerSpecification = {|
     "id": string,
     "type": "background",
@@ -369,5 +403,6 @@ declare type LayerSpecification =
     | HeatmapLayerSpecification
     | FillExtrusionLayerSpecification
     | RasterLayerSpecification
+    | HillshadeLayerSpecification
     | BackgroundLayerSpecification;
 

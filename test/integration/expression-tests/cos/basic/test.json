@@ -2,12 +2,12 @@
   "expression": ["cos", 0],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [1],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [1]
+    }
   }
 }

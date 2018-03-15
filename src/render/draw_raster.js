@@ -2,28 +2,28 @@
 
 const util = require('../util/util');
 const ImageSource = require('../source/image_source');
+const browser = require('../util/browser');
+const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
 module.exports = drawRaster;
 
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<TileCoord>) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
 
-    const gl = painter.gl;
+    const context = painter.context;
+    const gl = context.gl;
     const source = sourceCache.getSource();
     const program = painter.useProgram('raster');
 
-    gl.enable(gl.DEPTH_TEST);
-    painter.depthMask(layer.paint.get('raster-opacity') === 1);
-    // Change depth function to prevent double drawing in areas where tiles overlap.
-    gl.depthFunc(gl.LESS);
-
-    gl.disable(gl.STENCIL_TEST);
+    context.setStencilMode(StencilMode.disabled);
+    context.setColorMode(painter.colorModeForRenderPass());
 
     // Constant parameters.
     gl.uniform1f(program.uniforms.u_brightness_low, layer.paint.get('raster-brightness-min'));
@@ -35,14 +35,16 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     gl.uniform1i(program.uniforms.u_image0, 0);
     gl.uniform1i(program.uniforms.u_image1, 1);
 
-    const minTileZ = coords.length && coords[0].z;
+    const minTileZ = coords.length && coords[0].overscaledZ;
 
     for (const coord of coords) {
-        // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
-        painter.setDepthSublayer(coord.z - minTileZ);
+        // Set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
+        // Use gl.LESS to prevent double drawing in areas where tiles overlap.
+        context.setDepthMode(painter.depthModeForSublayer(coord.overscaledZ - minTileZ,
+            layer.paint.get('raster-opacity') === 1 ? DepthMode.ReadWrite : DepthMode.ReadOnly, gl.LESS));
 
         const tile = sourceCache.getTile(coord);
-        const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
+        const posMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), true);
 
         tile.registerFadeDuration(layer.paint.get('raster-fade-duration'));
 
@@ -53,15 +55,15 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         let parentScaleBy, parentTL;
 
-        gl.activeTexture(gl.TEXTURE0);
+        context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
-        gl.activeTexture(gl.TEXTURE1);
+        context.activeTexture.set(gl.TEXTURE1);
 
         if (parentTile) {
             parentTile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
-            parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
-            parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
+            parentScaleBy = Math.pow(2, parentTile.tileID.overscaledZ - tile.tileID.overscaledZ);
+            parentTL = [tile.tileID.canonical.x * parentScaleBy % 1, tile.tileID.canonical.y * parentScaleBy % 1];
 
         } else {
             tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
@@ -77,11 +79,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         if (source instanceof ImageSource) {
             const buffer = source.boundsBuffer;
             const vao = source.boundsVAO;
-            vao.bind(gl, program, buffer);
+            vao.bind(context, program, buffer, []);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
             program.draw(
-                gl,
+                context,
                 gl.TRIANGLES,
                 layer.id,
                 tile.maskedBoundsBuffer,
@@ -91,12 +93,10 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         } else {
             const buffer = painter.rasterBoundsBuffer;
             const vao = painter.rasterBoundsVAO;
-            vao.bind(gl, program, buffer);
+            vao.bind(context, program, buffer, []);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
         }
     }
-
-    gl.depthFunc(gl.LEQUAL);
 }
 
 function spinWeights(angle) {
@@ -126,7 +126,7 @@ function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
     const fadeDuration = layer.paint.get('raster-fade-duration');
 
     if (fadeDuration > 0) {
-        const now = Date.now();
+        const now = browser.now();
         const sinceTile = (now - tile.timeAdded) / fadeDuration;
         const sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
@@ -137,7 +137,7 @@ function getFadeValues(tile, parentTile, sourceCache, layer, transform) {
         });
 
         // if no parent or parent is older, fade in; if parent is younger, fade out
-        const fadeIn = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
+        const fadeIn = !parentTile || Math.abs(parentTile.tileID.overscaledZ - idealZ) > Math.abs(tile.tileID.overscaledZ - idealZ);
 
         const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
 

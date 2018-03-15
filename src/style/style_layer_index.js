@@ -5,10 +5,13 @@ const util = require('../util/util');
 const featureFilter = require('../style-spec/feature_filter');
 const groupByLayout = require('../style-spec/group_by_layout');
 
+import type {TypedStyleLayer} from './style_layer/typed_style_layer';
+
 export type LayerConfigs = { [string]: LayerSpecification };
+export type Family<Layer: TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
-    familiesBySource: { [string]: { [string]: Array<Array<StyleLayer>> } };
+    familiesBySource: { [source: string]: { [sourceLayer: string]: Array<Family<*>> } };
 
     _layerConfigs: LayerConfigs;
     _layers: { [string]: StyleLayer };

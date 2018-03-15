@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "description": "Tests that transitions from property default values function correctly by checking the rendering halfway through the (default 300ms long) transition from the default circle-color (black) to red.",
+      "operations": [
+        [
+          "setPaintProperty",
+          "circle",
+          "circle-color",
+          "red"
+        ],
+        [
+          "wait",
+          0
+        ],
+        [
+          "wait",
+          150
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson"
+    }
+  ]
+}

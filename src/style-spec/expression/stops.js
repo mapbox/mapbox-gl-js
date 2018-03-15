@@ -1,5 +1,7 @@
 // @flow
 
+const RuntimeError = require('./runtime_error');
+
 import type { Expression } from './expression';
 
 export type Stops = Array<[number, Expression]>;
@@ -25,6 +27,8 @@ function findStopLessThanOrEqualTo(stops: Array<number>, input: number) {
             lowerIndex = currentIndex + 1;
         } else if (currentValue > input) {
             upperIndex = currentIndex - 1;
+        } else {
+            throw new RuntimeError('Input is not a number.');
         }
     }
 

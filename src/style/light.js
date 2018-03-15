@@ -1,7 +1,5 @@
 // @flow
 
-import type {StylePropertySpecification} from "../style-spec/style-spec";
-
 const styleSpec = require('../style-spec/reference/latest');
 const util = require('../util/util');
 const Evented = require('../util/evented');
@@ -9,6 +7,9 @@ const validateStyle = require('./validate_style');
 const {sphericalToCartesian} = require('../util/util');
 const Color = require('../style-spec/util/color');
 const interpolate = require('../style-spec/util/interpolate');
+
+import type {StylePropertySpecification} from '../style-spec/style-spec';
+import type EvaluationParameters from './evaluation_parameters';
 
 const {
     Properties,
@@ -18,7 +19,11 @@ const {
     DataConstantProperty
 } = require('./properties');
 
-import type {Property, PropertyValue, EvaluationParameters} from './properties';
+import type {
+    Property,
+    PropertyValue,
+    TransitionParameters
+} from './properties';
 
 type LightPosition = {
     x: number,
@@ -96,15 +101,8 @@ class Light extends Evented {
         }
     }
 
-    updateTransitions(options: {transition?: boolean}, transition: TransitionSpecification) {
-        if (options.transition === false) {
-            this._transitioning = this._transitionable.untransitioned();
-        } else {
-            this._transitioning = this._transitionable.transitioned({
-                now: Date.now(),
-                transition
-            }, this._transitioning);
-        }
+    updateTransitions(parameters: TransitionParameters) {
+        this._transitioning = this._transitionable.transitioned(parameters, this._transitioning);
     }
 
     hasTransition() {

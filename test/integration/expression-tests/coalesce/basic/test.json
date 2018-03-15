@@ -8,12 +8,12 @@
     [{}, {}]
   ],
   "expected": {
+    "outputs": [1, 1, 2, 3, 0],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "value"
-    },
-    "outputs": [1, 1, 2, 3, 0]
+    }
   }
 }

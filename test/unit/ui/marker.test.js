@@ -5,6 +5,8 @@ const window = require('../../../src/util/window');
 const Map = require('../../../src/ui/map');
 const Marker = require('../../../src/ui/marker');
 const Popup = require('../../../src/ui/popup');
+const LngLat = require('../../../src/geo/lng_lat');
+const Point = require('@mapbox/point-geometry');
 
 function createMap() {
     const container = window.document.createElement('div');
@@ -24,6 +26,21 @@ test('Marker', (t) => {
     t.test('default marker', (t) => {
         const marker = new Marker();
         t.ok(marker.getElement(), 'default marker is created');
+        t.ok(marker.getOffset().equals(new Point(0, -14)), 'default marker with no offset uses default marker offset');
+        t.end();
+    });
+
+    t.test('default marker with some options', (t) => {
+        const marker = new Marker(null, { foo: 'bar' });
+        t.ok(marker.getElement(), 'default marker is created');
+        t.ok(marker.getOffset().equals(new Point(0, -14)), 'default marker with no offset uses default marker offset');
+        t.end();
+    });
+
+    t.test('default marker with custom offest', (t) => {
+        const marker = new Marker(null, { offset: [1, 2] });
+        t.ok(marker.getElement(), 'default marker is created');
+        t.ok(marker.getOffset().equals(new Point(1, 2)), 'default marker with supplied offset');
         t.end();
     });
 
@@ -63,6 +80,17 @@ test('Marker', (t) => {
         t.end();
     });
 
+    t.test('popups can be set before LngLat', (t) => {
+        const map = createMap();
+        const popup = new Popup();
+        new Marker(window.document.createElement('div'))
+            .setPopup(popup)
+            .setLngLat([-77.01866, 38.888])
+            .addTo(map);
+        t.deepEqual(popup.getLngLat(), new LngLat(-77.01866, 38.888));
+        t.end();
+    });
+
     t.test('marker centered by default', (t) => {
         const map = createMap();
         const element = window.document.createElement('div');
@@ -78,6 +106,17 @@ test('Marker', (t) => {
         const marker = new Marker(element).setLngLat([0, 0]).addTo(map);
         marker.setPopup(new Popup());
         t.ok(marker.togglePopup() instanceof Marker);
+        t.end();
+    });
+
+    t.test('marker\'s offset can be changed', (t) => {
+        const map = createMap();
+        const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
+        const offset = marker.getOffset();
+        t.ok(offset.x === 0 && offset.y === 0, 'default offset');
+        t.ok(marker.setOffset([50, -75]) instanceof Marker, 'marker.setOffset() returns Marker instance');
+        const newOffset = marker.getOffset();
+        t.ok(newOffset.x === 50 &&  newOffset.y === -75, 'marker\'s offset can be updated');
         t.end();
     });
 

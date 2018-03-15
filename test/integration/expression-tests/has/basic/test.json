@@ -8,12 +8,12 @@
     [{}, {"properties": {"x": null}}]
   ],
   "expected": {
+    "outputs": [false, true, true, true, true],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "boolean"
-    },
-    "outputs": [false, true, true, true, true]
+    }
   }
 }

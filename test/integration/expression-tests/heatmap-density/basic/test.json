@@ -10,17 +10,27 @@
         [0.7, "yellow"],
         [1, "red"]
       ]
-    }
+    },
+    "function": true,
+    "property-function": true
   },
-  "expression": ["interpolate", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
+  "expression": [
+    "interpolate",
+    ["linear"],
+    ["heatmap-density"],
+    0,
+    "#000000",
+    1,
+    "#ff0000"
+  ],
   "inputs": [[{"heatmapDensity": 0.5}, {}]],
   "expected": {
+    "outputs": [[0.5, 0, 0, 1]],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "color"
-    },
-    "outputs": [[0.5, 0, 0, 1]]
+    }
   }
 }

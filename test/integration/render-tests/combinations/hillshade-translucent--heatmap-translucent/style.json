@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [
+    -113.26903,
+    35.9654
+  ],
+  "zoom": 11,
+  "sources": {
+    "hillshade": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 15,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -113.27384948730469,
+              35.962
+            ],
+            [
+              -113.26421051269531,
+              35.962
+            ],
+            [
+              -113.26421051269531,
+              35.97
+            ],
+            [
+              -113.27384948730469,
+              35.97
+            ],
+            [
+              -113.27384948730469,
+              35.962
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "hillshade-translucent",
+      "type": "hillshade",
+      "source": "hillshade",
+      "paint": {
+        "hillshade-exaggeration": 1
+      }
+    },
+    {
+      "id": "heatmap-translucent",
+      "type": "heatmap",
+      "source": "geojson",
+      "paint": {
+        "heatmap-opacity": 0.7
+      }
+    }
+  ]
+}

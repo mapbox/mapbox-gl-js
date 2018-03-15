@@ -25,12 +25,6 @@
     [{}, {"properties": {"x": 100}}]
   ],
   "expected": {
-    "compiled": {
-      "result": "success",
-      "isFeatureConstant": false,
-      "isZoomConstant": true,
-      "type": "number"
-    },
     "outputs": [
       0,
       1.972244726385564,
@@ -43,6 +37,12 @@
       91.83401779508367,
       98.02775527361445,
       100
-    ]
+    ],
+    "compiled": {
+      "result": "success",
+      "isZoomConstant": true,
+      "isFeatureConstant": false,
+      "type": "number"
+    }
   }
 }

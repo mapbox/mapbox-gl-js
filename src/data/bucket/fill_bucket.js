@@ -1,73 +1,63 @@
 // @flow
 
+const {FillLayoutArray} = require('../array_types');
+const layoutAttributes = require('./fill_attributes').members;
 const {SegmentVector} = require('../segment');
-const VertexBuffer = require('../../gl/vertex_buffer');
-const IndexBuffer = require('../../gl/index_buffer');
 const {ProgramConfigurationSet} = require('../program_configuration');
-const createVertexArrayType = require('../vertex_array_type');
 const {LineIndexArray, TriangleIndexArray} = require('../index_array_type');
 const loadGeometry = require('../load_geometry');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
+const {register} = require('../../util/web_worker_transfer');
 
-import type {Bucket, IndexedFeature, PopulateParameters, SerializedBucket} from '../bucket';
-import type {ProgramInterface} from '../program_configuration';
-import type StyleLayer from '../../style/style_layer';
-import type {StructArray} from '../../util/struct_array';
+import type {
+    Bucket,
+    BucketParameters,
+    IndexedFeature,
+    PopulateParameters
+} from '../bucket';
+import type FillStyleLayer from '../../style/style_layer/fill_style_layer';
+import type Context from '../../gl/context';
+import type IndexBuffer from '../../gl/index_buffer';
+import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
 
-const fillInterface = {
-    layoutAttributes: [
-        {name: 'a_pos', components: 2, type: 'Int16'}
-    ],
-    indexArrayType: TriangleIndexArray,
-    indexArrayType2: LineIndexArray,
-
-    paintAttributes: [
-        {property: 'fill-color'},
-        {property: 'fill-outline-color'},
-        {property: 'fill-opacity'}
-    ]
-};
-
-const LayoutVertexArrayType = createVertexArrayType(fillInterface.layoutAttributes);
-
 class FillBucket implements Bucket {
-    static programInterface: ProgramInterface;
-
     index: number;
     zoom: number;
     overscaling: number;
-    layers: Array<StyleLayer>;
+    layers: Array<FillStyleLayer>;
+    layerIds: Array<string>;
 
-    layoutVertexArray: StructArray;
+    layoutVertexArray: FillLayoutArray;
     layoutVertexBuffer: VertexBuffer;
 
-    indexArray: StructArray;
+    indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
-    indexArray2: StructArray;
+    indexArray2: LineIndexArray;
     indexBuffer2: IndexBuffer;
 
-    programConfigurations: ProgramConfigurationSet;
+    programConfigurations: ProgramConfigurationSet<FillStyleLayer>;
     segments: SegmentVector;
     segments2: SegmentVector;
     uploaded: boolean;
 
-    constructor(options: any) {
+    constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
 
-        this.layoutVertexArray = new LayoutVertexArrayType(options.layoutVertexArray);
-        this.indexArray = new TriangleIndexArray(options.indexArray);
-        this.indexArray2 = new LineIndexArray(options.indexArray2);
-        this.programConfigurations = new ProgramConfigurationSet(fillInterface, options.layers, options.zoom, options.programConfigurations);
-        this.segments = new SegmentVector(options.segments);
-        this.segments2 = new SegmentVector(options.segments2);
+        this.layoutVertexArray = new FillLayoutArray();
+        this.indexArray = new TriangleIndexArray();
+        this.indexArray2 = new LineIndexArray();
+        this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
+        this.segments = new SegmentVector();
+        this.segments2 = new SegmentVector();
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
@@ -84,24 +74,11 @@ class FillBucket implements Bucket {
         return this.layoutVertexArray.length === 0;
     }
 
-    serialize(transferables?: Array<Transferable>): SerializedBucket {
-        return {
-            zoom: this.zoom,
-            layerIds: this.layers.map((l) => l.id),
-            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
-            indexArray: this.indexArray.serialize(transferables),
-            indexArray2: this.indexArray2.serialize(transferables),
-            programConfigurations: this.programConfigurations.serialize(transferables),
-            segments: this.segments.get(),
-            segments2: this.segments2.get()
-        };
-    }
-
-    upload(gl: WebGLRenderingContext) {
-        this.layoutVertexBuffer = new VertexBuffer(gl, this.layoutVertexArray);
-        this.indexBuffer = new IndexBuffer(gl, this.indexArray);
-        this.indexBuffer2 = new IndexBuffer(gl, this.indexArray2);
-        this.programConfigurations.upload(gl);
+    upload(context: Context) {
+        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+        this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        this.indexBuffer2 = context.createIndexBuffer(this.indexArray2);
+        this.programConfigurations.upload(context);
     }
 
     destroy() {
@@ -173,6 +150,6 @@ class FillBucket implements Bucket {
     }
 }
 
-FillBucket.programInterface = fillInterface;
+register('FillBucket', FillBucket, {omit: ['layers']});
 
 module.exports = FillBucket;

@@ -36,7 +36,7 @@ if [ -z "$CIRCLE_TAG" ]; then
 fi
 
 # upload benchmarks
-if [ "$CIRCLE_BRANCH" == "master" ]; then
+if [[ $CIRCLE_BRANCH == master || $CIRCLE_BRANCH =~ ^release- ]]; then
     yarn run build-benchmarks
-    aws s3 cp --acl public-read --content-type application/javascript bench/benchmarks_generated.js s3://mapbox-gl-js/master/benchmarks.js
+    aws s3 cp --acl public-read --content-type application/javascript bench/benchmarks_generated.js s3://mapbox-gl-js/$CIRCLE_BRANCH/benchmarks.js
 fi

@@ -1,5 +1,7 @@
 // @flow
 
+const {register} = require('../util/web_worker_transfer');
+
 class OpacityState {
     opacity: number;
     targetOpacity: number;
@@ -19,5 +21,7 @@ class OpacityState {
         return clone;
     }
 }
+
+register('OpacityState', OpacityState);
 
 module.exports = OpacityState;

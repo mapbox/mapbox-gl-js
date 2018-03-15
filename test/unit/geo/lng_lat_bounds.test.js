@@ -166,5 +166,13 @@ test('LngLatBounds', (t) => {
         t.end();
     });
 
+    t.test('#isEmpty', (t) => {
+        const nullBounds = new LngLatBounds();
+        t.equal(nullBounds.isEmpty(), true);
+        nullBounds.extend([-73.9876, 40.7661], [-73.9397, 40.8002]);
+        t.equal(nullBounds.isEmpty(), false);
+        t.end();
+    });
+
     t.end();
 });

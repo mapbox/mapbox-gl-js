@@ -14,12 +14,12 @@
     [{}, {"properties": {"x": "1"}}]
   ],
   "expected": {
+    "outputs": ["match", "match", "match", "match", "otherwise"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "string"
-    },
-    "outputs": ["match", "match", "match", "match", "otherwise"]
+    }
   }
 }

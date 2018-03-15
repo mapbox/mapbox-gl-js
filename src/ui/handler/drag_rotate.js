@@ -3,9 +3,11 @@
 const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
+const browser = require('../../util/browser');
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
+import type Transform from '../../geo/transform';
 
 const inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -19,7 +21,7 @@ const inertiaLinearity = 0.25,
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  * @param {Object} [options]
  * @param {number} [options.bearingSnap] The threshold, measured in degrees, that determines when the map's
- *   bearing (rotation) will snap to north.
+ *   bearing will snap to north.
  * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
  */
 class DragRotateHandler {
@@ -30,7 +32,10 @@ class DragRotateHandler {
     _button: 'right' | 'left';
     _bearingSnap: number;
     _pitchWithRotate: boolean;
+
+    _lastMoveEvent: MouseEvent;
     _pos: Point;
+    _previousPos: Point;
     _startPos: Point;
     _inertia: Array<[number, number]>;
     _center: Point;
@@ -50,7 +55,9 @@ class DragRotateHandler {
         util.bindAll([
             '_onDown',
             '_onMove',
-            '_onUp'
+            '_onUp',
+            '_onDragFrame',
+            '_onDragFinished'
         ], this);
     }
 
@@ -124,14 +131,17 @@ class DragRotateHandler {
         window.addEventListener('blur', this._onUp);
 
         this._active = false;
-        this._inertia = [[Date.now(), this._map.getBearing()]];
-        this._startPos = this._pos = DOM.mousePos(this._el, e);
+        this._inertia = [[browser.now(), this._map.getBearing()]];
+        this._startPos = this._previousPos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
     }
 
     _onMove(e: MouseEvent) {
+        this._lastMoveEvent = e;
+        this._pos = DOM.mousePos(this._el, e);
+
         if (!this.isActive()) {
             this._active = true;
             this._map.moving = true;
@@ -140,33 +150,9 @@ class DragRotateHandler {
             if (this._pitchWithRotate) {
                 this._fireEvent('pitchstart', e);
             }
+
+            this._map._startAnimation(this._onDragFrame, this._onDragFinished);
         }
-
-        const map = this._map;
-        map.stop();
-
-        const p1 = this._pos,
-            p2 = DOM.mousePos(this._el, e),
-            bearingDiff = (p1.x - p2.x) * 0.8,
-            pitchDiff = (p1.y - p2.y) * -0.5,
-            bearing = map.getBearing() - bearingDiff,
-            pitch = map.getPitch() - pitchDiff,
-            inertia = this._inertia,
-            last = inertia[inertia.length - 1];
-
-        this._drainInertiaBuffer();
-        inertia.push([Date.now(), map._normalizeBearing(bearing, last[1])]);
-
-        map.transform.bearing = bearing;
-        if (this._pitchWithRotate) {
-            this._fireEvent('pitch', e);
-            map.transform.pitch = pitch;
-        }
-
-        this._fireEvent('rotate', e);
-        this._fireEvent('move', e);
-
-        this._pos = p2;
     }
 
     _onUp(e: MouseEvent | FocusEvent) {
@@ -176,9 +162,45 @@ class DragRotateHandler {
 
         DOM.enableDrag();
 
+        this._onDragFinished(e);
+    }
+
+    _onDragFrame(tr: Transform) {
+        const e = this._lastMoveEvent;
+        if (!e) return;
+
+        const p1 = this._previousPos,
+            p2 = this._pos,
+            bearingDiff = (p1.x - p2.x) * 0.8,
+            pitchDiff = (p1.y - p2.y) * -0.5,
+            bearing = tr.bearing - bearingDiff,
+            pitch = tr.pitch - pitchDiff,
+            inertia = this._inertia,
+            last = inertia[inertia.length - 1];
+
+        this._drainInertiaBuffer();
+        inertia.push([browser.now(), this._map._normalizeBearing(bearing, last[1])]);
+
+        tr.bearing = bearing;
+        if (this._pitchWithRotate) {
+            this._fireEvent('pitch', e);
+            tr.pitch = pitch;
+        }
+
+        this._fireEvent('rotate', e);
+        this._fireEvent('move', e);
+
+        delete this._lastMoveEvent;
+        this._previousPos = this._pos;
+    }
+
+    _onDragFinished(e: MouseEvent | FocusEvent | void) {
         if (!this.isActive()) return;
 
         this._active = false;
+        delete this._lastMoveEvent;
+        delete this._previousPos;
+
         this._fireEvent('rotateend', e);
         this._drainInertiaBuffer();
 
@@ -235,13 +257,13 @@ class DragRotateHandler {
         }, { originalEvent: e });
     }
 
-    _fireEvent(type: string, e: Event) {
-        return this._map.fire(type, { originalEvent: e });
+    _fireEvent(type: string, e: ?Event) {
+        return this._map.fire(type, e ? { originalEvent: e } : {});
     }
 
     _drainInertiaBuffer() {
         const inertia = this._inertia,
-            now = Date.now(),
+            now = browser.now(),
             cutoff = 160;   //msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff)

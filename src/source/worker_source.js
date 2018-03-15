@@ -1,11 +1,13 @@
 // @flow
 
-import type TileCoord from './tile_coord';
-import type {SerializedBucket} from '../data/bucket';
-import type {SerializedFeatureIndex} from '../data/feature_index';
-import type {SerializedStructArray} from '../util/struct_array';
 import type {RequestParameters} from '../util/ajax';
 import type {RGBAImage, AlphaImage} from '../util/image';
+import type {OverscaledTileID} from './tile_id';
+import type {Bucket} from '../data/bucket';
+import type FeatureIndex from '../data/feature_index';
+import type {CollisionBoxArray} from '../data/array_types';
+import type {DEMData} from '../data/dem_data';
+import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 
 export type TileParameters = {
     source: string,
@@ -13,26 +15,34 @@ export type TileParameters = {
 };
 
 export type WorkerTileParameters = TileParameters & {
-    coord: TileCoord,
+    tileID: OverscaledTileID,
     request: RequestParameters,
     zoom: number,
     maxZoom: number,
     tileSize: number,
     pixelRatio: number,
     overscaling: number,
-    showCollisionBoxes: boolean
+    showCollisionBoxes: boolean,
+    collectResourceTiming?: boolean
+};
+
+export type WorkerDEMTileParameters = TileParameters & {
+    coord: { z: number, x: number, y: number, w: number },
+    rawImageData: RGBAImage
 };
 
 export type WorkerTileResult = {
-    buckets: Array<SerializedBucket>,
+    buckets: Array<Bucket>,
     iconAtlasImage: RGBAImage,
     glyphAtlasImage: AlphaImage,
-    featureIndex: SerializedFeatureIndex,
-    collisionBoxArray: SerializedStructArray,
+    featureIndex: FeatureIndex,
+    collisionBoxArray: CollisionBoxArray,
     rawTileData?: ArrayBuffer,
+    resourceTiming?: Array<PerformanceResourceTiming>
 };
 
-export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult, transferables: ?Array<Transferable>) => void;
+export type WorkerTileCallback = (error: ?Error, result: ?WorkerTileResult) => void;
+export type WorkerDEMTileCallback = (err: ?Error, result: ?DEMData) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

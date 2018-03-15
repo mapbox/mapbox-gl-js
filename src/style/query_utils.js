@@ -4,15 +4,16 @@ const Point = require('@mapbox/point-geometry');
 
 import type {PossiblyEvaluatedPropertyValue} from "./properties";
 import type StyleLayer from '../style/style_layer';
-import type {Bucket} from '../data/bucket';
+import type CircleBucket from '../data/bucket/circle_bucket';
+import type LineBucket from '../data/bucket/line_bucket';
 
-function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: Bucket): number {
+function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: CircleBucket<*> | LineBucket): number {
     const value = ((layer.paint: any).get(property): PossiblyEvaluatedPropertyValue<any>).value;
     if (value.kind === 'constant') {
         return value.value;
     } else {
-        return (bucket: any).programConfigurations.get(layer.id)
-            .paintPropertyStatistics[property].max;
+        const binders = bucket.programConfigurations.get(layer.id).binders;
+        return binders[property].statistics.max;
     }
 }
 

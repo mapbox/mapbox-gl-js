@@ -2,15 +2,16 @@
 
 const FeatureIndex = require('../data/feature_index');
 const {performSymbolLayout} = require('../symbol/symbol_layout');
-const CollisionBoxArray = require('../symbol/collision_box');
+const {CollisionBoxArray} = require('../data/array_types');
 const DictionaryCoder = require('../util/dictionary_coder');
 const SymbolBucket = require('../data/bucket/symbol_bucket');
 const util = require('../util/util');
 const assert = require('assert');
 const {makeImageAtlas} = require('../render/image_atlas');
 const {makeGlyphAtlas} = require('../render/glyph_atlas');
+const EvaluationParameters = require('../style/evaluation_parameters');
+const {OverscaledTileID} = require('./tile_id');
 
-import type TileCoord from './tile_coord';
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
 import type StyleLayer from '../style/style_layer';
@@ -23,7 +24,7 @@ import type {
 } from '../source/worker_source';
 
 class WorkerTile {
-    coord: TileCoord;
+    tileID: OverscaledTileID;
     uid: string;
     zoom: number;
     pixelRatio: number;
@@ -31,6 +32,7 @@ class WorkerTile {
     source: string;
     overscaling: number;
     showCollisionBoxes: boolean;
+    collectResourceTiming: boolean;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -41,7 +43,7 @@ class WorkerTile {
     vectorTile: VectorTile;
 
     constructor(params: WorkerTileParameters) {
-        this.coord = params.coord;
+        this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         this.uid = params.uid;
         this.zoom = params.zoom;
         this.pixelRatio = params.pixelRatio;
@@ -49,6 +51,7 @@ class WorkerTile {
         this.source = params.source;
         this.overscaling = params.overscaling;
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.collectResourceTiming = !!params.collectResourceTiming;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, actor: Actor, callback: WorkerTileCallback) {
@@ -58,7 +61,7 @@ class WorkerTile {
         this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const featureIndex = new FeatureIndex(this.coord, this.overscaling);
+        const featureIndex = new FeatureIndex(this.tileID, this.overscaling);
         featureIndex.bucketLayerIDs = [];
 
         const buckets: {[string]: Bucket} = {};
@@ -161,18 +164,13 @@ class WorkerTile {
 
                 this.status = 'done';
 
-                const transferables = [
-                    glyphAtlas.image.data.buffer,
-                    imageAtlas.image.data.buffer
-                ];
-
                 callback(null, {
-                    buckets: serializeBuckets(util.values(buckets), transferables),
-                    featureIndex: featureIndex.serialize(transferables),
-                    collisionBoxArray: this.collisionBoxArray.serialize(),
+                    buckets: util.values(buckets).filter(b => !b.isEmpty()),
+                    featureIndex,
+                    collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
                     iconAtlasImage: imageAtlas.image
-                }, transferables);
+                });
             }
         }
     }
@@ -180,24 +178,10 @@ class WorkerTile {
 
 function recalculateLayers(layers: $ReadOnlyArray<StyleLayer>, zoom: number) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
+    const parameters = new EvaluationParameters(zoom);
     for (const layer of layers) {
-        layer.recalculate({
-            zoom,
-            now: Number.MAX_VALUE,
-            defaultFadeDuration: 0,
-            zoomHistory: {
-                lastIntegerZoom: 0,
-                lastIntegerZoomTime: 0,
-                lastZoom: 0
-            }
-        });
+        layer.recalculate(parameters);
     }
-}
-
-function serializeBuckets(buckets: $ReadOnlyArray<Bucket>, transferables: Array<Transferable>) {
-    return buckets
-        .filter((b) => !b.isEmpty())
-        .map((b) => b.serialize(transferables));
 }
 
 module.exports = WorkerTile;

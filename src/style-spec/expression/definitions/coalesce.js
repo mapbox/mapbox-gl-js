@@ -1,6 +1,7 @@
 // @flow
 
 const assert = require('assert');
+const {checkSubtype, ValueType} = require('../types');
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -21,18 +22,31 @@ class Coalesce implements Expression {
             return context.error("Expectected at least one argument.");
         }
         let outputType: Type = (null: any);
-        if (context.expectedType && context.expectedType.kind !== 'value') {
-            outputType = context.expectedType;
+        const expectedType = context.expectedType;
+        if (expectedType && expectedType.kind !== 'value') {
+            outputType = expectedType;
         }
         const parsedArgs = [];
+
         for (const arg of args.slice(1)) {
-            const parsed = context.parse(arg, 1 + parsedArgs.length, outputType);
+            const parsed = context.parse(arg, 1 + parsedArgs.length, outputType, undefined, {omitTypeAnnotations: true});
             if (!parsed) return null;
             outputType = outputType || parsed.type;
             parsedArgs.push(parsed);
         }
         assert(outputType);
-        return new Coalesce((outputType: any), parsedArgs);
+
+        // Above, we parse arguments without inferred type annotation so that
+        // they don't produce a runtime error for `null` input, which would
+        // preempt the desired null-coalescing behavior.
+        // Thus, if any of our arguments would have needed an annotation, we
+        // need to wrap the enclosing coalesce expression with it instead.
+        const needsAnnotation = expectedType &&
+            parsedArgs.some(arg => checkSubtype(expectedType, arg.type));
+
+        return needsAnnotation ?
+            new Coalesce(ValueType, parsedArgs) :
+            new Coalesce((outputType: any), parsedArgs);
     }
 
     evaluate(ctx: EvaluationContext) {
@@ -46,6 +60,10 @@ class Coalesce implements Expression {
 
     eachChild(fn: (Expression) => void) {
         this.args.forEach(fn);
+    }
+
+    possibleOutputs() {
+        return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
     }
 }
 

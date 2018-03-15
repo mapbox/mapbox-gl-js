@@ -16,6 +16,7 @@ test('load tile', (t) => {
             type: 'vector',
             source: 'source',
             uid: 0,
+            tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
             request: { url: '/error' }// Sinon fake server gives 404 responses by default
         }, (err) => {
             t.ok(err);
@@ -47,7 +48,7 @@ test('isolates different instances\' data', (t) => {
 test('worker source messages dispatched to the correct map instance', (t) => {
     const worker = new Worker(_self);
 
-    worker.actor.send = function (type, data, callback, buffers, mapId) {
+    worker.actor.send = function (type, data, callback, mapId) {
         t.equal(type, 'main thread task');
         t.equal(mapId, 999);
         t.end();

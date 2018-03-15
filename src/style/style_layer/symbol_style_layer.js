@@ -17,7 +17,7 @@ const {
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
 import type {Feature} from '../../style-spec/expression';
-import type {EvaluationParameters} from '../properties';
+import type EvaluationParameters from '../evaluation_parameters';
 
 class SymbolStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -69,10 +69,8 @@ class SymbolStyleLayer extends StyleLayer {
         return value;
     }
 
-    createBucket(parameters: BucketParameters) {
-        // Eventually we need to make SymbolBucket conform to the Bucket interface.
-        // Hack around it with casts for now.
-        return (new SymbolBucket((parameters: any)): any);
+    createBucket(parameters: BucketParameters<*>) {
+        return new SymbolBucket(parameters);
     }
 
     queryRadius(): number {

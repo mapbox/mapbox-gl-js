@@ -56,7 +56,7 @@ export type ImageAtlas = {
 };
 
 function makeImageAtlas(images: {[string]: StyleImage}): ImageAtlas {
-    const image = RGBAImage.create({width: 0, height: 0});
+    const image = new RGBAImage({width: 0, height: 0});
     const positions = {};
 
     const pack = new ShelfPack(0, 0, {autoResize: true});
@@ -68,7 +68,7 @@ function makeImageAtlas(images: {[string]: StyleImage}): ImageAtlas {
             src.data.width + 2 * padding,
             src.data.height + 2 * padding);
 
-        RGBAImage.resize(image, {
+        image.resize({
             width: pack.w,
             height: pack.h
         });
@@ -87,7 +87,7 @@ function makeImageAtlas(images: {[string]: StyleImage}): ImageAtlas {
     }
 
     pack.shrink();
-    RGBAImage.resize(image, {
+    image.resize({
         width: pack.w,
         height: pack.h
     });

@@ -9,12 +9,12 @@
     [{}, {"properties": {"x": "abc", "y": "abc"}}]
   ],
   "expected": {
+    "outputs": [true, false, true, false, true, true],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": false,
       "isZoomConstant": true,
+      "isFeatureConstant": false,
       "type": "boolean"
-    },
-    "outputs": [true, false, true, false, true, true]
+    }
   }
 }

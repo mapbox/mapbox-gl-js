@@ -5,6 +5,7 @@ const validateObject = require('./validate_object');
 const validateFilter = require('./validate_filter');
 const validatePaintProperty = require('./validate_paint_property');
 const validateLayoutProperty = require('./validate_layout_property');
+const validateSpec = require('./validate');
 const extend = require('../util/extend');
 
 module.exports = function validateLayer(options) {
@@ -26,7 +27,7 @@ module.exports = function validateLayer(options) {
         for (let i = 0; i < options.arrayIndex; i++) {
             const otherLayer = style.layers[i];
             if (unbundle(otherLayer.id) === layerId) {
-                errors.push(new ValidationError(key, layer.id, 'duplicate layer id "%s", previously used at line %d', layer.id, otherLayer.id.__line__));
+                errors.push(new ValidationError(key, layer.id, `duplicate layer id "${layer.id}", previously used at line ${otherLayer.id.__line__}`));
             }
         }
     }
@@ -34,7 +35,7 @@ module.exports = function validateLayer(options) {
     if ('ref' in layer) {
         ['type', 'source', 'source-layer', 'filter', 'layout'].forEach((p) => {
             if (p in layer) {
-                errors.push(new ValidationError(key, layer[p], '"%s" is prohibited for ref layers', p));
+                errors.push(new ValidationError(key, layer[p], `"${p}" is prohibited for ref layers`));
             }
         });
 
@@ -45,7 +46,7 @@ module.exports = function validateLayer(options) {
         });
 
         if (!parent) {
-            errors.push(new ValidationError(key, layer.ref, 'ref layer "%s" not found', ref));
+            errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
         } else if (parent.ref) {
             errors.push(new ValidationError(key, layer.ref, 'ref cannot reference another ref layer'));
         } else {
@@ -58,13 +59,15 @@ module.exports = function validateLayer(options) {
             const source = style.sources && style.sources[layer.source];
             const sourceType = source && unbundle(source.type);
             if (!source) {
-                errors.push(new ValidationError(key, layer.source, 'source "%s" not found', layer.source));
+                errors.push(new ValidationError(key, layer.source, `source "${layer.source}" not found`));
             } else if (sourceType === 'vector' && type === 'raster') {
-                errors.push(new ValidationError(key, layer.source, 'layer "%s" requires a raster source', layer.id));
+                errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a raster source`));
             } else if (sourceType === 'raster' && type !== 'raster') {
-                errors.push(new ValidationError(key, layer.source, 'layer "%s" requires a vector source', layer.id));
+                errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a vector source`));
             } else if (sourceType === 'vector' && !layer['source-layer']) {
-                errors.push(new ValidationError(key, layer, 'layer "%s" must specify a "source-layer"', layer.id));
+                errors.push(new ValidationError(key, layer, `layer "${layer.id}" must specify a "source-layer"`));
+            } else if (sourceType === 'raster-dem' && type !== 'hillshade') {
+                errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
             }
         }
     }
@@ -78,6 +81,19 @@ module.exports = function validateLayer(options) {
         objectElementValidators: {
             '*': function() {
                 return [];
+            },
+            // We don't want to enforce the spec's `"requires": true` for backward compatibility with refs;
+            // the actual requirement is validated above. See https://github.com/mapbox/mapbox-gl-js/issues/5772.
+            type: function() {
+                return validateSpec({
+                    key: `${key}.type`,
+                    value: layer.type,
+                    valueSpec: styleSpec.layer.type,
+                    style: options.style,
+                    styleSpec: options.styleSpec,
+                    object: layer,
+                    objectKey: 'type'
+                });
             },
             filter: validateFilter,
             layout: function(options) {

@@ -28,7 +28,7 @@ Fork Version | Mapbox version | Notes
   but in not GeojsonSource.
 
 **Mapbox GL JS** is a JavaScript library for interactive, customizable vector maps on the web. It takes map styles that conform to the
-[Mapbox Style Specification](https://github.com/mapbox/mapbox-gl-js/style-spec/), applies them to vector tiles that
+[Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-js/style-spec), applies them to vector tiles that
 conform to the [Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec), and renders them using
 WebGL.
 
@@ -44,6 +44,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 [mapbox/mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native/) repository.
 
 - [Getting started with Mapbox GL JS](https://www.mapbox.com/mapbox-gl-js/api/)
+- [Tutorials](https://www.mapbox.com/help/tutorials/#web-apps)
 - [API documentation](https://www.mapbox.com/mapbox-gl-js/api/)
 - [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style documentation](https://www.mapbox.com/mapbox-gl-js/style-spec/)

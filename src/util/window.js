@@ -57,6 +57,7 @@ function restore(): Window {
 
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
+    window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
     util.extend(module.exports, window);
 
     return window;

@@ -20,17 +20,18 @@ module.exports = function validateSource(options) {
     switch (type) {
     case 'vector':
     case 'raster':
+    case 'raster-dem':
         errors = errors.concat(validateObject({
             key: key,
             value: value,
-            valueSpec: styleSpec[`source_${type}`],
+            valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
             styleSpec: styleSpec
         }));
         if ('url' in value) {
             for (const prop in value) {
                 if (['type', 'url', 'tileSize'].indexOf(prop) < 0) {
-                    errors.push(new ValidationError(`${key}.${prop}`, value[prop], 'a source with a "url" property may not include a "%s" property', prop));
+                    errors.push(new ValidationError(`${key}.${prop}`, value[prop], `a source with a "url" property may not include a "${prop}" property`));
                 }
             }
         }
@@ -76,7 +77,7 @@ module.exports = function validateSource(options) {
         return validateEnum({
             key: `${key}.type`,
             value: value.type,
-            valueSpec: {values: ['vector', 'raster', 'geojson', 'video', 'image', 'canvas']},
+            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image', 'canvas']},
             style: style,
             styleSpec: styleSpec
         });

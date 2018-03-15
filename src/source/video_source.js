@@ -2,6 +2,9 @@
 
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');
+const rasterBoundsAttributes = require('../data/raster_bounds_attributes');
+const VertexArrayObject = require('../render/vertex_array_object');
+const Texture = require('../render/texture');
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -112,8 +115,36 @@ class VideoSource extends ImageSource {
     // setCoordinates inherited from ImageSource
 
     prepare() {
-        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) return; // not enough data for current position
-        this._prepareImage(this.map.painter.gl, this.video);
+        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) {
+            return; // not enough data for current position
+        }
+
+        const context = this.map.painter.context;
+        const gl = context.gl;
+
+        if (!this.boundsBuffer) {
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+        }
+
+        if (!this.boundsVAO) {
+            this.boundsVAO = new VertexArrayObject();
+        }
+
+        if (!this.texture) {
+            this.texture = new Texture(context, this.video, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        } else if (!this.video.paused) {
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
+        }
+
+        for (const w in this.tiles) {
+            const tile = this.tiles[w];
+            if (tile.state !== 'loaded') {
+                tile.state = 'loaded';
+                tile.texture = this.texture;
+            }
+        }
     }
 
     serialize() {

@@ -9,14 +9,14 @@ const TileBounds = require('./tile_bounds');
 const Texture = require('../render/texture');
 
 import type {Source} from './source';
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 
 class RasterTileSource extends Evented implements Source {
-    type: 'raster';
+    type: 'raster' | 'raster-dem';
     id: string;
     minzoom: number;
     maxzoom: number;
@@ -32,9 +32,9 @@ class RasterTileSource extends Evented implements Source {
     tiles: Array<string>;
 
     _loaded: boolean;
-    _options: RasterSourceSpecification;
+    _options: RasterSourceSpecification | RasterDEMSourceSpecification;
 
-    constructor(id: string, options: RasterSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: RasterSourceSpecification | RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -79,12 +79,12 @@ class RasterTileSource extends Evented implements Source {
         return util.extend({}, this._options);
     }
 
-    hasTile(coord: TileCoord) {
-        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
+    hasTile(tileID: OverscaledTileID) {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
+        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
         tile.request = ajax.getImage(this.map._transformRequest(url, ajax.ResourceType.Tile), (err, img) => {
             delete tile.request;
 
@@ -99,17 +99,18 @@ class RasterTileSource extends Evented implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
 
-                const gl = this.map.painter.gl;
+                const context = this.map.painter.context;
+                const gl = context.gl;
                 tile.texture = this.map.painter.getTileTexture(img.width);
                 if (tile.texture) {
                     tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
                     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
                 } else {
-                    tile.texture = new Texture(gl, img, gl.RGBA);
+                    tile.texture = new Texture(context, img, gl.RGBA);
                     tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
 
-                    if (this.map.painter.extTextureFilterAnisotropic) {
-                        gl.texParameterf(gl.TEXTURE_2D, this.map.painter.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.map.painter.extTextureFilterAnisotropicMax);
+                    if (context.extTextureFilterAnisotropic) {
+                        gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
                     }
                 }
                 gl.generateMipmap(gl.TEXTURE_2D);

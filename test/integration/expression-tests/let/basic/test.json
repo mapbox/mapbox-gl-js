@@ -9,12 +9,12 @@
   ],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [4],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [4]
+    }
   }
 }

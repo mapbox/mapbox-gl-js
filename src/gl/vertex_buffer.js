@@ -1,12 +1,13 @@
 // @flow
 
+const assert = require('assert');
 import type {
     StructArray,
-    StructArrayMember,
-    SerializedStructArray
+    StructArrayMember
 } from '../util/struct_array';
 
 import type Program from '../render/program';
+import type Context from '../gl/context';
 
 /**
  * @enum {string} AttributeType
@@ -30,25 +31,26 @@ const AttributeType = {
  */
 class VertexBuffer {
     length: number;
-    attributes: Array<StructArrayMember>;
+    attributes: $ReadOnlyArray<StructArrayMember>;
     itemSize: number;
     dynamicDraw: ?boolean;
-    gl: WebGLRenderingContext;
+    context: Context;
     buffer: WebGLBuffer;
 
     /**
      * @param dynamicDraw Whether this buffer will be repeatedly updated.
      */
-    constructor(gl: WebGLRenderingContext, array: StructArray, dynamicDraw?: boolean) {
+    constructor(context: Context, array: StructArray, attributes: $ReadOnlyArray<StructArrayMember>, dynamicDraw?: boolean) {
         this.length = array.length;
-        this.attributes = array.members;
+        this.attributes = attributes;
         this.itemSize = array.bytesPerElement;
         this.dynamicDraw = dynamicDraw;
 
-        this.gl = gl;
+        this.context = context;
+        const gl = context.gl;
         this.buffer = gl.createBuffer();
-        this.gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        this.gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+        context.bindVertexBuffer.set(this.buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, array.arrayBuffer, this.dynamicDraw ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 
         if (!this.dynamicDraw) {
             delete array.arrayBuffer;
@@ -56,12 +58,14 @@ class VertexBuffer {
     }
 
     bind() {
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+        this.context.bindVertexBuffer.set(this.buffer);
     }
 
-    updateData(array: SerializedStructArray) {
+    updateData(array: StructArray) {
+        assert(array.length === this.length);
+        const gl = this.context.gl;
         this.bind();
-        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, array.arrayBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, array.arrayBuffer);
     }
 
     enableAttributes(gl: WebGLRenderingContext, program: Program) {
@@ -102,8 +106,9 @@ class VertexBuffer {
      * Destroy the GL buffer bound to the given WebGL context
      */
     destroy() {
+        const gl = this.context.gl;
         if (this.buffer) {
-            this.gl.deleteBuffer(this.buffer);
+            gl.deleteBuffer(this.buffer);
             delete this.buffer;
         }
     }

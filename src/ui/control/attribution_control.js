@@ -131,7 +131,12 @@ class AttributionControl {
             }
             return true;
         });
-        this._container.innerHTML = attributions.join(' | ');
+        if (attributions.length) {
+            this._container.innerHTML = attributions.join(' | ');
+            this._container.classList.remove('mapboxgl-attrib-empty');
+        } else {
+            this._container.classList.add('mapboxgl-attrib-empty');
+        }
         // remove old DOM node from _editLink
         this._editLink = null;
     }

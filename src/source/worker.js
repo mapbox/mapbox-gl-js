@@ -4,6 +4,7 @@ const Actor = require('../util/actor');
 const StyleLayerIndex = require('../style/style_layer_index');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
+const RasterDEMTileWorkerSource = require('./raster_dem_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
 const assert = require('assert');
 
@@ -12,7 +13,9 @@ const globalRTLTextPlugin = require('./rtl_text_plugin');
 import type {
     WorkerSource,
     WorkerTileParameters,
+    WorkerDEMTileParameters,
     WorkerTileCallback,
+    WorkerDEMTileCallback,
     TileParameters
 } from '../source/worker_source';
 
@@ -28,6 +31,7 @@ class Worker {
     layerIndexes: { [string]: StyleLayerIndex };
     workerSourceTypes: { [string]: Class<WorkerSource> };
     workerSources: { [string]: { [string]: WorkerSource } };
+    demWorkerSources: { [string]: RasterDEMTileWorkerSource };
 
     constructor(self: WorkerGlobalScopeInterface) {
         this.self = self;
@@ -42,6 +46,7 @@ class Worker {
 
         // [mapId][sourceType] => worker source instance
         this.workerSources = {};
+        this.demWorkerSources = {};
 
         this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
             if (this.workerSourceTypes[name]) {
@@ -74,6 +79,10 @@ class Worker {
         this.getWorkerSource(mapId, params.type).loadTile(params, callback);
     }
 
+    loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
+        this.getDEMWorkerSource(mapId).loadTile(params, callback);
+    }
+
     reloadTile(mapId: string, params: WorkerTileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
@@ -87,6 +96,10 @@ class Worker {
     removeTile(mapId: string, params: TileParameters & {type: string}, callback: WorkerTileCallback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).removeTile(params, callback);
+    }
+
+    removeDEMTile(mapId: string, params: TileParameters) {
+        this.getDEMWorkerSource(mapId).removeTile(params);
     }
 
     removeSource(mapId: string, params: {source: string} & {type: string}, callback: WorkerTileCallback) {
@@ -142,8 +155,8 @@ class Worker {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
-                send: (type, data, callback, buffers) => {
-                    this.actor.send(type, data, callback, buffers, mapId);
+                send: (type, data, callback) => {
+                    this.actor.send(type, data, callback, mapId);
                 }
             };
 
@@ -151,6 +164,14 @@ class Worker {
         }
 
         return this.workerSources[mapId][type];
+    }
+
+    getDEMWorkerSource(mapId: string) {
+        if (!this.demWorkerSources[mapId]) {
+            this.demWorkerSources[mapId] = new RasterDEMTileWorkerSource();
+        }
+
+        return this.demWorkerSources[mapId];
     }
 }
 

@@ -9,6 +9,7 @@ const Coordinate = require('../geo/coordinate');
 const geojsonToVectorTile = require('./geojson_to_vector_tile');
 const vtpbf = require('vt-pbf');
 const rewind = require('geojson-rewind');
+const perf = require('../util/performance');
 
 import type {
     WorkerSource,
@@ -17,24 +18,32 @@ import type {
     TileParameters
 } from '../source/worker_source';
 
+import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {Callback} from '../types/callback';
+import type CanonicalTileID from './tile_id';
 
 export type LoadVectorTileResult = {
     vectorTile: VectorTile;
     rawData: ArrayBuffer;
     expires?: any;
     cacheControl?: any;
+    resourceTiming?: Array<PerformanceResourceTiming>;
+};
+
+export type TileCoordinate = {
+  row: number,
+  column: number,
+  zoom: number
 };
 
 export type GetLeavesParameters = {
-    source: string,
-    tileCoordinate: Coordinate,
+    canonicalTileID: CanonicalTileID,
     clusterId: string,
-    clusterZoom: number,
     limit: number,
-    offset: number
+    offset: number,
+    source: string
 };
 
 
@@ -78,7 +87,7 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
 
             try {
                 const { geojsonWrappedVectorTile, geojsonIndex } = geojsonToVectorTile(
-                  data, options, params.tileSize, params.zoom, params.coord
+                  data, options, params.tileSize, params.tileID
                 );
 
                 let pbf = vtpbf(geojsonWrappedVectorTile);
@@ -181,16 +190,22 @@ class VectorTileWorkerSource implements WorkerSource {
             const cacheControl = {};
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
+            const resourceTiming = {};
+            if (params.request && params.request.collectResourceTiming) {
+                const resourceTimingData = perf.getEntriesByName(params.request.url);
+                // it's necessary to eval the result of getEntriesByName() here via parse/stringify
+                // late evaluation in the main thread causes TypeError: illegal invocation
+                if (resourceTimingData)
+                    resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
+            }
 
             workerTile.vectorTile = response.vectorTile;
             workerTile.geojsonIndex = response.geojsonIndex;
-            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
+            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result) => {
                 if (err || !result) return callback(err);
 
-                // Not transferring rawTileData because the worker needs to retain its copy.
-                callback(null,
-                    util.extend({rawTileData}, result, cacheControl),
-                    transferrables);
+                // Transferring a copy of rawTileData because the worker needs to retain its copy.
+                callback(null, util.extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
             });
 
             this.loaded[source] = this.loaded[source] || {};
@@ -238,9 +253,7 @@ class VectorTileWorkerSource implements WorkerSource {
     getLeaves(params: GetLeavesParameters, callback: Callback<void>) {
         const workerTiles = util.values(this.loaded[params.source]);
         const workerTile = workerTiles.filter((wt) => {
-            return wt.coord.x === params.tileCoordinate.column &&
-                wt.coord.y === params.tileCoordinate.row &&
-                wt.coord.z === params.tileCoordinate.zoom;
+            return wt.tileID.canonical.equals(params.canonicalTileID);
         })[0];
 
         if (!workerTile) {
@@ -255,7 +268,7 @@ class VectorTileWorkerSource implements WorkerSource {
 
         const leaves = superclusterInstance.getLeaves(
             params.clusterId,
-            params.clusterZoom,
+            params.canonicalTileID.z,
             params.limit,
             params.offset
         );

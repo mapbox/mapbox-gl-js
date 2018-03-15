@@ -1,15 +1,14 @@
 // @flow
 
-const util = require('../util/util');
-
-import type CollisionBoxArray from '../symbol/collision_box';
+import type {CollisionBoxArray} from './array_types';
 import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
+import type Context from '../gl/context';
 
-export type BucketParameters = {
+export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
-    layers: Array<StyleLayer>,
+    layers: Array<Layer>,
     zoom: number,
     pixelRatio: number,
     overscaling: number,
@@ -20,11 +19,6 @@ export type PopulateParameters = {
     featureIndex: FeatureIndex,
     iconDependencies: {},
     glyphDependencies: {}
-}
-
-export type SerializedBucket = {
-    zoom: number,
-    layerIds: Array<string>
 }
 
 export type IndexedFeature = {
@@ -57,11 +51,12 @@ export type IndexedFeature = {
  * @private
  */
 export interface Bucket {
+    layerIds: Array<string>;
+
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
     isEmpty(): boolean;
-    serialize(transferables?: Array<Transferable>): SerializedBucket;
 
-    upload(gl: WebGLRenderingContext): void;
+    upload(context: Context): void;
     uploaded: boolean;
 
     /**
@@ -75,15 +70,15 @@ export interface Bucket {
 }
 
 module.exports = {
-    deserialize(input: Array<SerializedBucket>, style: Style): {[string]: Bucket} {
+    deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
         const output = {};
 
         // Guard against the case where the map's style has been set to null while
         // this bucket has been parsing.
         if (!style) return output;
 
-        for (const serialized of input) {
-            const layers = serialized.layerIds
+        for (const bucket of input) {
+            const layers = bucket.layerIds
                 .map((id) => style.getLayer(id))
                 .filter(Boolean);
 
@@ -91,7 +86,10 @@ module.exports = {
                 continue;
             }
 
-            const bucket = layers[0].createBucket(util.extend({layers}, serialized));
+            // look up StyleLayer objects from layer ids (since we don't
+            // want to waste time serializing/copying them from the worker)
+            (bucket: any).layers = layers;
+
             for (const layer of layers) {
                 output[layer.id] = bucket;
             }

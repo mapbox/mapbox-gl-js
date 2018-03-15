@@ -16,6 +16,8 @@ function isFeatureConstant(e: Expression) {
             e.name === 'id'
         ) {
             return false;
+        } else if (/^filter-/.test(e.name)) {
+            return false;
         }
     }
 

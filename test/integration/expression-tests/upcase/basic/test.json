@@ -2,12 +2,12 @@
   "expression": ["upcase", "string"],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": ["STRING"],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "string"
-    },
-    "outputs": ["STRING"]
+    }
   }
 }

@@ -1,3 +1,70 @@
+## 0.44.0
+
+### ✨ Features and improvements
+
+* The CSP policy of a page using mapbox-gl-js no longer needs to include `script-src 'unsafe-eval'` [#559](https://github.com/mapbox/mapbox-gl-js/issues/559)
+* Add `LngLatBounds#isEmpty()` method [#5917](https://github.com/mapbox/mapbox-gl-js/pull/5917)
+* Updated to flow 0.62.0 [#5923](https://github.com/mapbox/mapbox-gl-js/issues/5923)
+* Make compass and zoom controls optional ([#5348](https://github.com/mapbox/mapbox-gl-js/pull/5348)) (h/t @matijs)
+* Add `collectResourceTiming` option to the enable collection of [Resource Timing](https://developer.mozilla.org/en-US/docs/Web/API/Resource_Timing_API/Using_the_Resource_Timing_API) data for requests that are made from Web Workers. ([#5948](https://github.com/mapbox/mapbox-gl-js/issues/5948))
+* Improve user location dot appearance across browsers ([#5498](https://github.com/mapbox/mapbox-gl-js/pull/5498)) (h/t @jasonbarry)
+
+### 🐛 Bug fixes
+
+* Fix error triggered by `==` and `!=` expressions [#5947](https://github.com/mapbox/mapbox-gl-js/issues/5947)
+* Image sources honor `renderWorldCopies` [#5932](https://github.com/mapbox/mapbox-gl-js/pull/5932)
+* Fix transitions to default fill-outline-color  [#5953](https://github.com/mapbox/mapbox-gl-js/issues/5953)
+* Fix transitions for light properties [#5982](https://github.com/mapbox/mapbox-gl-js/issues/5982)
+* Fix minor symbol collisions on pitched maps [#5913](https://github.com/mapbox/mapbox-gl-js/pull/5913)
+* Fix memory leaks after `Map#remove()` [#5943](https://github.com/mapbox/mapbox-gl-js/pull/5943), [#5951](https://github.com/mapbox/mapbox-gl-js/pull/5951)
+* Fix bug wherein `GeoJSONSource#setData()` caused labels to fade out and back in ([#6002](https://github.com/mapbox/mapbox-gl-js/issues/6002))
+* Fix bug that could cause incorrect collisions for labels placed very near to each other at low zoom levels ([#5993](https://github.com/mapbox/mapbox-gl-js/issues/5993))
+* Fix bug causing `move` events to be fired out of sync with actual map movements ([#6005](https://github.com/mapbox/mapbox-gl-js/pull/6005))
+* Fix bug wherein `Map` did not fire `mouseover` events ([#6000](https://github.com/mapbox/mapbox-gl-js/pull/6000)] (h/t @jay-manday)
+* Fix bug causing blurry rendering of raster tiles ([#4552](https://github.com/mapbox/mapbox-gl-js/issues/4552))
+* Fix potential memory leak caused by removing layers ([#5995](https://github.com/mapbox/mapbox-gl-js/issues/5995))
+* Fix bug causing attribution icon to appear incorrectly in compact maps not using Mapbox data ([#6042](https://github.com/mapbox/mapbox-gl-js/pull/6042))
+* Fix positioning of default marker element ([#6012](https://github.com/mapbox/mapbox-gl-js/pull/6012)) (h/t @andrewharvey)
+
+## 0.43.0 (December 21, 2017)
+
+### ⚠️ Breaking changes
+
+* It is now an error to attempt to remove a source that is in use [#5562](https://github.com/mapbox/mapbox-gl-js/pull/5562)
+* It is now an error if the layer specified by the `before` parameter to `moveLayer` does not exist [#5679](https://github.com/mapbox/mapbox-gl-js/pull/5679)
+* `"colorSpace": "hcl"` now uses shortest-path interpolation for hue [#5811](https://github.com/mapbox/mapbox-gl-js/issues/5811)
+
+### ✨ Features and improvements
+
+* Introduce client-side hillshading with `raster-dem` source type and `hillshade` layer type [#5286](https://github.com/mapbox/mapbox-gl-js/pull/5286)
+* GeoJSON sources take 2x less memory and generate tiles 20%–100% faster [#5799](https://github.com/mapbox/mapbox-gl-js/pull/5799)
+* Enable data-driven values for text-font [#5698](https://github.com/mapbox/mapbox-gl-js/pull/5698)
+* Enable data-driven values for heatmap-radius [#5898](https://github.com/mapbox/mapbox-gl-js/pull/5898)
+* Add getter and setter for offset on marker [#5759](https://github.com/mapbox/mapbox-gl-js/pull/5759)
+* Add `Map#hasImage` [#5775](https://github.com/mapbox/mapbox-gl-js/pull/5775)
+* Improve typing for `==` and `!=` expressions [#5840](https://github.com/mapbox/mapbox-gl-js/pull/5840)
+* Made `coalesce` expressions more useful [#5755](https://github.com/mapbox/mapbox-gl-js/issues/5755)
+* Enable implicit type assertions for array types [#5738](https://github.com/mapbox/mapbox-gl-js/pull/5738)
+* Improve hash control precision [#5767](https://github.com/mapbox/mapbox-gl-js/pull/5767)
+* `supported()` now returns false on old IE 11 versions that don't support Web Worker blob URLs [#5801](https://github.com/mapbox/mapbox-gl-js/pull/5801)
+* Remove flow globals TileJSON and Transferable [#5668](https://github.com/mapbox/mapbox-gl-js/pull/5668)
+* Improve performance of image, video, and canvas sources [#5845](https://github.com/mapbox/mapbox-gl-js/pull/5845)
+
+### 🐛 Bug fixes
+
+* Fix popups and markers lag during pan animation [#4670](https://github.com/mapbox/mapbox-gl-js/issues/4670)
+* Fix fading of symbol layers caused by setData [#5716](https://github.com/mapbox/mapbox-gl-js/issues/5716)
+* Fix behavior of `to-rgba` and `rgba` expressions [#5778](https://github.com/mapbox/mapbox-gl-js/pull/5778), [#5866](https://github.com/mapbox/mapbox-gl-js/pull/5866)
+* Fix cross-fading of `*-pattern` and `line-dasharray` [#5791](https://github.com/mapbox/mapbox-gl-js/pull/5791)
+* Fix `colorSpace` function property [#5843](https://github.com/mapbox/mapbox-gl-js/pull/5843)
+* Fix style diffing when changing GeoJSON source properties [#5731](https://github.com/mapbox/mapbox-gl-js/issues/5731)
+* Fix missing labels when zooming out from overzoomed tile [#5827](https://github.com/mapbox/mapbox-gl-js/issues/5827)
+* Fix missing labels when zooming out and quickly using setData [#5837](https://github.com/mapbox/mapbox-gl-js/issues/5837)
+* Handle NaN as input to step and interpolate expressions [#5757](https://github.com/mapbox/mapbox-gl-js/pull/5757)
+* Clone property values on input and output [#5806](https://github.com/mapbox/mapbox-gl-js/pull/5806)
+* Bump geojson-rewind dependency [#5769](https://github.com/mapbox/mapbox-gl-js/pull/5769)
+* Allow setting Marker's popup before LngLat [#5893](https://github.com/mapbox/mapbox-gl-js/pull/5893)
+
 ## 0.42.2 (November 21, 2017)
 
 ### 🐛 Bug fixes

@@ -89,16 +89,14 @@ class Evented {
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
-
-            for (let i = 0; i < listeners.length; i++) {
-                listeners[i].call(this, data);
+            for (const listener of listeners) {
+                listener.call(this, data);
             }
 
             const oneTimeListeners = this._oneTimeListeners && this._oneTimeListeners[type] ? this._oneTimeListeners[type].slice() : [];
-
-            for (let i = 0; i < oneTimeListeners.length; i++) {
-                oneTimeListeners[i].call(this, data);
-                _removeEventListener(type, oneTimeListeners[i], this._oneTimeListeners);
+            for (const listener of oneTimeListeners) {
+                _removeEventListener(type, listener, this._oneTimeListeners);
+                listener.call(this, data);
             }
 
             if (this._eventedParent) {

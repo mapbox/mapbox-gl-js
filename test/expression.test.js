@@ -32,6 +32,8 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
 
     expression = expression.value;
 
+    const type = expression._styleExpression.expression.type; // :scream:
+
     const outputs = [];
     const result = {
         outputs,
@@ -39,11 +41,11 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
             result: 'success',
             isZoomConstant: expression.kind === 'constant' || expression.kind === 'source',
             isFeatureConstant: expression.kind === 'constant' || expression.kind === 'camera',
-            type: toString(expression.parsed.type)
+            type: toString(type)
         }
     };
 
-    for (const input of fixture.inputs) {
+    for (const input of fixture.inputs || []) {
         try {
             const feature = { properties: input[1].properties || {} };
             if ('id' in input[1]) {
@@ -53,7 +55,7 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
                 feature.type = input[1].geometry.type;
             }
             let value = expression.evaluate(input[0], feature);
-            if (expression.parsed.type.kind === 'color') {
+            if (type.kind === 'color') {
                 value = [value.r, value.g, value.b, value.a];
             }
             outputs.push(value);

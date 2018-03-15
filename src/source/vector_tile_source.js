@@ -9,11 +9,12 @@ const ResourceType = require('../util/ajax').ResourceType;
 const browser = require('../util/browser');
 
 import type {Source} from './source';
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
+import type {CanonicalTileID} from './CanonicalTileID';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -25,6 +26,7 @@ class VectorTileSource extends Evented implements Source {
     tileSize: number;
 
     _options: VectorSourceSpecification;
+    _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
     bounds: ?[number, number, number, number];
@@ -33,7 +35,7 @@ class VectorTileSource extends Evented implements Source {
     reparseOverscaled: boolean;
     isTileClipped: boolean;
 
-    constructor(id: string, options: VectorSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -48,6 +50,8 @@ class VectorTileSource extends Evented implements Source {
 
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
         this._options = util.extend({ type: 'vector' }, options);
+
+        this._collectResourceTiming = options.collectResourceTiming;
 
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
@@ -75,8 +79,8 @@ class VectorTileSource extends Evented implements Source {
         });
     }
 
-    hasTile(coord: TileCoord) {
-        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
+    hasTile(tileID: OverscaledTileID) {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     onAdd(map: Map) {
@@ -89,21 +93,22 @@ class VectorTileSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
-        const url = normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url);
+        const overscaling = tile.tileID.overscaleFactor();
+        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url);
         const params = {
             request: this.map._transformRequest(url, ResourceType.Tile),
             uid: tile.uid,
-            coord: tile.coord,
-            zoom: tile.coord.z,
+            tileID: tile.tileID,
+            zoom: tile.tileID.overscaledZ,
             tileSize: this.tileSize * overscaling,
             type: this.type,
             options: this._options,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
             overscaling: overscaling,
-            showCollisionBoxes: this.map.showCollisionBoxes
+            showCollisionBoxes: this.map.showCollisionBoxes,
         };
+        params.request.collectResourceTiming = this._collectResourceTiming;
 
         if (tile.workerID === undefined || tile.state === 'expired') {
             tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
@@ -122,6 +127,9 @@ class VectorTileSource extends Evented implements Source {
                 return callback(err);
             }
 
+            if (data && data.resourceTiming)
+                tile.resourceTiming = data.resourceTiming;
+
             if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
 
@@ -134,11 +142,10 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    getLeaves(tileCoordinate, clusterId, clusterZoom, limit, offset, callback) {
+    getLeaves(canonicalTileID: canonicalTileID, clusterId: number, limit: number, offset: number, callback: Callback<void>) {
         const options = util.extend({
-            tileCoordinate: tileCoordinate,
+            canonicalTileID: canonicalTileID,
             clusterId: clusterId,
-            clusterZoom: Math.ceil(clusterZoom),
             limit: limit || 10,
             offset: offset || 0,
             source: this.id

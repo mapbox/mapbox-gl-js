@@ -11,8 +11,13 @@ const mat4 = glmatrix.mat4;
 const projection = require('../symbol/projection');
 
 import type Transform from '../geo/transform';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 import type {SingleCollisionBox} from '../data/bucket/symbol_bucket';
+import type {
+    CollisionBoxArray,
+    GlyphOffsetArray,
+    SymbolLineVertexArray
+} from '../data/array_types';
 
 // When a symbol crosses the edge that causes it to be included in
 // collision detection, it will cause changes in the symbols around
@@ -39,6 +44,8 @@ class CollisionIndex {
     ignoredGrid: Grid;
     transform: Transform;
     pitchfactor: number;
+    screenRightBoundary: number;
+    screenBottomBoundary: number;
 
     constructor(
         transform: Transform,
@@ -50,22 +57,31 @@ class CollisionIndex {
         this.grid = grid;
         this.ignoredGrid = ignoredGrid;
         this.pitchfactor = Math.cos(transform._pitch) * transform.cameraToCenterDistance;
+
+        this.screenRightBoundary = transform.width + viewportPadding;
+        this.screenBottomBoundary = transform.height + viewportPadding;
     }
 
-    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4): Array<number> {
+    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4): { box: Array<number>, offscreen: boolean } {
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
-        const tlX = collisionBox.x1 / tileToViewport + projectedPoint.point.x;
-        const tlY = collisionBox.y1 / tileToViewport + projectedPoint.point.y;
-        const brX = collisionBox.x2 / tileToViewport + projectedPoint.point.x;
-        const brY = collisionBox.y2 / tileToViewport + projectedPoint.point.y;
+        const tlX = collisionBox.x1 * tileToViewport + projectedPoint.point.x;
+        const tlY = collisionBox.y1 * tileToViewport + projectedPoint.point.y;
+        const brX = collisionBox.x2 * tileToViewport + projectedPoint.point.x;
+        const brY = collisionBox.y2 * tileToViewport + projectedPoint.point.y;
 
         if (!allowOverlap) {
             if (this.grid.hitTest(tlX, tlY, brX, brY)) {
-                return [];
+                return {
+                    box: [],
+                    offscreen: false
+                };
             }
         }
-        return [tlX, tlY, brX, brY];
+        return {
+            box: [tlX, tlY, brX, brY],
+            offscreen: this.isOffscreen(tlX, tlY, brX, brY)
+        };
     }
 
     approximateTileDistance(tileDistance: any, lastSegmentAngle: number, pixelsToTileUnits: number, cameraToAnchorDistance: number, pitchWithMap: boolean): number {
@@ -95,13 +111,13 @@ class CollisionIndex {
                           textPixelRatio: number,
                           key: string,
                           symbol: any,
-                          lineVertexArray: any,
-                          glyphOffsetArray: any,
+                          lineVertexArray: SymbolLineVertexArray,
+                          glyphOffsetArray: GlyphOffsetArray,
                           fontSize: number,
                           posMatrix: mat4,
                           labelPlaneMatrix: mat4,
                           showCollisionCircles: boolean,
-                          pitchWithMap: boolean): Array<number> {
+                          pitchWithMap: boolean): { circles: Array<number>, offscreen: boolean } {
         const placedCollisionCircles = [];
 
         const projectedAnchor = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY);
@@ -131,10 +147,13 @@ class CollisionIndex {
             /*return tile distance*/ true);
 
         let collisionDetected = false;
+        let entirelyOffscreen = true;
 
         const tileToViewport = projectedAnchor.perspectiveRatio * textPixelRatio;
+        // pixelsToTileUnits is used for translating line geometry to tile units
+        // ... so we care about 'scale' but not 'perspectiveRatio'
         // equivalent to pixel_to_tile_units
-        const pixelsToTileUnits = tileToViewport / scale;
+        const pixelsToTileUnits = 1 / (textPixelRatio * scale);
 
         let firstTileDistance = 0, lastTileDistance = 0;
         if (firstAndLastGlyph) {
@@ -158,7 +177,7 @@ class CollisionIndex {
             }
 
             const projectedPoint = this.projectPoint(posMatrix, anchorPointX, anchorPointY);
-            const radius = tileUnitRadius / tileToViewport;
+            const radius = tileUnitRadius * tileToViewport;
 
             const atLeastOneCirclePlaced = placedCollisionCircles.length > 0;
             if (atLeastOneCirclePlaced) {
@@ -190,10 +209,15 @@ class CollisionIndex {
             placedCollisionCircles.push(projectedPoint.x, projectedPoint.y, radius, collisionBoxArrayIndex);
             markCollisionCircleUsed(collisionCircles, k, true);
 
+            entirelyOffscreen = entirelyOffscreen && this.isOffscreen(projectedPoint.x - radius, projectedPoint.y - radius, projectedPoint.x + radius, projectedPoint.y + radius);
+
             if (!allowOverlap) {
                 if (this.grid.hitTestCircle(projectedPoint.x, projectedPoint.y, radius)) {
                     if (!showCollisionCircles) {
-                        return [];
+                        return {
+                            circles: [],
+                            offscreen: false
+                        };
                     } else {
                         // Don't early exit if we're showing the debug circles because we still want to calculate
                         // which circles are in use
@@ -203,7 +227,10 @@ class CollisionIndex {
             }
         }
 
-        return collisionDetected ? [] : placedCollisionCircles;
+        return {
+            circles: collisionDetected ? [] : placedCollisionCircles,
+            offscreen: entirelyOffscreen
+        };
     }
 
     /**
@@ -220,7 +247,7 @@ class CollisionIndex {
      *
      * @private
      */
-    queryRenderedSymbols(queryGeometry: any, tileCoord: TileCoord, tileSourceMaxZoom: number, textPixelRatio: number, collisionBoxArray: any, sourceID: string) {
+    queryRenderedSymbols(queryGeometry: any, tileCoord: OverscaledTileID, textPixelRatio: number, collisionBoxArray: CollisionBoxArray, sourceID: string, bucketInstanceIds: {[number]: boolean}) {
         const sourceLayerFeatures = {};
         const result = [];
 
@@ -228,7 +255,7 @@ class CollisionIndex {
             return result;
         }
 
-        const posMatrix = this.transform.calculatePosMatrix(tileCoord, tileSourceMaxZoom);
+        const posMatrix = this.transform.calculatePosMatrix(tileCoord.toUnwrapped());
 
         const query = [];
         let minX = Infinity;
@@ -247,18 +274,23 @@ class CollisionIndex {
             }
         }
 
-        const tileID = tileCoord.id;
+        const tileID = tileCoord.key;
 
         const thisTileFeatures = [];
         const features = this.grid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < features.length; i++) {
-            if (features[i].sourceID === sourceID && features[i].tileID === tileID) {
+            // Only include results from the matching source, tile and version of the bucket that was indexed
+            if (features[i].sourceID === sourceID &&
+                features[i].tileID === tileID &&
+                bucketInstanceIds[features[i].bucketInstanceId]) {
                 thisTileFeatures.push(features[i].boxIndex);
             }
         }
         const ignoredFeatures = this.ignoredGrid.query(minX, minY, maxX, maxY);
         for (let i = 0; i < ignoredFeatures.length; i++) {
-            if (ignoredFeatures[i].sourceID === sourceID && ignoredFeatures[i].tileID === tileID) {
+            if (ignoredFeatures[i].sourceID === sourceID &&
+                ignoredFeatures[i].tileID === tileID &&
+                bucketInstanceIds[ignoredFeatures[i].bucketInstanceId]) {
                 thisTileFeatures.push(ignoredFeatures[i].boxIndex);
             }
         }
@@ -287,10 +319,10 @@ class CollisionIndex {
             // to work with.
             const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, blocking.anchorPointX, blocking.anchorPointY);
             const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
-            const x1 = blocking.x1 / tileToViewport + projectedPoint.point.x;
-            const y1 = blocking.y1 / tileToViewport + projectedPoint.point.y;
-            const x2 = blocking.x2 / tileToViewport + projectedPoint.point.x;
-            const y2 = blocking.y2 / tileToViewport + projectedPoint.point.y;
+            const x1 = blocking.x1 * tileToViewport + projectedPoint.point.x;
+            const y1 = blocking.y1 * tileToViewport + projectedPoint.point.y;
+            const x2 = blocking.x2 * tileToViewport + projectedPoint.point.x;
+            const y2 = blocking.y2 * tileToViewport + projectedPoint.point.y;
             const bbox = [
                 new Point(x1, y1),
                 new Point(x2, y1),
@@ -308,18 +340,18 @@ class CollisionIndex {
         return result;
     }
 
-    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, tileID: number, sourceID: string, boxStartIndex: number) {
+    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, tileID: number, sourceID: string, bucketInstanceId: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { tileID: tileID, sourceID: sourceID, boxIndex: boxStartIndex };
+        const key = { tileID: tileID, sourceID: sourceID, bucketInstanceId: bucketInstanceId, boxIndex: boxStartIndex };
         grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
-    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, tileID: number, sourceID: string, boxStartIndex: number) {
+    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, tileID: number, sourceID: string, bucketInstanceId: number, boxStartIndex: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
         for (let k = 0; k < collisionCircles.length; k += 4) {
-            const key = { tileID: tileID, sourceID: sourceID, boxIndex: boxStartIndex + collisionCircles[k + 3] };
+            const key = { tileID: tileID, sourceID: sourceID, bucketInstanceId: bucketInstanceId, boxIndex: boxStartIndex + collisionCircles[k + 3] };
             grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }
     }
@@ -328,7 +360,7 @@ class CollisionIndex {
         const p = [x, y, 0, 1];
         projection.xyTransformMat4(p, p, posMatrix);
         return {
-            perspectiveRatio: 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance),
+            perspectiveRatio: 0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3]),
             cameraDistance: p[3]
         };
     }
@@ -351,10 +383,16 @@ class CollisionIndex {
         );
         return {
             point: a,
-            perspectiveRatio: 0.5 + 0.5 * (p[3] / this.transform.cameraToCenterDistance)
+            // See perspective ratio comment in symbol_sdf.vertex
+            // We're doing collision detection in viewport space so we need
+            // to scale down boxes in the distance
+            perspectiveRatio: 0.5 + 0.5 * (this.transform.cameraToCenterDistance / p[3])
         };
     }
 
+    isOffscreen(x1: number, y1: number, x2: number, y2: number) {
+        return x2 < viewportPadding || x1 >= this.screenRightBoundary || y2 < viewportPadding || y1 > this.screenBottomBoundary;
+    }
 }
 
 function markCollisionCircleUsed(collisionCircles: Array<number>, index: number, used: boolean) {

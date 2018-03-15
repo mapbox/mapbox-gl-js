@@ -1,6 +1,7 @@
 // @flow
 
 const assert = require('assert');
+const {register} = require('./web_worker_transfer');
 
 export type Size = {
     width: number,
@@ -12,21 +13,24 @@ type Point = {
     y: number
 };
 
-function createImage({width, height}: Size, channels: number, data?: Uint8Array) {
+function createImage(image: *, {width, height}: Size, channels: number, data?: Uint8Array | Uint8ClampedArray) {
     if (!data) {
         data = new Uint8Array(width * height * channels);
     } else if (data.length !== width * height * channels) {
         throw new RangeError('mismatched image size');
     }
-    return { width, height, data };
+    image.width = width;
+    image.height = height;
+    image.data = data;
+    return image;
 }
 
 function resizeImage(image: *, {width, height}: Size, channels: number) {
     if (width === image.width && height === image.height) {
-        return image;
+        return;
     }
 
-    const newImage = createImage({width, height}, channels);
+    const newImage = createImage({}, {width, height}, channels);
 
     copyImage(image, newImage, {x: 0, y: 0}, {x: 0, y: 0}, {
         width: Math.min(image.width, width),
@@ -73,21 +77,21 @@ function copyImage(srcImg: *, dstImg: *, srcPt: Point, dstPt: Point, size: Size,
     return dstImg;
 }
 
-// These "classes" are really just a combination of type (for the properties)
-// and namespace (for the static methods). In reality, the type at runtime is
-// a plain old object; we can't use instance methods because these values are
-// transferred to and from workers.
 class AlphaImage {
     width: number;
     height: number;
-    data: Uint8Array;
+    data: Uint8Array | Uint8ClampedArray;
 
-    static create(size: Size, data?: Uint8Array) {
-        return ((createImage(size, 1, data): any): AlphaImage);
+    constructor(size: Size, data?: Uint8Array | Uint8ClampedArray) {
+        createImage(this, size, 1, data);
     }
 
-    static resize(image: AlphaImage, size: Size) {
-        resizeImage(image, size, 1);
+    resize(size: Size) {
+        resizeImage(this, size, 1);
+    }
+
+    clone() {
+        return new AlphaImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
     static copy(srcImg: AlphaImage, dstImg: AlphaImage, srcPt: Point, dstPt: Point, size: Size) {
@@ -100,20 +104,27 @@ class AlphaImage {
 class RGBAImage {
     width: number;
     height: number;
-    data: Uint8Array;
+    data: Uint8Array | Uint8ClampedArray;
 
-    static create(size: Size, data?: Uint8Array) {
-        return ((createImage(size, 4, data): any): RGBAImage);
+    constructor(size: Size, data?: Uint8Array | Uint8ClampedArray) {
+        createImage(this, size, 4, data);
     }
 
-    static resize(image: RGBAImage, size: Size) {
-        resizeImage(image, size, 4);
+    resize(size: Size) {
+        resizeImage(this, size, 4);
+    }
+
+    clone() {
+        return new RGBAImage({width: this.width, height: this.height}, new Uint8Array(this.data));
     }
 
     static copy(srcImg: RGBAImage | ImageData, dstImg: RGBAImage, srcPt: Point, dstPt: Point, size: Size) {
         copyImage(srcImg, dstImg, srcPt, dstPt, size, 4);
     }
 }
+
+register('AlphaImage', AlphaImage);
+register('RGBAImage', RGBAImage);
 
 module.exports = {
     AlphaImage,

@@ -57,6 +57,10 @@ class At implements Expression {
         fn(this.index);
         fn(this.input);
     }
+
+    possibleOutputs() {
+        return [undefined];
+    }
 }
 
 module.exports = At;

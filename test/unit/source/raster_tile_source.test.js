@@ -2,7 +2,7 @@
 const test = require('mapbox-gl-js-test').test;
 const RasterTileSource = require('../../../src/source/raster_tile_source');
 const window = require('../../../src/util/window');
-const TileCoord = require('../../../src/source/tile_coord');
+const OverscaledTileID = require('../../../src/source/tile_id').OverscaledTileID;
 
 function createSource(options, transformCallback) {
     const source = new RasterTileSource('id', options, { send: function() {} }, options.eventedParent);
@@ -59,8 +59,8 @@ test('RasterTileSource', (t) => {
         });
         source.on('data', (e)=>{
             if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
-                t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
                 t.end();
             }
         });
@@ -95,8 +95,8 @@ test('RasterTileSource', (t) => {
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
-                t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
                 t.end();
             }
         });
@@ -116,7 +116,7 @@ test('RasterTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
                     loadVectorData: function () {},
                     setExpiryData: function() {}

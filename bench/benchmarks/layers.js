@@ -26,8 +26,6 @@ class LayerBenchmark extends Benchmark {
     }
 
     bench() {
-        this.map._styleDirty = true;
-        this.map._sourcesDirty = true;
         this.map._render();
     }
 
@@ -140,6 +138,26 @@ class LayerHeatmap extends LayerBenchmark {
     }
 }
 
+class LayerHillshade extends LayerBenchmark {
+    constructor() {
+        super();
+
+        this.layerStyle = Object.assign({}, style, {
+            sources: {
+                'terrain-rgb': {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.terrain-rgb'
+                }
+            },
+            layers: generateLayers({
+                'id': 'layer',
+                'type': 'hillshade',
+                'source': 'terrain-rgb',
+            })
+        });
+    }
+}
+
 class LayerLine extends LayerBenchmark {
     constructor() {
         super();
@@ -202,6 +220,7 @@ module.exports = [
     LayerFill,
     LayerFillExtrusion,
     LayerHeatmap,
+    LayerHillshade,
     LayerLine,
     LayerRaster,
     LayerSymbol

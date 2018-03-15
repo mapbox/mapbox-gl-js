@@ -173,6 +173,10 @@ class Interpolate implements Expression {
             fn(expression);
         }
     }
+
+    possibleOutputs() {
+        return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
+    }
 }
 
 /**

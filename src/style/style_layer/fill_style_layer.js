@@ -15,7 +15,7 @@ const {
 import type {BucketParameters} from '../../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_style_layer_properties';
-import type {EvaluationParameters} from '../properties';
+import type EvaluationParameters from '../evaluation_parameters';
 
 class FillStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
@@ -34,7 +34,7 @@ class FillStyleLayer extends StyleLayer {
         }
     }
 
-    createBucket(parameters: BucketParameters) {
+    createBucket(parameters: BucketParameters<*>) {
         return new FillBucket(parameters);
     }
 

@@ -37,6 +37,10 @@ function createFunction(parameters, propertySpec) {
         }
     }
 
+    if (parameters.colorSpace && parameters.colorSpace !== 'rgb' && !colorSpaces[parameters.colorSpace]) {
+        throw new Error(`Unknown color space: ${parameters.colorSpace}`);
+    }
+
     let innerFun;
     let hashedStops;
     let categoricalKeyType;
@@ -60,31 +64,6 @@ function createFunction(parameters, propertySpec) {
         innerFun = evaluateIdentityFunction;
     } else {
         throw new Error(`Unknown function type "${type}"`);
-    }
-
-    let outputFunction;
-
-    // If we're interpolating colors in a color system other than RGBA,
-    // first translate all stop values to that color system, then interpolate
-    // arrays as usual. The `outputFunction` option lets us then translate
-    // the result of that interpolation back into RGBA.
-    if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
-        if (colorSpaces[parameters.colorSpace]) {
-            const colorspace = colorSpaces[parameters.colorSpace];
-            // Avoid mutating the parameters value
-            parameters = JSON.parse(JSON.stringify(parameters));
-            for (let s = 0; s < parameters.stops.length; s++) {
-                parameters.stops[s] = [
-                    parameters.stops[s][0],
-                    colorspace.forward(parameters.stops[s][1])
-                ];
-            }
-            outputFunction = colorspace.reverse;
-        } else {
-            throw new Error(`Unknown color space: ${parameters.colorSpace}`);
-        }
-    } else {
-        outputFunction = identityFunction;
     }
 
     if (zoomAndFeatureDependent) {
@@ -116,10 +95,10 @@ function createFunction(parameters, propertySpec) {
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, {name: 'linear'}),
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
-                return outputFunction(evaluateExponentialFunction({
+                return evaluateExponentialFunction({
                     stops: featureFunctionStops,
                     base: parameters.base
-                }, propertySpec, zoom).evaluate(zoom, properties));
+                }, propertySpec, zoom).evaluate(zoom, properties);
             }
         };
     } else if (zoomDependent) {
@@ -129,7 +108,7 @@ function createFunction(parameters, propertySpec) {
                 Interpolate.interpolationFactor.bind(undefined, {name: 'exponential', base: parameters.base !== undefined ? parameters.base : 1}) :
                 () => 0,
             zoomStops: parameters.stops.map(s => s[0]),
-            evaluate: ({zoom}) => outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType))
+            evaluate: ({zoom}) => innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType)
         };
     } else {
         return {
@@ -139,7 +118,7 @@ function createFunction(parameters, propertySpec) {
                 if (value === undefined) {
                     return coalesce(parameters.default, propertySpec.default);
                 }
-                return outputFunction(innerFun(parameters, propertySpec, value, hashedStops, categoricalKeyType));
+                return innerFun(parameters, propertySpec, value, hashedStops, categoricalKeyType);
             }
         };
     }
@@ -187,7 +166,12 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
     const outputLower = parameters.stops[index][1];
     const outputUpper = parameters.stops[index + 1][1];
-    const interp = interpolate[propertySpec.type] || identityFunction;
+    let interp = interpolate[propertySpec.type] || identityFunction;
+
+    if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
+        const colorspace = colorSpaces[parameters.colorSpace];
+        interp = (a, b) => colorspace.reverse(colorspace.interpolate(colorspace.forward(a), colorspace.forward(b), t));
+    }
 
     if (typeof outputLower.evaluate === 'function') {
         return {

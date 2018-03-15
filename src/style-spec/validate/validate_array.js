@@ -12,15 +12,15 @@ module.exports = function validateArray(options) {
     const validateArrayElement = options.arrayElementValidator || validate;
 
     if (getType(array) !== 'array') {
-        return [new ValidationError(key, array, 'array expected, %s found', getType(array))];
+        return [new ValidationError(key, array, `array expected, ${getType(array)} found`)];
     }
 
     if (arraySpec.length && array.length !== arraySpec.length) {
-        return [new ValidationError(key, array, 'array length %d expected, length %d found', arraySpec.length, array.length)];
+        return [new ValidationError(key, array, `array length ${arraySpec.length} expected, length ${array.length} found`)];
     }
 
     if (arraySpec['min-length'] && array.length < arraySpec['min-length']) {
-        return [new ValidationError(key, array, 'array length at least %d expected, length %d found', arraySpec['min-length'], array.length)];
+        return [new ValidationError(key, array, `array length at least ${arraySpec['min-length']} expected, length ${array.length} found`)];
     }
 
     let arrayElementSpec = {

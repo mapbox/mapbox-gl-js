@@ -2,12 +2,12 @@
   "expression": ["asin", 0.5],
   "inputs": [[{}, {}]],
   "expected": {
+    "outputs": [0.5235987755982989],
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
       "isZoomConstant": true,
+      "isFeatureConstant": true,
       "type": "number"
-    },
-    "outputs": [0.5235987755982989]
+    }
   }
 }

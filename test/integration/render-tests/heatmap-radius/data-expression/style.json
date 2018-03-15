@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "radius": 5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -10,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "radius": 10
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                10,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "heatmap",
+      "type": "heatmap",
+      "source": "geojson",
+      "paint": {
+        "heatmap-radius": [
+          "get",
+          "radius"
+        ]
+      }
+    }
+  ]
+}
