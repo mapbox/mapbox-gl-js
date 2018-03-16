@@ -20,6 +20,7 @@ const config = [{
         sourcemap: 'inline'
     },
     experimentalCodeSplitting: true,
+    treeshake: production,
     plugins: plugins()
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
