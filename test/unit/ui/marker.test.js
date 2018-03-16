@@ -21,16 +21,16 @@ test('Marker uses a default marker element with an appropriate offset', (t) => {
 });
 
 test('Marker uses a default marker with custom offest', (t) => {
-    const marker = new Marker(null, { offset: [1, 2] });
+    const marker = new Marker({ offset: [1, 2] });
     t.ok(marker.getElement());
     t.ok(marker.getOffset().equals(new Point(1, 2)));
     t.end();
 });
 
 test('Marker uses the provided element', (t) => {
-    const el = window.document.createElement('div');
-    const marker = new Marker(el);
-    t.equal(marker.getElement(), el);
+    const element = window.document.createElement('div');
+    const marker = new Marker({element});
+    t.equal(marker.getElement(), element);
     t.end();
 });
 
@@ -128,7 +128,7 @@ test('Marker anchor defaults to center', (t) => {
 
 test('Marker anchors as specified by the anchor option', (t) => {
     const map = createMap();
-    const marker = new Marker(null, {anchor: 'top'})
+    const marker = new Marker({anchor: 'top'})
         .setLngLat([0, 0])
         .addTo(map);
 
@@ -136,5 +136,17 @@ test('Marker anchors as specified by the anchor option', (t) => {
     t.match(marker.getElement().style.transform, /translate\(-50%,0\)/);
 
     map.remove();
+    t.end();
+});
+
+test('Marker accepts backward-compatible constructor parameters', (t) => {
+    const element = window.document.createElement('div');
+
+    const m1 = new Marker(element);
+    t.equal(m1.getElement(), element);
+
+    const m2 = new Marker(element, { offset: [1, 2] });
+    t.equal(m2.getElement(), element);
+    t.ok(m2.getOffset().equals(new Point(1, 2)));
     t.end();
 });

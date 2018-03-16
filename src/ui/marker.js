@@ -1,11 +1,11 @@
 // @flow
 
 import DOM from '../util/dom';
-
+import window from '../util/window';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
-import { bindAll } from '../util/util';
+import { bindAll, extend } from '../util/util';
 import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
 
 import type Map from './map';
@@ -14,14 +14,15 @@ import type {LngLatLike} from "../geo/lng_lat";
 import type {MapMouseEvent} from './events';
 
 type Options = {
+    element?: HTMLElement,
     offset?: PointLike,
     anchor?: Anchor
 };
 
 /**
  * Creates a marker component
- * @param element DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
  * @param options
+ * @param options.element DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
  * @param options.anchor A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  *   The default is `'center'`.
@@ -41,13 +42,19 @@ export default class Marker {
     _lngLat: LngLat;
     _pos: ?Point;
 
-    constructor(element: ?HTMLElement, options?: Options) {
+    constructor(options?: Options) {
+        // For backward compatibility -- the constructor used to accept the element as a
+        // required first argument, before it was made optional.
+        if (arguments[0] instanceof window.HTMLElement || arguments.length === 2) {
+            options = extend({element: options}, arguments[1]);
+        }
+
         bindAll(['_update', '_onMapClick'], this);
 
         this._anchor = options && options.anchor || 'center';
 
-        if (!element) {
-            element = DOM.create('div');
+        if (!options || !options.element) {
+            this._element = DOM.create('div');
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
@@ -137,7 +144,7 @@ export default class Marker {
 
             svg.appendChild(page1);
 
-            element.appendChild(svg);
+            this._element.appendChild(svg);
 
             // if no element and no offset option given apply an offset for the default marker
             // the -14 as the y value of the default marker offset was determined as follows
@@ -148,12 +155,12 @@ export default class Marker {
             // negative is used to move the marker up from the center so the tip is at the Marker lngLat
             this._offset = Point.convert(options && options.offset || [0, -14]);
         } else {
+            this._element = options.element;
             this._offset = Point.convert(options && options.offset || [0, 0]);
         }
 
-        element.classList.add('mapboxgl-marker');
+        this._element.classList.add('mapboxgl-marker');
 
-        this._element = element;
         this._popup = null;
     }
 
