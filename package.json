@@ -102,7 +102,7 @@
     "st": "^1.2.0",
     "stylelint": "^8.4.0",
     "stylelint-config-standard": "^18.0.0",
-    "tap": "^10.3.0"
+    "tap": "^11.1.2"
   },
   "browser": {
     "./src/util/window.js": "./src/util/browser/window.js",
