@@ -1,7 +1,7 @@
 /* eslint-disable import/unambiguous,no-global-assign */
 
 require('./stub_loader');
-require('../build/flow-remove-types.js');
+require('@mapbox/flow-remove-types/register');
 require = require("@std/esm")(module, true);
 
 const querySuite = require('./integration').query;
