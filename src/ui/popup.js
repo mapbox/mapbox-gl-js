@@ -34,8 +34,8 @@ export type PopupOptions = {
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
  *   map is clicked.
- * @param {string} [options.anchor] - A string indicating the popup's location relative to
- *   the coordinate set via {@link Popup#setLngLat}.
+ * @param {string} [options.anchor] - A string indicating the part of the Popup that should
+ *   be positioned closest to the coordinate set via {@link Popup#setLngLat}.
  *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
@@ -324,7 +324,7 @@ function normalizeOffset(offset: ?Offset) {
         // input specifies a radius from which to calculate offsets at all positions
         const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
         return {
-            'middle': new Point(0, 0),
+            'center': new Point(0, 0),
             'top': new Point(0, offset),
             'top-left': new Point(cornerOffset, cornerOffset),
             'top-right': new Point(-cornerOffset, cornerOffset),
@@ -339,7 +339,7 @@ function normalizeOffset(offset: ?Offset) {
         // input specifies a single offset to be applied to all positions
         const convertedOffset = Point.convert(offset);
         return {
-            'middle': convertedOffset,
+            'center': convertedOffset,
             'top': convertedOffset,
             'top-left': convertedOffset,
             'top-right': convertedOffset,
@@ -353,7 +353,7 @@ function normalizeOffset(offset: ?Offset) {
     } else {
         // input specifies an offset per position
         return {
-            'middle': Point.convert(offset['middle'] || [0, 0]),
+            'center': Point.convert(offset['center'] || [0, 0]),
             'top': Point.convert(offset['top'] || [0, 0]),
             'top-left': Point.convert(offset['top-left'] || [0, 0]),
             'top-right': Point.convert(offset['top-right'] || [0, 0]),
