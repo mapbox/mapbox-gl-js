@@ -22,9 +22,9 @@ type Options = {
  * Creates a marker component
  * @param element DOM element to use as a marker. If left unspecified a default SVG will be created as the DOM element to use.
  * @param options
- * @param options.anchor A string indicating the Marker's location relative to the coordinate set via {@link Marker#setLngLat}.
- *   Options are `'middle'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
- *   The default is `'middle'`.
+ * @param options.anchor A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
+ *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+ *   The default is `'center'`.
  * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
@@ -44,7 +44,7 @@ export default class Marker {
     constructor(element: ?HTMLElement, options?: Options) {
         bindAll(['_update', '_onMapClick'], this);
 
-        this._anchor = options && options.anchor || 'middle';
+        this._anchor = options && options.anchor || 'center';
 
         if (!element) {
             element = DOM.create('div');

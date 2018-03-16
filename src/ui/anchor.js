@@ -1,7 +1,7 @@
 // @flow
 
 export type Anchor =
-    | 'middle'
+    | 'center'
     | 'top'
     | 'bottom'
     | 'left'
@@ -12,7 +12,7 @@ export type Anchor =
     | 'bottom-right';
 
 export const anchorTranslate: {[Anchor]: string} = {
-    'middle': 'translate(-50%,-50%)',
+    'center': 'translate(-50%,-50%)',
     'top': 'translate(-50%,0)',
     'top-left': 'translate(0,0)',
     'top-right': 'translate(-100%,0)',

@@ -113,13 +113,13 @@ test('Marker#togglePopup closes a popup that was open', (t) => {
     t.end();
 });
 
-test('Marker anchor defaults to middle', (t) => {
+test('Marker anchor defaults to center', (t) => {
     const map = createMap();
     const marker = new Marker()
         .setLngLat([0, 0])
         .addTo(map);
 
-    t.ok(marker.getElement().classList.contains('mapboxgl-marker-anchor-middle'));
+    t.ok(marker.getElement().classList.contains('mapboxgl-marker-anchor-center'));
     t.match(marker.getElement().style.transform, /translate\(-50%,-50%\)/);
 
     map.remove();
