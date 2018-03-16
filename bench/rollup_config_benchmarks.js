@@ -44,6 +44,8 @@ if (!shared) {
 }
 `
     },
+    treeshake: false,
+    indent: false,
     plugins: [sourcemaps()],
 }];
 
