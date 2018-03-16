@@ -393,9 +393,10 @@ class Map extends Camera {
      * This method must be called after the map's `container` is resized by another script,
      * or when the map is shown after being initially hidden with CSS.
      *
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
      * @returns {Map} `this`
      */
-    resize() {
+    resize(eventData?: Object) {
         const dimensions = this._containerDimensions();
         const width = dimensions[0];
         const height = dimensions[1];
@@ -405,10 +406,10 @@ class Map extends Camera {
         this.painter.resize(width, height);
 
         return this
-            .fire(new Event('movestart'))
-            .fire(new Event('move'))
-            .fire(new Event('resize'))
-            .fire(new Event('moveend'));
+            .fire(new Event('movestart', eventData))
+            .fire(new Event('move', eventData))
+            .fire(new Event('resize', eventData))
+            .fire(new Event('moveend', eventData));
     }
 
     /**
