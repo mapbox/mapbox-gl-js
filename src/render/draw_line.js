@@ -62,14 +62,12 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, c
         gradient ? lineGradientUniformValues(painter, tile, layer) :
         lineUniformValues(painter, tile, layer);
 
-    if (programChanged) {
-        if (dasharray) {
-            context.activeTexture.set(gl.TEXTURE0);
-            painter.lineAtlas.bind(context);
-        } else if (image) {
-            context.activeTexture.set(gl.TEXTURE0);
-            painter.imageManager.bind(context);
-        }
+    if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
+        context.activeTexture.set(gl.TEXTURE0);
+        painter.lineAtlas.bind(context);
+    } else if (image && (programChanged || painter.imageManager.dirty)) {
+        context.activeTexture.set(gl.TEXTURE0);
+        painter.imageManager.bind(context);
     }
 
     if (gradient) {

@@ -5,14 +5,14 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2fv,
-    Uniform4fv,
+    UniformColor,
     UniformMatrix4fv,
     Uniforms
 } from '../uniform_binding';
 import { extend } from '../../util/util';
 
 import type Painter from '../painter';
-import type {UniformValues} from '../uniform_binding';
+import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type Context from '../../gl/context';
 import type Color from '../../style-spec/util/color';
 import type {CrossFaded} from '../../style/cross_faded';
@@ -21,7 +21,7 @@ import type {OverscaledTileID} from '../../source/tile_id';
 export type BackgroundUniformsType = {|
     'u_matrix': UniformMatrix4fv,
     'u_opacity': Uniform1f,
-    'u_color': Uniform4fv
+    'u_color': UniformColor
 |};
 
 export type BackgroundPatternUniformsType = {|
@@ -44,29 +44,29 @@ export type BackgroundPatternUniformsType = {|
     'u_tile_units_to_pixels': Uniform1f
 |};
 
-const backgroundUniforms = (context: Context): Uniforms<BackgroundUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_opacity': new Uniform1f(context),
-    'u_color': new Uniform4fv(context)
+const backgroundUniforms = (context: Context, locations: UniformLocations): Uniforms<BackgroundUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_opacity': new Uniform1f(context, locations.u_opacity),
+    'u_color': new UniformColor(context, locations.u_color)
 });
 
-const backgroundPatternUniforms = (context: Context): Uniforms<BackgroundPatternUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_opacity': new Uniform1f(context),
-    'u_image': new Uniform1i(context),
-    'u_pattern_tl_a': new Uniform2fv(context),
-    'u_pattern_br_a': new Uniform2fv(context),
-    'u_pattern_tl_b': new Uniform2fv(context),
-    'u_pattern_br_b': new Uniform2fv(context),
-    'u_texsize': new Uniform2fv(context),
-    'u_mix': new Uniform1f(context),
-    'u_pattern_size_a': new Uniform2fv(context),
-    'u_pattern_size_b': new Uniform2fv(context),
-    'u_scale_a': new Uniform1f(context),
-    'u_scale_b': new Uniform1f(context),
-    'u_pixel_coord_upper': new Uniform2fv(context),
-    'u_pixel_coord_lower': new Uniform2fv(context),
-    'u_tile_units_to_pixels': new Uniform1f(context)
+const backgroundPatternUniforms = (context: Context, locations: UniformLocations): Uniforms<BackgroundPatternUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_opacity': new Uniform1f(context, locations.u_opacity),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_pattern_tl_a': new Uniform2fv(context, locations.u_pattern_tl_a),
+    'u_pattern_br_a': new Uniform2fv(context, locations.u_pattern_br_a),
+    'u_pattern_tl_b': new Uniform2fv(context, locations.u_pattern_tl_b),
+    'u_pattern_br_b': new Uniform2fv(context, locations.u_pattern_br_b),
+    'u_texsize': new Uniform2fv(context, locations.u_texsize),
+    'u_mix': new Uniform1f(context, locations.u_mix),
+    'u_pattern_size_a': new Uniform2fv(context, locations.u_pattern_size_a),
+    'u_pattern_size_b': new Uniform2fv(context, locations.u_pattern_size_b),
+    'u_scale_a': new Uniform1f(context, locations.u_scale_a),
+    'u_scale_b': new Uniform1f(context, locations.u_scale_b),
+    'u_pixel_coord_upper': new Uniform2fv(context, locations.u_pixel_coord_upper),
+    'u_pixel_coord_lower': new Uniform2fv(context, locations.u_pixel_coord_lower),
+    'u_tile_units_to_pixels': new Uniform1f(context, locations.u_tile_units_to_pixels)
 });
 
 const backgroundUniformValues = (
@@ -76,7 +76,7 @@ const backgroundUniformValues = (
 ): UniformValues<BackgroundUniformsType> => ({
     'u_matrix': matrix,
     'u_opacity': opacity,
-    'u_color': [color.r, color.g, color.b, color.a]
+    'u_color': color
 });
 
 const backgroundPatternUniformValues = (

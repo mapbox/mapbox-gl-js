@@ -34,7 +34,7 @@ class Program<Us: UniformBindings> {
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
-                fixedUniforms: (Context) => Uniforms<Us>,
+                fixedUniforms: (Context, UniformLocations) => Uniforms<Us>,
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
@@ -92,8 +92,8 @@ class Program<Us: UniformBindings> {
             }
         }
 
-        this.fixedUniforms = fixedUniforms(context);
-        this.binderUniforms = new Uniforms({});
+        this.fixedUniforms = fixedUniforms(context, this.uniforms);
+        configuration.getUniforms(context, (this: any));
     }
 
     draw(context: Context,
@@ -118,7 +118,7 @@ class Program<Us: UniformBindings> {
         context.setStencilMode(stencilMode);
         context.setColorMode(colorMode);
 
-        this.fixedUniforms.set(this.uniforms, uniformValues);
+        this.fixedUniforms.set(uniformValues);
         if (configuration) {
             configuration.setUniforms(context, this, currentProperties, {zoom: (zoom: any)});
         }
