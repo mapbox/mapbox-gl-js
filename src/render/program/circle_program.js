@@ -10,7 +10,7 @@ import {
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
 import type Context from '../../gl/context';
-import type {UniformValues} from '../uniform_binding';
+import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type {OverscaledTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
@@ -24,12 +24,12 @@ export type CircleUniformsType = {|
     'u_matrix': UniformMatrix4fv
 |};
 
-const circleUniforms = (context: Context): Uniforms<CircleUniformsType> => new Uniforms({
-    'u_camera_to_center_distance': new Uniform1f(context),
-    'u_scale_with_map': new Uniform1i(context),
-    'u_pitch_with_map': new Uniform1i(context),
-    'u_extrude_scale': new Uniform2fv(context),
-    'u_matrix': new UniformMatrix4fv(context)
+const circleUniforms = (context: Context, locations: UniformLocations): Uniforms<CircleUniformsType> => new Uniforms({
+    'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
+    'u_scale_with_map': new Uniform1i(context, locations.u_scale_with_map),
+    'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
+    'u_extrude_scale': new Uniform2fv(context, locations.u_extrude_scale),
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix)
 });
 
 const circleUniformValues = (
