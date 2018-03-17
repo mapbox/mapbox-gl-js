@@ -5,7 +5,7 @@ import Color from '../style-spec/util/color';
 import { register } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
-import { Uniform, Uniform1f, Uniform4fv } from '../render/uniform_binding';
+import { Uniform, Uniform1f, UniformColor, Uniforms } from '../render/uniform_binding';
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -55,7 +55,6 @@ function packColor(color: Color): [number, number] {
 interface Binder<T> {
     statistics: { max: number };
     uniformName: string;
-    uniformBinding: ?$Subtype<Uniform<*>>;
 
     populatePaintArray(length: number, feature: Feature): void;
     upload(Context): void;
@@ -65,6 +64,8 @@ interface Binder<T> {
 
     setUniforms(context: Context, program: Program<*>, globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<T>): void;
+
+    getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<*>>;
 }
 
 class ConstantBinder<T> implements Binder<T> {
@@ -73,7 +74,6 @@ class ConstantBinder<T> implements Binder<T> {
     statistics: { max: number };
     type: string;
     uniformName: string;
-    uniformBinding: ?$Subtype<Uniform<*>>;
 
     constructor(value: T, name: string, type: string) {
         this.value = value;
@@ -94,13 +94,13 @@ class ConstantBinder<T> implements Binder<T> {
     setUniforms(context: Context, program: Program<*>, globals: GlobalProperties,
                 currentValue: PossiblyEvaluatedPropertyValue<T>): void {
         const value = currentValue.constantOr(this.value);
+        program.binderUniforms.bindings[this.uniformName].set(value);
+    }
 
-        if (!program.binderUniforms.bindings[this.uniformName]) {
-            program.binderUniforms.bindings[this.uniformName] = this.type === 'color' ?
-                new Uniform4fv(context) : new Uniform1f(context);
-        }
-
-        program.binderUniforms.bindings[this.uniformName].set(program.uniforms[this.uniformName], value);
+    getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<*>> {
+        return (this.type === 'color') ?
+            new UniformColor(context, location) :
+            new Uniform1f(context, location);
     }
 }
 
@@ -110,7 +110,6 @@ class SourceExpressionBinder<T> implements Binder<T> {
     uniformName: string;
     type: string;
     statistics: { max: number };
-    uniformBinding: ?Uniform1f;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -171,11 +170,11 @@ class SourceExpressionBinder<T> implements Binder<T> {
     }
 
     setUniforms(context: Context, program: Program<*>): void {
-        if (!program.binderUniforms.bindings[this.uniformName]) {
-            program.binderUniforms.bindings[this.uniformName] = new Uniform1f(context);
-        }
+        program.binderUniforms.bindings[this.uniformName].set(0);
+    }
 
-        program.binderUniforms.bindings[this.uniformName].set(program.uniforms[this.uniformName], 0);
+    getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
+        return new Uniform1f(context, location);
     }
 }
 
@@ -187,7 +186,6 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     useIntegerZoom: boolean;
     zoom: number;
     statistics: { max: number };
-    uniformBinding: ?Uniform1f;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -261,11 +259,11 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     setUniforms(context: Context, program: Program<*>,
                 globals: GlobalProperties): void {
-        if (!program.binderUniforms.bindings[this.uniformName]) {
-            program.binderUniforms.bindings[this.uniformName] = new Uniform1f(context);
-        }
+        program.binderUniforms.bindings[this.uniformName].set(this.interpolationFactor(globals.zoom));
+    }
 
-        program.binderUniforms.bindings[this.uniformName].set(program.uniforms[this.uniformName], this.interpolationFactor(globals.zoom));
+    getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
+        return new Uniform1f(context, location);
     }
 }
 
@@ -351,6 +349,15 @@ class ProgramConfiguration {
 
     getPaintVertexBuffers(): Array<VertexBuffer> {
         return this._buffers;
+    }
+
+    getUniforms(context: Context, program: Program<*>): void {
+        program.binderUniforms = new Uniforms({});
+        for (const property in this.binders) {
+            const binder = this.binders[property];
+            program.binderUniforms.bindings[binder.uniformName] =
+                binder.getBinding(context, program.uniforms[binder.uniformName]);
+        }
     }
 
     setUniforms<Properties: Object>(context: Context, program: Program<*>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {

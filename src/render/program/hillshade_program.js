@@ -6,7 +6,7 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2fv,
-    Uniform4fv,
+    UniformColor,
     UniformMatrix4fv,
     Uniforms
 } from '../uniform_binding';
@@ -14,7 +14,7 @@ import EXTENT from '../../data/extent';
 import Coordinate from '../../geo/coordinate';
 
 import type Context from '../../gl/context';
-import type {UniformValues} from '../uniform_binding';
+import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type Tile from '../../source/tile';
 import type Painter from '../painter';
 import type HillshadeStyleLayer from '../../style/style_layer/hillshade_style_layer';
@@ -25,9 +25,9 @@ export type HillshadeUniformsType = {|
     'u_image': Uniform1i,
     'u_latrange': Uniform2fv,
     'u_light': Uniform2fv,
-    'u_shadow': Uniform4fv,
-    'u_highlight': Uniform4fv,
-    'u_accent': Uniform4fv
+    'u_shadow': UniformColor,
+    'u_highlight': UniformColor,
+    'u_accent': UniformColor
 |};
 
 export type HillshadePrepareUniformsType = {|
@@ -38,22 +38,22 @@ export type HillshadePrepareUniformsType = {|
     'u_maxzoom': Uniform1f
 |};
 
-const hillshadeUniforms = (context: Context): Uniforms<HillshadeUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_image': new Uniform1i(context),
-    'u_latrange': new Uniform2fv(context),
-    'u_light': new Uniform2fv(context),
-    'u_shadow': new Uniform4fv(context),
-    'u_highlight': new Uniform4fv(context),
-    'u_accent': new Uniform4fv(context)
+const hillshadeUniforms = (context: Context, locations: UniformLocations): Uniforms<HillshadeUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_latrange': new Uniform2fv(context, locations.u_latrange),
+    'u_light': new Uniform2fv(context, locations.u_light),
+    'u_shadow': new UniformColor(context, locations.u_shadow),
+    'u_highlight': new UniformColor(context, locations.u_highlight),
+    'u_accent': new UniformColor(context, locations.u_accent)
 });
 
-const hillshadePrepareUniforms = (context: Context): Uniforms<HillshadePrepareUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_image': new Uniform1i(context),
-    'u_dimension': new Uniform2fv(context),
-    'u_zoom': new Uniform1f(context),
-    'u_maxzoom': new Uniform1f(context)
+const hillshadePrepareUniforms = (context: Context, locations: UniformLocations): Uniforms<HillshadePrepareUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_dimension': new Uniform2fv(context, locations.u_dimension),
+    'u_zoom': new Uniform1f(context, locations.u_zoom),
+    'u_maxzoom': new Uniform1f(context, locations.u_maxzoom)
 });
 
 const hillshadeUniformValues = (
@@ -76,9 +76,9 @@ const hillshadeUniformValues = (
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
-        'u_shadow': [shadow.r, shadow.g, shadow.b, shadow.a],
-        'u_highlight': [highlight.r, highlight.g, highlight.b, highlight.a],
-        'u_accent': [accent.r, accent.g, accent.b, accent.a]
+        'u_shadow': shadow,
+        'u_highlight': highlight,
+        'u_accent': accent
     };
 };
 

@@ -12,7 +12,7 @@ import { extend } from '../../util/util';
 import browser from '../../util/browser';
 
 import type Context from '../../gl/context';
-import type {UniformValues} from '../uniform_binding';
+import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type Transform from '../../geo/transform';
 import type Tile from '../../source/tile';
 import type {CrossFaded} from '../../style/cross_faded';
@@ -53,38 +53,38 @@ export type LineSDFUniformsType = {|
     'u_mix': Uniform1f
 |};
 
-const lineUniforms = (context: Context): Uniforms<LineUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_ratio': new Uniform1f(context),
-    'u_gl_units_to_pixels': new Uniform2fv(context)
+const lineUniforms = (context: Context, locations: UniformLocations): Uniforms<LineUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_ratio': new Uniform1f(context, locations.u_ratio),
+    'u_gl_units_to_pixels': new Uniform2fv(context, locations.u_gl_units_to_pixels)
 });
 
-const linePatternUniforms = (context: Context): Uniforms<LinePatternUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_ratio': new Uniform1f(context),
-    'u_gl_units_to_pixels': new Uniform2fv(context),
-    'u_pattern_size_a': new Uniform2fv(context),
-    'u_pattern_size_b': new Uniform2fv(context),
-    'u_texsize': new Uniform2fv(context),
-    'u_image': new Uniform1i(context),
-    'u_pattern_tl_a': new Uniform2fv(context),
-    'u_pattern_br_a': new Uniform2fv(context),
-    'u_pattern_tl_b': new Uniform2fv(context),
-    'u_pattern_br_b': new Uniform2fv(context),
-    'u_fade': new Uniform1f(context)
+const linePatternUniforms = (context: Context, locations: UniformLocations): Uniforms<LinePatternUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_ratio': new Uniform1f(context, locations.u_ratio),
+    'u_gl_units_to_pixels': new Uniform2fv(context, locations.u_gl_units_to_pixels),
+    'u_pattern_size_a': new Uniform2fv(context, locations.u_pattern_size_a),
+    'u_pattern_size_b': new Uniform2fv(context, locations.u_pattern_size_b),
+    'u_texsize': new Uniform2fv(context, locations.u_texsize),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_pattern_tl_a': new Uniform2fv(context, locations.u_pattern_tl_a),
+    'u_pattern_br_a': new Uniform2fv(context, locations.u_pattern_br_a),
+    'u_pattern_tl_b': new Uniform2fv(context, locations.u_pattern_tl_b),
+    'u_pattern_br_b': new Uniform2fv(context, locations.u_pattern_br_b),
+    'u_fade': new Uniform1f(context, locations.u_fade)
 });
 
-const lineSDFUniforms = (context: Context): Uniforms<LineSDFUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_ratio': new Uniform1f(context),
-    'u_gl_units_to_pixels': new Uniform2fv(context),
-    'u_patternscale_a': new Uniform2fv(context),
-    'u_patternscale_b': new Uniform2fv(context),
-    'u_sdfgamma': new Uniform1f(context),
-    'u_image': new Uniform1i(context),
-    'u_tex_y_a': new Uniform1f(context),
-    'u_tex_y_b': new Uniform1f(context),
-    'u_mix': new Uniform1f(context)
+const lineSDFUniforms = (context: Context, locations: UniformLocations): Uniforms<LineSDFUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_ratio': new Uniform1f(context, locations.u_ratio),
+    'u_gl_units_to_pixels': new Uniform2fv(context, locations.u_gl_units_to_pixels),
+    'u_patternscale_a': new Uniform2fv(context, locations.u_patternscale_a),
+    'u_patternscale_b': new Uniform2fv(context, locations.u_patternscale_b),
+    'u_sdfgamma': new Uniform1f(context, locations.u_sdfgamma),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_tex_y_a': new Uniform1f(context, locations.u_tex_y_a),
+    'u_tex_y_b': new Uniform1f(context, locations.u_tex_y_b),
+    'u_mix': new Uniform1f(context, locations.u_mix)
 });
 
 const lineUniformValues = (

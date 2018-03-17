@@ -20,7 +20,7 @@ import type Context from '../../gl/context';
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
 import type {CrossFaded} from '../../style/cross_faded';
-import type {UniformValues} from '../uniform_binding';
+import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 
 export type FillExtrusionUniformsType = {|
@@ -60,40 +60,40 @@ export type ExtrusionTextureUniformsType = {|
     'u_opacity': Uniform1f
 |};
 
-const fillExtrusionUniforms = (context: Context): Uniforms<FillExtrusionUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_lightpos': new Uniform3fv(context),
-    'u_lightintensity': new Uniform1f(context),
-    'u_lightcolor': new Uniform3fv(context)
+const fillExtrusionUniforms = (context: Context, locations: UniformLocations): Uniforms<FillExtrusionUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_lightpos': new Uniform3fv(context, locations.u_lightpos),
+    'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
+    'u_lightcolor': new Uniform3fv(context, locations.u_lightcolor)
 });
 
-const fillExtrusionPatternUniforms = (context: Context): Uniforms<FillExtrusionPatternUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_lightpos': new Uniform3fv(context),
-    'u_lightintensity': new Uniform1f(context),
-    'u_lightcolor': new Uniform3fv(context),
-    'u_height_factor': new Uniform1f(context),
-    'u_image': new Uniform1i(context),
-    'u_pattern_tl_a': new Uniform2fv(context),
-    'u_pattern_br_a': new Uniform2fv(context),
-    'u_pattern_tl_b': new Uniform2fv(context),
-    'u_pattern_br_b': new Uniform2fv(context),
-    'u_texsize': new Uniform2fv(context),
-    'u_mix': new Uniform1f(context),
-    'u_pattern_size_a': new Uniform2fv(context),
-    'u_pattern_size_b': new Uniform2fv(context),
-    'u_scale_a': new Uniform1f(context),
-    'u_scale_b': new Uniform1f(context),
-    'u_pixel_coord_upper': new Uniform2fv(context),
-    'u_pixel_coord_lower': new Uniform2fv(context),
-    'u_tile_units_to_pixels': new Uniform1f(context)
+const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): Uniforms<FillExtrusionPatternUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_lightpos': new Uniform3fv(context, locations.u_lightpos),
+    'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
+    'u_lightcolor': new Uniform3fv(context, locations.u_lightcolor),
+    'u_height_factor': new Uniform1f(context, locations.u_height_factor),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_pattern_tl_a': new Uniform2fv(context, locations.u_pattern_tl_a),
+    'u_pattern_br_a': new Uniform2fv(context, locations.u_pattern_br_a),
+    'u_pattern_tl_b': new Uniform2fv(context, locations.u_pattern_tl_b),
+    'u_pattern_br_b': new Uniform2fv(context, locations.u_pattern_br_b),
+    'u_texsize': new Uniform2fv(context, locations.u_texsize),
+    'u_mix': new Uniform1f(context, locations.u_mix),
+    'u_pattern_size_a': new Uniform2fv(context, locations.u_pattern_size_a),
+    'u_pattern_size_b': new Uniform2fv(context, locations.u_pattern_size_b),
+    'u_scale_a': new Uniform1f(context, locations.u_scale_a),
+    'u_scale_b': new Uniform1f(context, locations.u_scale_b),
+    'u_pixel_coord_upper': new Uniform2fv(context, locations.u_pixel_coord_upper),
+    'u_pixel_coord_lower': new Uniform2fv(context, locations.u_pixel_coord_lower),
+    'u_tile_units_to_pixels': new Uniform1f(context, locations.u_tile_units_to_pixels)
 });
 
-const extrusionTextureUniforms = (context: Context): Uniforms<ExtrusionTextureUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_world': new Uniform2fv(context),
-    'u_image': new Uniform1i(context),
-    'u_opacity': new Uniform1f(context)
+const extrusionTextureUniforms = (context: Context, locations: UniformLocations): Uniforms<ExtrusionTextureUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_world': new Uniform2fv(context, locations.u_world),
+    'u_image': new Uniform1i(context, locations.u_image),
+    'u_opacity': new Uniform1f(context, locations.u_opacity)
 });
 
 const fillExtrusionUniformValues = (

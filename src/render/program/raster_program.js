@@ -10,7 +10,7 @@ import {
 } from '../uniform_binding';
 
 import type Context from '../../gl/context';
-import type {UniformValues} from '../uniform_binding';
+import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type RasterStyleLayer from '../../style/style_layer/raster_style_layer';
 
 export type RasterUniformsType = {|
@@ -29,20 +29,20 @@ export type RasterUniformsType = {|
     'u_spin_weights': Uniform3fv
 |};
 
-const rasterUniforms = (context: Context): Uniforms<RasterUniformsType> => new Uniforms({
-    'u_matrix': new UniformMatrix4fv(context),
-    'u_tl_parent': new Uniform2fv(context),
-    'u_scale_parent': new Uniform1f(context),
-    'u_buffer_scale': new Uniform1f(context),
-    'u_fade_t': new Uniform1f(context),
-    'u_opacity': new Uniform1f(context),
-    'u_image0': new Uniform1i(context),
-    'u_image1': new Uniform1i(context),
-    'u_brightness_low': new Uniform1f(context),
-    'u_brightness_high': new Uniform1f(context),
-    'u_saturation_factor': new Uniform1f(context),
-    'u_contrast_factor': new Uniform1f(context),
-    'u_spin_weights': new Uniform3fv(context)
+const rasterUniforms = (context: Context, locations: UniformLocations): Uniforms<RasterUniformsType> => new Uniforms({
+    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
+    'u_tl_parent': new Uniform2fv(context, locations.u_tl_parent),
+    'u_scale_parent': new Uniform1f(context, locations.u_scale_parent),
+    'u_buffer_scale': new Uniform1f(context, locations.u_buffer_scale),
+    'u_fade_t': new Uniform1f(context, locations.u_fade_t),
+    'u_opacity': new Uniform1f(context, locations.u_opacity),
+    'u_image0': new Uniform1i(context, locations.u_image0),
+    'u_image1': new Uniform1i(context, locations.u_image1),
+    'u_brightness_low': new Uniform1f(context, locations.u_brightness_low),
+    'u_brightness_high': new Uniform1f(context, locations.u_brightness_high),
+    'u_saturation_factor': new Uniform1f(context, locations.u_saturation_factor),
+    'u_contrast_factor': new Uniform1f(context, locations.u_contrast_factor),
+    'u_spin_weights': new Uniform3fv(context, locations.u_spin_weights)
 });
 
 const rasterUniformValues = (

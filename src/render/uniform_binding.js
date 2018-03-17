@@ -15,91 +15,113 @@ export type BinderUniformTypes = any;
 class Uniform<T> {
     context: Context;
     location: ?WebGLUniformLocation;
-    current: ?T;
+    current: T;
 
-    constructor(context: Context) {
+    constructor(context: Context, location: WebGLUniformLocation) {
         this.context = context;
+        this.location = location;
     }
 }
 
 class Uniform1i extends Uniform<number> {
-    set(location: WebGLUniformLocation, v: number): void {
-        if (this.current !== v || this.location !== location) {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = 0;
+    }
+
+    set(v: number): void {
+        if (this.current !== v) {
             this.current = v;
-            this.location = location;
-            this.context.gl.uniform1i(location, v);
+            this.context.gl.uniform1i(this.location, v);
         }
     }
 }
 
 class Uniform1f extends Uniform<number> {
-    set(location: WebGLUniformLocation, v: number): void {
-        if (this.current !== v || this.location !== location) {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = 0;
+    }
+
+    set(v: number): void {
+        if (this.current !== v) {
             this.current = v;
-            this.location = location;
-            this.context.gl.uniform1f(location, v);
+            this.context.gl.uniform1f(this.location, v);
         }
     }
 }
 
 class Uniform2fv extends Uniform<[number, number]> {
-    set(location: WebGLUniformLocation, v: [number, number]): void {
-        const c = this.current;
-        if (!c || v[0] !== c[0] || v[1] !== c[1] || this.location !== location) {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = [0, 0];
+    }
+
+    set(v: [number, number]): void {
+        if (v[0] !== this.current[0] || v[1] !== this.current[1]) {
             this.current = v;
-            this.location = location;
-            this.context.gl.uniform2f(location, v[0], v[1]);
+            this.context.gl.uniform2f(this.location, v[0], v[1]);
         }
     }
 }
 
 class Uniform3fv extends Uniform<[number, number, number]> {
-    set(location: WebGLUniformLocation, v: [number, number, number]): void {
-        const c = this.current;
-        if (!c || v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || this.location !== location) {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = [0, 0, 0];
+    }
+
+    set(v: [number, number, number]): void {
+        if (v[0] !== this.current[0] || v[1] !== this.current[1] || v[2] !== this.current[2]) {
             this.current = v;
-            this.location = location;
-            this.context.gl.uniform3f(location, v[0], v[1], v[2]);
+            this.context.gl.uniform3f(this.location, v[0], v[1], v[2]);
         }
     }
 }
 
-class Uniform4fv extends Uniform<[number, number, number, number] | Color> {
-    set(location: WebGLUniformLocation, v: [number, number, number, number] | Color): void {
-        const c = this.current;
-        if (v instanceof Color && (!c || c instanceof Color)) {
-            if (!c || v.r !== c.r || v.g !== c.g || v.b !== c.b || v.a !== c.a || this.location !== location) {
-                this.current = v;
-                this.location = location;
-                this.context.gl.uniform4f(location, v.r, v.g, v.b, v.a);
-            }
-        } else if (Array.isArray(v) && (!c || Array.isArray(c))) {
-            if (!c || v[0] !== c[0] || v[1] !== c[1] || v[2] !== c[2] || v[3] !== c[3] || this.location !== location) {
-                this.current = v;
-                this.location = location;
-                this.context.gl.uniform4f(location, v[0], v[1], v[2], v[3]);
-            }
+class Uniform4fv extends Uniform<[number, number, number, number]> {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = [0, 0, 0, 0];
+    }
+
+    set(v: [number, number, number, number]): void {
+        if (v[0] !== this.current[0] || v[1] !== this.current[1] ||
+            v[2] !== this.current[2] || v[3] !== this.current[3]) {
+            this.current = v;
+            this.context.gl.uniform4f(this.location, v[0], v[1], v[2], v[3]);
+        }
+    }
+}
+
+class UniformColor extends Uniform<Color> {
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = new Color(0, 0, 0, 0);
+    }
+
+    set(v: Color): void {
+        if (v.r !== this.current.r || v.g !== this.current.g ||
+            v.b !== this.current.b || v.a !== this.current.a) {
+            this.current = v;
+            this.context.gl.uniform4f(this.location, v.r, v.g, v.b, v.a);
         }
     }
 }
 
 class UniformMatrix4fv extends Uniform<Float32Array> {
-    set(location: WebGLUniformLocation, v: Float32Array): void {
-        let diff = !this.current || this.location !== location;
+    constructor(context: Context, location: WebGLUniformLocation) {
+        super(context, location);
+        this.current = new Float32Array(16);
+    }
 
-        if (!diff && this.current) {
-            for (let i = 0; i < 16; i++) {
-                if (v[i] !== this.current[i]) {
-                    diff = true;
-                    break;
-                }
+    set(v: Float32Array): void {
+        for (let i = 0; i < 16; i++) {
+            if (v[i] !== this.current[i]) {
+                this.current = v;
+                this.context.gl.uniformMatrix4fv(this.location, false, v);
+                break;
             }
-        }
-
-        if (diff) {
-            this.current = v;
-            this.location = location;
-            this.context.gl.uniformMatrix4fv(location, false, v);
         }
     }
 }
@@ -111,10 +133,10 @@ class Uniforms<Us: UniformBindings> {
         this.bindings = bindings;
     }
 
-    set(uniformLocations: UniformLocations, uniformValues: UniformValues<Us>) {
+    set(uniformValues: UniformValues<Us>) {
         for (const name in uniformValues) {
             assert(this.bindings[name], `No binding with name ${name}`);
-            this.bindings[name].set(uniformLocations[name], uniformValues[name]);
+            this.bindings[name].set(uniformValues[name]);
         }
     }
 }
@@ -126,6 +148,7 @@ export {
     Uniform2fv,
     Uniform3fv,
     Uniform4fv,
+    UniformColor,
     UniformMatrix4fv,
     Uniforms
 };
