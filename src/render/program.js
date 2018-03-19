@@ -23,7 +23,6 @@ export type DrawMode =
 
 class Program<Us: UniformBindings> {
     program: WebGLProgram;
-    uniforms: UniformLocations;
     attributes: {[string]: number};
     numAttributes: number;
     fixedUniforms: Us;
@@ -73,7 +72,7 @@ class Program<Us: UniformBindings> {
         this.numAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
 
         this.attributes = {};
-        this.uniforms = {};
+        const uniformLocations = {};
 
         for (let i = 0; i < this.numAttributes; i++) {
             const attribute = gl.getActiveAttrib(this.program, i);
@@ -86,12 +85,12 @@ class Program<Us: UniformBindings> {
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(this.program, i);
             if (uniform) {
-                this.uniforms[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
+                uniformLocations[uniform.name] = gl.getUniformLocation(this.program, uniform.name);
             }
         }
 
-        this.fixedUniforms = fixedUniforms(context, this.uniforms);
-        configuration.getUniforms(context, (this: any));
+        this.fixedUniforms = fixedUniforms(context, uniformLocations);
+        this.binderUniforms = configuration.getUniforms(context, uniformLocations);
     }
 
     draw(context: Context,
@@ -122,7 +121,7 @@ class Program<Us: UniformBindings> {
         }
 
         if (configuration) {
-            configuration.setUniforms(context, this, currentProperties, {zoom: (zoom: any)});
+            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
         }
 
         const primitiveSize = {
