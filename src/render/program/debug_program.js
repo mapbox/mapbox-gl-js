@@ -2,8 +2,7 @@
 
 import {
     UniformColor,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 
 import type Context from '../../gl/context';
@@ -15,7 +14,7 @@ export type DebugUniformsType = {|
     'u_matrix': UniformMatrix4fv
 |};
 
-const debugUniforms = (context: Context, locations: UniformLocations): Uniforms<DebugUniformsType> => new Uniforms({
+const debugUniforms = (context: Context, locations: UniformLocations): DebugUniformsType => ({
     'u_color': new UniformColor(context, locations.u_color),
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix)
 });

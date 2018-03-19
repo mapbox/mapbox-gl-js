@@ -5,8 +5,7 @@ import {
     Uniform1f,
     Uniform2fv,
     Uniform3fv,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 
 import type Context from '../../gl/context';
@@ -29,7 +28,7 @@ export type RasterUniformsType = {|
     'u_spin_weights': Uniform3fv
 |};
 
-const rasterUniforms = (context: Context, locations: UniformLocations): Uniforms<RasterUniformsType> => new Uniforms({
+const rasterUniforms = (context: Context, locations: UniformLocations): RasterUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_tl_parent': new Uniform2fv(context, locations.u_tl_parent),
     'u_scale_parent': new Uniform1f(context, locations.u_scale_parent),

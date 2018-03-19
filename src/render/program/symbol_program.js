@@ -4,8 +4,7 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2fv,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 import { extend } from '../../util/util';
 
@@ -53,7 +52,7 @@ export type SymbolSDFUniformsType = {|
     'u_is_halo': Uniform1f
 |};
 
-const symbolIconUniforms = (context: Context, locations: UniformLocations): Uniforms<SymbolIconUniformsType> => new Uniforms({
+const symbolIconUniforms = (context: Context, locations: UniformLocations): SymbolIconUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context, locations.u_is_size_zoom_constant),
     'u_is_size_feature_constant': new Uniform1i(context, locations.u_is_size_feature_constant),
     'u_size_t': new Uniform1f(context, locations.u_size_t),
@@ -72,7 +71,7 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Unif
     'u_texture': new Uniform1i(context, locations.u_texture)
 });
 
-const symbolSDFUniforms = (context: Context, locations: UniformLocations): Uniforms<SymbolSDFUniformsType> => new Uniforms({
+const symbolSDFUniforms = (context: Context, locations: UniformLocations): SymbolSDFUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context, locations.u_is_size_zoom_constant),
     'u_is_size_feature_constant': new Uniform1i(context, locations.u_is_size_feature_constant),
     'u_size_t': new Uniform1f(context, locations.u_size_t),
