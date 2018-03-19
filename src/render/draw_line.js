@@ -60,6 +60,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const program = painter.useProgram(programId, programConfiguration);
         const programChanged = firstTile || program.program !== prevProgram;
 
+        const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray) :
+            image ? linePatternUniformValues(painter, tile, layer, image) :
+            gradient ? lineGradientUniformValues(painter, tile, layer) :
+            lineUniformValues(painter, tile, layer);
+
         if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
@@ -67,11 +72,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             context.activeTexture.set(gl.TEXTURE0);
             painter.imageManager.bind(context);
         }
-
-        const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray) :
-            image ? linePatternUniformValues(painter, tile, layer, image) :
-            gradient ? lineGradientUniformValues(painter, tile, layer) :
-            lineUniformValues(painter, tile, layer);
 
         program.draw(context, gl.TRIANGLES, depthMode,
             painter.stencilModeForClipping(coord), colorMode, uniformValues,
