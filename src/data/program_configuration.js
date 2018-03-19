@@ -5,13 +5,18 @@ import Color from '../style-spec/util/color';
 import { register } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
-import { Uniform, Uniform1f, UniformColor } from '../render/uniform_binding';
+import {
+    Uniform,
+    Uniform1f,
+    UniformColor,
+    type UniformBindings,
+    type UniformLocations
+} from '../render/uniform_binding';
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {StructArray, StructArrayMember} from '../util/struct_array';
 import type VertexBuffer from '../gl/vertex_buffer';
-import type Program from '../render/program';
 import type {
     Feature,
     GlobalProperties,
@@ -62,7 +67,7 @@ interface Binder<T> {
 
     defines(): Array<string>;
 
-    setUniforms(context: Context, program: Program<*>, globals: GlobalProperties,
+    setUniforms(context: Context, uniform: Uniform<*>, globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<T>): void;
 
     getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<*>>;
@@ -91,10 +96,9 @@ class ConstantBinder<T> implements Binder<T> {
     upload() {}
     destroy() {}
 
-    setUniforms(context: Context, program: Program<*>, globals: GlobalProperties,
+    setUniforms(context: Context, uniform: Uniform<*>, globals: GlobalProperties,
                 currentValue: PossiblyEvaluatedPropertyValue<T>): void {
-        const value = currentValue.constantOr(this.value);
-        program.binderUniforms[this.uniformName].set(value);
+        uniform.set(currentValue.constantOr(this.value));
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<*>> {
@@ -169,8 +173,8 @@ class SourceExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(context: Context, program: Program<*>): void {
-        program.binderUniforms[this.uniformName].set(0);
+    setUniforms(context: Context, uniform: Uniform<*>): void {
+        uniform.set(0);
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
@@ -257,9 +261,9 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    setUniforms(context: Context, program: Program<*>,
+    setUniforms(context: Context, uniform: Uniform<*>,
                 globals: GlobalProperties): void {
-        program.binderUniforms[this.uniformName].set(this.interpolationFactor(globals.zoom));
+        uniform.set(this.interpolationFactor(globals.zoom));
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
@@ -291,7 +295,6 @@ class ProgramConfiguration {
     binders: { [string]: Binder<any> };
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
-    program: ?Program<*>;
 
     _buffers: Array<VertexBuffer>;
 
@@ -351,21 +354,22 @@ class ProgramConfiguration {
         return this._buffers;
     }
 
-    getUniforms(context: Context, program: Program<*>): void {
-        program.binderUniforms = {};
+    getUniforms(context: Context, locations: UniformLocations): UniformBindings {
+        const result = {};
         for (const property in this.binders) {
             const binder = this.binders[property];
-            program.binderUniforms[binder.uniformName] =
-                binder.getBinding(context, program.uniforms[binder.uniformName]);
+            result[binder.uniformName] = binder.getBinding(context, locations[binder.uniformName]);
         }
+        return result;
     }
 
-    setUniforms<Properties: Object>(context: Context, program: Program<*>, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+    setUniforms<Properties: Object>(context: Context, uniformBindings: UniformBindings, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguraton's binder members.
 
         for (const property in this.binders) {
-            this.binders[property].setUniforms(context, program, globals, properties.get(property));
+            const binder = this.binders[property];
+            binder.setUniforms(context, uniformBindings[binder.uniformName], globals, properties.get(property));
         }
     }
 
