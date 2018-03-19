@@ -1473,8 +1473,8 @@ export default class extends React.Component {
                                     <a id='other-function' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#other-function' title='link to function'>Function</a></h3>
 
-                                    <p>The value for any layout or paint property may be specified as a
-                                        <em>function</em>. Functions allow you to make the appearance of a map feature
+                                    <p>The value for any layout or paint property may be specified as
+                                        a <em>function</em>. Functions allow you to make the appearance of a map feature
                                         change with the current zoom level and/or the feature's properties.</p>
                                     <div className='col12 pad1x'>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
