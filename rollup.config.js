@@ -17,7 +17,8 @@ const config = [{
     output: {
         dir: 'rollup/build/mapboxgl',
         format: 'amd',
-        sourcemap: 'inline'
+        sourcemap: 'inline',
+        indent: false
     },
     experimentalCodeSplitting: true,
     treeshake: production,
@@ -32,6 +33,7 @@ const config = [{
         file: outputFile,
         format: 'umd',
         sourcemap: production ? true : 'inline',
+        indent: false,
         intro: `
 let shared, worker, mapboxgl;
 // define gets called three times: one for each chunk. we rely on the order
@@ -52,7 +54,6 @@ if (!shared) {
 }`
     },
     treeshake: false,
-    indent: false,
     plugins: [
         // Ingest the sourcemaps produced in the first step of the build.
         // This is the only reason we use Rollup for this second pass
