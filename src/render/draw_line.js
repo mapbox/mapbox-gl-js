@@ -22,9 +22,17 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
     const colorMode = painter.colorModeForRenderPass();
 
+    const dasharray = layer.paint.get('line-dasharray');
+    const image = layer.paint.get('line-pattern');
+
+    if (painter.isPatternMissing(image)) return;
+
     const programId =
-        layer.paint.get('line-dasharray') ? 'lineSDF' :
-        layer.paint.get('line-pattern') ? 'linePattern' : 'line';
+        dasharray ? 'lineSDF' :
+        image ? 'linePattern' : 'line';
+
+    const context = painter.context;
+    const gl = context.gl;
 
     let firstTile = true;
 
@@ -38,34 +46,24 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const program = painter.useProgram(programId, programConfiguration);
         const programChanged = firstTile || program.program !== prevProgram;
 
-        drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, colorMode, programConfiguration, programChanged);
+        if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
+            context.activeTexture.set(gl.TEXTURE0);
+            painter.lineAtlas.bind(context);
+        } else if (image && (programChanged || painter.imageManager.dirty)) {
+            context.activeTexture.set(gl.TEXTURE0);
+            painter.imageManager.bind(context);
+        }
+
+        const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray) :
+            image ? linePatternUniformValues(painter, tile, layer, image) :
+            lineUniformValues(painter, tile, layer);
+
+        program.draw(context, gl.TRIANGLES, depthMode,
+            painter.stencilModeForClipping(coord), colorMode, uniformValues,
+            layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
+            layer.paint, painter.transform.zoom, programConfiguration);
+
         firstTile = false;
         // once refactored so that bound texture state is managed, we'll also be able to remove this firstTile/programChanged logic
     }
-}
-
-function drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, colorMode, programConfiguration, programChanged) {
-    const context = painter.context;
-    const gl = context.gl;
-    const dasharray = layer.paint.get('line-dasharray');
-    const image = layer.paint.get('line-pattern');
-
-    if (painter.isPatternMissing(image)) return;
-
-    const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray) :
-        image ? linePatternUniformValues(painter, tile, layer, image) :
-        lineUniformValues(painter, tile, layer);
-
-    if (dasharray && (programChanged || painter.lineAtlas.dirty)) {
-        context.activeTexture.set(gl.TEXTURE0);
-        painter.lineAtlas.bind(context);
-    } else if (image && (programChanged || painter.imageManager.dirty)) {
-        context.activeTexture.set(gl.TEXTURE0);
-        painter.imageManager.bind(context);
-    }
-
-    program.draw(context, gl.TRIANGLES, depthMode,
-        painter.stencilModeForClipping(coord), colorMode, uniformValues,
-        layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
-        layer.paint, painter.transform.zoom, programConfiguration);
 }
