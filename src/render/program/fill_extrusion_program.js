@@ -6,8 +6,7 @@ import {
     Uniform1f,
     Uniform2fv,
     Uniform3fv,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 
 import glMatrix from '@mapbox/gl-matrix';
@@ -60,14 +59,14 @@ export type ExtrusionTextureUniformsType = {|
     'u_opacity': Uniform1f
 |};
 
-const fillExtrusionUniforms = (context: Context, locations: UniformLocations): Uniforms<FillExtrusionUniformsType> => new Uniforms({
+const fillExtrusionUniforms = (context: Context, locations: UniformLocations): FillExtrusionUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_lightpos': new Uniform3fv(context, locations.u_lightpos),
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
     'u_lightcolor': new Uniform3fv(context, locations.u_lightcolor)
 });
 
-const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): Uniforms<FillExtrusionPatternUniformsType> => new Uniforms({
+const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocations): FillExtrusionPatternUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_lightpos': new Uniform3fv(context, locations.u_lightpos),
     'u_lightintensity': new Uniform1f(context, locations.u_lightintensity),
@@ -89,7 +88,7 @@ const fillExtrusionPatternUniforms = (context: Context, locations: UniformLocati
     'u_tile_units_to_pixels': new Uniform1f(context, locations.u_tile_units_to_pixels)
 });
 
-const extrusionTextureUniforms = (context: Context, locations: UniformLocations): Uniforms<ExtrusionTextureUniformsType> => new Uniforms({
+const extrusionTextureUniforms = (context: Context, locations: UniformLocations): ExtrusionTextureUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_world': new Uniform2fv(context, locations.u_world),
     'u_image': new Uniform1i(context, locations.u_image),

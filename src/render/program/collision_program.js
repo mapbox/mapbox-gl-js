@@ -3,8 +3,7 @@
 import {
     Uniform1f,
     Uniform2fv,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
@@ -21,7 +20,7 @@ export type CollisionUniformsType = {|
     'u_overscale_factor': Uniform1f
 |};
 
-const collisionUniforms = (context: Context, locations: UniformLocations): Uniforms<CollisionUniformsType> => new Uniforms({
+const collisionUniforms = (context: Context, locations: UniformLocations): CollisionUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
     'u_pixels_to_tile_units': new Uniform1f(context, locations.u_pixels_to_tile_units),

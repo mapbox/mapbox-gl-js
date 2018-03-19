@@ -4,8 +4,7 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2fv,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 import { extend } from '../../util/util';
@@ -53,13 +52,13 @@ export type LineSDFUniformsType = {|
     'u_mix': Uniform1f
 |};
 
-const lineUniforms = (context: Context, locations: UniformLocations): Uniforms<LineUniformsType> => new Uniforms({
+const lineUniforms = (context: Context, locations: UniformLocations): LineUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_gl_units_to_pixels': new Uniform2fv(context, locations.u_gl_units_to_pixels)
 });
 
-const linePatternUniforms = (context: Context, locations: UniformLocations): Uniforms<LinePatternUniformsType> => new Uniforms({
+const linePatternUniforms = (context: Context, locations: UniformLocations): LinePatternUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_gl_units_to_pixels': new Uniform2fv(context, locations.u_gl_units_to_pixels),
@@ -74,7 +73,7 @@ const linePatternUniforms = (context: Context, locations: UniformLocations): Uni
     'u_fade': new Uniform1f(context, locations.u_fade)
 });
 
-const lineSDFUniforms = (context: Context, locations: UniformLocations): Uniforms<LineSDFUniformsType> => new Uniforms({
+const lineSDFUniforms = (context: Context, locations: UniformLocations): LineSDFUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_ratio': new Uniform1f(context, locations.u_ratio),
     'u_gl_units_to_pixels': new Uniform2fv(context, locations.u_gl_units_to_pixels),

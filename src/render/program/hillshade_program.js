@@ -7,8 +7,7 @@ import {
     Uniform1f,
     Uniform2fv,
     UniformColor,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 import EXTENT from '../../data/extent';
 import Coordinate from '../../geo/coordinate';
@@ -38,7 +37,7 @@ export type HillshadePrepareUniformsType = {|
     'u_maxzoom': Uniform1f
 |};
 
-const hillshadeUniforms = (context: Context, locations: UniformLocations): Uniforms<HillshadeUniformsType> => new Uniforms({
+const hillshadeUniforms = (context: Context, locations: UniformLocations): HillshadeUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_latrange': new Uniform2fv(context, locations.u_latrange),
@@ -48,7 +47,7 @@ const hillshadeUniforms = (context: Context, locations: UniformLocations): Unifo
     'u_accent': new UniformColor(context, locations.u_accent)
 });
 
-const hillshadePrepareUniforms = (context: Context, locations: UniformLocations): Uniforms<HillshadePrepareUniformsType> => new Uniforms({
+const hillshadePrepareUniforms = (context: Context, locations: UniformLocations): HillshadePrepareUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_dimension': new Uniform2fv(context, locations.u_dimension),

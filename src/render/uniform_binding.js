@@ -1,6 +1,5 @@
 // @flow
 
-import assert from 'assert';
 import Color from '../style-spec/util/color';
 
 import type Context from '../gl/context';
@@ -8,9 +7,6 @@ import type Context from '../gl/context';
 export type UniformValues<Us: Object>
     = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
 export type UniformLocations = {[string]: WebGLUniformLocation};
-export type UniformBindings = {[string]: any};
-// binder uniforms are dynamically created:
-export type BinderUniformTypes = any;
 
 class Uniform<T> {
     context: Context;
@@ -21,6 +17,8 @@ class Uniform<T> {
         this.context = context;
         this.location = location;
     }
+
+    +set: (v: T) => void;
 }
 
 class Uniform1i extends Uniform<number> {
@@ -135,21 +133,6 @@ class UniformMatrix4fv extends Uniform<Float32Array> {
     }
 }
 
-class Uniforms<Us: UniformBindings> {
-    bindings: Us;
-
-    constructor(bindings: Us) {
-        this.bindings = bindings;
-    }
-
-    set(uniformValues: UniformValues<Us>) {
-        for (const name in uniformValues) {
-            assert(this.bindings[name], `No binding with name ${name}`);
-            this.bindings[name].set(uniformValues[name]);
-        }
-    }
-}
-
 export {
     Uniform,
     Uniform1i,
@@ -158,6 +141,7 @@ export {
     Uniform3fv,
     Uniform4fv,
     UniformColor,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 };
+
+export type UniformBindings = {[string]: Uniform<any>};

@@ -5,7 +5,7 @@ import Color from '../style-spec/util/color';
 import { register } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
-import { Uniform, Uniform1f, UniformColor, Uniforms } from '../render/uniform_binding';
+import { Uniform, Uniform1f, UniformColor } from '../render/uniform_binding';
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -94,7 +94,7 @@ class ConstantBinder<T> implements Binder<T> {
     setUniforms(context: Context, program: Program<*>, globals: GlobalProperties,
                 currentValue: PossiblyEvaluatedPropertyValue<T>): void {
         const value = currentValue.constantOr(this.value);
-        program.binderUniforms.bindings[this.uniformName].set(value);
+        program.binderUniforms[this.uniformName].set(value);
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): $Subtype<Uniform<*>> {
@@ -170,7 +170,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
     }
 
     setUniforms(context: Context, program: Program<*>): void {
-        program.binderUniforms.bindings[this.uniformName].set(0);
+        program.binderUniforms[this.uniformName].set(0);
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
@@ -259,7 +259,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     setUniforms(context: Context, program: Program<*>,
                 globals: GlobalProperties): void {
-        program.binderUniforms.bindings[this.uniformName].set(this.interpolationFactor(globals.zoom));
+        program.binderUniforms[this.uniformName].set(this.interpolationFactor(globals.zoom));
     }
 
     getBinding(context: Context, location: WebGLUniformLocation): Uniform1f {
@@ -352,10 +352,10 @@ class ProgramConfiguration {
     }
 
     getUniforms(context: Context, program: Program<*>): void {
-        program.binderUniforms = new Uniforms({});
+        program.binderUniforms = {};
         for (const property in this.binders) {
             const binder = this.binders[property];
-            program.binderUniforms.bindings[binder.uniformName] =
+            program.binderUniforms[binder.uniformName] =
                 binder.getBinding(context, program.uniforms[binder.uniformName]);
         }
     }

@@ -6,8 +6,7 @@ import {
     Uniform1f,
     Uniform2fv,
     UniformColor,
-    UniformMatrix4fv,
-    Uniforms
+    UniformMatrix4fv
 } from '../uniform_binding';
 import { extend } from '../../util/util';
 
@@ -44,13 +43,13 @@ export type BackgroundPatternUniformsType = {|
     'u_tile_units_to_pixels': Uniform1f
 |};
 
-const backgroundUniforms = (context: Context, locations: UniformLocations): Uniforms<BackgroundUniformsType> => new Uniforms({
+const backgroundUniforms = (context: Context, locations: UniformLocations): BackgroundUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_color': new UniformColor(context, locations.u_color)
 });
 
-const backgroundPatternUniforms = (context: Context, locations: UniformLocations): Uniforms<BackgroundPatternUniformsType> => new Uniforms({
+const backgroundPatternUniforms = (context: Context, locations: UniformLocations): BackgroundPatternUniformsType => ({
     'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
     'u_opacity': new Uniform1f(context, locations.u_opacity),
     'u_image': new Uniform1i(context, locations.u_image),

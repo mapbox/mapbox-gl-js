@@ -7,7 +7,6 @@ import assert from 'assert';
 import { ProgramConfiguration } from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
 import Context from '../gl/context';
-import { Uniforms } from './uniform_binding';
 
 import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -15,7 +14,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type DepthMode from '../gl/depth_mode';
 import type StencilMode from '../gl/stencil_mode';
 import type ColorMode from '../gl/color_mode';
-import type {UniformBindings, UniformValues, UniformLocations, BinderUniformTypes} from './uniform_binding';
+import type {UniformBindings, UniformValues, UniformLocations} from './uniform_binding';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -27,14 +26,13 @@ class Program<Us: UniformBindings> {
     uniforms: UniformLocations;
     attributes: {[string]: number};
     numAttributes: number;
-    fixedUniforms: Uniforms<Us>;
-    binderUniforms: Uniforms<BinderUniformTypes>;
-    configuration: ProgramConfiguration;
+    fixedUniforms: Us;
+    binderUniforms: UniformBindings;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
                 configuration: ProgramConfiguration,
-                fixedUniforms: (Context, UniformLocations) => Uniforms<Us>,
+                fixedUniforms: (Context, UniformLocations) => Us,
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
@@ -118,7 +116,10 @@ class Program<Us: UniformBindings> {
         context.setStencilMode(stencilMode);
         context.setColorMode(colorMode);
 
-        this.fixedUniforms.set(uniformValues);
+        for (const name in this.fixedUniforms) {
+            this.fixedUniforms[name].set(uniformValues[name]);
+        }
+
         if (configuration) {
             configuration.setUniforms(context, this, currentProperties, {zoom: (zoom: any)});
         }
