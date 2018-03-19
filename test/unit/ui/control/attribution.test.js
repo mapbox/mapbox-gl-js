@@ -89,14 +89,16 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
         map.addSource('3', { type: 'vector', attribution: 'Another Source' });
         map.addSource('4', { type: 'vector', attribution: 'Hello' });
         map.addSource('5', { type: 'vector', attribution: 'Hello World' });
+        map.addSource('6', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World' });
+        map.addSource('7', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'GeoJSON Source' });
 
     });
 
     let times = 0;
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-            if (++times === 5) {
-                t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
+            if (++times === 7) {
+                t.equal(attribution._container.innerHTML, 'Hello World | Another Source | GeoJSON Source');
                 t.end();
             }
         }

@@ -110,6 +110,7 @@ declare type GeojsonSourceSpecification = {|
     "type": "geojson",
     "data"?: mixed,
     "maxzoom"?: number,
+    "attribution"?: string,
     "buffer"?: number,
     "tolerance"?: number,
     "cluster"?: boolean,
