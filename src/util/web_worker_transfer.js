@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import Grid from 'grid-index';
 import Color from '../style-spec/util/color';
-import { StylePropertyFunction, StyleExpression, StyleExpressionWithErrorHandling, ZoomDependentExpression, ZoomConstantExpression } from '../style-spec/expression';
+import { StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression } from '../style-spec/expression';
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions';
 import window from './window';
@@ -86,11 +86,7 @@ register('Error', Error);
 
 register('StylePropertyFunction', StylePropertyFunction);
 register('StyleExpression', StyleExpression, {omit: ['_evaluator']});
-register(
-    'StyleExpressionWithErrorHandling',
-    StyleExpressionWithErrorHandling,
-    {omit: ['_evaluator']}
-);
+
 register('ZoomDependentExpression', ZoomDependentExpression);
 register('ZoomConstantExpression', ZoomConstantExpression);
 register('CompoundExpression', CompoundExpression, {omit: ['_evaluate']});
