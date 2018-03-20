@@ -61,10 +61,12 @@ class Context {
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
     extTextureHalfFloat: any;
+    timerQueryExt: any;
 
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
+        this.timerQueryExt = this.gl.getExtension('EXT_disjoint_timer_query');
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
         this.clearColor = new ClearColor(this);
