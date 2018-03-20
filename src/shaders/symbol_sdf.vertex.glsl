@@ -77,7 +77,10 @@ void main() {
     highp float distance_ratio = u_pitch_with_map ?
         camera_to_anchor_distance / u_camera_to_center_distance :
         u_camera_to_center_distance / camera_to_anchor_distance;
-    highp float perspective_ratio = 0.5 + 0.5 * distance_ratio;
+    highp float perspective_ratio = clamp(
+        0.5 + 0.5 * distance_ratio,
+        0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+        4.0);
 
     size *= perspective_ratio;
 
