@@ -60,7 +60,7 @@ import composite from './composite';
 import diff from './diff';
 import ValidationError from './error/validation_error';
 import ParsingError from './error/parsing_error';
-import { StyleExpression, StyleExpressionWithErrorHandling, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction } from './expression';
+import { StyleExpression, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction } from './expression';
 import featureFilter from './feature_filter';
 import Color from './util/color';
 import { createFunction, isFunction } from './function';
@@ -78,7 +78,6 @@ const exported = {
     ParsingError,
     expression: {
         StyleExpression,
-        StyleExpressionWithErrorHandling,
         isExpression,
         createExpression,
         createPropertyExpression,

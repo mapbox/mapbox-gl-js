@@ -20,7 +20,7 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
     spec['function'] = true;
     spec['property-function'] = true;
 
-    let expression = createPropertyExpression(fixture.expression, spec, {handleErrors: false});
+    let expression = createPropertyExpression(fixture.expression, spec);
     if (expression.result === 'error') {
         return {
             compiled: {
@@ -57,7 +57,7 @@ expressionSuite.run('js', { ignores, tests }, (fixture) => {
             if ('geometry' in input[1]) {
                 feature.type = input[1].geometry.type;
             }
-            let value = expression.evaluate(input[0], feature);
+            let value = expression.evaluateWithoutErrorHandling(input[0], feature);
             if (type.kind === 'color') {
                 value = [value.r, value.g, value.b, value.a];
             }
