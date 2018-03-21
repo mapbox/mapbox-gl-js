@@ -12,8 +12,9 @@ function getMaximumPaintValue(property: string, layer: StyleLayer, bucket: Circl
     if (value.kind === 'constant') {
         return value.value;
     } else {
-        const binders = bucket.programConfigurations.get(layer.id).binders;
-        return binders[property].statistics.max;
+        const programConfiguration = bucket.programConfigurations.get(layer.id);
+        const binder = programConfiguration.binders.find(b => b.property === property);
+        return binder.statistics.max;
     }
 }
 

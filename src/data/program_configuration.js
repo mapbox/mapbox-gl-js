@@ -58,6 +58,7 @@ function packColor(color: Color): [number, number] {
  */
 
 interface Binder<T> {
+    property: string;
     statistics: { max: number };
     uniformName: string;
 
@@ -74,22 +75,22 @@ interface Binder<T> {
 }
 
 class ConstantBinder<T> implements Binder<T> {
+    property: string;
     value: T;
-    name: string;
     statistics: { max: number };
     type: string;
     uniformName: string;
 
-    constructor(value: T, name: string, type: string) {
+    constructor(value: T, property: string, name: string, type: string) {
         this.value = value;
-        this.name = name;
-        this.uniformName = `u_${this.name}`;
+        this.property = property;
+        this.uniformName = `u_${name}`;
         this.type = type;
         this.statistics = { max: -Infinity };
     }
 
     defines() {
-        return [`#define HAS_UNIFORM_u_${this.name}`];
+        return [`#define HAS_UNIFORM_${this.uniformName}`];
     }
 
     populatePaintArray() {}
@@ -109,8 +110,8 @@ class ConstantBinder<T> implements Binder<T> {
 }
 
 class SourceExpressionBinder<T> implements Binder<T> {
+    property: string;
     expression: SourceExpression;
-    name: string;
     uniformName: string;
     type: string;
     statistics: { max: number };
@@ -119,9 +120,9 @@ class SourceExpressionBinder<T> implements Binder<T> {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: ?VertexBuffer;
 
-    constructor(expression: SourceExpression, name: string, type: string) {
+    constructor(expression: SourceExpression, property: string, name: string, type: string) {
         this.expression = expression;
-        this.name = name;
+        this.property = property;
         this.type = type;
         this.uniformName = `a_${name}`;
         this.statistics = { max: -Infinity };
@@ -183,8 +184,8 @@ class SourceExpressionBinder<T> implements Binder<T> {
 }
 
 class CompositeExpressionBinder<T> implements Binder<T> {
+    property: string;
     expression: CompositeExpression;
-    name: string;
     uniformName: string;
     type: string;
     useIntegerZoom: boolean;
@@ -195,10 +196,10 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: ?VertexBuffer;
 
-    constructor(expression: CompositeExpression, name: string, type: string, useIntegerZoom: boolean, zoom: number) {
+    constructor(expression: CompositeExpression, property: string, name: string, type: string, useIntegerZoom: boolean, zoom: number) {
         this.expression = expression;
-        this.name = name;
-        this.uniformName = `a_${this.name}_t`;
+        this.property = property;
+        this.uniformName = `a_${name}_t`;
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
@@ -292,14 +293,16 @@ class CompositeExpressionBinder<T> implements Binder<T> {
  * @private
  */
 class ProgramConfiguration {
-    binders: { [string]: Binder<any> };
+    binders: Array<Binder<any>>;
     cacheKey: string;
     layoutAttributes: Array<StructArrayMember>;
+    binderLen: number;
 
     _buffers: Array<VertexBuffer>;
 
     constructor() {
-        this.binders = {};
+        this.binders = [];
+        this.binderLen = 0;
         this.cacheKey = '';
 
         this._buffers = [];
@@ -309,6 +312,7 @@ class ProgramConfiguration {
         const self = new ProgramConfiguration();
         const keys = [];
 
+        let i = 0;
         for (const property in layer.paint._values) {
             if (!filterProperties(property)) continue;
             const value = layer.paint.get(property);
@@ -320,16 +324,18 @@ class ProgramConfiguration {
             const useIntegerZoom = value.property.useIntegerZoom;
 
             if (value.value.kind === 'constant') {
-                self.binders[property] = new ConstantBinder(value.value, name, type);
+                self.binders.push(new ConstantBinder(value.value, property, name, type));
                 keys.push(`/u_${name}`);
             } else if (value.value.kind === 'source') {
-                self.binders[property] = new SourceExpressionBinder(value.value, name, type);
+                self.binders.push(new SourceExpressionBinder(value.value, property, name, type));
                 keys.push(`/a_${name}`);
             } else {
-                self.binders[property] = new CompositeExpressionBinder(value.value, name, type, useIntegerZoom, zoom);
+                self.binders.push(new CompositeExpressionBinder(value.value, property, name, type, useIntegerZoom, zoom));
                 keys.push(`/z_${name}`);
             }
+            i++;
         }
+        self.binderLen = i;
 
         self.cacheKey = keys.sort().join('');
 
@@ -337,15 +343,15 @@ class ProgramConfiguration {
     }
 
     populatePaintArrays(length: number, feature: Feature) {
-        for (const property in this.binders) {
-            this.binders[property].populatePaintArray(length, feature);
+        for (let i = 0; i < this.binderLen; i++) {
+            this.binders[i].populatePaintArray(length, feature);
         }
     }
 
     defines(): Array<string> {
         const result = [];
-        for (const property in this.binders) {
-            result.push.apply(result, this.binders[property].defines());
+        for (let i = 0; i < this.binderLen; i++) {
+            result.push.apply(result, this.binders[i].defines());
         }
         return result;
     }
@@ -356,31 +362,29 @@ class ProgramConfiguration {
 
     getUniforms(context: Context, locations: UniformLocations): UniformBindings {
         const result = {};
-        for (const property in this.binders) {
-            const binder = this.binders[property];
+        for (let i = 0; i < this.binderLen; i++) {
+            const binder = this.binders[i];
             result[binder.uniformName] = binder.getBinding(context, locations[binder.uniformName]);
         }
         return result;
     }
 
-    setUniforms<Properties: Object>(context: Context, uniformBindings: UniformBindings, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties) {
+    setUniforms<Properties: Object>(context: Context, uniformBindings: UniformBindings, properties: PossiblyEvaluated<Properties>, globals: GlobalProperties, i: number) {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguraton's binder members.
-
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            binder.setUniforms(context, uniformBindings[binder.uniformName], globals, properties.get(property));
+        for (; i < this.binderLen; i++) {
+            this.binders[i].setUniforms(context, uniformBindings[this.binders[i].uniformName], globals, properties.get(this.binders[i].property));
         }
     }
 
     upload(context: Context) {
-        for (const property in this.binders) {
-            this.binders[property].upload(context);
-        }
-
         const buffers = [];
-        for (const property in this.binders) {
-            const binder = this.binders[property];
+
+        for (let i = 0; i < this.binderLen; i++) {
+            const binder = this.binders[i];
+
+            binder.upload(context);
+
             if ((binder instanceof SourceExpressionBinder ||
                 binder instanceof CompositeExpressionBinder) &&
                 binder.paintVertexBuffer
@@ -392,8 +396,8 @@ class ProgramConfiguration {
     }
 
     destroy() {
-        for (const property in this.binders) {
-            this.binders[property].destroy();
+        for (let i = 0; i < this.binderLen; i++) {
+            this.binders[i].destroy();
         }
     }
 }

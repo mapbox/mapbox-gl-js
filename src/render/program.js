@@ -121,7 +121,10 @@ class Program<Us: UniformBindings> {
         }
 
         if (configuration) {
-            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)});
+            // For whatever reason, initializing `setUniforms`'s
+            // loop iterator here creates consistently better performance:
+            const i = 0;
+            configuration.setUniforms(context, this.binderUniforms, currentProperties, {zoom: (zoom: any)}, i);
         }
 
         const primitiveSize = {
