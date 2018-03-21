@@ -1,7 +1,7 @@
 {
   "name": "@socrata/mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -15,7 +15,7 @@
   "engines": {
     "node": ">=6.4.0"
   },
-  "dependencies": {
+  "devDependencies": {
     "@mapbox/gl-matrix": "^0.0.1",
     "@mapbox/mapbox-gl-supported": "^1.3.0",
     "@mapbox/point-geometry": "^0.1.0",
@@ -46,9 +46,7 @@
     "unassertify": "^2.0.0",
     "unflowify": "^1.0.0",
     "vt-pbf": "^3.0.1",
-    "webworkify": "^1.5.0"
-  },
-  "devDependencies": {
+    "webworkify": "^1.5.0",
     "@mapbox/batfish": "^0.13.3",
     "@mapbox/mapbox-gl-rtl-text": "^0.1.1",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
