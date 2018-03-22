@@ -15,21 +15,28 @@ import type Tile from '../../source/tile';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type Painter from '../painter';
 
-export type CircleUniformsType = {|
-    'u_camera_to_center_distance': Uniform1f,
-    'u_scale_with_map': Uniform1i,
-    'u_pitch_with_map': Uniform1i,
-    'u_extrude_scale': Uniform2fv,
-    'u_matrix': UniformMatrix4fv
-|};
 
-const circleUniforms = (context: Context, locations: UniformLocations): CircleUniformsType => ({
-    'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
-    'u_scale_with_map': new Uniform1i(context, locations.u_scale_with_map),
-    'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_extrude_scale': new Uniform2fv(context, locations.u_extrude_scale),
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix)
-});
+type u_camera_to_center_distance = Uniform1f;
+type u_scale_with_map = Uniform1i;
+type u_pitch_with_map = Uniform1i;
+type u_extrude_scale = Uniform2fv;
+type u_matrix = UniformMatrix4fv;
+
+export type CircleUniformsType = [
+    u_matrix,
+    u_camera_to_center_distance,
+    u_scale_with_map,
+    u_pitch_with_map,
+    u_extrude_scale
+];
+
+const circleUniforms = (context: Context, locations: UniformLocations): CircleUniformsType => ([
+    new UniformMatrix4fv(context, locations['u_matrix']),
+    new Uniform1f(context, locations['u_camera_to_center_distance']),
+    new Uniform1i(context, locations['u_scale_with_map']),
+    new Uniform1i(context, locations['u_pitch_with_map']),
+    new Uniform2fv(context, locations['u_extrude_scale'])
+]);
 
 const circleUniformValues = (
     painter: Painter,
@@ -49,17 +56,17 @@ const circleUniformValues = (
         extrudeScale = transform.pixelsToGLUnits;
     }
 
-    return {
-        'u_camera_to_center_distance': transform.cameraToCenterDistance,
-        'u_scale_with_map': +(layer.paint.get('circle-pitch-scale') === 'map'),
-        'u_matrix': painter.translatePosMatrix(
+    return [
+        painter.translatePosMatrix(
             coord.posMatrix,
             tile,
             layer.paint.get('circle-translate'),
             layer.paint.get('circle-translate-anchor')),
-        'u_pitch_with_map': +(pitchWithMap),
-        'u_extrude_scale': extrudeScale
-    };
+        transform.cameraToCenterDistance,
+        +(layer.paint.get('circle-pitch-scale') === 'map'),
+        +(pitchWithMap),
+        extrudeScale
+    ];
 };
 
 export { circleUniforms, circleUniformValues };

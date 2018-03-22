@@ -116,8 +116,8 @@ class Program<Us: UniformBindings> {
         context.setStencilMode(stencilMode);
         context.setColorMode(colorMode);
 
-        for (const name in this.fixedUniforms) {
-            this.fixedUniforms[name].set(uniformValues[name]);
+        for (let i = 0; i < this.fixedUniforms.length; i++) {
+            this.fixedUniforms[i].set(uniformValues[i]);
         }
 
         if (configuration) {

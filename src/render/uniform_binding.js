@@ -4,8 +4,11 @@ import Color from '../style-spec/util/color';
 
 import type Context from '../gl/context';
 
-export type UniformValues<Us: Object>
-    = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
+// export type UniformValues<Us: Object>
+//     = $Exact<$ObjMap<Us, <V>(u: Uniform<V>) => V>>;
+
+export type UniformValues<Us: Array<Uniform<*>>>
+    = $TupleMap<Us, <V>(u: Uniform<V>) => V>;
 export type UniformLocations = {[string]: WebGLUniformLocation};
 
 class Uniform<T> {
@@ -144,4 +147,5 @@ export {
     UniformMatrix4fv
 };
 
+// export type UniformBindings = Array<Uniform<any>>;
 export type UniformBindings = {[string]: Uniform<any>};

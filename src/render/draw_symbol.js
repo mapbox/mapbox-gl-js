@@ -137,7 +137,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 drawSymbolElements(buffers, layer, painter, program, depthMode, stencilMode, colorMode, uniformValues);
             }
 
-            uniformValues['u_is_halo'] = 0;
+            uniformValues[uniformValues.length - 1] = 0;
 
         } else {
             uniformValues = symbolIconUniformValues(sizeData.functionType,

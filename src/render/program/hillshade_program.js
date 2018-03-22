@@ -19,41 +19,38 @@ import type Painter from '../painter';
 import type HillshadeStyleLayer from '../../style/style_layer/hillshade_style_layer';
 import type {OverscaledTileID} from '../../source/tile_id';
 
-export type HillshadeUniformsType = {|
-    'u_matrix': UniformMatrix4fv,
-    'u_image': Uniform1i,
-    'u_latrange': Uniform2fv,
-    'u_light': Uniform2fv,
-    'u_shadow': UniformColor,
-    'u_highlight': UniformColor,
-    'u_accent': UniformColor
-|};
+type u_matrix = UniformMatrix4fv;
+type u_image = Uniform1i;
+type u_latrange = Uniform2fv;
+type u_light = Uniform2fv;
+type u_shadow = UniformColor;
+type u_highlight = UniformColor;
+type u_accent = UniformColor;
+type u_matrix = UniformMatrix4fv;
+type u_image = Uniform1i;
+type u_dimension = Uniform2fv;
+type u_zoom = Uniform1f;
+type u_maxzoom = Uniform1f;
 
-export type HillshadePrepareUniformsType = {|
-    'u_matrix': UniformMatrix4fv,
-    'u_image': Uniform1i,
-    'u_dimension': Uniform2fv,
-    'u_zoom': Uniform1f,
-    'u_maxzoom': Uniform1f
-|};
+export type HillshadeUniformsType = [
+    u_matrix,
+    u_image,
+    u_latrange,
+    u_light,
+    u_shadow,
+    u_highlight,
+    u_accent
+];
 
-const hillshadeUniforms = (context: Context, locations: UniformLocations): HillshadeUniformsType => ({
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_latrange': new Uniform2fv(context, locations.u_latrange),
-    'u_light': new Uniform2fv(context, locations.u_light),
-    'u_shadow': new UniformColor(context, locations.u_shadow),
-    'u_highlight': new UniformColor(context, locations.u_highlight),
-    'u_accent': new UniformColor(context, locations.u_accent)
-});
-
-const hillshadePrepareUniforms = (context: Context, locations: UniformLocations): HillshadePrepareUniformsType => ({
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
-    'u_image': new Uniform1i(context, locations.u_image),
-    'u_dimension': new Uniform2fv(context, locations.u_dimension),
-    'u_zoom': new Uniform1f(context, locations.u_zoom),
-    'u_maxzoom': new Uniform1f(context, locations.u_maxzoom)
-});
+const hillshadeUniforms = (context: Context, locations: UniformLocations): HillshadeUniformsType => ([
+    new UniformMatrix4fv(context, locations['u_matrix']),
+    new Uniform1i(context, locations['u_image']),
+    new Uniform2fv(context, locations['u_latrange']),
+    new Uniform2fv(context, locations['u_light']),
+    new UniformColor(context, locations['u_shadow']),
+    new UniformColor(context, locations['u_highlight']),
+    new UniformColor(context, locations['u_accent'])
+]);
 
 const hillshadeUniformValues = (
     painter: Painter,
@@ -70,16 +67,32 @@ const hillshadeUniformValues = (
         azimuthal -= painter.transform.angle;
     }
 
-    return {
-        'u_matrix': painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), true),
-        'u_image': 0,
-        'u_latrange': getTileLatRange(painter, tile.tileID),
-        'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
-        'u_shadow': shadow,
-        'u_highlight': highlight,
-        'u_accent': accent
-    };
+    return [
+        painter.transform.calculatePosMatrix(tile.tileID.toUnwrapped(), true),
+        0,
+        getTileLatRange(painter, tile.tileID),
+        [layer.paint.get('hillshade-exaggeration'), azimuthal],
+        shadow,
+        highlight,
+        accent
+    ];
 };
+
+export type HillshadePrepareUniformsType = [
+    u_matrix,
+    u_image,
+    u_dimension,
+    u_zoom,
+    u_maxzoom
+];
+
+const hillshadePrepareUniforms = (context: Context, locations: UniformLocations): HillshadePrepareUniformsType => ([
+    new UniformMatrix4fv(context, locations['u_matrix']),
+    new Uniform1i(context, locations['u_image']),
+    new Uniform2fv(context, locations['u_dimension']),
+    new Uniform1f(context, locations['u_zoom']),
+    new Uniform1f(context, locations['u_maxzoom'])
+]);
 
 const hillshadeUniformPrepareValues = (
     tile: {dem: any, tileID: OverscaledTileID}, maxzoom: number
@@ -90,13 +103,13 @@ const hillshadeUniformPrepareValues = (
     mat4.ortho(matrix, 0, EXTENT, -EXTENT, 0, 0, 1);
     mat4.translate(matrix, matrix, [0, -EXTENT, 0]);
 
-    return {
-        'u_matrix': matrix,
-        'u_image': 1,
-        'u_dimension': [tileSize * 2, tileSize * 2],
-        'u_zoom': tile.tileID.overscaledZ,
-        'u_maxzoom': maxzoom
-    };
+    return [
+        matrix,
+        1,
+        [tileSize * 2, tileSize * 2],
+        tile.tileID.overscaledZ,
+        maxzoom
+    ];
 };
 
 function getTileLatRange(painter: Painter, tileID: OverscaledTileID) {

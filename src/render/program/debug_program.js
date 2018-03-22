@@ -9,19 +9,19 @@ import type Context from '../../gl/context';
 import type {UniformValues, UniformLocations} from '../uniform_binding';
 import type Color from '../../style-spec/util/color';
 
-export type DebugUniformsType = {|
-    'u_color': UniformColor,
-    'u_matrix': UniformMatrix4fv
-|};
+type u_color = UniformColor;
+type u_matrix = UniformMatrix4fv;
 
-const debugUniforms = (context: Context, locations: UniformLocations): DebugUniformsType => ({
-    'u_color': new UniformColor(context, locations.u_color),
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix)
-});
+export type DebugUniformsType = [ u_color, u_matrix ];
 
-const debugUniformValues = (matrix: Float32Array, color: Color): UniformValues<DebugUniformsType> => ({
-    'u_matrix': matrix,
-    'u_color': color
-});
+const debugUniforms = (context: Context, locations: UniformLocations): DebugUniformsType => ([
+    new UniformColor(context, locations['u_color']),
+    new UniformMatrix4fv(context, locations['u_matrix'])
+]);
+
+const debugUniformValues = (matrix: Float32Array, color: Color): UniformValues<DebugUniformsType> => ([
+    matrix,
+    color
+]);
 
 export { debugUniforms, debugUniformValues };
