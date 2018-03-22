@@ -44,9 +44,9 @@ if (!shared) {
 } else if (!worker) {
     worker = chunk;
 } else {
-    const workerBundleString = 'const sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
+    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
 
-    const sharedChunk = {};
+    var sharedChunk = {};
     shared(sharedChunk);
     mapboxgl = chunk(sharedChunk);
     mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));

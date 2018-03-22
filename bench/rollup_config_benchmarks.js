@@ -34,9 +34,9 @@ if (!shared) {
 } else if (!worker) {
     worker = module;
 } else {
-    const workerBundleString = 'const sharedModule = {}; (' + shared + ')(sharedModule); (' + worker + ')(sharedModule);'
+    var workerBundleString = 'var sharedModule = {}; (' + shared + ')(sharedModule); (' + worker + ')(sharedModule);'
 
-    const sharedModule = {};
+    var sharedModule = {};
     shared(sharedModule);
     window.mapboxGlWorkerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
     module(sharedModule);
