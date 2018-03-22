@@ -4,7 +4,7 @@
   "version": "0.44.1",
   "main": "dist/mapbox-gl.js",
   "style": "dist/mapbox-gl.css",
-  "license": "SEE LICENSE IN LICENSE.txt",
+  "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
