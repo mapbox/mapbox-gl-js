@@ -18,6 +18,7 @@ import Step from './step';
 import Interpolate from './interpolate';
 import Coalesce from './coalesce';
 import { Equals, NotEquals } from './equals';
+import { CollatorExpression } from './collator';
 import Length from './length';
 
 import type { Type } from '../types';
@@ -33,6 +34,7 @@ const expressions: ExpressionRegistry = {
     'boolean': Assertion,
     'case': Case,
     'coalesce': Coalesce,
+    'collator': CollatorExpression,
     'interpolate': Interpolate,
     'length': Length,
     'let': Let,

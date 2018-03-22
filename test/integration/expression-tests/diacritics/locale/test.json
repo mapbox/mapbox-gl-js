@@ -1,0 +1,17 @@
+{
+  "expression": ["==", ["string",["get", "lhs"]], ["get", "rhs"], ["collator", true, false, "de"]],
+  "inputs": [
+      [{}, {"properties": {"lhs": "ü", "rhs": "ue"}}],
+      [{}, {"properties": {"lhs": "ü", "rhs": "u"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, false],
+    "serialized": "string"
+  }
+}

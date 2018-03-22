@@ -1,6 +1,6 @@
 // @flow
 
-import { toString, ValueType, BooleanType } from '../types';
+import { toString, ValueType, BooleanType, CollatorType } from '../types';
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';
@@ -28,21 +28,23 @@ function isComparableType(type: Type) {
  *
  * @private
  */
-function makeComparison(compare) {
+function makeComparison(negate) {
     return class Comparison implements Expression {
         type: Type;
         lhs: Expression;
         rhs: Expression;
+        collator: Expression;
 
-        constructor(lhs: Expression, rhs: Expression) {
+        constructor(lhs: Expression, rhs: Expression, collator: Expression) {
             this.type = BooleanType;
             this.lhs = lhs;
             this.rhs = rhs;
+            this.collator = collator;
         }
 
         static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
-            if (args.length !== 3)
-                return context.error(`Expected two arguments.`);
+            if (args.length !== 3 && args.length !== 4)
+                return context.error(`Expected two or three arguments.`);
 
             const lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;
@@ -57,11 +59,21 @@ function makeComparison(compare) {
                 return context.error(`Cannot compare ${toString(lhs.type)} and ${toString(rhs.type)}.`);
             }
 
-            return new Comparison(lhs, rhs);
+            let collator;
+            if (args.length === 4) {
+                collator = context.parse(args[3], 3, CollatorType);
+                if (!collator) return null;
+            }
+
+            return new Comparison(lhs, rhs, collator);
         }
 
         evaluate(ctx: EvaluationContext) {
-            return compare(this.lhs.evaluate(ctx), this.rhs.evaluate(ctx));
+            const equal = this.collator ?
+                this.collator.evaluate(ctx).compare(this.lhs.evaluate(ctx), this.rhs.evaluate(ctx)) === 0 :
+                this.lhs.evaluate(ctx) === this.rhs.evaluate(ctx);
+
+            return negate ? !equal : equal;
         }
 
         eachChild(fn: (Expression) => void) {
@@ -75,5 +87,5 @@ function makeComparison(compare) {
     };
 }
 
-export const Equals = makeComparison((lhs, rhs) => lhs === rhs);
-export const NotEquals = makeComparison((lhs, rhs) => lhs !== rhs);
+export const Equals = makeComparison(false);
+export const NotEquals = makeComparison(true);
