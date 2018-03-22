@@ -1,6 +1,6 @@
 // @flow
 
-import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, array, toString } from '../types';
+import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, CollatorType, array, toString } from '../types';
 
 import { typeOf, Color, validateRGBA } from '../values';
 import CompoundExpression from '../compound_expression';
@@ -516,6 +516,11 @@ CompoundExpression.register(expressions, {
         StringType,
         varargs(StringType),
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
+    ],
+    'resolved-locale': [
+        StringType,
+        [CollatorType],
+        (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
     ]
 });
 

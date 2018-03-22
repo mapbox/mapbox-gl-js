@@ -25,6 +25,11 @@ export class Collator {
                                  { sensitivity: this.sensitivity, usage: 'search' })
             .compare(lhs, rhs);
     }
+
+    resolvedLocale(): string {
+        return new Intl.Collator(this.locale ? this.locale : {})
+            .resolvedOptions().locale;
+    }
 }
 
 export class CollatorExpression implements Expression {
