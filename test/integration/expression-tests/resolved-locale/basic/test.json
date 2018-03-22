@@ -1,0 +1,14 @@
+{
+  "expression": ["==", ["resolved-locale", ["collator", true, true, "en"]], "en"],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true],
+    "serialized": true
+  }
+}

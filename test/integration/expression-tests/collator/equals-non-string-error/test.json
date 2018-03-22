@@ -1,0 +1,14 @@
+{
+  "expression": ["==", 1, 2, ["collator", false, false]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "error": "Cannot use collator to compare non-string types.",
+          "key": ""
+        }
+      ]
+    }
+  }
+}
