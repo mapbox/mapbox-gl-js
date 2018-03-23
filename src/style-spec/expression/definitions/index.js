@@ -123,8 +123,7 @@ CompoundExpression.register(expressions, {
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
-            const {r, g, b, a} = v.evaluate(ctx);
-            return [255 * r / a, 255 * g / a, 255 * b / a, a];
+            return v.evaluate(ctx).toArray();
         }
     ],
     'rgb': [
