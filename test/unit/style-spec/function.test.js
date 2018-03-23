@@ -192,9 +192,9 @@ test('exponential function', (t) => {
         }).evaluate;
 
         t.deepEqual(f({zoom: 0}), new Color(0, 0, 0, 1));
-        t.equalWithPrecision(f({zoom: 5}).r, 0, 1e-6);
-        t.equalWithPrecision(f({zoom: 5}).g, 0.444, 1e-3);
-        t.equalWithPrecision(f({zoom: 5}).b, 0.444, 1e-3);
+        t.equalWithPrecision(f({zoom: 5}).r, 0.137255, 1e-3);
+        t.equalWithPrecision(f({zoom: 5}).g, 0.412, 1e-3);
+        t.equalWithPrecision(f({zoom: 5}).b, 0.412, 1e-3);
 
         t.end();
     });

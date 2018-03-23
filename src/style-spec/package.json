@@ -30,6 +30,8 @@
     "@mapbox/unitbezier": "^0.0.0",
     "brfs": "^1.4.0",
     "csscolorparser": "~1.0.2",
+    "d3-color": "^1.0.3",
+    "d3-interpolate": "^1.1.6",
     "in-publish": "^2.0.0",
     "jsonlint-lines-primitives": "~1.6.0",
     "minimist": "0.0.8",
