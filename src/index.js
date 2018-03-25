@@ -64,6 +64,21 @@ const exported = {
         WorkerPool.workerCount = count;
     },
 
+    /**
+     * Gets and sets map's pixel ratio
+     *
+     * @var {number} devicePixelRation
+     * @example
+     * mapboxgl.devicePixelRatio = 2
+     */
+    get devicePixelRatio() {
+        return config.DEVICE_PIXEL_RATIO;
+    },
+
+    set devicePixelRatio(devicePixelRatio: number) {
+        config.DEVICE_PIXEL_RATIO = devicePixelRatio;
+    },
+
     workerUrl: ''
 };
 

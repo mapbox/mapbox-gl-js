@@ -5,7 +5,7 @@ import { Event, ErrorEvent, Evented } from '../util/evented';
 import { extend } from '../util/util';
 import EXTENT from '../data/extent';
 import { ResourceType } from '../util/ajax';
-import browser from '../util/browser';
+import config from '../util/config';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
