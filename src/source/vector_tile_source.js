@@ -7,7 +7,7 @@ import loadTileJSON from './load_tilejson';
 import { normalizeTileURL as normalizeURL } from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import { ResourceType } from '../util/ajax';
-import browser from '../util/browser';
+import config from '../util/config';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
