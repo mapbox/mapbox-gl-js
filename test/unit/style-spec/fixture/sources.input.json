@@ -41,6 +41,14 @@
       ],
       "canvas": "canvasId",
       "animate": false
+    },
+    "canvas-invalid-union-type": {
+      "type": "canvas",
+      "coordinates": [
+        [1, 2], [3, 4], [5, 6], [7, 8]
+      ],
+      "canvas": 3,
+      "animate": false
     }
   },
   "layers": []
