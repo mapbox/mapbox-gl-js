@@ -1,3 +1,4 @@
+import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from 'rollup-plugin-replace';
 import {plugins as basePlugins} from '../build/rollup_plugins';
@@ -26,23 +27,7 @@ const config = [{
         file: 'bench/benchmarks_generated.js',
         format: 'umd',
         sourcemap: 'inline',
-        intro: `
-var shared, worker, mapboxgl;
-function define(_, chunk) {
-if (!shared) {
-    shared = chunk;
-} else if (!worker) {
-    worker = chunk;
-} else {
-    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
-
-    var sharedChunk = {};
-    shared(sharedChunk);
-    mapboxgl = chunk(sharedChunk);
-    mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
-}
-}
-`
+        intro: fs.readFileSync(require.resolve('../rollup/bundle_prelude.js'), 'utf8')
     },
     treeshake: false,
     indent: false,
