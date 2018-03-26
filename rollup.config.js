@@ -1,3 +1,4 @@
+import fs from 'fs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import {plugins} from './build/rollup_plugins';
 
@@ -25,8 +26,8 @@ const config = [{
     plugins: plugins()
 }, {
     // Next, bundle together the three "chunks" produced in the previous pass
-    // into a single, final bundle. See 'intro:' below and rollup/mapboxgl.js
-    // for details.
+    // into a single, final bundle. See rollup/bundle_prelude.js and
+    // rollup/mapboxgl.js for details.
     input: 'rollup/mapboxgl.js',
     output: {
         name: 'mapboxgl',
@@ -34,24 +35,7 @@ const config = [{
         format: 'umd',
         sourcemap: production ? true : 'inline',
         indent: false,
-        intro: `
-let shared, worker, mapboxgl;
-// define gets called three times: one for each chunk. we rely on the order
-// they're imported to know which is which
-function define(_, chunk) {
-if (!shared) {
-    shared = chunk;
-} else if (!worker) {
-    worker = chunk;
-} else {
-    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
-
-    var sharedChunk = {};
-    shared(sharedChunk);
-    mapboxgl = chunk(sharedChunk);
-    mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
-}
-}`
+        intro: fs.readFileSync(require.resolve('./rollup/bundle_prelude.js'), 'utf8')
     },
     treeshake: false,
     plugins: [
