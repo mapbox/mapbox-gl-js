@@ -35,7 +35,7 @@ const config = [{
         sourcemap: production ? true : 'inline',
         indent: false,
         intro: `
-let shared, worker, mapboxgl;
+var shared, worker, mapboxgl;
 // define gets called three times: one for each chunk. we rely on the order
 // they're imported to know which is which
 function define(_, chunk) {
