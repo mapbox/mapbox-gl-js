@@ -9,6 +9,10 @@ function flowEnum(values) {
     }
 }
 
+function flowUnion(types) {
+    return Object.keys(types).join(' | ');
+}
+
 function flowType(property) {
     if (typeof property.type === 'function') {
         return property.type();
@@ -22,6 +26,8 @@ function flowType(property) {
                 return property.type;
             case 'enum':
                 return flowEnum(property.values);
+            case 'union':
+                return flowUnion(property.types);
             case 'array':
                 const elementType = flowType(typeof property.value === 'string' ? {type: property.value} : property.value)
                 if (property.length) {
