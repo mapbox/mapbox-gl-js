@@ -426,9 +426,26 @@
       "doc": "Whether the canvas source is animated. If the canvas is static, `animate` should be set to `false` to improve performance."
     },
     "canvas": {
-      "type": "string",
+      "type": "union",
       "required": true,
-      "doc": "HTML ID of the canvas from which to read pixels."
+      "types": {
+        "string": {
+          "doc": "HTML ID of the canvas from which to read pixels.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.32.0"
+            }
+          }
+        },
+        "HTMLCanvasElement": {
+          "doc": "HTMLCanvasElement from which to read pixels.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "TODO"
+            }
+          }
+        }
+      }
     }
   },
   "layer": {

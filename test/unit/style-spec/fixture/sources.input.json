@@ -33,6 +33,14 @@
       "coordinates": [
         1, "2", [3, "4"], []
       ]
+    },
+    "canvas-valid-string": {
+      "type": "canvas",
+      "coordinates": [
+        [1, 2], [3, 4], [5, 6], [7, 8]
+      ],
+      "canvas": "canvasId",
+      "animate": false
     }
   },
   "layers": []

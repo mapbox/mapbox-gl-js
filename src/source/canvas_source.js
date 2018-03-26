@@ -75,7 +75,12 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
-        this.canvas = this.canvas || window.document.getElementById(this.options.canvas);
+        if (!this.canvas) {
+            this.canvas = (this.options.canvas instanceof HTMLCanvasElement) ?
+                this.options.canvas :
+                window.document.getElementById(this.options.canvas);
+        }
+
         this.width = this.canvas.width;
         this.height = this.canvas.height;
 

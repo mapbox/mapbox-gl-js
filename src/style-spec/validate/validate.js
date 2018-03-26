@@ -18,6 +18,7 @@ import validateLayer from './validate_layer';
 import validateSource from './validate_source';
 import validateLight from './validate_light';
 import validateString from './validate_string';
+import validateUnion from './validate_union';
 
 const VALIDATORS = {
     '*': function() {
@@ -35,7 +36,8 @@ const VALIDATORS = {
     'object': validateObject,
     'source': validateSource,
     'light': validateLight,
-    'string': validateString
+    'string': validateString,
+    'union': validateUnion
 };
 
 
