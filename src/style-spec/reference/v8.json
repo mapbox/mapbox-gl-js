@@ -427,6 +427,7 @@
     },
     "canvas": {
       "type": "union",
+      "doc": "Source from which read canvas data.",
       "required": true,
       "types": {
         "string": {
