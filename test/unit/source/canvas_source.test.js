@@ -8,7 +8,7 @@ import window from '../../../src/util/window';
 function createSource(options) {
     window.useFakeHTMLCanvasGetContext();
 
-    const c = window.document.createElement('canvas');
+    const c = options && options.canvas || window.document.createElement('canvas');
     c.width = 20;
     c.height = 20;
 
@@ -17,7 +17,9 @@ function createSource(options) {
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
 
+
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
+
     source.canvas = c;
 
     return source;
@@ -51,6 +53,22 @@ test('CanvasSource', (t) => {
         source.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.equal(typeof source.play, 'function');
+                t.end();
+            }
+        });
+
+        source.onAdd(new StubMap());
+    });
+
+    t.test('can be initialized with HTML element', (t) => {
+        const el = window.document.createElement('canvas');
+        const source = createSource({
+            canvas: el
+        });
+
+        source.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                t.equal(source.canvas, el);
                 t.end();
             }
         });
