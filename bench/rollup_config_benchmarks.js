@@ -27,19 +27,19 @@ const config = [{
         format: 'umd',
         sourcemap: 'inline',
         intro: `
-let shared, worker;
-function define(_, module) {
+var shared, worker, mapboxgl;
+function define(_, chunk) {
 if (!shared) {
-    shared = module;
+    shared = chunk;
 } else if (!worker) {
-    worker = module;
+    worker = chunk;
 } else {
-    var workerBundleString = 'var sharedModule = {}; (' + shared + ')(sharedModule); (' + worker + ')(sharedModule);'
+    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
 
-    var sharedModule = {};
-    shared(sharedModule);
-    window.mapboxGlWorkerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
-    module(sharedModule);
+    var sharedChunk = {};
+    shared(sharedChunk);
+    mapboxgl = chunk(sharedChunk);
+    mapboxgl.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
 }
 }
 `
