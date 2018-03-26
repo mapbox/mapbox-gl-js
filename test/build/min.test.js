@@ -2,6 +2,7 @@ import {test} from 'mapbox-gl-js-test';
 import fs from 'fs';
 import path from 'path';
 import reference from '../../src/style-spec/reference/latest';
+import { Linter } from 'eslint';
 
 const pkg = require('../../package.json');
 
@@ -34,3 +35,19 @@ test('can be browserified', (t) => {
         t.end();
     });
 });
+
+test('distributed in plain ES5 code', (t) => {
+    const linter = new Linter();
+    const messages = linter.verify(minBundle, {
+        parserOptions: {
+            ecmaVersion: 5
+        },
+        rules: {},
+        env: {
+            node: true
+        }
+    });
+    t.deepEqual(messages.map(message => `${message.line}:${message.column}: ${message.message}`), []);
+    t.end();
+});
+
