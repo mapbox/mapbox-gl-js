@@ -992,8 +992,8 @@ export default class extends React.Component {
                             <p>
                                 If you are using Mapbox Studio, you will use prebuilt sprites provided by Mapbox, or you can upload custom SVG
                                 images to build your own sprite. In either case, the sprite will be built automatically and supplied by Mapbox
-                                APIs. If you want to build a sprite by hand and self-host the files, you can use
-                                <a href="https://github.com/mapbox/spritezero-cli">spritezero-cli</a>, a command line utility that builds Mapbox
+                                APIs. If you want to build a sprite by hand and self-host the files, you can 
+                                use <a href="https://github.com/mapbox/spritezero-cli">spritezero-cli</a>, a command line utility that builds Mapbox
                                 GL compatible sprite PNGs and index files from a directory of SVGs.
                             </p>
                         </div>
@@ -1560,8 +1560,8 @@ export default class extends React.Component {
                                                     contain a value for the specified property.
                                                 </li>
                                                 <li>In identity functions, when the feature value is not valid for the
-                                                    style property (for example, if the function is being used for a
-                                                    <var>circle-color</var> property but the feature property value is
+                                                    style property (for example, if the function is being used for 
+                                                    a <var>circle-color</var> property but the feature property value is
                                                     not a string or not a valid color).
                                                 </li>
                                                 <li>In interval or exponential property and zoom-and-property functions,
