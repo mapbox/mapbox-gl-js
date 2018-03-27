@@ -218,7 +218,7 @@ const navigation = [
                 "title": "Function"
             },
             {
-                "title": "Filter (deprecated syntax)"
+                "title": "Filter"
             }
         ]
     }
@@ -449,7 +449,7 @@ export default class extends React.Component {
                             <a className='block truncate strong quiet' href={`#${slug(title)}`}>{title}</a>
                             {subnav && subnav.map(({title: subtitle}, i) =>
                                 <a key={i} className='block truncate'
-                                    href={`#${slug(title)}-${slug(subtitle.replace(/\s*\(.+\)$/, ''))}`}>{subtitle}</a>
+                                    href={`#${slug(title)}-${slug(subtitle)}`}>{subtitle}</a>
                             )}
                         </div>
                     )}
