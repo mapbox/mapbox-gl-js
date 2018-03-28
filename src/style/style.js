@@ -133,7 +133,7 @@ class Style extends Evented {
 
         const self = this;
         this._rtlTextPluginCallback = Style.registerForPluginAvailability((args) => {
-            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.errorCallback);
+            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginURL, args.completionCallback);
             for (const id in self.sourceCaches) {
                 self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
             }
