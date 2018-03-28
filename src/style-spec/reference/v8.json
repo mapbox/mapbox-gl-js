@@ -5013,6 +5013,27 @@
       },
       "property-type": "data-constant"
     },
+    "raster-scaling": {
+      "type": "enum",
+      "doc": "The raster scaling to use for overscaling",
+      "values": {
+        "linear": {
+          "doc": "(Bi)linear filtering"
+        },
+        "nearest": {
+          "doc": "Nearest neighbor filtering"
+        }
+      },
+      "default": "linear",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.45.0"
+        },
+        "data-driven styling": {}
+      }
+    },
     "raster-fade-duration": {
       "type": "number",
       "default": 300,

@@ -199,7 +199,7 @@ class ImageSource extends Evented implements Source {
 
         if (!this.texture) {
             this.texture = new Texture(context, this.image, gl.RGBA);
-            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            this.texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
         for (const w in this.tiles) {
