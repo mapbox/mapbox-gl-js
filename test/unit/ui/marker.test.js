@@ -20,6 +20,12 @@ test('Marker uses a default marker element with an appropriate offset', (t) => {
     t.end();
 });
 
+test('Marker uses a default marker element with custom color', (t) => {
+    const marker = new Marker({ color: '#123456' });
+    t.ok(marker.getElement().innerHTML.includes('#123456'));
+    t.end();
+});
+
 test('Marker uses a default marker with custom offest', (t) => {
     const marker = new Marker({ offset: [1, 2] });
     t.ok(marker.getElement());

@@ -16,7 +16,8 @@ import type {MapMouseEvent} from './events';
 type Options = {
     element?: HTMLElement,
     offset?: PointLike,
-    anchor?: Anchor
+    anchor?: Anchor,
+    color?: string
 };
 
 /**
@@ -27,6 +28,7 @@ type Options = {
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  *   The default is `'center'`.
  * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+ * @param options.color The color to use for the default marker if options.element is not provided. The default is light blue.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -41,6 +43,7 @@ export default class Marker {
     _popup: ?Popup;
     _lngLat: LngLat;
     _pos: ?Point;
+    _color: ?string;
 
     constructor(options?: Options) {
         // For backward compatibility -- the constructor used to accept the element as a
@@ -52,6 +55,7 @@ export default class Marker {
         bindAll(['_update', '_onMapClick'], this);
 
         this._anchor = options && options.anchor || 'center';
+        this._color = options && options.color || '#3FB1CE';
 
         if (!options || !options.element) {
             this._element = DOM.create('div');
@@ -97,7 +101,7 @@ export default class Marker {
             }
 
             const background = DOM.createNS('http://www.w3.org/2000/svg', 'g');
-            background.setAttributeNS(null, 'fill', '#3FB1CE');
+            background.setAttributeNS(null, 'fill', this._color);
 
             const bgPath = DOM.createNS('http://www.w3.org/2000/svg', 'path');
             bgPath.setAttributeNS(null, 'd', 'M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z');
