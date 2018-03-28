@@ -1,0 +1,18 @@
+{
+  "expression": ["is-supported-script", ["get", "x"]],
+  "description": "'is-supported-script' always returns true when run without global context providing an 'isSupportedScript' function (as in the expression tests). The 'is-supported-script' render tests provide the necessary global context and exercise the functionality.",
+  "inputs": [
+    [{}, {"properties": {"x": "שָׁלוֹם"}}],
+    [{}, {"properties": {"x": "देवनागरी"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, true],
+    "serialized": ["is-supported-script", ["string", ["get", "x"]]]
+  }
+}
