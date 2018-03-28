@@ -9,6 +9,7 @@ import { TriangleIndexArray } from '../index_array_type';
 import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
 import { register } from '../../util/web_worker_transfer';
+import EvaluationParameters from '../../style/evaluation_parameters';
 
 import type {
     Bucket,
@@ -69,7 +70,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters) {
         for (const {feature, index, sourceLayerIndex} of features) {
-            if (this.layers[0]._featureFilter({zoom: this.zoom}, feature)) {
+            if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
                 const geometry = loadGeometry(feature);
                 this.addFeature(feature, geometry);
                 options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
