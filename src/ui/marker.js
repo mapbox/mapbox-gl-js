@@ -44,6 +44,7 @@ export default class Marker {
     _lngLat: LngLat;
     _pos: ?Point;
     _color: ?string;
+    _defaultMarker: boolean;
 
     constructor(options?: Options) {
         // For backward compatibility -- the constructor used to accept the element as a
@@ -58,6 +59,7 @@ export default class Marker {
         this._color = options && options.color || '#3FB1CE';
 
         if (!options || !options.element) {
+            this._defaultMarker = true;
             this._element = DOM.create('div');
 
             // create default map marker SVG
@@ -255,7 +257,19 @@ export default class Marker {
 
         if (popup) {
             if (!('offset' in popup.options)) {
-                popup.options.offset = this._offset;
+                const markerHeight = 41 - (5.8 / 2);
+                const markerRadius = 13.5;
+                const linearOffset = Math.sqrt(Math.pow(markerRadius, 2) / 2);
+                popup.options.offset = this._defaultMarker ? {
+                    'top': [0, 0],
+                    'top-left': [0, 0],
+                    'top-right': [0, 0],
+                    'bottom': [0, -markerHeight],
+                    'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+                    'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+                    'left': [markerRadius, (markerHeight - markerRadius) * -1],
+                    'right': [-markerRadius, (markerHeight - markerRadius) * -1]
+                } : this._offset;
             }
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
