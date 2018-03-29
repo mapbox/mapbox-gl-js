@@ -5,7 +5,7 @@ import StyleLayer from '../style_layer';
 import HeatmapBucket from '../../data/bucket/heatmap_bucket';
 import { RGBAImage } from '../../util/image';
 import properties from './heatmap_style_layer_properties';
-import { renderColorRamp } from '../../util/color_ramp';
+import renderColorRamp from '../../util/color_ramp';
 import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
 
 import type Texture from '../../render/texture';

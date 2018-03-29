@@ -10,7 +10,7 @@ import type {StylePropertyExpression} from '../style-spec/expression/index';
  *
  * @private
  */
-export function renderColorRamp(expression: StylePropertyExpression, colorRampEvaluationParameter: string): RGBAImage {
+export default function renderColorRamp(expression: StylePropertyExpression, colorRampEvaluationParameter: string): RGBAImage {
     const colorRampData = new Uint8Array(256 * 4);
     const evaluationGlobals = {};
     for (let i = 0, j = 0; i < 256; i++, j += 4) {

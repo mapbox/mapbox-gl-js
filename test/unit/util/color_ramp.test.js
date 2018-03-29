@@ -1,8 +1,7 @@
-'use strict';
 
-const test = require('mapbox-gl-js-test').test;
-const renderColorRamp = require('../../../src/util/color_ramp');
-const { createPropertyExpression } = require('../../../src/style-spec/expression');
+import { test } from 'mapbox-gl-js-test';
+import renderColorRamp from '../../../src/util/color_ramp';
+import { createPropertyExpression } from '../../../src/style-spec/expression';
 
 const spec = {
     'function': true,

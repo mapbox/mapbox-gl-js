@@ -10,7 +10,7 @@ import { getMaximumPaintValue, translateDistance, translate } from '../query_uti
 import properties from './line_style_layer_properties';
 import { extend } from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
-import { renderColorRamp } from '../../util/color_ramp';
+import renderColorRamp from '../../util/color_ramp';
 import { Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty } from '../properties';
 
 import type {Bucket, BucketParameters} from '../../data/bucket';
