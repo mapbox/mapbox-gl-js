@@ -5,7 +5,7 @@ import md from '../components/md';
 import PageShell from '../components/page_shell';
 import LeftNav from '../components/left_nav';
 import TopNav from '../components/top_nav';
-import {highlightJavascript, highlightJSON, highlightMarkup} from '../components/prism_highlight';
+import {highlightJavascript, highlightJSON} from '../components/prism_highlight';
 import entries from 'object.entries';
 import ref from '../../src/style-spec/reference/latest';
 
