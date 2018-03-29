@@ -1,7 +1,7 @@
 
 import validateStyleMin from './validate_style.min';
 import ParsingError from './error/parsing_error';
-import jsonlint from 'jsonlint-lines-primitives';
+import jsonlint from '@mapbox/jsonlint-lines-primitives';
 import {v8} from './style-spec';
 
 /**
