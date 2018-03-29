@@ -160,11 +160,11 @@ class LineBucket implements Bucket {
     addLine(vertices: Array<Point>, feature: VectorTileFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
         let lineDistances = null;
         if (!!feature.properties &&
-            feature.properties.hasOwnProperty('$distance_start') &&
-            feature.properties.hasOwnProperty('$distance_end')) {
+            feature.properties.hasOwnProperty('mapbox_clip_start') &&
+            feature.properties.hasOwnProperty('mapbox_clip_end')) {
             lineDistances = {
-                start: feature.properties.$distance_start,
-                end: feature.properties.$distance_end,
+                start: feature.properties.mapbox_clip_start,
+                end: feature.properties.mapbox_clip_end,
                 tileTotal: undefined
             };
         }
