@@ -97,9 +97,6 @@ const navigation = [
             },
             {
                 "title": "video"
-            },
-            {
-                "title": "canvas"
             }
         ]
     },
@@ -223,7 +220,7 @@ const navigation = [
     }
 ];
 
-const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video', 'canvas'];
+const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video'];
 const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];
 
 const {expressions, expressionGroups} = require('../components/expression-metadata');
@@ -870,68 +867,6 @@ export default class extends React.Component {
                                                 <td><a href="https://github.com/mapbox/mapbox-gl-native/issues/601">Not yet supported</a></td>
                                                 <td><a href="https://github.com/mapbox/mapbox-gl-native/issues/601">Not yet supported</a></td>
                                                 <td><a href="https://github.com/mapbox/mapbox-gl-native/issues/601">Not yet supported</a></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div id='sources-canvas' className='pad2 keyline-bottom'>
-                                    <h3 className='space-bottom1'><a href='#sources-canvas' title='link to canvas'>canvas</a></h3>
-                                    <p>
-                                        A canvas source. The <code>"canvas"</code> value is the ID of the canvas element in the document.
-                                    </p>
-                                    <p>
-                                        The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the video
-                                        corners listed in clockwise order: top left, top right, bottom right, bottom left.
-                                    </p>
-                                    <p>
-                                        If an HTML document contains a canvas such as this:
-                                    </p>
-                                    <div className='space-bottom1 clearfix'>
-                                        {highlightMarkup(`<canvas id="mycanvas" width="400" height="300" style="display: none;"/>`)}
-                                    </div>
-                                    <p>
-                                        the corresponding canvas source would be specified as follows:
-                                    </p>
-                                    <div className='space-bottom1 clearfix'>
-                                        {highlightJSON(`
-                                            "canvas": {
-                                                "type": "canvas",
-                                                "canvas": "mycanvas",
-                                                "coordinates": [
-                                                    [-122.51596391201019, 37.56238816766053],
-                                                    [-122.51467645168304, 37.56410183312965],
-                                                    [-122.51309394836426, 37.563391708549425],
-                                                    [-122.51423120498657, 37.56161849366671]
-                                                ]
-                                            }`)}
-                                    </div>
-                                    <p>
-                                        This source type is available only in Mapbox GL JS. Avoid using it in styles that need to maintain
-                                        compatibility with other Mapbox Maps SDKs.
-                                    </p>
-                                    <div className='space-bottom1 clearfix'>
-                                        { entries(ref.source_canvas).map(([name, prop], i) =>
-                                            name !== '*' && name !== 'type' &&
-                                            <Item key={i} id={`sources-canvas-${name}`} name={name} {...prop}/>)}
-                                    </div>
-                                    <table className="micro">
-                                        <thead>
-                                            <tr className='fill-light'>
-                                                <th>SDK Support</th>
-                                                <td className='center'>Mapbox GL JS</td>
-                                                <td className='center'>Android SDK</td>
-                                                <td className='center'>iOS SDK</td>
-                                                <td className='center'>macOS SDK</td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>basic functionality</td>
-                                                <td>&gt;= 0.32.0</td>
-                                                <td>Not supported</td>
-                                                <td>Not supported</td>
-                                                <td>Not supported</td>
                                             </tr>
                                         </tbody>
                                     </table>
