@@ -21,15 +21,17 @@ export type CanvasSourceSpecification = {|
 |};
 
 /**
- * A data source containing the contents of an HTML canvas. Unlike other source types, canvas sources are specific to Mapbox GL JS
- * and cannot function purely through inclusion in a style document, so they are not documented in the Style Specification.
+ * Options to add a canvas source type to the map.
  *
- * @param {string} options.type Source type. Must be "canvas"
- * @param {string|HTMLCanvasElement} options.canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the HTMLCanvasElement itself.
- * @param {Array<Array<number>>} options.coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in [longitude, latitude] pairs.
- * @param {boolean} [options.animate=true] Whether the canvas source is animated. If the canvas is static, `animate` should be set to `false` to improve performance.
- *
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
+ * @typedef {Object} CanvasSourceOptions
+ * @property {string} type Source type. Must be `"canvas"`.
+ * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
+ * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
+ * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
+ */
+
+/**
+ * A data source containing the contents of an HTML canvas. See {@link CanvasSourceOptions} for detailed documentation of options.
  *
  * @example
  * // add to map
