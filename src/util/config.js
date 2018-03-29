@@ -21,7 +21,9 @@ const config: Config = {
     },
     REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null,
-    DEVICE_PIXEL_RATIO: browser.devicePixelRatio,
+    get DEVICE_PIXEL_RATIO() {
+        return browser.devicePixelRatio;
+    }
 };
 
 export default config;
