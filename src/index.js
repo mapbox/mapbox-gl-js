@@ -69,7 +69,7 @@ const exported = {
     },
 
     set devicePixelRatio(devicePixelRatio: number) {
-        config.DEVICE_PIXEL_RATIO = devicePixelRatio;
+        Object.defineProperty(config, 'DEVICE_PIXEL_RATIO', { value: devicePixelRatio });
     },
 
     workerUrl: ''
