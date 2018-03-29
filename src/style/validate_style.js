@@ -1,6 +1,7 @@
 // @flow
 import validateStyleMin from '../style-spec/validate_style.min';
-import { ErrorEvent } from '../util/evented';
+import { ErrorEvent, WarningEvent } from '../util/evented';
+import { ValidationWarning } from '../style-spec/error/validation_error';
 
 import type {Evented} from '../util/evented';
 
@@ -19,13 +20,18 @@ export const validateFilter = (validateStyleMin.filter: Validator);
 export const validatePaintProperty = (validateStyleMin.paintProperty: Validator);
 export const validateLayoutProperty = (validateStyleMin.layoutProperty: Validator);
 
-export function emitValidationErrors(emitter: Evented, errors: ?$ReadOnlyArray<{message: string}>) {
+export function emitValidationErrors(emitter: Evented, errors: ?$ReadOnlyArray<{message: string}>): boolean {
+    let hasErrors = false;
     if (errors && errors.length) {
-        for (const {message} of errors) {
-            emitter.fire(new ErrorEvent(new Error(message)));
+        for (const error of errors) {
+            const {message} = error;
+            if (error instanceof ValidationWarning) {
+                emitter.fire(new WarningEvent({warning: message}));
+            } else {
+                emitter.fire(new ErrorEvent(new Error(message)));
+                hasErrors = true;
+            }
         }
-        return true;
-    } else {
-        return false;
     }
+    return hasErrors;
 }

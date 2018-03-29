@@ -111,8 +111,7 @@
     "source_raster_dem",
     "source_geojson",
     "source_video",
-    "source_image",
-    "source_canvas"
+    "source_image"
   ],
   "source_vector": {
     "type": {
@@ -395,40 +394,6 @@
         "value": "number",
         "doc": "A single longitude, latitude pair."
       }
-    }
-  },
-  "source_canvas": {
-    "type": {
-      "required": true,
-      "type": "enum",
-      "values": {
-        "canvas": {
-          "doc": "A canvas data source."
-        }
-      },
-      "doc": "The data type of the canvas source."
-    },
-    "coordinates": {
-      "required": true,
-      "doc": "Corners of canvas specified in longitude, latitude pairs.",
-      "type": "array",
-      "length": 4,
-      "value": {
-        "type": "array",
-        "length": 2,
-        "value": "number",
-        "doc": "A single longitude, latitude pair."
-      }
-    },
-    "animate": {
-      "type": "boolean",
-      "default": "true",
-      "doc": "Whether the canvas source is animated. If the canvas is static, `animate` should be set to `false` to improve performance."
-    },
-    "canvas": {
-      "type": "string",
-      "required": true,
-      "doc": "HTML ID of the canvas from which to read pixels."
     }
   },
   "layer": {

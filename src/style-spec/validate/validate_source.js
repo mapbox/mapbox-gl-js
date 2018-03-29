@@ -1,5 +1,5 @@
 
-import ValidationError from '../error/validation_error';
+import ValidationError, { ValidationWarning } from '../error/validation_error';
 import { unbundle } from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
@@ -65,13 +65,8 @@ export default function validateSource(options) {
         });
 
     case 'canvas':
-        return validateObject({
-            key: key,
-            value: value,
-            valueSpec: styleSpec.source_canvas,
-            style: style,
-            styleSpec: styleSpec
-        });
+        errors.push(new ValidationWarning(key, null, `Please use runtime APIs to add canvas sources, rather than including them in stylesheets.`));
+        return errors;
 
     default:
         return validateEnum({

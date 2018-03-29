@@ -7,13 +7,28 @@ import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import VertexArrayObject from '../render/vertex_array_object';
 import Texture from '../render/texture';
 import { ErrorEvent } from '../util/evented';
+import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type {Evented} from '../util/evented';
 
+export type CanvasSourceSpecification = {|
+    "type": "canvas",
+    "coordinates": [[number, number], [number, number], [number, number], [number, number]],
+    "animate"?: boolean,
+    "canvas": string | HTMLCanvasElement
+|};
+
 /**
- * A data source containing the contents of an HTML canvas.
+ * A data source containing the contents of an HTML canvas. Unlike other source types, canvas sources are specific to Mapbox GL JS
+ * and cannot function purely through inclusion in a style document, so they are not documented in the Style Specification.
+ *
+ * @param {string} options.type Source type. Must be "canvas"
+ * @param {string|HTMLCanvasElement} options.canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the HTMLCanvasElement itself.
+ * @param {Array<Array<number>>} options.coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in [longitude, latitude] pairs.
+ * @param {boolean} [options.animate=true] Whether the canvas source is animated. If the canvas is static, `animate` should be set to `false` to improve performance.
+ *
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
  *
  * @example
@@ -56,6 +71,25 @@ class CanvasSource extends ImageSource {
      */
     constructor(id: string, options: CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
+
+        // We build in some validation here, since canvas sources aren't included in the style spec:
+        if (!options.coordinates) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'missing required property "coordinates"')));
+        } else if (!Array.isArray(options.coordinates) || options.coordinates.length !== 4 ||
+                options.coordinates.some(c => !Array.isArray(c) || c.length !== 2 || c.some(l => typeof l !== 'number'))) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, '"coordinates" property must be an array of 4 longitude/latitude array pairs')));
+        }
+
+        if (options.animate && typeof options.animate !== 'boolean') {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'optional "animate" property must be a boolean value')));
+        }
+
+        if (!options.canvas) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'missing required property "canvas"')));
+        } else if (typeof options.canvas !== 'string' && !(options.canvas instanceof window.HTMLCanvasElement)) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, '"canvas" must be either a string representing the ID of the canvas element from which to read, or an HTMLCanvasElement instance')));
+        }
+
         this.options = options;
         this.animate = options.animate !== undefined ? options.animate : true;
     }
@@ -75,7 +109,12 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
-        this.canvas = this.canvas || window.document.getElementById(this.options.canvas);
+        if (!this.canvas) {
+            this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
+                this.options.canvas :
+                window.document.getElementById(this.options.canvas);
+        }
+
         this.width = this.canvas.width;
         this.height = this.canvas.height;
 
