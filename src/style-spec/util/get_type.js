@@ -1,4 +1,6 @@
 
+import window from '../../util/window';
+
 export default function getType(val) {
     if (val instanceof Number) {
         return 'number';
@@ -8,6 +10,8 @@ export default function getType(val) {
         return 'boolean';
     } else if (Array.isArray(val)) {
         return 'array';
+    } else if (val instanceof window.HTMLCanvasElement) {
+        return 'HTMLCanvasElement';
     } else if (val === null) {
         return 'null';
     } else {

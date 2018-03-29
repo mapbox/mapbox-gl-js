@@ -23,7 +23,7 @@ function validSchema(k, t, obj, ref, version, kind) {
     const types = Object.keys(ref).concat(['boolean', 'string', 'number',
         'array', 'enum', 'color', '*',
         // new in v8
-        'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template',
+        'opacity', 'translate-array', 'dash-array', 'offset-array', 'font-array', 'field-template', 'union',
         // new enums in v8
         'line-cap-enum',
         'line-join-enum',
@@ -51,6 +51,7 @@ function validSchema(k, t, obj, ref, version, kind) {
         'units',
         'tokens',
         'values',
+        'types',
         'maximum',
         'minimum',
         'period',
@@ -85,6 +86,17 @@ function validSchema(k, t, obj, ref, version, kind) {
                         } else if (t.name === 'latest') t.fail(`doc missing for ${k}`);
                     }
                 }
+            }
+        }
+
+        if (obj.type === 'union') {
+            const types = Object.keys(obj.types);
+            t.ok(Array.isArray(types));
+            for (const v in obj.types) {
+                if (obj.types[v].doc !== undefined) {
+                    t.equal('string', typeof obj.types[v].doc, `${k}.doc (string)`);
+                    if (kind === 'min') t.fail(`minified file should not have ${k}.doc`);
+                } else if (t.name === 'latest') t.fail(`doc missing for ${k}`);
             }
         }
 

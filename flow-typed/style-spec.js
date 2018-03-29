@@ -133,7 +133,7 @@ declare type CanvasSourceSpecification = {|
     "type": "canvas",
     "coordinates": [[number, number], [number, number], [number, number], [number, number]],
     "animate"?: boolean,
-    "canvas": string
+    "canvas": string | HTMLCanvasElement
 |}
 
 declare type SourceSpecification =

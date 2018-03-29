@@ -34,5 +34,9 @@
   {
     "message": "sources.video-wrong-coordinates.coordinates[3]: array length 2 expected, length 0 found",
     "line": 34
+  },
+  {
+    "message": "sources.canvas-invalid-union-type.canvas: expected one of types [string, HTMLCanvasElement], \"number\" found",
+    "line": 50
   }
 ]
