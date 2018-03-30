@@ -166,6 +166,10 @@ export default function validateFunction(options) {
             return [new ValidationError(options.key, reportValue, message)];
         }
 
+        if (options.key.match(/(-pattern)|(-dasharray)/) && Math.floor(value) !== value) {
+            return [new ValidationError(options.key, reportValue, `Non-integer zoom steps are not supported for *-pattern or line-dasharray properties. Integer expected, found ${value}`)];
+        }
+
         if (functionType === 'categorical' && type === 'number' && (!isFinite(value) || Math.floor(value) !== value)) {
             return [new ValidationError(options.key, reportValue, `integer expected, found ${value}`)];
         }

@@ -73,6 +73,24 @@
       "paint": {
         "fill-opacity": "{opacity}"
       }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "line-pattern": ["step", ["zoom"], "hospital-11", 14.5, "dog-park-11"]
+      }
+    },
+    {
+      "id": "line2",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "line-dasharray": {"stops": [[12.5, [0, 1]], [14.5, [2, 1]]]}
+      }
     }
   ]
 }

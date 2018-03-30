@@ -41,5 +41,17 @@
   {
     "message": "layers[4].paint.fill-opacity: \"fill-opacity\" does not support interpolation syntax\nUse an identity property function instead: `{ \"type\": \"identity\", \"property\": \"opacity\" }`.",
     "line": 74
+  },
+  {
+    "message": "layers[5].paint.line-pattern: Non-integer zoom steps are not supported for *-pattern or line-dasharray properties. Integer expected, found 14.5",
+    "line": 83
+  },
+  {
+    "message": "layers[6].paint.line-dasharray.stops[0][0]: Non-integer zoom steps are not supported for *-pattern or line-dasharray properties. Integer expected, found 12.5",
+    "line": 92
+  },
+  {
+    "message": "layers[6].paint.line-dasharray.stops[1][0]: Non-integer zoom steps are not supported for *-pattern or line-dasharray properties. Integer expected, found 14.5",
+    "line": 92
   }
 ]
