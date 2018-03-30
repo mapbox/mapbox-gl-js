@@ -11,6 +11,6 @@
       "type": "array<number, 4>"
     },
     "outputs": [[0, 0, 0, 0]],
-    "serialized": ["to-rgba", ["rgba", 0, 0, 0, 0]]
+    "serialized": ["literal", [0, 0, 0, 0]]
   }
 }
