@@ -34,7 +34,7 @@
       "to-rgba",
       [
         "interpolate",
-        ["exponential", 1],
+        ["linear"],
         ["number", ["get", "x"]],
         1,
         ["rgba", 255, 0, 0, 1],

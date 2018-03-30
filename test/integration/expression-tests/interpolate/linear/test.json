@@ -32,7 +32,7 @@
     ],
     "serialized": [
       "interpolate",
-      ["exponential", 1],
+      ["linear"],
       ["number", ["get", "x"]],
       0,
       100,

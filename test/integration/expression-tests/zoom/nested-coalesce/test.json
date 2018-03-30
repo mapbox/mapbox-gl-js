@@ -14,7 +14,7 @@
     "outputs": [5],
     "serialized": [
       "coalesce",
-      ["interpolate", ["exponential", 1], ["zoom"], 0, 0, 30, 30]
+      ["interpolate", ["linear"], ["zoom"], 0, 0, 30, 30]
     ]
   }
 }
