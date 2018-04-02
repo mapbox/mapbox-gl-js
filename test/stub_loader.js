@@ -1,5 +1,5 @@
 // Load our stubbed ajax module for the integration suite implementation
-/* eslint-disable import/unambiguous */
+/* eslint-disable import/unambiguous, import/no-commonjs */
 const fs = require('fs');
 const assert = require('assert');
 const pirates = require('pirates');
