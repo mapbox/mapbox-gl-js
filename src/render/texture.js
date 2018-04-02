@@ -47,7 +47,6 @@ class Texture {
 
         const {width, height} = image;
         this.size = [width, height];
-        this.powerOfTwoSize = width === height && (Math.log(width) / Math.LN2) % 1 === 0;
         this.format = format;
 
         this.texture = context.gl.createTexture();
@@ -72,6 +71,8 @@ class Texture {
         } else {
             gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
         }
+
+        this.powerOfTwoSize = width === height && (Math.log(width) / Math.LN2) % 1 === 0;
     }
 
     bind(filter: TextureFilter, wrap: TextureWrap, minFilter: ?TextureFilter) {
