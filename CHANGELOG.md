@@ -4,6 +4,12 @@
 
 * `Evented` is no longer publicly exported, and `Evented#fire` and `Evented#listens` are now private. If you are writing a class that needs event emitting functionality, consider using [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) or similar libraries instead.
 
+## 0.44.2
+
+### 🐛 Bug fixes
+
+* Workaround a breaking change in Safari causing page to scroll/zoom in response to user actions intended to pan/zoom the map [#6095](https://github.com/mapbox/mapbox-gl-js/issues/6095). (N.B., not to be confused with the workaround from April 2017 dealing with the same breaking change in Chrome [#4259](https://github.com/mapbox/mapbox-gl-js/issues/6095). See also https://github.com/WICG/interventions/issues/18, https://bugs.webkit.org/show_bug.cgi?id=182521, https://bugs.chromium.org/p/chromium/issues/detail?id=639227 .)
+
 ## 0.44.1
 
 ### 🐛 Bug fixes
