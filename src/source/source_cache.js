@@ -43,6 +43,7 @@ class SourceCache extends Evented {
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
     _tiles: {[any]: Tile};
+    _prevLng: number | void;
     _cache: Cache<Tile>;
     _timers: {[any]: TimeoutID};
     _cacheTimers: {[any]: TimeoutID};
@@ -392,6 +393,49 @@ class SourceCache extends Evented {
         this._cache.setMaxSize(maxSize);
     }
 
+    handleWrapJump(lng: number) {
+        // On top of the regular z/x/y values, TileIDs have a `wrap` value that specify
+        // which cppy of the world the tile belongs to. For example, at `lng: 10` you
+        // might render z/x/y/0 while at `lng: 370` you would render z/x/y/1.
+        //
+        // When lng values get wrapped (going from `lng: 370` to `long: 10`) you expect
+        // to see the same thing on the screen (370 degrees and 10 degrees is the same
+        // place in the world) but all the TileIDs will have different wrap values.
+        //
+        // In order to make this transition seamless, we calculate the rounded difference of
+        // "worlds" between the last frame and the current frame. If the map panned by
+        // a world, then we can assign all the tiles new TileIDs with updated wrap values.
+        // For example, assign z/x/y/1 a new id: z/x/y/0. It is the same tile, just rendered
+        // in a different position.
+        //
+        // This enables us to reuse the tiles at more ideal locations and prevent flickering.
+        const prevLng = this._prevLng === undefined ? lng : this._prevLng;
+        const lngDifference = lng - prevLng;
+        const worldDifference = lngDifference / 360;
+        const wrapDelta = Math.round(worldDifference);
+        this._prevLng = lng;
+
+        if (wrapDelta) {
+            const tiles = {};
+            for (const key in this._tiles) {
+                const tile = this._tiles[key];
+                tile.tileID = tile.tileID.unwrapTo(tile.tileID.wrap + wrapDelta);
+                tiles[tile.tileID.key] = tile;
+            }
+            this._tiles = tiles;
+
+            // Reset tile reload timers
+            for (const id in this._timers) {
+                clearTimeout(this._timers[id]);
+                delete this._timers[id];
+            }
+            for (const id in this._tiles) {
+                const tile = this._tiles[id];
+                this._setTileReloadTimer(id, tile);
+            }
+        }
+    }
+
     /**
      * Removes tiles that are outside the viewport and adds new tiles that
      * are inside the viewport.
@@ -401,6 +445,8 @@ class SourceCache extends Evented {
         if (!this._sourceLoaded || this._paused) { return; }
 
         this.updateCacheSize(transform);
+        this.handleWrapJump(this.transform.center.lng);
+
         // Covered is a list of retained tiles who's areas are fully covered by other,
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
@@ -572,13 +618,13 @@ class SourceCache extends Evented {
 
         tile = this._cache.getAndRemove((tileID.wrapped().key: any));
         if (tile) {
-            // set the tileID because the cached tile could have had a different wrap value
-            tile.tileID = tileID;
             if (this._cacheTimers[tileID.key]) {
                 clearTimeout(this._cacheTimers[tileID.key]);
                 delete this._cacheTimers[tileID.key];
                 this._setTileReloadTimer(tileID.key, tile);
             }
+            // set the tileID because the cached tile could have had a different wrap value
+            tile.tileID = tileID;
         }
 
         const cached = Boolean(tile);

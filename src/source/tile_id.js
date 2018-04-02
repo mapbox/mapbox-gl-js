@@ -68,6 +68,10 @@ export class OverscaledTileID {
         this.key = calculateKey(wrap, overscaledZ, x, y);
     }
 
+    equals(id: OverscaledTileID) {
+        return this.overscaledZ === id.overscaledZ && this.wrap === id.wrap && this.canonical.equals(id.canonical);
+    }
+
     scaledTo(targetZ: number) {
         assert(targetZ <= this.overscaledZ);
         const zDifference = this.canonical.z - targetZ;
@@ -120,6 +124,10 @@ export class OverscaledTileID {
 
     wrapped() {
         return new OverscaledTileID(this.overscaledZ, 0, this.canonical.z, this.canonical.x, this.canonical.y);
+    }
+
+    unwrapTo(wrap: number) {
+        return new OverscaledTileID(this.overscaledZ, wrap, this.canonical.z, this.canonical.x, this.canonical.y);
     }
 
     overscaleFactor() {
