@@ -114,7 +114,7 @@ class RasterTileSource extends Evented implements Source {
                         gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
                     }
                 }
-                gl.generateMipmap(gl.TEXTURE_2D);
+                if (tile.texture.powerOfTwoSize) gl.generateMipmap(gl.TEXTURE_2D);
 
                 tile.state = 'loaded';
 

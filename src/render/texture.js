@@ -40,12 +40,14 @@ class Texture {
     format: TextureFormat;
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
+    powerOfTwoSize: boolean;
 
     constructor(context: Context, image: TextureImage, format: TextureFormat, premultiply: ?boolean) {
         this.context = context;
 
         const {width, height} = image;
         this.size = [width, height];
+        this.powerOfTwoSize = width === height && (Math.log(width) / Math.LN2) % 1 === 0;
         this.format = format;
 
         this.texture = context.gl.createTexture();
@@ -76,6 +78,10 @@ class Texture {
         const {context} = this;
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.powerOfTwoSize) {
+            minFilter = gl.LINEAR;
+        }
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
