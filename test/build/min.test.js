@@ -3,8 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import reference from '../../src/style-spec/reference/latest';
 import { Linter } from 'eslint';
-
-const pkg = require('../../package.json');
+import { scripts } from '../../package.json';
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 
@@ -16,8 +15,8 @@ test('production build removes asserts', (t) => {
 test('trims package.json assets', (t) => {
     // confirm that the entire package.json isn't present by asserting
     // the absence of each of our script strings
-    for (const name in pkg.scripts) {
-        t.assert(minBundle.indexOf(pkg.scripts[name]) === -1);
+    for (const name in scripts) {
+        t.assert(minBundle.indexOf(scripts[name]) === -1);
     }
     t.end();
 });

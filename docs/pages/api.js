@@ -6,6 +6,8 @@ import {highlightJavascript} from '../components/prism_highlight.js';
 import Quickstart from '../components/quickstart';
 import docs from '../components/api.json'; // eslint-disable-line import/no-unresolved
 import GithubSlugger from 'github-slugger';
+import createFormatters from 'documentation/lib/output/util/formatters';
+import LinkerStack from 'documentation/lib/output/util/linker_stack';
 
 const meta = {
     title: 'Mapbox GL JS API',
@@ -13,8 +15,6 @@ const meta = {
     pathname: '/api'
 };
 
-const createFormatters = require('documentation/lib/output/util/formatters');
-const LinkerStack = require('documentation/lib/output/util/linker_stack');
 
 const linkerStack = new LinkerStack({})
     .namespaceResolver(docs, (namespace) => {

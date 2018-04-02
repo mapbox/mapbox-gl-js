@@ -139,7 +139,7 @@
     "test-unit": "build/run-tap --reporter classic --no-coverage test/unit",
     "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
-    "test-expressions": "node test/expression.test.js",
+    "test-expressions": "build/run-node test/expression.test.js",
     "test-flow": "node build/generate-flow-typed-style-spec && flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",

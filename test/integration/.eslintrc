@@ -6,6 +6,7 @@
     "node"
   ],
   "rules": {
+    "import/no-commonjs": "off",
     "node/no-unsupported-features": ["error", {
         "version": 4
     }]

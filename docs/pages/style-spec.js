@@ -226,7 +226,7 @@ const navigation = [
 const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video', 'canvas'];
 const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];
 
-const {expressions, expressionGroups} = require('../components/expression-metadata');
+import {expressions, expressionGroups} from '../components/expression-metadata';
 
 const groupedExpressions = [
     'Types',

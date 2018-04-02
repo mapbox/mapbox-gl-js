@@ -1,2 +1,2 @@
-/* eslint-disable import/unambiguous */
+/* eslint-disable import/unambiguous, import/no-commonjs */
 require('../..');

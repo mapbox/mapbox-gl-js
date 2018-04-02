@@ -1,3 +1,6 @@
+
+/* eslint-disable import/no-commonjs */
+
 const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 const path = require('path');
