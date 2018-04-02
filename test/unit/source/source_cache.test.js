@@ -709,6 +709,32 @@ test('SourceCache#update', (t) => {
         sourceCache.onAdd();
     });
 
+    t.test('reassigns tiles for large jumps in longitude', (t) => {
+
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        const sourceCache = createSourceCache({});
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                transform.center = new LngLat(360, 0);
+                const tileID = new OverscaledTileID(0, 1, 0, 0, 0);
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [tileID.key]);
+                const tile = sourceCache.getTile(tileID);
+
+                transform.center = new LngLat(0, 0);
+                const wrappedTileID = new OverscaledTileID(0, 0, 0, 0, 0);
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [wrappedTileID.key]);
+                t.equal(sourceCache.getTile(wrappedTileID), tile);
+                t.end();
+            }
+        });
+        sourceCache.onAdd();
+    });
+
     t.end();
 });
 
