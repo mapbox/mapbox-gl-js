@@ -38,9 +38,16 @@ export default function bindHandlers(map: Map, options: {}) {
     DOM.addEventListener(el, 'mouseup', onMouseUp);
     DOM.addEventListener(el, 'mousemove', onMouseMove);
     DOM.addEventListener(el, 'mouseover', onMouseOver);
+
+    // Bind touchstart and touchmove with passive: false because, even though
+    // they only fire a map events and therefore could theoretically be
+    // passive, binding with passive: true causes iOS not to respect
+    // e.preventDefault() in _other_ handlers, even if they are non-passive
+    // (see https://bugs.webkit.org/show_bug.cgi?id=184251)
     DOM.addEventListener(el, 'touchstart', onTouchStart, {passive: false});
-    DOM.addEventListener(el, 'touchmove', onTouchMove, {passive: true}); // `passive: true` because onTouchMove only sends a map event.
-    DOM.addEventListener(el, 'touchend', onTouchEnd);                    // The real action is in DragPanHandler and TouchZoomRotateHandler.
+    DOM.addEventListener(el, 'touchmove', onTouchMove, {passive: false});
+
+    DOM.addEventListener(el, 'touchend', onTouchEnd);
     DOM.addEventListener(el, 'touchcancel', onTouchCancel);
     DOM.addEventListener(el, 'click', onClick);
     DOM.addEventListener(el, 'dblclick', onDblClick);
