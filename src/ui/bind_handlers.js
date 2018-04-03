@@ -2,6 +2,10 @@
 
 const Point = require('@mapbox/point-geometry');
 const DOM = require('../util/dom');
+const window = require('../util/window');
+
+const iOS = !!window.navigator.platform &&
+    /iPad|iPhone|iPod/.test(window.navigator.platform); // https://stackoverflow.com/a/9039885
 
 import type Map from './map';
 
@@ -34,8 +38,14 @@ module.exports = function bindHandlers(map: Map, options: {}) {
     DOM.addEventListener(el, 'mouseup', onMouseUp);
     DOM.addEventListener(el, 'mousemove', onMouseMove);
     DOM.addEventListener(el, 'mouseover', onMouseOver);
-    DOM.addEventListener(el, 'touchstart', onTouchStart, {passive: true}); // passive: true because onTouchStart only fires a map event
-    DOM.addEventListener(el, 'touchmove', onTouchMove, {passive: true}); // passive: true because onTouchMove only fires a map event
+    // Bind touchstart with passive: true because onTouchStart only fires a map event
+    DOM.addEventListener(el, 'touchstart', onTouchStart, {passive: true});
+
+    // Bind touchmove with passive: false on iOS because, even though
+    // onTouchMove only fires a map event, binding with passive: true causes
+    // iOS not to respect e.preventDefault() in _other_ handlers, even if they
+    // are non-passive.  https://bugs.webkit.org/show_bug.cgi?id=182521
+    DOM.addEventListener(el, 'touchmove', onTouchMove, {passive: !iOS});
     DOM.addEventListener(el, 'touchend', onTouchEnd);
     DOM.addEventListener(el, 'touchcancel', onTouchCancel);
     DOM.addEventListener(el, 'click', onClick);
