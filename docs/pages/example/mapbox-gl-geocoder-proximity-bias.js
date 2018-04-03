@@ -5,7 +5,7 @@ description: >-
   control to search for places using Mapbox Geocoding API biasing results
   nearby the map's current view.
 tags:
-  - controls-and-overlays
+  - geocoder
 pathname: /mapbox-gl-js/example/mapbox-gl-geocoder-proximity-bias/
 ---*/
 import Example from '../../components/example';
