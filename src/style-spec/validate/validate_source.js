@@ -1,5 +1,5 @@
 
-import ValidationError, { ValidationWarning } from '../error/validation_error';
+import ValidationError from '../error/validation_error';
 import { unbundle } from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
@@ -65,14 +65,14 @@ export default function validateSource(options) {
         });
 
     case 'canvas':
-        errors.push(new ValidationWarning(key, null, `Please use runtime APIs to add canvas sources, rather than including them in stylesheets.`));
+        errors.push(new ValidationError(key, null, `Please use runtime APIs to add canvas sources, rather than including them in stylesheets.`, 'source.canvas'));
         return errors;
 
     default:
         return validateEnum({
             key: `${key}.type`,
             value: value.type,
-            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image', 'canvas']},
+            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']},
             style: style,
             styleSpec: styleSpec
         });

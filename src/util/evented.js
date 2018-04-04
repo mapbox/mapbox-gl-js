@@ -34,12 +34,6 @@ export class ErrorEvent extends Event {
     }
 }
 
-export class WarningEvent extends Event {
-    constructor(data: Object = {}) {
-        super('warning', data);
-    }
-}
-
 /**
  * Methods mixed in to other classes for event capabilities.
  *

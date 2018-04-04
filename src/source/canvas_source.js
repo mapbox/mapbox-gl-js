@@ -116,7 +116,6 @@ class CanvasSource extends ImageSource {
                 this.options.canvas :
                 window.document.getElementById(this.options.canvas);
         }
-
         this.width = this.canvas.width;
         this.height = this.canvas.height;
 
@@ -220,7 +219,6 @@ class CanvasSource extends ImageSource {
     serialize(): Object {
         return {
             type: 'canvas',
-            canvas: this.canvas,
             coordinates: this.coordinates
         };
     }

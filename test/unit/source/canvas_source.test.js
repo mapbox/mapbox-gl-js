@@ -180,7 +180,6 @@ test('CanvasSource#serialize', (t) => {
 
     const serialized = source.serialize();
     t.equal(serialized.type, 'canvas');
-    t.ok(serialized.canvas);
     t.deepEqual(serialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
 
     window.restore();
