@@ -16,7 +16,7 @@ var map = new mapboxgl.Map({
  */
 var coordinatesGeocoder = function (query) {
     // match anything which looks like a decimal degrees coordinate pair
-    var matches = query.match(/^[ ]*(?:Lat: )?(-?\d+\.?\d*)[, ]+(?:Lng: )?(-?\d+\.?\d*)[ ]*$/);
+    var matches = query.match(/^[ ]*(?:Lat: )?(-?\d+\.?\d*)[, ]+(?:Lng: )?(-?\d+\.?\d*)[ ]*$/i);
     if (!matches) {
         return null;
     }
