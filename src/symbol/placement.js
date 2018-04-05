@@ -69,6 +69,7 @@ class Placement {
     lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
+    bucketInstanceIds: {[number]: boolean};
 
     constructor(transform: Transform, fadeDuration: number) {
         this.transform = transform.clone();
@@ -77,11 +78,16 @@ class Placement {
         this.opacities = {};
         this.stale = false;
         this.fadeDuration = fadeDuration;
+
+        this.bucketInstanceIds = {};
     }
 
     placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-        if (!symbolBucket) return;
+        if (!symbolBucket || !tile.latestFeatureIndex)
+            return;
+
+        const collisionBoxArray = tile.latestFeatureIndex.collisionBoxArray;
 
         const layout = symbolBucket.layers[0].layout;
 
@@ -103,7 +109,7 @@ class Placement {
                 pixelsToTileUnits(tile, 1, this.transform.zoom));
 
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source);
+                showCollisionBoxes, seenCrossTileIDs, collisionBoxArray, tile.tileID.key, styleLayer.source);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
@@ -116,6 +122,10 @@ class Placement {
 
         const iconWithoutText = !bucket.hasTextData() || layout.get('text-optional');
         const textWithoutIcon = !bucket.hasIconData() || layout.get('icon-optional');
+
+        // Mark this bucket version as "used" by this placement.
+        // This is necessary to hold onto tile data for symbol querying
+        this.bucketInstanceIds[bucket.bucketInstanceId] = true;
 
         for (const symbolInstance of bucket.symbolInstances) {
             if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
@@ -259,8 +269,8 @@ class Placement {
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (symbolBucket) {
-                this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray);
+            if (symbolBucket && tile.latestFeatureIndex) {
+                this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.latestFeatureIndex.collisionBoxArray);
             }
         }
     }

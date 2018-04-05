@@ -9,7 +9,7 @@ import GeoJSONFeature from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter';
 import CollisionIndex from '../symbol/collision_index';
 import SymbolBucket from '../data/bucket/symbol_bucket';
-import { RasterBoundsArray, CollisionBoxArray } from '../data/array_types';
+import { RasterBoundsArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import EXTENT from '../data/extent';
 import Point from '@mapbox/point-geometry';
@@ -55,6 +55,9 @@ class Tile {
     uses: number;
     tileSize: number;
     buckets: {[string]: Bucket};
+    latestFeatureIndex: ?FeatureIndex;
+    latestRawTileData: ?ArrayBuffer;
+    retainedFeatureIndexes: {[number]: FeatureIndex};
     iconAtlasImage: ?RGBAImage;
     iconAtlasTexture: Texture;
     glyphAtlasImage: ?AlphaImage;
@@ -64,10 +67,6 @@ class Tile {
     state: TileState;
     timeAdded: any;
     fadeEndTime: any;
-    rawTileData: ArrayBuffer;
-    collisionBoxArray: ?CollisionBoxArray;
-    collisionIndex: ?CollisionIndex;
-    featureIndex: ?FeatureIndex;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
     placementSource: any;
@@ -111,6 +110,8 @@ class Tile {
         this.expiredRequestCount = 0;
 
         this.state = 'loading';
+
+        this.retainedFeatureIndexes = {};
     }
 
     registerFadeDuration(duration: number) {
@@ -144,17 +145,23 @@ class Tile {
 
         // empty GeoJSON tile
         if (!data) {
-            this.collisionBoxArray = new CollisionBoxArray();
+            this.latestFeatureIndex = new FeatureIndex(this.tileID);
             return;
         }
 
-        if (data.rawTileData) {
-            // Only vector tiles have rawTileData
-            this.rawTileData = data.rawTileData;
+        if (data.featureIndex) {
+            this.latestFeatureIndex = data.featureIndex;
+            if (data.rawTileData) {
+                // Only vector tiles have rawTileData, and they won't update it for
+                // 'reloadTile'
+                this.latestRawTileData = data.rawTileData;
+                this.latestFeatureIndex.rawTileData = data.rawTileData;
+            } else if (this.latestRawTileData) {
+                // If rawTileData hasn't updated, hold onto a pointer to the last
+                // one we received
+                this.latestFeatureIndex.rawTileData = this.latestRawTileData;
+            }
         }
-        this.collisionBoxArray = data.collisionBoxArray;
-        this.featureIndex = data.featureIndex;
-        this.featureIndex.rawTileData = this.rawTileData;
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
         if (justReloaded) {
@@ -198,8 +205,7 @@ class Tile {
             this.glyphAtlasTexture.destroy();
         }
 
-        this.collisionBoxArray = null;
-        this.featureIndex = null;
+        this.latestFeatureIndex = null;
         this.state = 'unloaded';
     }
 
@@ -244,23 +250,12 @@ class Tile {
                           posMatrix: Float32Array,
                           sourceID: string,
                           collisionIndex: ?CollisionIndex): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
-        if (!this.featureIndex || !this.collisionBoxArray)
+        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData)
             return {};
 
-        // Create the set of the current bucket instance ids
-        const bucketInstanceIds = {};
-        for (const id in layers) {
-            const bucket = this.getBucket(layers[id]);
-            if (bucket) {
-                // Add the bucket instance's id to the set of current ids.
-                // The query will only include results from current buckets.
-                if (bucket instanceof SymbolBucket && bucket.bucketInstanceId !== undefined) {
-                    bucketInstanceIds[bucket.bucketInstanceId] = true;
-                }
-            }
-        }
-
-        return this.featureIndex.query({
+        // First, query non-symbol features in the latest feature index
+        const results = {};
+        this.latestFeatureIndex.query(results, {
             queryGeometry: queryGeometry,
             scale: scale,
             tileSize: this.tileSize,
@@ -268,22 +263,59 @@ class Tile {
             transform: transform,
             params: params,
             queryPadding: this.queryPadding * maxPitchScaleFactor,
-            collisionBoxArray: this.collisionBoxArray,
             sourceID: sourceID,
-            collisionIndex: collisionIndex,
-            bucketInstanceIds: bucketInstanceIds
+            collisionIndex: null,
+            bucketInstanceIds: {}
         }, layers);
+
+        // Build up set of unique featureIndexes used by different buckets
+        const symbolFeatureIndexes = [];
+        for (const bucketInstanceString in this.retainedFeatureIndexes) {
+            const bucketInstanceId = (bucketInstanceString: any);
+            const featureIndex = this.retainedFeatureIndexes[bucketInstanceId];
+            const existingIndex = symbolFeatureIndexes.indexOf(featureIndex);
+            if (existingIndex === -1) {
+                const bucketIds = {};
+                bucketIds[bucketInstanceId] = true;
+                symbolFeatureIndexes.push({ index: featureIndex, bucketIds: bucketIds});
+            } else {
+                symbolFeatureIndexes[existingIndex].bucketIds[bucketInstanceId] = true;
+            }
+        }
+
+        for (const symbolFeatureIndex of symbolFeatureIndexes) {
+            if (!symbolFeatureIndex.index.rawTileData) {
+                continue;
+            }
+
+            symbolFeatureIndex.index.query(results, {
+                queryGeometry: queryGeometry,
+                scale: scale,
+                tileSize: this.tileSize,
+                posMatrix: posMatrix,
+                transform: transform,
+                params: params,
+                queryPadding: this.queryPadding * maxPitchScaleFactor,
+                sourceID: sourceID,
+                collisionIndex: collisionIndex,
+                bucketInstanceIds: symbolFeatureIndex.bucketIds
+            }, layers);
+        }
+
+        return results;
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
-        if (!this.rawTileData) return;
+        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) return;
 
-        if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
+        if (!this.latestFeatureIndex.vtLayers) {
+            this.latestFeatureIndex.vtLayers =
+                new vt.VectorTile(new Protobuf(this.latestFeatureIndex.rawTileData)).layers;
         }
+        const vtLayers = this.latestFeatureIndex.vtLayers;
 
         const sourceLayer = params ? params.sourceLayer : '';
-        const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[sourceLayer];
+        const layer = vtLayers._geojsonTileLayer || vtLayers[sourceLayer];
 
         if (!layer) return;
 
@@ -424,6 +456,17 @@ class Tile {
             } else {
                 // Max value for `setTimeout` implementations is a 32 bit integer; cap this accordingly
                 return Math.min(this.expirationTime - new Date().getTime(), Math.pow(2, 31) - 1);
+            }
+        }
+    }
+
+    pruneFeatureIndexes(usedBucketInstanceIds: {[number]: boolean}) {
+        for (const bucketInstanceId of Object.keys(this.retainedFeatureIndexes).map(Number)) {
+            if (!usedBucketInstanceIds[bucketInstanceId]) {
+                // This bucket was no longer used in the latest placement,
+                // so discard the associated querying data if this was the
+                // last bucket to use it.
+                delete this.retainedFeatureIndexes[bucketInstanceId];
             }
         }
     }
