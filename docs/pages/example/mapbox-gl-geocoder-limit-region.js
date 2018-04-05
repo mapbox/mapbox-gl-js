@@ -5,7 +5,7 @@ description: >-
   control to search for places using Mapbox Geocoding API limiting results
   to a region.
 tags:
-  - controls-and-overlays
+  - geocoder
 pathname: /mapbox-gl-js/example/mapbox-gl-geocoder-limit-region/
 ---*/
 import Example from '../../components/example';
