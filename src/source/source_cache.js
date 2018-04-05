@@ -788,12 +788,12 @@ class SourceCache extends Evented {
         return false;
     }
 
-    setFeatureState(feature: string, key: string, value: string, sourceLayer?: string) {
-        this._state.setState(feature, key, value, sourceLayer || '_geojsonTileLayer');
+    setFeatureState(sourceLayer: string, feature: string, key: string, value: any) {
+        this._state.setState(sourceLayer, feature, key, value);
     }
 
-    getFeatureState(feature: string, key?: string, sourceLayer?: string) {
-        return this._state.getState(feature, key, sourceLayer || '_geojsonTileLayer');
+    getFeatureState(sourceLayer: string, feature: string, key?: string) {
+        return this._state.getState(sourceLayer, feature, key);
     }
 }
 

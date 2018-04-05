@@ -6,11 +6,13 @@
       "operations": [
         [
             "setFeatureState", 
-            "mapbox",
+            { 
+                "sourceId": "mapbox",
+                "sourceLayer": "poi_label"
+            },
             "1000059876748",
             "isRed",
-            true,
-            "poi_label"
+            true
         ], [
             "wait"
         ]

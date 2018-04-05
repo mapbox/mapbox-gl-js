@@ -1375,29 +1375,29 @@ class Map extends Camera {
     /**
      * Sets state values on a feature, given a source and [optional]source-layer.
      * 
-     * @param {string} source The source identifier for the feature.
+     * @param {string | {sourceId: string, sourceLayer: string}} source *For vector tile sources, the sourceLayer is
+     *  required.* For GeoJSON sources, just the source id.
      * @param {string} feature The unique feature identifier from the source data.
      * @param {string} key The name of the state to be set.
-     * @param {string | number | boolean} value The value to be set.
-     * @param {string} sourceLayer (optional) The source-layer identifier for Vector Tile sources.
+     * @param {any} value The value to be set. This can be any valid JSON value.
      */
-    setFeatureState(source: string, feature: string, key: string, value: any, sourceLayer?: string) {
-        this.style.setFeatureState(source, feature, key, value, sourceLayer);
+    setFeatureState(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string, value: any) {
+        this.style.setFeatureState(source, feature, key, value);
         this._update();
     }
 
     /**
      * Gets the state of a feature, given a source and [optional]source-layer.
      * 
-     * @param {string} source The source identifier for the feature.
+     * @param {string | {sourceId: string, sourceLayer: string}} source *For vector tile sources, the sourceLayer is
+     *  required.* For GeoJSON sources, just the source id.
      * @param {string} feature The unique feature identifier from the source data.
      * @param {string} key (optional) The name of the state. When null, all state values are returned.
-     * @param {string} sourceLayer (optional) The source-layer identifier for Vector Tile sources.
      * 
-     * @returns The value of the specified specified state or all states.
+     * @returns {any} The value of the specified specified state or all states.
      */
-    getFeatureState(source: string, feature: string, key?: string, sourceLayer?: string): any {
-        return this.style.getFeatureState(source, feature, key, sourceLayer);
+    getFeatureState(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key?: string): any {
+        return this.style.getFeatureState(source, feature, key);
     }
 
     /**

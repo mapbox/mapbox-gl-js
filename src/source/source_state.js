@@ -2,7 +2,7 @@
 import { extend } from '../util/util';
 import Tile from './tile';
 
-export type FeatureStates = {[feature_id: string]: {[key: string]: string | number | boolean }};
+export type FeatureStates = {[feature_id: string]: {[key: string]: any }};
 export type LayerFeatureStates = {[layer: string]: FeatureStates};
 
 /** 
@@ -20,14 +20,14 @@ class SourceFeatureState {
         this.stateChanges = {};
     }
 
-    setState(feature: string, key: string, value: any, sourceLayer: string) {
+    setState(sourceLayer: string, feature: string, key: string, value: any) {
         feature = String(feature);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         this.stateChanges[sourceLayer][feature][key] = value;
     }
 
-    getState(feature: string, key?: string, sourceLayer: string) {
+    getState(sourceLayer: string, feature: string, key?: string) {
         feature = String(feature);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};

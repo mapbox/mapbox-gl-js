@@ -6,31 +6,31 @@
       "operations": [
         [
             "setFeatureState", 
-            "mapbox",
+            { 
+                "sourceId": "mapbox",
+                "sourceLayer": "road"
+            },
             "4612696",
             "stateA",
-            1,
-            "road"
+            1
         ], [
             "setFeatureState", 
-            "mapbox",
+            { 
+                "sourceId": "mapbox",
+                "sourceLayer": "road"
+            },
             4612696,
             "stateB",
-            "feature_id as number",
-            "road"
+            "feature_id as number"
         ], [
             "setFeatureState", 
-            "mapbox",
+            { 
+                "sourceId": "mapbox",
+                "sourceLayer": "road"
+            },
             "4612752",
             "stateB",
-            { "stateKey" : [ 4, 2] },
-            "road"
-        ], [
-            "setFeatureState", 
-            "mapbox",
-            "4612752",
-            "stateA",
-            "Won't show in result without sourceLayer parameter for vector sources."
+            { "stateKey" : [ 4, 2] }
         ]
       ],
       "queryGeometry": [

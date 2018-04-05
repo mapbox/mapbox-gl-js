@@ -1227,9 +1227,10 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState('geojson', '12345', 'hover', true, 'source-layer');
-                t.equal(map.getFeatureState('geojson', '12345', 'hover', 'source-layer'), true);
-                t.equal(map.getFeatureState('geojson', '12345', 'hover'), undefined);
+                map.setFeatureState('geojson', '12345', 'hover', true);
+                t.equal(map.getFeatureState('geojson', '12345', 'hover'), true);
+                t.equal(map.getFeatureState({ sourceId: 'geojson' }, '12345', 'hover'), true);
+                t.equal(map.getFeatureState({ sourceId: 'geojson', sourceLayer: 'source-layer'}, '12345', 'hover'), true);
                 t.end();
             });
         });
@@ -1265,6 +1266,27 @@ test('Map', (t) => {
                     t.end();
                 });
                 map.setFeatureState('vector', '12345', 'hover', true);
+            });
+        });
+        t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /sourceLayer/);
+                    t.end();
+                });
+                map.setFeatureState({ sourceId: 'vector', sourceLayer: 0}, '12345', 'hover', true);
             });
         });
 
