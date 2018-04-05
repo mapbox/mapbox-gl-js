@@ -128,6 +128,42 @@ test('querySourceFeatures', (t) => {
         t.end();
     });
 
+    t.test('loadVectorData preserves old symbol data until it has been pruned', (t) => {
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        tile.state = 'loaded';
+
+        tile.loadVectorData(
+            createVectorData({rawTileData: createRawTileData()}),
+            createPainter()
+        );
+
+        tile.retainedFeatureIndexes[0] = tile.latestFeatureIndex;
+
+        tile.loadVectorData(
+            createVectorData(),
+            createPainter()
+        );
+
+        tile.pruneFeatureIndexes({0: true});
+        t.equal(Object.keys(tile.retainedFeatureIndexes).length, 1);
+
+        t.notEqual(tile.retainedFeatureIndexes[0], tile.latestFeatureIndex);
+
+        let features = [];
+        tile.querySourceFeatures(features, { 'sourceLayer': 'road' });
+        t.equal(features.length, 3);
+
+        tile.pruneFeatureIndexes({});
+
+        t.equal(Object.keys(tile.retainedFeatureIndexes).length, 0);
+
+        features = [];
+        tile.querySourceFeatures(features, { 'sourceLayer': 'road' });
+        t.equal(features.length, 3);
+
+        t.end();
+    });
+
     t.end();
 });
 
