@@ -27,6 +27,10 @@
     "layout": {
       "text-field": "ABCD",
       "text-font": ["array", "string", ["literal", ["Open Sans Semibold", "Arial Unicode MS Bold"]]]
+    },
+    "paint": {
+      "text-color": ["get", "color", ["literal", {"color": "black"}]],
+      "text-opacity": ["let", "opacity", 1, ["var", "opacity"]]
     }
   }]
 }
