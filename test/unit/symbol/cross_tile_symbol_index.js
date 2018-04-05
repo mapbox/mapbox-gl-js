@@ -20,7 +20,8 @@ function makeTile(tileID, symbolInstances) {
     };
     return {
         tileID: tileID,
-        getBucket: () => bucket
+        getBucket: () => bucket,
+        latestFeatureIndex: {}
     };
 }
 

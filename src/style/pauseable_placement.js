@@ -2,7 +2,7 @@
 
 import browser from '../util/browser';
 
-import Placement from '../symbol/placement';
+import { Placement } from '../symbol/placement';
 
 import type Transform from '../geo/transform';
 import type StyleLayer from './style_layer';
