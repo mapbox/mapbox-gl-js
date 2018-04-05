@@ -5,13 +5,13 @@ import type StyleLayer from '../style/style_layer';
 import type Coordinate from '../geo/coordinate';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
+import type { RetainedQueryData } from '../symbol/placement';
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Coordinate>,
                             params: { filter: FilterSpecification, layers: Array<string> },
-                            transform: Transform,
-                            collisionIndex: ?CollisionIndex) {
+                            transform: Transform) {
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
     const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor);
 
@@ -28,13 +28,42 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                 params,
                 transform,
                 maxPitchScaleFactor,
-                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()),
-                sourceCache.id,
-                collisionIndex)
+                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()))
         });
     }
 
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
+}
+
+export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
+                            queryGeometry: Array<Point>,
+                            params: { filter: FilterSpecification, layers: Array<string> },
+                            collisionIndex: CollisionIndex,
+                            retainedQueryData: {[number]: RetainedQueryData}) {
+    const result = {};
+    const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
+    const bucketQueryData = [];
+    for (const bucketInstanceId of Object.keys(renderedSymbols).map(Number)) {
+        bucketQueryData.push(retainedQueryData[bucketInstanceId]);
+    }
+    bucketQueryData.sort(sortTilesIn);
+
+    for (const queryData of bucketQueryData) {
+        const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
+                renderedSymbols[queryData.bucketInstanceId],
+                queryData.bucketIndex,
+                queryData.sourceLayerIndex,
+                params.filter,
+                params.layers,
+                styleLayers);
+        for (const layerID in bucketSymbols) {
+            const resultFeatures = result[layerID] = result[layerID] || [];
+            for (const symbolFeature of bucketSymbols[layerID]) {
+                resultFeatures.push(symbolFeature.feature);
+            }
+        }
+    }
+    return result;
 }
 
 export function querySourceFeatures(sourceCache: SourceCache, params: any) {

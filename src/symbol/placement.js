@@ -16,6 +16,8 @@ import type Tile from '../source/tile';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type mat4 from '@mapbox/gl-matrix';
 import type {CollisionBoxArray, CollisionVertexArray} from '../data/array_types';
+import type FeatureIndex from '../data/feature_index';
+import type {OverscaledTileID} from '../source/tile_id';
 
 class OpacityState {
     opacity: number;
@@ -60,7 +62,27 @@ class JointPlacement {
     }
 }
 
-class Placement {
+export class RetainedQueryData {
+    bucketInstanceId: number;
+    featureIndex: FeatureIndex;
+    sourceLayerIndex: number;
+    bucketIndex: number;
+    tileID: OverscaledTileID;
+
+    constructor(bucketInstanceId: number,
+                featureIndex: FeatureIndex,
+                sourceLayerIndex: number,
+                bucketIndex: number,
+                tileID: OverscaledTileID) {
+        this.bucketInstanceId = bucketInstanceId;
+        this.featureIndex = featureIndex;
+        this.sourceLayerIndex = sourceLayerIndex;
+        this.bucketIndex = bucketIndex;
+        this.tileID = tileID;
+    }
+}
+
+export class Placement {
     transform: Transform;
     collisionIndex: CollisionIndex;
     placements: { [string | number]: JointPlacement };
@@ -69,6 +91,7 @@ class Placement {
     lastPlacementChangeTime: number;
     stale: boolean;
     fadeDuration: number;
+    retainedQueryData: {[number]: RetainedQueryData};
 
     constructor(transform: Transform, fadeDuration: number) {
         this.transform = transform.clone();
@@ -77,11 +100,16 @@ class Placement {
         this.opacities = {};
         this.stale = false;
         this.fadeDuration = fadeDuration;
+        this.retainedQueryData = {};
     }
 
     placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }) {
         const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-        if (!symbolBucket) return;
+        const bucketFeatureIndex = tile.latestFeatureIndex;
+        if (!symbolBucket || !bucketFeatureIndex)
+            return;
+
+        const collisionBoxArray = tile.collisionBoxArray;
 
         const layout = symbolBucket.layers[0].layout;
 
@@ -102,14 +130,23 @@ class Placement {
                 this.transform,
                 pixelsToTileUnits(tile, 1, this.transform.zoom));
 
+        // As long as this placement lives, we have to hold onto this bucket's
+        // matching FeatureIndex/data for querying purposes
+        this.retainedQueryData[symbolBucket.bucketInstanceId] = new RetainedQueryData(
+            symbolBucket.bucketInstanceId,
+            bucketFeatureIndex,
+            symbolBucket.sourceLayerIndex,
+            symbolBucket.index,
+            tile.tileID
+        );
+
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, tile.collisionBoxArray, tile.tileID.key, styleLayer.source);
+                showCollisionBoxes, seenCrossTileIDs, collisionBoxArray);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
             scale: number, textPixelRatio: number, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean },
-            collisionBoxArray: ?CollisionBoxArray, tileKey: number, sourceID: string) {
-
+            collisionBoxArray: ?CollisionBoxArray) {
         const layout = bucket.layers[0].layout;
 
         const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayoutProperties.properties['text-size']);
@@ -128,12 +165,18 @@ class Placement {
                 let placedGlyphCircles = null;
                 let placedIconBoxes = null;
 
+                let textFeatureIndex = 0;
+                let iconFeatureIndex = 0;
+
                 if (!symbolInstance.collisionArrays) {
                     symbolInstance.collisionArrays = bucket.deserializeCollisionBoxes(
                             ((collisionBoxArray: any): CollisionBoxArray),
                             symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex);
                 }
 
+                if (symbolInstance.collisionArrays.textFeatureIndex) {
+                    textFeatureIndex = symbolInstance.collisionArrays.textFeatureIndex;
+                }
                 if (symbolInstance.collisionArrays.textBox) {
                     placedGlyphBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
                             layout.get('text-allow-overlap'), textPixelRatio, posMatrix);
@@ -165,6 +208,9 @@ class Placement {
                     offscreen = offscreen && placedGlyphCircles.offscreen;
                 }
 
+                if (symbolInstance.collisionArrays.iconFeatureIndex) {
+                    iconFeatureIndex = symbolInstance.collisionArrays.iconFeatureIndex;
+                }
                 if (symbolInstance.collisionArrays.iconBox) {
                     placedIconBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
                             layout.get('icon-allow-overlap'), textPixelRatio, posMatrix);
@@ -183,15 +229,15 @@ class Placement {
 
                 if (placeText && placedGlyphBoxes) {
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
-                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.textBoxStartIndex);
+                            bucket.bucketInstanceId, textFeatureIndex);
                 }
                 if (placeIcon && placedIconBoxes) {
                     this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
-                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.iconBoxStartIndex);
+                            bucket.bucketInstanceId, iconFeatureIndex);
                 }
                 if (placeText && placedGlyphCircles) {
                     this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'),
-                            tileKey, sourceID, bucket.bucketInstanceId, symbolInstance.textBoxStartIndex);
+                            bucket.bucketInstanceId, textFeatureIndex);
                 }
 
                 assert(symbolInstance.crossTileID !== 0);
@@ -259,7 +305,7 @@ class Placement {
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (symbolBucket) {
+            if (symbolBucket && tile.latestFeatureIndex) {
                 this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray);
             }
         }
@@ -417,5 +463,3 @@ function packOpacity(opacityState: OpacityState): number {
         opacityBits * shift9 + targetBit * shift8 +
         opacityBits * shift1 + targetBit;
 }
-
-export default Placement;

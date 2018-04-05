@@ -10,7 +10,7 @@ test('QueryFeatures#rendered', (t) => {
     t.test('returns empty object if source returns no tiles', (t) => {
         const mockSourceCache = { tilesIn: function () { return []; } };
         const transform = new Transform();
-        const result = queryRenderedFeatures(mockSourceCache, undefined, undefined, undefined, transform);
+        const result = queryRenderedFeatures(mockSourceCache, undefined, {}, undefined, transform);
         t.deepEqual(result, []);
         t.end();
     });

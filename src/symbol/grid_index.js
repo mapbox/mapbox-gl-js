@@ -91,12 +91,32 @@ class GridIndex {
         if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
             return hitTest ? false : [];
         }
-        let result = [];
+        const result = [];
         if (x1 <= 0 && y1 <= 0 && this.width <= x2 && this.height <= y2) {
-            // We use `Array#slice` because `this.keys` may be a `Int32Array` and
-            // some browsers (Safari and IE) do not support `TypedArray#slice`
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/slice#Browser_compatibility
-            result = Array.prototype.slice.call(this.boxKeys).concat(this.circleKeys);
+            if (hitTest) {
+                return true;
+            }
+            for (let boxUid = 0; boxUid < this.boxKeys.length; boxUid++) {
+                result.push({
+                    key: this.boxKeys[boxUid],
+                    x1: this.bboxes[boxUid * 4],
+                    y1: this.bboxes[boxUid * 4 + 1],
+                    x2: this.bboxes[boxUid * 4 + 2],
+                    y2: this.bboxes[boxUid * 4 + 3]
+                });
+            }
+            for (let circleUid = 0; circleUid < this.circleKeys.length; circleUid++) {
+                const x = this.circles[circleUid * 3];
+                const y = this.circles[circleUid * 3 + 1];
+                const radius = this.circles[circleUid * 3 + 2];
+                result.push({
+                    key: this.circleKeys[circleUid],
+                    x1: x - radius,
+                    y1: y - radius,
+                    x2: x + radius,
+                    y2: y + radius
+                });
+            }
         } else {
             const queryArgs = {
                 hitTest,
@@ -160,7 +180,13 @@ class GridIndex {
                             result.push(true);
                             return true;
                         } else {
-                            result.push(this.boxKeys[boxUid]);
+                            result.push({
+                                key: this.boxKeys[boxUid],
+                                x1: bboxes[offset],
+                                y1: bboxes[offset + 1],
+                                x2: bboxes[offset + 2],
+                                y2: bboxes[offset + 3]
+                            });
                         }
                     }
                 }
@@ -185,7 +211,16 @@ class GridIndex {
                             result.push(true);
                             return true;
                         } else {
-                            result.push(this.circleKeys[circleUid]);
+                            const x = circles[offset];
+                            const y = circles[offset + 1];
+                            const radius = circles[offset + 2];
+                            result.push({
+                                key: this.circleKeys[circleUid],
+                                x1: x - radius,
+                                y1: y - radius,
+                                x2: x + radius,
+                                y2: y + radius
+                            });
                         }
                     }
                 }

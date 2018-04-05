@@ -212,11 +212,13 @@ class CrossTileSymbolIndex {
     layerIndexes: {[layerId: string]: CrossTileSymbolLayerIndex};
     crossTileIDs: CrossTileIDs;
     maxBucketInstanceId: number;
+    bucketsInCurrentPlacement: {[number]: boolean};
 
     constructor() {
         this.layerIndexes = {};
         this.crossTileIDs = new CrossTileIDs();
         this.maxBucketInstanceId = 0;
+        this.bucketsInCurrentPlacement = {};
     }
 
     addLayer(styleLayer: StyleLayer, tiles: Array<Tile>) {

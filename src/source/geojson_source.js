@@ -238,7 +238,6 @@ class GeoJSONSource extends Evented implements Source {
             tileSize: this.tileSize,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
-            overscaling: tile.tileID.overscaleFactor(),
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
