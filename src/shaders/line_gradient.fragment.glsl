@@ -9,7 +9,7 @@ uniform sampler2D u_image;
 varying vec2 v_width2;
 varying vec2 v_normal;
 varying float v_gamma_scale;
-varying float v_linesofar;
+varying highp float v_linesofar;
 
 void main() {
     #pragma mapbox: initialize highp vec4 color

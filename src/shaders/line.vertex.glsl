@@ -22,7 +22,7 @@ uniform vec2 u_gl_units_to_pixels;
 varying vec2 v_normal;
 varying vec2 v_width2;
 varying float v_gamma_scale;
-varying float v_linesofar;
+varying highp float v_linesofar;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float blur
