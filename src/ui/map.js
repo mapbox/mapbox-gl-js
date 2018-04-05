@@ -880,11 +880,12 @@ class Map extends Camera {
             ];
         }
 
-        queryGeometry = queryGeometry.map((p) => {
-            return this.transform.pointCoordinate(p);
-        });
-
-        return queryGeometry;
+        return {
+            viewport: queryGeometry,
+            worldCoordinate: queryGeometry.map((p) => {
+                return this.transform.pointCoordinate(p);
+            })
+        };
     }
 
     /**

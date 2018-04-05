@@ -12,7 +12,8 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     zoom: number,
     pixelRatio: number,
     overscaling: number,
-    collisionBoxArray: CollisionBoxArray
+    collisionBoxArray: CollisionBoxArray,
+    sourceLayerIndex: number
 }
 
 export type PopulateParameters = {
