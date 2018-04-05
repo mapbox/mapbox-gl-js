@@ -20,7 +20,7 @@ import {
     getType as getSourceType,
     setType as setSourceType
 } from '../source/source';
-import { queryRenderedFeatures, querySourceFeatures } from '../source/query_features';
+import { queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures } from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
@@ -48,7 +48,7 @@ import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
-import type Placement from '../symbol/placement';
+import type { Placement } from '../symbol/placement';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -838,8 +838,27 @@ class Style extends Evented {
         const sourceResults = [];
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            const results = queryRenderedFeatures(this.sourceCaches[id], this._layers, queryGeometry, params, transform, this.placement ? this.placement.collisionIndex : null);
-            sourceResults.push(results);
+            sourceResults.push(
+                queryRenderedFeatures(
+                    this.sourceCaches[id],
+                    this._layers,
+                    queryGeometry.worldCoordinate,
+                    params,
+                    transform)
+            );
+        }
+
+        if (this.placement) {
+            // If a placement has run, query against its CollisionIndex
+            // for symbol results, and treat it as an extra source to merge
+            sourceResults.push(
+                queryRenderedSymbols(
+                    this._layers,
+                    queryGeometry.viewport,
+                    params,
+                    this.placement.collisionIndex,
+                    this.placement.retainedQueryData)
+            );
         }
         return this._flattenRenderedFeatures(sourceResults);
     }

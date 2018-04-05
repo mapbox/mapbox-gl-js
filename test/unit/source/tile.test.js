@@ -21,6 +21,7 @@ test('querySourceFeatures', (t) => {
 
     t.test('geojson tile', (t) => {
         const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        tile.latestFeatureIndex = new FeatureIndex(tile.tileID);
         let result;
 
         result = [];
@@ -29,7 +30,7 @@ test('querySourceFeatures', (t) => {
 
         const geojsonWrapper = new GeoJSONWrapper(features);
         geojsonWrapper.name = '_geojsonTileLayer';
-        tile.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+        tile.latestFeatureIndex.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
 
         result = [];
         tile.querySourceFeatures(result);

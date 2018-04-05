@@ -50,7 +50,7 @@ class WorkerTile {
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
-        this.overscaling = params.overscaling;
+        this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
     }
@@ -62,7 +62,7 @@ class WorkerTile {
         this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const featureIndex = new FeatureIndex(this.tileID, this.overscaling);
+        const featureIndex = new FeatureIndex(this.tileID);
         featureIndex.bucketLayerIDs = [];
 
         const buckets: {[string]: Bucket} = {};
@@ -108,7 +108,8 @@ class WorkerTile {
                     zoom: this.zoom,
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
-                    collisionBoxArray: this.collisionBoxArray
+                    collisionBoxArray: this.collisionBoxArray,
+                    sourceLayerIndex: sourceLayerIndex
                 });
 
                 bucket.populate(features, options);

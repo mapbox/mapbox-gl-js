@@ -1910,7 +1910,7 @@ test('Style#query*Features', (t) => {
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}, transform), []);
+        t.deepEqual(style.queryRenderedFeatures({ worldCoordinate: [10, 100] }, {filter: 7}, transform), []);
         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
         t.end();
     });
