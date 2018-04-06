@@ -3209,7 +3209,7 @@
       "value": "number",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
+      "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width. Note that GeoJSON sources with `lineMetrics: true` specified won't render dashed lines to the expected scale.",
       "minimum": 0,
       "transition": true,
       "units": "line widths",
