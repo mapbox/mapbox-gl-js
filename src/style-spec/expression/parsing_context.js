@@ -190,16 +190,31 @@ export default ParsingContext;
 
 function isConstant(expression: Expression) {
     if (expression instanceof Var) {
-        return false;
+        return isConstant(expression.boundExpression);
     } else if (expression instanceof CompoundExpression && expression.name === 'error') {
         return false;
     }
 
-    let literalArgs = true;
-    expression.eachChild(arg => {
-        if (!(arg instanceof Literal)) { literalArgs = false; }
+    const isTypeAnnotation = expression instanceof Coercion ||
+        expression instanceof Assertion ||
+        expression instanceof ArrayAssertion;
+
+    let childrenConstant = true;
+    expression.eachChild(child => {
+        // We can _almost_ assume that if `expressions` children are constant,
+        // they would already have been evaluated to Literal values when they
+        // were parsed.  Type annotations are the exception, because they might
+        // have been inferred and added after a child was parsed.
+
+        // So we recurse into isConstant() for the children of type annotations,
+        // but otherwise simply check whether they are Literals.
+        if (isTypeAnnotation) {
+            childrenConstant = childrenConstant && isConstant(child);
+        } else {
+            childrenConstant = childrenConstant && child instanceof Literal;
+        }
     });
-    if (!literalArgs) {
+    if (!childrenConstant) {
         return false;
     }
 
