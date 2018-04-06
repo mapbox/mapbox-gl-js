@@ -1,5 +1,12 @@
 {
-  "expression": ["asin", 0.5],
+  "expression": [
+    "let",
+    "a",
+    1,
+    "b",
+    2,
+    ["+", ["+", ["var", "a"], ["var", "b"]], ["var", "a"]]
+  ],
   "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
@@ -8,7 +15,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [0.523598],
-    "serialized": 0.5235987755982989
+    "outputs": [4],
+    "serialized": 4
   }
 }

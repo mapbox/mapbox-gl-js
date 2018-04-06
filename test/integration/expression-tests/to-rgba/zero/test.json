@@ -1,8 +1,6 @@
 {
   "expression": ["to-rgba", ["rgba", 0, 0, 0, 0]],
-  "inputs": [
-    [{}, {}]
-  ],
+  "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
