@@ -132,29 +132,41 @@ exports.run = function (implementation, options, runExpressionTest) {
 
             params.ok = compileOk && evalOk && recompileOk && roundTripOk && serializationOk;
 
-            let msg = '';
-
-            const diffJson = (expectedJson, actualJson) => {
-                return diff.diffJson(expectedJson, actualJson)
-                    .map((hunk) => {
-                        if (hunk.added) {
-                            return `+ ${hunk.value}`;
-                        } else if (hunk.removed) {
-                            return `- ${hunk.value}`;
-                        } else {
-                            return `  ${hunk.value}`;
-                        }
-                    })
-                    .join('');
+            const diffOutput = {
+                text: '',
+                html: ''
             };
+
+            const diffJson = (label, expectedJson, actualJson) => {
+                let text = '';
+                let html = '';
+                diff.diffJson(expectedJson, actualJson)
+                    .forEach((hunk) => {
+                        if (hunk.added) {
+                            text += `+ ${hunk.value}`;
+                            html += `<ins>  ${hunk.value}</ins>`;
+                        } else if (hunk.removed) {
+                            text += `- ${hunk.value}`;
+                            html += `<del>  ${hunk.value}</del>`;
+                        } else {
+                            text += `  ${hunk.value}`;
+                            html += `<span>  ${hunk.value}</span>`;
+                        }
+                    });
+                if (text) {
+                    diffOutput.text += `${label}\n${text}`;
+                    diffOutput.html += `<h3>${label}</h3>\n${html}`;
+                }
+            };
+
             if (!compileOk) {
-                msg += diffJson(expected.compiled, result.compiled);
+                diffJson('Compiled', expected.compiled, result.compiled);
             }
             if (compileOk && !serializationOk) {
-                msg += diffJson(expected.serialized, result.serialized);
+                diffJson('Serialized', expected.serialized, result.serialized);
             }
             if (compileOk && !recompileOk) {
-                msg += diffJson(expected.compiled, result.recompiled);
+                diffJson('Serialized and re-compiled', expected.compiled, result.recompiled);
             }
 
             const diffOutputs = (testOutputs) => {
@@ -168,14 +180,14 @@ exports.run = function (implementation, options, runExpressionTest) {
                     .join('\n');
             };
             if (compileOk && !evalOk) {
-                msg += diffOutputs(result.outputs);
+                diffOutputs(result.outputs);
             }
             if (recompileOk && !roundTripOk) {
-                msg += diffOutputs(result.roundTripOutputs);
+                diffOutputs(result.roundTripOutputs);
             }
 
-            params.difference = msg;
-            if (msg) { console.log(msg); }
+            params.difference = diffOutput.html;
+            if (diffOutput.text) { console.log(diffOutput.text); }
 
             params.expression = JSON.stringify(fixture.expression, null, 2);
 
