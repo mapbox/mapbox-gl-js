@@ -1,6 +1,8 @@
 // @flow
 
+import assert from 'assert';
 import { isValue, typeOf } from '../values';
+import Color from '../../util/color';
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
@@ -49,6 +51,20 @@ class Literal implements Expression {
 
     possibleOutputs() {
         return [this.value];
+    }
+
+    serialize() {
+        if (this.type.kind === 'array' || this.type.kind === 'object') {
+            return ["literal", this.value];
+        } else if (this.value instanceof Color) {
+            return ["rgba"].concat(this.value.toArray());
+        } else {
+            assert(this.value === null ||
+                typeof this.value === 'string' ||
+                typeof this.value === 'number' ||
+                typeof this.value === 'boolean');
+            return (this.value: any);
+        }
     }
 }
 

@@ -50,6 +50,12 @@ class Length implements Expression {
     possibleOutputs() {
         return [undefined];
     }
+
+    serialize() {
+        const serialized = ["length"];
+        this.eachChild(child => { serialized.push(child.serialize()); });
+        return serialized;
+    }
 }
 
 export default Length;

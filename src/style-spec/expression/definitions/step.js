@@ -108,6 +108,17 @@ class Step implements Expression {
     possibleOutputs() {
         return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
     }
+
+    serialize() {
+        const serialized = ["step", this.input.serialize()];
+        for (let i = 0; i < this.labels.length; i++) {
+            if (i > 0) {
+                serialized.push(this.labels[i]);
+            }
+            serialized.push(this.outputs[i].serialize());
+        }
+        return serialized;
+    }
 }
 
 export default Step;

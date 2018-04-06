@@ -61,6 +61,10 @@ class At implements Expression {
     possibleOutputs() {
         return [undefined];
     }
+
+    serialize() {
+        return ["at", this.index.serialize(), this.input.serialize()];
+    }
 }
 
 export default At;

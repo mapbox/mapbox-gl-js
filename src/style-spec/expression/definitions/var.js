@@ -35,6 +35,10 @@ class Var implements Expression {
     possibleOutputs() {
         return [undefined];
     }
+
+    serialize() {
+        return ["var", this.name];
+    }
 }
 
 export default Var;
