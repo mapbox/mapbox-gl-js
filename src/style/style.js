@@ -38,7 +38,8 @@ import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
 // smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
-const emitValidationErrors = (evented, errors) => _emitValidationErrors(evented, errors, { 'source.canvas': true});
+const emitValidationErrors = (evented: Evented, errors: ?$ReadOnlyArray<{message: string, identifier?: string}>) =>
+    _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
