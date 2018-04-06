@@ -90,7 +90,7 @@ const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     },
     lineGradient: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_gradient.fragment.glsl', 'utf8'),
-        vertexSource: fs.readFileSync(__dirname + '/../shaders/line.vertex.glsl', 'utf8')
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/line_gradient.vertex.glsl', 'utf8')
     },
     linePattern: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_pattern.fragment.glsl', 'utf8'),
