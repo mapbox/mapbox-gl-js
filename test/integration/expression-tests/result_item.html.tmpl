@@ -10,10 +10,13 @@
     </td>
     <td>
         <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json">&nbsp;</a></h2>
-        <div style="max-width: 400px; overflow: scroll; font-family: monospace;">
+        <div>
+<% if (r.serialized) { %>
+            Serialized:
             <pre>
-<%- r.compiledJs %>
+<%- r.serialized %>
             </pre>
+<% } %>
         </div>
     </td>
 </tr>

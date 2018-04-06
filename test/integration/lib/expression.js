@@ -177,7 +177,8 @@ exports.run = function (implementation, options, runExpressionTest) {
             params.difference = diffOutput.html;
             if (diffOutput.text) { console.log(diffOutput.text); }
 
-            params.expression = JSON.stringify(fixture.expression, null, 2);
+            params.expression = compactStringify(fixture.expression);
+            params.serialized = compactStringify(result.serialized);
 
             done();
         } catch (e) {
