@@ -95,20 +95,10 @@ exports.run = function (implementation, options, runExpressionTest) {
             const dir = path.join(directory, params.group, params.test);
 
             if (process.env.UPDATE) {
-                // If we're updating from GL JS, where `result.serialized` will not exist,
-                // just copy the existing expected value, or default to expect the
-                // serialized form to be identical to the input expression
-                const previousSerialized =
-                    (fixture.expected && fixture.expected.serialized !== undefined) ?
-                        fixture.expected.serialized :
-                        undefined;
-
                 fixture.expected = {
                     compiled: result.compiled,
                     outputs: stripPrecision(result.outputs),
-                    serialized: implementation === 'native' ?
-                        result.serialized :
-                        previousSerialized
+                    serialized: result.serialized
                 };
 
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
@@ -119,12 +109,10 @@ exports.run = function (implementation, options, runExpressionTest) {
             const compileOk = deepEqual(result.compiled, expected.compiled);
             const evalOk = compileOk && deepEqual(result.outputs, expected.outputs);
 
-            // Serialization/round-tripping only exists on native
             let recompileOk = true;
             let roundTripOk = true;
             let serializationOk = true;
-
-            if (implementation === 'native' && expected.compiled.result !== 'error') {
+            if (expected.compiled.result !== 'error') {
                 serializationOk = compileOk && deepEqual(expected.serialized, result.serialized);
                 recompileOk = compileOk && deepEqual(result.recompiled, expected.compiled);
                 roundTripOk = recompileOk && deepEqual(result.roundTripOutputs, expected.outputs);
