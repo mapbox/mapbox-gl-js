@@ -68,7 +68,7 @@
       "number",
       [
         "interpolate",
-        ["exponential", 1],
+        ["linear"],
         ["number", ["get", "x"]],
         2,
         100,

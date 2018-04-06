@@ -32,7 +32,7 @@
       30,
       [
         "interpolate",
-        ["exponential", 1],
+        ["linear"],
         ["zoom"],
         0,
         ["var", "z0_value"],
