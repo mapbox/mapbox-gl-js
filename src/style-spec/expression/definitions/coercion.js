@@ -93,6 +93,12 @@ class Coercion implements Expression {
     possibleOutputs() {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
     }
+
+    serialize() {
+        const serialized = [`to-${this.type.kind}`];
+        this.eachChild(child => { serialized.push(child.serialize()); });
+        return serialized;
+    }
 }
 
 export default Coercion;

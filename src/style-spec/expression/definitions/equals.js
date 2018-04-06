@@ -6,6 +6,7 @@ import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
 import type { Type } from '../types';
+import type { Value } from '../values';
 
 function isComparableType(type: Type) {
     return type.kind === 'string' ||
@@ -28,7 +29,7 @@ function isComparableType(type: Type) {
  *
  * @private
  */
-function makeComparison(compare) {
+function makeComparison(op: string, compare: (Value, Value) => boolean) {
     return class Comparison implements Expression {
         type: Type;
         lhs: Expression;
@@ -72,8 +73,12 @@ function makeComparison(compare) {
         possibleOutputs() {
             return [true, false];
         }
+
+        serialize() {
+            return [op, this.lhs.serialize(), this.rhs.serialize()];
+        }
     };
 }
 
-export const Equals = makeComparison((lhs, rhs) => lhs === rhs);
-export const NotEquals = makeComparison((lhs, rhs) => lhs !== rhs);
+export const Equals = makeComparison('==', (lhs, rhs) => lhs === rhs);
+export const NotEquals = makeComparison('!=', (lhs, rhs) => lhs !== rhs);

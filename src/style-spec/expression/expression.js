@@ -5,6 +5,8 @@ import type {Value} from './values';
 import type ParsingContext from './parsing_context';
 import type EvaluationContext from './evaluation_context';
 
+type SerializedExpression = Array<mixed> | string | number | boolean | null;
+
 export interface Expression {
     +type: Type;
 
@@ -18,6 +20,8 @@ export interface Expression {
      * complete set of outputs is statically undecidable.
      */
     possibleOutputs(): Array<Value | void>;
+
+    serialize(): SerializedExpression;
 }
 
 export type ExpressionParser = (args: Array<mixed>, context: ParsingContext) => ?Expression;

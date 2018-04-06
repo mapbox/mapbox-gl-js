@@ -75,6 +75,22 @@ class ArrayAssertion implements Expression {
     possibleOutputs() {
         return this.input.possibleOutputs();
     }
+
+    serialize() {
+        const serialized = ["array"];
+        const itemType = this.type.itemType;
+        if (itemType.kind === 'string' ||
+            itemType.kind === 'number' ||
+            itemType.kind === 'boolean') {
+            serialized.push(itemType.kind);
+            const N = this.type.N;
+            if (typeof N === 'number') {
+                serialized.push(N);
+            }
+        }
+        serialized.push(this.input.serialize());
+        return serialized;
+    }
 }
 
 export default ArrayAssertion;

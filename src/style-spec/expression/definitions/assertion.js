@@ -76,6 +76,10 @@ class Assertion implements Expression {
     possibleOutputs() {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
     }
+
+    serialize() {
+        return [this.type.kind].concat(this.args.map(arg => arg.serialize()));
+    }
 }
 
 export default Assertion;

@@ -178,6 +178,31 @@ class Interpolate implements Expression {
     possibleOutputs() {
         return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
     }
+
+    serialize() {
+        let interpolation;
+        if (this.interpolation.name === 'linear') {
+            interpolation = ["linear"];
+        } else if (this.interpolation.name === 'exponential') {
+            if  (this.interpolation.base === 1) {
+                interpolation = ["linear"];
+            } else {
+                interpolation = ["exponential", this.interpolation.base];
+            }
+        } else {
+            interpolation = ["cubic-bezier" ].concat(this.interpolation.controlPoints);
+        }
+
+        const serialized = ["interpolate", interpolation, this.input.serialize()];
+
+        for (let i = 0; i < this.labels.length; i++) {
+            serialized.push(
+                this.labels[i],
+                this.outputs[i].serialize()
+            );
+        }
+        return serialized;
+    }
 }
 
 /**
