@@ -122,6 +122,8 @@ export class Evented {
         // console if they have no listeners.
         } else if (endsWith(type, 'error')) {
             console.error((event && event.error) || event || 'Empty error event');
+        } else if (endsWith(type, 'warning')) {
+            console.warn((event && event.warning) || event || 'Empty warning event');
         }
 
         return this;

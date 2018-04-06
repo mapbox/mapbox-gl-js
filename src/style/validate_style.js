@@ -6,7 +6,8 @@ import type {Evented} from '../util/evented';
 
 type ValidationError = {
     message: string,
-    line: number
+    line: number,
+    identifier?: string
 };
 
 type Validator = (Object) => $ReadOnlyArray<ValidationError>;
@@ -19,13 +20,13 @@ export const validateFilter = (validateStyleMin.filter: Validator);
 export const validatePaintProperty = (validateStyleMin.paintProperty: Validator);
 export const validateLayoutProperty = (validateStyleMin.layoutProperty: Validator);
 
-export function emitValidationErrors(emitter: Evented, errors: ?$ReadOnlyArray<{message: string}>) {
+export function emitValidationErrors(emitter: Evented, errors: ?$ReadOnlyArray<{message: string, identifier?: string}>): boolean {
+    let hasErrors = false;
     if (errors && errors.length) {
-        for (const {message} of errors) {
-            emitter.fire(new ErrorEvent(new Error(message)));
+        for (const error of errors) {
+            emitter.fire(new ErrorEvent(new Error(error.message)));
+            hasErrors = true;
         }
-        return true;
-    } else {
-        return false;
     }
+    return hasErrors;
 }

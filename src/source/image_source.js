@@ -15,6 +15,7 @@ import VertexArrayObject from '../render/vertex_array_object';
 import Texture from '../render/texture';
 
 import type {Source} from './source';
+import type {CanvasSourceSpecification} from './canvas_source';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
