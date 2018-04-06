@@ -460,10 +460,21 @@ class Tile {
         }
     }
 
-    pruneFeatureIndexes(usedBucketInstanceIds: {[number]: boolean}) {
+    pruneFeatureIndexes(placedBucketInstanceIds: {[number]: boolean}) {
+        const latestBucketInstanceIds = {};
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                // We're counting on `pruneFeatureIndexes` only being called immediately after
+                // placement so that all buckets have a bucketInstanceId assigned to them
+                latestBucketInstanceIds[bucket.bucketInstanceId] = true;
+            }
+        }
         for (const bucketInstanceId of Object.keys(this.retainedFeatureIndexes).map(Number)) {
-            if (!usedBucketInstanceIds[bucketInstanceId]) {
+            if (!placedBucketInstanceIds[bucketInstanceId] &&
+                !latestBucketInstanceIds[bucketInstanceId]) {
                 // This bucket was no longer used in the latest placement,
+                // and it's not in the latest data waiting for placement,
                 // so discard the associated querying data if this was the
                 // last bucket to use it.
                 delete this.retainedFeatureIndexes[bucketInstanceId];
