@@ -129,13 +129,6 @@ declare type ImageSourceSpecification = {|
     "coordinates": [[number, number], [number, number], [number, number], [number, number]]
 |}
 
-declare type CanvasSourceSpecification = {|
-    "type": "canvas",
-    "coordinates": [[number, number], [number, number], [number, number], [number, number]],
-    "animate"?: boolean,
-    "canvas": string
-|}
-
 declare type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
@@ -143,7 +136,6 @@ declare type SourceSpecification =
     | GeojsonSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification
-    | CanvasSourceSpecification
 
 declare type FillLayerSpecification = {|
     "id": string,

@@ -65,19 +65,14 @@ export default function validateSource(options) {
         });
 
     case 'canvas':
-        return validateObject({
-            key: key,
-            value: value,
-            valueSpec: styleSpec.source_canvas,
-            style: style,
-            styleSpec: styleSpec
-        });
+        errors.push(new ValidationError(key, null, `Please use runtime APIs to add canvas sources, rather than including them in stylesheets.`, 'source.canvas'));
+        return errors;
 
     default:
         return validateEnum({
             key: `${key}.type`,
             value: value.type,
-            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image', 'canvas']},
+            valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']},
             style: style,
             styleSpec: styleSpec
         });

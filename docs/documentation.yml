@@ -49,6 +49,7 @@ toc:
   - VideoSource
   - ImageSource
   - CanvasSource
+  - CanvasSourceOptions
   - name: Events
     description: |
       `Map` (and some other classes) emit events in response to user interactions or changes in state. `Evented`
