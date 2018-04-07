@@ -74,9 +74,9 @@ class LogoControl {
 
     _updateCompact() {
         if (this._map.getCanvasContainer().offsetWidth < 250) {
-            this._container.firstChild.classList.add('mapboxgl-compact');
+            this._container.firstChild && this._container.firstChild.classList.add('mapboxgl-compact');
         } else {
-            this._container.firstChild.classList.remove('mapboxgl-compact');
+            this._container.firstChild && this._container.firstChild.classList.remove('mapboxgl-compact');
         }
     }
 
