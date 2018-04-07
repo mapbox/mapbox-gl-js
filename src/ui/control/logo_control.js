@@ -73,10 +73,14 @@ class LogoControl {
     }
 
     _updateCompact() {
-        if (this._map.getCanvasContainer().offsetWidth < 250) {
-            this._container.children.length && this._container.children[0].classList.add('mapboxgl-compact');
-        } else {
-            this._container.children.length && this._container.children[0].classList.remove('mapboxgl-compact');
+        const containerChildren = this._container.children;
+        if (containerChildren.length) {
+            const anchor = containerChildren[0];
+            if (this._map.getCanvasContainer().offsetWidth < 250) {
+                anchor.classList.add('mapboxgl-compact');
+            } else {
+                anchor.classList.remove('mapboxgl-compact');
+            }
         }
     }
 
