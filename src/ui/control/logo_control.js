@@ -21,6 +21,7 @@ class LogoControl {
 
     constructor() {
         bindAll(['_updateLogo'], this);
+        bindAll(['_updateCompact'], this);
     }
 
     onAdd(map: Map) {
@@ -35,6 +36,10 @@ class LogoControl {
 
         this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
+
+        this._map.on('resize', this._updateCompact);
+        this._updateCompact();
+
         return this._container;
     }
 
@@ -65,6 +70,14 @@ class LogoControl {
         }
 
         return false;
+    }
+
+    _updateCompact() {
+        if (this._map.getCanvasContainer().offsetWidth < 250) {
+            this._container.firstChild.classList.add('mapboxgl-compact');
+        } else {
+            this._container.firstChild.classList.remove('mapboxgl-compact');
+        }
     }
 
 }

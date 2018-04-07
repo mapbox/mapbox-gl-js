@@ -196,6 +196,16 @@ a.mapboxgl-ctrl-logo {
     background-image: svg-load('svg/mapboxgl-ctrl-logo.svg');
 }
 
+a.mapboxgl-ctrl-logo-compact {
+    width: 21px;
+    height: 21px;
+    margin: 0 0 -3px -3px;
+    display: block;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    background-image: svg-load('svg/mapboxgl-ctrl-logo-compact.svg');
+}
+
 .mapboxgl-ctrl.mapboxgl-ctrl-attrib {
     padding: 0 5px;
     background-color: rgba(255, 255, 255, 0.5);
