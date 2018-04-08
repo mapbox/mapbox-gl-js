@@ -1307,7 +1307,7 @@ class Map extends Camera {
     /**
      * Sets the any combination of light values.
      *
-     * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param light Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#light).
      * @returns {Map} `this`
      */
     setLight(light: LightSpecification) {
