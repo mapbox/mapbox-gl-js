@@ -150,12 +150,16 @@ const defaultOptions = {
  * where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the following
  * [the predefined Mapbox styles](https://www.mapbox.com/maps/):
  *
- *  * `mapbox://styles/mapbox/streets-v9`
- *  * `mapbox://styles/mapbox/outdoors-v9`
+ *  * `mapbox://styles/mapbox/streets-v10`
+ *  * `mapbox://styles/mapbox/outdoors-v10`
  *  * `mapbox://styles/mapbox/light-v9`
  *  * `mapbox://styles/mapbox/dark-v9`
  *  * `mapbox://styles/mapbox/satellite-v9`
- *  * `mapbox://styles/mapbox/satellite-streets-v9`
+ *  * `mapbox://styles/mapbox/satellite-streets-v10`
+ *  * `mapbox://styles/mapbox/navigation-preview-day-v2`
+ *  * `mapbox://styles/mapbox/navigation-preview-night-v2`
+ *  * `mapbox://styles/mapbox/navigation-guidance-day-v2`
+ *  * `mapbox://styles/mapbox/navigation-guidance-night-v2`
  *
  * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v9?optimize=true`.
  * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles).
