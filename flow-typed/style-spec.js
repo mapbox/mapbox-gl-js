@@ -114,7 +114,8 @@ declare type GeojsonSourceSpecification = {|
     "tolerance"?: number,
     "cluster"?: boolean,
     "clusterRadius"?: number,
-    "clusterMaxZoom"?: number
+    "clusterMaxZoom"?: number,
+    "lineMetrics"?: boolean
 |}
 
 declare type VideoSourceSpecification = {|
@@ -186,7 +187,8 @@ declare type LineLayerSpecification = {|
         "line-offset"?: DataDrivenPropertyValueSpecification<number>,
         "line-blur"?: DataDrivenPropertyValueSpecification<number>,
         "line-dasharray"?: PropertyValueSpecification<Array<number>>,
-        "line-pattern"?: PropertyValueSpecification<string>
+        "line-pattern"?: PropertyValueSpecification<string>,
+        "line-gradient"?: ExpressionSpecification
     |}
 |}
 

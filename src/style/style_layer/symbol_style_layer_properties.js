@@ -9,7 +9,7 @@ import {
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
+    ColorRampProperty
 } from '../properties';
 
 import type Color from '../../style-spec/util/color';
