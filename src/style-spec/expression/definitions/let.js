@@ -17,10 +17,7 @@ class Let implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        ctx.pushScope(this.bindings);
-        const result = this.result.evaluate(ctx);
-        ctx.popScope();
-        return result;
+        return this.result.evaluate(ctx);
     }
 
     eachChild(fn: (Expression) => void) {

@@ -1,14 +1,15 @@
 {
-  "expression": ["asin", 0.5],
+  "propertySpec": {"type": "color"},
+  "expression": "red",
   "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
       "isFeatureConstant": true,
       "isZoomConstant": true,
-      "type": "number"
+      "type": "color"
     },
-    "outputs": [0.523598],
-    "serialized": 0.5235987755982989
+    "outputs": [[1, 0, 0, 1]],
+    "serialized": ["rgba", 255, 0, 0, 1]
   }
 }

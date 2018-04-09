@@ -63,10 +63,13 @@ class ParsingContext {
         bindings?: Array<[string, Expression]>,
         options: {omitTypeAnnotations?: boolean} = {}
     ): ?Expression {
-        let context = this;
         if (index) {
-            context = context.concat(index, expectedType, bindings);
+            return this.concat(index, expectedType, bindings)._parse(expr, options);
         }
+        return this._parse(expr, options);
+    }
+
+    _parse(expr: mixed, options: {omitTypeAnnotations?: boolean}): ?Expression {
 
         if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
             expr = ['literal', expr];
@@ -74,22 +77,22 @@ class ParsingContext {
 
         if (Array.isArray(expr)) {
             if (expr.length === 0) {
-                return context.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
+                return this.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
             }
 
             const op = expr[0];
             if (typeof op !== 'string') {
-                context.error(`Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`, 0);
+                this.error(`Expression name must be a string, but found ${typeof op} instead. If you wanted a literal array, use ["literal", [...]].`, 0);
                 return null;
             }
 
-            const Expr = context.registry[op];
+            const Expr = this.registry[op];
             if (Expr) {
-                let parsed = Expr.parse(expr, context);
+                let parsed = Expr.parse(expr, this);
                 if (!parsed) return null;
 
-                if (context.expectedType) {
-                    const expected = context.expectedType;
+                if (this.expectedType) {
+                    const expected = this.expectedType;
                     const actual = parsed.type;
 
                     // When we expect a number, string, boolean, or array but
@@ -109,7 +112,7 @@ class ParsingContext {
                         if (!options.omitTypeAnnotations) {
                             parsed = new Coercion(expected, [parsed]);
                         }
-                    } else if (context.checkSubtype(context.expectedType, parsed.type)) {
+                    } else if (this.checkSubtype(this.expectedType, parsed.type)) {
                         return null;
                     }
                 }
@@ -122,7 +125,7 @@ class ParsingContext {
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
                     } catch (e) {
-                        context.error(e.message);
+                        this.error(e.message);
                         return null;
                     }
                 }
@@ -130,13 +133,13 @@ class ParsingContext {
                 return parsed;
             }
 
-            return context.error(`Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`, 0);
+            return this.error(`Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`, 0);
         } else if (typeof expr === 'undefined') {
-            return context.error(`'undefined' value invalid. Use null instead.`);
+            return this.error(`'undefined' value invalid. Use null instead.`);
         } else if (typeof expr === 'object') {
-            return context.error(`Bare objects invalid. Use ["literal", {...}] instead.`);
+            return this.error(`Bare objects invalid. Use ["literal", {...}] instead.`);
         } else {
-            return context.error(`Expected an array, but found ${typeof expr} instead.`);
+            return this.error(`Expected an array, but found ${typeof expr} instead.`);
         }
     }
 
@@ -187,16 +190,31 @@ export default ParsingContext;
 
 function isConstant(expression: Expression) {
     if (expression instanceof Var) {
-        return false;
+        return isConstant(expression.boundExpression);
     } else if (expression instanceof CompoundExpression && expression.name === 'error') {
         return false;
     }
 
-    let literalArgs = true;
-    expression.eachChild(arg => {
-        if (!(arg instanceof Literal)) { literalArgs = false; }
+    const isTypeAnnotation = expression instanceof Coercion ||
+        expression instanceof Assertion ||
+        expression instanceof ArrayAssertion;
+
+    let childrenConstant = true;
+    expression.eachChild(child => {
+        // We can _almost_ assume that if `expressions` children are constant,
+        // they would already have been evaluated to Literal values when they
+        // were parsed.  Type annotations are the exception, because they might
+        // have been inferred and added after a child was parsed.
+
+        // So we recurse into isConstant() for the children of type annotations,
+        // but otherwise simply check whether they are Literals.
+        if (isTypeAnnotation) {
+            childrenConstant = childrenConstant && isConstant(child);
+        } else {
+            childrenConstant = childrenConstant && child instanceof Literal;
+        }
     });
-    if (!literalArgs) {
+    if (!childrenConstant) {
         return false;
     }
 

@@ -10,7 +10,6 @@
           "error": "Expected argument of type string or array, but found number instead."
         }
       ]
-    },
-    "serialized": ["length", 0]
+    }
   }
 }
