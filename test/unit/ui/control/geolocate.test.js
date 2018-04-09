@@ -80,6 +80,31 @@ test('GeolocateControl geolocate event', (t) => {
     geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
 });
 
+test('GeolocateControl trigger', (t) => {
+    t.plan(1);
+
+    const map = createMap();
+    const geolocate = new GeolocateControl();
+    map.addControl(geolocate);
+
+    geolocate.on('geolocate', () => {
+        t.end();
+    });
+    t.true(geolocate.trigger());
+    geolocation.send({latitude: 10, longitude: 20, accuracy: 30, timestamp: 40});
+});
+
+test('GeolocateControl trigger before added to map', (t) => {
+    t.plan(2);
+    t.stub(console, 'warn');
+
+    const geolocate = new GeolocateControl();
+
+    t.false(geolocate.trigger());
+    t.ok(console.warn.calledWith('Geolocate control triggered before added to a map'));
+    t.end();
+});
+
 test('GeolocateControl geolocate fitBoundsOptions', (t) => {
     t.plan(1);
 
