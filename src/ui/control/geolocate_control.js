@@ -3,7 +3,7 @@
 import { Event, Evented } from '../../util/evented';
 import DOM from '../../util/dom';
 import window from '../../util/window';
-import { extend, bindAll } from '../../util/util';
+import { extend, bindAll, warnOnce } from '../../util/util';
 import assert from 'assert';
 import LngLat from '../../geo/lng_lat';
 import Marker from '../marker';
@@ -307,7 +307,7 @@ class GeolocateControl extends Evented {
      */
     trigger() {
         if (!this._setup) {
-            util.warnOnce('Geolocate control triggered before added to a map');
+            warnOnce('Geolocate control triggered before added to a map');
             return false;
         }
         if (this.options.trackUserLocation) {
