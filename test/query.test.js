@@ -1,4 +1,4 @@
-/* eslint-disable import/unambiguous,no-global-assign */
+/* eslint-disable import/unambiguous, import/no-commonjs, no-global-assign */
 
 require('./stub_loader');
 require('@mapbox/flow-remove-types/register');

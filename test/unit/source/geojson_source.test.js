@@ -144,7 +144,8 @@ test('GeoJSONSource#update', (t) => {
                     extent: 8192,
                     maxZoom: 10,
                     tolerance: 4,
-                    buffer: 256
+                    buffer: 256,
+                    lineMetrics: false
                 });
                 t.end();
             }

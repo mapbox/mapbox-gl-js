@@ -11,7 +11,7 @@ import path from 'path';
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
 
-module.exports = function(style, options, _callback) {
+module.exports = function(style, options, _callback) { // eslint-disable-line import/no-commonjs
     let wasCallbackCalled = false;
 
     const timeout = setTimeout(() => {

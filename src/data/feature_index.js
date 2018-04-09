@@ -83,7 +83,12 @@ class FeatureIndex {
                 bbox[3] = Math.max(bbox[3], p.y);
             }
 
-            this.grid.insert(key, bbox[0], bbox[1], bbox[2], bbox[3]);
+            if (bbox[0] < EXTENT &&
+                bbox[1] < EXTENT &&
+                bbox[2] >= 0 &&
+                bbox[3] >= 0) {
+                this.grid.insert(key, bbox[0], bbox[1], bbox[2], bbox[3]);
+            }
         }
     }
 

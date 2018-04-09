@@ -335,6 +335,11 @@
     "clusterMaxZoom": {
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+    },
+    "lineMetrics": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to calculate line distance metrics. This is required for line layers that specify `line-gradient` values."
     }
   },
   "source_video": {
@@ -2293,6 +2298,10 @@
           }
         }
       },
+      "line-progress": {
+        "doc": "Gets the progress along a gradient line. Can only be used in the `line-gradient` property.",
+        "group": "Heatmap"
+      },
       "+": {
         "doc": "Returns the sum of the inputs.",
         "group": "Math",
@@ -3200,7 +3209,7 @@
       "value": "number",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
+      "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width. Note that GeoJSON sources with `lineMetrics: true` specified won't render dashed lines to the expected scale.",
       "minimum": 0,
       "transition": true,
       "units": "line widths",
@@ -3231,6 +3240,34 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-gradient": {
+      "type": "color",
+      "doc": "Defines a gradient with which to color a line feature. Can only be used with GeoJSON sources that specify `\"lineMetrics\": true`.",
+      "function": "interpolated",
+      "zoom-function": false,
+      "property-function": false,
+      "transition": false,
+      "requires": [
+        {
+          "!": "line-dasharray"
+        },
+        {
+          "!": "line-pattern"
+        },
+        {
+          "source": "geojson",
+          "has": {
+            "lineMetrics": true
+          }
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.45.0"
         },
         "data-driven styling": {}
       }

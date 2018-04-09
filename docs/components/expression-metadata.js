@@ -208,8 +208,8 @@ for (const name in CompoundExpression.definitions) {
 
 delete types['error'];
 
-const expressions = {};
-const expressionGroups = {};
+export const expressions = {};
+export const expressionGroups = {};
 for (const name in types) {
     const spec = ref['expression_name'].values[name];
     expressionGroups[spec.group] = expressionGroups[spec.group] || [];
@@ -228,5 +228,3 @@ function processParameters(params) {
         return [{repeat: [toString(params.type)]}];
     }
 }
-
-module.exports = {expressions, expressionGroups};

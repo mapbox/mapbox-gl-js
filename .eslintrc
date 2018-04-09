@@ -31,6 +31,7 @@
       }
     ],
     "global-require": "off",
+    "import/no-commonjs": "error",
     "key-spacing": "off",
     "no-eq-null": "off",
     "no-lonely-if": "off",
