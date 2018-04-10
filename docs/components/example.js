@@ -18,6 +18,7 @@ const tags = {
     "user-interaction": "User interaction",
     "camera": "Camera",
     "controls-and-overlays": "Controls and overlays",
+    "geocoder": "Geocoder",
     "browser-support": "Browser support",
     "internationalization": "Internationalization support"
 };

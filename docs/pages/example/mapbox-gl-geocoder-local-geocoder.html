@@ -10,12 +10,13 @@ var map = new mapboxgl.Map({
     zoom: 13
 });
 
-/* given a query returns a matching geographic coordinates as search results in
- * carmen geojson format, https://github.com/mapbox/carmen/blob/master/carmen-geojson.md
+/* given a query in the form "lng, lat" or "lat, lng" returns the matching
+ * geographic coordinate(s) as search results in carmen geojson format,
+ * https://github.com/mapbox/carmen/blob/master/carmen-geojson.md
  */
 var coordinatesGeocoder = function (query) {
     // match anything which looks like a decimal degrees coordinate pair
-    var matches = query.match(/^[ ]*(-?\d+\.?\d*)[, ]+(-?\d+\.?\d*)[ ]*$/);
+    var matches = query.match(/^[ ]*(?:Lat: )?(-?\d+\.?\d*)[, ]+(?:Lng: )?(-?\d+\.?\d*)[ ]*$/i);
     if (!matches) {
         return null;
     }
@@ -59,6 +60,8 @@ var coordinatesGeocoder = function (query) {
 
 map.addControl(new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
-    localGeocoder: coordinatesGeocoder
+    localGeocoder: coordinatesGeocoder,
+    zoom: 4,
+    placeholder: "Try: -40, 170"
 }));
 </script>

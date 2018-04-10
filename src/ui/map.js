@@ -247,12 +247,41 @@ class Map extends Camera {
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
 
+    /**
+     * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
+     */
     scrollZoom: ScrollZoomHandler;
+
+    /**
+     * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
+     */
     boxZoom: BoxZoomHandler;
+
+    /**
+     * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
+     * mouse button or with the Control key pressed.
+     */
     dragRotate: DragRotateHandler;
+
+    /**
+     * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
+     */
     dragPan: DragPanHandler;
+
+    /**
+     * The map's {@link KeyboardHandler}, which allows the user to zoom, rotate, and pan the map using keyboard
+     * shortcuts.
+     */
     keyboard: KeyboardHandler;
+
+    /**
+     * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
+     */
     doubleClickZoom: DoubleClickZoomHandler;
+
+    /**
+     * The map's {@link TouchZoomRotateHandler}, which allows the user to zoom or rotate the map with touch gestures.
+     */
     touchZoomRotate: TouchZoomRotateHandler;
 
     constructor(options: MapOptions) {
@@ -745,7 +774,7 @@ class Map extends Camera {
 
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects)
+     * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
      * representing visible features that satisfy the query parameters.
      *
      * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
@@ -760,7 +789,7 @@ class Map extends Camera {
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
-     * [feature objects](http://geojson.org/geojson-spec.html#feature-objects).
+     * [feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
@@ -889,7 +918,7 @@ class Map extends Camera {
 
     /**
      * Returns an array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects)
+     * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2)
      * representing features within the specified vector tile or GeoJSON source that satisfy the query parameters.
      *
      * @param {string} sourceID The ID of the vector tile or GeoJSON source to query.
@@ -900,7 +929,7 @@ class Map extends Camera {
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects).
+     * [Feature objects](https://tools.ietf.org/html/rfc7946#section-3.2).
      *
      * In contrast to {@link Map#queryRenderedFeatures}, this function
      * returns all features matching the query parameters,

@@ -546,6 +546,10 @@
     display: -webkit-flex !important;
     display: flex !important;
   }
+  .shell-wrapper .shell-flex-parent--space-between-main-mm {
+    -webkit-justify-content: space-between !important;
+    justify-content: space-between !important;
+  }
   .shell-wrapper .shell-mt0-mm {
     margin-top: 0 !important;
   }
@@ -558,6 +562,11 @@
   }
   .shell-wrapper .shell-align-left-mm {
     text-align: left !important;
+  }
+  .shell-wrapper .shell-footer-column {
+    /* max-width based on Turn-by-turn navigation in Use Cases column */
+    width: 20% !important;
+    max-width: 130px !important;
   }
 }
 @media screen and (min-width: 800px) {
@@ -596,6 +605,11 @@
     padding-top: 48px !important;
     padding-bottom: 48px !important;
   }
+  .shell-wrapper .shell-footer-column {
+    /* max-width based on Turn-by-turn navigation in Use Cases column */
+    width: 20% !important;
+    max-width: 130px !important;
+  }
 }
 @media screen and (min-width: 1200px) {
   .shell-wrapper .shell-grid--gut24-mxl {
@@ -626,6 +640,11 @@
   .shell-wrapper .shell-ml18-mxl,
   .shell-wrapper .shell-mx18-mxl {
     margin-left: 18px !important;
+  }
+  .shell-wrapper .shell-footer-column {
+    /* max-width based on Turn-by-turn navigation in Use Cases column */
+    width: 20% !important;
+    max-width: 140px !important;
   }
 }
 
@@ -834,8 +853,9 @@
     padding-top: 84px;
   }
   .shell-wrapper .shell-footer-column {
-    /* width based on Customer Showcase in Use Cases column */
-    width: 130px;
+    /* max-width based on Turn-by-turn navigation in Use Cases column */
+    width: 25%;
+    max-width: 130px;
   }
   .shell-wrapper .compatibility-warning-copy {
     padding-right: 150px;

@@ -1082,7 +1082,7 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Name of image in sprite to use for drawing an image background. Within literal values and zoom functions, property names enclosed in curly brackets (e.g. `{token}`) are replaced with the value of the named property. Expressions and property functions do not support this syntax; for equivalent functionality in expressions, use the [`concat`](#expressions-concat) and [`get`](#expressions-get) operators.",
+      "doc": "Name of image in sprite to use for drawing an image background.",
       "tokens": true,
       "sdk-support": {
         "basic functionality": {
@@ -1365,7 +1365,7 @@
       "property-function": true,
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. Within literal values and zoom functions, property names enclosed in curly brackets (e.g. `{token}`) are replaced with the value of the named property. Expressions and property functions do not support this syntax; for equivalent functionality in expressions, use the [`concat`](#expressions-concat) and [`get`](#expressions-get) operators.",
+      "doc": "Value to use for a text label.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -2158,7 +2158,7 @@
         }
       },
       "string": {
-        "doc": "Asserts that the input value is a string. If multiple values are provided, each one is evaluated in order until a string value is obtained. If none of the inputs are strings, the expression is an error.",
+        "doc": "Asserts that the input value is a string. If multiple values are provided, each one is evaluated in order until a string is obtained. If none of the inputs are strings, the expression is an error.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2167,7 +2167,7 @@
         }
       },
       "number": {
-        "doc": "Asserts that the input value is a number. If multiple values are provided, each one is evaluated in order until a number value is obtained. If none of the inputs are numbers, the expression is an error.",
+        "doc": "Asserts that the input value is a number. If multiple values are provided, each one is evaluated in order until a number is obtained. If none of the inputs are numbers, the expression is an error.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2176,7 +2176,7 @@
         }
       },
       "boolean": {
-        "doc": "Asserts that the input value is a boolean. If multiple values are provided, each one is evaluated in order until a boolean value is obtained. If none of the inputs are booleans, the expression is an error.",
+        "doc": "Asserts that the input value is a boolean. If multiple values are provided, each one is evaluated in order until a boolean is obtained. If none of the inputs are booleans, the expression is an error.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -2185,7 +2185,7 @@
         }
       },
       "object": {
-        "doc": "Asserts that the input value is an object. If it is not, the expression is an error.",
+        "doc": "Asserts that the input value is an object. If multiple values are provided, each one is evaluated in order until an object is obtained. If none of the inputs are objects, the expression is an error.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {

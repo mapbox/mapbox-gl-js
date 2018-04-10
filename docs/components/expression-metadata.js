@@ -118,6 +118,13 @@ const types = {
             'value'
         ]
     }],
+    object: [{
+        type: 'object',
+        parameters: ['value']
+    }, {
+        type: 'object',
+        parameters: ['value', { repeat: [ 'fallback: value' ] }]
+    }],
     'to-number': [{
         type: 'number',
         parameters: ['value', { repeat: [ 'fallback: value' ] }]
