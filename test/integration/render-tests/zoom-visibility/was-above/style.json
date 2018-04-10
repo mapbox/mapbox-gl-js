@@ -16,14 +16,7 @@
           "setLayerZoomRange",
           "circle",
           1,
-          2
-        ],
-        [
-          "wait"
-        ],
-        [
-          "setZoom",
-          1.5
+          3
         ]
       ]
     }
@@ -44,7 +37,9 @@
     {
       "id": "circle",
       "type": "circle",
-      "source": "geojson"
+      "source": "geojson",
+      "minzoom": 1,
+      "maxzoom": 2
     }
   ]
 }
