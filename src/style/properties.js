@@ -598,9 +598,9 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
         } else {
             assert(!value.isDataDriven());
             return this._calculate(
-                value.expression.evaluate({zoom: parameters.zoom - 1.0}),
-                value.expression.evaluate({zoom: parameters.zoom}),
-                value.expression.evaluate({zoom: parameters.zoom + 1.0}),
+                value.expression.evaluate({zoom: Math.floor(parameters.zoom - 1.0)}),
+                value.expression.evaluate({zoom: Math.floor(parameters.zoom)}),
+                value.expression.evaluate({zoom: Math.floor(parameters.zoom + 1.0)}),
                 parameters);
         }
     }
