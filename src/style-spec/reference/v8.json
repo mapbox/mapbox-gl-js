@@ -2491,7 +2491,7 @@
         }
       },
       "round": {
-        "doc": "Rounds the input to the nearest integer. Halflway values are rounded away from zero. E.g., `[\"round\", -1.5]` evaluates to -2.",
+        "doc": "Rounds the input to the nearest integer. Halfway values are rounded away from zero. For example, `[\"round\", -1.5]` evaluates to -2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
