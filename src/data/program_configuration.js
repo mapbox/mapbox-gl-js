@@ -2,6 +2,7 @@
 
 import { packUint8ToFloat } from '../shaders/encode_attribute';
 import Color from '../style-spec/util/color';
+import { isPropertyFunction } from '../style-spec/util/properties';
 import { register } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
@@ -348,7 +349,7 @@ export default class ProgramConfiguration {
         for (const property in layer.paint._values) {
             if (!filterProperties(property)) continue;
             const value = layer.paint.get(property);
-            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !value.property.specification['property-function']) {
+            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !isPropertyFunction(value.property.specification)) {
                 continue;
             }
             const name = paintAttributeName(property, layer.type);

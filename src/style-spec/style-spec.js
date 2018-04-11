@@ -1,59 +1,61 @@
 // @flow
 
+type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant';
+type ExpressionParameters = Array<'zoom' | 'feature' | 'heatmap-density' | 'line-progress'>;
+
+type ExpressionSpecification = {
+    type: ExpressionType,
+    interpolated: boolean,
+    parameters: ExpressionParameters
+}
+
 export type StylePropertySpecification = {
     type: 'number',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     transition: boolean,
     default?: number
 } | {
     type: 'string',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
-    default?: string,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     transition: boolean,
+    default?: string,
     tokens?: boolean
 } | {
     type: 'boolean',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     transition: boolean,
     default?: boolean
 } | {
     type: 'enum',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     values: {[string]: {}},
     transition: boolean,
     default?: string
 } | {
     type: 'color',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     transition: boolean,
     default?: string
 } | {
     type: 'array',
     value: 'number',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
-    transition: boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     length?: number,
+    transition: boolean,
     default?: Array<number>
 } | {
     type: 'array',
     value: 'string',
-    'function': 'interpolated' | 'piecewise-constant',
-    'property-function': boolean,
-    'zoom-function': boolean,
-    transition: boolean,
+    'property-type': ExpressionType,
+    expression?: ExpressionSpecification,
     length?: number,
+    transition: boolean,
     default?: Array<string>
 };
 
