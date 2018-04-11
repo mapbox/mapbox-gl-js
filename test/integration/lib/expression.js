@@ -167,11 +167,16 @@ exports.run = function (implementation, options, runExpressionTest) {
                     .filter(Boolean)
                     .join('\n');
             };
+
             if (compileOk && !evalOk) {
-                diffOutputs(result.outputs);
+                const differences = diffOutputs(result.outputs);
+                diffOutput.text += differences;
+                diffOutput.html += differences;
             }
             if (recompileOk && !roundTripOk) {
-                diffOutputs(result.roundTripOutputs);
+                const differences = diffOutputs(result.roundTripOutputs);
+                diffOutput.text += differences;
+                diffOutput.html += differences;
             }
 
             params.difference = diffOutput.html;

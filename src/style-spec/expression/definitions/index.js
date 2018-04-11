@@ -309,6 +309,32 @@ CompoundExpression.register(expressions, {
         varargs(NumberType),
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
     ],
+    'abs': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.abs(n.evaluate(ctx))
+    ],
+    'round': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => {
+            const v = n.evaluate(ctx);
+            // Javascript's Math.round() rounds towards +Infinity for halfway
+            // values, even when they're negative. It's more common to round
+            // away from 0 (e.g., this is what python and C++ do)
+            return v < 0 ? -Math.round(-v) : Math.round(v);
+        }
+    ],
+    'floor': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.floor(n.evaluate(ctx))
+    ],
+    'ceil': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.ceil(n.evaluate(ctx))
+    ],
     'filter-==': [
         BooleanType,
         [StringType, ValueType],
