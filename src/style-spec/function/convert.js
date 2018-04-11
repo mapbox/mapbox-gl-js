@@ -236,8 +236,8 @@ function appendStopPair(curve, input, output, isStep) {
 function getFunctionType(parameters, propertySpec) {
     if (parameters.type) {
         return parameters.type;
-    } else if (propertySpec.function) {
-        return propertySpec.function === 'interpolated' ? 'exponential' : 'interval';
+    } else if (propertySpec.expression) {
+        return propertySpec.expression.interpolated ? 'exponential' : 'interval';
     } else {
         return 'exponential';
     }

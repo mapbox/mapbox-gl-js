@@ -1,51 +1,46 @@
 // @flow
 
+type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant';
+type ExpressionParameters = Array<'zoom' | 'feature' | 'heatmap-density' | 'line-progress'>;
+
+type ExpressionSpecification = {
+    type: ExpressionType,
+    interpolated: boolean,
+    parameters: ExpressionParameters
+}
+
 export type StylePropertySpecification = {
     type: 'number',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     default?: number
 } | {
     type: 'string',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     default?: string,
     tokens?: boolean
 } | {
     type: 'boolean',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     default?: boolean
 } | {
     type: 'enum',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     values: {[string]: {}},
     default?: string
 } | {
     type: 'color',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     default?: string
 } | {
     type: 'array',
     value: 'number',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     length?: number,
     default?: Array<number>
 } | {
     type: 'array',
     value: 'string',
-    'function': boolean,
-    'property-function': boolean,
-    'zoom-function': boolean,
+    expression?: ExpressionSpecification,
     length?: number,
     default?: Array<string>
 };

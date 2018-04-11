@@ -140,7 +140,7 @@
     "test-render": "node --max-old-space-size=2048 test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-expressions": "build/run-node test/expression.test.js",
-    "test-flow": "node build/generate-flow-typed-style-spec && flow .",
+    "test-flow": "build/run-node build/generate-flow-typed-style-spec && flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
