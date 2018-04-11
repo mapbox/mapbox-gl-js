@@ -2,7 +2,8 @@
   "expression": ["abs", ["get", "x"]],
   "inputs": [
     [{}, {"properties": {"x": -2}}],
-    [{}, {"properties": {"x": 2}}]
+    [{}, {"properties": {"x": 2}}],
+    [{}, {"properties": {"x": -1.1}}]
   ],
   "expected": {
     "compiled": {
@@ -11,7 +12,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [2, 2],
+    "outputs": [2, 2, 1.1],
     "serialized": ["abs", ["number", ["get", "x"]]]
   }
 }
