@@ -1,0 +1,17 @@
+{
+  "expression": ["abs", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": -2}}],
+    [{}, {"properties": {"x": 2}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [2, 2],
+    "serialized": ["abs", ["number", ["get", "x"]]]
+  }
+}

@@ -309,6 +309,26 @@ CompoundExpression.register(expressions, {
         varargs(NumberType),
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
     ],
+    'abs': [
+        NumberType,
+        [NumberType],
+        (ctx, args) => Math.abs(args[0].evaluate(ctx))
+    ],
+    'round': [
+        NumberType,
+        [NumberType],
+        (ctx, args) => Math.round(args[0].evaluate(ctx))
+    ],
+    'floor': [
+        NumberType,
+        [NumberType],
+        (ctx, args) => Math.floor(args[0].evaluate(ctx))
+    ],
+    'ceil': [
+        NumberType,
+        [NumberType],
+        (ctx, args) => Math.ceil(args[0].evaluate(ctx))
+    ],
     'filter-==': [
         BooleanType,
         [StringType, ValueType],
