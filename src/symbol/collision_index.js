@@ -295,7 +295,7 @@ class CollisionIndex {
             result[featureKey.bucketInstanceId].push(featureKey.featureIndex);
         }
         for (const bucket in result) {
-            result[bucket].sort();
+            result[bucket].sort((a, b) => b - a); // Match topDownFeatureComparator from FeatureIndex
         }
 
         return result;
