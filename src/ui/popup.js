@@ -14,7 +14,8 @@ import type {LngLatLike} from '../geo/lng_lat';
 
 const defaultOptions = {
     closeButton: true,
-    closeOnClick: true
+    closeOnClick: true,
+    className: ''
 };
 
 export type Offset = number | PointLike | {[Anchor]: PointLike};
@@ -23,7 +24,8 @@ export type PopupOptions = {
     closeButton: boolean,
     closeOnClick: boolean,
     anchor: Anchor,
-    offset: Offset
+    offset: Offset,
+    className: string
 };
 
 /**
@@ -46,6 +48,7 @@ export type PopupOptions = {
  *   - a {@link PointLike} specifying a constant offset
  *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
+ * @param {string} [options.className] Space-separated CSS class names to add to popup container
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
  * var popupOffsets = {
@@ -58,7 +61,7 @@ export type PopupOptions = {
  *  'left': [markerRadius, (markerHeight - markerRadius) * -1],
  *  'right': [-markerRadius, (markerHeight - markerRadius) * -1]
  *  };
- * var popup = new mapboxgl.Popup({offset:popupOffsets})
+ * var popup = new mapboxgl.Popup({offset: popupOffsets, className: 'my-class'})
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
  *   .addTo(map);
@@ -268,6 +271,11 @@ export default class Popup extends Evented {
             this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
+
+            if (this.options.className) {
+                this.options.className.split(' ').forEach(name =>
+                    this._container.classList.add(name));
+            }
         }
 
         if (this._map.transform.renderWorldCopies) {

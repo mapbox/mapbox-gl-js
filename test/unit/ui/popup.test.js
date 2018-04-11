@@ -446,3 +446,16 @@ test('Popup#remove is idempotent (#2395)', (t) => {
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-popup').length, 0);
     t.end();
 });
+
+test('Popup adds classes from className option', (t) => {
+    const map = createMap();
+    new Popup({className: 'some classes'})
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    const popupContainer = map.getContainer().querySelector('.mapboxgl-popup');
+    t.ok(popupContainer.classList.contains('some'));
+    t.ok(popupContainer.classList.contains('classes'));
+    t.end();
+});
