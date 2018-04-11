@@ -1,0 +1,61 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "debug": true,
+            "height": 128,
+            "width": 256,
+            "queryGeometry": [
+                [
+                    0,
+                    0
+                ],
+                [
+                    100,
+                    128
+                ]
+            ]
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 3,
+    "sources": {
+        "point": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                3,
+                                3
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "text",
+            "type": "symbol",
+            "source": "point",
+            "layout": {
+                "text-field": "This Label Bleeds Over Tile Boundaries",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}
