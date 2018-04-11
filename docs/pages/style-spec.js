@@ -149,7 +149,10 @@ const navigation = [
             },
             {
                 "title": "hillshade"
-            }
+            },
+            {
+                "title": "custom-webgl"
+            },
         ]
     },
     {
@@ -224,7 +227,7 @@ const navigation = [
 ];
 
 const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video', 'canvas'];
-const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];
+const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade', 'custom-webgl'];
 
 import {expressions, expressionGroups} from '../components/expression-metadata';
 

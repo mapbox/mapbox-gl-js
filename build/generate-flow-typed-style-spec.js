@@ -96,7 +96,7 @@ function flowLayer(key) {
         return flowObject(spec[`layout_${key}`], '    ', '|');
     };
 
-    if (key === 'background') {
+    if (key === 'background' || key === 'custom-webgl') {
         delete layer.source;
         delete layer['source-layer'];
         delete layer.filter;

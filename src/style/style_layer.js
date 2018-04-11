@@ -60,7 +60,7 @@ class StyleLayer extends Evented {
         this.maxzoom = layer.maxzoom;
         this.visibility = 'visible';
 
-        if (layer.type !== 'background') {
+        if (layer.type !== 'background' && layer.type !== 'custom-webgl') {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;

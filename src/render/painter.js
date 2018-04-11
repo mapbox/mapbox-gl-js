@@ -28,6 +28,7 @@ import heatmap from './draw_heatmap';
 import line from './draw_line';
 import fill from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
+import customWebgl from './draw_custom_webgl';
 import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
@@ -40,6 +41,7 @@ const draw = {
     line,
     fill,
     'fill-extrusion': fillExtrusion,
+    'custom-webgl': customWebgl,
     hillshade,
     raster,
     background,
@@ -77,6 +79,7 @@ class Painter {
     context: Context;
     transform: Transform;
     _tileTextures: { [number]: Array<Texture> };
+    customWebGLDrawCallbacks: { [string]: Function};
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -112,6 +115,7 @@ class Painter {
         this.context = new Context(gl);
         this.transform = transform;
         this._tileTextures = {};
+        this.customWebGLDrawCallbacks = {};
 
         this.setup();
 
@@ -416,7 +420,7 @@ class Painter {
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && !coords.length) return;
+        if ((layer.type !== 'background' && layer.type !== 'custom-webgl') && !coords.length) return;
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);
@@ -483,6 +487,16 @@ class Painter {
         this.context.program.set(nextProgram.program);
 
         return nextProgram;
+    }
+
+    /**
+     * Store a draw callback to be used by a `custom-webgl` layer.
+     *
+     * @param id The ID of the `custom-webgl` layer.
+     * @param callback The callback to be stored. When called, the callback will receive the WebGL context and a invalidator function that should be called every time that the WebGL context is modified asynchronously.
+     */
+    setCustomWebGLDrawCallback(id: string, callback: Function) {
+        this.customWebGLDrawCallbacks[id] = callback;
     }
 }
 
