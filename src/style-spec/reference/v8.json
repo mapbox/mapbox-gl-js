@@ -2490,6 +2490,42 @@
           }
         }
       },
+      "round": {
+        "doc": "Rounds the input to the nearest integer. Halflway values are rounded away from zero. E.g., `[\"round\", -1.5]` evaluates to -2.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0"
+          }
+        }
+      },
+      "abs": {
+        "doc": "Returns the absolute value of the input.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0"
+          }
+        }
+      },
+      "ceil": {
+        "doc": "Returns the smallest integer that is greater than or equal to the input.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0"
+          }
+        }
+      },
+      "floor": {
+        "doc": "Returns the largest integer that is less than or equal to the input.",
+        "group": "Math",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0"
+          }
+        }
+      },
       "==": {
         "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
         "group": "Decision",
