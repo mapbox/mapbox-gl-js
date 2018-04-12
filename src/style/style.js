@@ -983,6 +983,10 @@ class Style extends Evented {
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(this.placement, browser.now());
+                for (const id in this.sourceCaches) {
+                    // Allows tiles to prune data no longer necessary for querying
+                    this.sourceCaches[id].commitPlacement(this.placement.bucketInstanceIds);
+                }
                 placementCommitted = true;
             }
 

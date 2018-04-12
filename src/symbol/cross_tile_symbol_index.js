@@ -234,6 +234,10 @@ class CrossTileSymbolIndex {
 
             if (!symbolBucket.bucketInstanceId) {
                 symbolBucket.bucketInstanceId = ++this.maxBucketInstanceId;
+                // As long as this bucket is used in any committed placement, we have to hold onto
+                // the matching FeatureIndex/CollisionBoxArray/data for querying purposes
+                if (tile.latestFeatureIndex)
+                    tile.retainedFeatureIndexes[symbolBucket.bucketInstanceId] = tile.latestFeatureIndex;
             }
 
             if (layerIndex.addBucket(tile.tileID, symbolBucket, this.crossTileIDs)) {

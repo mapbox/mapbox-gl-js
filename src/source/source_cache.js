@@ -757,6 +757,14 @@ class SourceCache extends Evented {
 
         return false;
     }
+
+    commitPlacement(usedBucketInstanceIds: {[number]: boolean}) {
+        const ids = this.getIds();
+        for (let i = 0; i < ids.length; i++) {
+            const tile = this.getTileByID(ids[i]);
+            tile.pruneFeatureIndexes(usedBucketInstanceIds);
+        }
+    }
 }
 
 SourceCache.maxOverzooming = 10;
@@ -779,4 +787,3 @@ function isRasterType(type) {
 }
 
 export default SourceCache;
-

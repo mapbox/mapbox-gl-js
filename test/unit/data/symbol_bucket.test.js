@@ -13,6 +13,7 @@ import Transform from '../../../src/geo/transform';
 import { OverscaledTileID } from '../../../src/source/tile_id';
 import Tile from '../../../src/source/tile';
 import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
+import FeatureIndex from '../../../src/data/feature_index';
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -57,6 +58,7 @@ test('SymbolBucket', (t) => {
     bucketA.populate([{feature}], options);
     performSymbolLayout(bucketA, stacks, {});
     const tileA = new Tile(tileID, 512);
+    tileA.latestFeatureIndex = new FeatureIndex(tileID);
     tileA.buckets = { test: bucketA };
     tileA.collisionBoxArray = collisionBoxArray;
 

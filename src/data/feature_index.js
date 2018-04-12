@@ -17,10 +17,9 @@ import { register } from '../util/web_worker_transfer';
 import type CollisionIndex from '../symbol/collision_index';
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
-import type {CollisionBoxArray} from './array_types';
 import type Transform from '../geo/transform';
 
-import { FeatureIndexArray } from './array_types';
+import { FeatureIndexArray, CollisionBoxArray } from './array_types';
 
 type QueryParameters = {
     scale: number,
@@ -33,7 +32,6 @@ type QueryParameters = {
         filter: FilterSpecification,
         layers: Array<string>,
     },
-    collisionBoxArray: CollisionBoxArray,
     sourceID: string,
     bucketInstanceIds: { [number]: boolean },
     collisionIndex: ?CollisionIndex
@@ -41,12 +39,12 @@ type QueryParameters = {
 
 class FeatureIndex {
     tileID: OverscaledTileID;
-    overscaling: number;
     x: number;
     y: number;
     z: number;
     grid: Grid;
     featureIndexArray: FeatureIndexArray;
+    collisionBoxArray: CollisionBoxArray;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
@@ -55,16 +53,16 @@ class FeatureIndex {
     sourceLayerCoder: DictionaryCoder;
 
     constructor(tileID: OverscaledTileID,
-                overscaling: number,
                 grid?: Grid,
-                featureIndexArray?: FeatureIndexArray) {
+                featureIndexArray?: FeatureIndexArray,
+                collisionBoxArray?: CollisionBoxArray) {
         this.tileID = tileID;
-        this.overscaling = overscaling;
         this.x = tileID.canonical.x;
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
         this.grid = grid || new Grid(EXTENT, 16, 0);
         this.featureIndexArray = featureIndexArray || new FeatureIndexArray();
+        this.collisionBoxArray = collisionBoxArray || new CollisionBoxArray();
     }
 
     insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number) {
@@ -93,47 +91,47 @@ class FeatureIndex {
     }
 
     // Finds features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}) {
+    query(result: {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>}, args: QueryParameters, styleLayers: {[string]: StyleLayer}) {
         if (!this.vtLayers) {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
         }
-
-        const result = {};
 
         const params = args.params || {},
             pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
             filter = featureFilter(params.filter);
 
         const queryGeometry = args.queryGeometry;
-        const queryPadding = args.queryPadding * pixelsToTileUnits;
 
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        for (let i = 0; i < queryGeometry.length; i++) {
-            const ring = queryGeometry[i];
-            for (let k = 0; k < ring.length; k++) {
-                const p = ring[k];
-                minX = Math.min(minX, p.x);
-                minY = Math.min(minY, p.y);
-                maxX = Math.max(maxX, p.x);
-                maxY = Math.max(maxY, p.y);
+        if (args.collisionIndex) {
+            // Querying symbol features
+            const matchingSymbols =
+                args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, args.tileSize / EXTENT, this.collisionBoxArray, args.sourceID, args.bucketInstanceIds);
+            matchingSymbols.sort();
+            this.filterMatching(result, matchingSymbols, this.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
+        } else {
+            // Querying non-symbol features
+            const queryPadding = args.queryPadding * pixelsToTileUnits;
+
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+            for (let i = 0; i < queryGeometry.length; i++) {
+                const ring = queryGeometry[i];
+                for (let k = 0; k < ring.length; k++) {
+                    const p = ring[k];
+                    minX = Math.min(minX, p.x);
+                    minY = Math.min(minY, p.y);
+                    maxX = Math.max(maxX, p.x);
+                    maxY = Math.max(maxY, p.y);
+                }
             }
+
+            const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
+            matching.sort(topDownFeatureComparator);
+            this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
         }
-
-        const matching = this.grid.query(minX - queryPadding, minY - queryPadding, maxX + queryPadding, maxY + queryPadding);
-        matching.sort(topDownFeatureComparator);
-        this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
-
-        const matchingSymbols = args.collisionIndex ?
-            args.collisionIndex.queryRenderedSymbols(queryGeometry, this.tileID, args.tileSize / EXTENT, args.collisionBoxArray, args.sourceID, args.bucketInstanceIds) :
-            [];
-        matchingSymbols.sort();
-        this.filterMatching(result, matchingSymbols, args.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, pixelsToTileUnits, args.posMatrix, args.transform);
-
-        return result;
     }
 
     filterMatching(

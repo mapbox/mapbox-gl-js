@@ -3,7 +3,6 @@
 import FeatureIndex from '../data/feature_index';
 
 import { performSymbolLayout } from '../symbol/symbol_layout';
-import { CollisionBoxArray } from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import { warnOnce, mapObject, values } from '../util/util';
@@ -37,7 +36,6 @@ class WorkerTile {
 
     status: 'parsing' | 'done';
     data: VectorTile;
-    collisionBoxArray: CollisionBoxArray;
 
     abort: ?() => void;
     reloadCallback: WorkerTileCallback;
@@ -50,7 +48,7 @@ class WorkerTile {
         this.pixelRatio = params.pixelRatio;
         this.tileSize = params.tileSize;
         this.source = params.source;
-        this.overscaling = params.overscaling;
+        this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
         this.collectResourceTiming = !!params.collectResourceTiming;
     }
@@ -59,10 +57,10 @@ class WorkerTile {
         this.status = 'parsing';
         this.data = data;
 
-        this.collisionBoxArray = new CollisionBoxArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const featureIndex = new FeatureIndex(this.tileID, this.overscaling);
+        const featureIndex = new FeatureIndex(this.tileID);
+        const collisionBoxArray = featureIndex.collisionBoxArray;
         featureIndex.bucketLayerIDs = [];
 
         const buckets: {[string]: Bucket} = {};
@@ -108,7 +106,7 @@ class WorkerTile {
                     zoom: this.zoom,
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
-                    collisionBoxArray: this.collisionBoxArray
+                    collisionBoxArray: collisionBoxArray
                 });
 
                 bucket.populate(features, options);
@@ -168,7 +166,6 @@ class WorkerTile {
                 callback(null, {
                     buckets: values(buckets).filter(b => !b.isEmpty()),
                     featureIndex,
-                    collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
                     iconAtlasImage: imageAtlas.image
                 });
