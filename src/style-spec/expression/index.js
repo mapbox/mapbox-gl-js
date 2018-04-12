@@ -15,7 +15,7 @@ import definitions from './definitions';
 import * as isConstant from './is_constant';
 import RuntimeError from './runtime_error';
 import { success, error } from '../util/result';
-import { isPropertyFunction, isZoomFunction, isInterpolated } from '../util/properties';
+import { isPropertyExpression, isZoomExpression, isInterpolated } from '../util/properties';
 
 import type {Type} from './types';
 import type {Value} from './values';
@@ -219,12 +219,12 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
     const parsed = expression.value.expression;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
-    if (!isFeatureConstant && !isPropertyFunction(propertySpec)) {
+    if (!isFeatureConstant && !isPropertyExpression(propertySpec)) {
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
-    if (!isZoomConstant && !isZoomFunction(propertySpec)) {
+    if (!isZoomConstant && !isZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 

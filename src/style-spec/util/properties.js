@@ -1,12 +1,10 @@
 // @flow
 
-export function isPropertyFunction(spec: Object): boolean {
-    const dataDrivenTypes = new Set(['data-driven', 'cross-faded-data-driven']);
-
-    return spec.expression && dataDrivenTypes.has(spec.expression['property-type']);
+export function isPropertyExpression(spec: Object): boolean {
+    return spec['property-type'] === 'data-driven' || spec['property-type'] === 'cross-faded-data-driven';
 }
 
-export function isZoomFunction(spec: Object): boolean {
+export function isZoomExpression(spec: Object): boolean {
     return spec.expression && spec.expression.parameters.indexOf('zoom') > -1;
 }
 

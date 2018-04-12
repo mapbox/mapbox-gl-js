@@ -2,8 +2,8 @@
   "propertySpec": {
     "type": "array",
     "value": "string",
+    "property-type": "data-driven",
     "expression": {
-      "property-type": "data-driven",
       "parameters": ["zoom", "feature"]
     }
   },

@@ -9,8 +9,8 @@ test('binary search', (t) => {
             base: 2
         }, {
             type: 'number',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': true,
                 'parameters': ['zoom']
             }
@@ -30,8 +30,8 @@ test('exponential function', (t) => {
             base: 2
         }, {
             type: 'number',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': true,
                 'parameters': ['zoom']
             }
@@ -471,8 +471,8 @@ test('interval function', (t) => {
             stops: [[-1, 11], [0, 111]]
         }, {
             type: 'number',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': false,
                 'parameters': ['zoom']
             }

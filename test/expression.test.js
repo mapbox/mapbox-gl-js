@@ -11,8 +11,8 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
 
 expressionSuite.run('js', { ignores, tests }, (fixture) => {
     const spec = Object.assign({}, fixture.propertySpec);
+    spec['property-type'] = 'data-driven';
     spec['expression'] = {
-        'property-type': 'data-driven',
         'interpolated': true,
         'parameters': ['zoom', 'feature']
     };

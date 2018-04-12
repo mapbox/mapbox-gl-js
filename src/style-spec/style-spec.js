@@ -1,10 +1,9 @@
 // @flow
 
-type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant';
+type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant' | 'constant';
 type ExpressionParameters = Array<'zoom' | 'feature' | 'heatmap-density' | 'line-progress'>;
 
 type ExpressionSpecification = {
-    type: ExpressionType,
     interpolated: boolean,
     parameters: ExpressionParameters
 }

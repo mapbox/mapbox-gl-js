@@ -48,8 +48,8 @@ const filterSpec = {
     'type': 'boolean',
     'default': false,
     'transition': false,
+    'property-type': 'data-driven',
     'expression': {
-        'type': 'data-driven',
         'interpolated': false,
         'parameters': ['zoom', 'feature']
     }
