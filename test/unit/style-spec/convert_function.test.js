@@ -16,8 +16,8 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': false,
                 'parameters': ['zoom']
             },
@@ -66,8 +66,8 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': false,
                 'parameters': ['zoom']
             }
@@ -97,8 +97,8 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'number',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': true,
                 'parameters': ['zoom']
             }

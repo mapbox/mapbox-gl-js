@@ -7,8 +7,8 @@ test('createPropertyExpression', (t) => {
             'interpolate', ['linear'], ['zoom'], 0, 0, 10, 10
         ], {
             type: 'number',
+            'property-type': 'data-constant',
             expression: {
-                'property-type': 'data-constant',
                 'interpolated': false,
                 'parameters': ['zoom']
             }
@@ -28,8 +28,8 @@ test('evaluate expression', (t) => {
             type: 'enum',
             values: {a: {}, b: {}, c: {}},
             default: 'a',
+            'property-type': 'data-driven',
             expression: {
-                'property-type': 'data-driven',
                 'interpolated': false,
                 'parameters': ['zoom', 'feature']
             }

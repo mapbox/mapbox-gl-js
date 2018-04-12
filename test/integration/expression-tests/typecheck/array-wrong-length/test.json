@@ -3,8 +3,8 @@
     "type": "array",
     "value": "number",
     "length": 3,
+    "property-type": "data-driven",
     "expression": {
-      "property-type": "data-driven",
       "parameters": ["zoom", "feature"]
     }
   },

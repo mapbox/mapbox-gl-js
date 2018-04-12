@@ -595,7 +595,8 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         }
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_fill": {
@@ -618,7 +619,8 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         }
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_circle": {
@@ -641,7 +643,8 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         }
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_heatmap": {
@@ -661,7 +664,8 @@
         "basic functionality": {
           "js": "0.41.0"
         }
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_fill-extrusion": {
@@ -684,7 +688,8 @@
           "ios": "3.6.0",
           "macos": "0.5.0"
         }
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_line": {
@@ -713,12 +718,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "line-join": {
       "type": "enum",
@@ -750,13 +755,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-miter-limit": {
       "type": "number",
@@ -777,12 +782,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "line-round-limit": {
       "type": "number",
@@ -803,12 +808,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "visibility": {
       "type": "enum",
@@ -830,7 +835,8 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {}
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_symbol": {
@@ -856,12 +862,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "symbol-spacing": {
       "type": "number",
@@ -884,12 +890,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "symbol-avoid-edges": {
       "type": "boolean",
@@ -905,12 +911,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-allow-overlap": {
       "type": "boolean",
@@ -929,12 +935,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-ignore-placement": {
       "type": "boolean",
@@ -953,12 +959,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-optional": {
       "type": "boolean",
@@ -978,12 +984,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-rotation-alignment": {
       "type": "enum",
@@ -1019,12 +1025,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-size": {
       "type": "number",
@@ -1050,13 +1056,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-text-fit": {
       "type": "enum",
@@ -1090,12 +1096,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-text-fit-padding": {
       "type": "array",
@@ -1130,12 +1136,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-image": {
       "type": "string",
@@ -1156,13 +1162,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-rotate": {
       "type": "number",
@@ -1188,13 +1194,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-padding": {
       "type": "number",
@@ -1215,12 +1221,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-keep-upright": {
       "type": "boolean",
@@ -1245,12 +1251,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-offset": {
       "type": "array",
@@ -1279,13 +1285,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-anchor": {
       "type": "enum",
@@ -1338,13 +1344,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-pitch-alignment": {
       "type": "enum",
@@ -1374,12 +1380,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-pitch-alignment": {
       "type": "enum",
@@ -1415,12 +1421,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-rotation-alignment": {
       "type": "enum",
@@ -1456,12 +1462,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-field": {
       "type": "string",
@@ -1483,13 +1489,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-font": {
       "type": "array",
@@ -1514,13 +1520,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-size": {
       "type": "number",
@@ -1546,13 +1552,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-max-width": {
       "type": "number",
@@ -1578,13 +1584,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-line-height": {
       "type": "number",
@@ -1604,12 +1610,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-letter-spacing": {
       "type": "number",
@@ -1634,13 +1640,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-justify": {
       "type": "enum",
@@ -1675,13 +1681,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-anchor": {
       "type": "enum",
@@ -1734,13 +1740,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-max-angle": {
       "type": "number",
@@ -1763,12 +1769,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-rotate": {
       "type": "number",
@@ -1794,13 +1800,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-padding": {
       "type": "number",
@@ -1821,12 +1827,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-keep-upright": {
       "type": "boolean",
@@ -1851,12 +1857,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-transform": {
       "type": "enum",
@@ -1891,13 +1897,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": false,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-offset": {
       "type": "array",
@@ -1927,13 +1933,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-allow-overlap": {
       "type": "boolean",
@@ -1952,12 +1958,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-ignore-placement": {
       "type": "boolean",
@@ -1976,12 +1982,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-optional": {
       "type": "boolean",
@@ -2001,12 +2007,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "visibility": {
       "type": "enum",
@@ -2028,7 +2034,8 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {}
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_raster": {
@@ -2052,7 +2059,8 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {}
-      }
+      },
+      "property-type": "constant"
     }
   },
   "layout_hillshade": {
@@ -2073,7 +2081,8 @@
           "js": "0.43.0"
         },
         "data-driven styling": {}
-      }
+      },
+      "property-type": "constant"
     }
   },
   "filter": {
@@ -2863,9 +2872,9 @@
           "doc": "The position of the light source is aligned to the rotation of the viewport."
         }
       },
+      "property-type": "data-constant",
       "transition": false,
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
@@ -2891,9 +2900,9 @@
       ],
       "length": 3,
       "value": "number",
+      "property-type": "data-constant",
       "transition": true,
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
@@ -2916,9 +2925,9 @@
     },
     "color": {
       "type": "color",
+      "property-type": "data-constant",
       "default": "#ffffff",
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
@@ -2937,11 +2946,11 @@
     },
     "intensity": {
       "type": "number",
+      "property-type": "data-constant",
       "default": 0.5,
       "minimum": 0,
       "maximum": 1,
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
@@ -2985,12 +2994,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "fill-opacity": {
       "type": "number",
@@ -3014,13 +3023,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "fill-color": {
       "type": "color",
@@ -3047,13 +3056,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "fill-outline-color": {
       "type": "color",
@@ -3082,13 +3091,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "fill-translate": {
       "type": "array",
@@ -3111,12 +3120,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "fill-translate-anchor": {
       "type": "enum",
@@ -3143,12 +3152,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "fill-pattern": {
       "type": "string",
@@ -3164,12 +3173,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "cross-faded",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "cross-faded"
     }
   },
   "paint_fill-extrusion": {
@@ -3189,12 +3198,12 @@
         }
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "fill-extrusion-color": {
       "type": "color",
@@ -3221,13 +3230,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "fill-extrusion-translate": {
       "type": "array",
@@ -3250,12 +3259,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "fill-extrusion-translate-anchor": {
       "type": "enum",
@@ -3282,12 +3291,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "fill-extrusion-pattern": {
       "type": "string",
@@ -3303,12 +3312,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "cross-faded",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "cross-faded"
     },
     "fill-extrusion-height": {
       "type": "number",
@@ -3332,13 +3341,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "fill-extrusion-base": {
       "type": "number",
@@ -3365,13 +3374,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_line": {
@@ -3397,13 +3406,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-color": {
       "type": "color",
@@ -3430,13 +3439,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-translate": {
       "type": "array",
@@ -3459,12 +3468,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "line-translate-anchor": {
       "type": "enum",
@@ -3491,12 +3500,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "line-width": {
       "type": "number",
@@ -3517,13 +3526,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-gap-width": {
       "type": "number",
@@ -3547,13 +3556,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-offset": {
       "type": "number",
@@ -3576,13 +3585,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-blur": {
       "type": "number",
@@ -3606,13 +3615,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "line-dasharray": {
       "type": "array",
@@ -3636,12 +3645,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "cross-faded",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "cross-faded"
     },
     "line-pattern": {
       "type": "string",
@@ -3657,12 +3666,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "cross-faded",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "cross-faded"
     },
     "line-gradient": {
       "type": "color",
@@ -3689,12 +3698,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "color-ramp",
         "interpolated": true,
         "parameters": [
           "line-progress"
         ]
-      }
+      },
+      "property-type": "color-ramp"
     }
   },
   "paint_circle": {
@@ -3720,13 +3729,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "circle-color": {
       "type": "color",
@@ -3748,13 +3757,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "circle-blur": {
       "type": "number",
@@ -3776,13 +3785,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "circle-opacity": {
       "type": "number",
@@ -3806,13 +3815,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "circle-translate": {
       "type": "array",
@@ -3835,12 +3844,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "circle-translate-anchor": {
       "type": "enum",
@@ -3867,12 +3876,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "circle-pitch-scale": {
       "type": "enum",
@@ -3896,12 +3905,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "circle-pitch-alignment": {
       "type": "enum",
@@ -3925,12 +3934,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "circle-stroke-width": {
       "type": "number",
@@ -3954,13 +3963,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "circle-stroke-color": {
       "type": "color",
@@ -3982,13 +3991,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "circle-stroke-opacity": {
       "type": "number",
@@ -4012,13 +4021,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_heatmap": {
@@ -4038,13 +4047,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "heatmap-weight": {
       "type": "number",
@@ -4061,13 +4070,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "heatmap-intensity": {
       "type": "number",
@@ -4082,12 +4091,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "heatmap-color": {
       "type": "color",
@@ -4121,12 +4130,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "color-ramp",
         "interpolated": true,
         "parameters": [
           "heatmap-density"
         ]
-      }
+      },
+      "property-type": "color-ramp"
     },
     "heatmap-opacity": {
       "type": "number",
@@ -4142,12 +4151,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_symbol": {
@@ -4176,13 +4185,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-color": {
       "type": "color",
@@ -4207,13 +4216,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-halo-color": {
       "type": "color",
@@ -4238,13 +4247,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-halo-width": {
       "type": "number",
@@ -4271,13 +4280,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-halo-blur": {
       "type": "number",
@@ -4304,13 +4313,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "icon-translate": {
       "type": "array",
@@ -4336,12 +4345,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -4369,12 +4378,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-opacity": {
       "type": "number",
@@ -4401,13 +4410,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-color": {
       "type": "color",
@@ -4432,13 +4441,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-halo-color": {
       "type": "color",
@@ -4463,13 +4472,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-halo-width": {
       "type": "number",
@@ -4496,13 +4505,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-halo-blur": {
       "type": "number",
@@ -4529,13 +4538,13 @@
         }
       },
       "expression": {
-        "property-type": "data-driven",
         "interpolated": true,
         "parameters": [
           "zoom",
           "feature"
         ]
-      }
+      },
+      "property-type": "data-driven"
     },
     "text-translate": {
       "type": "array",
@@ -4561,12 +4570,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "text-translate-anchor": {
       "type": "enum",
@@ -4594,12 +4603,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_raster": {
@@ -4620,12 +4629,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "raster-hue-rotate": {
       "type": "number",
@@ -4644,12 +4653,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "raster-brightness-min": {
       "type": "number",
@@ -4668,12 +4677,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "raster-brightness-max": {
       "type": "number",
@@ -4692,12 +4701,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "raster-saturation": {
       "type": "number",
@@ -4716,12 +4725,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "raster-contrast": {
       "type": "number",
@@ -4740,12 +4749,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "raster-fade-duration": {
       "type": "number",
@@ -4764,12 +4773,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_hillshade": {
@@ -4787,12 +4796,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "hillshade-illumination-anchor": {
       "type": "enum",
@@ -4813,12 +4822,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "hillshade-exaggeration": {
       "type": "number",
@@ -4834,12 +4843,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "hillshade-shadow-color": {
       "type": "color",
@@ -4853,12 +4862,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "hillshade-highlight-color": {
       "type": "color",
@@ -4872,12 +4881,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "hillshade-accent-color": {
       "type": "color",
@@ -4891,12 +4900,12 @@
         "data-driven styling": {}
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_background": {
@@ -4919,12 +4928,12 @@
         }
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     },
     "background-pattern": {
       "type": "string",
@@ -4939,12 +4948,12 @@
         }
       },
       "expression": {
-        "property-type": "cross-faded",
         "interpolated": false,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "cross-faded"
     },
     "background-opacity": {
       "type": "number",
@@ -4962,12 +4971,12 @@
         }
       },
       "expression": {
-        "property-type": "data-constant",
         "interpolated": true,
         "parameters": [
           "zoom"
         ]
-      }
+      },
+      "property-type": "data-constant"
     }
   },
   "transition": {

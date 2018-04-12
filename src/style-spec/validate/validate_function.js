@@ -7,8 +7,8 @@ import validateArray from './validate_array';
 import validateNumber from './validate_number';
 import { unbundle } from '../util/unbundle_jsonlint';
 import {
-    isPropertyFunction as acceptsPropertyFunction,
-    isZoomFunction as acceptsZoomFunction,
+    isPropertyExpression as acceptsPropertyExpression,
+    isZoomExpression as acceptsZoomExpression,
     isInterpolated as acceptsInterpolated
 } from '../util/properties';
 
@@ -52,9 +52,9 @@ export default function validateFunction(options) {
     }
 
     if (options.styleSpec.$version >= 8) {
-        if (isPropertyFunction && !acceptsPropertyFunction(options.valueSpec)) {
+        if (isPropertyFunction && !acceptsPropertyExpression(options.valueSpec)) {
             errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
-        } else if (isZoomFunction && !acceptsZoomFunction(options.valueSpec)) {
+        } else if (isZoomFunction && !acceptsZoomExpression(options.valueSpec)) {
             errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
         }
     }
@@ -165,7 +165,7 @@ export default function validateFunction(options) {
 
         if (type !== 'number' && functionType !== 'categorical') {
             let message = `number expected, ${type} found`;
-            if (acceptsPropertyFunction(functionValueSpec) && functionType === undefined) {
+            if (acceptsPropertyExpression(functionValueSpec) && functionType === undefined) {
                 message += '\nIf you intended to use a categorical function, specify `"type": "categorical"`.';
             }
             return [new ValidationError(options.key, reportValue, message)];

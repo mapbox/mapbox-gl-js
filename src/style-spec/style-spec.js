@@ -1,45 +1,51 @@
 // @flow
 
-type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant';
+type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant' | 'constant';
 type ExpressionParameters = Array<'zoom' | 'feature' | 'heatmap-density' | 'line-progress'>;
 
 type ExpressionSpecification = {
-    type: ExpressionType,
     interpolated: boolean,
     parameters: ExpressionParameters
 }
 
 export type StylePropertySpecification = {
     type: 'number',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     default?: number
 } | {
     type: 'string',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     default?: string,
     tokens?: boolean
 } | {
     type: 'boolean',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     default?: boolean
 } | {
     type: 'enum',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     values: {[string]: {}},
     default?: string
 } | {
     type: 'color',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     default?: string
 } | {
     type: 'array',
     value: 'number',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     length?: number,
     default?: Array<number>
 } | {
     type: 'array',
     value: 'string',
+    'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     length?: number,
     default?: Array<string>

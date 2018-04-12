@@ -35,7 +35,7 @@ global.flowType = function (property) {
 };
 
 global.propertyType = function (property) {
-    switch (property.expression['property-type']) {
+    switch (property['property-type']) {
         case 'data-driven':
             return `DataDrivenProperty<${flowType(property)}>`;
         case 'cross-faded':
@@ -89,7 +89,7 @@ global.defaultValue = function (property) {
 };
 
 global.propertyValue = function (property, type) {
-    switch (property.expression['property-type']) {
+    switch (property['property-type']) {
         case 'data-driven':
             return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'cross-faded':

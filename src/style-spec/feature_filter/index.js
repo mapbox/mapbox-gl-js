@@ -47,8 +47,8 @@ function isExpressionFilter(filter: any) {
 const filterSpec = {
     'type': 'boolean',
     'default': false,
+    'property-type': 'data-driven',
     'expression': {
-        'type': 'data-driven',
         'interpolated': true,
         'parameters': ['zoom', 'feature']
     }
