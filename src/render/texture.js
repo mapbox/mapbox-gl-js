@@ -40,39 +40,52 @@ class Texture {
     format: TextureFormat;
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
+    useMipmap: boolean;
     powerOfTwoSize: boolean;
 
-    constructor(context: Context, image: TextureImage, format: TextureFormat, premultiply: ?boolean) {
+    constructor(context: Context, image: TextureImage, format: TextureFormat, premultiply: ?boolean, useMipmap: ?boolean) {
         this.context = context;
-
-        const {width, height} = image;
-        this.size = [width, height];
         this.format = format;
-
         this.texture = context.gl.createTexture();
-        this.update(image, premultiply);
+        this.update(image, premultiply, useMipmap);
     }
 
-    update(image: TextureImage, premultiply: ?boolean) {
+    update(image: TextureImage, premultiply: ?boolean, useMipmap: ?boolean) {
         const {width, height} = image;
-        this.size = [width, height];
-
+        const resize = !this.size || this.size[0] !== width || this.size[1] !== height;
         const {context} = this;
         const {gl} = context;
+
+        this.useMipmap = Boolean(useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        context.pixelStoreUnpack.set(1);
 
-        if (this.format === gl.RGBA && premultiply !== false) {
-            context.pixelStoreUnpackPremultiplyAlpha.set(true);
-        }
+        if (resize) {
+            this.size = [width, height];
+            this.powerOfTwoSize = width === height && (Math.log(width) / Math.LN2) % 1 === 0;
 
-        if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+            context.pixelStoreUnpack.set(1);
+
+            if (this.format === gl.RGBA && premultiply !== false) {
+                context.pixelStoreUnpackPremultiplyAlpha.set(true);
+            }
+
+            if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+            } else {
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
+            }
+
         } else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
+            if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            } else {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, image.data);
+            }
         }
 
-        this.powerOfTwoSize = width === height && (Math.log(width) / Math.LN2) % 1 === 0;
+        if (this.useMipmap && this.powerOfTwoSize) {
+            gl.generateMipmap(gl.TEXTURE_2D);
+        }
     }
 
     bind(filter: TextureFilter, wrap: TextureWrap, minFilter: ?TextureFilter) {
