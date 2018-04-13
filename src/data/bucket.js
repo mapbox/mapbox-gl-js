@@ -5,6 +5,7 @@ import type Style from '../style/style';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
+import type {FeatureStates} from '../source/source_cache';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -53,8 +54,10 @@ export type IndexedFeature = {
  */
 export interface Bucket {
     layerIds: Array<string>;
+    +layers: Array<any>;
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;

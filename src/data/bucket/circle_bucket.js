@@ -23,6 +23,7 @@ import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
+import type {FeatureStates} from '../../source/source_cache';
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
@@ -75,6 +76,15 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 this.addFeature(feature, geometry, index);
                 options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
+        }
+    }
+
+    update(states: FeatureStates, vtLayer: VectorTileLayer) {
+        //TODO: AHM: Determine if layers have state dependent paint properties!
+        const affectedLayers = this.layers;
+        const changed = this.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
+        if (changed) {
+            this.uploaded = false;
         }
     }
 

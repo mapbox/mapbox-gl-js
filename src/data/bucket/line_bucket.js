@@ -25,6 +25,7 @@ import type {Segment} from '../segment';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
+import type {FeatureStates} from '../../source/source_cache';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -125,6 +126,15 @@ class LineBucket implements Bucket {
                 this.addFeature(feature, geometry, index);
                 options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
+        }
+    }
+
+    update(states: FeatureStates, vtLayer: VectorTileLayer) {
+        //TODO: AHM: Determine if layers have state dependent paint properties!
+        const affectedLayers = this.layers;
+        const changed = this.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
+        if (changed) {
+            this.uploaded = false;
         }
     }
 

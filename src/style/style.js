@@ -766,6 +766,25 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
+    setFeatureState(feature: string, key: string, value: any, source: string, sourceLayer: string) {
+        if (this.sourceCaches[source] === undefined) {
+            throw new Error('There is no source with this ID');
+        }
+
+        const sourceCache = this.sourceCaches[source];
+
+        sourceCache.setFeatureState(feature, key, value, sourceLayer);
+    }
+
+    getFeatureState(feature: string, key: string, source: string, sourceLayer: string) {
+        if (this.sourceCaches[source] === undefined) {
+            throw new Error('There is no source with this ID');
+        }
+        const sourceCache = this.sourceCaches[source];
+
+        return sourceCache.getFeatureState(feature, key, sourceLayer);
+    }
+
     getTransition() {
         return extend({ duration: 300, delay: 0 }, this.stylesheet && this.stylesheet.transition);
     }

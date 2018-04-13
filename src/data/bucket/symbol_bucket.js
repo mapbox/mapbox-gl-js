@@ -33,6 +33,7 @@ import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
+import type {FeatureStates} from '../../source/source_cache';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -403,6 +404,15 @@ class SymbolBucket implements Bucket {
         }
     }
 
+    update(states: FeatureStates, vtLayer: VectorTileLayer) {
+        //TODO: AHM: Determine if layers have state dependent paint properties!
+        const affectedLayers = this.layers;
+        let changed = this.text.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
+        changed = changed || this.icon.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
+        if (changed) {
+            this.uploaded = false;
+        }
+    }
 
     isEmpty() {
         return this.symbolInstances.length === 0;
