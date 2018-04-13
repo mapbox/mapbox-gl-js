@@ -1,0 +1,37 @@
+{
+  "expression": [
+    "case",
+    ["==", ["resolved-locale", ["collator", true, false, "de"]], "de"],
+    [
+      "==",
+      ["string", ["get", "lhs"]],
+      ["get", "rhs"],
+      ["collator", true, false, "de"]
+    ],
+    ["case", ["==", ["get", "rhs"], "ue"], true, false]
+  ],
+  "inputs": [
+    [{}, {"properties": {"lhs": "ü", "rhs": "ue"}}],
+    [{}, {"properties": {"lhs": "ü", "rhs": "u"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, false],
+    "serialized": [
+      "case",
+      ["==", ["resolved-locale", ["collator", true, false, "de"]], "de"],
+      [
+        "==",
+        ["string", ["get", "lhs"]],
+        ["get", "rhs"],
+        ["collator", true, false, "de"]
+      ],
+      ["case", ["==", ["get", "rhs"], "ue"], true, false]
+    ]
+  }
+}

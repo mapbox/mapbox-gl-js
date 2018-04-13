@@ -2163,6 +2163,15 @@
           }
         }
       },
+      "collator": {
+        "doc": "Returns a `collator` for use in locale dependent comparison operations. The first two arguments control case and diacritic sensitivity, and the optional third argument specifies the IETF language tag of the locale to use. If no locale is provided, the default locale is used.",
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0"
+          }
+        }
+      },
       "to-string": {
         "doc": "Converts the input value to a string. If the input is `null`, the result is `\"null\"`. If the input is a boolean, the result is `\"true\"` or `\"false\"`. If the input is a number, it is converted to a string as specified by the [\"NumberToString\" algorithm](https://tc39.github.io/ecma262/#sec-tostring-applied-to-the-number-type) of the ECMAScript Language Specification. If the input is a color, it is converted to a string of the form `\"rgba(r,g,b,a)\"`, where `r`, `g`, and `b` are numerals ranging from 0 to 255, and `a` ranges from 0 to 1. Otherwise, the input is converted to a string in the format specified by the [`JSON.stringify`](https://tc39.github.io/ecma262/#sec-json.stringify) function of the ECMAScript Language Specification.",
         "group": "Types",
@@ -2501,7 +2510,7 @@
         }
       },
       "==": {
-        "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
+        "doc": "Returns `true` if the input values are equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2510,7 +2519,7 @@
         }
       },
       "!=": {
-        "doc": "Returns `true` if the input values are not equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal.",
+        "doc": "Returns `true` if the input values are not equal, `false` otherwise. Equality is strictly typed: values of different types are always considered not equal. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2519,7 +2528,7 @@
         }
       },
       ">": {
-        "doc": "Returns `true` if the first input is strictly greater than the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
+        "doc": "Returns `true` if the first input is strictly greater than the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2528,7 +2537,7 @@
         }
       },
       "<": {
-        "doc": "Returns `true` if the first input is strictly less than the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
+        "doc": "Returns `true` if the first input is strictly less than the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2537,7 +2546,7 @@
         }
       },
       ">=": {
-        "doc": "Returns `true` if the first input is greater than or equal to the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
+        "doc": "Returns `true` if the first input is greater than or equal to the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2546,7 +2555,7 @@
         }
       },
       "<=": {
-        "doc": "Returns `true` if the first input is less than or equal to the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type.",
+        "doc": "Returns `true` if the first input is less than or equal to the second, `false` otherwise. The inputs must be numbers or strings, and both of the same type. Accepts an optional `collator` argument to control locale-dependent string comparisons.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
@@ -2605,6 +2614,15 @@
         "sdk-support": {
           "basic functionality": {
             "js": "0.41.0"
+          }
+        }
+      },
+      "resolved-locale": {
+        "doc": "Returns the IETF language tag of the locale being used by the provided `collator`. This can be used to determine the default system locale, or to determine if a requested locale was successfully loaded.",
+        "group": "String",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.45.0"
           }
         }
       }

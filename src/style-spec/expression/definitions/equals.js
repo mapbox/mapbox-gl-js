@@ -1,12 +1,11 @@
 // @flow
 
-import { toString, ValueType, BooleanType } from '../types';
+import { toString, ValueType, BooleanType, CollatorType } from '../types';
 
 import type { Expression } from '../expression';
 import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
 import type { Type } from '../types';
-import type { Value } from '../values';
 
 function isComparableType(type: Type) {
     return type.kind === 'string' ||
@@ -29,21 +28,23 @@ function isComparableType(type: Type) {
  *
  * @private
  */
-function makeComparison(op: string, compare: (Value, Value) => boolean) {
+function makeComparison(op: string, negate: boolean) {
     return class Comparison implements Expression {
         type: Type;
         lhs: Expression;
         rhs: Expression;
+        collator: Expression | null;
 
-        constructor(lhs: Expression, rhs: Expression) {
+        constructor(lhs: Expression, rhs: Expression, collator: Expression | null) {
             this.type = BooleanType;
             this.lhs = lhs;
             this.rhs = rhs;
+            this.collator = collator;
         }
 
         static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
-            if (args.length !== 3)
-                return context.error(`Expected two arguments.`);
+            if (args.length !== 3 && args.length !== 4)
+                return context.error(`Expected two or three arguments.`);
 
             const lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;
@@ -58,16 +59,32 @@ function makeComparison(op: string, compare: (Value, Value) => boolean) {
                 return context.error(`Cannot compare ${toString(lhs.type)} and ${toString(rhs.type)}.`);
             }
 
-            return new Comparison(lhs, rhs);
+            let collator = null;
+            if (args.length === 4) {
+                if (lhs.type.kind !== 'string' && rhs.type.kind !== 'string') {
+                    return context.error(`Cannot use collator to compare non-string types.`);
+                }
+                collator = context.parse(args[3], 3, CollatorType);
+                if (!collator) return null;
+            }
+
+            return new Comparison(lhs, rhs, collator);
         }
 
         evaluate(ctx: EvaluationContext) {
-            return compare(this.lhs.evaluate(ctx), this.rhs.evaluate(ctx));
+            const equal = this.collator ?
+                this.collator.evaluate(ctx).compare(this.lhs.evaluate(ctx), this.rhs.evaluate(ctx)) === 0 :
+                this.lhs.evaluate(ctx) === this.rhs.evaluate(ctx);
+
+            return negate ? !equal : equal;
         }
 
         eachChild(fn: (Expression) => void) {
             fn(this.lhs);
             fn(this.rhs);
+            if (this.collator) {
+                fn(this.collator);
+            }
         }
 
         possibleOutputs() {
@@ -75,10 +92,12 @@ function makeComparison(op: string, compare: (Value, Value) => boolean) {
         }
 
         serialize() {
-            return [op, this.lhs.serialize(), this.rhs.serialize()];
+            const serialized = [op];
+            this.eachChild(child => { serialized.push(child.serialize()); });
+            return serialized;
         }
     };
 }
 
-export const Equals = makeComparison('==', (lhs, rhs) => lhs === rhs);
-export const NotEquals = makeComparison('!=', (lhs, rhs) => lhs !== rhs);
+export const Equals = makeComparison('==', false);
+export const NotEquals = makeComparison('!=', true);
