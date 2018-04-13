@@ -29,11 +29,12 @@ export type Feature = {
     +properties: {[string]: any}
 };
 
-export type GlobalProperties = {
+export type GlobalProperties = $ReadOnly<{
     zoom: number,
     heatmapDensity?: number,
-    lineProgress?: number
-};
+    lineProgress?: number,
+    isSupportedScript?: (string) => boolean
+}>;
 
 export class StyleExpression {
     expression: Expression;

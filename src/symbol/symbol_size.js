@@ -4,6 +4,7 @@ import { normalizePropertyExpression } from '../style-spec/expression';
 
 import { number as interpolate } from '../style-spec/util/interpolate';
 import { clamp } from '../util/util';
+import EvaluationParameters from '../style/evaluation_parameters';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
@@ -34,7 +35,7 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
     if (expression.kind === 'constant') {
         return {
             functionType: 'constant',
-            layoutSize: expression.evaluate({zoom: tileZoom + 1})
+            layoutSize: expression.evaluate(new EvaluationParameters(tileZoom + 1))
         };
     } else if (expression.kind === 'source') {
         return {
@@ -70,11 +71,11 @@ function getSizeData(tileZoom: number, value: PropertyValue<number, PossiblyEval
             // evaluated at the covering zoom levels
             return {
                 functionType: 'camera',
-                layoutSize: expression.evaluate({zoom: tileZoom + 1}),
+                layoutSize: expression.evaluate(new EvaluationParameters(tileZoom + 1)),
                 zoomRange,
                 sizeRange: {
-                    min: expression.evaluate({zoom: zoomRange.min}),
-                    max: expression.evaluate({zoom: zoomRange.max})
+                    min: expression.evaluate(new EvaluationParameters(zoomRange.min)),
+                    max: expression.evaluate(new EvaluationParameters(zoomRange.max))
                 },
                 propertyValue: (value.value: any)
             };

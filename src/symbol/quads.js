@@ -47,7 +47,6 @@ export function getIconQuads(anchor: Anchor,
                       layer: SymbolStyleLayer,
                       alongLine: boolean,
                       shapedText: Shaping,
-                      globalProperties: Object,
                       feature: Feature): Array<SymbolQuad> {
     const image = shapedIcon.image;
     const layout = layer.layout;
@@ -119,7 +118,6 @@ export function getGlyphQuads(anchor: Anchor,
                        shaping: Shaping,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,
-                       globalProperties: Object,
                        feature: Feature,
                        positions: {[number]: GlyphPosition}): Array<SymbolQuad> {
 
