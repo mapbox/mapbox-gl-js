@@ -8,7 +8,7 @@ function isFeatureConstant(e: Expression) {
     if (e instanceof CompoundExpression) {
         if (e.name === 'get' && e.args.length === 1) {
             return false;
-        } else if (e.name === 'state' && e.args.length === 1) {
+        } else if (e.name === 'state') {
             return false;
         } else if (e.name === 'has' && e.args.length === 1) {
             return false;
@@ -32,7 +32,7 @@ function isFeatureConstant(e: Expression) {
 
 function isStateConstant(e: Expression) {
     if (e instanceof CompoundExpression) {
-        if (e.name === 'state' && e.args.length === 1) {
+        if (e.name === 'state') {
             return false;
         }
     }

@@ -1,5 +1,6 @@
 // @flow
 import { extend } from '../util/util';
+import Tile from './tile';
 
 export type FeatureStates = {[feature_id: string]: {[key: string]: string | number | boolean }};
 export type LayerFeatureStates = {[layer: string]: FeatureStates};
@@ -40,8 +41,12 @@ class SourceFeatureState {
         }
     }
 
-    coalesceChanges() {
-        const changes = {};
+    initializeTileState(tile: Tile) {
+        tile.updateFeatureState(this.state);
+    }
+
+    coalesceChanges(tiles: {[any]: Tile}) {
+        const changes: LayerFeatureStates = {};
         for (const sourceLayer in this.stateChanges) {
             this.state[sourceLayer]  = this.state[sourceLayer] || {};
             const layerStates = {};
@@ -55,7 +60,12 @@ class SourceFeatureState {
             changes[sourceLayer] = layerStates;
         }
         this.stateChanges = {};
-        return changes;
+        if (Object.keys(changes).length === 0) return;
+
+        for (const id in tiles) {
+            const tile = tiles[id];
+            tile.updateFeatureState(changes);
+        }
     }
 }
 

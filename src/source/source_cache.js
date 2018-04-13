@@ -22,7 +22,6 @@ import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
-import type {LayerFeatureStates} from './source_state';
 
 /**
  * `SourceCache` is responsible for
@@ -169,13 +168,8 @@ class SourceCache extends Evented {
             this._source.prepare();
         }
 
-        const changedFeatureStates: LayerFeatureStates = this._state.coalesceChanges();
-        const hasChanges = Object.keys(changedFeatureStates).length > 0;
-
+        this._state.coalesceChanges(this._tiles);
         for (const i in this._tiles) {
-            if (hasChanges) {
-                this._tiles[i].updateFeatureState(changedFeatureStates);
-            }
             this._tiles[i].upload(context);
         }
     }
@@ -257,8 +251,7 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
-
-        tile.updateFeatureState(this._state.state);
+        this._state.initializeTileState(tile);
 
         this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
 
@@ -634,7 +627,7 @@ class SourceCache extends Evented {
             this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
-            tile.updateFeatureState(this._state.state);
+            this._state.initializeTileState(tile);
             if (this._cacheTimers[tileID.key]) {
                 clearTimeout(this._cacheTimers[tileID.key]);
                 delete this._cacheTimers[tileID.key];

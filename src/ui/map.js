@@ -1383,7 +1383,7 @@ class Map extends Camera {
      */
     setFeatureState(source: string, feature: string, key: string, value: any, sourceLayer?: string) {
         this.style.setFeatureState(source, feature, key, value, sourceLayer);
-        this._rerender();
+        this._update();
     }
 
     /**

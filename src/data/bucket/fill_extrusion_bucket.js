@@ -62,7 +62,6 @@ class FillExtrusionBucket implements Bucket {
     programConfigurations: ProgramConfigurationSet<FillExtrusionStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
-    changed: boolean;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
@@ -89,7 +88,7 @@ class FillExtrusionBucket implements Bucket {
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
         if (!this.stateDependentLayers.length) return;
-        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers);
+        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers);
     }
 
     isEmpty() {
@@ -97,7 +96,7 @@ class FillExtrusionBucket implements Bucket {
     }
 
     uploadPending() {
-        return !this.uploaded || this.changed;
+        return !this.uploaded || this.programConfigurations.needsUpload;
     }
 
     upload(context: Context) {
@@ -107,7 +106,6 @@ class FillExtrusionBucket implements Bucket {
         }
         this.programConfigurations.upload(context);
         this.uploaded = true;
-        this.changed = false;
     }
 
     destroy() {

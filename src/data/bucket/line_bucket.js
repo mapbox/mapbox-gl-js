@@ -106,7 +106,6 @@ class LineBucket implements Bucket {
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
-    changed: boolean;
 
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
@@ -133,7 +132,7 @@ class LineBucket implements Bucket {
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
         if (!this.stateDependentLayers.length) return;
-        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers);
+        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers);
     }
 
     isEmpty() {
@@ -141,7 +140,7 @@ class LineBucket implements Bucket {
     }
 
     uploadPending() {
-        return !this.uploaded || this.changed;
+        return !this.uploaded || this.programConfigurations.needsUpload;
     }
 
     upload(context: Context) {
@@ -150,7 +149,6 @@ class LineBucket implements Bucket {
             this.indexBuffer = context.createIndexBuffer(this.indexArray);
         }
         this.programConfigurations.upload(context);
-        this.changed = false;
         this.uploaded = true;
     }
 
