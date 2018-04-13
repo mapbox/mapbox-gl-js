@@ -284,8 +284,8 @@ export function charInSupportedScript(char: number, canRenderRTL: boolean) {
     }
     if ((char >= 0x0900 && char <= 0x0DFF) ||
         // Main blocks for Indic scripts and Sinhala
-        (char >= 0x0E80 && char <= 0x109F) ||
-        // Main blocks for Lao, Tibetan, and Myanmar
+        (char >= 0x0F00 && char <= 0x109F) ||
+        // Main blocks for Tibetan and Myanmar
         isChar['Khmer'](char)) {
         // These blocks cover common scripts that require
         // complex text shaping, based on unicode script metadata:
