@@ -122,7 +122,7 @@ class LineBucket implements Bucket {
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
                 const geometry = loadGeometry(feature);
-                this.addFeature(feature, geometry);
+                this.addFeature(feature, geometry, index);
                 options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
         }
@@ -146,7 +146,7 @@ class LineBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
+    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>, index: number) {
         const layout = this.layers[0].layout;
         const join = layout.get('line-join').evaluate(feature);
         const cap = layout.get('line-cap');
@@ -154,11 +154,11 @@ class LineBucket implements Bucket {
         const roundLimit = layout.get('line-round-limit');
 
         for (const line of geometry) {
-            this.addLine(line, feature, join, cap, miterLimit, roundLimit);
+            this.addLine(line, feature, join, cap, miterLimit, roundLimit, index);
         }
     }
 
-    addLine(vertices: Array<Point>, feature: VectorTileFeature, join: string, cap: string, miterLimit: number, roundLimit: number) {
+    addLine(vertices: Array<Point>, feature: VectorTileFeature, join: string, cap: string, miterLimit: number, roundLimit: number, index: number) {
         let lineDistances = null;
         if (!!feature.properties &&
             feature.properties.hasOwnProperty('mapbox_clip_start') &&
@@ -436,7 +436,7 @@ class LineBucket implements Bucket {
             startOfLine = false;
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index);
     }
 
     /**

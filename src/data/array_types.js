@@ -31,6 +31,12 @@ class StructArrayLayout2i4 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number) {
+        const o2 = i * 2;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        return i;
+    }
 }
 
 StructArrayLayout2i4.prototype.bytesPerElement = 4;
@@ -63,6 +69,14 @@ class StructArrayLayout4i8 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
+        const o2 = i * 4;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        return i;
+    }
 }
 
 StructArrayLayout4i8.prototype.bytesPerElement = 8;
@@ -98,6 +112,16 @@ class StructArrayLayout2i4i12 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
+        const o2 = i * 6;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.int16[o2 + 4] = v4;
+        this.int16[o2 + 5] = v5;
+        return i;
+    }
 }
 
 StructArrayLayout2i4i12.prototype.bytesPerElement = 12;
@@ -136,6 +160,19 @@ class StructArrayLayout4i4ub12 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const o2 = i * 6;
+        const o1 = i * 12;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.uint8[o1 + 8] = v4;
+        this.uint8[o1 + 9] = v5;
+        this.uint8[o1 + 10] = v6;
+        this.uint8[o1 + 11] = v7;
+        return i;
+    }
 }
 
 StructArrayLayout4i4ub12.prototype.bytesPerElement = 12;
@@ -175,6 +212,18 @@ class StructArrayLayout4i4ui16 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number) {
+        const o2 = i * 8;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.uint16[o2 + 4] = v4;
+        this.uint16[o2 + 5] = v5;
+        this.uint16[o2 + 6] = v6;
+        this.uint16[o2 + 7] = v7;
+        return i;
+    }
 }
 
 StructArrayLayout4i4ui16.prototype.bytesPerElement = 16;
@@ -206,6 +255,13 @@ class StructArrayLayout3f12 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number) {
+        const o4 = i * 3;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        return i;
+    }
 }
 
 StructArrayLayout3f12.prototype.bytesPerElement = 12;
@@ -235,6 +291,11 @@ class StructArrayLayout1ul4 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number) {
+        const o4 = i * 1;
+        this.uint32[o4 + 0] = v0;
+        return i;
+    }
 }
 
 StructArrayLayout1ul4.prototype.bytesPerElement = 4;
@@ -282,6 +343,22 @@ class StructArrayLayout6i1ul2ui2i24 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number) {
+        const o2 = i * 12;
+        const o4 = i * 6;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.int16[o2 + 4] = v4;
+        this.int16[o2 + 5] = v5;
+        this.uint32[o4 + 3] = v6;
+        this.uint16[o2 + 8] = v7;
+        this.uint16[o2 + 9] = v8;
+        this.int16[o2 + 10] = v9;
+        this.int16[o2 + 11] = v10;
+        return i;
+    }
 }
 
 StructArrayLayout6i1ul2ui2i24.prototype.bytesPerElement = 24;
@@ -318,6 +395,16 @@ class StructArrayLayout2i2i2i12 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number) {
+        const o2 = i * 6;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        this.int16[o2 + 3] = v3;
+        this.int16[o2 + 4] = v4;
+        this.int16[o2 + 5] = v5;
+        return i;
+    }
 }
 
 StructArrayLayout2i2i2i12.prototype.bytesPerElement = 12;
@@ -346,6 +433,12 @@ class StructArrayLayout2ub4 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number) {
+        const o1 = i * 4;
+        this.uint8[o1 + 0] = v0;
+        this.uint8[o1 + 1] = v1;
+        return i;
+    }
 }
 
 StructArrayLayout2ub4.prototype.bytesPerElement = 4;
@@ -401,6 +494,26 @@ class StructArrayLayout2i2ui3ul3ui2f2ub40 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number, v6: number, v7: number, v8: number, v9: number, v10: number, v11: number, v12: number, v13: number) {
+        const o2 = i * 20;
+        const o4 = i * 10;
+        const o1 = i * 40;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        this.uint16[o2 + 3] = v3;
+        this.uint32[o4 + 2] = v4;
+        this.uint32[o4 + 3] = v5;
+        this.uint32[o4 + 4] = v6;
+        this.uint16[o2 + 10] = v7;
+        this.uint16[o2 + 11] = v8;
+        this.uint16[o2 + 12] = v9;
+        this.float32[o4 + 7] = v10;
+        this.float32[o4 + 8] = v11;
+        this.uint8[o1 + 36] = v12;
+        this.uint8[o1 + 37] = v13;
+        return i;
+    }
 }
 
 StructArrayLayout2i2ui3ul3ui2f2ub40.prototype.bytesPerElement = 40;
@@ -430,6 +543,11 @@ class StructArrayLayout1f4 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number) {
+        const o4 = i * 1;
+        this.float32[o4 + 0] = v0;
+        return i;
+    }
 }
 
 StructArrayLayout1f4.prototype.bytesPerElement = 4;
@@ -461,6 +579,13 @@ class StructArrayLayout3i6 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number) {
+        const o2 = i * 3;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        return i;
+    }
 }
 
 StructArrayLayout3i6.prototype.bytesPerElement = 6;
@@ -496,6 +621,14 @@ class StructArrayLayout1ul2ui8 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number) {
+        const o4 = i * 2;
+        const o2 = i * 4;
+        this.uint32[o4 + 0] = v0;
+        this.uint16[o2 + 2] = v1;
+        this.uint16[o2 + 3] = v2;
+        return i;
+    }
 }
 
 StructArrayLayout1ul2ui8.prototype.bytesPerElement = 8;
@@ -527,6 +660,13 @@ class StructArrayLayout3ui6 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number) {
+        const o2 = i * 3;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        this.uint16[o2 + 2] = v2;
+        return i;
+    }
 }
 
 StructArrayLayout3ui6.prototype.bytesPerElement = 6;
@@ -557,6 +697,12 @@ class StructArrayLayout2ui4 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number) {
+        const o2 = i * 2;
+        this.uint16[o2 + 0] = v0;
+        this.uint16[o2 + 1] = v1;
+        return i;
+    }
 }
 
 StructArrayLayout2ui4.prototype.bytesPerElement = 4;
@@ -587,6 +733,12 @@ class StructArrayLayout2f8 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number) {
+        const o4 = i * 2;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        return i;
+    }
 }
 
 StructArrayLayout2f8.prototype.bytesPerElement = 8;
@@ -619,6 +771,14 @@ class StructArrayLayout4f16 extends StructArray {
         return i;
     }
 
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
+        const o4 = i * 4;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        this.float32[o4 + 2] = v2;
+        this.float32[o4 + 3] = v3;
+        return i;
+    }
 }
 
 StructArrayLayout4f16.prototype.bytesPerElement = 16;

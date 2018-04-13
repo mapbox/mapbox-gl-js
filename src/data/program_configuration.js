@@ -20,6 +20,14 @@ import type {
 } from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 
+type FeaturePaintBufferMap = {
+    [feature_id: string]: {
+        index: number,
+        start: number,
+        length: number
+    }
+};
+
 function packColor(color: Color): [number, number] {
     return [
         packUint8ToFloat(255 * color.r, 255 * color.g),
@@ -278,11 +286,16 @@ export default class ProgramConfiguration {
 
     _buffers: Array<VertexBuffer>;
 
+    _idMap: FeaturePaintBufferMap;
+    _bufferPos: number;
+
     constructor() {
         this.binders = {};
         this.cacheKey = '';
 
         this._buffers = [];
+        this._idMap = {};
+        this._bufferPos = 0;
     }
 
     static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
@@ -316,10 +329,20 @@ export default class ProgramConfiguration {
         return self;
     }
 
-    populatePaintArrays(length: number, feature: Feature) {
+    populatePaintArrays(length: number, feature: Feature, index: number) {
         for (const property in this.binders) {
             this.binders[property].populatePaintArray(length, feature);
         }
+
+        if (feature.id && index) {
+            this._idMap[feature.id] = {
+                index: index,
+                start: this._bufferPos,
+                length: length
+            };
+        }
+
+        this._bufferPos = length;
     }
 
     defines(): Array<string> {
@@ -377,9 +400,9 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
         }
     }
 
-    populatePaintArrays(length: number, feature: Feature) {
+    populatePaintArrays(length: number, feature: Feature, index: number) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature);
+            this.programConfigurations[key].populatePaintArrays(length, feature, index);
         }
     }
 
