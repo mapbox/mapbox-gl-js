@@ -7,20 +7,23 @@ import type EvaluationContext from '../evaluation_context';
 import type ParsingContext from '../parsing_context';
 import type { Type } from '../types';
 
+// Flow type declarations for Intl cribbed from
+// https://github.com/facebook/flow/issues/1270
+
 declare var Intl: {
-  Collator: Class<Collator>
+  Collator: Class<Intl$Collator>
 }
 
-declare class Collator {
+declare class Intl$Collator {
   constructor (
     locales?: string | string[],
     options?: CollatorOptions
-  ): Collator;
+  ): Intl$Collator;
 
   static (
     locales?: string | string[],
     options?: CollatorOptions
-  ): Collator;
+  ): Intl$Collator;
 
   compare (a: string, b: string): number;
 
@@ -36,9 +39,10 @@ type CollatorOptions = {
   caseFirst?: 'upper' | 'lower' | 'false'
 }
 
-export class CollatorInstantiation {
+export class Collator {
     locale: string | null;
     sensitivity: 'base' | 'accent' | 'case' | 'variant';
+    collator: Intl$Collator;
 
     constructor(caseSensitive: boolean, diacriticSensitive: boolean, locale: string | null) {
         if (caseSensitive)
@@ -47,15 +51,17 @@ export class CollatorInstantiation {
             this.sensitivity = diacriticSensitive ? 'accent' : 'base';
 
         this.locale = locale;
+        this.collator = new Intl.Collator(this.locale ? this.locale : [],
+            { sensitivity: this.sensitivity, usage: 'search' });
     }
 
     compare(lhs: string, rhs: string): number {
-        return new Intl.Collator(this.locale ? this.locale : [],
-                                 { sensitivity: this.sensitivity, usage: 'search' })
-            .compare(lhs, rhs);
+        return this.collator.compare(lhs, rhs);
     }
 
     resolvedLocale(): string {
+        // We create a Collator without "usage: search" because we don't want
+        // the search options encoded in our result (e.g. "en-u-co-search")
         return new Intl.Collator(this.locale ? this.locale : [])
             .resolvedOptions().locale;
     }
@@ -97,12 +103,12 @@ export class CollatorExpression implements Expression {
         if (!caseSensitive) return null;
 
         const diacriticSensitive = context.parse(
-            options['diacriticSensitive'] === undefined ? false : options['diacriticSensitive'], 2, BooleanType);
+            options['diacriticSensitive'] === undefined ? false : options['diacriticSensitive'], 1, BooleanType);
         if (!diacriticSensitive) return null;
 
         let locale = null;
         if (options['locale']) {
-            locale = context.parse(options['locale'], 3, StringType);
+            locale = context.parse(options['locale'], 1, StringType);
             if (!locale) return null;
         }
 
@@ -110,7 +116,7 @@ export class CollatorExpression implements Expression {
     }
 
     evaluate(ctx: EvaluationContext) {
-        return new CollatorInstantiation(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
+        return new Collator(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
     }
 
     eachChild(fn: (Expression) => void) {
