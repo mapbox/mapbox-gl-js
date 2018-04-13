@@ -4,7 +4,7 @@ import { create as createSource } from './source';
 
 import Tile from './tile';
 import { Event, ErrorEvent, Evented } from '../util/evented';
-import Cache from '../util/lru_cache';
+import TileCache from './tile_cache';
 import Coordinate from '../geo/coordinate';
 import { keysDifference } from '../util/util';
 import EXTENT from '../data/extent';
@@ -44,7 +44,7 @@ class SourceCache extends Evented {
     _sourceErrored: boolean;
     _tiles: {[any]: Tile};
     _prevLng: number | void;
-    _cache: Cache<Tile>;
+    _cache: TileCache;
     _timers: {[any]: TimeoutID};
     _cacheTimers: {[any]: TimeoutID};
     _maxTileCacheSize: ?number;
@@ -86,7 +86,7 @@ class SourceCache extends Evented {
         this._source = createSource(id, options, dispatcher, this);
 
         this._tiles = {};
-        this._cache = new Cache(0, this._unloadTile.bind(this));
+        this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
         this._maxTileCacheSize = null;
@@ -208,7 +208,7 @@ class SourceCache extends Evented {
             return;
         }
 
-        this._resetCache();
+        this._cache.reset();
 
         for (const i in this._tiles) {
             this._reloadTile(i, 'reloading');
@@ -366,9 +366,9 @@ class SourceCache extends Evented {
                 retain[id] = parent;
                 return tile;
             }
-            if (this._cache.has(id)) {
+            if (this._cache.has(parent)) {
                 retain[id] = parent;
-                return this._cache.get(id);
+                return this._cache.get(parent);
             }
         }
     }
@@ -616,13 +616,9 @@ class SourceCache extends Evented {
             return tile;
 
 
-        tile = this._cache.getAndRemove((tileID.wrapped().key: any));
+        tile = this._cache.getAndRemove(tileID);
         if (tile) {
-            if (this._cacheTimers[tileID.key]) {
-                clearTimeout(this._cacheTimers[tileID.key]);
-                delete this._cacheTimers[tileID.key];
-                this._setTileReloadTimer(tileID.key, tile);
-            }
+            this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
         }
@@ -658,21 +654,6 @@ class SourceCache extends Evented {
         }
     }
 
-    _setCacheInvalidationTimer(id: string | number, tile: Tile) {
-        if (id in this._cacheTimers) {
-            clearTimeout(this._cacheTimers[id]);
-            delete this._cacheTimers[id];
-        }
-
-        const expiryTimeout = tile.getExpiryTimeout();
-        if (expiryTimeout) {
-            this._cacheTimers[id] = setTimeout(() => {
-                this._cache.remove((id: any));
-                delete this._cacheTimers[id];
-            }, expiryTimeout);
-        }
-    }
-
     /**
      * Remove a tile, given its id, from the pyramid
      * @private
@@ -693,10 +674,7 @@ class SourceCache extends Evented {
             return;
 
         if (tile.hasData()) {
-            tile.tileID = tile.tileID.wrapped();
-            const wrappedId = tile.tileID.key;
-            this._cache.add((wrappedId: any), tile);
-            this._setCacheInvalidationTimer(wrappedId, tile);
+            this._cache.add(tile.tileID, tile, tile.getExpiryTimeout());
         } else {
             tile.aborted = true;
             this._abortTile(tile);
@@ -714,14 +692,6 @@ class SourceCache extends Evented {
         for (const id in this._tiles)
             this._removeTile(id);
 
-        this._resetCache();
-    }
-
-    _resetCache() {
-        for (const id in this._cacheTimers)
-            clearTimeout(this._cacheTimers[id]);
-
-        this._cacheTimers = {};
         this._cache.reset();
     }
 
