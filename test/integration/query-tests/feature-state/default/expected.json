@@ -33,7 +33,10 @@
       "type": "secondary"
     },
     "id": 4612696,
-    "state": {}
+    "state": {
+      "stateA": 1,
+      "stateB": "feature_id as number"
+    }
   },
   {
     "geometry": {
@@ -81,6 +84,13 @@
       "type": "residential"
     },
     "id": 4612752,
-    "state": {}
+    "state": {
+      "stateB": {
+        "stateKey": [
+          4,
+          2
+        ]
+      }
+    }
   }
 ]

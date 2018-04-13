@@ -21,12 +21,14 @@ class SourceFeatureState {
     }
 
     setState(feature: string, key: string, value: any, sourceLayer: string) {
+        feature = String(feature);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         this.stateChanges[sourceLayer][feature][key] = value;
     }
 
     getState(feature: string, key?: string, sourceLayer: string) {
+        feature = String(feature);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
 

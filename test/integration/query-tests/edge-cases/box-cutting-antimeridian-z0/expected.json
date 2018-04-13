@@ -10,7 +10,8 @@
     "type": "Feature",
     "properties": {
       "id": "B"
-    }
+    },
+    "state": {}
   },
   {
     "geometry": {
@@ -23,6 +24,7 @@
     "type": "Feature",
     "properties": {
       "id": "C"
-    }
+    },
+    "state": {}
   }
 ]

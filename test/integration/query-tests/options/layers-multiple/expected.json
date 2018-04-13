@@ -1,6 +1,5 @@
 [
   {
-    "type": "Feature",
     "geometry": {
       "type": "Point",
       "coordinates": [
@@ -8,12 +7,13 @@
         0
       ]
     },
+    "type": "Feature",
     "properties": {
       "key": "value"
-    }
+    },
+    "state": {}
   },
   {
-    "type": "Feature",
     "geometry": {
       "type": "Point",
       "coordinates": [
@@ -21,8 +21,10 @@
         0
       ]
     },
+    "type": "Feature",
     "properties": {
       "key": "value"
-    }
+    },
+    "state": {}
   }
 ]
