@@ -6,6 +6,7 @@ import type Coordinate from '../geo/coordinate';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type { RetainedQueryData } from '../symbol/placement';
+import assert from 'assert';
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
@@ -56,9 +57,31 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
                 params.filter,
                 params.layers,
                 styleLayers);
+
         for (const layerID in bucketSymbols) {
             const resultFeatures = result[layerID] = result[layerID] || [];
-            for (const symbolFeature of bucketSymbols[layerID]) {
+            const layerSymbols = bucketSymbols[layerID];
+            layerSymbols.sort((a, b) => {
+                // Match topDownFeatureComparator from FeatureIndex, but using
+                // most recent sorting of features from bucket.sortFeatures
+                const featureSortOrder = queryData.featureSortOrder;
+                if (featureSortOrder) {
+                    // queryRenderedSymbols documentation says we'll return features in
+                    // "top-to-bottom" rendering order (aka last-to-first).
+                    // Actually there can be multiple symbol instances per feature, so
+                    // we sort each feature based on the first matching symbol instance.
+                    const sortedA = featureSortOrder.indexOf(a.featureIndex);
+                    const sortedB = featureSortOrder.indexOf(b.featureIndex);
+                    assert(sortedA >= 0);
+                    assert(sortedB >= 0);
+                    return sortedB - sortedA;
+                } else {
+                    // Bucket hasn't been re-sorted based on angle, so use the
+                    // reverse of the order the features appeared in the data.
+                    return b.featureIndex - a.featureIndex;
+                }
+            });
+            for (const symbolFeature of layerSymbols) {
                 resultFeatures.push(symbolFeature.feature);
             }
         }

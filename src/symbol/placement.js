@@ -68,6 +68,7 @@ export class RetainedQueryData {
     sourceLayerIndex: number;
     bucketIndex: number;
     tileID: OverscaledTileID;
+    featureSortOrder: ?Array<number>
 
     constructor(bucketInstanceId: number,
                 featureIndex: FeatureIndex,
@@ -393,6 +394,9 @@ export class Placement {
         }
 
         bucket.sortFeatures(this.transform.angle);
+        if (this.retainedQueryData[bucket.bucketInstanceId]) {
+            this.retainedQueryData[bucket.bucketInstanceId].featureSortOrder = bucket.featureSortOrder;
+        }
 
         if (bucket.hasTextData() && bucket.text.opacityVertexBuffer) {
             bucket.text.opacityVertexBuffer.updateData(bucket.text.opacityVertexArray);

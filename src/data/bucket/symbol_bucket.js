@@ -279,6 +279,7 @@ class SymbolBucket implements Bucket {
     fadeStartTime: number;
     sortFeaturesByY: boolean;
     sortedAngle: number;
+    featureSortOrder: Array<number>;
 
     text: SymbolBuffers;
     icon: SymbolBuffers;
@@ -656,8 +657,11 @@ class SymbolBucket implements Bucket {
         this.text.indexArray.clear();
         this.icon.indexArray.clear();
 
+        this.featureSortOrder = [];
+
         for (const i of symbolInstanceIndexes) {
             const symbolInstance = this.symbolInstances[i];
+            this.featureSortOrder.push(symbolInstance.featureIndex);
 
             for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
                 const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
