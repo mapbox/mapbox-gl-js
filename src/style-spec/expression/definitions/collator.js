@@ -61,13 +61,13 @@ export class CollatorInstantiation {
     }
 
     serialize() {
-        const serialized = ["collator"];
-        serialized.push(this.sensitivity === 'variant' || this.sensitivity === 'case');
-        serialized.push(this.sensitivity === 'variant' || this.sensitivity === 'accent');
+        const options = {};
+        options['caseSensitive'] = this.sensitivity === 'variant' || this.sensitivity === 'case';
+        options['diacriticSensitive'] = this.sensitivity === 'variant' || this.sensitivity === 'accent';
         if (this.locale) {
-            serialized.push(this.locale);
+            options['locale'] = this.locale;
         }
-        return serialized;
+        return ["collator", options];
     }
 }
 
@@ -85,17 +85,24 @@ export class CollatorExpression implements Expression {
     }
 
     static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
-        if (args.length !== 3 && args.length !== 4)
-            return context.error(`Expected two or three arguments.`);
+        if (args.length !== 2)
+            return context.error(`Expected one argument.`);
 
-        const caseSensitive = context.parse(args[1], 1, BooleanType);
+        const options = (args[1]: any);
+        if (typeof options !== "object" || Array.isArray(options))
+            return context.error(`Collator options argument must be an object.`);
+
+        const caseSensitive = context.parse(
+            options['caseSensitive'] === undefined ? false : options['caseSensitive'], 1, BooleanType);
         if (!caseSensitive) return null;
-        const diacriticSensitive = context.parse(args[2], 2, BooleanType);
+
+        const diacriticSensitive = context.parse(
+            options['diacriticSensitive'] === undefined ? false : options['diacriticSensitive'], 2, BooleanType);
         if (!diacriticSensitive) return null;
 
         let locale = null;
-        if (args.length === 4) {
-            locale = context.parse(args[3], 3, StringType);
+        if (options['locale']) {
+            locale = context.parse(options['locale'], 3, StringType);
             if (!locale) return null;
         }
 
@@ -123,8 +130,12 @@ export class CollatorExpression implements Expression {
     }
 
     serialize() {
-        const serialized = ["collator"];
-        this.eachChild(child => { serialized.push(child.serialize()); });
-        return serialized;
+        const options = {};
+        options['caseSensitive'] = this.caseSensitive;
+        options['diacriticSensitive'] = this.diacriticSensitive;
+        if (this.locale) {
+            options['locale'] = this.locale;
+        }
+        return ["collator", options];
     }
 }

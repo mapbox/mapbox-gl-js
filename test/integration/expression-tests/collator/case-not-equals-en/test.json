@@ -5,7 +5,10 @@
       "!=",
       ["string", ["get", "lhs"]],
       ["get", "rhs"],
-      ["collator", false, true, "en"]
+      [
+        "collator",
+        {"caseSensitive": false, "diacriticSensitive": true, "locale": "en"}
+      ]
     ]
   ],
   "inputs": [
@@ -27,7 +30,10 @@
         "!=",
         ["string", ["get", "lhs"]],
         ["get", "rhs"],
-        ["collator", false, true, "en"]
+        [
+          "collator",
+          {"caseSensitive": false, "diacriticSensitive": true, "locale": "en"}
+        ]
       ]
     ]
   }

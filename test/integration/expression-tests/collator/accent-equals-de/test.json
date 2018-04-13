@@ -1,12 +1,25 @@
 {
   "expression": [
     "case",
-    ["==", ["resolved-locale", ["collator", true, false, "de"]], "de"],
+    [
+      "==",
+      [
+        "resolved-locale",
+        [
+          "collator",
+          {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+        ]
+      ],
+      "de"
+    ],
     [
       "==",
       ["string", ["get", "lhs"]],
       ["get", "rhs"],
-      ["collator", true, false, "de"]
+      [
+        "collator",
+        {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+      ]
     ],
     ["case", ["==", ["get", "rhs"], "ue"], true, false]
   ],
@@ -24,12 +37,15 @@
     "outputs": [true, false],
     "serialized": [
       "case",
-      ["==", ["resolved-locale", ["collator", true, false, "de"]], "de"],
+      false,
       [
         "==",
         ["string", ["get", "lhs"]],
         ["get", "rhs"],
-        ["collator", true, false, "de"]
+        [
+          "collator",
+          {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+        ]
       ],
       ["case", ["==", ["get", "rhs"], "ue"], true, false]
     ]

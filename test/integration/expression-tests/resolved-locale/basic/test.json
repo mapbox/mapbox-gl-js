@@ -1,7 +1,13 @@
 {
   "expression": [
     "==",
-    ["resolved-locale", ["collator", true, true, "en"]],
+    [
+      "resolved-locale",
+      [
+        "collator",
+        {"caseSensitive": true, "diacriticSensitive": true, "locale": "en"}
+      ]
+    ],
     "en"
   ],
   "inputs": [[{}, {}]],
@@ -13,10 +19,6 @@
       "type": "boolean"
     },
     "outputs": [true],
-    "serialized": [
-      "==",
-      ["resolved-locale", ["collator", true, true, "en"]],
-      "en"
-    ]
+    "serialized": true
   }
 }
