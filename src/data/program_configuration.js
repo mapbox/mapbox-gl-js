@@ -388,16 +388,14 @@ export default class ProgramConfiguration {
     }
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layer: TypedStyleLayer): boolean {
-        let dirty: boolean= false;
+        let dirty: boolean = false;
         for (const id in featureStates) {
             const pos = this._idMap[id];
 
             if (pos) {
                 const feature = vtLayer.feature(pos.index);
-                //TODO: AHM: Switch to state?
-                for (const key in featureStates[id]) {
-                    feature.properties[key] = featureStates[id][key];
-                }
+                feature.state = featureStates[id];
+
                 for (const property in this.binders) {
                     const binder: Binder<any> = this.binders[property];
                     //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255

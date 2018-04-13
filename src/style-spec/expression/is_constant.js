@@ -8,6 +8,8 @@ function isFeatureConstant(e: Expression) {
     if (e instanceof CompoundExpression) {
         if (e.name === 'get' && e.args.length === 1) {
             return false;
+        } else if (e.name === 'state' && e.args.length === 1) {
+            return false;
         } else if (e.name === 'has' && e.args.length === 1) {
             return false;
         } else if (

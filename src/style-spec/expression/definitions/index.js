@@ -169,6 +169,15 @@ CompoundExpression.register(expressions, {
             ]
         ]
     },
+    'state': {
+        type: ValueType,
+        overloads: [
+            [
+                [StringType],
+                (ctx, [key]) => get(key.evaluate(ctx), ctx.state())
+            ]
+        ]
+    },
     'properties': [
         ObjectType,
         [],
