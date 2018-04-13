@@ -11,6 +11,9 @@ const types = {
         parameters: ['string', 'string']
     }, {
         type: 'boolean',
+        parameters: ['string', 'string', 'collator']
+    }, {
+        type: 'boolean',
         parameters: ['number', 'number']
     }, {
         type: 'boolean',
@@ -23,6 +26,9 @@ const types = {
         parameters: ['string', 'value']
     }, {
         type: 'boolean',
+        parameters: ['string', 'value', 'collator']
+    }, {
+        type: 'boolean',
         parameters: ['number', 'value']
     }, {
         type: 'boolean',
@@ -33,6 +39,9 @@ const types = {
     }, {
         type: 'boolean',
         parameters: ['value', 'string']
+    }, {
+        type: 'boolean',
+        parameters: ['value', 'string', 'collator']
     }, {
         type: 'boolean',
         parameters: ['value', 'number']
@@ -48,6 +57,9 @@ const types = {
         parameters: ['string', 'string']
     }, {
         type: 'boolean',
+        parameters: ['string', 'string', 'collator']
+    }, {
+        type: 'boolean',
         parameters: ['number', 'number']
     }, {
         type: 'boolean',
@@ -60,6 +72,9 @@ const types = {
         parameters: ['string', 'value']
     }, {
         type: 'boolean',
+        parameters: ['string', 'value', 'collator']
+    }, {
+        type: 'boolean',
         parameters: ['number', 'value']
     }, {
         type: 'boolean',
@@ -70,6 +85,9 @@ const types = {
     }, {
         type: 'boolean',
         parameters: ['value', 'string']
+    }, {
+        type: 'boolean',
+        parameters: ['value', 'string', 'collator']
     }, {
         type: 'boolean',
         parameters: ['value', 'number']
@@ -190,6 +208,20 @@ const types = {
     var: [{
         type: 'the type of the bound expression',
         parameters: ['previously bound variable name']
+    }],
+    collator: [{
+        type: 'collator',
+        parameters: [
+            'caseSensitive: boolean',
+            'diacriticSensitive: boolean',
+        ]
+    }, {
+        type: 'collator',
+        parameters: [
+            'caseSensitive: boolean',
+            'diacriticSensitive: boolean',
+            'locale: string'
+        ]
     }]
 };
 

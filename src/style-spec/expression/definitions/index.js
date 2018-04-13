@@ -1,6 +1,6 @@
 // @flow
 
-import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, array, toString } from '../types';
+import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, CollatorType, array, toString } from '../types';
 
 import { typeOf, Color, validateRGBA } from '../values';
 import CompoundExpression from '../compound_expression';
@@ -18,6 +18,7 @@ import Step from './step';
 import Interpolate from './interpolate';
 import Coalesce from './coalesce';
 import { Equals, NotEquals } from './equals';
+import { CollatorExpression } from './collator';
 import Length from './length';
 
 import type { Type } from '../types';
@@ -33,6 +34,7 @@ const expressions: ExpressionRegistry = {
     'boolean': Assertion,
     'case': Case,
     'coalesce': Coalesce,
+    'collator': CollatorExpression,
     'interpolate': Interpolate,
     'length': Length,
     'let': Let,
@@ -70,6 +72,11 @@ function lt(ctx, [a, b]) { return a.evaluate(ctx) < b.evaluate(ctx); }
 function gt(ctx, [a, b]) { return a.evaluate(ctx) > b.evaluate(ctx); }
 function lteq(ctx, [a, b]) { return a.evaluate(ctx) <= b.evaluate(ctx); }
 function gteq(ctx, [a, b]) { return a.evaluate(ctx) >= b.evaluate(ctx); }
+
+function ltCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) < 0; }
+function gtCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) > 0; }
+function lteqCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) <= 0; }
+function gteqCollate(ctx, [a, b, c]) { return c.evaluate(ctx).compare(a.evaluate(ctx), b.evaluate(ctx)) >= 0; }
 
 function binarySearch(v, a, i, j) {
     while (i <= j) {
@@ -463,28 +470,32 @@ CompoundExpression.register(expressions, {
         type: BooleanType,
         overloads: [
             [[NumberType, NumberType], gt],
-            [[StringType, StringType], gt]
+            [[StringType, StringType], gt],
+            [[StringType, StringType, CollatorType], gtCollate]
         ]
     },
     '<': {
         type: BooleanType,
         overloads: [
             [[NumberType, NumberType], lt],
-            [[StringType, StringType], lt]
+            [[StringType, StringType], lt],
+            [[StringType, StringType, CollatorType], ltCollate]
         ]
     },
     '>=': {
         type: BooleanType,
         overloads: [
             [[NumberType, NumberType], gteq],
-            [[StringType, StringType], gteq]
+            [[StringType, StringType], gteq],
+            [[StringType, StringType, CollatorType], gteqCollate]
         ]
     },
     '<=': {
         type: BooleanType,
         overloads: [
             [[NumberType, NumberType], lteq],
-            [[StringType, StringType], lteq]
+            [[StringType, StringType], lteq],
+            [[StringType, StringType, CollatorType], lteqCollate]
         ]
     },
     'all': {
@@ -544,6 +555,12 @@ CompoundExpression.register(expressions, {
         StringType,
         varargs(StringType),
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
+    ],
+    'resolved-locale': [
+        // Must be added to non-featureConstant list in parsing_context.js
+        StringType,
+        [CollatorType],
+        (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
     ]
 });
 

@@ -1,0 +1,11 @@
+{
+  "expression": ["<", 1, 2, ["collator", false, false]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {"key": "[1]", "error": "Expected string but found number instead."}
+      ]
+    }
+  }
+}
