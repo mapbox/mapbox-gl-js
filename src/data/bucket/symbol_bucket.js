@@ -18,6 +18,7 @@ import Anchor from '../../symbol/anchor';
 import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import { PossiblyEvaluatedPropertyValue } from '../../style/properties';
 
 import type {
     Bucket,
@@ -288,6 +289,9 @@ class SymbolBucket implements Bucket {
     collisionCircle: CollisionBuffers;
     uploaded: boolean;
     sourceLayerIndex: number;
+    changed: boolean;
+    stateDependentText: boolean;
+    stateDependentIcon: boolean;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -313,6 +317,22 @@ class SymbolBucket implements Bucket {
     createArrays() {
         this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
         this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
+
+        this.layers.forEach((layer) => {
+            for (const property in layer.paint._values) {
+                const value = layer.paint.get(property);
+                if (!(value instanceof PossiblyEvaluatedPropertyValue) || !value.property.specification['property-function']) {
+                    continue;
+                }
+
+                if ((value.value.kind === 'source' || value.value.kind === 'composite') &&
+                    value.value.isStateDependent) {
+                    if (/^text/.test(property.name)) this.stateDependentText = true;
+                    else if (/^icon/.test(property.name)) this.stateDependentIcon = true;
+                }
+            }
+        });
+
         this.collisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.collisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
 
@@ -405,12 +425,10 @@ class SymbolBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
-        //TODO: AHM: Determine if layers have state dependent paint properties!
-        const affectedLayers = this.layers;
-        let changed = this.text.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
-        changed = changed || this.icon.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
-        if (changed) {
-            this.uploaded = false;
+        if (this.stateDependentText) {
+            this.changed = this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
+        } if (this.stateDependentIcon) {
+            this.changed = this.changed || this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
         }
     }
 
@@ -418,11 +436,19 @@ class SymbolBucket implements Bucket {
         return this.symbolInstances.length === 0;
     }
 
+    uploadPending() {
+        return !this.uploaded || this.changed;
+    }
+
     upload(context: Context) {
+        if (!this.uploaded) {
+            this.collisionBox.upload(context);
+            this.collisionCircle.upload(context);
+        }
         this.text.upload(context, this.sortFeaturesByY);
         this.icon.upload(context, this.sortFeaturesByY);
-        this.collisionBox.upload(context);
-        this.collisionCircle.upload(context);
+        this.uploaded = true;
+        this.changed = false;
     }
 
     destroy() {

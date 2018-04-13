@@ -30,6 +30,19 @@ function isFeatureConstant(e: Expression) {
     return result;
 }
 
+function isStateConstant(e: Expression) {
+    if (e instanceof CompoundExpression) {
+        if (e.name === 'state' && e.args.length === 1) {
+            return false;
+        }
+    }
+    let result = true;
+    e.eachChild(arg => {
+        if (result && !isStateConstant(arg)) { result = false; }
+    });
+    return result;
+}
+
 function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
     if (e instanceof CompoundExpression && properties.indexOf(e.name) >= 0) { return false; }
     let result = true;
@@ -39,4 +52,4 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>) {
     return result;
 }
 
-export { isFeatureConstant, isGlobalPropertyConstant };
+export { isFeatureConstant, isGlobalPropertyConstant, isStateConstant };

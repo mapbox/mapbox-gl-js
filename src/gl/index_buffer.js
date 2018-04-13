@@ -15,7 +15,7 @@ class IndexBuffer {
         this.context = context;
         const gl = context.gl;
         this.buffer = gl.createBuffer();
-        this.dynamicDraw = true; //Boolean(dynamicDraw);
+        this.dynamicDraw = dynamicDraw;
 
         this.unbindVAO();
 

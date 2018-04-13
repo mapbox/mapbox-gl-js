@@ -61,7 +61,7 @@ export interface Bucket {
     isEmpty(): boolean;
 
     upload(context: Context): void;
-    uploaded: boolean;
+    uploadPending(): boolean;
 
     /**
      * Release the WebGL resources associated with the buffers. Note that because

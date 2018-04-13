@@ -33,6 +33,7 @@ class FillBucket implements Bucket {
     overscaling: number;
     layers: Array<FillStyleLayer>;
     layerIds: Array<string>;
+    stateDependent: boolean;
 
     layoutVertexArray: FillLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -47,6 +48,7 @@ class FillBucket implements Bucket {
     segments: SegmentVector;
     segments2: SegmentVector;
     uploaded: boolean;
+    changed: boolean;
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
@@ -54,6 +56,7 @@ class FillBucket implements Bucket {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
+        this.stateDependent = this.layers[0].isStateDependent();
 
         this.layoutVertexArray = new FillLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -74,23 +77,26 @@ class FillBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
-        //TODO: AHM: Determine if layers have state dependent paint properties!
-        const affectedLayers = this.layers;
-        const changed = this.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
-        if (changed) {
-            this.uploaded = false;
-        }
+        if (!this.stateDependent) return;
+        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
     }
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
 
+    uploadPending(): boolean {
+        return !this.uploaded || this.changed;
+    }
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray);
-        this.indexBuffer2 = context.createIndexBuffer(this.indexArray2);
+        if (!this.uploaded) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+            this.indexBuffer2 = context.createIndexBuffer(this.indexArray2);
+        }
         this.programConfigurations.upload(context);
+        this.uploaded = true;
+        this.changed = false;
     }
 
     destroy() {

@@ -183,7 +183,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
 
     upload(context: Context) {
         if (this.paintVertexArray) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes);
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
         }
     }
 
@@ -278,7 +278,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     upload(context: Context) {
         if (this.paintVertexArray) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes);
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
         }
     }
 
@@ -398,9 +398,9 @@ export default class ProgramConfiguration {
 
                 for (const property in this.binders) {
                     const binder: Binder<any> = this.binders[property];
-                    //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
-                    const value = layer.paint.get(property);
-                    if (binder.expression) {
+                    if (binder.expression && binder.expression.isStateDependent === true) {
+                        //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
+                        const value = layer.paint.get(property);
                         binder.expression = value.value;
                         binder.updatePaintArray(pos.start, pos.length, feature);
                         dirty = true;

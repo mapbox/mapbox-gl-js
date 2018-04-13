@@ -175,7 +175,9 @@ class SourceCache extends Evented {
         const hasChanges = Object.keys(changedFeatureStates).length > 0;
 
         for (const i in this._tiles) {
-            if (hasChanges) this._tiles[i].updateFeatureState(changedFeatureStates);
+            if (hasChanges) {
+                this._tiles[i].updateFeatureState(changedFeatureStates);
+            }
             this._tiles[i].upload(context);
         }
     }

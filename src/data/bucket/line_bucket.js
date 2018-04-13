@@ -95,6 +95,7 @@ class LineBucket implements Bucket {
     overscaling: number;
     layers: Array<LineStyleLayer>;
     layerIds: Array<string>;
+    stateDependent: boolean;
 
     layoutVertexArray: LineLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -105,6 +106,7 @@ class LineBucket implements Bucket {
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
+    changed: boolean;
 
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
@@ -112,6 +114,7 @@ class LineBucket implements Bucket {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
+        this.stateDependent = this.layers[0].isStateDependent();
 
         this.layoutVertexArray = new LineLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -130,22 +133,26 @@ class LineBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
-        //TODO: AHM: Determine if layers have state dependent paint properties!
-        const affectedLayers = this.layers;
-        const changed = this.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
-        if (changed) {
-            this.uploaded = false;
-        }
+        if (!this.stateDependent) return;
+        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
     }
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
 
+    uploadPending() {
+        return !this.uploaded || this.change;
+    }
+
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        if (!this.uploaded) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        }
         this.programConfigurations.upload(context);
+        this.changed = false;
+        this.uploaded = true;
     }
 
     destroy() {

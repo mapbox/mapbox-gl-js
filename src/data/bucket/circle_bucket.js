@@ -45,6 +45,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     overscaling: number;
     layerIds: Array<string>;
     layers: Array<Layer>;
+    stateDependent: boolean;
 
     layoutVertexArray: CircleLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -55,6 +56,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     programConfigurations: ProgramConfigurationSet<Layer>;
     segments: SegmentVector;
     uploaded: boolean;
+    changed: boolean;
 
     constructor(options: BucketParameters<Layer>) {
         this.zoom = options.zoom;
@@ -62,6 +64,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
+        this.stateDependent = this.layers[0].isStateDependent();
 
         this.layoutVertexArray = new CircleLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -80,22 +83,26 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer) {
-        //TODO: AHM: Determine if layers have state dependent paint properties!
-        const affectedLayers = this.layers;
-        const changed = this.programConfigurations.updatePaintArrays(states, vtLayer, affectedLayers);
-        if (changed) {
-            this.uploaded = false;
-        }
+        if (!this.stateDependent) return;
+        this.changed = this.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
     }
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
 
+    uploadPending() {
+        return !this.uploaded || this.changed;
+    }
+
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        if (!this.uploaded) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        }
         this.programConfigurations.upload(context);
+        this.uploaded = true;
+        this.changed = false;
     }
 
     destroy() {
