@@ -7,10 +7,10 @@ import * as interpolate from '../style-spec/util/interpolate';
 import { normalizePropertyExpression } from '../style-spec/expression';
 import Color from '../style-spec/util/color';
 import { register } from '../util/web_worker_transfer';
+import EvaluationParameters from './evaluation_parameters';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
-import type EvaluationParameters from './evaluation_parameters';
 
 import type {
     Feature,
@@ -598,9 +598,9 @@ export class CrossFadedProperty<T> implements Property<T, ?CrossFaded<T>> {
         } else {
             assert(!value.isDataDriven());
             return this._calculate(
-                value.expression.evaluate({zoom: Math.floor(parameters.zoom - 1.0)}),
-                value.expression.evaluate({zoom: Math.floor(parameters.zoom)}),
-                value.expression.evaluate({zoom: Math.floor(parameters.zoom + 1.0)}),
+                value.expression.evaluate(new EvaluationParameters(Math.floor(parameters.zoom - 1.0), parameters)),
+                value.expression.evaluate(new EvaluationParameters(Math.floor(parameters.zoom), parameters)),
+                value.expression.evaluate(new EvaluationParameters(Math.floor(parameters.zoom + 1.0), parameters)),
                 parameters);
         }
     }

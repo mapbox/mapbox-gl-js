@@ -1,6 +1,8 @@
 // @flow
 
 import ZoomHistory from './zoom_history';
+import {isStringInSupportedScript} from '../util/script_detection';
+import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
 
 class EvaluationParameters {
     zoom: number;
@@ -9,6 +11,7 @@ class EvaluationParameters {
     zoomHistory: ZoomHistory;
     transition: TransitionSpecification;
 
+    // "options" may also be another EvaluationParameters to copy, see CrossFadedProperty.possiblyEvaluate
     constructor(zoom: number, options?: *) {
         this.zoom = zoom;
 
@@ -23,6 +26,10 @@ class EvaluationParameters {
             this.zoomHistory = new ZoomHistory();
             this.transition = {};
         }
+    }
+
+    isSupportedScript(str: string): boolean {
+        return isStringInSupportedScript(str, rtlTextPlugin.isLoaded());
     }
 
     crossFadingFactor() {

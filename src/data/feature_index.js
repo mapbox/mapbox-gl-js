@@ -13,6 +13,7 @@ import GeoJSONFeature from '../util/vectortile_to_geojson';
 import { arraysIntersect } from '../util/util';
 import { OverscaledTileID } from '../source/tile_id';
 import { register } from '../util/web_worker_transfer';
+import EvaluationParameters from '../style/evaluation_parameters';
 
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
@@ -163,7 +164,7 @@ class FeatureIndex {
         const sourceLayer = this.vtLayers[sourceLayerName];
         const feature = sourceLayer.feature(featureIndex);
 
-        if (!filter({zoom: this.tileID.overscaledZ}, feature))
+        if (!filter(new EvaluationParameters(this.tileID.overscaledZ), feature))
             return;
 
         for (let l = 0; l < layerIDs.length; l++) {

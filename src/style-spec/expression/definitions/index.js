@@ -541,6 +541,18 @@ CompoundExpression.register(expressions, {
         [BooleanType],
         (ctx, [b]) => !b.evaluate(ctx)
     ],
+    'is-supported-script': [
+        BooleanType,
+        [StringType],
+        // At parse time this will always return true, so we need to exclude this expression with isGlobalPropertyConstant
+        (ctx, [s]) => {
+            const isSupportedScript = ctx.globals && ctx.globals.isSupportedScript;
+            if (isSupportedScript) {
+                return isSupportedScript(s.evaluate(ctx));
+            }
+            return true;
+        }
+    ],
     'upcase': [
         StringType,
         [StringType],
