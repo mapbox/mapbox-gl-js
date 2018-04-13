@@ -1,5 +1,10 @@
 {
-  "expression": ["==", 1, 2, ["collator", false, false]],
+  "expression": [
+    "==",
+    1,
+    2,
+    ["collator", {"caseSensitive": false, "diacriticSensitive": false}]
+  ],
   "expected": {
     "compiled": {
       "result": "error",

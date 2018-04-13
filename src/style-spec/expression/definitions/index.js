@@ -557,7 +557,6 @@ CompoundExpression.register(expressions, {
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
     ],
     'resolved-locale': [
-        // Must be added to non-featureConstant list in parsing_context.js
         StringType,
         [CollatorType],
         (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()

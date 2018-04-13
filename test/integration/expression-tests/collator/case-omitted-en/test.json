@@ -1,16 +1,14 @@
 {
   "expression": [
-    "<",
+    "==",
     ["string", ["get", "lhs"]],
     ["get", "rhs"],
-    [
-      "collator",
-      {"caseSensitive": true, "diacriticSensitive": false, "locale": "en"}
-    ]
+    ["collator", {"diacriticSensitive": true, "locale": "en"}]
   ],
   "inputs": [
-    [{}, {"properties": {"lhs": "a", "rhs": "ä"}}],
-    [{}, {"properties": {"lhs": "a", "rhs": "A"}}],
+    [{}, {"properties": {"lhs": "ä", "rhs": "a"}}],
+    [{}, {"properties": {"lhs": "A", "rhs": "a"}}],
+    [{}, {"properties": {"lhs": "a", "rhs": "a"}}],
     [{}, {"properties": {"lhs": "ä", "rhs": "b"}}]
   ],
   "expected": {
@@ -20,14 +18,14 @@
       "isZoomConstant": true,
       "type": "boolean"
     },
-    "outputs": [false, true, true],
+    "outputs": [false, true, true, false],
     "serialized": [
-      "<",
+      "==",
       ["string", ["get", "lhs"]],
-      ["string", ["get", "rhs"]],
+      ["get", "rhs"],
       [
         "collator",
-        {"caseSensitive": true, "diacriticSensitive": false, "locale": "en"}
+        {"caseSensitive": false, "diacriticSensitive": true, "locale": "en"}
       ]
     ]
   }
