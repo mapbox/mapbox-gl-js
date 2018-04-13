@@ -149,5 +149,23 @@ test('hash', (t) => {
         t.end();
     });
 
+    t.test('map#remove', (t) => {
+        const container = window.document.createElement('div');
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
+
+        const map = new Map({
+            container,
+            center: [-74.50, 40],
+            zoom: 9,
+            hash: true,
+        });
+
+        map.remove();
+
+        t.ok(map);
+        t.end();
+    });
+
     t.end();
 });
