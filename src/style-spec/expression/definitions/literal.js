@@ -1,9 +1,7 @@
 // @flow
 
 import assert from 'assert';
-import { isValue, typeOf } from '../values';
-import Color from '../../util/color';
-import { CollatorInstantiation } from '../definitions/collator';
+import { isValue, typeOf, Color, Collator } from '../values';
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
@@ -58,8 +56,13 @@ class Literal implements Expression {
         if (this.type.kind === 'array' || this.type.kind === 'object') {
             return ["literal", this.value];
         } else if (this.value instanceof Color) {
+            // Constant-folding can generate Literal expressions that you
+            // couldn't actually generate with a "literal" expression,
+            // so we have to implement an equivalent serialization here
             return ["rgba"].concat(this.value.toArray());
-        } else if (this.value instanceof CollatorInstantiation) {
+        } else if (this.value instanceof Collator) {
+            // Same as Color above: literal serialization delegated to
+            // Collator (not CollatorExpression)
             return this.value.serialize();
         } else {
             assert(this.value === null ||

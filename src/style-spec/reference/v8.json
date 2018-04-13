@@ -2164,7 +2164,7 @@
         }
       },
       "collator": {
-        "doc": "Returns a `collator` for use in locale dependent comparison operations. The `caseSensitive` and `diacriticSensitive` options default to `false`. The `locale` argument specifies the IETF language tag of the locale to use. If none is provided, the default locale is used. If the requested locale is not available, the `collator` will use a system-defined fallback locale. Use `resolved-locale` to test the results of locale fallback behavior.",
+        "doc": "Returns a `collator` for use in locale-dependent comparison operations. The `caseSensitive` and `diacriticSensitive` options default to `false`. The `locale` argument specifies the IETF language tag of the locale to use. If none is provided, the default locale is used. If the requested locale is not available, the `collator` will use a system-defined fallback locale. Use `resolved-locale` to test the results of locale fallback behavior.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {

@@ -3,7 +3,8 @@
 import assert from 'assert';
 
 import Color from '../util/color';
-import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, array } from './types';
+import { Collator } from './definitions/collator';
+import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, array } from './types';
 
 import type { Type } from './types';
 
@@ -26,7 +27,7 @@ export function validateRGBA(r: mixed, g: mixed, b: mixed, a?: mixed): ?string {
     return null;
 }
 
-export type Value = null | string | boolean | number | Color | $ReadOnlyArray<Value> | { +[string]: Value }
+export type Value = null | string | boolean | number | Color | Collator | $ReadOnlyArray<Value> | { +[string]: Value }
 
 export function isValue(mixed: mixed): boolean {
     if (mixed === null) {
@@ -38,6 +39,8 @@ export function isValue(mixed: mixed): boolean {
     } else if (typeof mixed === 'number') {
         return true;
     } else if (mixed instanceof Color) {
+        return true;
+    } else if (mixed instanceof Collator) {
         return true;
     } else if (Array.isArray(mixed)) {
         for (const item of mixed) {
@@ -69,6 +72,8 @@ export function typeOf(value: Value): Type {
         return NumberType;
     } else if (value instanceof Color) {
         return ColorType;
+    } else if (value instanceof Collator) {
+        return CollatorType;
     } else if (Array.isArray(value)) {
         const length = value.length;
         let itemType: ?Type;
@@ -92,4 +97,4 @@ export function typeOf(value: Value): Type {
     }
 }
 
-export {Color};
+export { Color, Collator };
