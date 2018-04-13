@@ -481,7 +481,7 @@ export class ProgramConfigurationSet<Layer: TypedStyleLayer> {
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: $ReadOnlyArray<TypedStyleLayer>) {
         for (const layer of layers) {
-            this.needsUpload =  this.needsUpload || this.programConfigurations[layer.id].updatePaintArrays(featureStates, vtLayer, layer);
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, vtLayer, layer) || this.needsUpload;
         }
     }
 

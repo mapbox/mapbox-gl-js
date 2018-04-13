@@ -1392,11 +1392,11 @@ class Map extends Camera {
      * @param {string | {sourceId: string, sourceLayer: string}} source *For vector tile sources, the sourceLayer is
      *  required.* For GeoJSON sources, just the source id.
      * @param {string} feature The unique feature identifier from the source data.
-     * @param {string} key (optional) The name of the state. When null, all state values are returned.
+     * @param {string} key The name of the state.
      * 
-     * @returns {any} The value of the specified specified state or all states.
+     * @returns {any} The value of the specified specified state.
      */
-    getFeatureState(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key?: string): any {
+    getFeatureState(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string): any {
         return this.style.getFeatureState(source, feature, key);
     }
 

@@ -787,7 +787,7 @@ class Style extends Evented {
         sourceCache.setFeatureState(sourceLayer, feature, key, value);
     }
 
-    getFeatureState(source: string | { sourceId: string, sourceLayer: string }, feature: string, key?: string) {
+    getFeatureState(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string) {
         this._checkLoaded();
         const sourceId = typeof source === 'string' ? source : source.sourceId;
         let sourceLayer = typeof source == 'object' ? source.sourceLayer : '';
@@ -803,6 +803,10 @@ class Style extends Evented {
             return;
         } else if (sourceType === 'geojson') {
             sourceLayer = '_geojsonTileLayer';
+        }
+        if (!key) {
+            this.fire(new ErrorEvent(new Error(`The key parameter must be provided.`)));
+            return;
         }
 
         return sourceCache.getFeatureState(sourceLayer, feature, key);
