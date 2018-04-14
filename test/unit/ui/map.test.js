@@ -1215,7 +1215,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#setFeatureState', (t) => {
+    t.test('#setFeatureStateValue', (t) => {
         t.test('sets state', (t) => {
             const map = createMap({
                 style: {
@@ -1227,10 +1227,10 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState('geojson', '12345', 'hover', true);
-                t.equal(map.getFeatureState('geojson', '12345', 'hover'), true);
-                t.equal(map.getFeatureState({ sourceId: 'geojson' }, '12345', 'hover'), true);
-                t.equal(map.getFeatureState({ sourceId: 'geojson', sourceLayer: 'source-layer'}, '12345', 'hover'), true);
+                map.setFeatureStateValue('geojson', '12345', 'hover', true);
+                t.equal(map.getFeatureStateValue('geojson', '12345', 'hover'), true);
+                t.equal(map.getFeatureStateValue({ sourceId: 'geojson' }, '12345', 'hover'), true);
+                t.equal(map.getFeatureStateValue({ sourceId: 'geojson', sourceLayer: 'source-layer'}, '12345', 'hover'), true);
                 t.end();
             });
         });
@@ -1245,7 +1245,7 @@ test('Map', (t) => {
                 }
             });
             t.throws(() => {
-                map.setFeatureState('geojson', '12345', 'hover', true);
+                map.setFeatureStateValue('geojson', '12345', 'hover', true);
             }, Error, /load/i);
 
             t.end();
@@ -1265,7 +1265,7 @@ test('Map', (t) => {
                     t.match(error.message, /source/);
                     t.end();
                 });
-                map.setFeatureState('vector', '12345', 'hover', true);
+                map.setFeatureStateValue('vector', '12345', 'hover', true);
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
@@ -1286,7 +1286,7 @@ test('Map', (t) => {
                     t.match(error.message, /sourceLayer/);
                     t.end();
                 });
-                map.setFeatureState({ sourceId: 'vector', sourceLayer: 0}, '12345', 'hover', true);
+                map.setFeatureStateValue({ sourceId: 'vector', sourceLayer: 0}, '12345', 'hover', true);
             });
         });
 

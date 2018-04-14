@@ -20,27 +20,31 @@ class SourceFeatureState {
         this.stateChanges = {};
     }
 
-    setState(sourceLayer: string, feature: string, key: string, value: any) {
+    setStateValue(sourceLayer: string, feature: string, key: string, value: any) {
         feature = String(feature);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
         this.stateChanges[sourceLayer][feature][key] = value;
     }
 
-    getState(sourceLayer: string, feature: string, key?: string) {
+    getStateValue(sourceLayer: string, feature: string, key: string) {
         feature = String(feature);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
 
-        if (!key) {
-            return extend({}, base[feature], changes[feature]);
-        }
         if (changes[feature]) {
             return changes[feature][key];
         }
         if (base[feature]) {
             return base[feature][key];
         }
+    }
+
+    getState(sourceLayer: string, feature: string) {
+        feature = String(feature);
+        const base = this.state[sourceLayer] || {};
+        const changes = this.stateChanges[sourceLayer] || {};
+        return extend({}, base[feature], changes[feature]);
     }
 
     initializeTileState(tile: Tile) {

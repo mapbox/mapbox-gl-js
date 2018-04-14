@@ -1381,13 +1381,13 @@ class Map extends Camera {
      * @param {string} key The name of the state to be set.
      * @param {any} value The value to be set. This can be any valid JSON value.
      */
-    setFeatureState(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string, value: any) {
-        this.style.setFeatureState(source, feature, key, value);
+    setFeatureStateValue(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string, value: any) {
+        this.style.setFeatureStateValue(source, feature, key, value);
         this._update();
     }
 
     /**
-     * Gets the state of a feature, given a source and [optional]source-layer.
+     * Gets the state value of a feature, given a source and [optional]source-layer.
      * 
      * @param {string | {sourceId: string, sourceLayer: string}} source *For vector tile sources, the sourceLayer is
      *  required.* For GeoJSON sources, just the source id.
@@ -1396,8 +1396,8 @@ class Map extends Camera {
      * 
      * @returns {any} The value of the specified specified state.
      */
-    getFeatureState(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string): any {
-        return this.style.getFeatureState(source, feature, key);
+    getFeatureStateValue(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string): any {
+        return this.style.getFeatureStateValue(source, feature, key);
     }
 
     /**

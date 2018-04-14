@@ -766,28 +766,7 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
-    setFeatureState(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string, value: any) {
-        this._checkLoaded();
-        const sourceId = typeof source === 'string' ? source : source.sourceId;
-        let sourceLayer = typeof source == 'object' ? source.sourceLayer : '';
-        const sourceCache = this.sourceCaches[sourceId];
-
-        if (sourceCache === undefined) {
-            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
-            return;
-        }
-        const sourceType = sourceCache.getSource().type;
-        if (sourceType === 'vector' && !sourceLayer) {
-            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
-            return;
-        } else if (sourceType === 'geojson') {
-            sourceLayer = '_geojsonTileLayer';
-        }
-
-        sourceCache.setFeatureState(sourceLayer, feature, key, value);
-    }
-
-    getFeatureState(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string) {
+    setFeatureStateValue(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string, value: any) {
         this._checkLoaded();
         const sourceId = typeof source === 'string' ? source : source.sourceId;
         let sourceLayer = typeof source == 'object' ? source.sourceLayer : '';
@@ -809,7 +788,32 @@ class Style extends Evented {
             return;
         }
 
-        return sourceCache.getFeatureState(sourceLayer, feature, key);
+        sourceCache.setFeatureStateValue(sourceLayer, feature, key, value);
+    }
+
+    getFeatureStateValue(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string) {
+        this._checkLoaded();
+        const sourceId = typeof source === 'string' ? source : source.sourceId;
+        let sourceLayer = typeof source == 'object' ? source.sourceLayer : '';
+        const sourceCache = this.sourceCaches[sourceId];
+
+        if (sourceCache === undefined) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+        const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'vector' && !sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
+            return;
+        } else if (sourceType === 'geojson') {
+            sourceLayer = '_geojsonTileLayer';
+        }
+        if (!key) {
+            this.fire(new ErrorEvent(new Error(`The key parameter must be provided.`)));
+            return;
+        }
+
+        return sourceCache.getFeatureStateValue(sourceLayer, feature, key);
     }
 
     getTransition() {

@@ -38,7 +38,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     // Merge state from SourceCache into the results
     for (const layerID in result) {
         result[layerID].forEach((feature) => {
-            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id, '');
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.state = state;
         });
     }
@@ -100,7 +100,7 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
         result[layerID].forEach((feature) => {
             const layer = styleLayers[layerID];
             const sourceCache = sourceCaches[layer.source];
-            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id, '');
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.state = state;
         });
     }
