@@ -46,6 +46,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
 }
 
 export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
+                            sourceCaches: {[string]: SourceCache},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             collisionIndex: CollisionIndex,
@@ -94,6 +95,14 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
                 resultFeatures.push(symbolFeature.feature);
             }
         }
+    }
+    for (const layerID in result) {
+        result[layerID].forEach((feature) => {
+            const layer = styleLayers[layerID];
+            const sourceCache = sourceCaches[layer.source];
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id, '');
+            feature.state = state;
+        });
     }
     return result;
 }

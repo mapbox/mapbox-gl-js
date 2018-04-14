@@ -900,6 +900,7 @@ class Style extends Evented {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._layers,
+                    this.sourceCaches,
                     queryGeometry.viewport,
                     params,
                     this.placement.collisionIndex,
