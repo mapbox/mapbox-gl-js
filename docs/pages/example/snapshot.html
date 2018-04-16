@@ -1,0 +1,184 @@
+<style>
+  html, body {
+    margin: 0;
+  }
+
+  #left {
+    position: absolute;
+    width:50%;
+    height:100%;
+    background: rgba(0,255,0,0.5);
+  }
+
+  #right {
+    position: absolute;
+    width:50%;
+    height:100%;
+    background:rgba(0,0,255,0.5);
+    left:50%;
+  }
+
+  #map {
+    position: absolute;
+    width:98%;
+    height:98%;
+    left:1%;
+    top:1%;
+  }
+
+  #snapshot {
+    position: absolute;
+    /* this canvas style will need
+       to be redefined with js */
+    width:98%;
+    height:98%;
+    left:1%;
+    top:1%;
+  }
+
+  h1 {
+    color:white;
+    text-align:center;
+    position: relative;
+    top:50%;
+    transform: translateY(-50%);
+    margin:0;
+  }
+ 
+</style>
+
+<div id="left">
+  <div id='map'></div>
+</div>
+
+<div id="right">
+  <canvas id='snapshot'></div>
+</div>
+
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: {
+        lat: 37.4036,
+        lng: -122.0325
+    },
+    zoom: 10,
+    preserveDrawingBuffer: true// required for the map's canvas to be exported to a PNG
+});
+
+var snapshot = document.querySelector('#snapshot');
+var ctx = snapshot.getContext('2d');
+
+// draw snapshot canvas 
+window.addEventListener('load', function() {
+    var text = 'Click on the map';
+    // css style needs to be redefined here
+    snapshot.height = window.innerHeight * 0.98;
+    snapshot.width = window.innerWidth / 2 * 0.98;
+    snapshot.style.top = window.innerHeight / 100;
+    snapshot.style.left = window.innerWidth / 100 / 2;
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = Math.round(snapshot.width / 10) + 'px Arial';
+    ctx.fillText(text, snapshot.width / 2, snapshot.height / 2);
+}, false);
+
+map.on('click', function() {
+    var png = map.getCanvas().toDataURL();
+    var copy = new Image();
+    copy.src = png;
+    copy.onload = function() {
+        ctx.drawImage(copy, 0, 0);
+        logo();
+        textbox();
+        clickMessage();
+    };
+});
+
+function textbox() {
+    // OpenStreetMap and Mapbox attribution are required by 
+    // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
+    var text = '© Mapbox © OpenStreetMap';
+    if (snapshot.width < 300) text = '© OSM';
+    var fontsize = 14;
+    var height = fontsize + 6;
+    var width = (text.length + 3) / fontsize * 100;
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(snapshot.width - width, snapshot.height - height, width, height);
+    ctx.font = fontsize + 'px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(text, snapshot.width - width + 3, snapshot.height - 3);
+}
+
+function logo() {
+    // OpenStreetMap and Mapbox attribution are required by 
+    // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
+
+    // define instance of Image
+    var img = new Image();
+
+    // use mapbox logo as source
+    var logo = mapboxLogo();
+    img.src = logo.image;
+
+    // draw the logo in img (when ready)
+    img.onload = function() {
+        ctx.drawImage(img, 3, snapshot.height - logo.height - 4, logo.width, logo.height);
+    };
+}
+
+function mapboxLogo() {
+    // logo image
+    var a = document.querySelector('a.mapboxgl-ctrl-logo');
+    var style = window.getComputedStyle(a, false);
+    var dataURL = style.backgroundImage.slice(5, -2);
+
+    // logo size
+    var height = style.height.replace('px', '');
+    var width = style.width.replace('px', '');
+
+    var safeDataURL = firefoxBugFix(dataURL, height, width);
+
+    return {'image':safeDataURL, 'height':height, 'width':width};
+}
+
+function firefoxBugFix(dataURL, height, width) {
+    // Firefox requires SVG to have height and width specified
+    // in the root SVG object when drawing to canvas
+
+    var base64 = dataURL.replace('data:image/svg+xml;base64,', '');
+    var svg = atob(base64);
+    var newHeader = 'height="' + height + 'px" width="' + width + 'px"';
+    var newSvg = svg.replace('<svg', '<svg ' + newHeader);
+    var newBase64 = btoa(newSvg);
+    var newDataURL = 'data:image/svg+xml;base64,' + newBase64;
+
+    return newDataURL;
+
+}
+
+function clickMessage() {
+    var text = 'click the map on the left to generate a new snapshot';
+    if (snapshot.width < 400) text = 'click map on the left';
+
+    var fontsize = 16;
+    var boxheight = fontsize + 6;
+    var boxwidth = (text.length + (text.length * 0.2)) / fontsize * 100;
+
+    ctx.fillStyle = 'rgba(200,200,100,0.9)';
+    ctx.fillRect((snapshot.width - boxwidth) / 2, boxheight, boxwidth, boxheight);
+
+    ctx.font = fontsize + 'px Arial';
+    ctx.fillStyle = 'rgb(50,50,100)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, snapshot.width / 2, boxheight * 1.5);
+}
+
+
+</script>
