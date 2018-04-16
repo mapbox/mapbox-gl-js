@@ -15,7 +15,7 @@ import definitions from './definitions';
 import * as isConstant from './is_constant';
 import RuntimeError from './runtime_error';
 import { success, error } from '../util/result';
-import { isPropertyExpression, isZoomExpression, isInterpolated } from '../util/properties';
+import { supportsPropertyExpression, supportsZoomExpression, supportsInterpolation } from '../util/properties';
 
 import type {Type} from './types';
 import type {Value} from './values';
@@ -208,12 +208,12 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
     const parsed = expression.value.expression;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
-    if (!isFeatureConstant && !isPropertyExpression(propertySpec)) {
+    if (!isFeatureConstant && !supportsPropertyExpression(propertySpec)) {
         return error([new ParsingError('', 'property expressions not supported')]);
     }
 
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
-    if (!isZoomConstant && !isZoomExpression(propertySpec)) {
+    if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
@@ -222,7 +222,7 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]);
     } else if (zoomCurve instanceof ParsingError) {
         return error([zoomCurve]);
-    } else if (zoomCurve instanceof Interpolate && !isInterpolated(propertySpec)) {
+    } else if (zoomCurve instanceof Interpolate && !supportsInterpolation(propertySpec)) {
         return error([new ParsingError('', '"interpolate" expressions cannot be used with this property')]);
     }
 

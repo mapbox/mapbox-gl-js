@@ -41,9 +41,9 @@ function flowType(property) {
         }
     })();
 
-    if (properties.isPropertyExpression(property)) {
+    if (properties.supportsPropertyExpression(property)) {
         return `DataDrivenPropertyValueSpecification<${baseType}>`;
-    } else if (properties.isZoomExpression(property)) {
+    } else if (properties.supportsZoomExpression(property)) {
         return `PropertyValueSpecification<${baseType}>`;
     } else if (property.expression) {
         return `ExpressionSpecification`;
