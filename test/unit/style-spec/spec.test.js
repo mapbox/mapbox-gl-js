@@ -42,8 +42,6 @@ function validSchema(k, t, obj, ref, version, kind) {
         'zoom-function',
         'property-function',
         'function-output',
-        'expression',
-        'property-type',
         'length',
         'min-length',
         'required',
@@ -116,18 +114,11 @@ function validSchema(k, t, obj, ref, version, kind) {
 
         // schema key function checks
         if (obj.function !== undefined) {
-            t.ok(ref.$version < 8, 'migrated to `expression` schema in v8 spec');
             if (ref.$version >= 7) {
                 t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0, `function: ${obj.function}`);
             } else {
                 t.equal('boolean', typeof obj.function, `${k}.required (boolean)`);
             }
-        } else if (obj.expression !== undefined) {
-            const expression = obj.expression;
-            t.equal(true, ['data-driven', 'cross-faded-data-driven', 'cross-faded', 'color-ramp', 'data-constant'].indexOf(obj['property-type']) >= 0, `${k}.expression: property-type: ${obj['property-type']}`);
-            t.equal('boolean', typeof expression.interpolated, `${k}.expression.interpolated.required (boolean)`);
-            t.equal(true, Array.isArray(expression.parameters), `${k}.expression.parameters array`);
-            if (obj['property-type'] !== 'color-ramp') t.equal(true, expression.parameters.every(k => k === 'zoom' || k === 'feature'));
         }
 
         // schema key required checks

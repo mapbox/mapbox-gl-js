@@ -47,11 +47,9 @@ function isExpressionFilter(filter: any) {
 const filterSpec = {
     'type': 'boolean',
     'default': false,
-    'property-type': 'data-driven',
-    'expression': {
-        'interpolated': true,
-        'parameters': ['zoom', 'feature']
-    }
+    'function': true,
+    'property-function': true,
+    'zoom-function': true
 };
 
 /**
