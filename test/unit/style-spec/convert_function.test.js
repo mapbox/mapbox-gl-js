@@ -16,7 +16,11 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
-            function: 'piecewise-constant',
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': false,
+                'parameters': ['zoom']
+            },
             tokens: true
         });
         t.deepEqual(expression, [
@@ -62,7 +66,11 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'string',
-            function: 'piecewise-constant'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': false,
+                'parameters': ['zoom']
+            }
         });
         t.deepEqual(expression, [
             'step',
@@ -89,7 +97,11 @@ test('convertFunction', (t) => {
 
         const expression = convertFunction(functionValue, {
             type: 'number',
-            function: 'interpolated'
+            'property-type': 'data-constant',
+            expression: {
+                'interpolated': true,
+                'parameters': ['zoom']
+            }
         });
         t.deepEqual(expression, [
             'interpolate',
