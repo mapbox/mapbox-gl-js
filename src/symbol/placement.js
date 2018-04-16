@@ -69,7 +69,6 @@ export class RetainedQueryData {
     bucketIndex: number;
     tileID: OverscaledTileID;
     featureSortOrder: ?Array<number>
-
     constructor(bucketInstanceId: number,
                 featureIndex: FeatureIndex,
                 sourceLayerIndex: number,
@@ -83,6 +82,45 @@ export class RetainedQueryData {
     }
 }
 
+class CollisionGroups {
+    collisionGroups: { [layerId: ?string]: { ID: number, predicate?: any }};
+    maxGroupID: number;
+
+    constructor() {
+        this.maxGroupID = 0;
+        this.collisionGroups = {
+            undefined: {
+                ID: 0,
+                predicate: null
+            }
+        };
+    }
+
+    get(groupName?: string) {
+        if (groupName && this.maxGroupID === 0) {
+            // Keep the predicate null until the first collision
+            // group gets added to avoid overhead in the case
+            // everything's in the default group.
+            this.collisionGroups[undefined].predicate =
+                (key) => {
+                    return key.collisionGroup === 0;
+                };
+        }
+
+        if (!this.collisionGroups[groupName]) {
+            const nextGroupID = ++this.maxGroupID;
+            this.collisionGroups[groupName] = {
+                ID: nextGroupID,
+                predicate: (key) => {
+                    return key.collisionGroup === nextGroupID;
+                }
+            };
+        }
+        return this.collisionGroups[groupName];
+    }
+}
+
+
 export class Placement {
     transform: Transform;
     collisionIndex: CollisionIndex;
@@ -93,6 +131,7 @@ export class Placement {
     stale: boolean;
     fadeDuration: number;
     retainedQueryData: {[number]: RetainedQueryData};
+    collisionGroups: CollisionGroups;
 
     constructor(transform: Transform, fadeDuration: number) {
         this.transform = transform.clone();
@@ -102,6 +141,7 @@ export class Placement {
         this.stale = false;
         this.fadeDuration = fadeDuration;
         this.retainedQueryData = {};
+        this.collisionGroups = new CollisionGroups();
     }
 
     placeLayerTile(styleLayer: StyleLayer, tile: Tile, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean }) {
@@ -155,6 +195,11 @@ export class Placement {
         const iconWithoutText = !bucket.hasTextData() || layout.get('text-optional');
         const textWithoutIcon = !bucket.hasIconData() || layout.get('icon-optional');
 
+        const textCollisionGroup =
+            this.collisionGroups.get(layout.get('text-collision-group'));
+        const iconCollisionGroup =
+            this.collisionGroups.get(layout.get('icon-collision-group'));
+
         for (const symbolInstance of bucket.symbolInstances) {
             if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
 
@@ -180,7 +225,7 @@ export class Placement {
                 }
                 if (symbolInstance.collisionArrays.textBox) {
                     placedGlyphBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.textBox,
-                            layout.get('text-allow-overlap'), textPixelRatio, posMatrix);
+                            layout.get('text-allow-overlap'), textPixelRatio, posMatrix, textCollisionGroup.predicate);
                     placeText = placedGlyphBoxes.box.length > 0;
                     offscreen = offscreen && placedGlyphBoxes.offscreen;
                 }
@@ -200,7 +245,8 @@ export class Placement {
                             posMatrix,
                             textLabelPlaneMatrix,
                             showCollisionBoxes,
-                            layout.get('text-pitch-alignment') === 'map');
+                            layout.get('text-pitch-alignment') === 'map',
+                            textCollisionGroup.predicate);
                     // If text-allow-overlap is set, force "placedCircles" to true
                     // In theory there should always be at least one circle placed
                     // in this case, but for now quirks in text-anchor
@@ -214,7 +260,7 @@ export class Placement {
                 }
                 if (symbolInstance.collisionArrays.iconBox) {
                     placedIconBoxes = this.collisionIndex.placeCollisionBox(symbolInstance.collisionArrays.iconBox,
-                            layout.get('icon-allow-overlap'), textPixelRatio, posMatrix);
+                            layout.get('icon-allow-overlap'), textPixelRatio, posMatrix, iconCollisionGroup.predicate);
                     placeIcon = placedIconBoxes.box.length > 0;
                     offscreen = offscreen && placedIconBoxes.offscreen;
                 }
@@ -230,15 +276,15 @@ export class Placement {
 
                 if (placeText && placedGlyphBoxes) {
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
-                            bucket.bucketInstanceId, textFeatureIndex);
+                            bucket.bucketInstanceId, textFeatureIndex, textCollisionGroup.ID);
                 }
                 if (placeIcon && placedIconBoxes) {
                     this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
-                            bucket.bucketInstanceId, iconFeatureIndex);
+                            bucket.bucketInstanceId, iconFeatureIndex, iconCollisionGroup.ID);
                 }
                 if (placeText && placedGlyphCircles) {
                     this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'),
-                            bucket.bucketInstanceId, textFeatureIndex);
+                            bucket.bucketInstanceId, textFeatureIndex, textCollisionGroup.ID);
                 }
 
                 assert(symbolInstance.crossTileID !== 0);
