@@ -7,9 +7,9 @@ import validateArray from './validate_array';
 import validateNumber from './validate_number';
 import { unbundle } from '../util/unbundle_jsonlint';
 import {
-    isPropertyExpression as acceptsPropertyExpression,
-    isZoomExpression as acceptsZoomExpression,
-    isInterpolated as acceptsInterpolated
+    supportsPropertyExpression,
+    supportsZoomExpression,
+    supportsInterpolation
 } from '../util/properties';
 
 export default function validateFunction(options) {
@@ -47,14 +47,14 @@ export default function validateFunction(options) {
         errors.push(new ValidationError(options.key, options.value, 'missing required property "stops"'));
     }
 
-    if (functionType === 'exponential' && options.valueSpec.expression && !acceptsInterpolated(options.valueSpec)) {
+    if (functionType === 'exponential' && options.valueSpec.expression && !supportsInterpolation(options.valueSpec)) {
         errors.push(new ValidationError(options.key, options.value, 'exponential functions not supported'));
     }
 
     if (options.styleSpec.$version >= 8) {
-        if (isPropertyFunction && !acceptsPropertyExpression(options.valueSpec)) {
+        if (isPropertyFunction && !supportsPropertyExpression(options.valueSpec)) {
             errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
-        } else if (isZoomFunction && !acceptsZoomExpression(options.valueSpec)) {
+        } else if (isZoomFunction && !supportsZoomExpression(options.valueSpec)) {
             errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
         }
     }
@@ -165,7 +165,7 @@ export default function validateFunction(options) {
 
         if (type !== 'number' && functionType !== 'categorical') {
             let message = `number expected, ${type} found`;
-            if (acceptsPropertyExpression(functionValueSpec) && functionType === undefined) {
+            if (supportsPropertyExpression(functionValueSpec) && functionType === undefined) {
                 message += '\nIf you intended to use a categorical function, specify `"type": "categorical"`.';
             }
             return [new ValidationError(options.key, reportValue, message)];

@@ -4,7 +4,7 @@ import ValidationError from '../error/validation_error';
 import getType from '../util/get_type';
 import { isFunction } from '../function';
 import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
-import { isPropertyExpression } from '../util/properties';
+import { supportsPropertyExpression } from '../util/properties';
 
 export default function validateProperty(options, propertyType) {
     const key = options.key;
@@ -33,7 +33,7 @@ export default function validateProperty(options, propertyType) {
     }
 
     let tokenMatch;
-    if (getType(value) === 'string' && isPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
+    if (getType(value) === 'string' && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
         return [new ValidationError(
             key, value,
             `"${propertyKey}" does not support interpolation syntax\n` +

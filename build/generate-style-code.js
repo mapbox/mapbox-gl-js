@@ -43,8 +43,10 @@ global.propertyType = function (property) {
         case 'color-ramp':
             return `ColorRampProperty`;
         case 'data-constant':
-        default:
+        case 'constant':
             return `DataConstantProperty<${flowType(property)}>`;
+        default:
+            throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 
@@ -97,8 +99,10 @@ global.propertyValue = function (property, type) {
         case 'color-ramp':
             return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
         case 'data-constant':
-        default:
+        case 'constant':
             return `new DataConstantProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        default:
+            throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 

@@ -1,13 +1,15 @@
 // @flow
 
-export function isPropertyExpression(spec: Object): boolean {
+import type {StylePropertySpecification} from '../style-spec';
+
+export function supportsPropertyExpression(spec: StylePropertySpecification): boolean {
     return spec['property-type'] === 'data-driven' || spec['property-type'] === 'cross-faded-data-driven';
 }
 
-export function isZoomExpression(spec: Object): boolean {
-    return spec.expression && spec.expression.parameters.indexOf('zoom') > -1;
+export function supportsZoomExpression(spec: StylePropertySpecification): boolean {
+    return !!spec.expression && spec.expression.parameters.indexOf('zoom') > -1;
 }
 
-export function isInterpolated(spec: Object): boolean {
-    return spec.expression && spec.expression.interpolated;
+export function supportsInterpolation(spec: StylePropertySpecification): boolean {
+    return !!spec.expression && spec.expression.interpolated;
 }
