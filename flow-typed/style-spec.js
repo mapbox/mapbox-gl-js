@@ -207,6 +207,7 @@ declare type SymbolLayerSpecification = {|
         "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
         "icon-allow-overlap"?: PropertyValueSpecification<boolean>,
         "icon-ignore-placement"?: PropertyValueSpecification<boolean>,
+        "icon-collision-group"?: string,
         "icon-optional"?: PropertyValueSpecification<boolean>,
         "icon-rotation-alignment"?: PropertyValueSpecification<"map" | "viewport" | "auto">,
         "icon-size"?: DataDrivenPropertyValueSpecification<number>,
@@ -237,6 +238,7 @@ declare type SymbolLayerSpecification = {|
         "text-offset"?: DataDrivenPropertyValueSpecification<[number, number]>,
         "text-allow-overlap"?: PropertyValueSpecification<boolean>,
         "text-ignore-placement"?: PropertyValueSpecification<boolean>,
+        "text-collision-group"?: string,
         "text-optional"?: PropertyValueSpecification<boolean>,
         "visibility"?: "visible" | "none"
     |},

@@ -60,7 +60,7 @@ class CollisionIndex {
         this.screenBottomBoundary = transform.height + viewportPadding;
     }
 
-    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4): { box: Array<number>, offscreen: boolean } {
+    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = collisionBox.x1 * tileToViewport + projectedPoint.point.x;
@@ -69,7 +69,7 @@ class CollisionIndex {
         const brY = collisionBox.y2 * tileToViewport + projectedPoint.point.y;
 
         if (!allowOverlap) {
-            if (this.grid.hitTest(tlX, tlY, brX, brY)) {
+            if (this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate)) {
                 return {
                     box: [],
                     offscreen: false
@@ -115,7 +115,8 @@ class CollisionIndex {
                           posMatrix: mat4,
                           labelPlaneMatrix: mat4,
                           showCollisionCircles: boolean,
-                          pitchWithMap: boolean): { circles: Array<number>, offscreen: boolean } {
+                          pitchWithMap: boolean,
+                          collisionGroupPredicate?: any): { circles: Array<number>, offscreen: boolean } {
         const placedCollisionCircles = [];
 
         const projectedAnchor = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY);
@@ -210,7 +211,7 @@ class CollisionIndex {
             entirelyOffscreen = entirelyOffscreen && this.isOffscreen(projectedPoint.x - radius, projectedPoint.y - radius, projectedPoint.x + radius, projectedPoint.y + radius);
 
             if (!allowOverlap) {
-                if (this.grid.hitTestCircle(projectedPoint.x, projectedPoint.y, radius)) {
+                if (this.grid.hitTestCircle(projectedPoint.x, projectedPoint.y, radius, collisionGroupPredicate)) {
                     if (!showCollisionCircles) {
                         return {
                             circles: [],
@@ -298,17 +299,17 @@ class CollisionIndex {
         return result;
     }
 
-    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number) {
+    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroup: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex };
+        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex, collisionGroup: collisionGroup };
         grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
-    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number) {
+    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroup: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex };
+        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex, collisionGroup: collisionGroup };
         for (let k = 0; k < collisionCircles.length; k += 4) {
             grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }
