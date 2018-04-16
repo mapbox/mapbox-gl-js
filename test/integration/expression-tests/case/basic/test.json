@@ -1,10 +1,8 @@
 {
   "propertySpec": {
     "type": "string",
-    "property-type": "data-driven",
-    "expression": {
-      "parameters": ["zoom", "feature"]
-    }
+    "function": true,
+    "property-function": true
   },
   "expression": ["case", ["get", "x"], "x", ["get", "y"], "y", "otherwise"],
   "inputs": [

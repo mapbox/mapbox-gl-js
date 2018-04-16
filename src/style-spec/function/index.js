@@ -5,7 +5,6 @@ import extend from '../util/extend';
 import getType from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
-import { supportsInterpolation } from '../util/properties';
 
 export function isFunction(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -20,7 +19,7 @@ export function createFunction(parameters, propertySpec) {
     const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
     const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
     const zoomDependent = zoomAndFeatureDependent || !featureDependent;
-    const type = parameters.type || (supportsInterpolation(propertySpec) ? 'exponential' : 'interval');
+    const type = parameters.type || (propertySpec.function === 'interpolated' ? 'exponential' : 'interval');
 
     if (isColor) {
         parameters = extend({}, parameters);

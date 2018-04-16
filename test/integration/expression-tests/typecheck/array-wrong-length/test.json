@@ -3,10 +3,8 @@
     "type": "array",
     "value": "number",
     "length": 3,
-    "property-type": "data-driven",
-    "expression": {
-      "parameters": ["zoom", "feature"]
-    }
+    "function": true,
+    "property-function": true
   },
   "expression": ["array", "number", 2, ["get", "x"]],
   "inputs": [],

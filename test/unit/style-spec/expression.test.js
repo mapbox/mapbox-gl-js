@@ -2,16 +2,12 @@ import { test } from 'mapbox-gl-js-test';
 import { createPropertyExpression } from '../../../src/style-spec/expression';
 
 test('createPropertyExpression', (t) => {
-    test('prohibits non-interpolable properties from using an "interpolate" expression', (t) => {
+    test('prohibits piecewise-constant properties from using an "interpolate" expression', (t) => {
         const {result, value} = createPropertyExpression([
             'interpolate', ['linear'], ['zoom'], 0, 0, 10, 10
         ], {
             type: 'number',
-            'property-type': 'data-constant',
-            expression: {
-                'interpolated': false,
-                'parameters': ['zoom']
-            }
+            function: 'piecewise-constant'
         });
         t.equal(result, 'error');
         t.equal(value.length, 1);
@@ -28,11 +24,7 @@ test('evaluate expression', (t) => {
             type: 'enum',
             values: {a: {}, b: {}, c: {}},
             default: 'a',
-            'property-type': 'data-driven',
-            expression: {
-                'interpolated': false,
-                'parameters': ['zoom', 'feature']
-            }
+            'property-function': true
         });
 
         t.stub(console, 'warn');

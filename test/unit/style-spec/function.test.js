@@ -9,11 +9,7 @@ test('binary search', (t) => {
             base: 2
         }, {
             type: 'number',
-            'property-type': 'data-constant',
-            expression: {
-                'interpolated': true,
-                'parameters': ['zoom']
-            }
+            function: 'interpolated'
         }).evaluate;
 
         t.equal(f({zoom: 17}), 11);
@@ -30,11 +26,7 @@ test('exponential function', (t) => {
             base: 2
         }, {
             type: 'number',
-            'property-type': 'data-constant',
-            expression: {
-                'interpolated': true,
-                'parameters': ['zoom']
-            }
+            function: 'interpolated'
         }).evaluate;
 
         t.equalWithPrecision(f({zoom: 2}), 30 / 9, 1e-6);
@@ -466,16 +458,12 @@ test('exponential function', (t) => {
 });
 
 test('interval function', (t) => {
-    t.test('is the default for non-interpolated properties', (t) => {
+    t.test('is the default for piecewise-constant properties', (t) => {
         const f = createFunction({
             stops: [[-1, 11], [0, 111]]
         }, {
             type: 'number',
-            'property-type': 'data-constant',
-            expression: {
-                'interpolated': false,
-                'parameters': ['zoom']
-            }
+            function: 'piecewise-constant'
         }).evaluate;
 
         t.equal(f({zoom: -1.5}), 11);

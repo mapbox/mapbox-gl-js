@@ -1,5 +1,4 @@
 const spec = require('../src/style-spec/reference/v8.json');
-const properties = require('../src/style-spec/util/properties');
 const fs = require('fs');
 
 function flowEnum(values) {
@@ -41,11 +40,11 @@ function flowType(property) {
         }
     })();
 
-    if (properties.supportsPropertyExpression(property)) {
+    if (property['property-function']) {
         return `DataDrivenPropertyValueSpecification<${baseType}>`;
-    } else if (properties.supportsZoomExpression(property)) {
+    } else if (property['zoom-function']) {
         return `PropertyValueSpecification<${baseType}>`;
-    } else if (property.expression) {
+    } else if (property.function) {
         return `ExpressionSpecification`;
     } else {
         return baseType;
