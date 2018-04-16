@@ -362,7 +362,7 @@ class Item extends React.Component {
                     <em className='quiet'>
                         {this.props.requires.map((r, i) => this.requires(r, i))} </em>}
 
-                    {this.props.function === "interpolated" &&
+                    {this.props.expression && this.props.expression.interpolated &&
                     <em className='quiet'>
                         Supports <a href='#expressions-interpolate'><span className='icon smooth-ramp inline'/><code>interpolate</code></a> expressions. </em>}
 
