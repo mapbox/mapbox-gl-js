@@ -47,6 +47,8 @@ class Hash {
     remove() {
         window.removeEventListener('hashchange', this._onHashChange, false);
         this._map.off('moveend', this._updateHash);
+        clearTimeout(this._updateHash());
+
         delete this._map;
         return this;
     }
