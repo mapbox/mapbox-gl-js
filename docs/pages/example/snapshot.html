@@ -1,0 +1,102 @@
+<style>
+    body {
+      margin: 0;
+    }
+
+    .window {
+      position: absolute;
+      top:0;
+      bottom:0;
+      width:46%;
+      min-height: 300px;
+      margin:1%;
+      border-style: solid;
+      border-width: 5px;
+    }
+
+    #map {
+      border-color: grey;
+    }
+
+    #snapshotWindow {
+      left:50%;
+      background-color:lightblue;
+      border-color: green;
+    }
+
+    #buttonLayer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    h1 {
+      color:white;
+      text-align:center;
+      position: relative;
+      top:50%;
+      transform: translateY(-50%);
+      margin:0;
+      height:0;
+    }
+
+    button {
+      pointer-events:auto;
+      padding: 20px 30px;
+      font-size: 1.5em;
+      font-weight: bold;
+      background-image: linear-gradient(red, blue);
+      border-color: white;
+      color: white; 
+    }
+
+    ::-moz-focus-inner {border:0;}
+
+</style>
+
+<div id='map' class='window'></div>
+<div id='snapshotWindow' class='window'><h1>Snapshot</h1></div>
+<div id='buttonLayer' class='window'>
+    <button id='button', type="button">Take Snapshot</button>
+</div>
+
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: {
+      lat: 37.4036,
+      lng: -122.0325
+    },
+    zoom: 10,
+    preserveDrawingBuffer: true// not guaranteed to work if false
+    });
+
+    map.on('load', function() {
+
+        document.getElementById("button").addEventListener("click", clicked); 
+
+        function clicked() {
+
+            var canvas = map.getCanvas()
+            var ctx = canvas.getContext('2d')
+
+            // TODO logo and attribution
+            
+            // canvas to png
+            var img = canvas.toDataURL();
+
+            // png to html
+            var snapshotWindow = document.getElementById("snapshotWindow")
+            var snapshotHTML = `<img src="${img}", 
+                                  width=${snapshotWindow.clientWidth}, 
+                                  height = ${snapshotWindow.clientHeight}/>`
+            snapshotWindow.innerHTML = snapshotHTML
+
+        };
+});
+
+</script>
