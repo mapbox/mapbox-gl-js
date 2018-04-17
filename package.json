@@ -3,7 +3,7 @@
   "description": "A WebGL interactive maps library",
   "version": "0.44.2",
   "main": "dist/mapbox-gl.js",
-  "module": "src/index.js",
+  "module": "esm/index.js",
   "style": "dist/mapbox-gl.css",
   "license": "SEE LICENSE IN LICENSE.txt",
   "repository": {
@@ -14,6 +14,9 @@
     "node": ">=6.4.0"
   },
   "dependencies": {
+    "@babel/cli": "^7.0.0-beta.44",
+    "@babel/core": "^7.0.0-beta.44",
+    "@babel/preset-flow": "^7.0.0-beta.44",
     "@mapbox/gl-matrix": "^0.0.1",
     "@mapbox/jsonlint-lines-primitives": "^2.0.1",
     "@mapbox/mapbox-gl-supported": "^1.3.1",
@@ -118,6 +121,7 @@
     "build-dev": "rollup -c --environment BUILD:dev && build/run-tap --no-coverage test/build/dev.test.js",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
     "build-min": "rollup -c --environment BUILD:production && build/run-tap --no-coverage test/build/min.test.js",
+    "build-esm": "cp -r src esm && babel --out-dir esm src",
     "build-token": "node build/generate-access-token-script.js",
     "build-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks.js",
     "build-benchmarks-view": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks_view.js",
@@ -144,7 +148,7 @@
     "test-flow": "node build/generate-flow-typed-style-spec && flow .",
     "test-flow-cov": "flow-coverage-report -i 'src/**/*.js' -t html",
     "test-cov": "nyc --require=@mapbox/flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-expressions test-query test-render",
-    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
+    "prepublish": "in-publish && run-s build-dev build-min build-esm || not-in-publish",
     "codegen": "build/run-node build/generate-style-code.js && build/run-node build/generate-struct-arrays.js"
   },
   "files": [
