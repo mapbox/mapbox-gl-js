@@ -3157,7 +3157,7 @@
       "property-type": "data-constant",
       "default": "#ffffff",
       "expression": {
-        "interpolated": false,
+        "interpolated": true,
         "parameters": [
           "zoom"
         ]
