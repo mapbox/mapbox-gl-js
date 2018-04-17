@@ -5,7 +5,7 @@
       "height": 256,
       "operations": [
         [
-            "setFeatureState", 
+            "setFeatureStateValue", 
             { 
                 "sourceId": "mapbox",
                 "sourceLayer": "road"
@@ -14,7 +14,7 @@
             "stateA",
             1
         ], [
-            "setFeatureState", 
+            "setFeatureStateValue", 
             { 
                 "sourceId": "mapbox",
                 "sourceLayer": "road"
@@ -23,7 +23,7 @@
             "stateB",
             "feature_id as number"
         ], [
-            "setFeatureState", 
+            "setFeatureStateValue", 
             { 
                 "sourceId": "mapbox",
                 "sourceLayer": "road"

@@ -5,7 +5,7 @@
       "height": 256,
       "operations": [
         [
-            "setFeatureState", 
+            "setFeatureStateValue", 
             { 
                 "sourceId": "mapbox",
                 "sourceLayer": "poi_label"
