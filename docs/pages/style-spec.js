@@ -393,7 +393,7 @@ class Item extends React.Component {
                     <em className='quiet'><span className='icon opacity inline quiet' />Transitionable. </em>}
 
                     <em className='quiet'>
-                        Should be represented by a <a href={'#property-types-' + this.props['property-type']}>{this.props['property-type']}</a> property. </em>
+                        Should be represented by a <a href={`#property-types-${this.props['property-type']}`}>{this.props['property-type']}</a> property. </em>
                 </div>
 
                 {this.props.doc &&
@@ -1436,8 +1436,8 @@ export default class extends React.Component {
                                     const propTypeDoc = ref['property-type'][propType].doc;
                                     return (
                                         <div className='pad2 keyline-bottom' key={i}>
-                                            <a id={'property-types-' + propType} className='anchor'/>
-                                            <h3 className='space-bottom1'><a href={'#property-types-' + propType} title={'link to ' + propType}>{propType}</a></h3>
+                                            <a id={`property-types-${propType}`} className='anchor'/>
+                                            <h3 className='space-bottom1'><a href={`#property-types-${propType}`} title={`link to ${propType}`}>{propType}</a></h3>
                                             <p>{propTypeDoc}</p>
                                         </div>);
                                 })}
