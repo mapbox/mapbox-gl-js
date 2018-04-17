@@ -1,5 +1,8 @@
 {
-  "parserOptions": {
+    "plugins": [
+        "html"
+    ],
+    "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
     }
