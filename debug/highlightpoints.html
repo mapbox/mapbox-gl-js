@@ -53,9 +53,9 @@ map.on('load', function() {
         if (e.features.length) {
             const f = e.features[0];
             if (!f.state.hover) {
-                map.setFeatureState('places', f.id, 'hover', true);
+                map.setFeatureStateValue('places', f.id, 'hover', true);
                 if (hoveredId) {
-                    map.setFeatureState('places', hoveredId, 'hover', false);
+                    map.setFeatureStateValue('places', hoveredId, 'hover', false);
                 }
                 hoveredId = f.id;
             }

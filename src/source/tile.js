@@ -419,10 +419,10 @@ class Tile {
     }
 
     updateFeatureState(states: LayerFeatureStates) {
-        if (!this.rawTileData || Object.keys(states).length === 0) return;
+        if (!this.latestRawTileData || Object.keys(states).length === 0) return;
 
         if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
+            this.vtLayers = new vt.VectorTile(new Protobuf(this.latestRawTileData)).layers;
         }
 
         for (const i in this.buckets) {

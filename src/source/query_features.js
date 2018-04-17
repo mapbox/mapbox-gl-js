@@ -96,9 +96,11 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
             }
         }
     }
-    for (const layerID in result) {
-        result[layerID].forEach((feature) => {
-            const layer = styleLayers[layerID];
+
+    // Merge state from SourceCache into the results
+    for (const layerName in result) {
+        result[layerName].forEach((feature) => {
+            const layer = styleLayers[layerName];
             const sourceCache = sourceCaches[layer.source];
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.state = state;
