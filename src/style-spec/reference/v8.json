@@ -5262,5 +5262,31 @@
       "units": "milliseconds",
       "doc": "Length of time before a transition begins."
     }
+  },
+  "property-type": {
+    "data-driven": {
+      "type": "property-type",
+      "doc": "Property is interpolable and can be represented using a property expression."
+    },
+    "cross-faded": {
+      "type": "property-type",
+      "doc": "Property is non-interpolable; rather, its values will be cross-faded to smoothly transition between integer zooms."
+    },
+    "cross-faded-data-driven": {
+      "type": "property-type",
+      "doc": "Property is non-interpolable; rather, its values will be cross-faded to smoothly transition between integer zooms. It can be represented using a property expression."
+    },
+    "color-ramp": {
+      "type": "property-type",
+      "doc": "Property should be specified using a color ramp from which the output color can be sampled based on a property calculation."
+    },
+    "data-constant": {
+      "type": "property-type",
+      "doc": "Property is interpolable but cannot be represented using a property expression."
+    },
+    "constant": {
+      "type": "property-type",
+      "doc": "Property is constant across all zoom levels and property values."
+    }
   }
 }

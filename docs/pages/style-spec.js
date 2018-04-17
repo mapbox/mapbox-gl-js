@@ -208,6 +208,29 @@ const navigation = [
         ]
     },
     {
+        "title": "Property types",
+        "subnav": [
+            {
+                "title": "Data-driven"
+            },
+            {
+                "title": "Cross-faded"
+            },
+            {
+                "title": "Cross-faded data-driven"
+            },
+            {
+                "title": "Color ramp"
+            },
+            {
+                "title": "Data-constant"
+            },
+            {
+                "title": "Constant"
+            }
+        ]
+    },
+    {
         "title": "Other",
         "subnav": [
             {
@@ -368,6 +391,9 @@ class Item extends React.Component {
 
                     {this.props.transition &&
                     <em className='quiet'><span className='icon opacity inline quiet' />Transitionable. </em>}
+
+                    <em className='quiet'>
+                        Should be represented by a <a href={'#property-types-' + this.props['property-type']}>{this.props['property-type']}</a> property. </em>
                 </div>
 
                 {this.props.doc &&
@@ -1399,6 +1425,22 @@ export default class extends React.Component {
                                         )}
                                     </div>
                                 )}
+                            </div>
+                        </div>
+
+                        <div className='pad2 prose'>
+                            <a id='property-types' className='anchor'/>
+                            <h2><a href='#property-types' title='link to property types'>Property types</a></h2>
+                            <div className='keyline-all fill-white'>
+                                {Object.keys(ref['property-type']).map((propType, i) => {
+                                    const propTypeDoc = ref['property-type'][propType].doc;
+                                    return (
+                                        <div className='pad2 keyline-bottom' key={i}>
+                                            <a id={'property-types-' + propType} className='anchor'/>
+                                            <h3 className='space-bottom1'><a href={'#property-types-' + propType} title={'link to ' + propType}>{propType}</a></h3>
+                                            <p>{propTypeDoc}</p>
+                                        </div>);
+                                })}
                             </div>
                         </div>
 

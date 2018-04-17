@@ -34,7 +34,8 @@ function validSchema(k, t, obj, ref, version, kind) {
         'text-justify-enum',
         'text-anchor-enum',
         'text-transform-enum',
-        'visibility-enum'
+        'visibility-enum',
+        'property-type'
     ]);
     const keys = [
         'default',
@@ -126,7 +127,7 @@ function validSchema(k, t, obj, ref, version, kind) {
             }
         } else if (obj.expression !== undefined) {
             const expression = obj.expression;
-            t.equal(true, ['data-driven', 'cross-faded-data-driven', 'cross-faded', 'color-ramp', 'data-constant'].indexOf(obj['property-type']) >= 0, `${k}.expression: property-type: ${obj['property-type']}`);
+            t.ok(ref['property-type'][obj['property-type']], `${k}.expression: property-type: ${obj['property-type']}`);
             t.equal('boolean', typeof expression.interpolated, `${k}.expression.interpolated.required (boolean)`);
             t.equal(true, Array.isArray(expression.parameters), `${k}.expression.parameters array`);
             if (obj['property-type'] !== 'color-ramp') t.equal(true, expression.parameters.every(k => k === 'zoom' || k === 'feature'));
