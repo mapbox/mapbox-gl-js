@@ -49,7 +49,7 @@
       "paint": {
         "circle-radius": 5,
         "circle-color": ["case",
-            ["boolean", ["state", "isRed"], false],
+            ["boolean", ["feature-state", "isRed"], false],
             ["rgb", 255, 0, 0],
             ["rgb", 0, 0, 0]
         ]

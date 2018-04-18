@@ -37,12 +37,12 @@ map.on('load', function() {
         type:"circle",
         paint: {
             "circle-radius": ["case",
-                ["boolean", ["state", "hover"], false],
+                ["boolean", ["feature-state", "hover"], false],
                 ["number", ["*", ["get", "scalerank"], 2]],
                 ["number", ["*", ["get", "scalerank"], 1.5]]
             ],
             "circle-color": ["case",
-                ["boolean", ["state", "hover"], false],
+                ["boolean", ["feature-state", "hover"], false],
                 ["rgb", 21, 210, 210],
                 ["rgb", 233, 103, 233]
             ]

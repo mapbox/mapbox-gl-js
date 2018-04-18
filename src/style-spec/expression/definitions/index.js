@@ -169,7 +169,7 @@ CompoundExpression.register(expressions, {
             ]
         ]
     },
-    'state': [
+    'feature-state': [
         ValueType,
         [StringType],
         (ctx, [key]) => get(key.evaluate(ctx), ctx.state())
