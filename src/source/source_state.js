@@ -57,10 +57,10 @@ class SourceFeatureState {
             this.state[sourceLayer]  = this.state[sourceLayer] || {};
             const layerStates = {};
             for (const id in this.stateChanges[sourceLayer]) {
-                this.state[sourceLayer][id] = extend(
-                                                {},
-                                                this.state[sourceLayer][id],
-                                                this.stateChanges[sourceLayer][id]);
+                if (!this.state[sourceLayer][id]) {
+                    this.state[sourceLayer][id] = {};
+                }
+                extend(this.state[sourceLayer][id], this.stateChanges[sourceLayer][id]);
                 layerStates[id] = this.state[sourceLayer][id];
             }
             changes[sourceLayer] = layerStates;

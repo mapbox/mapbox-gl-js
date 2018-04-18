@@ -809,6 +809,9 @@ class SourceCache extends Evented {
      * @private
      */
     getFeatureState(sourceLayer: string, feature: string) {
+        if (this._source.type === 'geojson') {
+            sourceLayer = '_geojsonTileLayer';
+        }
         return this._state.getState(sourceLayer, feature);
     }
 }
