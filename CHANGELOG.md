@@ -3,6 +3,7 @@
 ### ⚠️ Breaking changes
 
 * `Evented` is no longer publicly exported, and `Evented#fire` and `Evented#listens` are now private. If you are writing a class that needs event emitting functionality, consider using [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) or similar libraries instead.
+* The `"to-string"` expression operator now converts `null` to an empty string rather than to `"null"`. [#6534](https://github.com/mapbox/mapbox-gl-js/pull/6534)
 
 ## 0.44.2
 
