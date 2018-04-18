@@ -156,8 +156,8 @@ class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
-    upload(context: Context, dynamicIndexBuffer: boolean, update?: boolean) {
-        if (!update) {
+    upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean) {
+        if (upload) {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
             this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
@@ -166,7 +166,9 @@ class SymbolBuffers {
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
         }
-        this.programConfigurations.upload(context);
+        if (upload || update) {
+            this.programConfigurations.upload(context);
+        }
     }
 
     destroy() {
@@ -427,8 +429,8 @@ class SymbolBucket implements Bucket {
             this.collisionBox.upload(context);
             this.collisionCircle.upload(context);
         }
-        this.text.upload(context, this.sortFeaturesByY, this.uploaded && this.text.programConfigurations.needsUpload);
-        this.icon.upload(context, this.sortFeaturesByY, this.uploaded && this.icon.programConfigurations.needsUpload);
+        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload);
+        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload);
         this.uploaded = true;
     }
 
