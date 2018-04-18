@@ -375,8 +375,7 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             this.binders[property].populatePaintArray(newLength, feature);
         }
-
-        if (feature.id && index) {
+        if (feature.id) {
             const featureId = String(feature.id);
             this._idMap[featureId] = this._idMap[featureId] || [];
             this._idMap[featureId].push({
