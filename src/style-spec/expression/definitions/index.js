@@ -112,7 +112,9 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             v = v.evaluate(ctx);
             const type = typeof v;
-            if (v === null || type === 'string' || type === 'number' || type === 'boolean') {
+            if (v === null) {
+                return '';
+            } else if (type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
             } else if (v instanceof Color) {
                 return v.toString();
