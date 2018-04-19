@@ -41,7 +41,6 @@ class Texture {
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
     useMipmap: boolean;
-    powerOfTwoSize: boolean;
 
     constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
         this.context = context;
@@ -61,7 +60,6 @@ class Texture {
 
         if (resize) {
             this.size = [width, height];
-            this.powerOfTwoSize = width === height && (Math.log(width) / Math.LN2) % 1 === 0;
 
             context.pixelStoreUnpack.set(1);
 
@@ -83,7 +81,7 @@ class Texture {
             }
         }
 
-        if (this.useMipmap && this.powerOfTwoSize) {
+        if (this.useMipmap && this.isSizePowerOfTwo()) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
@@ -93,7 +91,7 @@ class Texture {
         const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.powerOfTwoSize) {
+        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.isSizePowerOfTwo()) {
             minFilter = gl.LINEAR;
         }
 
@@ -108,6 +106,10 @@ class Texture {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
             this.wrap = wrap;
         }
+    }
+
+    isSizePowerOfTwo() {
+        return this.size[0] === this.size[1] && (Math.log(this.size[0]) / Math.LN2) % 1 === 0;
     }
 
     destroy() {
