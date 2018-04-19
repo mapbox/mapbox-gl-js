@@ -1373,24 +1373,32 @@ class Map extends Camera {
     }
 
     /**
-     * Updates state of a feature.
+     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
      * 
-     * @param {source: string, sourceLayer?: string, id: string}} feature identifier *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {Object} [feature] Feature identifier. Feature objects returned from 
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.* 
+     * @param {string} [feature.id] Unique id of the feature.
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      */
-    updateFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
-        this.style.updateFeatureState(feature, state);
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+        this.style.setFeatureState(feature, state);
         this._update();
     }
 
     /**
      * Gets the state of a feature.
      * 
-     * @param {source: string, sourceLayer?: string, id: string}} feature identifier *For vector tile sources, the sourceLayer is
-     *  required.*
+     * @param {Object} [feature] Feature identifier. Feature objects returned from 
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.* 
+     * @param {string} [feature.id] Unique id of the feature.
      * 
-     * @returns {any} The value of the specified specified state.
+     * @returns {Object} The state of the feature.
      */
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }): any {
         return this.style.getFeatureState(feature);

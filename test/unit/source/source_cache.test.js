@@ -98,7 +98,7 @@ test('SourceCache#addTile', (t) => {
                     t.equal(updateFeaturesSpy.getCalls().length, 1);
                     t.end();
                 });
-                updateFeaturesSpy = t.spy(tile, 'updateFeatureState');
+                updateFeaturesSpy = t.spy(tile, 'setFeatureState');
                 tile.state = 'loaded';
                 callback();
             }
@@ -150,7 +150,7 @@ test('SourceCache#addTile', (t) => {
         sourceCache.updateCacheSize(tr);
 
         const tile = sourceCache._addTile(tileID);
-        const updateFeaturesSpy = t.spy(tile, 'updateFeatureState');
+        const updateFeaturesSpy = t.spy(tile, 'setFeatureState');
 
         sourceCache._removeTile(tileID.key);
         sourceCache._addTile(tileID);

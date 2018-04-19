@@ -766,7 +766,7 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
-    updateFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
         this._checkLoaded();
         const sourceId = feature.source;
         const sourceLayer = feature.sourceLayer;
@@ -782,7 +782,7 @@ class Style extends Evented {
             return;
         }
 
-        sourceCache.updateFeatureState(sourceLayer || '_geojsonTileLayer', feature.id, state);
+        sourceCache.setFeatureState(sourceLayer || '_geojsonTileLayer', feature.id, state);
     }
 
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }) {

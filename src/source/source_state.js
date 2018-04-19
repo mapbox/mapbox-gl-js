@@ -35,7 +35,7 @@ class SourceFeatureState {
     }
 
     initializeTileState(tile: Tile) {
-        tile.updateFeatureState(this.state);
+        tile.setFeatureState(this.state);
     }
 
     coalesceChanges(tiles: {[any]: Tile}) {
@@ -57,7 +57,7 @@ class SourceFeatureState {
 
         for (const id in tiles) {
             const tile = tiles[id];
-            tile.updateFeatureState(changes);
+            tile.setFeatureState(changes);
         }
     }
 }

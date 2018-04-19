@@ -418,7 +418,7 @@ class Tile {
         }
     }
 
-    updateFeatureState(states: LayerFeatureStates) {
+    setFeatureState(states: LayerFeatureStates) {
         if (!this.latestRawTileData || Object.keys(states).length === 0) return;
 
         if (!this.vtLayers) {

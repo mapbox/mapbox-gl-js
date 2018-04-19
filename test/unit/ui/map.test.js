@@ -1215,7 +1215,7 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#updateFeatureState', (t) => {
+    t.test('#setFeatureState', (t) => {
         t.test('sets state', (t) => {
             const map = createMap({
                 style: {
@@ -1227,7 +1227,7 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.updateFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
                 const fState = map.getFeatureState({ source: 'geojson', id: '12345'});
                 t.equal(fState.hover, true);
                 t.end();
@@ -1244,7 +1244,7 @@ test('Map', (t) => {
                 }
             });
             t.throws(() => {
-                map.updateFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
             }, Error, /load/i);
 
             t.end();
@@ -1264,7 +1264,7 @@ test('Map', (t) => {
                     t.match(error.message, /source/);
                     t.end();
                 });
-                map.updateFeatureState({ source: 'vector', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'vector', id: '12345'}, {'hover': true});
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
@@ -1285,7 +1285,7 @@ test('Map', (t) => {
                     t.match(error.message, /sourceLayer/);
                     t.end();
                 });
-                map.updateFeatureState({ source: 'vector', sourceLayer: 0, id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: '12345'}, {'hover': true});
             });
         });
 
