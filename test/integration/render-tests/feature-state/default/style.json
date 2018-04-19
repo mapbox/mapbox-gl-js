@@ -5,14 +5,15 @@
       "height": 256,
       "operations": [
         [
-            "setFeatureStateValue", 
+            "updateFeatureState", 
             { 
-                "sourceId": "mapbox",
-                "sourceLayer": "poi_label"
+                "source": "mapbox",
+                "sourceLayer": "poi_label",
+                "id": "1000059876748"
             },
-            "1000059876748",
-            "isRed",
-            true
+            {
+                "isRed": true
+            }
         ], [
             "wait"
         ]

@@ -5,32 +5,35 @@
       "height": 256,
       "operations": [
         [
-            "setFeatureStateValue", 
+            "updateFeatureState", 
             { 
-                "sourceId": "mapbox",
-                "sourceLayer": "road"
+                "source": "mapbox",
+                "sourceLayer": "road",
+                "id": "4612696"
             },
-            "4612696",
-            "stateA",
-            1
+            { 
+                "stateA": 1 
+            }
         ], [
-            "setFeatureStateValue", 
+            "updateFeatureState", 
             { 
-                "sourceId": "mapbox",
-                "sourceLayer": "road"
+                "source": "mapbox",
+                "sourceLayer": "road",
+                "id": 4612696
             },
-            4612696,
-            "stateB",
-            "feature_id as number"
+            {
+                "stateB": "feature_id as number"
+            }
         ], [
-            "setFeatureStateValue", 
+            "updateFeatureState", 
             { 
-                "sourceId": "mapbox",
-                "sourceLayer": "road"
+                "source": "mapbox",
+                "sourceLayer": "road",
+                "id": "4612752"
             },
-            "4612752",
-            "stateB",
-            { "stateKey" : [ 4, 2] }
+            {
+                "stateB": { "stateKey" : [ 4, 2] }
+            }
         ]
       ],
       "queryGeometry": [

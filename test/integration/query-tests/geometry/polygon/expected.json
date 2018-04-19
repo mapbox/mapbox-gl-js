@@ -51,6 +51,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "source": "geojson",
     "state": {}
   }
 ]

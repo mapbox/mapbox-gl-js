@@ -11,6 +11,7 @@
     "properties": {
       "identifier": "secondSource"
     },
+    "source": "secondSource",
     "state": {}
   }
 ]

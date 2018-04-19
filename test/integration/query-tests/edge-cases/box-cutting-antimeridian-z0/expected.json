@@ -11,6 +11,7 @@
     "properties": {
       "id": "B"
     },
+    "source": "geojson",
     "state": {}
   },
   {
@@ -25,6 +26,7 @@
     "properties": {
       "id": "C"
     },
+    "source": "geojson",
     "state": {}
   }
 ]

@@ -11,6 +11,7 @@
     "properties": {
       "radius": 20
     },
+    "source": "mapbox",
     "state": {}
   }
 ]

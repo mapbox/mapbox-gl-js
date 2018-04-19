@@ -48,16 +48,16 @@ map.on('load', function() {
             ]
         }
     });
-    let hoveredId;
+    let hoveredFeature;
     map.on('mousemove', 'places', function(e) {
         if (e.features.length) {
             const f = e.features[0];
             if (!f.state.hover) {
-                map.setFeatureStateValue('places', f.id, 'hover', true);
-                if (hoveredId) {
-                    map.setFeatureStateValue('places', hoveredId, 'hover', false);
+                map.updateFeatureState(f, {'hover': true});
+                if (hoveredFeature) {
+                    map.updateFeatureState(hoveredFeature, {'hover': false});
                 }
-                hoveredId = f.id;
+                hoveredFeature = f;
             }
         }
     });

@@ -792,16 +792,8 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureStateValue(sourceLayer: string, feature: string, key: string, value: any) {
-        this._state.setStateValue(sourceLayer, feature, key, value);
-    }
-
-    /**
-     * Get the value of a particular state for a feature
-     * @private
-     */
-    getFeatureStateValue(sourceLayer: string, feature: string, key: string) {
-        return this._state.getStateValue(sourceLayer, feature, key);
+    updateFeatureState(sourceLayer: string, feature: string, state: Object) {
+        this._state.updateState(sourceLayer, feature, state);
     }
 
     /**

@@ -794,9 +794,9 @@ class Map extends Camera {
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
      *
-     * Each feature includes a top-level `layer` property whose value is an object representing the style layer to
-     * which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated
-     * for the given zoom level and feature.
+     * Each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object 
+     * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
+     * which are fully evaluated for the given zoom level and feature.
      *
      * Features from layers whose `visibility` property is `"none"`, or from layers whose zoom range excludes the
      * current zoom level are not included. Symbol features that have been hidden due to text or icon collision are
@@ -1373,31 +1373,27 @@ class Map extends Camera {
     }
 
     /**
-     * Sets state values on a feature, given a source and [optional]source-layer.
+     * Updates state of a feature.
      * 
-     * @param {string | {sourceId: string, sourceLayer: string}} source *For vector tile sources, the sourceLayer is
-     *  required.* For GeoJSON sources, just the source id.
-     * @param {string} feature The unique feature identifier from the source data.
-     * @param {string} key The name of the state to be set.
-     * @param {any} value The value to be set. This can be any valid JSON value.
+     * @param {source: string, sourceLayer?: string, id: string}} feature identifier *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
      */
-    setFeatureStateValue(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string, value: any) {
-        this.style.setFeatureStateValue(source, feature, key, value);
+    updateFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+        this.style.updateFeatureState(feature, state);
         this._update();
     }
 
     /**
-     * Gets the state value of a feature, given a source and [optional]source-layer.
+     * Gets the state of a feature.
      * 
-     * @param {string | {sourceId: string, sourceLayer: string}} source *For vector tile sources, the sourceLayer is
-     *  required.* For GeoJSON sources, just the source id.
-     * @param {string} feature The unique feature identifier from the source data.
-     * @param {string} key The name of the state.
+     * @param {source: string, sourceLayer?: string, id: string}} feature identifier *For vector tile sources, the sourceLayer is
+     *  required.*
      * 
      * @returns {any} The value of the specified specified state.
      */
-    getFeatureStateValue(source: string | { sourceId: string; sourceLayer: string; }, feature: string, key: string): any {
-        return this.style.getFeatureStateValue(source, feature, key);
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }): any {
+        return this.style.getFeatureState(feature);
     }
 
     /**

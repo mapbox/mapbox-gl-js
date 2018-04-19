@@ -20,24 +20,11 @@ class SourceFeatureState {
         this.stateChanges = {};
     }
 
-    setStateValue(sourceLayer: string, feature: string, key: string, value: any) {
+    updateState(sourceLayer: string, feature: string, state: Object) {
         feature = String(feature);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
-        this.stateChanges[sourceLayer][feature][key] = value;
-    }
-
-    getStateValue(sourceLayer: string, feature: string, key: string) {
-        feature = String(feature);
-        const base = this.state[sourceLayer] || {};
-        const changes = this.stateChanges[sourceLayer] || {};
-
-        if (changes[feature]) {
-            return changes[feature][key];
-        }
-        if (base[feature]) {
-            return base[feature][key];
-        }
+        extend(this.stateChanges[sourceLayer][feature], state);
     }
 
     getState(sourceLayer: string, feature: string) {

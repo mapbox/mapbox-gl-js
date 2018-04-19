@@ -29,6 +29,8 @@
       "level": 56
     },
     "id": 958,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
     "state": {}
   },
   {
@@ -61,6 +63,8 @@
       "level": 56
     },
     "id": 957,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
     "state": {}
   },
   {
@@ -93,6 +97,8 @@
       "level": 56
     },
     "id": 956,
+    "source": "mapbox",
+    "sourceLayer": "hillshade",
     "state": {}
   }
 ]

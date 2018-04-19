@@ -17,6 +17,7 @@
     "properties": {
       "gap": 20
     },
+    "source": "geojson",
     "state": {}
   }
 ]

@@ -766,10 +766,10 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
-    setFeatureStateValue(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string, value: any) {
+    updateFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
         this._checkLoaded();
-        const sourceId = typeof source === 'string' ? source : source.sourceId;
-        let sourceLayer = typeof source == 'object' ? source.sourceLayer : '';
+        const sourceId = feature.source;
+        const sourceLayer = feature.sourceLayer;
         const sourceCache = this.sourceCaches[sourceId];
 
         if (sourceCache === undefined) {
@@ -780,21 +780,15 @@ class Style extends Evented {
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
-        } else if (sourceType === 'geojson') {
-            sourceLayer = '_geojsonTileLayer';
-        }
-        if (!key) {
-            this.fire(new ErrorEvent(new Error(`The key parameter must be provided.`)));
-            return;
         }
 
-        sourceCache.setFeatureStateValue(sourceLayer, feature, key, value);
+        sourceCache.updateFeatureState(sourceLayer || '_geojsonTileLayer', feature.id, state);
     }
 
-    getFeatureStateValue(source: string | { sourceId: string, sourceLayer: string }, feature: string, key: string) {
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }) {
         this._checkLoaded();
-        const sourceId = typeof source === 'string' ? source : source.sourceId;
-        let sourceLayer = typeof source == 'object' ? source.sourceLayer : '';
+        const sourceId = feature.source;
+        const sourceLayer = feature.sourceLayer;
         const sourceCache = this.sourceCaches[sourceId];
 
         if (sourceCache === undefined) {
@@ -805,15 +799,9 @@ class Style extends Evented {
         if (sourceType === 'vector' && !sourceLayer) {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
-        } else if (sourceType === 'geojson') {
-            sourceLayer = '_geojsonTileLayer';
-        }
-        if (!key) {
-            this.fire(new ErrorEvent(new Error(`The key parameter must be provided.`)));
-            return;
         }
 
-        return sourceCache.getFeatureStateValue(sourceLayer, feature, key);
+        return sourceCache.getFeatureState(sourceLayer || '_geojsonTileLayer', feature.id);
     }
 
     getTransition() {

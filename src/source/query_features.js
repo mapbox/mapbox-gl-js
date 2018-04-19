@@ -39,6 +39,8 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
     for (const layerID in result) {
         result[layerID].forEach((feature) => {
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
+            feature.source = feature.layer.source;
+            feature.sourceLayer = feature.layer['source-layer'];
             feature.state = state;
         });
     }
@@ -103,6 +105,8 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
             const layer = styleLayers[layerName];
             const sourceCache = sourceCaches[layer.source];
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
+            feature.source = feature.layer.source;
+            feature.sourceLayer = feature.layer['source-layer'];
             feature.state = state;
         });
     }

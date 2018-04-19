@@ -254,6 +254,8 @@
       "pop_density": 3852.3524267234866
     },
     "id": 23,
+    "source": "us-counties",
+    "sourceLayer": "counties",
     "state": {}
   }
 ]
