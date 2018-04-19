@@ -605,6 +605,10 @@ class Style extends Evented {
             return;
         }
 
+        if (id === before) {
+            return;
+        }
+
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
 

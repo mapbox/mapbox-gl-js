@@ -1273,6 +1273,23 @@ test('Style#moveLayer', (t) => {
         });
     });
 
+    t.test('moves to existing location', (t) => {
+        const style = new Style(new StubMap());
+        style.loadJSON(createStyleJSON({
+            layers: [
+                {id: 'a', type: 'background'},
+                {id: 'b', type: 'background'},
+                {id: 'c', type: 'background'}
+            ]
+        }));
+
+        style.on('style.load', () => {
+            style.moveLayer('b', 'b');
+            t.deepEqual(style._order, ['a', 'b', 'c']);
+            t.end();
+        });
+    });
+
     t.end();
 });
 
