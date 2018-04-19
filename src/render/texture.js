@@ -43,20 +43,20 @@ class Texture {
     useMipmap: boolean;
     powerOfTwoSize: boolean;
 
-    constructor(context: Context, image: TextureImage, format: TextureFormat, premultiply: ?boolean, useMipmap: ?boolean) {
+    constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
         this.context = context;
         this.format = format;
         this.texture = context.gl.createTexture();
-        this.update(image, premultiply, useMipmap);
+        this.update(image, options);
     }
 
-    update(image: TextureImage, premultiply: ?boolean, useMipmap: ?boolean) {
+    update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}) {
         const {width, height} = image;
         const resize = !this.size || this.size[0] !== width || this.size[1] !== height;
         const {context} = this;
         const {gl} = context;
 
-        this.useMipmap = Boolean(useMipmap);
+        this.useMipmap = Boolean(options && options.useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
         if (resize) {
@@ -65,7 +65,7 @@ class Texture {
 
             context.pixelStoreUnpack.set(1);
 
-            if (this.format === gl.RGBA && premultiply !== false) {
+            if (this.format === gl.RGBA && (!options || options.premultiply !== false)) {
                 context.pixelStoreUnpackPremultiplyAlpha.set(true);
             }
 
