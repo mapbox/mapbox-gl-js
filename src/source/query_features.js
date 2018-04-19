@@ -40,7 +40,9 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
         result[layerID].forEach((feature) => {
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.source = feature.layer.source;
-            feature.sourceLayer = feature.layer['source-layer'];
+            if (feature.layer['source-layer']) {
+                feature.sourceLayer = feature.layer['source-layer'];
+            }
             feature.state = state;
         });
     }
@@ -106,7 +108,9 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
             const sourceCache = sourceCaches[layer.source];
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.source = feature.layer.source;
-            feature.sourceLayer = feature.layer['source-layer'];
+            if (feature.layer['source-layer']) {
+                feature.sourceLayer = feature.layer['source-layer'];
+            }
             feature.state = state;
         });
     }
