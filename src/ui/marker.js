@@ -7,35 +7,36 @@ import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
 import { bindAll, extend } from '../util/util';
 import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
-
+import { Event, Evented } from '../util/evented';
 import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
-import type {MapMouseEvent} from './events';
+import type {MapMouseEvent, MapTouchEvent} from './events';
 
 type Options = {
     element?: HTMLElement,
     offset?: PointLike,
     anchor?: Anchor,
-    color?: string
+    color?: string,
+    draggable?: boolean
 };
 
 /**
  * Creates a marker component
- * @param options
- * @param options.element DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
- * @param options.anchor A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
+ * @param {Object} [options]
+ * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
+ * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
- *   The default is `'center'`.
- * @param options.offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
- * @param options.color The color to use for the default marker if options.element is not provided. The default is light blue.
+ * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+ * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
+ * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
-export default class Marker {
+export default class Marker extends Evented {
     _map: Map;
     _anchor: Anchor;
     _offset: Point;
@@ -45,18 +46,30 @@ export default class Marker {
     _pos: ?Point;
     _color: ?string;
     _defaultMarker: boolean;
+    _draggable: boolean;
+    _state: 'inactive' | 'pending' | 'active'; // used for handling drag events
+    _positionDelta: ?number;
 
     constructor(options?: Options) {
+        super();
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
         if (arguments[0] instanceof window.HTMLElement || arguments.length === 2) {
             options = extend({element: options}, arguments[1]);
         }
 
-        bindAll(['_update', '_onMapClick'], this);
+        bindAll([
+            '_update',
+            '_onMove',
+            '_onUp',
+            '_addDragHandler',
+            '_onMapClick'
+        ], this);
 
         this._anchor = options && options.anchor || 'center';
         this._color = options && options.color || '#3FB1CE';
+        this._draggable = options && options.draggable || false;
+        this._state = 'inactive';
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -181,6 +194,7 @@ export default class Marker {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         map.on('moveend', this._update);
+        this.setDraggable(this._draggable);
         this._update();
 
         // If we attached the `click` listener to the marker element, the popup
@@ -203,6 +217,8 @@ export default class Marker {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
             this._map.off('moveend', this._update);
+            this._map.off('mousedown', this._addDragHandler);
+            this._map.off('touchstart', this._addDragHandler);
             delete this._map;
         }
         DOM.remove(this._element);
@@ -278,8 +294,8 @@ export default class Marker {
         return this;
     }
 
-    _onMapClick(event: MapMouseEvent) {
-        const targetElement = event.originalEvent.target;
+    _onMapClick(e: MapMouseEvent) {
+        const targetElement = e.originalEvent.target;
         const element = this._element;
 
         if (this._popup && (targetElement === element || element.contains((targetElement: any)))) {
@@ -345,5 +361,117 @@ export default class Marker {
         this._offset = Point.convert(offset);
         this._update();
         return this;
+    }
+
+    _onMove(e: MapMouseEvent | MapTouchEvent) {
+        this._pos = e.point.sub(this._positionDelta);
+        this._lngLat = this._map.unproject(this._pos);
+        this.setLngLat(this._lngLat);
+        // suppress click event so that popups don't toggle on drag
+        this._element.style.pointerEvents = 'none';
+
+        // make sure dragstart only fires on the first move event after mousedown.
+        // this can't be on mousedown because that event doesn't necessarily
+        // imply that a drag is about to happen.
+        if (this._state === 'pending') {
+            this._state = 'active';
+
+            /**
+             * Fired when dragging starts
+             *
+             * @event dragstart
+             * @memberof Marker
+             * @instance
+             * @type {Object}
+             * @property {Marker} marker object that is being dragged
+             */
+            this.fire(new Event('dragstart'));
+        }
+
+        /**
+         * Fired while dragging
+         *
+         * @event drag
+         * @memberof Marker
+         * @instance
+         * @type {Object}
+         * @property {Marker} marker object that is being dragged
+         */
+        this.fire(new Event('drag'));
+    }
+
+    _onUp() {
+        // revert to normal pointer event handling
+        this._element.style.pointerEvents = 'auto';
+        this._positionDelta = null;
+        this._map.off('mousemove', this._onMove);
+        this._map.off('touchmove', this._onMove);
+
+        // only fire dragend if it was preceded by at least one drag event
+        if (this._state === 'active') {
+            /**
+            * Fired when the marker is finished being dragged
+            *
+            * @event dragend
+            * @memberof Marker
+            * @instance
+            * @type {Object}
+            * @property {Marker} marker object that was dragged
+            */
+            this.fire(new Event('dragend'));
+        }
+
+        this._state = 'inactive';
+    }
+
+    _addDragHandler(e: MapMouseEvent | MapTouchEvent) {
+        if (this._element.contains((e.originalEvent.target: any))) {
+            e.preventDefault();
+
+            // We need to calculate the pixel distance between the click point
+            // and the marker position, with the offset accounted for. Then we
+            // can subtract this distance from the mousemove event's position
+            // to calculate the new marker position.
+            // If we don't do this, the marker 'jumps' to the click position
+            // creating a jarring UX effect.
+            this._positionDelta = e.point.sub(this._pos).add(this._offset);
+
+            this._state = 'pending';
+            this._map.on('mousemove', this._onMove);
+            this._map.on('touchmove', this._onMove);
+            this._map.once('mouseup', this._onUp);
+            this._map.once('touchend', this._onUp);
+        }
+    }
+
+    /**
+     * Sets the `draggable` property and functionality of the marker
+     * @param {boolean} [shouldBeDraggable=false] Turns drag functionality on/off
+     * @returns {Marker} `this`
+     */
+    setDraggable(shouldBeDraggable: boolean) {
+        this._draggable = !!shouldBeDraggable; // convert possible undefined value to false
+
+        // handle case where map may not exist yet
+        // e.g. when setDraggable is called before addTo
+        if (this._map) {
+            if (shouldBeDraggable) {
+                this._map.on('mousedown', this._addDragHandler);
+                this._map.on('touchstart', this._addDragHandler);
+            } else {
+                this._map.off('mousedown', this._addDragHandler);
+                this._map.off('touchstart', this._addDragHandler);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Returns true if the marker can be dragged
+     * @returns {boolean}
+     */
+    isDraggable() {
+        return this._draggable;
     }
 }

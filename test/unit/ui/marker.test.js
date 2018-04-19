@@ -5,6 +5,7 @@ import Marker from '../../../src/ui/marker';
 import Popup from '../../../src/ui/popup';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
+import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap() {
     const container = window.document.createElement('div');
@@ -26,7 +27,7 @@ test('Marker uses a default marker element with custom color', (t) => {
     t.end();
 });
 
-test('Marker uses a default marker with custom offest', (t) => {
+test('Marker uses a default marker with custom offset', (t) => {
     const marker = new Marker({ offset: [1, 2] });
     t.ok(marker.getElement());
     t.ok(marker.getOffset().equals(new Point(1, 2)));
@@ -231,5 +232,222 @@ test('Popup anchors around default Marker', (t) => {
     marker.setLngLat(map.unproject([mapHeight - markerRight, mapHeight]));
     t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-bottom-right'), 'popup anchors top left of marker');
 
+    t.end();
+});
+
+test('Marker drag functionality can be added with drag option', (t) => {
+    const map = createMap();
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.isDraggable(), true);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker#setDraggable adds drag functionality', (t) => {
+    const map = createMap();
+    const marker = new Marker()
+        .setLngLat([0, 0])
+        .setDraggable(true)
+        .addTo(map);
+
+    t.equal(marker.isDraggable(), true);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker#setDraggable turns off drag functionality', (t) => {
+    const map = createMap();
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    t.equal(marker.isDraggable(), true);
+
+    marker.setDraggable(false);
+
+    t.equal(marker.isDraggable(), false);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to a mouse-triggered drag', (t) => {
+    const map = createMap();
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    marker.on('dragstart', dragstart);
+    marker.on('drag',      drag);
+    marker.on('dragend',   dragend);
+
+    simulate.mousedown(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(el);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(el);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:false does not fire dragstart, drag, and dragend events in response to a mouse-triggered drag', (t) => {
+    const map = createMap();
+    const marker = new Marker({})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    marker.on('dragstart', dragstart);
+    marker.on('drag',      drag);
+    marker.on('dragend',   dragend);
+
+    simulate.mousedown(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:true fires dragstart, drag, and dragend events at appropriate times in response to a touch-triggered drag', (t) => {
+    const map = createMap();
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    marker.on('dragstart', dragstart);
+    marker.on('drag',      drag);
+    marker.on('dragend',   dragend);
+
+    simulate.touchstart(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchmove(el);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchend(el);
+    t.equal(dragstart.callCount, 1);
+    t.equal(drag.callCount, 1);
+    t.equal(dragend.callCount, 1);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:false does not fire dragstart, drag, and dragend events in response to a touch-triggered drag', (t) => {
+    const map = createMap();
+    const marker = new Marker({})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    marker.on('dragstart', dragstart);
+    marker.on('drag',      drag);
+    marker.on('dragend',   dragend);
+
+    simulate.touchstart(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchmove(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchend(el);
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:true moves to new position in response to a mouse-triggered drag', (t) => {
+    const map = createMap();
+    const marker = new Marker({draggable: true})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+    const startPos = map.project(marker.getLngLat());
+    simulate.mousedown(el);
+    simulate.mousemove(el, {clientX: 10, clientY: 10});
+    simulate.mouseup(el);
+
+    const endPos = map.project(marker.getLngLat());
+    t.equal(Math.floor(endPos.x), startPos.x + 10);
+    t.equal(Math.floor(endPos.y), startPos.y + 10);
+
+    map.remove();
+    t.end();
+});
+
+test('Marker with draggable:false does not move to new position in response to a mouse-triggered drag', (t) => {
+    const map = createMap();
+    const marker = new Marker({})
+        .setLngLat([0, 0])
+        .addTo(map);
+    const el = marker.getElement();
+    const startPos = map.project(marker.getLngLat());
+
+    simulate.mousedown(el);
+    simulate.mousemove(el);
+    simulate.mouseup(el);
+
+    const endPos = map.project(marker.getLngLat());
+
+    t.equal(startPos.x, endPos.x);
+    t.equal(startPos.y, endPos.y);
+
+    map.remove();
     t.end();
 });
