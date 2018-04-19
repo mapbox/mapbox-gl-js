@@ -123,10 +123,10 @@ function prepareHillshade(painter, tile, sourceMaxZoom) {
         tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
         if (tile.demTexture) {
             const demTexture = tile.demTexture;
-            demTexture.update(pixelData, false);
+            demTexture.update(pixelData, { premultiply: false });
             demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         } else {
-            tile.demTexture = new Texture(context, pixelData, gl.RGBA, false);
+            tile.demTexture = new Texture(context, pixelData, gl.RGBA, { premultiply: false });
             tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
         }
 
