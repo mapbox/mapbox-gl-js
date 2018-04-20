@@ -16,7 +16,8 @@ function makeSymbolInstance(x, y, key) {
 
 function makeTile(tileID, symbolInstances) {
     const bucket = {
-        symbolInstances: symbolInstances
+        symbolInstances: symbolInstances,
+        layerIds: ['test']
     };
     return {
         tileID: tileID,
