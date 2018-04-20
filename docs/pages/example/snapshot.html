@@ -49,7 +49,7 @@ var ctx = snapshot.getContext('2d')
 snapshot.height = innerHeight
 snapshot.width = innerWidth / 2
 var text = 'Click on the map'
-ctx.font = `${snapshot.width / 10}px Arial`;
+ctx.font = Math.round(snapshot.width / 10)+'px Arial';
 ctx.fillStyle = 'white'
 ctx.textAlign = 'center'
 ctx.textBaseline = 'middle'
@@ -80,7 +80,7 @@ width = 200
 text = '  © Mapbox © OpenStreetMap'
 ctx.fillStyle = 'rgba(255,255,255,0.4)'
 ctx.fillRect(snapshot.width - width, snapshot.height - height, width, height)
-ctx.font = `${fontsize}px Arial`;
+ctx.font = fontsize+'px Arial';
 ctx.fillStyle = 'black'
 ctx.textAlign = 'left'
 ctx.textBaseline = 'bottom'
