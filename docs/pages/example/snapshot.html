@@ -44,11 +44,11 @@ var map = new mapboxgl.Map({
   preserveDrawingBuffer: true// not guaranteed to work if false
   });
 
-let snapshot = document.querySelector('#snapshot');
-let ctx = snapshot.getContext('2d')
+var snapshot = document.querySelector('#snapshot');
+var ctx = snapshot.getContext('2d')
 snapshot.height = innerHeight
 snapshot.width = innerWidth / 2
-let text = 'Click on the map'
+var text = 'Click on the map'
 ctx.font = `${snapshot.width / 10}px Arial`;
 ctx.fillStyle = 'white'
 ctx.textAlign = 'center'
@@ -57,8 +57,8 @@ ctx.fillText(text, snapshot.width / 2, snapshot.height / 2)
 
 map.on('click', function() {
 
-  let png = map.getCanvas().toDataURL();
-  let copy = new Image();
+  var png = map.getCanvas().toDataURL();
+  var copy = new Image();
   copy.src = png
   copy.onload = function() {
     ctx.drawImage(copy, 0, 0);
@@ -90,7 +90,7 @@ ctx.fillText(text, snapshot.width - width, snapshot.height - 3)
 function logo(){
 // Please attribute mapbox if using non-commercially
 // https://www.mapbox.com/help/how-attribution-works
-let logo = new Image();
+var logo = new Image();
 logo.src = mapboxlogo();
 logo.onload = function() {
 ctx.drawImage(logo, 3, snapshot.height - logo.height - 3);
