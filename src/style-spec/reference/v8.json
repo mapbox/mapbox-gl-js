@@ -458,7 +458,10 @@
           "doc": "A heatmap.",
           "sdk-support": {
             "basic functionality": {
-              "js": "0.41.0"
+              "js": "0.41.0",
+              "android": "6.0.0",
+              "ios": "4.0.0",
+              "macos": "0.7.0"
             }
           }
         },
@@ -488,7 +491,10 @@
           "doc": "Client-side hillshading visualization based on DEM data. Currently, the implementation only supports Mapbox Terrain RGB and Mapzen Terrarium tiles.",
           "sdk-support": {
             "basic functionality": {
-              "js": "0.43.0"
+              "js": "0.43.0",
+              "android": "6.0.0",
+              "ios": "4.0.0",
+              "macos": "0.7.0"
             }
           }
         },
@@ -639,7 +645,10 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         }
       }
     }
@@ -1370,7 +1379,10 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.43.0"
+          "js": "0.43.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         }
       }
     },
@@ -1847,7 +1859,10 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.43.0"
+          "js": "0.43.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         },
         "data-driven styling": {}
       }
@@ -3811,10 +3826,16 @@
       "doc": "Radius of influence of one heatmap point in pixels. Increasing the value makes the heatmap smoother, but less detailed.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         },
         "data-driven styling": {
-          "js": "0.43.0"
+          "js": "0.43.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         }
       }
     },
@@ -3829,10 +3850,16 @@
       "doc": "A measure of how much an individual point contributes to the heatmap. A value of 10 would be equivalent to having 10 points of weight 1 in the same spot. Especially useful when combined with clustering.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         },
         "data-driven styling": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         }
       }
     },
@@ -3847,7 +3874,10 @@
       "doc": "Similar to `heatmap-weight` but controls the intensity of the heatmap globally. Primarily used for adjusting the heatmap based on zoom level.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         },
         "data-driven styling": {}
       }
@@ -3872,7 +3902,10 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         },
         "data-driven styling": {}
       }
@@ -3889,7 +3922,10 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.41.0"
+          "js": "0.41.0",
+          "android": "6.0.0",
+          "ios": "4.0.0",
+          "macos": "0.7.0"
         },
         "data-driven styling": {}
       }
@@ -4424,7 +4460,10 @@
         "transition": false,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0"
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0",
+            "macos": "0.7.0"
           },
           "data-driven styling": {}
         }
@@ -4445,7 +4484,10 @@
         "doc": "Direction of light source when map is rotated.",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0"
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0",
+            "macos": "0.7.0"
           },
           "data-driven styling": {}
         }
@@ -4461,7 +4503,10 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0"
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0",
+            "macos": "0.7.0"
           },
           "data-driven styling": {}
         }
@@ -4475,7 +4520,10 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0"
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0",
+            "macos": "0.7.0"
           },
           "data-driven styling": {}
         }
@@ -4489,7 +4537,10 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0"
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0",
+            "macos": "0.7.0"
           },
           "data-driven styling": {}
         }
@@ -4503,7 +4554,10 @@
         "transition": true,
         "sdk-support": {
           "basic functionality": {
-            "js": "0.43.0"
+            "js": "0.43.0",
+            "android": "6.0.0",
+            "ios": "4.0.0",
+            "macos": "0.7.0"
           },
           "data-driven styling": {}
         }
