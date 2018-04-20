@@ -259,7 +259,8 @@ class CrossTileSymbolIndex {
 
         for (const tile of tiles) {
             const symbolBucket = ((tile.getBucket(styleLayer): any): SymbolBucket);
-            if (!symbolBucket) continue;
+            if (!symbolBucket || styleLayer.id !== symbolBucket.layerIds[0])
+                continue;
 
             if (!symbolBucket.bucketInstanceId) {
                 symbolBucket.bucketInstanceId = ++this.maxBucketInstanceId;

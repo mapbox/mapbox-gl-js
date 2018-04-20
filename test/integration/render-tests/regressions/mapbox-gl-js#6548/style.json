@@ -1,0 +1,62 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "height": 64,
+            "width": 128
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "sources": {
+        "point": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "text1",
+            "type": "symbol",
+            "source": "point",
+            "layout": {
+                "text-field": "Rendered Twice",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        },
+        {
+            "id": "text2",
+            "type": "symbol",
+            "source": "point",
+            "layout": {
+                "text-field": "Rendered Twice",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}
