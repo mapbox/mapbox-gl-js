@@ -9,14 +9,14 @@
     13.418056,
     52.499167
   ],
-  "zoom": 16,
+  "zoom": 20,
   "sources": {
     "satellite": {
       "type": "raster",
       "tiles": [
         "local://tiles/{z}-{x}-{y}.satellite.png"
       ],
-      "maxzoom": 10,
+      "maxzoom": 17,
       "tileSize": 256
     }
   },
