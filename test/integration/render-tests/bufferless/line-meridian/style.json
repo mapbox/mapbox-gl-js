@@ -3,13 +3,13 @@
   "metadata": {
     "test": {
       "debug": true,
-      "height": 1024,
-      "width": 1024
+      "height": 256,
+      "width": 256
     }
   },
   "center": [
     0,
-    0
+    66.51326044311188
   ],
   "zoom": 2,
   "sources": {
@@ -20,12 +20,12 @@
         "type": "LineString",
         "coordinates": [
           [
-            -90,
-            66.51326044311188
+            0,
+            90
           ],
           [
-            90,
-            66.51326044311188
+            0,
+            -90
           ]
         ]
       }
