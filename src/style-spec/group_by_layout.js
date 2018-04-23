@@ -23,8 +23,14 @@ function stringify(obj) {
     return `${str}}`;
 }
 
-function getKey(layer) {
+function getKey(layer, i) {
     let key = '';
+
+    // never group symbol layers
+    if (layer.type === 'symbol') {
+        key += i;
+    }
+
     for (const k of refProperties) {
         key += `/${stringify(layer[k])}`;
     }
@@ -51,7 +57,7 @@ function groupByLayout(layers) {
     const groups = {};
 
     for (let i = 0; i < layers.length; i++) {
-        const k = getKey(layers[i]);
+        const k = getKey(layers[i], i);
         let group = groups[k];
         if (!group) {
             group = groups[k] = [];
