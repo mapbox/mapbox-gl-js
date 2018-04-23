@@ -18,6 +18,7 @@ import Anchor from '../../symbol/anchor';
 import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import assert from 'assert';
 
 import type {Feature as ExpressionFeature} from '../../style-spec/expression';
 import type {
@@ -294,6 +295,8 @@ class SymbolBucket implements Bucket {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        // symbol layers are never grouped
+        assert(this.layers.length === 1);
         this.layerIds = this.layers.map(layer => layer.id);
         this.index = options.index;
         this.pixelRatio = options.pixelRatio;

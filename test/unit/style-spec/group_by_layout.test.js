@@ -64,3 +64,31 @@ t('group works even for differing layout key orders', (t) => {
     ]]);
     t.end();
 });
+
+t('does not group symbol layers', (t) => {
+    t.deepEqual(group([
+        {
+            'id': 'parent',
+            'type': 'symbol',
+            'layout': {'a': 1, 'b': 2}
+        },
+        {
+            'id': 'child',
+            'type': 'symbol',
+            'layout': {'b': 2, 'a': 1}
+        }
+    ]), [[
+        {
+            'id': 'parent',
+            'type': 'symbol',
+            'layout': {'a': 1, 'b': 2}
+        }
+    ], [
+        {
+            'id': 'child',
+            'type': 'symbol',
+            'layout': {'b': 2, 'a': 1}
+        }
+    ]]);
+    t.end();
+});
