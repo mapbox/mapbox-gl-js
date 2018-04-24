@@ -37,7 +37,8 @@
       "type": "line",
       "source": "geojson",
       "paint": {
-        "line-width": 10
+        "line-width": 10,
+        "line-opacity": 0.5
       }
     }
   ]
