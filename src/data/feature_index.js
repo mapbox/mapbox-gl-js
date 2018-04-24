@@ -84,12 +84,17 @@ class FeatureIndex {
         }
     }
 
-    // Finds non-symbol features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+    loadVTLayers(): {[string]: VectorTileLayer} {
         if (!this.vtLayers) {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
         }
+        return this.vtLayers;
+    }
+
+    // Finds non-symbol features in this tile at a particular position.
+    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+        this.loadVTLayers();
 
         const params = args.params || {},
             pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
@@ -201,10 +206,7 @@ class FeatureIndex {
                          filterLayerIDs: Array<string>,
                          styleLayers: {[string]: StyleLayer}) {
         const result = {};
-        if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
-            this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
-        }
+        this.loadVTLayers();
 
         const filter = featureFilter(filterSpec);
 
