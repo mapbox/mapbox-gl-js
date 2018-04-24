@@ -132,7 +132,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
     program.draw(
         context,
-        gl.TRIANGLES,
+        gl.LINES,
         layer.id,
         bucket.layoutVertexBuffer,
         bucket.indexBuffer,

@@ -5,7 +5,7 @@ import { LineLayoutArray } from '../array_types';
 import { members as layoutAttributes } from './line_attributes';
 import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
-import { TriangleIndexArray } from '../index_array_type';
+import { LineIndexArray } from '../index_array_type';
 import loadGeometry from '../load_geometry';
 import EXTENT from '../extent';
 import mvt from '@mapbox/vector-tile';
@@ -98,7 +98,7 @@ class LineBucket implements Bucket {
     layoutVertexArray: LineLayoutArray;
     layoutVertexBuffer: VertexBuffer;
 
-    indexArray: TriangleIndexArray;
+    indexArray: LineIndexArray;
     indexBuffer: IndexBuffer;
 
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
@@ -113,7 +113,7 @@ class LineBucket implements Bucket {
         this.index = options.index;
 
         this.layoutVertexArray = new LineLayoutArray();
-        this.indexArray = new TriangleIndexArray();
+        this.indexArray = new LineIndexArray();
         this.programConfigurations = new ProgramConfigurationSet(layoutAttributes, options.layers, options.zoom);
         this.segments = new SegmentVector();
     }
@@ -471,8 +471,10 @@ class LineBucket implements Bucket {
         addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, endLeft, distance);
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
-            indexArray.emplaceBack(this.e1, this.e2, this.e3);
-            segment.primitiveLength++;
+            indexArray.emplaceBack(this.e1, this.e2);
+            indexArray.emplaceBack(this.e2, this.e3);
+            indexArray.emplaceBack(this.e3, this.e1);
+            segment.primitiveLength += 3;
         }
         this.e1 = this.e2;
         this.e2 = this.e3;
@@ -482,8 +484,10 @@ class LineBucket implements Bucket {
         addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, -endRight, distance);
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
-            indexArray.emplaceBack(this.e1, this.e2, this.e3);
-            segment.primitiveLength++;
+            indexArray.emplaceBack(this.e1, this.e2);
+            indexArray.emplaceBack(this.e2, this.e3);
+            indexArray.emplaceBack(this.e3, this.e1);
+            segment.primitiveLength += 3;
         }
         this.e1 = this.e2;
         this.e2 = this.e3;
@@ -523,8 +527,10 @@ class LineBucket implements Bucket {
         addLineVertex(layoutVertexArray, currentVertex, extrude, false, lineTurnsLeft, 0, distance);
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
-            indexArray.emplaceBack(this.e1, this.e2, this.e3);
-            segment.primitiveLength++;
+            indexArray.emplaceBack(this.e1, this.e2);
+            indexArray.emplaceBack(this.e2, this.e3);
+            indexArray.emplaceBack(this.e3, this.e1);
+            segment.primitiveLength += 3;
         }
 
         if (lineTurnsLeft) {
