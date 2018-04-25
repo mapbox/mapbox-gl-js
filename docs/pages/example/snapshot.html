@@ -62,26 +62,25 @@ map.on('click', function() {
     copy.onload = function() {
         ctx.drawImage(copy, 0, 0);
         logo();
-        if (snapshot.width > 400) {
-            textbox();
-        }
+        textbox()        
     };
 });
 
 function textbox() {
     // Please attribute mapbox if using non-commercially
     // https://www.mapbox.com/help/how-attribution-works
+    var text = '© Mapbox © OpenStreetMap'
+    if (snapshot.width < 300) text = '© OCM'
     var fontsize = 14;
     var height = fontsize + 6;
-    var width = 200;
-    var text = '  © Mapbox © OpenStreetMap';
+    var width = (text.length + 3) / fontsize * 100;
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.fillRect(snapshot.width - width, snapshot.height - height, width, height);
     ctx.font = fontsize + 'px Arial';
     ctx.fillStyle = 'black';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(text, snapshot.width - width, snapshot.height - 3);
+    ctx.fillText(text, snapshot.width - width + 3, snapshot.height - 3);
 }
 
 function logo() {
