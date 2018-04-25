@@ -92,7 +92,7 @@ exports.run = function (implementation, options, runExpressionTest) {
     harness(directory, implementation, options, (fixture, params, done) => {
         try {
             const result = runExpressionTest(fixture, params);
-            const dir = path.join(directory, params.group, params.test);
+            const dir = path.join(directory, params.id);
 
             if (process.env.UPDATE) {
                 fixture.expected = {

@@ -47,7 +47,7 @@ exports.run = function (implementation, options, query) {
         query(style, params, (err, data, results) => {
             if (err) return done(err);
 
-            const dir = path.join(directory, params.group, params.test);
+            const dir = path.join(directory, params.id);
 
             if (process.env.UPDATE) {
                 fs.writeFile(path.join(dir, 'expected.json'), JSON.stringify(results, null, 2), done);
