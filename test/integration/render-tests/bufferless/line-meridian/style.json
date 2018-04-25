@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "debug": true,
+      "clipTiles": false,
       "height": 256,
       "width": 256
     }

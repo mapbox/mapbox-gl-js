@@ -62,6 +62,7 @@ export type RenderPass = 'offscreen' | 'opaque' | 'translucent';
 type PainterOptions = {
     showOverdrawInspector: boolean,
     showTileBoundaries: boolean,
+    clipTiles: boolean,
     rotating: boolean,
     zooming: boolean,
     fadeDuration: number
@@ -103,7 +104,6 @@ class Painter {
     renderPass: RenderPass;
     currentLayer: number;
     id: string;
-    _showOverdrawInspector: boolean;
     cache: { [string]: Program };
     crossTileSymbolIndex: CrossTileSymbolIndex;
     symbolFadeChange: number;
@@ -242,13 +242,17 @@ class Painter {
     }
 
     stencilModeForClipping(tileID: OverscaledTileID): StencilMode {
-        const gl = this.context.gl;
-        return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        if (this.options.clipTiles) {
+            const gl = this.context.gl;
+            return new StencilMode({ func: gl.EQUAL, mask: 0xFF }, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
+        } else {
+            return StencilMode.disabled;
+        }
     }
 
     colorModeForRenderPass(): $ReadOnly<ColorMode> {
         const gl = this.context.gl;
-        if (this._showOverdrawInspector) {
+        if (this.options.showOverdrawInspector) {
             const numOverdrawSteps = 8;
             const a = 1 / numOverdrawSteps;
 
@@ -333,8 +337,6 @@ class Painter {
 
         // Clear buffers in preparation for drawing to the main framebuffer
         this.context.clear({ color: options.showOverdrawInspector ? Color.black : Color.transparent, depth: 1 });
-
-        this._showOverdrawInspector = options.showOverdrawInspector;
 
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
@@ -470,9 +472,9 @@ class Painter {
 
     _createProgramCached(name: string, programConfiguration: ProgramConfiguration): Program {
         this.cache = this.cache || {};
-        const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
+        const key = `${name}${programConfiguration.cacheKey || ''}${this.options.showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, shaders[name], programConfiguration, this._showOverdrawInspector);
+            this.cache[key] = new Program(this.context, shaders[name], programConfiguration, this.options.showOverdrawInspector);
         }
         return this.cache[key];
     }

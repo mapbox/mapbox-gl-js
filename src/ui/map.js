@@ -226,6 +226,7 @@ class Map extends Camera {
     _showTileBoundaries: ?boolean;
     _showCollisionBoxes: ?boolean;
     _showOverdrawInspector: boolean;
+    _clipTiles: ?boolean;
     _repaint: ?boolean;
     _vertices: ?boolean;
     _canvas: HTMLCanvasElement;
@@ -1600,6 +1601,7 @@ class Map extends Camera {
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
+            clipTiles: this._clipTiles !== false,
             rotating: this.isRotating(),
             zooming: this.isZooming(),
             fadeDuration: this._fadeDuration
@@ -1732,6 +1734,13 @@ class Map extends Camera {
     set showOverdrawInspector(value: boolean) {
         if (this._showOverdrawInspector === value) return;
         this._showOverdrawInspector = value;
+        this._update();
+    }
+
+    get clipTiles(): boolean { return this.clipTiles; }
+    set clipTiles(value: boolean) {
+        if (this._clipTiles === value) return;
+        this._clipTiles = value;
         this._update();
     }
 
