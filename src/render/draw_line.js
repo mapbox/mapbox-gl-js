@@ -4,6 +4,7 @@ import browser from '../util/browser';
 
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import DepthMode from '../gl/depth_mode';
+import StencilMode from '../gl/stencil_mode';
 import Texture from './texture';
 
 import type Painter from './painter';
@@ -112,7 +113,8 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
         }
     }
 
-    context.setStencilMode(painter.stencilModeForClipping(coord));
+    // context.setStencilMode(painter.stencilModeForClipping(coord));
+    context.setStencilMode(StencilMode.disabled);
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
