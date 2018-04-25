@@ -41,7 +41,7 @@ var map = new mapboxgl.Map({
         lng: -122.0325
     },
     zoom: 10,
-    preserveDrawingBuffer: true// not guaranteed to work if false
+    preserveDrawingBuffer: true// required for the map's canvas to be exported to a PNG
 });
 
 var snapshot = document.querySelector('#snapshot');
