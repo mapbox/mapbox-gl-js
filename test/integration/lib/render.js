@@ -36,6 +36,40 @@ function minBy(array, pluck) {
     }, null)[1];
 }
 
+exports.test = function (dir, style, params, expectedBuffers, data) {
+    const actualPNG = toPNG(data, params);
+
+    // There may be multiple expected images, covering different platforms. We'll compare against each
+    // one and pick the one with the least amount of difference; this is useful for covering features
+    // that render differently depending on platform, i.e. heatmaps use half-float textures for improved
+    // rendering where supported.
+
+    const results = expectedBuffers.map((expectedBuffer) => {
+        const expectedPNG = PNG.sync.read(expectedBuffer);
+        const diffPNG = new PNG({width: actualPNG.width, height: actualPNG.height});
+        const numPixels = pixelmatch(actualPNG.data, expectedPNG.data,
+            diffPNG.data, actualPNG.width, actualPNG.height, {threshold: 0.13});
+        return {diffPNG, numPixels, expectedBuffer};
+    });
+
+    const best = minBy(results, r => r.numPixels);
+    const score = best.numPixels / (actualPNG.width * actualPNG.height);
+
+    params.difference = score;
+    params.ok = score <= params.allowed;
+
+    const diffBuffer = PNG.sync.write(best.diffPNG);
+    const actualBuffer = PNG.sync.write(actualPNG);
+    const expectedBuffer = best.expectedBuffer;
+
+    params.diff = diffBuffer.toString('base64');
+    params.actual = actualBuffer.toString('base64');
+    params.expected = expectedBuffer.toString('base64');
+
+    fs.writeFileSync(path.join(dir, 'diff.png'), diffBuffer);
+    fs.writeFileSync(path.join(dir, 'actual.png'), actualBuffer);
+};
+
 /**
  * Run the render test suite, compute differences to expected values (making exceptions based on
  * implementation vagaries), print results to standard output, write test artifacts to the
@@ -111,69 +145,26 @@ exports.run = function (implementation, ignores, render) {
 
     const directory = path.join(__dirname, '../render-tests');
     harness(directory, implementation, options, (style, params, done) => {
+        const dir = path.join(directory, params.id);
         render(style, params, (err, data) => {
             if (err) return done(err);
-
-            const dir      = path.join(directory, params.id);
-            const expected = path.join(dir, 'expected.png');
-            const actual   = path.join(dir, 'actual.png');
-            const diff     = path.join(dir, 'diff.png');
-
-            const actualPNG = toPNG(data, params);
-
             if (process.env.UPDATE) {
-                actualPNG.pack()
-                    .pipe(fs.createWriteStream(expected))
+                toPNG(data, params)
+                    .pack()
+                    .pipe(fs.createWriteStream(path.join(dir, 'expected.png')))
                     .on('finish', done);
             } else {
-                // There may be multiple expected images, covering different platforms. We'll compare against each
-                // one and pick the one with the least amount of difference; this is useful for covering features
-                // that render differently depending on platform, i.e. heatmaps use half-float textures for improved
-                // rendering where supported.
-
                 const expectedPaths = glob.sync(path.join(dir, 'expected*.png'));
                 if (expectedPaths.length === 0) {
                     throw new Error('No expected*.png files found; did you mean to run tests with UPDATE=true?');
                 }
 
                 const q = queue();
+                expectedPaths.forEach(path => q.defer(fs.readFile, path));
 
-                expectedPaths.forEach((path) => {
-                    q.defer((callback) => {
-                        fs.readFile(path, (err, buffer) => {
-                            if (err) return callback(err);
-                            new PNG().parse(buffer, (err, expectedPNG) => {
-                                if (err) return callback(err);
-
-                                const diff = new PNG({width: actualPNG.width, height: actualPNG.height});
-                                const numPixels = pixelmatch(actualPNG.data, expectedPNG.data,
-                                    diff.data, actualPNG.width, actualPNG.height, {threshold: 0.13});
-
-                                callback(null, [diff, numPixels, buffer]);
-                            });
-                        });
-                    });
-                });
-
-                q.awaitAll((err, results) => {
+                q.awaitAll((err, buffers) => {
                     if (err) return done(err);
-
-                    const best = minBy(results, (r) => r[1]);
-                    const score = best[1] / (actualPNG.width * actualPNG.height);
-
-                    params.difference = score;
-                    params.ok = score <= params.allowed;
-
-                    const diffBuffer = PNG.sync.write(best[0]);
-                    const actualBuffer = PNG.sync.write(actual);
-
-                    fs.writeFileSync(diff, diffBuffer);
-                    fs.writeFileSync(actual, actualBuffer);
-
-                    params.diff = diffBuffer.toString('base64');
-                    params.actual = actualBuffer.toString('base64');
-                    params.expected = best[2].toString('base64');
-
+                    exports.test(dir, style, params, buffers, data);
                     done();
                 });
             }
