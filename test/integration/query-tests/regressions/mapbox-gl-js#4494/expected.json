@@ -9,6 +9,7 @@
     },
     "type": "Feature",
     "properties": {},
-    "id": "foo"
+    "source": "geojson",
+    "state": {}
   }
 ]

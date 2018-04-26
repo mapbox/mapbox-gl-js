@@ -1,7 +1,5 @@
 [
   {
-    "properties": {},
-    "type": "Feature",
     "geometry": {
       "type": "MultiPoint",
       "coordinates": [
@@ -11,9 +9,13 @@
         ],
         [
           10.01953125,
-          10.012129557908139
+          10.012129557908153
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {},
+    "source": "geojson",
+    "state": {}
   }
 ]

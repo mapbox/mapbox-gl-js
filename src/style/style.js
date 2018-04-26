@@ -770,6 +770,44 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+        this._checkLoaded();
+        const sourceId = feature.source;
+        const sourceLayer = feature.sourceLayer;
+        const sourceCache = this.sourceCaches[sourceId];
+
+        if (sourceCache === undefined) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+        const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'vector' && !sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
+            return;
+        }
+
+        sourceCache.setFeatureState(sourceLayer || '_geojsonTileLayer', feature.id, state);
+    }
+
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }) {
+        this._checkLoaded();
+        const sourceId = feature.source;
+        const sourceLayer = feature.sourceLayer;
+        const sourceCache = this.sourceCaches[sourceId];
+
+        if (sourceCache === undefined) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+        const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'vector' && !sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
+            return;
+        }
+
+        return sourceCache.getFeatureState(sourceLayer || '_geojsonTileLayer', feature.id);
+    }
+
     getTransition() {
         return extend({ duration: 300, delay: 0 }, this.stylesheet && this.stylesheet.transition);
     }
@@ -858,6 +896,7 @@ class Style extends Evented {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._layers,
+                    this.sourceCaches,
                     queryGeometry.viewport,
                     params,
                     this.placement.collisionIndex,

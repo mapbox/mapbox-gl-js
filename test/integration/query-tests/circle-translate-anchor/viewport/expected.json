@@ -1,13 +1,5 @@
 [
   {
-    "properties": {
-      "class": "street",
-      "oneway": 0,
-      "osm_id": 4887461,
-      "type": "residential"
-    },
-    "id": 4887461,
-    "type": "Feature",
     "geometry": {
       "type": "LineString",
       "coordinates": [
@@ -36,17 +28,20 @@
           52.500160120744795
         ]
       ]
-    }
-  },
-  {
+    },
+    "type": "Feature",
     "properties": {
       "class": "street",
       "oneway": 0,
-      "osm_id": 4612753,
+      "osm_id": 4887461,
       "type": "residential"
     },
-    "id": 4612753,
-    "type": "Feature",
+    "id": 4887461,
+    "source": "mapbox",
+    "sourceLayer": "road",
+    "state": {}
+  },
+  {
     "geometry": {
       "type": "LineString",
       "coordinates": [
@@ -59,6 +54,17 @@
           52.49939268890719
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {
+      "class": "street",
+      "oneway": 0,
+      "osm_id": 4612753,
+      "type": "residential"
+    },
+    "id": 4612753,
+    "source": "mapbox",
+    "sourceLayer": "road",
+    "state": {}
   }
 ]

@@ -10,7 +10,9 @@
     "type": "Feature",
     "properties": {
       "id": "B"
-    }
+    },
+    "source": "geojson",
+    "state": {}
   },
   {
     "geometry": {
@@ -23,6 +25,8 @@
     "type": "Feature",
     "properties": {
       "id": "C"
-    }
+    },
+    "source": "geojson",
+    "state": {}
   }
 ]

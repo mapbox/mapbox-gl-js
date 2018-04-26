@@ -28,6 +28,10 @@ class EvaluationContext {
         return this.feature && this.feature.properties || {};
     }
 
+    state() {
+        return this.feature && this.feature.state || {};
+    }
+
     parseColor(input: string): ?Color {
         let cached = this._parseColorCache[input];
         if (!cached) {

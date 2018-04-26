@@ -8,6 +8,8 @@
       ]
     },
     "type": "Feature",
-    "properties": {}
+    "properties": {},
+    "source": "geojson",
+    "state": {}
   }
 ]

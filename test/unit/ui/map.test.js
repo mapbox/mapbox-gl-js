@@ -1215,6 +1215,83 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#setFeatureState', (t) => {
+        t.test('sets state', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                const fState = map.getFeatureState({ source: 'geojson', id: '12345'});
+                t.equal(fState.hover, true);
+                t.end();
+            });
+        });
+        t.test('throw before loaded', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            t.throws(() => {
+                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+            }, Error, /load/i);
+
+            t.end();
+        });
+        t.test('fires an error if source not found', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /source/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', id: '12345'}, {'hover': true});
+            });
+        });
+        t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
+            const map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /sourceLayer/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: '12345'}, {'hover': true});
+            });
+        });
+
+        t.end();
+    });
+
     t.test('error event', (t) => {
         t.test('logs errors to console when it has NO listeners', (t) => {
             const map = createMap();

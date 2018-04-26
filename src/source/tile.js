@@ -33,6 +33,7 @@ import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Transform from '../geo/transform';
+import type {LayerFeatureStates} from './source_state';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -221,9 +222,8 @@ class Tile {
     upload(context: Context) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (!bucket.uploaded) {
+            if (bucket.uploadPending()) {
                 bucket.upload(context);
-                bucket.uploaded = true;
             }
         }
 
@@ -418,6 +418,24 @@ class Tile {
         }
     }
 
+    setFeatureState(states: LayerFeatureStates) {
+        if (!this.latestRawTileData || Object.keys(states).length === 0) return;
+
+        if (!this.vtLayers) {
+            this.vtLayers = new vt.VectorTile(new Protobuf(this.latestRawTileData)).layers;
+        }
+
+        for (const i in this.buckets) {
+            const bucket = this.buckets[i];
+            // Buckets are grouped by common source-layer
+            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
+            const sourceLayer = this.vtLayers[sourceLayerId];
+            const sourceLayerStates = states[sourceLayerId];
+            if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
+
+            bucket.update(sourceLayerStates, sourceLayer);
+        }
+    }
 }
 
 export default Tile;

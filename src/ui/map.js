@@ -794,9 +794,9 @@ class Map extends Camera {
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
      *
-     * Each feature includes a top-level `layer` property whose value is an object representing the style layer to
-     * which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated
-     * for the given zoom level and feature.
+     * Each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object 
+     * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
+     * which are fully evaluated for the given zoom level and feature.
      *
      * Features from layers whose `visibility` property is `"none"`, or from layers whose zoom range excludes the
      * current zoom level are not included. Symbol features that have been hidden due to text or icon collision are
@@ -1370,6 +1370,38 @@ class Map extends Camera {
      */
     getLight() {
         return this.style.getLight();
+    }
+
+    /**
+     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
+     * 
+     * @param {Object} [feature] Feature identifier. Feature objects returned from 
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.* 
+     * @param {string} [feature.id] Unique id of the feature.
+     * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
+     */
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+        this.style.setFeatureState(feature, state);
+        this._update();
+    }
+
+    /**
+     * Gets the state of a feature.
+     * 
+     * @param {Object} [feature] Feature identifier. Feature objects returned from 
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.* 
+     * @param {string} [feature.id] Unique id of the feature.
+     * 
+     * @returns {Object} The state of the feature.
+     */
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }): any {
+        return this.style.getFeatureState(feature);
     }
 
     /**

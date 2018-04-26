@@ -1,7 +1,5 @@
 [
   {
-    "properties": {},
-    "type": "Feature",
     "geometry": {
       "type": "MultiPolygon",
       "coordinates": [
@@ -54,6 +52,10 @@
           ]
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {},
+    "source": "geojson",
+    "state": {}
   }
 ]

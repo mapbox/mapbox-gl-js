@@ -55,6 +55,13 @@ exports.run = function (implementation, options, query) {
             }
 
             const expected = require(path.join(dir, 'expected.json'));
+
+            //For feature states, remove 'state' from fixtures until implemented in native
+            if (implementation === 'native') {
+                for (let i = 0; i < expected.length; i++) {
+                    delete expected[i].state;
+                }
+            }
             params.ok = deepEqual(results, expected);
 
             if (!params.ok) {

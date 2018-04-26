@@ -98,6 +98,7 @@ class StructArray {
     members: Array<StructArrayMember>;
     bytesPerElement: number;
     +emplaceBack: Function;
+    +emplace: Function;
 
     constructor() {
         this.isTransferred = false;

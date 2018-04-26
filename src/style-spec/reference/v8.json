@@ -2373,6 +2373,15 @@
           }
         }
       },
+      "feature-state": {
+        "doc": "Retrieves a property value from the current feature's state. Returns null if the requested property is not present on the feature's state object.",
+        "group": "Feature data",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.46.0"
+          }
+        }
+      },
       "geometry-type": {
         "doc": "Gets the feature's geometry type: Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon.",
         "group": "Feature data",

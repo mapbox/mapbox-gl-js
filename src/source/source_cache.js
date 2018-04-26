@@ -13,6 +13,7 @@ import Point from '@mapbox/point-geometry';
 import browser from '../util/browser';
 import { OverscaledTileID } from './tile_id';
 import assert from 'assert';
+import SourceFeatureState from './source_state';
 
 import type {Source} from './source';
 import type Map from '../ui/map';
@@ -54,6 +55,7 @@ class SourceCache extends Evented {
     transform: Transform;
     _isIdRenderable: (id: number) => boolean;
     used: boolean;
+    _state: SourceFeatureState
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -94,6 +96,7 @@ class SourceCache extends Evented {
         this._isIdRenderable = this._isIdRenderable.bind(this);
 
         this._coveredTiles = {};
+        this._state = new SourceFeatureState();
     }
 
     onAdd(map: Map) {
@@ -165,6 +168,7 @@ class SourceCache extends Evented {
             this._source.prepare();
         }
 
+        this._state.coalesceChanges(this._tiles);
         for (const i in this._tiles) {
             this._tiles[i].upload(context);
         }
@@ -247,6 +251,8 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
+        this._state.initializeTileState(tile);
+
         this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -621,6 +627,12 @@ class SourceCache extends Evented {
             this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
+            this._state.initializeTileState(tile);
+            if (this._cacheTimers[tileID.key]) {
+                clearTimeout(this._cacheTimers[tileID.key]);
+                delete this._cacheTimers[tileID.key];
+                this._setTileReloadTimer(tileID.key, tile);
+            }
         }
 
         const cached = Boolean(tile);
@@ -774,6 +786,25 @@ class SourceCache extends Evented {
         }
 
         return false;
+    }
+
+    /**
+     * Set the value of a particular state for a feature
+     * @private
+     */
+    setFeatureState(sourceLayer: string, feature: string, state: Object) {
+        this._state.updateState(sourceLayer, feature, state);
+    }
+
+    /**
+     * Get the entire state object for a feature
+     * @private
+     */
+    getFeatureState(sourceLayer: string, feature: string) {
+        if (this._source.type === 'geojson') {
+            sourceLayer = '_geojsonTileLayer';
+        }
+        return this._state.getState(sourceLayer, feature);
     }
 }
 

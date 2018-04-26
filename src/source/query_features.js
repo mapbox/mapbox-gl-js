@@ -33,10 +33,24 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
         });
     }
 
-    return mergeRenderedFeatureLayers(renderedFeatureLayers);
+    const result = mergeRenderedFeatureLayers(renderedFeatureLayers);
+
+    // Merge state from SourceCache into the results
+    for (const layerID in result) {
+        result[layerID].forEach((feature) => {
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
+            feature.source = feature.layer.source;
+            if (feature.layer['source-layer']) {
+                feature.sourceLayer = feature.layer['source-layer'];
+            }
+            feature.state = state;
+        });
+    }
+    return result;
 }
 
 export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
+                            sourceCaches: {[string]: SourceCache},
                             queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             collisionIndex: CollisionIndex,
@@ -85,6 +99,20 @@ export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
                 resultFeatures.push(symbolFeature.feature);
             }
         }
+    }
+
+    // Merge state from SourceCache into the results
+    for (const layerName in result) {
+        result[layerName].forEach((feature) => {
+            const layer = styleLayers[layerName];
+            const sourceCache = sourceCaches[layer.source];
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
+            feature.source = feature.layer.source;
+            if (feature.layer['source-layer']) {
+                feature.sourceLayer = feature.layer['source-layer'];
+            }
+            feature.state = state;
+        });
     }
     return result;
 }
