@@ -50,7 +50,7 @@ var snapshot = document.querySelector('#snapshot');
 var ctx = snapshot.getContext('2d');
 
 // draw snapshot canvas 
-window.addEventListener('load', function(){
+window.addEventListener('load', function() {
     var text = 'Click on the map';
     snapshot.height = window.innerHeight;
     snapshot.width = window.innerWidth / 2;
@@ -94,10 +94,10 @@ function logo() {
     // https://www.mapbox.com/help/how-attribution-works
     var img = new Image();
     var logo = mapboxlogo();
-    img.src = logo.image64
+    img.src = logo.image64;
     img.onload = function() {
     //(!) Doesn't work in Firefox
-    ctx.drawImage(img, 3, snapshot.height - logo.height - 4, logo.width, logo.height);
+        ctx.drawImage(img, 3, snapshot.height - logo.height - 4, logo.width, logo.height);
     };
 }
 
@@ -111,10 +111,10 @@ function mapboxlogo() {
     var image64 = b64Start + base64;
 
     // logo size
-    var height = style.height.replace('px','');
-    var width = style.width.replace('px','');
+    var height = style.height.replace('px', '');
+    var width = style.width.replace('px', '');
 
-    return {'image64':image64, 'height':height, 'width':width}
+    return {'image64':image64, 'height':height, 'width':width};
 }
 
 </script>
