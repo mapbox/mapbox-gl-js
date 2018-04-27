@@ -48,14 +48,18 @@ var map = new mapboxgl.Map({
 
 var snapshot = document.querySelector('#snapshot');
 var ctx = snapshot.getContext('2d');
-snapshot.height = innerHeight;
-snapshot.width = innerWidth / 2;
-var text = 'Click on the map';
-ctx.font = Math.round(snapshot.width / 10) + 'px Arial';
-ctx.fillStyle = 'white';
-ctx.textAlign = 'center';
-ctx.textBaseline = 'middle';
-ctx.fillText(text, snapshot.width / 2, snapshot.height / 2);
+
+// draw snapshot canvas 
+window.addEventListener('load', function(){
+    var text = 'Click on the map';
+    snapshot.height = window.innerHeight;
+    snapshot.width = window.innerWidth / 2;
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = Math.round(snapshot.width / 10) + 'px Arial';
+    ctx.fillText(text, snapshot.width / 2, snapshot.height / 2);
+}, false);
 
 map.on('click', function() {
     var png = map.getCanvas().toDataURL();
