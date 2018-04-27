@@ -106,7 +106,7 @@ function mapboxlogo() {
     // logo image
     var a = document.querySelector('a.mapboxgl-ctrl-logo');
     var style = window.getComputedStyle(a, false);
-    var base64 = style.backgroundImage.slice(31, -2)
+    var base64 = style.backgroundImage.slice(31, -2);
     var b64Start = 'data:image/svg+xml;base64,';
     var image64 = b64Start + base64;
 
