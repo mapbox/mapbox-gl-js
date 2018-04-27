@@ -1,6 +1,6 @@
 /*---
-title: Snapshot
-description: Capture a snapshot image of a map
+title: Snapshot an image of a map
+description: Captures a snapshot image of a map.
 tags:
   - user-interaction
 pathname: /mapbox-gl-js/example/snapshot/
