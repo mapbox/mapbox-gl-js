@@ -1,6 +1,6 @@
 // @flow
 
-import { parseCSSColor } from 'csscolorparser';
+import { color } from 'd3-color';
 
 /**
  * An RGBA color value. Create instances from color strings using the static
@@ -47,16 +47,17 @@ class Color {
             return undefined;
         }
 
-        const rgba = parseCSSColor(input);
-        if (!rgba) {
+        const c = color(input);
+        if (!c) {
             return undefined;
         }
 
+        const {r, g, b, opacity} = c.rgb();
         return new Color(
-            rgba[0] / 255 * rgba[3],
-            rgba[1] / 255 * rgba[3],
-            rgba[2] / 255 * rgba[3],
-            rgba[3]
+            (r || 0) / 255 * opacity,
+            (g || 0) / 255 * opacity,
+            (b || 0) / 255 * opacity,
+            (opacity || 0)
         );
     }
 
