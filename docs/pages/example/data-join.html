@@ -72,7 +72,7 @@ map.on('load', function() {
     // https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
     map.addSource("states", {
         type: "vector",
-        url: "mapbox://mapbox.10asuvo4",
+        url: "mapbox://mapbox.us_census_states_2015"
     });
 
     // Add layer from the vector tile source with data-driven style
@@ -94,19 +94,19 @@ map.on('load', function() {
 
     // Join the JSON unemployment data with the corresponding vector features where
     // feautre.id == STATE_ID
-    function setStates() {
-        data.forEach(function(row) {
-            map.setFeatureState({source: 'states', sourceLayer: 'states', id: row["STATE_ID"]}, row);
-        });
+    function setStates(e) {
+        if (e.sourceId === 'states' && e.isSourceLoaded) {
+            map.off('sourcedata', setStates);
+            data.forEach(function(row) {
+                map.setFeatureState({source: 'states', sourceLayer: 'states', id: row["STATE_ID"]}, row);
+            });
+        }
     }
 
     if (map.isSourceLoaded('states')) {
-        setStates();
-    } else map.on('sourcedata', function(e) {
-        if (e.sourceId === 'states' && e.isSourceLoaded) {
-            setStates();
-            map.off('sourcedata');
-        }
-    });
+        setStates({ sourceId: 'states', isSourceLoaded: true});
+    } else {
+        map.on('sourcedata', setStates);
+    }
 });
 </script>
