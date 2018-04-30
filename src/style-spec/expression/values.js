@@ -4,6 +4,7 @@ import assert from 'assert';
 
 import Color from '../util/color';
 import { Collator } from './definitions/collator';
+import { Formatted } from './definitions/formatted';
 import { NullType, NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, CollatorType, array } from './types';
 
 import type { Type } from './types';
@@ -94,6 +95,19 @@ export function typeOf(value: Value): Type {
     } else {
         assert(typeof value === 'object');
         return ObjectType;
+    }
+}
+
+export function toString(value: Value) {
+    const type = typeof value;
+    if (value === null) {
+        return '';
+    } else if (type === 'string' || type === 'number' || type === 'boolean') {
+        return String(value);
+    } else if (value instanceof Color || value instanceof Formatted) {
+        return value.toString();
+    } else {
+        return JSON.stringify(value);
     }
 }
 
