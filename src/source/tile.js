@@ -413,17 +413,19 @@ class Tile {
     }
 
     setFeatureState(states: LayerFeatureStates) {
-        if (!this.latestRawTileData || Object.keys(states).length === 0) return;
-
-        if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(this.latestRawTileData)).layers;
+        if (!this.latestFeatureIndex ||
+            !this.latestFeatureIndex.rawTileData ||
+            Object.keys(states).length === 0) {
+            return;
         }
+
+        const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
         for (const i in this.buckets) {
             const bucket = this.buckets[i];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
-            const sourceLayer = this.vtLayers[sourceLayerId];
+            const sourceLayer = vtLayers[sourceLayerId];
             const sourceLayerStates = states[sourceLayerId];
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
