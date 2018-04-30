@@ -9,7 +9,7 @@ import FeatureIndex from '../../../src/data/feature_index';
 import { CollisionBoxArray } from '../../../src/data/array_types';
 import { extend } from '../../../src/util/util';
 import Context from '../../../src/gl/context';
-import { serialize } from '../../../src/util/web_worker_transfer';
+import { serialize, deserialize } from '../../../src/util/web_worker_transfer';
 
 test('querySourceFeatures', (t) => {
     const features = [{
@@ -21,7 +21,6 @@ test('querySourceFeatures', (t) => {
 
     t.test('geojson tile', (t) => {
         const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        tile.latestFeatureIndex = new FeatureIndex(tile.tileID);
         let result;
 
         result = [];
@@ -30,7 +29,10 @@ test('querySourceFeatures', (t) => {
 
         const geojsonWrapper = new GeoJSONWrapper(features);
         geojsonWrapper.name = '_geojsonTileLayer';
-        tile.latestFeatureIndex.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+        tile.loadVectorData(
+            createVectorData({rawTileData: vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }})}),
+            createPainter()
+        );
 
         result = [];
         tile.querySourceFeatures(result);
@@ -309,8 +311,8 @@ function createRawTileData() {
 function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return extend({
-        collisionBoxArray: serialize(collisionBoxArray),
-        featureIndex: serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1))),
+        collisionBoxArray: deserialize(serialize(collisionBoxArray)),
+        featureIndex: deserialize(serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1)))),
         buckets: []
     }, options);
 }

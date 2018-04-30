@@ -3,8 +3,6 @@
 import { uniqueId, deepEqual, parseCacheControl } from '../util/util';
 import { deserialize as deserializeBucket } from '../data/bucket';
 import FeatureIndex from '../data/feature_index';
-import vt from '@mapbox/vector-tile';
-import Protobuf from 'pbf';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter';
 import SymbolBucket from '../data/bucket/symbol_bucket';
@@ -266,11 +264,7 @@ class Tile {
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
         if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) return;
 
-        if (!this.latestFeatureIndex.vtLayers) {
-            this.latestFeatureIndex.vtLayers =
-                new vt.VectorTile(new Protobuf(this.latestFeatureIndex.rawTileData)).layers;
-        }
-        const vtLayers = this.latestFeatureIndex.vtLayers;
+        const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
         const sourceLayer = params ? params.sourceLayer : '';
         const layer = vtLayers._geojsonTileLayer || vtLayers[sourceLayer];
