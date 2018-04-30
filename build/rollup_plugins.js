@@ -38,7 +38,7 @@ export const plugins = () => [
 
 // Using this instead of rollup-plugin-flow due to
 // https://github.com/leebyron/rollup-plugin-flow/issues/5
-function flow() {
+export function flow() {
     return {
         name: 'flow-remove-types',
         transform: (code) => ({
