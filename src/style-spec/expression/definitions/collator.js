@@ -137,10 +137,10 @@ export class CollatorExpression implements Expression {
 
     serialize() {
         const options = {};
-        options['caseSensitive'] = this.caseSensitive;
-        options['diacriticSensitive'] = this.diacriticSensitive;
+        options['caseSensitive'] = this.caseSensitive.serialize();
+        options['diacriticSensitive'] = this.diacriticSensitive.serialize();
         if (this.locale) {
-            options['locale'] = this.locale;
+            options['locale'] = this.locale.serialize();
         }
         return ["collator", options];
     }
