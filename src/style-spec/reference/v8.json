@@ -5029,7 +5029,7 @@
       "zoom-function": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.45.0"
+          "js": "0.46.0"
         },
         "data-driven styling": {}
       }
