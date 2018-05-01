@@ -130,6 +130,7 @@ jobs:
           at: .
       - run: yarn run build-min
       - run: yarn run build-dev
+      - run: yarn run build-css
       - persist_to_workspace:
           root: .
           paths:

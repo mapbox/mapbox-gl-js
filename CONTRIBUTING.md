@@ -86,9 +86,10 @@ A standalone build allows you to turn the contents of this repository into `mapb
 To create a standalone build, run
 ```bash
 yarn run build-min
+yarn run build-css
 ```
 
-Once that command finishes, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
+Once those commands finish, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
 
 ## Writing & Running Tests
 
