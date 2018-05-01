@@ -37,7 +37,17 @@
     "outputs": [true, false],
     "serialized": [
       "case",
-      false,
+      [
+        "==",
+        [
+          "resolved-locale",
+          [
+            "collator",
+            {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+          ]
+        ],
+        "de"
+      ],
       [
         "==",
         ["string", ["get", "lhs"]],
