@@ -29,6 +29,7 @@ export type LoadGeoJSONParameters = {
     request?: RequestParameters,
     data?: string,
     source: string,
+    cluster: boolean,
     superclusterOptions?: Object,
     geojsonVtOptions?: Object
 };

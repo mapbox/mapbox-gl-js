@@ -2,50 +2,57 @@
 
 export type StylePropertySpecification = {
     type: 'number',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
+    transition: boolean,
     default?: number
 } | {
     type: 'string',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
     default?: string,
+    transition: boolean,
     tokens?: boolean
 } | {
     type: 'boolean',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
+    transition: boolean,
     default?: boolean
 } | {
     type: 'enum',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
     values: {[string]: {}},
+    transition: boolean,
     default?: string
 } | {
     type: 'color',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
+    transition: boolean,
     default?: string
 } | {
     type: 'array',
     value: 'number',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
+    transition: boolean,
     length?: number,
     default?: Array<number>
 } | {
     type: 'array',
     value: 'string',
-    'function': boolean,
+    'function': 'interpolated' | 'piecewise-constant',
     'property-function': boolean,
     'zoom-function': boolean,
+    transition: boolean,
     length?: number,
     default?: Array<string>
 };

@@ -110,11 +110,11 @@ class FullscreenControl {
             }
         } else if (this._mapContainer.requestFullscreen) {
             this._mapContainer.requestFullscreen();
-        } else if (this._mapContainer.mozRequestFullScreen) {
+        } else if ((this._mapContainer: any).mozRequestFullScreen) {
             (this._mapContainer: any).mozRequestFullScreen();
-        } else if (this._mapContainer.msRequestFullscreen) {
+        } else if ((this._mapContainer: any).msRequestFullscreen) {
             (this._mapContainer: any).msRequestFullscreen();
-        } else if (this._mapContainer.webkitRequestFullscreen) {
+        } else if ((this._mapContainer: any).webkitRequestFullscreen) {
             (this._mapContainer: any).webkitRequestFullscreen();
         }
     }

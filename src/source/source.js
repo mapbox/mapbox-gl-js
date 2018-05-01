@@ -8,6 +8,7 @@ import type Map from '../ui/map';
 import type Tile from './tile';
 import type {OverscaledTileID} from './tile_id';
 import type {Callback} from '../types/callback';
+import {CanonicalTileID} from './tile_id';
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`,
@@ -34,15 +35,6 @@ import type {Callback} from '../types/callback';
  * if they are floor-ed to the nearest integer.
  */
 export interface Source {
-    /**
-     * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource}
-     * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
-     * @private
-     */
-    // Static interface properties are not supported in flow as of 0.62.0.
-    // https://github.com/facebook/flow/issues/5590
-    // static workerSourceURL?: URL;
-
     +type: string;
     id: string;
     minzoom: number,
@@ -51,6 +43,9 @@ export interface Source {
     attribution?: string,
 
     roundZoom?: boolean,
+    isTileClipped?: boolean,
+    mapbox_logo?: boolean,
+    tileID?: CanonicalTileID;
     reparseOverscaled?: boolean,
     vectorLayerIds?: Array<string>,
 
@@ -76,6 +71,17 @@ export interface Source {
 
     +prepare?: () => void;
 }
+
+type SourceStatics = {
+    /**
+     * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource}
+     * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
+     * @private
+     */
+    workerSourceURL?: URL;
+};
+
+export type SourceClass = Class<Source> & SourceStatics;
 
 import vector from '../source/vector_tile_source';
 import raster from '../source/raster_tile_source';

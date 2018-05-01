@@ -21,7 +21,7 @@ const handlers = {
     touchZoomRotate
 };
 
-export default function bindHandlers(map: Map, options: {}) {
+export default function bindHandlers(map: Map, options: {interactive: boolean}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
@@ -97,7 +97,7 @@ export default function bindHandlers(map: Map, options: {}) {
         if (map.dragPan.isActive()) return;
         if (map.dragRotate.isActive()) return;
 
-        let target: any = e.toElement || e.target;
+        let target: ?Node = (e.target: any);
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
@@ -105,7 +105,7 @@ export default function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseOver(e: MouseEvent) {
-        let target: any = e.toElement || e.target;
+        let target: ?Node = (e.target: any);
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 

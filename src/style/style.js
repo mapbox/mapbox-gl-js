@@ -18,7 +18,8 @@ import Dispatcher from '../util/dispatcher';
 import { validateStyle, emitValidationErrors as _emitValidationErrors } from './validate_style';
 import {
     getType as getSourceType,
-    setType as setSourceType
+    setType as setSourceType,
+    type SourceClass
 } from '../source/source';
 import { queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures } from '../source/query_features';
 import SourceCache from '../source/source_cache';
@@ -43,7 +44,6 @@ const emitValidationErrors = (evented: Evented, errors: ?$ReadOnlyArray<{message
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
-import type {Source} from '../source/source';
 import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type {Callback} from '../types/callback';
@@ -914,7 +914,7 @@ class Style extends Evented {
         return sourceCache ? querySourceFeatures(sourceCache, params) : [];
     }
 
-    addSourceType(name: string, SourceType: Class<Source>, callback: Callback<void>) {
+    addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>) {
         if (Style.getSourceType(name)) {
             return callback(new Error(`A source type called "${name}" already exists.`));
         }
