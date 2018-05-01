@@ -1664,7 +1664,7 @@ test('Style#queryRenderedFeatures', (t) => {
     const transform = new Transform();
     transform.resize(512, 512);
 
-    function queryMapboxFeatures(layers, queryGeom, scale, params) {
+    function queryMapboxFeatures(layers, getFeatureState, queryGeom, scale, params) {
         const features = {
             'land': [{
                 type: 'Feature',

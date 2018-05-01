@@ -93,7 +93,7 @@ class FeatureIndex {
     }
 
     // Finds non-symbol features in this tile at a particular position.
-    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
+    query(args: QueryParameters, styleLayers: {[string]: StyleLayer}, getFeatureState: (sourceLayer?: string, id: string) => Object): {[string]: Array<{ featureIndex: number, feature: GeoJSONFeature }>} {
         this.loadVTLayers();
 
         const params = args.params || {},
@@ -142,6 +142,10 @@ class FeatureIndex {
                 (feature: VectorTileFeature, styleLayer: StyleLayer) => {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
+                    }
+                    if (feature.id) {
+                        // `feature-state` expression evaluation requires feature state to be available
+                        (feature: any).state = getFeatureState(styleLayer.sourceLayer || '', String(feature.id));
                     }
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.posMatrix);
                 }

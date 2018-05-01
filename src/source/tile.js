@@ -241,6 +241,7 @@ class Tile {
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
+                          getFeatureState: (sourceLayer?: string, id: string) => Object,
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
@@ -258,7 +259,7 @@ class Tile {
             transform: transform,
             params: params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
-        }, layers);
+        }, layers, getFeatureState);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
