@@ -168,7 +168,7 @@ class SourceCache extends Evented {
             this._source.prepare();
         }
 
-        this._state.coalesceChanges(this._tiles);
+        this._state.coalesceChanges(this._tiles, this.map ? this.map.painter : null);
         for (const i in this._tiles) {
             this._tiles[i].upload(context);
         }
@@ -251,7 +251,7 @@ class SourceCache extends Evented {
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         if (this.getSource().type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
-        this._state.initializeTileState(tile);
+        this._state.initializeTileState(tile, this.map ? this.map.painter : null);
 
         this._source.fire(new Event('data', {dataType: 'source', tile: tile, coord: tile.tileID}));
 
@@ -627,7 +627,7 @@ class SourceCache extends Evented {
             this._setTileReloadTimer(tileID.key, tile);
             // set the tileID because the cached tile could have had a different wrap value
             tile.tileID = tileID;
-            this._state.initializeTileState(tile);
+            this._state.initializeTileState(tile, this.map ? this.map.painter : null);
             if (this._cacheTimers[tileID.key]) {
                 clearTimeout(this._cacheTimers[tileID.key]);
                 delete this._cacheTimers[tileID.key];
@@ -792,7 +792,8 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureState(sourceLayer: string, feature: string, state: Object) {
+    setFeatureState(sourceLayer?: string, feature: string, state: Object) {
+        sourceLayer = sourceLayer || '_geojsonTileLayer';
         this._state.updateState(sourceLayer, feature, state);
     }
 
@@ -800,10 +801,8 @@ class SourceCache extends Evented {
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer: string, feature: string) {
-        if (this._source.type === 'geojson') {
-            sourceLayer = '_geojsonTileLayer';
-        }
+    getFeatureState(sourceLayer?: string, feature: string) {
+        sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, feature);
     }
 }
