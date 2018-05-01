@@ -241,7 +241,7 @@ class SourceCache extends Evented {
     _tileLoaded(tile: Tile, id: string | number, previousState: TileState, err: ?Error) {
         if (err) {
             tile.state = 'errored';
-            if (err.status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
+            if ((err: any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // continue to try loading parent/children tiles if a tile doesn't exist (404)
             else this.update(this.transform);
             return;
@@ -461,7 +461,7 @@ class SourceCache extends Evented {
         if (!this.used) {
             idealTileIDs = [];
         } else if (this._source.tileID) {
-            idealTileIDs = transform.getVisibleUnwrappedCoordinates((this._source.tileID: any))
+            idealTileIDs = transform.getVisibleUnwrappedCoordinates(this._source.tileID)
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
         } else {
             idealTileIDs = transform.coveringTiles({

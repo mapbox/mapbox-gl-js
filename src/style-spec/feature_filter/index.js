@@ -47,9 +47,10 @@ function isExpressionFilter(filter: any) {
 const filterSpec = {
     'type': 'boolean',
     'default': false,
-    'function': true,
+    'function': 'piecewise-constant',
     'property-function': true,
-    'zoom-function': true
+    'zoom-function': true,
+    'transition': false
 };
 
 /**
