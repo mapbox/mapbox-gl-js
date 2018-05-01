@@ -19,6 +19,16 @@
       "type": "boolean"
     },
     "outputs": [true],
-    "serialized": true
+    "serialized": [
+      "==",
+      [
+        "resolved-locale",
+        [
+          "collator",
+          {"caseSensitive": true, "diacriticSensitive": true, "locale": "en"}
+        ]
+      ],
+      "en"
+    ]
   }
 }
