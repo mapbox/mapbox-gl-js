@@ -5,7 +5,7 @@
     ["get", "rhs"],
     [
       "collator",
-      {"caseSensitive": false, "diacriticSensitive": false, "locale": "en"}
+      {"case-sensitive": false, "diacritic-sensitive": false, "locale": "en"}
     ]
   ],
   "inputs": [
@@ -27,7 +27,7 @@
       ["get", "rhs"],
       [
         "collator",
-        {"caseSensitive": false, "diacriticSensitive": false, "locale": "en"}
+        {"case-sensitive": false, "diacritic-sensitive": false, "locale": "en"}
       ]
     ]
   }

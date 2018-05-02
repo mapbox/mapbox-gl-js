@@ -7,7 +7,7 @@
         "resolved-locale",
         [
           "collator",
-          {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+          {"case-sensitive": true, "diacritic-sensitive": false, "locale": "de"}
         ]
       ],
       "de"
@@ -18,7 +18,7 @@
       ["get", "rhs"],
       [
         "collator",
-        {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+        {"case-sensitive": true, "diacritic-sensitive": false, "locale": "de"}
       ]
     ],
     ["case", ["==", ["get", "rhs"], "ue"], true, false]
@@ -43,7 +43,7 @@
           "resolved-locale",
           [
             "collator",
-            {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+            {"case-sensitive": true, "diacritic-sensitive": false, "locale": "de"}
           ]
         ],
         "de"
@@ -54,7 +54,7 @@
         ["get", "rhs"],
         [
           "collator",
-          {"caseSensitive": true, "diacriticSensitive": false, "locale": "de"}
+          {"case-sensitive": true, "diacritic-sensitive": false, "locale": "de"}
         ]
       ],
       ["case", ["==", ["get", "rhs"], "ue"], true, false]

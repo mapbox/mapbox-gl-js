@@ -3,7 +3,7 @@
     "<",
     ["string", ["get", "lhs"]],
     ["get", "rhs"],
-    ["collator", {"caseSensitive": ["==", 1, 1], "locale": "en"}]
+    ["collator", {"case-sensitive": ["==", 1, 1], "locale": "en"}]
   ],
   "inputs": [
     [{}, {"properties": {"lhs": "a", "rhs": "ä"}}],
@@ -24,7 +24,7 @@
       ["string", ["get", "rhs"]],
       [
         "collator",
-        {"caseSensitive": true, "diacriticSensitive": false, "locale": "en"}
+        {"case-sensitive": true, "diacritic-sensitive": false, "locale": "en"}
       ]
     ]
   }
