@@ -65,16 +65,6 @@ export class Collator {
         return new Intl.Collator(this.locale ? this.locale : [])
             .resolvedOptions().locale;
     }
-
-    serialize() {
-        const options = {};
-        options['caseSensitive'] = this.sensitivity === 'variant' || this.sensitivity === 'case';
-        options['diacriticSensitive'] = this.sensitivity === 'variant' || this.sensitivity === 'accent';
-        if (this.locale) {
-            options['locale'] = this.locale;
-        }
-        return ["collator", options];
-    }
 }
 
 export class CollatorExpression implements Expression {
