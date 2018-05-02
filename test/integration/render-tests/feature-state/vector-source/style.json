@@ -5,17 +5,18 @@
       "height": 256,
       "operations": [
         [
-            "setFeatureState", 
-            { 
-                "source": "mapbox",
-                "sourceLayer": "poi_label",
-                "id": "1000059876748"
-            },
-            {
-                "isRed": true
-            }
-        ], [
-            "wait"
+          "setFeatureState",
+          {
+            "source": "mapbox",
+            "sourceLayer": "poi_label",
+            "id": "1000059876748"
+          },
+          {
+            "color": "red"
+          }
+        ],
+        [
+          "wait"
         ]
       ]
     }
@@ -49,12 +50,14 @@
       "source-layer": "poi_label",
       "paint": {
         "circle-radius": 5,
-        "circle-color": ["case",
-            ["boolean", ["feature-state", "isRed"], false],
-            ["rgb", 255, 0, 0],
-            ["rgb", 0, 0, 0]
+        "circle-color": [
+          "coalesce",
+          [
+            "feature-state",
+            "color"
+          ],
+          "black"
         ]
-
       }
     }
   ]
