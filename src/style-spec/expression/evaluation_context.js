@@ -2,13 +2,14 @@
 
 import { Color } from './values';
 
-import type { Feature, GlobalProperties } from './index';
+import type { GlobalProperties, Feature, FeatureState } from './index';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
 class EvaluationContext {
     globals: GlobalProperties;
     feature: ?Feature;
+    featureState: ?FeatureState;
 
     _parseColorCache: {[string]: ?Color};
 
@@ -26,10 +27,6 @@ class EvaluationContext {
 
     properties() {
         return this.feature && this.feature.properties || {};
-    }
-
-    state() {
-        return this.feature && this.feature.state || {};
     }
 
     parseColor(input: string): ?Color {

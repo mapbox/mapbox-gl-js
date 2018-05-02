@@ -1,11 +1,13 @@
 // @flow
+
 import { extend } from '../util/util';
 import Tile from './tile';
+import type {FeatureState} from '../style-spec/expression';
 
-export type FeatureStates = {[feature_id: string]: {[key: string]: any }};
+export type FeatureStates = {[feature_id: string]: FeatureState};
 export type LayerFeatureStates = {[layer: string]: FeatureStates};
 
-/** 
+/**
  * SourceFeatureState manages the state and state changes
  * to features in a source, separated by source layer.
  *
