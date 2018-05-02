@@ -202,7 +202,7 @@ const defaultOptions = {
  *   style: style_object,
  *   hash: true,
  *   transformRequest: (url, resourceType)=> {
- *     if(resourceType == 'Source' && url.startsWith('http://myHost')) {
+ *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {
  *        url: url.replace('http', 'https'),
  *        headers: { 'my-custom-header': true},
