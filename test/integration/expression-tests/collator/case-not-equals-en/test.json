@@ -7,7 +7,7 @@
       ["get", "rhs"],
       [
         "collator",
-        {"caseSensitive": false, "diacriticSensitive": true, "locale": "en"}
+        {"case-sensitive": false, "diacritic-sensitive": true, "locale": "en"}
       ]
     ]
   ],
@@ -32,7 +32,7 @@
         ["get", "rhs"],
         [
           "collator",
-          {"caseSensitive": false, "diacriticSensitive": true, "locale": "en"}
+          {"case-sensitive": false, "diacritic-sensitive": true, "locale": "en"}
         ]
       ]
     ]

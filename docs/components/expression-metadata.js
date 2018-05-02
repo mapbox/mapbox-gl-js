@@ -211,7 +211,7 @@ const types = {
     }],
     collator: [{
         type: 'collator',
-        parameters: [ '{ "caseSensitive": boolean, "diacriticSensitive": boolean, "locale": string }' ]
+        parameters: [ '{ "case-sensitive": boolean, "diacritic-sensitive": boolean, "locale": string }' ]
     }]
 };
 

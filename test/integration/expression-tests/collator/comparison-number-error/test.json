@@ -3,7 +3,7 @@
     "<",
     1,
     2,
-    ["collator", {"caseSensitive": false, "diacriticSensitive": false}]
+    ["collator", {"case-sensitive": false, "diacritic-sensitive": false}]
   ],
   "expected": {
     "compiled": {

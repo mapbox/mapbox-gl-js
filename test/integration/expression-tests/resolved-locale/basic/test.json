@@ -5,7 +5,7 @@
       "resolved-locale",
       [
         "collator",
-        {"caseSensitive": true, "diacriticSensitive": true, "locale": "en"}
+        {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
       ]
     ],
     "en"
@@ -25,7 +25,7 @@
         "resolved-locale",
         [
           "collator",
-          {"caseSensitive": true, "diacriticSensitive": true, "locale": "en"}
+          {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
         ]
       ],
       "en"
