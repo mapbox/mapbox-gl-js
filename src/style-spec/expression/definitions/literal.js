@@ -1,7 +1,7 @@
 // @flow
 
 import assert from 'assert';
-import { isValue, typeOf, Color, Collator } from '../values';
+import { isValue, typeOf, Color } from '../values';
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
@@ -60,10 +60,6 @@ class Literal implements Expression {
             // couldn't actually generate with a "literal" expression,
             // so we have to implement an equivalent serialization here
             return ["rgba"].concat(this.value.toArray());
-        } else if (this.value instanceof Collator) {
-            // Same as Color above: literal serialization delegated to
-            // Collator (not CollatorExpression)
-            return this.value.serialize();
         } else {
             assert(this.value === null ||
                 typeof this.value === 'string' ||
