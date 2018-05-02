@@ -29,6 +29,8 @@ export type Feature = {
     +properties: {[string]: any}
 };
 
+export type FeatureState = {[string]: any};
+
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
     heatmapDensity?: number,
@@ -53,24 +55,26 @@ export class StyleExpression {
         }
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
         if (!this._evaluator) {
             this._evaluator = new EvaluationContext();
         }
 
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
+        this._evaluator.featureState = featureState;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
         if (!this._evaluator) {
             this._evaluator = new EvaluationContext();
         }
 
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
+        this._evaluator.featureState = featureState;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -129,12 +133,12 @@ export class ZoomConstantExpression<Kind> {
         this.isStateDependent = kind !== 'constant' && !isConstant.isStateConstant(expression.expression);
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluate(globals, feature);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluate(globals, feature, featureState);
     }
 }
 
@@ -156,12 +160,12 @@ export class ZoomDependentExpression<Kind> {
         }
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluate(globals, feature);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluate(globals, feature, featureState);
     }
 
     interpolationFactor(input: number, lower: number, upper: number): number {
@@ -181,12 +185,12 @@ export type ConstantExpression = {
 export type SourceExpression = {
     kind: 'source',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
 };
 
 export type CameraExpression = {
     kind: 'camera',
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };
@@ -194,7 +198,7 @@ export type CameraExpression = {
 export type CompositeExpression = {
     kind: 'composite',
     isStateDependent: boolean,
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };

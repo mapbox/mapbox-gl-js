@@ -14,6 +14,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type Program from '../render/program';
 import type {
     Feature,
+    FeatureState,
     GlobalProperties,
     SourceExpression,
     CompositeExpression
@@ -64,7 +65,7 @@ interface Binder<T> {
     statistics: { max: number };
 
     populatePaintArray(length: number, feature: Feature): void;
-    updatePaintArray(start: number, length: number, feature: Feature): void;
+    updatePaintArray(start: number, length: number, feature: Feature, featureState: FeatureState): void;
     upload(Context): void;
     destroy(): void;
 
@@ -163,9 +164,9 @@ class SourceExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
         const paintArray = this.paintVertexArray;
-        const value = this.expression.evaluate({zoom: 0}, feature);
+        const value = this.expression.evaluate({zoom: 0}, feature, featureState);
 
         if (this.type === 'color') {
             const color = packColor(value);
@@ -255,11 +256,11 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         }
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState) {
         const paintArray = this.paintVertexArray;
 
-        const min = this.expression.evaluate({zoom: this.zoom    }, feature);
-        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature);
+        const min = this.expression.evaluate({zoom: this.zoom    }, feature, featureState);
+        const max = this.expression.evaluate({zoom: this.zoom + 1}, feature, featureState);
 
         if (this.type === 'color') {
             const minColor = packColor(min);
@@ -394,18 +395,18 @@ export default class ProgramConfiguration {
             const posArray = this._idMap[id];
             if (!posArray) continue;
 
+            const featureState = featureStates[id];
             for (const pos of posArray) {
-                const feature: any = vtLayer.feature(pos.index);
-                feature.state = featureStates[id];
+                const feature = vtLayer.feature(pos.index);
 
                 for (const property in this.binders) {
-                    const binder: Binder<any> = this.binders[property];
+                    const binder = this.binders[property];
                     if (binder instanceof ConstantBinder) continue;
                     if ((binder: any).expression.isStateDependent === true) {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
                         (binder: any).expression = value.value;
-                        binder.updatePaintArray(pos.start, pos.end, feature);
+                        binder.updatePaintArray(pos.start, pos.end, feature, featureState);
                         dirty = true;
                     }
                 }
