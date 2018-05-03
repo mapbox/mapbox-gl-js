@@ -215,7 +215,7 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
     if (!isFeatureConstant && !propertySpec['property-function']) {
-        return error([new ParsingError('', 'property expressions not supported')]);
+        return error([new ParsingError('', 'data expressions not supported')]);
     }
 
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
