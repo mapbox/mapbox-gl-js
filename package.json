@@ -120,7 +120,7 @@
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
     "build-min": "rollup -c --environment BUILD:production",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
-    "build-style-spec": "cd src/style-spec && npm run build && cd ../.. && cp -R src/style-spec/dist dist/style-spec",
+    "build-style-spec": "cd src/style-spec && npm run build && cd ../.. && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
     "watch-css": "postcss --watch -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-token": "node build/generate-access-token-script.js",
     "build-benchmarks": "BENCHMARK_VERSION=${BENCHMARK_VERSION:-\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\"} rollup -c bench/rollup_config_benchmarks.js",

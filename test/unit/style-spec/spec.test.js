@@ -1,5 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
-import spec from '../../../src/style-spec/style-spec';
+
+/* eslint-disable import/namespace */
+import * as spec from '../../../src/style-spec/style-spec';
 
 ['v8', 'latest'].forEach((version) => {
     ['', 'min'].forEach((kind) => {
