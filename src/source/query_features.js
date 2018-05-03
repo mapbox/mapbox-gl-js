@@ -24,7 +24,7 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
             wrappedTileID: tileIn.tileID.wrapped().key,
             queryResults: tileIn.tile.queryRenderedFeatures(
                 styleLayers,
-                sourceCache.getFeatureState.bind(sourceCache),
+                sourceCache._state,
                 tileIn.queryGeometry,
                 tileIn.scale,
                 params,

@@ -15,6 +15,7 @@ import SegmentVector from '../data/segment';
 import { TriangleIndexArray } from '../data/index_array_type';
 import browser from '../util/browser';
 import EvaluationParameters from '../style/evaluation_parameters';
+import SourceFeatureState from '../source/source_state';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -241,7 +242,7 @@ class Tile {
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
-                          getFeatureState: (sourceLayer?: string, id: string) => Object,
+                          sourceFeatureState: SourceFeatureState,
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
@@ -259,7 +260,7 @@ class Tile {
             transform: transform,
             params: params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
-        }, layers, getFeatureState);
+        }, layers, sourceFeatureState);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
