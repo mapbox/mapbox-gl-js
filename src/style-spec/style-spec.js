@@ -58,8 +58,6 @@ export type StylePropertySpecification = {
 };
 
 import v8 from './reference/v8.json';
-export {v8};
-
 import latest from './reference/latest';
 import format from './format';
 import migrate from './migrate';
@@ -75,7 +73,25 @@ import convertFunction from './function/convert';
 
 import validate from './validate_style';
 
-const exported = {
+const expression = {
+    StyleExpression,
+    isExpression,
+    createExpression,
+    createPropertyExpression,
+    normalizePropertyExpression,
+    ZoomConstantExpression,
+    ZoomDependentExpression,
+    StylePropertyFunction
+};
+
+const styleFunction = {
+    convertFunction,
+    createFunction,
+    isFunction
+};
+
+export {
+    v8,
     latest,
     format,
     migrate,
@@ -83,27 +99,12 @@ const exported = {
     diff,
     ValidationError,
     ParsingError,
-    expression: {
-        StyleExpression,
-        isExpression,
-        createExpression,
-        createPropertyExpression,
-        normalizePropertyExpression,
-        ZoomConstantExpression,
-        ZoomDependentExpression,
-        StylePropertyFunction
-    },
+    expression,
     featureFilter,
     Color,
-    function: {
-        convertFunction,
-        createFunction,
-        isFunction
-    },
+    styleFunction as function,
     validate
 };
-
-export default exported;
 
 validate.parsed = validate;
 validate.latest = validate;
