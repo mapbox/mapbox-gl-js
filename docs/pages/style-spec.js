@@ -1161,8 +1161,8 @@ export default class extends React.Component {
                                 and layout properties. However, some paint and layout properties do not yet support data
                                 expressions. The level of support is indicated by the "data-driven styling" row of the
                                 "SDK Support" table for each property. Data expressions with the
-                                <a href="#expressions-feature-state"><code>feature-state</code></a> operator are only
-                                allowed on paint properties that also support data-driven styling.</p>
+                                <a href="#expressions-feature-state"><code>feature-state</code></a> operator are allowed
+                                only on paint properties.</p>
 
                             <h3>Camera expressions</h3>
                             <p>A <a id="camera-expression" className="anchor"></a><em>camera expression</em> is any
