@@ -1,11 +1,13 @@
 import { test as t } from 'mapbox-gl-js-test';
 import fs from 'fs';
 import glob from 'glob';
-import spec from '../../../src/style-spec/style-spec';
 import path from 'path';
 import validate from '../../../src/style-spec/validate_style';
 import v8 from '../../../src/style-spec/reference/v8';
 import migrate from '../../../src/style-spec/migrate';
+
+/* eslint-disable import/namespace */
+import * as spec from '../../../src/style-spec/style-spec';
 
 const UPDATE = !!process.env.UPDATE;
 
