@@ -57,6 +57,7 @@ export default function validateProperty(options, propertyType) {
         style: style,
         styleSpec: styleSpec,
         expressionContext: 'property',
+        propertyType: propertyType,
         propertyKey
     }));
 }

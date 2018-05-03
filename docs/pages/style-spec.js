@@ -1130,9 +1130,10 @@ export default class extends React.Component {
                                 <a href="#expressions-get"><code>get</code></a>,
                                 <a href="#expressions-has"><code>has</code></a>,
                                 <a href="#expressions-id"><code>id</code></a>,
-                                <a href="#expressions-geometry-type"><code>geometry-type</code></a>, or
-                                <a href="#expressions-properties"><code>properties</code></a>. Data expressions allow a
-                                feature's properties to determine its appearance. They can be used to differentiate
+                                <a href="#expressions-geometry-type"><code>geometry-type</code></a>,
+                                <a href="#expressions-properties"><code>properties</code></a>, or
+                                <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a
+                                feature's properties or state to determine its appearance. They can be used to differentiate
                                 features within the same layer and to create data visualizations.</p>
 
                             <div className='col12 space-bottom'>
@@ -1159,7 +1160,9 @@ export default class extends React.Component {
                                 <a href="#layer-filter"><code>filter</code></a> property, and as values for most paint
                                 and layout properties. However, some paint and layout properties do not yet support data
                                 expressions. The level of support is indicated by the "data-driven styling" row of the
-                                "SDK Support" table for each property.</p>
+                                "SDK Support" table for each property. Data expressions with the
+                                <a href="#expressions-feature-state"><code>feature-state</code></a> operator are allowed
+                                only on paint properties.</p>
 
                             <h3>Camera expressions</h3>
                             <p>A <a id="camera-expression" className="anchor"></a><em>camera expression</em> is any
