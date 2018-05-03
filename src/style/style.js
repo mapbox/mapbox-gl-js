@@ -786,7 +786,7 @@ class Style extends Evented {
             return;
         }
 
-        sourceCache.setFeatureState(sourceLayer || '_geojsonTileLayer', feature.id, state);
+        sourceCache.setFeatureState(sourceLayer, feature.id, state);
     }
 
     getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }) {
@@ -805,7 +805,7 @@ class Style extends Evented {
             return;
         }
 
-        return sourceCache.getFeatureState(sourceLayer || '_geojsonTileLayer', feature.id);
+        return sourceCache.getFeatureState(sourceLayer, feature.id);
     }
 
     getTransition() {

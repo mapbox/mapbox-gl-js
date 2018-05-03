@@ -15,6 +15,7 @@ import SegmentVector from '../data/segment';
 import { TriangleIndexArray } from '../data/index_array_type';
 import browser from '../util/browser';
 import EvaluationParameters from '../style/evaluation_parameters';
+import SourceFeatureState from '../source/source_state';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -241,6 +242,7 @@ class Tile {
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
+                          sourceFeatureState: SourceFeatureState,
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
@@ -258,7 +260,7 @@ class Tile {
             transform: transform,
             params: params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
-        }, layers);
+        }, layers, sourceFeatureState);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
@@ -412,7 +414,7 @@ class Tile {
         }
     }
 
-    setFeatureState(states: LayerFeatureStates) {
+    setFeatureState(states: LayerFeatureStates, painter: any) {
         if (!this.latestFeatureIndex ||
             !this.latestFeatureIndex.rawTileData ||
             Object.keys(states).length === 0) {
@@ -430,6 +432,9 @@ class Tile {
             if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
 
             bucket.update(sourceLayerStates, sourceLayer);
+            if (painter && painter.style) {
+                this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
+            }
         }
     }
 }

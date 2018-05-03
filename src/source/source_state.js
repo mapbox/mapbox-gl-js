@@ -36,11 +36,11 @@ class SourceFeatureState {
         return extend({}, base[feature], changes[feature]);
     }
 
-    initializeTileState(tile: Tile) {
-        tile.setFeatureState(this.state);
+    initializeTileState(tile: Tile, painter: any) {
+        tile.setFeatureState(this.state, painter);
     }
 
-    coalesceChanges(tiles: {[any]: Tile}) {
+    coalesceChanges(tiles: {[any]: Tile}, painter: any) {
         const changes: LayerFeatureStates = {};
         for (const sourceLayer in this.stateChanges) {
             this.state[sourceLayer]  = this.state[sourceLayer] || {};
@@ -59,7 +59,7 @@ class SourceFeatureState {
 
         for (const id in tiles) {
             const tile = tiles[id];
-            tile.setFeatureState(changes);
+            tile.setFeatureState(changes, painter);
         }
     }
 }
