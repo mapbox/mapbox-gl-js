@@ -13,6 +13,7 @@ import { Evented } from '../util/evented';
 import { Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue } from './properties';
 import { supportsPropertyExpression } from '../style-spec/util/properties';
 
+import type { FeatureState } from '../style-spec/expression';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter} from '../style-spec/feature_filter';
@@ -45,6 +46,7 @@ class StyleLayer extends Evented {
     +queryRadius: (bucket: Bucket) => number;
     +queryIntersectsFeature: (queryGeometry: Array<Array<Point>>,
                               feature: VectorTileFeature,
+                              featureState?: FeatureState,
                               geometry: Array<Array<Point>>,
                               zoom: number,
                               transform: Transform,

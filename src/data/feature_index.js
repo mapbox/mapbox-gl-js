@@ -144,11 +144,12 @@ class FeatureIndex {
                     if (!featureGeometry) {
                         featureGeometry = loadGeometry(feature);
                     }
+                    let featureState = {};
                     if (feature.id) {
                         // `feature-state` expression evaluation requires feature state to be available
-                        (feature: any).state = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', String(feature.id));
+                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', String(feature.id));
                     }
-                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.posMatrix);
+                    return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.posMatrix);
                 }
             );
         }

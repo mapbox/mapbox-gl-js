@@ -10,6 +10,7 @@ import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties'
 import {vec4} from '@mapbox/gl-matrix';
 import Point from '@mapbox/point-geometry';
 
+import type { FeatureState } from '../../style-spec/expression';
 import type Transform from '../../geo/transform';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './circle_style_layer_properties';
@@ -36,6 +37,7 @@ class CircleStyleLayer extends StyleLayer {
 
     queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
                            feature: VectorTileFeature,
+                           featureState?: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,
@@ -45,8 +47,8 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
             transform.angle, pixelsToTileUnits);
-        const radius = this.paint.get('circle-radius').evaluate(feature);
-        const stroke = this.paint.get('circle-stroke-width').evaluate(feature);
+        const radius = this.paint.get('circle-radius').evaluate(feature, featureState);
+        const stroke = this.paint.get('circle-stroke-width').evaluate(feature, featureState);
         const size  = radius + stroke;
 
         // For pitch-alignment: map, compare feature geometry to query geometry in the plane of the tile
