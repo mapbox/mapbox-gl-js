@@ -5,7 +5,7 @@ about: Report a bug
 ---
 
 <!--
-Hello! Thanks for contributing. 
+Hello! Thanks for contributing.  In order to help us make address this issue quickly and effectively, please:
 
  - Make the issue title a succinct but specific description of the unexpected behavior. Bad: "Map rotation is broken". Good: "map.setBearing(...) throws a TypeError for negative values"
  - Include a link to a minimal demonstration of the bug. We recommend using https://jsbin.com.
