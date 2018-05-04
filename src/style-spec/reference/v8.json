@@ -5121,7 +5121,7 @@
           "ios": "4.0.0",
           "macos": "0.7.0"
         },
-        "data-driven styling": {},
+        "data-driven styling": {}
       },
       "expression": {
         "interpolated": true,
