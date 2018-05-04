@@ -11,7 +11,7 @@ Hello! Thanks for contributing.  For the fastest response and resolution, please
  - Include a link to a minimal demonstration of the bug. We recommend using https://jsbin.com.
  - Ensure you can reproduce the bug using the latest release.
  - Check the console for relevant errors and warnings
- - Only post to report a bug or request a feature. Direct all other questions to https://stackoverflow.com/questions/tagged/mapbox-gl-js
+ - Only post to report a bug.  For feature requests, please use https://github.com/mapbox/mapbox-gl-js/issues/new?template=Feature_request.md instead.  Direct all other questions to https://stackoverflow.com/questions/tagged/mapbox-gl-js
 
 -->
 
