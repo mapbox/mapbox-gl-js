@@ -11,6 +11,7 @@ import {
 } from './validate_style';
 import { Evented } from '../util/evented';
 import { Layout, Transitionable, Transitioning, Properties, PossiblyEvaluatedPropertyValue } from './properties';
+import { supportsPropertyExpression } from '../style-spec/util/properties';
 
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
@@ -205,7 +206,7 @@ class StyleLayer extends Evented {
     isStateDependent() {
         for (const property in (this: any).paint._values) {
             const value = (this: any).paint.get(property);
-            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !value.property.specification['property-function']) {
+            if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
             }
 
