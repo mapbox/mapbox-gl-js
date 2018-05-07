@@ -54,10 +54,10 @@ export default function validate(options) {
     const valueSpec = options.valueSpec;
     const styleSpec = options.styleSpec;
 
-    if (valueSpec.function && isFunction(unbundle(value))) {
+    if (valueSpec.expression && isFunction(unbundle(value))) {
         return validateFunction(options);
 
-    } else if (valueSpec.function && isExpression(deepUnbundle(value))) {
+    } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {

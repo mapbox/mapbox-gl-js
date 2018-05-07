@@ -12,10 +12,6 @@ global.camelize = function (str) {
     });
 };
 
-global.isDataDriven = function (property) {
-    return property['property-function'] === true;
-};
-
 global.flowType = function (property) {
     switch (property.type) {
         case 'boolean':
@@ -39,14 +35,18 @@ global.flowType = function (property) {
 };
 
 global.propertyType = function (property) {
-    if (isDataDriven(property)) {
-        return `DataDrivenProperty<${flowType(property)}>`;
-    } else if (/-pattern$/.test(property.name) || property.name === 'line-dasharray') {
-        return `CrossFadedProperty<${flowType(property)}>`;
-    } else if (property.name === 'heatmap-color' || property.name === 'line-gradient') {
-        return `ColorRampProperty`;
-    } else {
-        return `DataConstantProperty<${flowType(property)}>`;
+    switch (property['property-type']) {
+        case 'data-driven':
+            return `DataDrivenProperty<${flowType(property)}>`;
+        case 'cross-faded':
+            return `CrossFadedProperty<${flowType(property)}>`;
+        case 'color-ramp':
+            return `ColorRampProperty`;
+        case 'data-constant':
+        case 'constant':
+            return `DataConstantProperty<${flowType(property)}>`;
+        default:
+            throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 
@@ -91,14 +91,18 @@ global.defaultValue = function (property) {
 };
 
 global.propertyValue = function (property, type) {
-    if (isDataDriven(property)) {
-        return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-    } else if (/-pattern$/.test(property.name) || property.name === 'line-dasharray') {
-        return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-    } else if (property.name === 'heatmap-color' || property.name === 'line-gradient') {
-        return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
-    } else {
-        return `new DataConstantProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+    switch (property['property-type']) {
+        case 'data-driven':
+            return `new DataDrivenProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'cross-faded':
+            return `new CrossFadedProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'color-ramp':
+            return `new ColorRampProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        case 'data-constant':
+        case 'constant':
+            return `new DataConstantProperty(styleSpec["${type}_${property.layerType}"]["${property.name}"])`;
+        default:
+            throw new Error(`unknown property-type "${property['property-type']}" for ${property.name}`);
     }
 };
 
