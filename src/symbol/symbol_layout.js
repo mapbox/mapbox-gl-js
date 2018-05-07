@@ -338,7 +338,8 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedTextOrientations.horizontal) {
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature
         // We're counting on the two versions having similar dimensions
-        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, bucket.overscaling);
+        const textRotate = layer.layout.get('text-rotate').evaluate(feature);
+        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations.horizontal, textBoxScale, textPadding, textAlongLine, bucket.overscaling, textRotate);
         numGlyphVertices += addTextVertices(bucket, anchor, shapedTextOrientations.horizontal, layer, textAlongLine, feature, textOffset, lineArray, shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly, placedTextSymbolIndices, glyphPositionMap, sizes);
 
         if (shapedTextOrientations.vertical) {
@@ -353,7 +354,8 @@ function addSymbol(bucket: SymbolBucket,
         const iconQuads = getIconQuads(anchor, shapedIcon, layer,
                             iconAlongLine, shapedTextOrientations.horizontal,
                             feature);
-        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false, bucket.overscaling);
+        const iconRotate = layer.layout.get('icon-rotate').evaluate(feature);
+        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, /*align boxes to line*/false, bucket.overscaling, iconRotate);
 
         numIconVertices = iconQuads.length * 4;
 
