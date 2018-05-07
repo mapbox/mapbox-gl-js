@@ -237,7 +237,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
 });
 
 ['mouseenter', 'mouseover'].forEach((event) => {
-    test(`Map#on ${event} does not fire if the specified layer does not exiist`, (t) => {
+    test(`Map#on ${event} does not fire if the specified layer does not exist`, (t) => {
         const map = createMap();
 
         t.stub(map, 'getLayer').returns(null);
@@ -265,6 +265,7 @@ test('Map#off distinguishes distinct listeners', (t) => {
         const spy = t.spy(function (e) {
             t.equal(this, map);
             t.equal(e.type, event);
+            t.equal(e.target, map);
             t.equal(e.features, features);
         });
 

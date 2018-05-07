@@ -33,7 +33,7 @@ export class MapMouseEvent extends Event {
     /**
      * The `Map` object that fired the event.
      */
-    map: Map;
+    target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -82,6 +82,7 @@ export class MapMouseEvent extends Event {
         const lngLat = map.unproject(point);
         super(type, extend({ point, lngLat, originalEvent }, data));
         this._defaultPrevented = false;
+        this.target = map;
     }
 }
 
