@@ -1,4 +1,20 @@
 
+## 12.0.0
+
+### ⚠️ Breaking changes
+* The `"to-string"` expression operator now converts null to an empty string rather than to `"null"`. [#6534](https://github.com/mapbox/mapbox-gl-js/pull/6534)
+
+### ✨ Features and improvements
+* 🌈 Add line-gradient property [#6303](https://github.com/mapbox/mapbox-gl-js/pull/6303)
+* Add collator expression for controlling case and diacritic sensitivity in string comparisons [#6270](https://github.com/mapbox/mapbox-gl-js/pull/6270)
+* Add `is-supported-script` expression for determining if a script is supported. [#6260](https://github.com/mapbox/mapbox-gl-js/pull/6260)
+* Add `collator` expression for controlling case and diacritic sensitivity in string comparisons [#6270](https://github.com/mapbox/mapbox-gl-js/pull/6270)
+* Add `abs`, `round`, `floor`, and `ceil` expression operators [#6496](https://github.com/mapbox/mapbox-gl-js/pull/6496)
+* Add support for Mapzen Terrarium tiles in raster-dem sources [#6110](https://github.com/mapbox/mapbox-gl-js/pull/6110)
+
+### 🐛 Bug fixes
+- Fix Rollup build [6575](https://github.com/mapbox/mapbox-gl-js/pull/6575)
+
 ## 11.1.1
 
 ### 🐛 Bug fixes
@@ -20,6 +36,7 @@
 
 ### ✨ Features and improvements
 
+* Introduce client-side hillshading with `raster-dem` source type and `hillshade` layer type [#5286](https://github.com/mapbox/mapbox-gl-js/pull/5286)
 * Add Color#toString and expose Color publicly [#5866](https://github.com/mapbox/mapbox-gl-js/pull/5866)
 * Improve typing for `==` and `!=` expressions [#5840](https://github.com/mapbox/mapbox-gl-js/pull/5840)
 * Made `coalesce` expressions more useful [#5755](https://github.com/mapbox/mapbox-gl-js/issues/5755)
