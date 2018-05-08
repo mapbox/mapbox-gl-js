@@ -1,4 +1,5 @@
-## 0.45.0-beta.1
+
+## 0.45.0
 
 ### ⚠️ Breaking changes
 
@@ -59,7 +60,8 @@
 * Fix bug causing flickering when panning across the anti-meridian [#6438](https://github.com/mapbox/mapbox-gl-js/pull/6438)
 * Fix error when using tiles of non-power-of-two size [#6444](https://github.com/mapbox/mapbox-gl-js/pull/6444)
 * Fix bug causing `Map#moveLayer(layerId, beforeId)` to remove the layer when `layerId === beforeId` [#6542](https://github.com/mapbox/mapbox-gl-js/pull/6542)
-
+- Fix bug causing `Map#querySourceFeatures` to throw an `Uncaught TypeError`(https://github.com/mapbox/mapbox-gl-js/pull/6555)
+- Fix issue where label collision detection was inaccurate for some symbol layers that shared layout properties with another layer [#6558](https://github.com/mapbox/mapbox-gl-js/pull/6558)
 
 ## 0.44.2
 
