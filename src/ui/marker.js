@@ -279,6 +279,7 @@ export default class Marker {
     }
 
     _onMapClick(event: MapMouseEvent) {
+        if (!event.originalEvent) return;
         const targetElement = event.originalEvent.target;
         const element = this._element;
 
