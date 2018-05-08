@@ -1741,7 +1741,7 @@ class Map extends Camera {
 
     _onWindowResize() {
         if (this._trackResize) {
-            this.stop().resize()._update();
+            this.resize()._update();
         }
     }
 
