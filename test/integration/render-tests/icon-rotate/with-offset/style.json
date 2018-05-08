@@ -42,16 +42,6 @@
                 ],
                 "icon-allow-overlap": true
             }
-        },
-        {
-            "id": "base",
-            "type": "symbol",
-            "source": "geojson",
-            "layout": {
-                "symbol-placement": "point",
-                "icon-image": "restaurant-12",
-                "icon-allow-overlap": true
-            }
         }
     ]
 }
