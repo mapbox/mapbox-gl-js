@@ -1,0 +1,52 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 2,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [
+              [
+                -3,
+                -3
+              ],
+              [
+                -3,
+                3
+              ]
+            ],
+            [
+              [
+                3,
+                -3
+              ],
+              [
+                3,
+                3
+              ]
+            ]
+          ]
+        }
+      },
+      "lineMetrics": true
+    }
+  },
+  "layers": [
+    {
+      "id": "id",
+      "type": "line",
+      "source": "geojson"
+    }
+  ]
+}
