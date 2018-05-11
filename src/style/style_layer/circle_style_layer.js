@@ -37,7 +37,7 @@ class CircleStyleLayer extends StyleLayer {
 
     queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
                            feature: VectorTileFeature,
-                           featureState?: FeatureState,
+                           featureState: FeatureState,
                            geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,

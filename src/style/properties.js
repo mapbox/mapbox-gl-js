@@ -446,7 +446,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
         }
     }
 
-    evaluate(feature: Feature, featureState?: FeatureState): T {
+    evaluate(feature: Feature, featureState: FeatureState): T {
         return this.property.evaluate(this.value, this.globals, feature, featureState);
     }
 }
@@ -568,7 +568,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         }
     }
 
-    evaluate(value: PossiblyEvaluatedValue<T>, globals: GlobalProperties, feature: Feature, featureState?: FeatureState): T {
+    evaluate(value: PossiblyEvaluatedValue<T>, globals: GlobalProperties, feature: Feature, featureState: FeatureState): T {
         if (value.kind === 'constant') {
             return value.value;
         } else {
