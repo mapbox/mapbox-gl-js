@@ -258,6 +258,19 @@ test('Map', (t) => {
             });
         });
 
+        t.test('style transform does not override map transform modified via options using 0/0/0', (t) => {
+            const map = new Map({container: window.document.createElement('div'), zoom: 0, center: [0, 0]});
+            t.notOk(map.transform.unmodified, 'map transform is modified by options');
+            map.setStyle(createStyle());
+            map.on('style.load', () => {
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: 0, lat: 0 }));
+                t.equal(fixedNum(map.transform.zoom), 0);
+                t.equal(fixedNum(map.transform.bearing), 0);
+                t.equal(fixedNum(map.transform.pitch), 0);
+                t.end();
+            });
+        });
+
         t.test('style transform does not override map transform modified via setters', (t) => {
             t.stub(Map.prototype, '_detectMissingCSS');
             const map = new Map({container: window.document.createElement('div')});
