@@ -70,7 +70,11 @@ const plugins = {
         },
         "angular-mapboxgl-directive": {
             "website": "https://github.com/Naimikan/angular-mapboxgl-directive",
-            "description": md`provides an [Angular](https://angularjs.org/) directive for Mapbox GL JS`
+            "description": md`provides an [AngularJS](https://angularjs.org/) directive for Mapbox GL JS`
+        },
+        "ngx-mapbox-gl": {
+            "website": "https://github.com/Wykks/ngx-mapbox-gl",
+            "description": md`provides a [Angular](https://angular.io/) integration for Mapbox GL JS`
         }
     },
     "Utility Libraries": {
