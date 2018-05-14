@@ -75,6 +75,10 @@ const plugins = {
         "ngx-mapbox-gl": {
             "website": "https://github.com/Wykks/ngx-mapbox-gl",
             "description": md`provides an [Angular](https://angular.io/) integration for Mapbox GL JS`
+        },
+        "@commodityvectors/react-mapbox-gl": {
+            "website": "https://commodityvectors.github.io/react-mapbox-gl/",
+            "description": md`provides a [React](https://facebook.github.io/react/) integration for Mapbox GL JS`
         }
     },
     "Utility Libraries": {
