@@ -24,10 +24,11 @@ import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
 
-function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
+function addCircleVertex(layoutVertexArray, x, y, z, extrudeX, extrudeY) {
     layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
-        (y * 2) + ((extrudeY + 1) / 2));
+        (y * 2) + ((extrudeY + 1) / 2),
+        z);
 }
 
 
@@ -101,6 +102,7 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
             for (const point of ring) {
                 const x = point.x;
                 const y = point.y;
+                const z = point.z;
 
                 // Do not include points that are outside the tile boundaries.
                 if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
@@ -117,10 +119,10 @@ class CircleBucket<Layer: CircleStyleLayer | HeatmapStyleLayer> implements Bucke
                 const segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                 const index = segment.vertexLength;
 
-                addCircleVertex(this.layoutVertexArray, x, y, -1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, -1);
-                addCircleVertex(this.layoutVertexArray, x, y, 1, 1);
-                addCircleVertex(this.layoutVertexArray, x, y, -1, 1);
+                addCircleVertex(this.layoutVertexArray, x, y, z, -1, -1);
+                addCircleVertex(this.layoutVertexArray, x, y, z, 1, -1);
+                addCircleVertex(this.layoutVertexArray, x, y, z, 1, 1);
+                addCircleVertex(this.layoutVertexArray, x, y, z, -1, 1);
 
                 this.indexArray.emplaceBack(index, index + 1, index + 2);
                 this.indexArray.emplaceBack(index, index + 3, index + 2);

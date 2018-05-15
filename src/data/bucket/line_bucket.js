@@ -64,7 +64,7 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
         // a_pos_normal
         point.x,
         point.y,
-        point.z,
+        point.z * 50,
         ((round ? 1 : 0) << 1) | (up ? 1 : 0),
         // a_data
         // add 128 to store a byte in an unsigned byte

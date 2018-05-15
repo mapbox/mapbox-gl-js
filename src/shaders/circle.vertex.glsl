@@ -4,7 +4,7 @@ uniform bool u_pitch_with_map;
 uniform vec2 u_extrude_scale;
 uniform highp float u_camera_to_center_distance;
 
-attribute vec2 a_pos;
+attribute vec3 a_pos;
 
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
@@ -26,11 +26,11 @@ void main(void) {
     #pragma mapbox: initialize lowp float stroke_opacity
 
     // unencode the extrusion vector that we snuck into the a_pos vector
-    vec2 extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
+    vec2 extrude = vec2(mod(a_pos.xy, 2.0) * 2.0 - 1.0);
 
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
-    vec2 circle_center = floor(a_pos * 0.5);
+    vec2 circle_center = floor(a_pos.xy * 0.5);
     if (u_pitch_with_map) {
         vec2 corner_position = circle_center;
         if (u_scale_with_map) {
@@ -43,9 +43,9 @@ void main(void) {
             corner_position += extrude * (radius + stroke_width) * u_extrude_scale * (projected_center.w / u_camera_to_center_distance);
         }
 
-        gl_Position = u_matrix * vec4(corner_position, 0, 1);
+        gl_Position = u_matrix * vec4(corner_position, a_pos.z, 1);
     } else {
-        gl_Position = u_matrix * vec4(circle_center, 0, 1);
+        gl_Position = u_matrix * vec4(circle_center, a_pos.z, 1);
 
         if (u_scale_with_map) {
             gl_Position.xy += extrude * (radius + stroke_width) * u_extrude_scale * u_camera_to_center_distance;

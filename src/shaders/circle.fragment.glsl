@@ -31,6 +31,8 @@ void main() {
         extrude_length - radius / (radius + stroke_width)
     );
 
+    if (opacity_t < 0.1) discard;
+
     gl_FragColor = opacity_t * mix(color * opacity, stroke_color * stroke_opacity, color_t);
 
 #ifdef OVERDRAW_INSPECTOR

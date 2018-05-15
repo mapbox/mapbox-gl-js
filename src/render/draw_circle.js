@@ -27,7 +27,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const context = painter.context;
     const gl = context.gl;
 
-    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
+    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadWrite));
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles
     context.setStencilMode(StencilMode.disabled);

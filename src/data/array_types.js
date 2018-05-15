@@ -71,6 +71,37 @@ register('StructArrayLayout4i8', StructArrayLayout4i8);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Int16[3]
+ *
+ * @private
+ */
+class StructArrayLayout3i8 extends StructArray {
+    uint8: Uint8Array;
+    int16: Int16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        const o2 = i * 4;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        return i;
+    }
+
+}
+
+StructArrayLayout3i8.prototype.bytesPerElement = 8;
+register('StructArrayLayout3i8', StructArrayLayout3i8);
+
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Int16[2]
  * [4]: Int16[4]
  *
@@ -856,6 +887,7 @@ register('FeatureIndexArray', FeatureIndexArray);
 export {
     StructArrayLayout2i4,
     StructArrayLayout4i8,
+    StructArrayLayout3i8,
     StructArrayLayout2i4i12,
     StructArrayLayout4i4ub12,
     StructArrayLayout4i4ui16,
@@ -874,10 +906,10 @@ export {
     StructArrayLayout4f16,
     StructArrayLayout2i4 as PosArray,
     StructArrayLayout4i8 as RasterBoundsArray,
-    StructArrayLayout2i4 as CircleLayoutArray,
+    StructArrayLayout3i8 as CircleLayoutArray,
     StructArrayLayout2i4 as FillLayoutArray,
     StructArrayLayout2i4i12 as FillExtrusionLayoutArray,
-    StructArrayLayout2i4 as HeatmapLayoutArray,
+    StructArrayLayout3i8 as HeatmapLayoutArray,
     StructArrayLayout4i4ub12 as LineLayoutArray,
     StructArrayLayout4i4ui16 as SymbolLayoutArray,
     StructArrayLayout3f12 as SymbolDynamicLayoutArray,
