@@ -21,11 +21,11 @@ const defaultOptions = {
 export type Offset = number | PointLike | {[Anchor]: PointLike};
 
 export type PopupOptions = {
-    closeButton: boolean,
-    closeOnClick: boolean,
-    anchor: Anchor,
-    offset: Offset,
-    className: string
+    closeButton?: boolean,
+    closeOnClick?: boolean,
+    anchor?: Anchor,
+    offset?: Offset,
+    className?: string
 };
 
 /**
