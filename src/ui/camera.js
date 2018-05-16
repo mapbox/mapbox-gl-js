@@ -355,35 +355,25 @@ class Camera extends Evented {
         return this;
     }
 
-
     /**
-     * Pans and zooms the map to contain its visible area within the specified geographical bounds.
-     * This function will also reset the map's bearing to 0 if bearing is nonzero.
-     *
      * @memberof Map#
-     * @param bounds Center these bounds in the viewport and use the highest
-     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param options
+     * @param bounds Calculate the center for these bounds in the viewport and use
+     *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
+     *      in the viewport.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {boolean} [options.linear=false] If `true`, the map transitions using
-     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     *     those functions and {@link AnimationOptions} for information about options available.
-     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param eventData Additional properties to be added to event objects of events triggered by this method.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-	 * @example
+     * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns CameraOptions with
+     *      at least `center`, `zoom`, `bearing`, `offset`, `padding`, and `maxZoom`, as well as any other
+     *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
+     * @example
      * var bbox = [[-79, 43], [-73, 45]];
-     * map.fitBounds(bbox, {
+     * var newCameraTransform = map.getFitBoundsTransform(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
-     * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
-    fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
-
+    getFitBoundsTransform(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         options = extend({
             padding: {
                 top: 0,
@@ -412,7 +402,7 @@ class Camera extends Evented {
             warnOnce(
                 "options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'"
             );
-            return this;
+            return;
         }
 
         bounds = LngLatBounds.convert(bounds);
@@ -438,12 +428,49 @@ class Camera extends Evented {
             warnOnce(
                 'Map cannot fit within canvas with the given bounds, padding, and/or offset.'
             );
-            return this;
+            return;
         }
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
         options.bearing = 0;
+
+        return options;
+    }
+
+    /**
+     * Pans and zooms the map to contain its visible area within the specified geographical bounds.
+     * This function will also reset the map's bearing to 0 if bearing is nonzero.
+     *
+     * @memberof Map#
+     * @param bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+     * @param options
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {boolean} [options.linear=false] If `true`, the map transitions using
+     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+     *     those functions and {@link AnimationOptions} for information about options available.
+     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+	 * @example
+     * var bbox = [[-79, 43], [-73, 45]];
+     * map.fitBounds(bbox, {
+     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     * });
+     * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
+     */
+    fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+        const calculatedBounds = this.getFitBoundsTransform(bounds, options);
+
+        // getFitBoundsTransform warns + returns undefined if unable to fit:
+        if (!calculatedBounds) return this;
+
+        options = extend(calculatedBounds, options);
 
         return options.linear ?
             this.easeTo(options, eventData) :
