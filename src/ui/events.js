@@ -101,7 +101,7 @@ export class MapTouchEvent extends Event {
     /**
      * The `Map` object that fired the event.
      */
-    map: Map;
+    target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -182,7 +182,7 @@ export class MapWheelEvent extends Event {
     /**
      * The `Map` object that fired the event.
      */
-    map: Map;
+    target: Map;
 
     /**
      * The DOM event which caused the map event.
