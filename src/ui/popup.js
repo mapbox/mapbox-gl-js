@@ -21,11 +21,11 @@ const defaultOptions = {
 export type Offset = number | PointLike | {[Anchor]: PointLike};
 
 export type PopupOptions = {
-    closeButton: boolean,
-    closeOnClick: boolean,
-    anchor: Anchor,
-    offset: Offset,
-    className: string
+    closeButton?: boolean,
+    closeOnClick?: boolean,
+    anchor?: Anchor,
+    offset?: Offset,
+    className?: string
 };
 
 /**
@@ -284,7 +284,7 @@ export default class Popup extends Evented {
 
         const pos = this._pos = this._map.project(this._lngLat);
 
-        let anchor: Anchor = this.options.anchor;
+        let anchor: ?Anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
 
         if (!anchor) {
