@@ -4,7 +4,8 @@
     [{}, {"properties": {"x": "a"}}],
     [{}, {"properties": {"x": "b"}}],
     [{}, {"properties": {"x": "c"}}],
-    [{}, {"properties": {"x": 0}}]
+    [{}, {"properties": {"x": 0}}],
+    [{}, {"properties": {}}]
   ],
   "expected": {
     "compiled": {
@@ -17,13 +18,12 @@
       "Apple",
       "Banana",
       "Kumquat",
-      {
-        "error": "Expected value to be of type string, but found number instead."
-      }
+      "Kumquat",
+      "Kumquat"
     ],
     "serialized": [
       "match",
-      ["string", ["get", "x"]],
+      ["get", "x"],
       "a",
       "Apple",
       "b",
