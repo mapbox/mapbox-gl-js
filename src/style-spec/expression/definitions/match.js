@@ -3,11 +3,11 @@
 import assert from 'assert';
 
 import { typeOf } from '../values';
+import { ValueType, type Type } from '../types';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Type } from '../types';
 
 // Map input label values to output expression index
 type Cases = {[number | string]: number};
@@ -84,19 +84,25 @@ class Match implements Expression {
             outputs.push(result);
         }
 
-        const input = context.parse(args[1], 1, inputType);
+        const input = context.parse(args[1], 1, ValueType);
         if (!input) return null;
 
         const otherwise = context.parse(args[args.length - 1], args.length - 1, outputType);
         if (!otherwise) return null;
 
         assert(inputType && outputType);
+
+        if (input.type.kind !== 'value' && context.concat(1).checkSubtype((inputType: any), input.type)) {
+            return null;
+        }
+
         return new Match((inputType: any), (outputType: any), input, cases, outputs, otherwise);
     }
 
     evaluate(ctx: EvaluationContext) {
         const input = (this.input.evaluate(ctx): any);
-        return (this.outputs[this.cases[input]] || this.otherwise).evaluate(ctx);
+        const output = (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
+        return output.evaluate(ctx);
     }
 
     eachChild(fn: (Expression) => void) {
@@ -134,7 +140,7 @@ class Match implements Expression {
             }
         }
 
-        const coerceLabel = (label) => this.input.type.kind === 'number' ? Number(label) : label;
+        const coerceLabel = (label) => this.inputType.kind === 'number' ? Number(label) : label;
 
         for (const [outputIndex, labels] of groupedByOutput) {
             if (labels.length === 1) {
