@@ -1209,19 +1209,6 @@ export default class extends React.Component {
                                 as <code>["to-number", ["get", "property-name"]]</code>.
                             </p>
 
-                            <h3>SDK Support</h3>
-                            <p>Support for expressions was introduced to Mapbox GL JS in version 0.41.0. Support in other SDKs
-                                is forthcoming.</p>
-
-                            <SDKSupportTable {...{
-                                'Layout and paint property expressions': {
-                                    js: '0.41.0'
-                                },
-                                'Filter expressions': {
-                                    js: '0.41.0'
-                                }
-                            }}/>
-
                             <h3>Expression reference</h3>
 
                             <div className='keyline-all fill-white'>
@@ -1257,7 +1244,7 @@ export default class extends React.Component {
                                                 expressions.
                                             </p>}
 
-                                        {group.expressions.map(({name, doc, type}, i) =>
+                                        {group.expressions.map(({name, doc, type, sdkSupport}, i) =>
                                             <div key={i} className='col12 clearfix pad0y pad2x space-top0'>
                                                 <span className='space-right'>
                                                     <a className='code'
@@ -1267,6 +1254,7 @@ export default class extends React.Component {
                                                 </span>
                                                 {type.map((overload, i) =>
                                                     <div key={i}>{highlightJavascript(renderSignature(name, overload))}</div>)}
+                                                {sdkSupport && <div className='space-top2 space-bottom2'><SDKSupportTable {...sdkSupport} /></div>}
                                             </div>
                                         )}
                                     </div>
