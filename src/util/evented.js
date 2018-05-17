@@ -6,8 +6,11 @@ type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
 
 function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
-    listenerList[type] = listenerList[type] || [];
-    listenerList[type].push(listener);
+    const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
+    if (!listenerExists) {
+        listenerList[type] = listenerList[type] || [];
+        listenerList[type].push(listener);
+    }
 }
 
 function _removeEventListener(type: string, listener: Listener, listenerList: Listeners) {
