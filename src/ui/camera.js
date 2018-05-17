@@ -364,7 +364,7 @@ class Camera extends Evented {
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
-     * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns CameraOptions with
+     * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
      *      at least `center`, `zoom`, `bearing`, `offset`, `padding`, and `maxZoom`, as well as any other
      *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
      * @example
