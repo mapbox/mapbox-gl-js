@@ -4,7 +4,7 @@
 // Not incorporated into browser.js because the latter is poisonous when used outside the main thread
 const exported = {
     getEntriesByName: (url: string) => {
-        if (performance && performance.getEntriesByName)
+        if ((typeof performance !== 'undefined') && performance && performance.getEntriesByName)
             return performance.getEntriesByName(url);
         else
             return false;
