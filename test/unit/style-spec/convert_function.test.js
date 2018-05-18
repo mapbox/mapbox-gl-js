@@ -2,6 +2,51 @@ import { test } from 'mapbox-gl-js-test';
 import convertFunction from '../../../src/style-spec/function/convert';
 
 test('convertFunction', (t) => {
+    t.test('boolean categorical', (t) => {
+        const fn = {
+            type: 'categorical',
+            property: 'p',
+            stops: [
+                [true, 'true'],
+                [false, 'false']
+            ],
+            default: 'default'
+        };
+
+        t.deepEqual(convertFunction(fn, {}), [
+            'case',
+            ['==', ['get', 'p'], true],
+            'true',
+            ['==', ['get', 'p'], false],
+            'false',
+            'default'
+        ]);
+
+        t.end();
+    });
+
+    t.test('numeric categorical', (t) => {
+        const fn = {
+            type: 'categorical',
+            property: 'p',
+            stops: [
+                [0, '0'],
+                [1, '1']
+            ],
+            default: 'default'
+        };
+
+        t.deepEqual(convertFunction(fn, {}), [
+            'match',
+            ['get', 'p'],
+            0, '0',
+            1, '1',
+            'default'
+        ]);
+
+        t.end();
+    });
+
     t.test('feature-constant text-field with token replacement', (t) => {
         const functionValue = {
             stops: [
