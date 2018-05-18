@@ -446,6 +446,12 @@ class Style extends Evented {
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
+    listImages() {
+        this._checkLoaded();
+
+        return this.imageManager.listImages();
+    }
+
     addSource(id: string, source: SourceSpecification, options?: {validate?: boolean}) {
         this._checkLoaded();
 

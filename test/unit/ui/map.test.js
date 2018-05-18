@@ -842,6 +842,29 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#listImages', (t) => {
+        const map = createMap();
+
+        map.on('load', () => {
+            t.equals(map.listImages().length, 0);
+
+            map.addImage('img', {width: 1, height: 1, data: new Uint8Array(4)});
+
+            const images = map.listImages();
+            t.equals(images.length, 1);
+            t.equals(images[0], 'img');
+            t.end();
+        });
+    });
+
+    t.test('#listImages throws an error if called before "load"', (t) => {
+        const map = createMap();
+        t.throws(() => {
+            map.listImages();
+        }, Error);
+        t.end();
+    });
+
     t.test('#queryRenderedFeatures', (t) => {
 
         t.test('if no arguments provided', (t) => {
