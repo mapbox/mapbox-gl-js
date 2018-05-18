@@ -25,6 +25,7 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
+    let startPos = null;
 
     for (const name in handlers) {
         (map: any)[name] = new handlers[name](map, options);
@@ -56,6 +57,7 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
 
     function onMouseDown(e: MouseEvent) {
         mouseDown = true;
+        startPos = DOM.mousePos(el, e);
 
         const mapEvent = new MapMouseEvent('mousedown', map, e);
         map.fire(mapEvent);
@@ -149,7 +151,10 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
     }
 
     function onClick(e: MouseEvent) {
-        map.fire(new MapMouseEvent('click', map, e));
+        const pos = DOM.mousePos(el, e);
+        if (pos.equals(startPos)) {
+            map.fire(new MapMouseEvent('click', map, e));
+        }
     }
 
     function onDblClick(e: MouseEvent) {
