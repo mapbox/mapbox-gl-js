@@ -203,10 +203,10 @@ class GeoJSONSource extends Evented implements Source {
             options.data = JSON.stringify(data);
         }
 
-        // target {this.type}.{options.source}.loadData rather than literally geojson.loadData,
+        // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(`${this.type}.${options.source}.loadData`, options, (err, result) => {
+        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, result) => {
             if (this._removed || (result && result.abandoned)) {
                 return;
             }
@@ -222,7 +222,7 @@ class GeoJSONSource extends Evented implements Source {
             // message queue. Waiting instead for the 'coalesce' to round-trip
             // through the foreground just means we're throttling the worker
             // to run at a little less than full-throttle.
-            this.dispatcher.send(`${this.type}.${options.source}.coalesce`, null, null, this.workerID);
+            this.dispatcher.send(`${this.type}.coalesce`, { source: options.source }, null, this.workerID);
             callback(err);
 
         }, this.workerID);
