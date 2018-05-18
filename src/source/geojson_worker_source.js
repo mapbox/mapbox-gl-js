@@ -2,7 +2,7 @@
 
 import { getJSON } from '../util/ajax';
 
-import perf from '../util/performance';
+import performance from '../util/performance';
 import rewind from 'geojson-rewind';
 import GeoJSONWrapper from './geojson_wrapper';
 import vtpbf from 'vt-pbf';
@@ -152,6 +152,10 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         const params = this._pendingLoadDataParams;
         delete this._pendingCallback;
         delete this._pendingLoadDataParams;
+
+        const perf = (params && params.request && params.request.collectResourceTiming) ?
+            new performance.Performance(params.request) : false;
+
         this.loadGeoJSON(params, (err, data) => {
             if (err || !data) {
                 return callback(err);
@@ -171,8 +175,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 this.loaded = {};
 
                 const result = {};
-                if (params.request && params.request.collectResourceTiming) {
-                    const resourceTimingData = perf.getEntriesByName(params.request.url);
+                if (perf) {
+                    const resourceTimingData = perf.finish();
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                     // late evaluation in the main thread causes TypeError: illegal invocation
                     if (resourceTimingData) {
