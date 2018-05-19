@@ -36,7 +36,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     queryIntersectsFeature(queryGeometry: Array<Array<Point>>,
                            feature: VectorTileFeature,
                            featureState: FeatureState,
-                            geometry: Array<Array<Point>>,
+                           geometry: Array<Array<Point>>,
                            zoom: number,
                            transform: Transform,
                            pixelsToTileUnits: number): boolean {
