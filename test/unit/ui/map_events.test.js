@@ -544,3 +544,19 @@ test(`Map#on mousedown can have default behavior prevented and still fire subseq
     map.remove();
     t.end();
 });
+
+test(`Map#on mousedown doesn't fire subsequent click event if mousepos changes`, (t) => {
+    const map = createMap();
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const click = t.spy();
+    map.on('click', click);
+    const canvas = map.getCanvas();
+
+    simulate.drag(canvas, {}, {clientX: 100, clientY: 100});
+    t.ok(click.notCalled);
+
+    map.remove();
+    t.end();
+});
