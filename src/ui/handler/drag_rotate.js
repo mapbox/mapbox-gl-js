@@ -59,6 +59,7 @@ class DragRotateHandler {
         this._pitchWithRotate = options.pitchWithRotate !== false;
 
         bindAll([
+            'onMouseDown',
             '_onMouseMove',
             '_onMouseUp',
             '_onBlur',
