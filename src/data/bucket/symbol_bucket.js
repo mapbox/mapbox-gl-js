@@ -387,7 +387,7 @@ class SymbolBucket implements Bucket {
             }
 
             if (text) {
-                const fontStack = textFont.evaluate(feature).join(',');
+                const fontStack = textFont.evaluate(feature, {}).join(',');
                 const stack = stacks[fontStack] = stacks[fontStack] || {};
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
                 const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text);

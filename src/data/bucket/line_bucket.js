@@ -162,7 +162,7 @@ class LineBucket implements Bucket {
 
     addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>, index: number) {
         const layout = this.layers[0].layout;
-        const join = layout.get('line-join').evaluate(feature);
+        const join = layout.get('line-join').evaluate(feature, {});
         const cap = layout.get('line-cap');
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');

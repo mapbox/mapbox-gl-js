@@ -66,7 +66,7 @@ export function getIconQuads(anchor: Anchor,
     if (layout.get('icon-text-fit') !== 'none' && shapedText) {
         const iconWidth = (right - left),
             iconHeight = (bottom - top),
-            size = layout.get('text-size').evaluate(feature) / 24,
+            size = layout.get('text-size').evaluate(feature, {}) / 24,
             textLeft = shapedText.left * size,
             textRight = shapedText.right * size,
             textTop = shapedText.top * size,
@@ -93,7 +93,7 @@ export function getIconQuads(anchor: Anchor,
         bl = new Point(left, bottom);
     }
 
-    const angle = layer.layout.get('icon-rotate').evaluate(feature) * Math.PI / 180;
+    const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
 
     if (angle) {
         const sin = Math.sin(angle),
@@ -122,8 +122,8 @@ export function getGlyphQuads(anchor: Anchor,
                        positions: {[number]: GlyphPosition}): Array<SymbolQuad> {
 
     const oneEm = 24;
-    const textRotate = layer.layout.get('text-rotate').evaluate(feature) * Math.PI / 180;
-    const textOffset = layer.layout.get('text-offset').evaluate(feature).map((t)=> t * oneEm);
+    const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
+    const textOffset = layer.layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm);
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
