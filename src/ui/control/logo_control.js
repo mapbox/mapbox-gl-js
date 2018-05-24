@@ -31,6 +31,7 @@ class LogoControl {
         anchor.target = "_blank";
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", "Mapbox logo");
+        anchor.setAttribute("rel", "noopener");
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
