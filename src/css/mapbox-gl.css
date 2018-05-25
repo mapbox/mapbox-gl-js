@@ -19,6 +19,10 @@
     cursor: -webkit-grab;
     cursor: -moz-grab;
     cursor: grab;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .mapboxgl-canvas-container.mapboxgl-interactive:active,
