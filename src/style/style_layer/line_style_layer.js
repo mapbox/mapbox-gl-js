@@ -56,8 +56,7 @@ class LineStyleLayer extends StyleLayer {
         super(layer, properties);
     }
 
-    setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
-        super.setPaintProperty(name, value, options);
+    _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
             this._updateGradient();
         }
