@@ -760,11 +760,8 @@ class Style extends Evented {
 
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const wasDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
-        layer.setPaintProperty(name, value);
-        const isDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
-
-        if (isDataDriven || wasDataDriven) {
+        const requiresRelayout = layer.setPaintProperty(name, value);
+        if (requiresRelayout) {
             this._updateLayer(layer);
         }
 

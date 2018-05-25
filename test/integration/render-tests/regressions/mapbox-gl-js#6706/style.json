@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "description": "Tests that runtime styling can set -transition properties.",
+      "operations": [
+        [
+          "setPaintProperty",
+          "background",
+          "background-color-transition",
+          {
+            "duration": 500
+          }
+        ],
+        [
+          "setPaintProperty",
+          "background",
+          "background-color",
+          "white"
+        ],
+        [
+          "wait",
+          0
+        ],
+        [
+          "wait",
+          250
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "black"
+      }
+    }
+  ]
+}
