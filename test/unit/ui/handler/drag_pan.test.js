@@ -25,7 +25,7 @@ test('DragPanHandler fires dragstart, drag, and dragend events at appropriate ti
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -58,7 +58,7 @@ test('DragPanHandler captures mousemove events during a mouse-triggered drag (re
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(window.document.body);
+    simulate.mousemove(window.document.body, {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -91,7 +91,7 @@ test('DragPanHandler fires dragstart, drag, and dragend events at appropriate ti
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(map.getCanvas());
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -124,7 +124,7 @@ test('DragPanHandler captures touchmove events during a mouse-triggered drag (re
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(window.document.body);
+    simulate.touchmove(window.document.body, {touches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -149,7 +149,7 @@ test('DragPanHandler prevents mousemove events from firing during a drag (#1555)
     simulate.mousedown(map.getCanvasContainer());
     map._renderTaskQueue.run();
 
-    simulate.mousemove(map.getCanvasContainer());
+    simulate.mousemove(map.getCanvasContainer(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvasContainer());
@@ -170,7 +170,7 @@ test('DragPanHandler ends a mouse-triggered drag if the window blurs', (t) => {
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     simulate.blur(window);
@@ -189,7 +189,7 @@ test('DragPanHandler ends a touch-triggered drag if the window blurs', (t) => {
     simulate.touchstart(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas());
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
 
     simulate.blur(window);
@@ -204,14 +204,14 @@ test('DragPanHandler requests a new render frame after each mousemove event', (t
     const requestFrame = t.spy(map, '_requestRenderFrame');
 
     simulate.mousedown(map.getCanvas());
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     t.ok(requestFrame.callCount > 0);
 
     map._renderTaskQueue.run();
 
     // https://github.com/mapbox/mapbox-gl-js/issues/6063
     requestFrame.reset();
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 20, clientY: 20});
     t.equal(requestFrame.callCount, 1);
 
     map.remove();
@@ -236,7 +236,7 @@ test('DragPanHandler can interleave with another handler', (t) => {
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -249,7 +249,7 @@ test('DragPanHandler can interleave with another handler', (t) => {
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
@@ -284,7 +284,7 @@ test('DragPanHandler can interleave with another handler', (t) => {
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
 
-        simulate.mousemove(map.getCanvas(), {[`${modifier}Key`]: true});
+        simulate.mousemove(map.getCanvas(), {[`${modifier}Key`]: true, clientX: 10, clientY: 10});
         map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
@@ -324,7 +324,7 @@ test('DragPanHandler can interleave with another handler', (t) => {
         t.equal(drag.callCount, 0);
         t.equal(dragend.callCount, 0);
 
-        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
         map._renderTaskQueue.run();
         t.equal(dragstart.callCount, 0);
         t.equal(drag.callCount, 0);
@@ -353,7 +353,7 @@ test('DragPanHandler does not begin a drag on right button mousedown', (t) => {
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas(), {buttons: 2});
+    simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -387,7 +387,7 @@ test('DragPanHandler does not end a drag on right button mouseup', (t) => {
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -405,7 +405,7 @@ test('DragPanHandler does not end a drag on right button mouseup', (t) => {
     t.equal(drag.callCount, 1);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 2);
@@ -437,7 +437,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the mo
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     simulate.mouseup(map.getCanvas());
@@ -467,7 +467,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     simulate.touchstart(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas());
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas());
@@ -504,7 +504,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     simulate.touchstart(map.getCanvas());
     map._renderTaskQueue.run();
 
-    simulate.touchmove(map.getCanvas());
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
     map._renderTaskQueue.run();
 
     simulate.touchend(map.getCanvas());
@@ -535,7 +535,7 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
         simulate.mousedown(map.getCanvas());
         map._renderTaskQueue.run();
 
-        simulate.mousemove(map.getCanvas());
+        simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
         map._renderTaskQueue.run();
 
         t.equal(dragstart.callCount, 1);
@@ -574,7 +574,7 @@ test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
 
     map.dragPan.disable();
 
-    simulate.mousemove(map.getCanvas());
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     t.equal(dragstart.callCount, 0);
@@ -591,6 +591,73 @@ test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
     t.equal(dragend.callCount, 0);
     t.equal(map.isMoving(), false);
     t.equal(map.dragPan.isEnabled(), false);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not begin a drag on spurious mousemove events', (t) => {
+    const map = createMap();
+    map.dragRotate.disable();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.mousedown(map.getCanvas(), {clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(), {clientX: 10, clientY: 10});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
+
+test('DragPanHandler does not begin a drag on spurious touchmove events', (t) => {
+    const map = createMap();
+
+    const dragstart = t.spy();
+    const drag      = t.spy();
+    const dragend   = t.spy();
+
+    map.on('dragstart', dragstart);
+    map.on('drag',      drag);
+    map.on('dragend',   dragend);
+
+    simulate.touchstart(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 10, clientY: 10}]});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
+
+    simulate.touchend(map.getCanvas(), {touches: []});
+    map._renderTaskQueue.run();
+    t.equal(dragstart.callCount, 0);
+    t.equal(drag.callCount, 0);
+    t.equal(dragend.callCount, 0);
 
     map.remove();
     t.end();
