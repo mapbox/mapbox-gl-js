@@ -105,3 +105,31 @@ test('BoxZoomHandler does not begin a box zoom if preventDefault is called on th
     map.remove();
     t.end();
 });
+
+test('BoxZoomHandler does not begin a box zoom on spurious mousemove events', (t) => {
+    const map = createMap();
+
+    const boxzoomstart = t.spy();
+    const boxzoomend   = t.spy();
+
+    map.on('boxzoomstart', boxzoomstart);
+    map.on('boxzoomend',   boxzoomend);
+
+    simulate.mousedown(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
+    map._renderTaskQueue.run();
+    t.equal(boxzoomstart.callCount, 0);
+    t.equal(boxzoomend.callCount, 0);
+
+    simulate.mousemove(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
+    map._renderTaskQueue.run();
+    t.equal(boxzoomstart.callCount, 0);
+    t.equal(boxzoomend.callCount, 0);
+
+    simulate.mouseup(map.getCanvas(), {shiftKey: true, clientX: 0, clientY: 0});
+    map._renderTaskQueue.run();
+    t.equal(boxzoomstart.callCount, 0);
+    t.equal(boxzoomend.callCount, 0);
+
+    map.remove();
+    t.end();
+});
