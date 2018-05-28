@@ -310,10 +310,14 @@ class Map extends Camera {
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
 
+        if (!options.container) {
+            throw new Error(`'container' option must be provided.`);
+        }
+
         if (typeof options.container === 'string') {
             const container = window.document.getElementById(options.container);
             if (!container) {
-                throw new Error(`Container '${options.container}' not found.`);
+                throw new Error(`Container '${options.container}' is not found.`);
             } else {
                 this._container = container;
             }

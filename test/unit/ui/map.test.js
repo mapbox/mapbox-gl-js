@@ -73,7 +73,7 @@ test('Map', (t) => {
             new Map({
                 container: 'anElementIdWhichDoesNotExistInTheDocument'
             });
-        }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
+        }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' is not found"), 'throws on invalid map container id');
         t.end();
     });
 
