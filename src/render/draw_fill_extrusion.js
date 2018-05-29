@@ -1,6 +1,6 @@
 // @flow
 
-import glMatrix from '@mapbox/gl-matrix';
+import { mat3, mat4, vec3 } from 'gl-matrix';
 
 import {
     isPatternMissing,
@@ -10,9 +10,6 @@ import {
 import Texture from './texture';
 import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
-const mat3 = glMatrix.mat3;
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
 import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';

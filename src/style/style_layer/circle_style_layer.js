@@ -7,7 +7,7 @@ import { multiPolygonIntersectsBufferedPoint } from '../../util/intersection_tes
 import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
 import properties from './circle_style_layer_properties';
 import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties';
-import {vec4} from '@mapbox/gl-matrix';
+import { vec4 } from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 
 import type { FeatureState } from '../../style-spec/expression';

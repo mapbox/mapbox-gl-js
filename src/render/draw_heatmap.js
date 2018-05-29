@@ -1,6 +1,6 @@
 // @flow
 
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 import Texture from './texture';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';

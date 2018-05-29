@@ -3,7 +3,7 @@ import Coordinate from '../geo/coordinate';
 
 import Texture from './texture';
 import EXTENT from '../data/extent';
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 

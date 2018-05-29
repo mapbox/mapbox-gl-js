@@ -97,10 +97,6 @@
   dependencies:
     wgs84 "0.0.0"
 
-"@mapbox/gl-matrix@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@mapbox/gl-matrix/-/gl-matrix-0.0.1.tgz#e5126aab4d64c36b81c7a97d0ae0dddde5773d2b"
-
 "@mapbox/jsonlint-lines-primitives@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@mapbox/jsonlint-lines-primitives/-/jsonlint-lines-primitives-2.0.1.tgz#bc4c1593e2ec2371e2771c518068d6eab8eeae58"
@@ -4459,6 +4455,10 @@ github-slugger@1.2.0, github-slugger@^1.0.0, github-slugger@^1.1.1:
   resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-1.2.0.tgz#8ada3286fd046d8951c3c952a8d7854cfd90fd9a"
   dependencies:
     emoji-regex ">=6.0.0 <=6.1.1"
+
+gl-matrix@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/gl-matrix/-/gl-matrix-2.6.1.tgz#1bc7f7b396f4ae80abdb4db9a98cd07d170b9004"
 
 gl@^4.0.1:
   version "4.0.4"
