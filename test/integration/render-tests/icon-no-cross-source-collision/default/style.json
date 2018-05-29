@@ -72,7 +72,7 @@
   "sprite": "local://sprites/sprite",
     "layers": [
         {
-            "id": "defaultGroup1",
+            "id": "source1Group1",
             "type": "symbol",
             "source": "source1",
             "layout": {
@@ -81,7 +81,7 @@
             }
         },
         {
-            "id": "defaultGroup2",
+            "id": "source1Group2",
             "type": "symbol",
             "source": "source1",
             "layout": {
@@ -90,7 +90,7 @@
             }
         },
         {
-            "id": "firstGroup1",
+            "id": "source2Group1",
             "type": "symbol",
             "source": "source2",
             "layout": {
@@ -103,7 +103,7 @@
             }
         },
         {
-            "id": "firstGroup2",
+            "id": "source2Group2",
             "type": "symbol",
             "source": "source2",
             "layout": {
@@ -116,7 +116,7 @@
             }
         },
         {
-            "id": "secondGroup1",
+            "id": "source3Group1",
             "type": "symbol",
             "source": "source3",
             "layout": {
@@ -129,7 +129,7 @@
             }
         },
         {
-            "id": "secondGroup2",
+            "id": "source3Group2",
             "type": "symbol",
             "source": "source3",
             "layout": {

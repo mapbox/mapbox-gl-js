@@ -120,11 +120,11 @@
     "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
     "layers": [
         {
-            "id": "defaultGroup1",
+            "id": "source1Group1",
             "type": "symbol",
             "source": "source1",
             "layout": {
-                "text-field": "Default Group {name}",
+                "text-field": "Source1 Group {name}",
                 "text-max-width": 30,
                 "text-font": [
                     "Open Sans Semibold",
@@ -133,11 +133,11 @@
             }
         },
         {
-            "id": "defaultGroup2",
+            "id": "source1Group2",
             "type": "symbol",
             "source": "source1",
             "layout": {
-                "text-field": "2nd Layer Default Group {name}",
+                "text-field": "2nd Layer Source1 Group {name}",
                 "text-max-width": 30,
                 "text-font": [
                     "Open Sans Semibold",
@@ -146,11 +146,11 @@
             }
         },
         {
-            "id": "firstGroup1",
+            "id": "source2Group1",
             "type": "symbol",
             "source": "source2",
             "layout": {
-                "text-field": "First Group {name}",
+                "text-field": "Source2 Group {name}",
                 "text-max-width": 30,
                 "text-font": [
                     "Open Sans Semibold",
@@ -163,11 +163,11 @@
             }
         },
         {
-            "id": "firstGroup2",
+            "id": "source2Group2",
             "type": "symbol",
             "source": "source2",
             "layout": {
-                "text-field": "2nd Layer First Group {name}",
+                "text-field": "2nd Layer Source2 Group {name}",
                 "text-max-width": 30,
                 "text-font": [
                     "Open Sans Semibold",
@@ -180,11 +180,11 @@
             }
         },
         {
-            "id": "secondGroup1",
+            "id": "source3Group1",
             "type": "symbol",
             "source": "source3",
             "layout": {
-                "text-field": "Second Group {name}",
+                "text-field": "Source3 Group {name}",
                 "text-max-width": 30,
                 "text-font": [
                     "Open Sans Semibold",
@@ -197,11 +197,11 @@
             }
         },
         {
-            "id": "secondGroup2",
+            "id": "ssource3Group2",
             "type": "symbol",
             "source": "source3",
             "layout": {
-                "text-field": "2nd Layer Second Group {name}",
+                "text-field": "2nd Layer Source3 Group {name}",
                 "text-max-width": 30,
                 "text-font": [
                     "Open Sans Semibold",
