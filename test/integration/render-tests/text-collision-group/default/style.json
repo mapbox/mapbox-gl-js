@@ -2,6 +2,7 @@
     "version": 8,
     "metadata": {
         "test": {
+            "crossSourceCollisions": false,
             "height": 128,
             "width": 256,
             "description": "Three collision groups of two layers each. Each group should show one label (overlapping with labels from other groups)"
@@ -13,7 +14,75 @@
     ],
     "zoom": 0,
     "sources": {
-        "point": {
+        "source1": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "A"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -20,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "B"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                20,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "source2": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "A"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -20,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": "B"
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                20,
+                                0
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "source3": {
             "type": "geojson",
             "data": {
                 "type": "FeatureCollection",
@@ -53,7 +122,7 @@
         {
             "id": "defaultGroup1",
             "type": "symbol",
-            "source": "point",
+            "source": "source1",
             "layout": {
                 "text-field": "Default Group {name}",
                 "text-max-width": 30,
@@ -66,7 +135,7 @@
         {
             "id": "defaultGroup2",
             "type": "symbol",
-            "source": "point",
+            "source": "source1",
             "layout": {
                 "text-field": "2nd Layer Default Group {name}",
                 "text-max-width": 30,
@@ -79,7 +148,7 @@
         {
             "id": "firstGroup1",
             "type": "symbol",
-            "source": "point",
+            "source": "source2",
             "layout": {
                 "text-field": "First Group {name}",
                 "text-max-width": 30,
@@ -87,7 +156,6 @@
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"
                 ],
-                "text-collision-group": "group1",
                 "text-offset": [
                     0,
                     0.5
@@ -97,7 +165,7 @@
         {
             "id": "firstGroup2",
             "type": "symbol",
-            "source": "point",
+            "source": "source2",
             "layout": {
                 "text-field": "2nd Layer First Group {name}",
                 "text-max-width": 30,
@@ -105,7 +173,6 @@
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"
                 ],
-                "text-collision-group": "group1",
                 "text-offset": [
                     0,
                     0.5
@@ -115,7 +182,7 @@
         {
             "id": "secondGroup1",
             "type": "symbol",
-            "source": "point",
+            "source": "source3",
             "layout": {
                 "text-field": "Second Group {name}",
                 "text-max-width": 30,
@@ -123,7 +190,6 @@
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"
                 ],
-                "text-collision-group": "group2",
                 "text-offset": [
                     0,
                     1
@@ -133,7 +199,7 @@
         {
             "id": "secondGroup2",
             "type": "symbol",
-            "source": "point",
+            "source": "source3",
             "layout": {
                 "text-field": "2nd Layer Second Group {name}",
                 "text-max-width": 30,
@@ -141,7 +207,6 @@
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"
                 ],
-                "text-collision-group": "group2",
                 "text-offset": [
                     0,
                     1

@@ -1004,7 +1004,7 @@ class Style extends Evented {
         }
     }
 
-    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number) {
+    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean) {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -1033,7 +1033,7 @@ class Style extends Evented {
         const forceFullPlacement = this._layerOrderChanged;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
             this._layerOrderChanged = false;
         }
 

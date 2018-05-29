@@ -979,19 +979,6 @@
       },
       "property-type": "data-constant"
     },
-    "icon-collision-group": {
-      "type": "string",
-      "doc": "Restricts collision detection to other symbols in the same group.",
-      "requires": [
-        "icon-image"
-      ],
-      "sdk-support": {
-        "basic functionality": {
-          "js": "0.45.0"
-        },
-        "data-driven styling": {}
-      }
-    },
     "icon-optional": {
       "type": "boolean",
       "default": false,
@@ -2017,19 +2004,6 @@
         ]
       },
       "property-type": "data-constant"
-    },
-    "text-collision-group": {
-      "type": "string",
-      "doc": "Restricts collision detection to other symbols in the same group.",
-      "requires": [
-        "text-field"
-      ],
-      "sdk-support": {
-        "basic functionality": {
-          "js": "0.45.0"
-        },
-        "data-driven styling": {}
-      }
     },
     "text-optional": {
       "type": "boolean",

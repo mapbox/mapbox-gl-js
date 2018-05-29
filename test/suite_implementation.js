@@ -44,7 +44,8 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
-        fadeDuration: options.fadeDuration || 0
+        fadeDuration: options.fadeDuration || 0,
+        crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions
     });
 
     // Configure the map to never stop the render loop
