@@ -14,7 +14,7 @@ import type Transform from '../geo/transform';
 import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type mat4 from '@mapbox/gl-matrix';
+import type {mat4} from 'gl-matrix';
 import type {CollisionBoxArray, CollisionVertexArray} from '../data/array_types';
 import type FeatureIndex from '../data/feature_index';
 import type {OverscaledTileID} from '../source/tile_id';

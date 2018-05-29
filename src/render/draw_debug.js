@@ -2,7 +2,7 @@
 
 import browser from '../util/browser';
 
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 import EXTENT from '../data/extent';
 import VertexArrayObject from './vertex_array_object';
 import { PosArray } from '../data/array_types';

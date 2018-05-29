@@ -4,9 +4,7 @@ import Point from '@mapbox/point-geometry';
 
 import * as intersectionTests from '../util/intersection_tests';
 import Grid from './grid_index';
-import glmatrix from '@mapbox/gl-matrix';
-
-const mat4 = glmatrix.mat4;
+import { mat4 } from 'gl-matrix';
 
 import * as projection from '../symbol/projection';
 
