@@ -40,9 +40,12 @@ class PauseablePlacement {
     _inProgressLayer: ?LayerPlacement;
 
     constructor(transform: Transform, order: Array<string>,
-            forceFullPlacement: boolean, showCollisionBoxes: boolean, fadeDuration: number) {
+                forceFullPlacement: boolean,
+                showCollisionBoxes: boolean,
+                fadeDuration: number,
+                crossSourceCollisions: boolean) {
 
-        this.placement = new Placement(transform, fadeDuration);
+        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions);
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;
