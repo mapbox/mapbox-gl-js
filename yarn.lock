@@ -239,10 +239,6 @@
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
 
-"@std/esm@^0.21.7":
-  version "0.21.7"
-  resolved "https://registry.yarnpkg.com/@std/esm/-/esm-0.21.7.tgz#492d7931aed03e91a133deac4d9062fbfce5fd6b"
-
 "@types/acorn@^4.0.3":
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@types/acorn/-/acorn-4.0.3.tgz#d1f3e738dde52536f9aad3d3380d14e448820afd"
@@ -3790,6 +3786,10 @@ eslint@4.1.1:
     strip-json-comments "~2.0.1"
     table "^4.0.1"
     text-table "~0.2.0"
+
+esm@^3.0.39:
+  version "3.0.39"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.39.tgz#076e6a2f846bb579e0b82c494091a0687b494b48"
 
 espree@^3.4.3:
   version "3.5.3"
