@@ -59,7 +59,6 @@ type MapOptions = {
     interactive?: boolean,
     container: HTMLElement | string,
     bearingSnap?: number,
-    classes?: Array<string>,
     attributionControl?: boolean,
     logoPosition?: ControlPosition,
     failIfMajorPerformanceCaveat?: boolean,
