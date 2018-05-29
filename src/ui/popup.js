@@ -313,9 +313,28 @@ export default class Popup extends Evented {
             }
         }
 
-        const offsetedPos = pos.add(offset[anchor]).round();
+        const offsetPos = pos.add(offset[anchor]).round();
 
-        DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+        const padding = 5;
+        // detect collisions with the edges of the screen and reposition the popup
+        // this takes into account the popup's offset
+        if (offsetPos.y > this._map.transform.height) {
+          anchor = 'bottom';
+          offsetPos.y = this._map.transform.height - padding;
+        } else if (offsetPos.y < 0) {
+          anchor = 'top';
+          offsetPos.y = 0 + padding;
+        }
+
+        if (offsetPos.x > this._map.transform.width) {
+          anchor = 'right';
+          offsetPos.x = this._map.transform.width - padding;
+        } else if (offsetPos.x < 0) {
+          anchor = 'left';
+          offsetPos.x = 0 + padding;
+        }
+
+        DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetPos.x}px,${offsetPos.y}px)`);
         applyAnchorClass(this._container, anchor, 'popup');
     }
 
