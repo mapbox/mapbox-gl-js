@@ -3,7 +3,6 @@
 import { Event, ErrorEvent, Evented } from '../util/evented';
 
 import { extend } from '../util/util';
-import window from '../util/window';
 import EXTENT from '../data/extent';
 import { ResourceType } from '../util/ajax';
 import browser from '../util/browser';
@@ -197,7 +196,7 @@ class GeoJSONSource extends Evented implements Source {
         const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
-            options.request = this.map._transformRequest(resolveURL(data), ResourceType.Source);
+            options.request = this.map._transformRequest(browser.resolveURL(data), ResourceType.Source);
             options.request.collectResourceTiming = this._collectResourceTiming;
         } else {
             options.data = JSON.stringify(data);
@@ -283,12 +282,6 @@ class GeoJSONSource extends Evented implements Source {
     hasTransition() {
         return false;
     }
-}
-
-function resolveURL(url) {
-    const a = window.document.createElement('a');
-    a.href = url;
-    return a.href;
 }
 
 export default GeoJSONSource;
