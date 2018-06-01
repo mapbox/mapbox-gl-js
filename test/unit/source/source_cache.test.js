@@ -943,8 +943,8 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
             '65' : new OverscaledTileID(1, 0, 1, 0, 1)
         }, 'retain ideal and parent tile when ideal tiles aren\'t loaded');
 
-        addTileSpy.reset();
-        getTileSpy.reset();
+        addTileSpy.resetHistory();
+        getTileSpy.resetHistory();
 
         // now make sure we don't retain the parent tile when the ideal tile is loaded
         sourceCache._tiles[idealTile.key].state = 'loaded';
@@ -1116,7 +1116,7 @@ test('SourceCache#_updateRetainedTiles', (t)=> {
             new OverscaledTileID(0, 0, 0, 0, 0),
         ], 'only ascends up a tile pyramid once');
 
-        getTileSpy.reset();
+        getTileSpy.resetHistory();
 
         const loadedTiles = [new OverscaledTileID(4, 0, 4, 0, 0)];
         loadedTiles.forEach((t)=>{
