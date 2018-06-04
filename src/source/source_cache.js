@@ -512,6 +512,25 @@ class SourceCache extends Evented {
                     }
                 }
             }
+        } else {
+          console.log('retain', retain);
+          for (const tileIDKey in retain) {
+              const tileID = retain[tileIDKey];
+              if (tileID.overscaledZ === zoom) {
+                return;
+              }
+
+              const children = tileID.children();
+              const shouldNotRenderParent = children.some((child) => {
+                  const childTile = this.getTile(child);
+                  return childTile && childTile.hasData();
+              });
+              if (shouldNotRenderParent) {
+                console.log('shouldNotRenderParent', tileID, tileID.children());
+                // delete retain[tileIDKey];
+                // this._removeTile(tileIDKey); // makes it much worse
+              }
+          }
         }
 
         let fadedParent;
@@ -827,4 +846,3 @@ function isRasterType(type) {
 }
 
 export default SourceCache;
-
