@@ -329,6 +329,10 @@
       "default": 18,
       "doc": "Maximum zoom level at which to create vector tiles (higher means greater detail at high zoom levels)."
     },
+    "attribution": {
+      "type": "string",
+      "doc": "Contains an attribution to be displayed when the map is shown to a user."
+    },
     "buffer": {
       "type": "number",
       "default": 128,

@@ -65,6 +65,7 @@ class GeoJSONSource extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
+    attribution: string;
 
     isTileClipped: boolean;
     reparseOverscaled: boolean;
@@ -109,6 +110,7 @@ class GeoJSONSource extends Evented implements Source {
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
+        if (options.attribution) this.attribution = options.attribution;
 
         const scale = EXTENT / this.tileSize;
 
