@@ -91,6 +91,18 @@ export class OverscaledTileID {
                 parent.canonical.y === (this.canonical.y >> zDifference));
     }
 
+    parent() {
+      const z = this.canonical.z - 1;
+      const x = this.canonical.x / 2;
+      const y = this.canonical.y / 2;
+
+      return new OverscaledTileID(z, this.wrap, z, Math.floor(x), Math.floor(y));
+    }
+
+    siblings() {
+      return this.parent().children().filter((sibling) => sibling.key !== this.key);
+    }
+
     children(sourceMaxZoom: number) {
         if (this.overscaledZ >= sourceMaxZoom) {
             // return a single tile coord representing a an overscaled tile
