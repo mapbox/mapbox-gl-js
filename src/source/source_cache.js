@@ -597,7 +597,7 @@ class SourceCache extends Evented {
                     this._findLoadedChildren(tileID, maxCoveringZoom, retain);
                     // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
                     const children = tileID.children(this._source.maxzoom);
-                    console.log('children', children);
+                    // console.log('children', children);
                     for (let j = 0; j < children.length; j++) {
                         if (!retain[children[j].key]) {
                             covered = false;
@@ -605,22 +605,20 @@ class SourceCache extends Evented {
                         }
                     }
                 }
-                console.log('covered', covered);
+                // console.log('covered', covered);
                 if (!covered) {
-                    const siblings = tileID.siblings();
-                    // is errored enough of a check? what if a tile is still loading then errors?
-                    const siblingFailed = siblings.some((sibling) => !this.getTile(sibling));
-                    // console.log('siblings', siblings);
-                    siblings.forEach((sibling) => {
-                      const tile = this.getTile(sibling);
-                      // console.log('status', tile);
-                    });
-                    // console.log('siblingFailed', siblingFailed);
-
                     // We couldn't find child tiles that entirely cover the ideal tile.
                     for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
 
                         const parentId = tileID.scaledTo(overscaledZ);
+                        const siblings = tileID.scaledTo(overscaledZ + 1).siblings();
+                        // is errored enough of a check? what if a tile is still loading then errors?
+                        const siblingHasData = siblings.some((sibling) => {
+                          const siblingTile = this.getTile(sibling);
+                          return siblingTile && siblingTile.hasData();
+                        });
+                        console.log('siblingsHasData', siblingHasData);
+                        // console.log('siblings', siblings);
                         if (checked[parentId.key]) {
                             // Break parent tile ascent, this route has been previously checked by another child.
                             break;
@@ -634,16 +632,20 @@ class SourceCache extends Evented {
                             tile = this._addTile(parentId);
                         }
 
-                        // if (tile) {
-                        //     // console.log('parentId', parentId);
-                        //     retain[parentId.key] = parentId; // NOTE: this line is the source of the overdrawing problem but removing it causes tiles to flicker when loaded for the first time
-                        //     // Save the current values, since they're the parent of the next iteration
-                        //     // of the parent tile ascent loop.
-                        //     parentWasRequested = tile.wasRequested();
-                        //     if (tile.hasData()) {
-                        //         break;
-                        //     }
-                        // }
+                        if (tile) {
+                            // console.log('parentId', parentId);
+                            if (!siblingHasData) {
+                              retain[parentId.key] = parentId; // NOTE: this line is the source of the overdrawing problem but removing it causes tiles to flicker when loaded for the first time
+                            } else {
+                              break;
+                            }
+                            // Save the current values, since they're the parent of the next iteration
+                            // of the parent tile ascent loop.
+                            parentWasRequested = tile.wasRequested();
+                            if (tile.hasData()) {
+                                break;
+                            }
+                        }
                     }
                 }
             }
