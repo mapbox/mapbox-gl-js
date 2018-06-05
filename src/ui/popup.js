@@ -68,6 +68,7 @@ export type PopupOptions = {
  * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
  * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
+ * @see [Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
 export default class Popup extends Evented {
     _map: Map;

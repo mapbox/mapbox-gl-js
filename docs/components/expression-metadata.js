@@ -246,7 +246,8 @@ for (const name in types) {
     expressions[name] = {
         name: name,
         doc: spec.doc,
-        type: types[name]
+        type: types[name],
+        sdkSupport: spec['sdk-support']
     };
 }
 

@@ -12,6 +12,9 @@
 * Add `abs`, `round`, `floor`, and `ceil` expression operators [#6496](https://github.com/mapbox/mapbox-gl-js/pull/6496)
 * Add support for Mapzen Terrarium tiles in raster-dem sources [#6110](https://github.com/mapbox/mapbox-gl-js/pull/6110)
 
+### 🐛 Bug fixes
+- Fix Rollup build [6575](https://github.com/mapbox/mapbox-gl-js/pull/6575)
+
 ## 11.1.1
 
 ### 🐛 Bug fixes
