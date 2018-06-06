@@ -369,11 +369,11 @@ class Camera extends Evented {
      *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
      * @example
      * var bbox = [[-79, 43], [-73, 45]];
-     * var newCameraTransform = map.getFitBoundsTransform(bbox, {
+     * var newCameraTransform = map.cameraForBounds(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    getFitBoundsTransform(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         options = extend({
             padding: {
                 top: 0,
@@ -465,9 +465,9 @@ class Camera extends Evented {
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
-        const calculatedBounds = this.getFitBoundsTransform(bounds, options);
+        const calculatedBounds = this.cameraForBounds(bounds, options);
 
-        // getFitBoundsTransform warns + returns undefined if unable to fit:
+        // cameraForBounds warns + returns undefined if unable to fit:
         if (!calculatedBounds) return this;
 
         options = extend(calculatedBounds, options);
