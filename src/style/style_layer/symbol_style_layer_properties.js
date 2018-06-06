@@ -20,6 +20,7 @@ export type LayoutProps = {|
     "symbol-avoid-edges": DataConstantProperty<boolean>,
     "icon-allow-overlap": DataConstantProperty<boolean>,
     "icon-ignore-placement": DataConstantProperty<boolean>,
+    "icon-collision-group": DataConstantProperty<string>,
     "icon-optional": DataConstantProperty<boolean>,
     "icon-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "icon-size": DataDrivenProperty<number>,
@@ -50,6 +51,7 @@ export type LayoutProps = {|
     "text-offset": DataDrivenProperty<[number, number]>,
     "text-allow-overlap": DataConstantProperty<boolean>,
     "text-ignore-placement": DataConstantProperty<boolean>,
+    "text-collision-group": DataConstantProperty<string>,
     "text-optional": DataConstantProperty<boolean>,
 |};
 
@@ -59,6 +61,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "symbol-avoid-edges": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-avoid-edges"]),
     "icon-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["icon-allow-overlap"]),
     "icon-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["icon-ignore-placement"]),
+    "icon-collision-group": new DataConstantProperty(styleSpec["layout_symbol"]["icon-collision-group"]),
     "icon-optional": new DataConstantProperty(styleSpec["layout_symbol"]["icon-optional"]),
     "icon-rotation-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["icon-rotation-alignment"]),
     "icon-size": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-size"]),
@@ -89,6 +92,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-offset": new DataDrivenProperty(styleSpec["layout_symbol"]["text-offset"]),
     "text-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["text-allow-overlap"]),
     "text-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["text-ignore-placement"]),
+    "text-collision-group": new DataConstantProperty(styleSpec["layout_symbol"]["text-collision-group"]),
     "text-optional": new DataConstantProperty(styleSpec["layout_symbol"]["text-optional"]),
 });
 
