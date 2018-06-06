@@ -28,58 +28,48 @@
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiZ3NkcG0iLCJhIjoiY2lqbmN5eG9mMDBndHVmbTU5Mmg1djF6MiJ9.QqFCD7tcmccysN8GUClW8w';
 const style = {
-    "version": 8,
-    "light": {
-        "position": [1.15, 225, 60]
-    },
-    "sources": {
-        "streets": {
-            "url": 'mapbox://gsdpm.e7248292',
-            "type": 'vector'
-        }
-    },
-    "layers": [
-      {
-          'id': 'PAK_District_Circles',
-          'type': 'circle',
-          'source': 'streets',
-          'source-layer': 'PAK_District_Points',
-          'layout': {},
-          'paint': {
-              'circle-opacity': .5,
-              'circle-color': "#fdbf6f",
-              'circle-stroke-width': .75,
-              'circle-stroke-color': '#555555',
-              'circle-stroke-opacity': .5,
-              'circle-blur': .05,
-          'circle-radius':
-            /* Expressions
-            [
-                  "interpolate",
-                  ["linear"],
-                  ["zoom"],
-                  4, ["sqrt", ["*", ["get", 'P14_DIST'], 5]],
-                  6, ["sqrt", ["*", ["get", 'P14_DIST'], 75]],
-                  8, ["sqrt", ["*", ["get", 'P14_DIST'], 160]]
-            ]
-            */
-      {
-              property: 'P14_DIST',
-              type: 'exponential',
-              stops: [[{"zoom": 4,"value": 5}, 1],
-                      [{"zoom": 4,"value": 95}, 9],
-                      [{"zoom": 5,"value": 5}, 2],
-                      [{"zoom": 5,"value": 95}, 18],
-                      [{"zoom": 6,"value": 5}, 4],
-                      [{"zoom": 6,"value": 95}, 36],
-                      [{"zoom": 7,"value": 5}, 8],
-                      [{"zoom": 7,"value": 95}, 72],
-                      [{"zoom": 8,"value": 5}, 16],
-                      [{"zoom": 8,"value": 95}, 144]]
+  "version": 8,
+  "light": {
+      "position": [1.15, 225, 60]
+  },
+  "sources": {
+      "streets": {
+          "url": 'mapbox://gsdpm.e7248292',
+          "type": 'vector'
       }
+  },
+  "layers": [
+    {
+      'id': 'PAK_District_Circles',
+      'type': 'circle',
+      'source': 'streets',
+      'source-layer': 'PAK_District_Points',
+      'layout': {},
+      'paint': {
+        'circle-opacity': .5,
+        'circle-color': "#fdbf6f",
+        'circle-stroke-width': .75,
+        'circle-stroke-color': '#555555',
+        'circle-stroke-opacity': .5,
+        'circle-blur': .05,
+        'circle-radius':
+        {
+          property: 'P14_DIST',
+          type: 'exponential',
+          stops: [[{"zoom": 4,"value": 5}, 1],
+                  [{"zoom": 4,"value": 95}, 9],
+                  [{"zoom": 5,"value": 5}, 2],
+                  [{"zoom": 5,"value": 95}, 18],
+                  [{"zoom": 6,"value": 5}, 4],
+                  [{"zoom": 6,"value": 95}, 36],
+                  [{"zoom": 7,"value": 5}, 8],
+                  [{"zoom": 7,"value": 95}, 72],
+                  [{"zoom": 8,"value": 5}, 16],
+                  [{"zoom": 8,"value": 95}, 144]]
+        }
       }
     }
-    ]
+  ]
 };
 
 var map = new mapboxgl.Map({
@@ -91,56 +81,6 @@ var map = new mapboxgl.Map({
 });
 
 map.showTileBoundaries = true;
-
-// map.on('load', function () {
-//
-//     map.addSource('PAK_Data', {
-//         type: 'vector',
-//         url: 'mapbox://gsdpm.e7248292'
-//     });
-//
-//     map.addLayer({
-//         'id': 'PAK_District_Circles',
-//         'type': 'circle',
-//         'source': 'PAK_Data',
-//         'source-layer': 'PAK_District_Points',
-//         'layout': {},
-//         'paint': {
-//             'circle-opacity': .5,
-//             'circle-color': "#fdbf6f",
-//             'circle-stroke-width': .75,
-//             'circle-stroke-color': '#555555',
-//             'circle-stroke-opacity': .5,
-//             'circle-blur': .05,
-//         'circle-radius':
-//           /* Expressions
-//           [
-//                 "interpolate",
-//                 ["linear"],
-//                 ["zoom"],
-//                 4, ["sqrt", ["*", ["get", 'P14_DIST'], 5]],
-//                 6, ["sqrt", ["*", ["get", 'P14_DIST'], 75]],
-//                 8, ["sqrt", ["*", ["get", 'P14_DIST'], 160]]
-//           ]
-//           */
-// {
-//             property: 'P14_DIST',
-//             type: 'exponential',
-//             stops: [[{"zoom": 4,"value": 5}, 1],
-//                     [{"zoom": 4,"value": 95}, 9],
-//                     [{"zoom": 5,"value": 5}, 2],
-//                     [{"zoom": 5,"value": 95}, 18],
-//                     [{"zoom": 6,"value": 5}, 4],
-//                     [{"zoom": 6,"value": 95}, 36],
-//                     [{"zoom": 7,"value": 5}, 8],
-//                     [{"zoom": 7,"value": 95}, 72],
-//                     [{"zoom": 8,"value": 5}, 16],
-//                     [{"zoom": 8,"value": 95}, 144]]
-// }
-//     }
-//     });
-// });
-
 </script>
 </body>
 </html>
