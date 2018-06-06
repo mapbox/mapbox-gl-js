@@ -56,16 +56,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         let parentScaleBy, parentTL;
 
-        let textureFilter;
-        switch (layer.paint.get('raster-scaling')) {
-        case 'nearest':
-            textureFilter = gl.NEAREST;
-            break;
-        case 'linear':
-        default:
-            textureFilter = gl.LINEAR;
-            break;
-        }
+        const textureFilter = layer.paint.get('raster-scaling') === 'nearest' ?  gl.NEAREST : gl.LINEAR;
 
         context.activeTexture.set(gl.TEXTURE0);
         tile.texture.bind(textureFilter, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
