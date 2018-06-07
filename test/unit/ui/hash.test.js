@@ -1,7 +1,6 @@
 import { test } from 'mapbox-gl-js-test';
 import Hash from '../../../src/ui/hash';
 import window from '../../../src/util/window';
-import Map from '../../../src/ui/map';
 import { createMap as globalCreateMap } from '../../util';
 
 test('hash', (t) => {
@@ -155,12 +154,7 @@ test('hash', (t) => {
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
 
-        const map = new Map({
-            container,
-            center: [-74.50, 40],
-            zoom: 9,
-            hash: true,
-        });
+        const map = createMap(t, { hash: true });
 
         map.remove();
 

@@ -825,7 +825,7 @@ test('Map', (t) => {
     });
 
     t.test('#listImages', (t) => {
-        const map = createMap();
+        const map = createMap(t);
 
         map.on('load', () => {
             t.equals(map.listImages().length, 0);
@@ -840,7 +840,7 @@ test('Map', (t) => {
     });
 
     t.test('#listImages throws an error if called before "load"', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         t.throws(() => {
             map.listImages();
         }, Error);
@@ -1222,7 +1222,7 @@ test('Map', (t) => {
 
     t.test('#setFeatureState', (t) => {
         t.test('sets state', (t) => {
-            const map = createMap({
+            const map = createMap(t, {
                 style: {
                     "version": 8,
                     "sources": {
@@ -1239,7 +1239,7 @@ test('Map', (t) => {
             });
         });
         t.test('throw before loaded', (t) => {
-            const map = createMap({
+            const map = createMap(t, {
                 style: {
                     "version": 8,
                     "sources": {
@@ -1255,7 +1255,7 @@ test('Map', (t) => {
             t.end();
         });
         t.test('fires an error if source not found', (t) => {
-            const map = createMap({
+            const map = createMap(t, {
                 style: {
                     "version": 8,
                     "sources": {
@@ -1273,7 +1273,7 @@ test('Map', (t) => {
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
-            const map = createMap({
+            const map = createMap(t, {
                 style: {
                     "version": 8,
                     "sources": {
@@ -1421,9 +1421,11 @@ test('Map', (t) => {
         t.equal(map.isEasing(), true);
 
         map.remove();
+        t.end();
+    });
 
     t.test('should not warn when CSS is present', (t) => {
-        const stub = t.stub(util, 'warnOnce');
+        const stub = t.stub(console, 'warn');
 
         const styleSheet = new window.CSSStyleSheet();
         styleSheet.insertRule('.mapboxgl-canary { background-color: rgb(250, 128, 114); }', 0);
@@ -1437,7 +1439,7 @@ test('Map', (t) => {
     });
 
     t.test('should warn when CSS is missing', (t) => {
-        const stub = t.stub(util, 'warnOnce');
+        const stub = t.stub(console, 'warn');
         new Map({ container: window.document.createElement('div') });
 
         t.ok(stub.calledOnce);

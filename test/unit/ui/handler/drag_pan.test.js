@@ -598,7 +598,7 @@ test(`DragPanHandler can be disabled after mousedown (#2419)`, (t) => {
 });
 
 test('DragPanHandler does not begin a drag on spurious mousemove events', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     map.dragRotate.disable();
 
     const dragstart = t.spy();
@@ -632,7 +632,7 @@ test('DragPanHandler does not begin a drag on spurious mousemove events', (t) =>
 });
 
 test('DragPanHandler does not begin a drag on spurious touchmove events', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     const dragstart = t.spy();
     const drag      = t.spy();

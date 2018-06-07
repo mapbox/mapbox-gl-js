@@ -1,5 +1,5 @@
 import { test } from 'mapbox-gl-js-test';
-import { createMap as globalCreateMap } from '../../../util';
+import { createMap as globalCreateMap } from '../../../util';
 import VectorTileSource from '../../../../src/source/vector_tile_source';
 
 function createMap(t, logoPosition, logoRequired) {
@@ -84,7 +84,7 @@ test('LogoControl is not added more than once', (t)=>{
 });
 
 test('LogoControl appears in compact mode if container is less then 250 pixel wide', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     const container = map.getContainer();
 
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 255, configurable: true});

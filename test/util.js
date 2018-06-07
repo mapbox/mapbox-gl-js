@@ -1,10 +1,8 @@
-'use strict';
+import window from '../src/util/window';
+import Map from '../src/ui/map';
+import { extend} from '../src/util/util';
 
-const window = require('../src/util/window');
-const Map = require('../src/ui/map');
-const util = require('../src/util/util');
-
-module.exports.createMap = function(t, options, callback) {
+export function createMap(t, options, callback) {
     const container = window.document.createElement('div');
 
     Object.defineProperty(container, 'offsetWidth', {value: 200, configurable: true});
@@ -12,7 +10,7 @@ module.exports.createMap = function(t, options, callback) {
 
     if (!options || !options.skipCSSStub) t.stub(Map.prototype, '_detectMissingCSS');
 
-    const map = new Map(util.extend({
+    const map = new Map(extend({
         container: container,
         interactive: false,
         attributionControl: false,
@@ -29,4 +27,4 @@ module.exports.createMap = function(t, options, callback) {
     });
 
     return map;
-};
+}

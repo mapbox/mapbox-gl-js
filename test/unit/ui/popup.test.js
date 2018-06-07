@@ -97,7 +97,7 @@ test('Popup fires close event when removed', (t) => {
 
 
 test('Popup fires open event when added', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     const onOpen = t.spy();
 
     new Popup()
@@ -448,7 +448,7 @@ test('Popup#remove is idempotent (#2395)', (t) => {
 });
 
 test('Popup adds classes from className option', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     new Popup({className: 'some classes'})
         .setText("Test")
         .setLngLat([0, 0])

@@ -738,7 +738,7 @@ test(`DragRotateHandler can be disabled after mousedown (#2419)`, (t) => {
 });
 
 test('DragRotateHandler does not begin rotation on spurious mousemove events', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     const rotatestart = t.spy();
     const rotate      = t.spy();

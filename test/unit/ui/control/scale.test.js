@@ -1,6 +1,6 @@
 
 import { test } from 'mapbox-gl-js-test';
-import { createMap } from '../../../util';
+import { createMap } from '../../../util';
 import ScaleControl from '../../../../src/ui/control/scale_control';
 
 test('ScaleControl appears in bottom-left by default', (t) => {

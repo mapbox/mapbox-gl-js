@@ -1,6 +1,6 @@
 import { test } from 'mapbox-gl-js-test';
 import window from '../../../../src/util/window';
-import { createMap } from '../../../util';
+import { createMap } from '../../../util';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control';
 
 // window and navigator globals need to be set for mock-geolocation
@@ -71,7 +71,7 @@ test('GeolocateControl geolocate event', (t) => {
 test('GeolocateControl trigger', (t) => {
     t.plan(1);
 
-    const map = createMap();
+    const map = createMap(t);
     const geolocate = new GeolocateControl();
     map.addControl(geolocate);
 

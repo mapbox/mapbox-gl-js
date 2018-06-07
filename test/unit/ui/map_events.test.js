@@ -1,5 +1,4 @@
 import { test } from 'mapbox-gl-js-test';
-import window from '../../../src/util/window';
 import { createMap } from '../../util';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
@@ -540,7 +539,7 @@ test(`Map#on mousedown can have default behavior prevented and still fire subseq
 });
 
 test(`Map#on mousedown doesn't fire subsequent click event if mousepos changes`, (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('mousedown', e => e.preventDefault());
 
