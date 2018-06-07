@@ -465,12 +465,12 @@ class Camera extends Evented {
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
-        const calculatedBounds = this.cameraForBounds(bounds, options);
+        const calculatedOptions = this.cameraForBounds(bounds, options);
 
         // cameraForBounds warns + returns undefined if unable to fit:
-        if (!calculatedBounds) return this;
+        if (!calculatedOptions) return this;
 
-        options = extend(calculatedBounds, options);
+        options = extend(calculatedOptions, options);
 
         return options.linear ?
             this.easeTo(options, eventData) :
