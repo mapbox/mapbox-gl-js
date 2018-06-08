@@ -10,8 +10,8 @@
     height: 100%;
 }
 
-.mapboxgl-missing-css {
-    display: none;
+.mapboxgl-canary {
+    background-color: salmon;
 }
 
 .mapboxgl-canvas-container.mapboxgl-interactive,

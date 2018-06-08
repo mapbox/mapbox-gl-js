@@ -1,20 +1,20 @@
 import { test } from 'mapbox-gl-js-test';
 import browser from '../../../../src/util/browser';
-import { extend } from '../../../../src/util/util';
 import window from '../../../../src/util/window';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-function createMap(options) {
-    return new Map(extend({
+function createMap(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
+    return new Map({
         container: DOM.create('div', '', window.document.body),
         style: {
             "version": 8,
             "sources": {},
             "layers": []
         }
-    }, options));
+    });
 }
 
 test('ScrollZoomHandler', (t) => {
@@ -23,7 +23,7 @@ test('ScrollZoomHandler', (t) => {
     browserNow.callsFake(() => now);
 
     t.test('Zooms for single mouse wheel tick', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         map._renderTaskQueue.run();
 
         // simulate a single 'wheel' event
@@ -42,7 +42,7 @@ test('ScrollZoomHandler', (t) => {
     });
 
     t.test('Zooms for single mouse wheel tick with non-magical deltaY', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         map._renderTaskQueue.run();
 
         // Simulate a single 'wheel' event without the magical deltaY value.
@@ -56,7 +56,7 @@ test('ScrollZoomHandler', (t) => {
     });
 
     t.test('Zooms for multiple mouse wheel ticks', (t) => {
-        const map = createMap();
+        const map = createMap(t);
 
         map._renderTaskQueue.run();
         const startZoom = map.getZoom();
@@ -94,7 +94,7 @@ test('ScrollZoomHandler', (t) => {
     });
 
     t.test('Gracefully ignores wheel events with deltaY: 0', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         map._renderTaskQueue.run();
 
         const startZoom = map.getZoom();
@@ -114,7 +114,7 @@ test('ScrollZoomHandler', (t) => {
     });
 
     test('does not zoom if preventDefault is called on the wheel event', (t) => {
-        const map = createMap();
+        const map = createMap(t);
 
         map.on('wheel', e => e.preventDefault());
 

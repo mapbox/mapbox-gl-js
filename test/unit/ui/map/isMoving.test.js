@@ -5,19 +5,20 @@ import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-function createMap() {
+function createMap(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
     return new Map({ container: DOM.create('div', '', window.document.body) });
 }
 
 test('Map#isMoving returns false by default', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     t.equal(map.isMoving(), false);
     map.remove();
     t.end();
 });
 
 test('Map#isMoving returns true during a camera zoom animation', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('zoomstart', () => {
         t.equal(map.isMoving(), true);
@@ -33,7 +34,7 @@ test('Map#isMoving returns true during a camera zoom animation', (t) => {
 });
 
 test('Map#isMoving returns true when drag panning', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('dragstart', () => {
         t.equal(map.isMoving(), true);
@@ -56,7 +57,7 @@ test('Map#isMoving returns true when drag panning', (t) => {
 });
 
 test('Map#isMoving returns true when drag rotating', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     // Prevent inertial rotation.
     t.stub(browser, 'now').returns(0);
@@ -82,7 +83,7 @@ test('Map#isMoving returns true when drag rotating', (t) => {
 });
 
 test('Map#isMoving returns true when scroll zooming', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('zoomstart', () => {
         t.equal(map.isMoving(), true);
@@ -106,7 +107,7 @@ test('Map#isMoving returns true when scroll zooming', (t) => {
 });
 
 test('Map#isMoving returns true when drag panning and scroll zooming interleave', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('dragstart', () => {
         t.equal(map.isMoving(), true);
