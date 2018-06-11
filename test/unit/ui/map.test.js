@@ -1447,6 +1447,21 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('continues camera animation on resize', (t) => {
+        const map = createMap(t),
+            container = map.getContainer();
+
+        map.flyTo({ center: [200, 0], duration: 100 });
+
+        Object.defineProperty(container, 'offsetWidth', {value: 250});
+        Object.defineProperty(container, 'offsetHeight', {value: 250});
+        map.resize();
+
+        t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');
+
+        t.end();
+    });
+
     t.end();
 });
 
