@@ -5025,14 +5025,19 @@
         }
       },
       "default": "linear",
-      "function": "piecewise-constant",
-      "zoom-function": true,
       "sdk-support": {
         "basic functionality": {
           "js": "0.46.0"
         },
         "data-driven styling": {}
-      }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     },
     "raster-fade-duration": {
       "type": "number",
