@@ -529,13 +529,11 @@ test('Map', (t) => {
         t.test('do resize if trackResize is true (default)', (t) => {
             const map = createMap(t);
 
-            t.spy(map, 'stop');
             t.spy(map, '_update');
             t.spy(map, 'resize');
 
             map._onWindowResize();
 
-            t.ok(map.stop.called);
             t.ok(map._update.called);
             t.ok(map.resize.called);
 
