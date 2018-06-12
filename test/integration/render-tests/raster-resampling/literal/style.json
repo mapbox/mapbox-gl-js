@@ -1,4 +1,4 @@
-{
+
   "version": 8,
   "metadata": {
     "test": {
@@ -27,18 +27,7 @@
       "source": "satellite",
       "paint": {
         "raster-fade-duration": 0,
-        "raster-scaling": {
-          "stops": [
-            [
-              19,
-              "linear"
-            ],
-            [
-              20,
-              "nearest"
-            ]
-          ]
-        }
+        "raster-resampling": "nearest"
       }
     }
   ]

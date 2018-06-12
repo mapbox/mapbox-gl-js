@@ -5013,15 +5013,15 @@
       },
       "property-type": "data-constant"
     },
-    "raster-scaling": {
+    "raster-resampling": {
       "type": "enum",
-      "doc": "The raster scaling to use for overscaling",
+      "doc": "The resampling (interpolation) method to use for overscaling",
       "values": {
         "linear": {
-          "doc": "(Bi)linear filtering"
+          "doc": "(Bi)linear filtering creating a smooth but blurry look"
         },
         "nearest": {
-          "doc": "Nearest neighbor filtering"
+          "doc": "Nearest neighbor filtering creating a sharp but pixelated look"
         }
       },
       "default": "linear",

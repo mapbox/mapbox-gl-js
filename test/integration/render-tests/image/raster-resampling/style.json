@@ -42,7 +42,7 @@
       "source": "image",
       "paint": {
         "raster-fade-duration": 0,
-        "raster-scaling": "nearest"
+        "raster-resampling": "nearest"
       }
     }
   ]

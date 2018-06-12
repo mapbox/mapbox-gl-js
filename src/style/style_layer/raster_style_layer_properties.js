@@ -22,7 +22,7 @@ export type PaintProps = {|
     "raster-brightness-max": DataConstantProperty<number>,
     "raster-saturation": DataConstantProperty<number>,
     "raster-contrast": DataConstantProperty<number>,
-    "raster-scaling": DataConstantProperty<"linear" | "nearest">,
+    "raster-resampling": DataConstantProperty<"linear" | "nearest">,
     "raster-fade-duration": DataConstantProperty<number>,
 |};
 
@@ -33,7 +33,7 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-brightness-max": new DataConstantProperty(styleSpec["paint_raster"]["raster-brightness-max"]),
     "raster-saturation": new DataConstantProperty(styleSpec["paint_raster"]["raster-saturation"]),
     "raster-contrast": new DataConstantProperty(styleSpec["paint_raster"]["raster-contrast"]),
-    "raster-scaling": new DataConstantProperty(styleSpec["paint_raster"]["raster-scaling"]),
+    "raster-resampling": new DataConstantProperty(styleSpec["paint_raster"]["raster-resampling"]),
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
 });
 
