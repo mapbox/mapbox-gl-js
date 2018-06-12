@@ -1,0 +1,63 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 128,
+      "description": "We use a render test for the collator expression because it has an Android-specific implementation and we don't have an Android expression test suite. For other platforms, see the collator expression tests."
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "literal",
+      "type": "symbol",
+      "source": "mapbox",
+      "layout": {
+        "text-field": ["concat",
+            "en == ",
+            [
+              "resolved-locale",
+              [
+                "collator",
+                {"case-sensitive": true, "diacritic-sensitive": true, "locale": "en"}
+              ]
+            ]
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+      ],
+        "text-size": 10,
+        "text-max-width": 7
+      }
+    }
+  ]
+}
