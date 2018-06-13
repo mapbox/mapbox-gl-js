@@ -203,7 +203,7 @@ declare type SymbolLayerSpecification = {|
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {|
-        "symbol-placement"?: PropertyValueSpecification<"point" | "line">,
+        "symbol-placement"?: PropertyValueSpecification<"point" | "line" | "line-center">,
         "symbol-spacing"?: PropertyValueSpecification<number>,
         "symbol-avoid-edges"?: PropertyValueSpecification<boolean>,
         "icon-allow-overlap"?: PropertyValueSpecification<boolean>,

@@ -8,7 +8,68 @@ import checkMaxAngle from './check_max_angle';
 import type Point from '@mapbox/point-geometry';
 import type {Shaping, PositionedIcon} from './shaping';
 
-export default getAnchors;
+export { getAnchors, getCenterAnchor };
+
+function getLineLength(line: Array<Point>): number {
+    let lineLength = 0;
+    for (let k = 0; k < line.length - 1; k++) {
+        lineLength += line[k].dist(line[k + 1]);
+    }
+    return lineLength;
+}
+
+function getAngleWindowSize(shapedText: ?Shaping,
+                            glyphSize: number,
+                            boxScale: number): number {
+    return shapedText ?
+        3 / 5 * glyphSize * boxScale :
+        0;
+}
+
+function getLabelLength(shapedText: ?Shaping, shapedIcon: ?PositionedIcon): number {
+    return Math.max(
+        shapedText ? shapedText.right - shapedText.left : 0,
+        shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
+}
+
+function getCenterAnchor(line: Array<Point>,
+                         maxAngle: number,
+                         shapedText: ?Shaping,
+                         shapedIcon: ?PositionedIcon,
+                         glyphSize: number,
+                         boxScale: number) {
+    const angleWindowSize = getAngleWindowSize(shapedText, glyphSize, boxScale);
+    const labelLength = getLabelLength(shapedText, shapedIcon);
+
+    let prevDistance = 0;
+    const centerDistance = getLineLength(line) / 2;
+
+    for (let i = 0; i < line.length - 1; i++) {
+
+        const a = line[i],
+            b = line[i + 1];
+
+        const segmentDistance = a.dist(b);
+
+        if (prevDistance + segmentDistance > centerDistance) {
+            // The center is on this segment
+            const t = (centerDistance - prevDistance) / segmentDistance,
+                x = interpolate(a.x, b.x, t),
+                y = interpolate(a.y, b.y, t);
+
+            const anchor = new Anchor(x, y, b.angleTo(a), i);
+            anchor._round();
+            if (angleWindowSize &&
+                !checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
+                return;
+            }
+
+            return anchor;
+        }
+
+        prevDistance += segmentDistance;
+    }
+}
 
 function getAnchors(line: Array<Point>,
                     spacing: number,
@@ -24,13 +85,8 @@ function getAnchors(line: Array<Point>,
     // potential label passes text-max-angle check and has enough froom to fit
     // on the line.
 
-    const angleWindowSize = shapedText ?
-        3 / 5 * glyphSize * boxScale :
-        0;
-
-    const labelLength = Math.max(
-        shapedText ? shapedText.right - shapedText.left : 0,
-        shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
+    const angleWindowSize = getAngleWindowSize(shapedText, glyphSize, boxScale);
+    const labelLength = getLabelLength(shapedText, shapedIcon);
 
     // Is the line continued from outside the tile boundary?
     const isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
@@ -59,10 +115,7 @@ function getAnchors(line: Array<Point>,
 function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent) {
 
     const halfLabelLength = labelLength / 2;
-    let lineLength = 0;
-    for (let k = 0; k < line.length - 1; k++) {
-        lineLength += line[k].dist(line[k + 1]);
-    }
+    const lineLength = getLineLength(line);
 
     let distance = 0,
         markedDistance = offset - spacing;
