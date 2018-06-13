@@ -21,7 +21,7 @@ const handlers = {
     touchZoomRotate
 };
 
-export default function bindHandlers(map: Map, options: {interactive: boolean}) {
+export default function bindHandlers(map: Map, options: {interactive: boolean, dragThreshold: number}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
@@ -152,7 +152,7 @@ export default function bindHandlers(map: Map, options: {interactive: boolean}) 
 
     function onClick(e: MouseEvent) {
         const pos = DOM.mousePos(el, e);
-        if (pos.equals(startPos)) {
+        if (pos.dist(startPos) <= options.dragThreshold) {
             map.fire(new MapMouseEvent('click', map, e));
         }
     }
