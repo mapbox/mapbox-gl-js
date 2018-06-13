@@ -148,6 +148,7 @@ function renderTextureToMap(painter, layer) {
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
     context.setDepthMode(DepthMode.disabled);
+    context.setStencilMode(StencilMode.disabled);
 
     const program = painter.useProgram('heatmapTexture');
 
