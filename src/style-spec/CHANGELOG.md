@@ -1,3 +1,19 @@
+## 13.0.1
+
+### ⚠️ Breaking changes
+* Align implicit type behavior of `match` expressions with with `case/==` ([#6684](https://github.com/mapbox/mapbox-gl-js/pull/6684))
+* Update spec so that documentation can automatically capture which functions and expressions can be used with which properties ([#6521](https://github.com/mapbox/mapbox-gl-js/pull/6521))
+
+### ✨ Features and improvements
+* Add `feature-state` [#6263](https://github.com/mapbox/mapbox-gl-js/pull/6263)
+* Add support for GeoJSON attribution ([#6364](https://github.com/mapbox/mapbox-gl-js/pull/6364)) (h/t [andrewharvey](https://github.com/andrewharvey))
+* Upgrade to Flow 0.69 ([#6594](https://github.com/mapbox/mapbox-gl-js/pull/6594))
+
+### 🐛 Bug fixes
+* Use named exports for style-spec entrypoint module ([#6601](https://github.com/mapbox/mapbox-gl-js/issues/6601)
+
+## 13.0.0
+Malformed package published to NPM.
 
 ## 12.0.0
 
