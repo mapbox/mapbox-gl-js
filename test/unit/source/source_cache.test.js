@@ -401,6 +401,32 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.onAdd();
     });
 
+    t.test('does not reload errored tiles', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        const sourceCache = createSourceCache({
+            loadTile: function (tile, callback) {
+                tile.state = 'errored';
+                callback();
+            }
+        });
+
+        const reloadTileSpy = t.spy(sourceCache, '_reloadTile');
+        sourceCache.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                sourceCache.getSource().fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
+            }
+        });
+        sourceCache.onAdd();
+
+        t.ok(reloadTileSpy.notCalled);
+
+        t.end();
+    });
+
     t.end();
 });
 
