@@ -30,7 +30,7 @@ class SymbolStyleLayer extends StyleLayer {
         super.recalculate(parameters);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
-            if (this.layout.get('symbol-placement') === 'line') {
+            if (this.layout.get('symbol-placement') !== 'point') {
                 this.layout._values['icon-rotation-alignment'] = 'map';
             } else {
                 this.layout._values['icon-rotation-alignment'] = 'viewport';
@@ -38,7 +38,7 @@ class SymbolStyleLayer extends StyleLayer {
         }
 
         if (this.layout.get('text-rotation-alignment') === 'auto') {
-            if (this.layout.get('symbol-placement') === 'line') {
+            if (this.layout.get('symbol-placement') !== 'point') {
                 this.layout._values['text-rotation-alignment'] = 'map';
             } else {
                 this.layout._values['text-rotation-alignment'] = 'viewport';

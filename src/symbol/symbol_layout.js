@@ -2,7 +2,7 @@
 
 import Anchor from './anchor';
 
-import getAnchors from './get_anchors';
+import { getAnchors, getCenterAnchor } from './get_anchors';
 import clipLine from './clip_line';
 import OpacityState from './opacity_state';
 import { shapeText, shapeIcon, WritingMode } from './shaping';
@@ -94,7 +94,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     const oneEm = 24;
     const lineHeight = layout.get('text-line-height') * oneEm;
-    const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
+    const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
     const keepUpright = layout.get('text-keep-upright');
 
 
@@ -111,7 +111,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             const spacingIfAllowed = allowsLetterSpacing(text) ? spacing : 0;
             const textAnchor = layout.get('text-anchor').evaluate(feature, {});
             const textJustify = layout.get('text-justify').evaluate(feature, {});
-            const maxWidth = layout.get('symbol-placement') !== 'line' ?
+            const maxWidth = layout.get('symbol-placement') === 'point' ?
                 layout.get('text-max-width').evaluate(feature, {}) * oneEm :
                 0;
 
@@ -191,8 +191,8 @@ function addFeature(bucket: SymbolBucket,
         textPadding = layout.get('text-padding') * bucket.tilePixelRatio,
         iconPadding = layout.get('icon-padding') * bucket.tilePixelRatio,
         textMaxAngle = layout.get('text-max-angle') / 180 * Math.PI,
-        textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line',
-        iconAlongLine = layout.get('icon-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line',
+        textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point',
+        iconAlongLine = layout.get('icon-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point',
         symbolPlacement = layout.get('symbol-placement'),
         textRepeatDistance = symbolMinDistance / 2;
 
@@ -227,6 +227,23 @@ function addFeature(bucket: SymbolBucket,
             for (const anchor of anchors) {
                 const shapedText = shapedTextOrientations.horizontal;
                 if (!shapedText || !anchorIsTooClose(bucket, shapedText.text, textRepeatDistance, anchor)) {
+                    addSymbolAtAnchor(line, anchor);
+                }
+            }
+        }
+    } else if (symbolPlacement === 'line-center') {
+        // No clipping, multiple lines per feature are allowed
+        // "lines" with only one point are ignored as in clipLines
+        for (const line of feature.geometry) {
+            if (line.length > 1) {
+                const anchor = getCenterAnchor(
+                    line,
+                    textMaxAngle,
+                    shapedTextOrientations.vertical || shapedTextOrientations.horizontal,
+                    shapedIcon,
+                    glyphSize,
+                    textMaxBoxScale);
+                if (anchor) {
                     addSymbolAtAnchor(line, anchor);
                 }
             }
