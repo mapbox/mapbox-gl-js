@@ -3025,7 +3025,7 @@
           "!": "fill-pattern"
         },
         {
-          "fill-antialias": true
+          "fill-antialias": "true"
         }
       ],
       "sdk-support": {
