@@ -2558,8 +2558,8 @@ var PageFooter = function (_Component) {
   return PageFooter;
 }(React.Component);
 
-var DEFAULT_SOCIAL_IMAGE_URL = 'https://www.mapbox.com/social-1200x630.png';
-var DEFAULT_SOCIAL_IMAGE_THUMBNAIL_URL = 'https://www.mapbox.com/social-120x120.png';
+var DEFAULT_SOCIAL_IMAGE_URL = 'https://www.mapbox.com/static/social-media/social-1200x630.png';
+var DEFAULT_SOCIAL_IMAGE_THUMBNAIL_URL = 'https://www.mapbox.com/static/social-media/social-120x120.png';
 
 var MetaTagger = function (_React$PureComponent) {
   inherits(MetaTagger, _React$PureComponent);
@@ -2727,7 +2727,7 @@ var ReactPageShell = function (_React$Component) {
             ),
             React__default.createElement(
               'main',
-              { style: { position: 'relative', display: 'block' } },
+              { style: { zIndex: 0, position: 'relative', display: 'block' } },
               this.props.children
             )
           ),

@@ -860,7 +860,11 @@ export default class extends React.Component {
                             <a id='transition' className='anchor'></a>
                             <h2><a href='#transition' title='link to transition'>Transition</a></h2>
                             <p>
-                                A style's <code>transition</code> property provides global transition defaults for that style.
+                                A <code>transition</code> property controls timing for the interpolation between a transitionable style
+                                property's previous value and new value. A style's <a href='#root-transition' title='link to root-transition'>
+                                root <code>transition</code></a> property provides global transition defaults for that style. Any transitionable
+                                style property may also have its own <code>-transition</code> property that defines specific transition timing
+                                for that specific layer property, overriding the global <code>transition</code> values.
                             </p>
                             <div className='space-bottom1 pad2x clearfix'>
                                 {highlightJSON(`"transition": ${JSON.stringify(ref.$root.transition.example, null, 2)}`)}
