@@ -1,4 +1,4 @@
-## 13.0.0
+## 13.0.0-beta.1
 
 ### ⚠️ Breaking changes
 * Align implicit type behavior of `match` expressions with with `case/==` ([#6684](https://github.com/mapbox/mapbox-gl-js/pull/6684))
