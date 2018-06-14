@@ -664,7 +664,7 @@ test('DragPanHandler does not begin a drag on spurious touchmove events', (t) =>
     t.end();
 });
 
-test('DragPanHandler does not begin a mouse drag if moved less than threshold', (t) => {
+test('DragPanHandler does not begin a mouse drag if moved less than click tolerance', (t) => {
     const map = createMap(t, 4);
 
     const dragstart = t.spy();
@@ -703,7 +703,7 @@ test('DragPanHandler does not begin a mouse drag if moved less than threshold', 
     t.end();
 });
 
-test('DragPanHandler does not begin a touch drag if moved less than threshold', (t) => {
+test('DragPanHandler does not begin a touch drag if moved less than click tolerance', (t) => {
     const map = createMap(t, 4);
 
     const dragstart = t.spy();
