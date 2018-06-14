@@ -30,18 +30,18 @@ class DragPanHandler {
     _lastMoveEvent: MouseEvent | TouchEvent | void;
     _inertia: Array<[number, Point]>;
     _frameId: ?TaskID;
-    _dragThreshold: number;
+    _clickTolerance: number;
 
     /**
      * @private
      */
     constructor(map: Map, options: {
-        dragThreshold?: number
+        clickTolerance?: number
     }) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._state = 'disabled';
-        this._dragThreshold = options.dragThreshold || 0;
+        this._clickTolerance = options.clickTolerance || 1;
 
         bindAll([
             '_onMove',
@@ -153,7 +153,7 @@ class DragPanHandler {
         e.preventDefault();
 
         const pos = DOM.mousePos(this._el, e);
-        if (this._lastPos.equals(pos) || (this._state === 'pending' && pos.dist(this._mouseDownPos) <= this._dragThreshold)) {
+        if (this._lastPos.equals(pos) || (this._state === 'pending' && pos.dist(this._mouseDownPos) < this._clickTolerance)) {
             return;
         }
 

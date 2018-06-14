@@ -4,9 +4,9 @@ import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-function createMap(t, dragThreshold) {
+function createMap(t, clickTolerance) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({ container: DOM.create('div', '', window.document.body), dragThreshold: dragThreshold || 0 });
+    return new Map({ container: DOM.create('div', '', window.document.body), clickTolerance: clickTolerance || 0 });
 }
 
 test('DragPanHandler fires dragstart, drag, and dragend events at appropriate times in response to a mouse-triggered drag', (t) => {
@@ -664,7 +664,7 @@ test('DragPanHandler does not begin a drag on spurious touchmove events', (t) =>
     t.end();
 });
 
-test('DragPanHandler does not beging a mouse drag if moved less than threshold', (t) => {
+test('DragPanHandler does not begin a mouse drag if moved less than threshold', (t) => {
     const map = createMap(t, 4);
 
     const dragstart = t.spy();
@@ -681,7 +681,7 @@ test('DragPanHandler does not beging a mouse drag if moved less than threshold',
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas(), {clientX: 14, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {clientX: 13, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -693,7 +693,7 @@ test('DragPanHandler does not beging a mouse drag if moved less than threshold',
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.mousemove(map.getCanvas(), {clientX: 15, clientY: 10});
+    simulate.mousemove(map.getCanvas(), {clientX: 14, clientY: 10});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
@@ -703,7 +703,7 @@ test('DragPanHandler does not beging a mouse drag if moved less than threshold',
     t.end();
 });
 
-test('DragPanHandler does not beging a touch drag if moved less than threshold', (t) => {
+test('DragPanHandler does not begin a touch drag if moved less than threshold', (t) => {
     const map = createMap(t, 4);
 
     const dragstart = t.spy();
@@ -720,7 +720,7 @@ test('DragPanHandler does not beging a touch drag if moved less than threshold',
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 14, clientY: 10}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 13, clientY: 10}]});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 0);
     t.equal(drag.callCount, 0);
@@ -732,7 +732,7 @@ test('DragPanHandler does not beging a touch drag if moved less than threshold',
     t.equal(drag.callCount, 0);
     t.equal(dragend.callCount, 0);
 
-    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 15, clientY: 10}]});
+    simulate.touchmove(map.getCanvas(), {touches: [{clientX: 14, clientY: 10}]});
     map._renderTaskQueue.run();
     t.equal(dragstart.callCount, 1);
     t.equal(drag.callCount, 1);
