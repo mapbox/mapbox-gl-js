@@ -1,4 +1,4 @@
-## 0.46.0
+## 0.46.0-beta.1
 
 ### ⚠️ Breaking changes
 
