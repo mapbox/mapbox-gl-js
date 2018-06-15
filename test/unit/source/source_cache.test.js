@@ -404,11 +404,13 @@ test('SourceCache / Source lifecycle', (t) => {
     t.test('does not reload errored tiles', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
-        transform.zoom = 0;
+        transform.zoom = 1;
 
         const sourceCache = createSourceCache({
             loadTile: function (tile, callback) {
-                tile.state = 'errored';
+                // this transform will try to load the four tiles at z1 and a single z0 tile
+                // we only expect _reloadTile to be called with the 'loaded' z0 tile
+                tile.state = tile.tileID.canonical.z === 1 ? 'errored' : 'loaded';
                 callback();
             }
         });
@@ -421,8 +423,9 @@ test('SourceCache / Source lifecycle', (t) => {
             }
         });
         sourceCache.onAdd();
-
-        t.ok(reloadTileSpy.notCalled);
+        // we expect the source cache to have five tiles, but only to have reloaded one
+        t.equal(Object.keys(sourceCache._tiles).length, 5);
+        t.ok(reloadTileSpy.calledOnce);
 
         t.end();
     });
