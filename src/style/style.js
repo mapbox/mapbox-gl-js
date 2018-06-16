@@ -48,7 +48,8 @@ import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
-import type { Placement } from '../symbol/placement';
+import type {Placement} from '../symbol/placement';
+import type {Cancelable} from '../types/cancelable';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -90,6 +91,8 @@ class Style extends Evented {
     lineAtlas: LineAtlas;
     light: Light;
 
+    _request: ?Cancelable;
+    _spriteRequest: ?Cancelable;
     _layers: {[string]: StyleLayer};
     _order: Array<string>;
     sourceCaches: {[string]: SourceCache};
@@ -175,7 +178,8 @@ class Style extends Evented {
         url = normalizeStyleURL(url, options.accessToken);
         const request = this.map._transformRequest(url, ResourceType.Style);
 
-        getJSON(request, (error, json) => {
+        this._request = getJSON(request, (error, json) => {
+            this._request = null;
             if (error) {
                 this.fire(new ErrorEvent(error));
             } else if (json) {
@@ -189,7 +193,8 @@ class Style extends Evented {
     } = {}) {
         this.fire(new Event('dataloading', {dataType: 'style'}));
 
-        browser.frame(() => {
+        this._request = browser.frame(() => {
+            this._request = null;
             this._load(json, options.validate !== false);
         });
     }
@@ -207,7 +212,8 @@ class Style extends Evented {
         }
 
         if (json.sprite) {
-            loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
+            this._spriteRequest = loadSprite(json.sprite, this.map._transformRequest, (err, images) => {
+                this._spriteRequest = null;
                 if (err) {
                     this.fire(new ErrorEvent(err));
                 } else if (images) {
@@ -976,6 +982,14 @@ class Style extends Evented {
     }
 
     _remove() {
+        if (this._request) {
+            this._request.cancel();
+            this._request = null;
+        }
+        if (this._spriteRequest) {
+            this._spriteRequest.cancel();
+            this._spriteRequest = null;
+        }
         rtlTextPluginEvented.off('pluginAvailable', this._rtlTextPluginCallback);
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].clearTiles();

@@ -15,11 +15,11 @@ test('browser', (t) => {
         t.end();
     });
 
-    t.test('cancelFrame', (t) => {
-        const id = browser.frame(() => {
+    t.test('frame', (t) => {
+        const frame = browser.frame(() => {
             t.fail();
         });
-        browser.cancelFrame(id);
+        frame.cancel();
         t.end();
     });
 

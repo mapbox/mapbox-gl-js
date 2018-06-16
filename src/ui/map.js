@@ -39,6 +39,7 @@ import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
 import type {TaskID} from '../util/task_queue';
+import type {Cancelable} from '../types/cancelable';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -237,7 +238,7 @@ class Map extends Camera {
     _canvas: HTMLCanvasElement;
     _transformRequest: RequestTransformFunction;
     _maxTileCacheSize: number;
-    _frameId: any;
+    _frame: ?Cancelable;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
@@ -1546,9 +1547,9 @@ class Map extends Camera {
 
     _contextLost(event: *) {
         event.preventDefault();
-        if (this._frameId) {
-            browser.cancelFrame(this._frameId);
-            this._frameId = null;
+        if (this._frame) {
+            this._frame.cancel();
+            this._frame = null;
         }
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
@@ -1703,9 +1704,11 @@ class Map extends Camera {
      */
     remove() {
         if (this._hash) this._hash.remove();
-        browser.cancelFrame(this._frameId);
+        if (this._frame) {
+            this._frame.cancel();
+            this._frame = null;
+        }
         this._renderTaskQueue.clear();
-        this._frameId = null;
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
@@ -1721,9 +1724,9 @@ class Map extends Camera {
     }
 
     _rerender() {
-        if (this.style && !this._frameId) {
-            this._frameId = browser.frame(() => {
-                this._frameId = null;
+        if (this.style && !this._frame) {
+            this._frame = browser.frame(() => {
+                this._frame = null;
                 this._render();
             });
         }
