@@ -5015,13 +5015,13 @@
     },
     "raster-resampling": {
       "type": "enum",
-      "doc": "The resampling (interpolation) method to use for overscaling",
+      "doc": "The resampling/interpolation method to use for overscaling, also known as texture magnification filter",
       "values": {
         "linear": {
-          "doc": "(Bi)linear filtering creating a smooth but blurry look"
+          "doc": "(Bi)linear filtering interpolates pixel values using the weighted average of the four closest original source pixels creating a smooth but blurry look when overscaled"
         },
         "nearest": {
-          "doc": "Nearest neighbor filtering creating a sharp but pixelated look"
+          "doc": "Nearest neighbor filtering interpolates pixel values using the nearest original source pixel creating a sharp but pixelated look when overscaled"
         }
       },
       "default": "linear",
