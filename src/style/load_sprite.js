@@ -9,14 +9,16 @@ import { RGBAImage } from '../util/image';
 import type {StyleImage} from './style_image';
 import type {RequestTransformFunction} from '../ui/map';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
 
 export default function(baseURL: string,
                           transformRequestCallback: RequestTransformFunction,
-                          callback: Callback<{[string]: StyleImage}>) {
+                          callback: Callback<{[string]: StyleImage}>): Cancelable {
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err, data) => {
+    let jsonRequest = getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err, data) => {
+        jsonRequest = null;
         if (!error) {
             error = err;
             json = data;
@@ -24,7 +26,8 @@ export default function(baseURL: string,
         }
     });
 
-    getImage(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
+    let imageRequest = getImage(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
+        imageRequest = null;
         if (!error) {
             error = err;
             image = img;
@@ -49,4 +52,17 @@ export default function(baseURL: string,
             callback(null, result);
         }
     }
+
+    return {
+        cancel() {
+            if (jsonRequest) {
+                jsonRequest.cancel();
+                jsonRequest = null;
+            }
+            if (imageRequest) {
+                imageRequest.cancel();
+                imageRequest = null;
+            }
+        }
+    };
 }

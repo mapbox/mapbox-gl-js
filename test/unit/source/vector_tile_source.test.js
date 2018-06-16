@@ -296,5 +296,12 @@ test('VectorTileSource', (t) => {
         });
     });
 
+    t.test('cancels TileJSON request if removed', (t) => {
+        const source = createSource({ url: "/source.json" });
+        source.onRemove();
+        t.equal(window.server.lastRequest.aborted, true);
+        t.end();
+    });
+
     t.end();
 });

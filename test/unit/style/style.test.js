@@ -162,6 +162,14 @@ test('Style#loadURL', (t) => {
         window.server.respond();
     });
 
+    t.test('cancels pending requests if removed', (t) => {
+        const style = new Style(new StubMap());
+        style.loadURL('style.json');
+        style._remove();
+        t.equal(window.server.lastRequest.aborted, true);
+        t.end();
+    });
+
     t.end();
 });
 

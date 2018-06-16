@@ -15,6 +15,7 @@ import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
 
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';
@@ -34,6 +35,7 @@ class RasterTileSource extends Evented implements Source {
 
     _loaded: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification;
+    _tileJSONRequest: ?Cancelable;
 
     constructor(id: string, options: RasterSourceSpecification | RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -55,7 +57,8 @@ class RasterTileSource extends Evented implements Source {
 
     load() {
         this.fire(new Event('dataloading', {dataType: 'source'}));
-        loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+        this._tileJSONRequest = loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+            this._tileJSONRequest = null;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
@@ -74,6 +77,13 @@ class RasterTileSource extends Evented implements Source {
     onAdd(map: Map) {
         this.map = map;
         this.load();
+    }
+
+    onRemove() {
+        if (this._tileJSONRequest) {
+            this._tileJSONRequest.cancel();
+            this._tileJSONRequest = null;
+        }
     }
 
     serialize() {
@@ -123,7 +133,7 @@ class RasterTileSource extends Evented implements Source {
 
     abortTile(tile: Tile, callback: Callback<void>) {
         if (tile.request) {
-            tile.request.abort();
+            tile.request.cancel();
             delete tile.request;
         }
         callback();

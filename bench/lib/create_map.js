@@ -2,8 +2,6 @@
 
 import Map from '../../src/ui/map';
 
-import browser from '../../src/util/browser';
-
 export default function (options: any): Promise<Map> {
     return new Promise((resolve, reject) => {
         const container = document.createElement('div');
@@ -24,9 +22,9 @@ export default function (options: any): Promise<Map> {
                 map._rerender = () => {};
 
                 // If there's a pending rerender, cancel it.
-                if (map._frameId) {
-                    browser.cancelFrame(map._frameId);
-                    map._frameId = null;
+                if (map._frame) {
+                    map._frame.cancel();
+                    map._frame = null;
                 }
 
                 resolve(map);

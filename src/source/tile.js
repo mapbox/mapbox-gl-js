@@ -33,6 +33,7 @@ import type Framebuffer from '../gl/framebuffer';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
+import type {Cancelable} from '../types/cancelable';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -80,8 +81,8 @@ class Tile {
     maskedBoundsBuffer: ?VertexBuffer;
     maskedIndexBuffer: ?IndexBuffer;
     segments: ?SegmentVector;
-    needsHillshadePrepare: ?boolean
-    request: any;
+    needsHillshadePrepare: ?boolean;
+    request: ?Cancelable;
     texture: any;
     fbo: ?Framebuffer;
     demTexture: ?Texture;
