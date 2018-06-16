@@ -2,12 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
-      "width": 512,
-      "height": 512
+      "width": 64,
+      "height": 64
     }
   },
   "center": [
-    -122.514426,
+    -122.514526,
     37.562984
   ],
   "zoom": 20,
