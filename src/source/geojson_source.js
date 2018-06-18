@@ -189,6 +189,18 @@ class GeoJSONSource extends Evented implements Source {
         return this;
     }
 
+    /**
+     * For clustered sources, fetches the zoom at which the given cluster expands.
+     *
+     * @param clusterId the value of the cluster's `cluster_id` property.
+     * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterExpansionZoom(clusterId: number, callback: Function) {
+        this.dispatcher.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback, this.workerID);
+        return this;
+    }
+
     /*
      * Responsible for invoking WorkerSource's geojson.loadData target, which
      * handles loading the geojson data and preparing to serve it up as tiles,

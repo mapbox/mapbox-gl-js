@@ -37,6 +37,8 @@ export type LoadGeoJSONParameters = {
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<mixed>) => void;
 
 export interface GeoJSONIndex {
+    getTile(z: number, x: number, y: number): GeoJSON;
+    getClusterExpansionZoom(clusterId: number): number;
 }
 
 function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
@@ -273,6 +275,10 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             this._pendingCallback(null, { abandoned: true });
         }
         callback();
+    }
+
+    getClusterExpansionZoom(params: {clusterId: number}, callback: Callback<mixed>) {
+        callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
     }
 }
 
