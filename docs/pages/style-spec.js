@@ -300,8 +300,6 @@ class Item extends React.Component {
             return <span key={i}><em>Requires</em> <var>{req}</var>. </span>;
         } else if (req['!']) {
             return <span key={i}><em>Disabled by</em> <var>{req['!']}</var>. </span>;
-        } else if (req['<=']) {
-            return <span key={i}><em>Must be less than or equal to</em> <code>{req['<=']}</code>. </span>;
         } else {
             const [name, value] = entries(req)[0];
             if (Array.isArray(value)) {
