@@ -22,14 +22,18 @@ class BoxZoomHandler {
     _startPos: Point;
     _lastPos: Point;
     _box: HTMLElement;
+    _clickTolerance: number;
 
     /**
      * @private
      */
-    constructor(map: Map) {
+    constructor(map: Map, options: {
+        clickTolerance?: number
+    }) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._container = map.getContainer();
+        this._clickTolerance = options.clickTolerance || 1;
 
         bindAll([
             '_onMouseMove',
@@ -94,7 +98,7 @@ class BoxZoomHandler {
     _onMouseMove(e: MouseEvent) {
         const pos = DOM.mousePos(this._el, e);
 
-        if (this._lastPos.equals(pos)) {
+        if (this._lastPos.equals(pos) || (!this._box && pos.dist(this._startPos) < this._clickTolerance)) {
             return;
         }
 

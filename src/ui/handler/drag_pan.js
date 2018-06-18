@@ -25,18 +25,23 @@ class DragPanHandler {
     _el: HTMLElement;
     _state: 'disabled' | 'enabled' | 'pending' | 'active';
     _startPos: Point;
+    _mouseDownPos: Point;
     _lastPos: Point;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
     _inertia: Array<[number, Point]>;
     _frameId: ?TaskID;
+    _clickTolerance: number;
 
     /**
      * @private
      */
-    constructor(map: Map) {
+    constructor(map: Map, options: {
+        clickTolerance?: number
+    }) {
         this._map = map;
         this._el = map.getCanvasContainer();
         this._state = 'disabled';
+        this._clickTolerance = options.clickTolerance || 1;
 
         bindAll([
             '_onMove',
@@ -140,7 +145,7 @@ class DragPanHandler {
         window.addEventListener('blur', this._onBlur);
 
         this._state = 'pending';
-        this._startPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._startPos = this._mouseDownPos = this._lastPos = DOM.mousePos(this._el, e);
         this._inertia = [[browser.now(), this._startPos]];
     }
 
@@ -148,7 +153,7 @@ class DragPanHandler {
         e.preventDefault();
 
         const pos = DOM.mousePos(this._el, e);
-        if (this._lastPos.equals(pos)) {
+        if (this._lastPos.equals(pos) || (this._state === 'pending' && pos.dist(this._mouseDownPos) < this._clickTolerance)) {
             return;
         }
 
@@ -260,6 +265,7 @@ class DragPanHandler {
         }
         delete this._lastMoveEvent;
         delete this._startPos;
+        delete this._mouseDownPos;
         delete this._lastPos;
     }
 

@@ -553,3 +553,35 @@ test(`Map#on mousedown doesn't fire subsequent click event if mousepos changes`,
     map.remove();
     t.end();
 });
+
+test(`Map#on mousedown fires subsequent click event if mouse position changes less than click tolerance`, (t) => {
+    const map = createMap(t, { clickTolerance: 4 });
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const click = t.spy();
+    map.on('click', click);
+    const canvas = map.getCanvas();
+
+    simulate.drag(canvas, {clientX: 100, clientY: 100}, {clientX: 100, clientY: 103});
+    t.ok(click.called);
+
+    map.remove();
+    t.end();
+});
+
+test(`Map#on mousedown does not fire subsequent click event if mouse position changes more than click tolerance`, (t) => {
+    const map = createMap(t, { clickTolerance: 4 });
+
+    map.on('mousedown', e => e.preventDefault());
+
+    const click = t.spy();
+    map.on('click', click);
+    const canvas = map.getCanvas();
+
+    simulate.drag(canvas, {clientX: 100, clientY: 100}, {clientX: 100, clientY: 104});
+    t.ok(click.notCalled);
+
+    map.remove();
+    t.end();
+});
