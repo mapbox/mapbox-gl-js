@@ -912,6 +912,13 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('zooms to integer level without floating point errors', (t) => {
+            const camera = createCamera({zoom: 0.6});
+            camera.flyTo({ zoom: 2, animate: false });
+            t.equal(camera.getZoom(), 2);
+            t.end();
+        });
+
         t.test('rotates to specified bearing', (t) => {
             const camera = createCamera();
             camera.flyTo({ bearing: 90, animate: false });
