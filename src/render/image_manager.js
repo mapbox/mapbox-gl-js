@@ -3,6 +3,7 @@
 import potpack from 'potpack';
 
 import { RGBAImage } from '../util/image';
+import { warnOnce } from '../util/util';
 import { ImagePosition } from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
@@ -93,7 +94,7 @@ class ImageManager {
 
     getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
-        // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.
+        // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
@@ -104,6 +105,7 @@ class ImageManager {
                 }
             }
         }
+
         if (this.isLoaded() || hasAllDependencies) {
             this._notify(ids, callback);
         } else {
@@ -123,6 +125,8 @@ class ImageManager {
                     pixelRatio: image.pixelRatio,
                     sdf: image.sdf
                 };
+            } else {
+                warnOnce(`Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage(), an image source or a "sprite" property in your style before using it in a layer.`);
             }
         }
 
