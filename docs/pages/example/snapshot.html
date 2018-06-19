@@ -74,8 +74,8 @@ map.on('click', function() {
 });
 
 function textbox() {
-    // Please attribute mapbox if using non-commercially
-    // https://www.mapbox.com/help/how-attribution-works
+    // OpenStreetMap and Mapbox attribution are required by 
+    // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
     var text = '© Mapbox © OpenStreetMap';
     if (snapshot.width < 300) text = '© OSM';
     var fontsize = 14;
@@ -91,8 +91,8 @@ function textbox() {
 }
 
 function logo() {
-    // Please attribute mapbox if using non-commercially
-    // https://www.mapbox.com/help/how-attribution-works
+    // OpenStreetMap and Mapbox attribution are required by 
+    // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
     var img = new Image();
     var logo = mapboxlogo();
     img.src = logo.image64;
