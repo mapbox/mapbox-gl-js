@@ -118,12 +118,12 @@ function textbox() {
 function logo() {
     // OpenStreetMap and Mapbox attribution are required by 
     // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
-    
+
     // define instance of Image
     var img = new Image();
 
     // use mapbox logo as source
-    var logo = mapboxLogo()
+    var logo = mapboxLogo();
     img.src = logo.image;
 
     // draw the logo in img (when ready)
@@ -143,7 +143,7 @@ var dataURL = style.backgroundImage.slice(5, -2);
 var height = style.height.replace('px', '');
 var width = style.width.replace('px', '');
 
-var dataURL = firefoxBugFix(dataURL, height, width)
+var dataURL = firefoxBugFix(dataURL, height, width);
 
 return {'image':dataURL, 'height':height, 'width':width};
 }
@@ -152,12 +152,12 @@ function firefoxBugFix(dataURL, height, width){
 // Firefox requires SVG to have height and width specified
 // in the root SVG object when drawing to canvas
 
-var base64 = dataURL.replace('data:image/svg+xml;base64,','')
-var svg = atob(base64)
-var newHeader = 'height="'+height+'px" width="'+width+'px"'
-var newSvg = svg.replace('<svg', '<svg '+newHeader)
-var newBase64 = btoa(newSvg)
-var newDataURL = 'data:image/svg+xml;base64,'+newBase64
+var base64 = dataURL.replace('data:image/svg+xml;base64,', '');
+var svg = atob(base64);
+var newHeader = 'height="'+height+'px" width="'+width+'px"';
+var newSvg = svg.replace('<svg', '<svg '+newHeader);
+var newBase64 = btoa(newSvg);
+var newDataURL = 'data:image/svg+xml;base64,'+newBase64;
 
 return newDataURL
 
