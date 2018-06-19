@@ -133,7 +133,6 @@ function logo() {
 }
 
 function mapboxLogo() {
-    
     // logo image
     var a = document.querySelector('a.mapboxgl-ctrl-logo');
     var style = window.getComputedStyle(a, false);
@@ -157,8 +156,8 @@ function firefoxBugFix(dataURL, height, width) {
     var newHeader = 'height="' + height + 'px" width="' + width + 'px"';
     var newSvg = svg.replace('<svg', '<svg ' + newHeader);
     var newBase64 = btoa(newSvg);
-    var newDataURL = 'data:image/svg+xml;base64,'+newBase64;
-    
+    var newDataURL = 'data:image/svg+xml;base64,' + newBase64;
+
     return newDataURL;
 
 }
@@ -172,7 +171,7 @@ function clickMessage() {
     var boxwidth = (text.length + (text.length * 0.2)) / fontsize * 100;
 
     ctx.fillStyle = 'rgba(200,200,100,0.9)';
-    ctx.fillRect( (snapshot.width - boxwidth) / 2, boxheight, boxwidth, boxheight);
+    ctx.fillRect((snapshot.width - boxwidth) / 2, boxheight, boxwidth, boxheight);
 
     ctx.font = fontsize + 'px Arial';
     ctx.fillStyle = 'rgb(50,50,100)';
