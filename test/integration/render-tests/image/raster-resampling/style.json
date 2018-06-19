@@ -1,0 +1,49 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [
+    -122.514526,
+    37.562984
+  ],
+  "zoom": 20,
+  "sources": {
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [
+          -122.51596391201019,
+          37.56238816766053
+        ],
+        [
+          -122.51467645168304,
+          37.56410183312965
+        ],
+        [
+          -122.51309394836426,
+          37.563391708549425
+        ],
+        [
+          -122.51423120498657,
+          37.56161849366671
+        ]
+      ],
+      "url": "local://image/0.png"
+    }
+  },
+  "layers": [
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0,
+        "raster-resampling": "nearest"
+      }
+    }
+  ]
+}
