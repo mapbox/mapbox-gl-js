@@ -118,29 +118,32 @@ function textbox() {
 function logo() {
     // OpenStreetMap and Mapbox attribution are required by 
     // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
+    
+    // define instance of Image
     var img = new Image();
-    var logo = mapboxlogo();
-    img.src = logo.image64;
+
+    // use mapbox logo as source
+    var logo = mapboxLogo()
+    img.src = logo.image;
+
+    // draw the logo in img (when ready)
     img.onload = function() {
         ctx.drawImage(img, 3, snapshot.height - logo.height - 4, logo.width, logo.height);
     };
 }
 
-function mapboxlogo() {
+function mapboxLogo() {
 
     // logo image
     var a = document.querySelector('a.mapboxgl-ctrl-logo');
     var style = window.getComputedStyle(a, false);
-
-    // seems to still be base64 (?)
-    console.log(style.backgroundImage)
-    //url("data:image/svg+xml;base64,...
+    var encodedImage = style.backgroundImage.slice(5, -2);
 
     // logo size
     var height = style.height.replace('px', '');
     var width = style.width.replace('px', '');
 
-    return {'image64':'image64', 'height':height, 'width':width};
+    return {'image':encodedImage, 'height':height, 'width':width};
 }
 
 function clickMessage() {
