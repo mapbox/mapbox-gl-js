@@ -28,7 +28,12 @@
 
   #snapshot {
     position: absolute;
-    /* canvas style needs to be set with js */
+    /* this canvas style will need
+       to be redefined with js */
+    width:98%;
+    height:98%;
+    left:1%;
+    top:1%;
   }
 
   h1 {
@@ -69,8 +74,11 @@ var ctx = snapshot.getContext('2d');
 // draw snapshot canvas 
 window.addEventListener('load', function() {
     var text = 'Click on the map';
-    snapshot.height = window.innerHeight;
-    snapshot.width = window.innerWidth / 2;
+    // css style needs to be redefined here
+    snapshot.height = window.innerHeight * 0.98;
+    snapshot.width = window.innerWidth / 2 * 0.98;
+    snapshot.style.top = window.innerHeight / 100;
+    snapshot.style.left = window.innerWidth / 100 / 2;
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
