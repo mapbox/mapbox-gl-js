@@ -1534,7 +1534,7 @@ var SolutionsMenu = function (_React$Component) {
           { style: { width: 380 }, className: 'shell-py30 shell-px30' },
           React__default.createElement(
             'div',
-            { className: 'shell-flex-parent flex-parent--space-between-main' },
+            { className: 'shell-flex-parent shell-flex-parent--space-between-main' },
             React__default.createElement(
               'div',
               { className: 'shell-flex-child' },
