@@ -86,6 +86,7 @@ map.on('click', function() {
         ctx.drawImage(copy, 0, 0);
         logo();
         textbox();
+        clickMessage();
     };
 });
 
@@ -122,15 +123,35 @@ function mapboxlogo() {
     // logo image
     var a = document.querySelector('a.mapboxgl-ctrl-logo');
     var style = window.getComputedStyle(a, false);
-    var base64 = style.backgroundImage.slice(31, -2);
-    var b64Start = 'data:image/svg+xml;base64,';
-    var image64 = b64Start + base64;
+
+    // seems to still be base64 (?)
+    console.log(style.backgroundImage)
+    //url("data:image/svg+xml;base64,...
 
     // logo size
     var height = style.height.replace('px', '');
     var width = style.width.replace('px', '');
 
-    return {'image64':image64, 'height':height, 'width':width};
+    return {'image64':'image64', 'height':height, 'width':width};
 }
+
+function clickMessage() {
+    var text = 'click the map on the left to generate a new snapshot';
+    if (snapshot.width < 400) text = 'click map on the left';
+
+    var fontsize = 16;
+    var boxheight = fontsize + 6;
+    var boxwidth = (text.length + (text.length*0.2)) / fontsize * 100;
+
+    ctx.fillStyle = 'rgba(200,200,100,0.9)';
+    ctx.fillRect( (snapshot.width - boxwidth)/2, boxheight, boxwidth, boxheight);
+    
+    ctx.font = fontsize + 'px Arial';
+    ctx.fillStyle = 'rgb(50,50,100)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, snapshot.width/2, boxheight*1.5);
+}
+
 
 </script>
