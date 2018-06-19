@@ -134,16 +134,33 @@ function logo() {
 
 function mapboxLogo() {
 
-    // logo image
-    var a = document.querySelector('a.mapboxgl-ctrl-logo');
-    var style = window.getComputedStyle(a, false);
-    var encodedImage = style.backgroundImage.slice(5, -2);
+// logo image
+var a = document.querySelector('a.mapboxgl-ctrl-logo');
+var style = window.getComputedStyle(a, false);
+var dataURL = style.backgroundImage.slice(5, -2);
 
-    // logo size
-    var height = style.height.replace('px', '');
-    var width = style.width.replace('px', '');
+// logo size
+var height = style.height.replace('px', '');
+var width = style.width.replace('px', '');
 
-    return {'image':encodedImage, 'height':height, 'width':width};
+var dataURL = firefoxBugFix(dataURL, height, width)
+
+return {'image':dataURL, 'height':height, 'width':width};
+}
+
+function firefoxBugFix(dataURL, height, width){
+// Firefox requires SVG to have height and width specified
+// in the root SVG object when drawing to canvas
+
+var base64 = dataURL.replace('data:image/svg+xml;base64,','')
+var svg = atob(base64)
+var newHeader = 'height="'+height+'px" width="'+width+'px"'
+var newSvg = svg.replace('<svg', '<svg '+newHeader)
+var newBase64 = btoa(newSvg)
+var newDataURL = 'data:image/svg+xml;base64,'+newBase64
+
+return newDataURL
+
 }
 
 function clickMessage() {
