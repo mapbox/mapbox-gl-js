@@ -3,20 +3,32 @@
     margin: 0;
   }
 
-  #map {
+  #left {
     position: absolute;
     width:50%;
     height:100%;
     background: rgba(0,255,0,0.5);
   }
 
-  #snapshot {
+  #right {
     position: absolute;
     width:50%;
     height:100%;
     background:rgba(0,0,255,0.5);
     left:50%;
-    /* border:2px solid #000000; */
+  }
+
+  #map {
+    position: absolute;
+    width:98%;
+    height:98%;
+    left:1%;
+    top:1%;
+  }
+
+  #snapshot {
+    position: absolute;
+    /* canvas style needs to be set with js */
   }
 
   h1 {
@@ -30,9 +42,13 @@
  
 </style>
 
-<div id='map' class='window'></div>
+<div id="left">
+  <div id='map'></div>
+</div>
 
-<canvas id='snapshot' class='window'></div>
+<div id="right">
+  <canvas id='snapshot'></div>
+</div>
 
 <script>
 
