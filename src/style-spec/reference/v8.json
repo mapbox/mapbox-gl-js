@@ -5027,7 +5027,7 @@
       "default": "linear",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.46.0"
+          "js": "0.47.0"
         },
         "data-driven styling": {}
       },
