@@ -201,7 +201,7 @@ var shellStyles = {
   mobilePopoverContainer: 'shell-absolute shell-z5',
 
   // Medium to X-large navigation
-  navigationMenu: 'shell-relative shell-mx6 shell-mx12-ml shell-mx18-mxl',
+  navigationItem: 'shell-mx6 shell-mx9-ml shell-mx18-mxl',
 
   // Medium to X-large navigation popup menu
   popupMenuContainer: 'shell-absolute shell-z2 shell-disable-text-size-adjust',
@@ -340,7 +340,7 @@ var UserMenu = function (_React$Component) {
             React__default.createElement(
               'div',
               {
-                className: 'shell-shadow-darken10-bold shell-bg-white shell-absolute shell-py30 shell-px24 shell-round shell-w-full shell-w-210-mm',
+                className: 'shell-shadow-darken10-bold shell-bg-white shell-absolute shell-py30 shell-px24 shell-round shell-w-full shell-w210-mm',
                 id: 'user-menu-body',
                 style: {
                   right: 10
@@ -428,14 +428,40 @@ var PopupMenu = function (_React$Component) {
       return false;
     }
   }, {
+    key: 'renderName',
+    value: function renderName() {
+      var _props = this.props,
+          name = _props.name,
+          shortName = _props.shortName;
+
+      if (shortName) {
+        return React__default.createElement(
+          'span',
+          null,
+          React__default.createElement(
+            'span',
+            { className: 'shell-none-ml' },
+            shortName
+          ),
+          React__default.createElement(
+            'span',
+            { className: 'shell-none shell-block-ml' },
+            name
+          )
+        );
+      }
+
+      return name;
+    }
+  }, {
     key: 'render',
     value: function render() {
       var menuNameClasses = shellStyles.headerMenuName;
       menuNameClasses += this.props.darkText ? ' shell-navigation-menu-button shell-transition shell-color-gray-dark shell-color-blue-on-hover' : ' shell-navigation-menu-button shell-link shell-link--white';
 
-      var _props = this.props,
-          name = _props.name,
-          children = _props.children;
+      var _props2 = this.props,
+          name = _props2.name,
+          children = _props2.children;
 
 
       return React__default.createElement(
@@ -443,7 +469,10 @@ var PopupMenu = function (_React$Component) {
         { style: { lineHeight: 1 } },
         React__default.createElement(
           'div',
-          { id: name + '-menu', className: shellStyles.navigationMenu },
+          {
+            id: name + '-menu',
+            className: 'shell-relative ' + shellStyles.navigationItem
+          },
           React__default.createElement(
             'button',
             {
@@ -456,7 +485,7 @@ var PopupMenu = function (_React$Component) {
               'aria-label': name + ' menu',
               className: menuNameClasses
             },
-            name
+            this.renderName()
           )
         ),
         React__default.createElement(
@@ -497,11 +526,13 @@ var PopupMenu = function (_React$Component) {
 PopupMenu.propTypes = {
   darkText: PropTypes.bool,
   name: PropTypes.string.isRequired,
+  shortName: PropTypes.string,
   children: PropTypes.node.isRequired
 };
 
 PopupMenu.defaultProps = {
-  darkText: true
+  darkText: true,
+  shortName: null
 };
 
 var SmallMapsIcon = function (_React$Component) {
@@ -683,6 +714,24 @@ var navigationMenuData = {
           name: 'Auto',
           to: '/automotive/',
           hideInMobile: true
+        }]
+      }
+    },
+    solutions: {
+      industries: {
+        title: 'Industries',
+        links: [{
+          name: 'Consumer apps (B2C)',
+          to: '/industries/consumer/'
+        }, {
+          name: 'Logistics',
+          to: '/industries/logistics/'
+        }, {
+          name: 'Business intelligence',
+          to: '/industries/business-intelligence/'
+        }, {
+          name: 'Government',
+          to: '/industries/government/'
         }]
       },
       useCases: {
@@ -965,14 +1014,14 @@ var CompanyMenu = function (_React$Component) {
         _extends({}, this.props, { name: 'Company' }),
         React__default.createElement(
           'div',
-          { className: 'shell-w-180-mm shell-py12 shell-px24' },
+          { className: 'shell-w180-mm shell-py30 shell-px30' },
           React__default.createElement(
             'ul',
             null,
-            navItems.map(function (navItem) {
+            navItems.map(function (navItem, i) {
               return React__default.createElement(
                 'li',
-                { key: navItem.name, className: 'shell-my18' },
+                { key: navItem.name, className: i === 0 ? '' : 'shell-mt18' },
                 React__default.createElement(
                   'a',
                   {
@@ -1148,16 +1197,16 @@ var DocumentationMenu = function (_React$Component) {
 
       return React__default.createElement(
         PopupMenu,
-        _extends({}, this.props, { name: 'Documentation' }),
+        _extends({}, this.props, { name: 'Documentation', shortName: 'Docs' }),
         React__default.createElement(
           'div',
-          null,
+          { style: { width: 540 } },
           React__default.createElement(
             'div',
             { className: 'shell-grid' },
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--8 shell-pt24 shell-px24' },
+              { className: 'shell-col shell-col--8 shell-pt30 shell-px30' },
               React__default.createElement(
                 'div',
                 { className: shellStyles.popupMenuNavHeading + ' shell-pb12' },
@@ -1194,7 +1243,7 @@ var DocumentationMenu = function (_React$Component) {
             ),
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--4 shell-bg-gray-faint shell-round shell-pt24 shell-px24' },
+              { className: 'shell-col shell-col--4 shell-bg-gray-faint shell-round shell-pt30 shell-px30' },
               React__default.createElement(
                 'div',
                 { className: shellStyles.popupMenuNavHeading + ' shell-pb12' },
@@ -1212,7 +1261,7 @@ var DocumentationMenu = function (_React$Component) {
             { className: 'shell-grid' },
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--8 shell-px24 shell-pb24' },
+              { className: 'shell-col shell-col--8 shell-px30 shell-pb30' },
               React__default.createElement(
                 'a',
                 {
@@ -1226,7 +1275,7 @@ var DocumentationMenu = function (_React$Component) {
             ),
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--4 shell-bg-gray-faint shell-round shell-px24 shell-pb24' },
+              { className: 'shell-col shell-col--4 shell-bg-gray-faint shell-round shell-px30 shell-pb30' },
               React__default.createElement(
                 'a',
                 {
@@ -1265,7 +1314,7 @@ var ProductsNavItem = function (_React$Component) {
         'a',
         {
           href: link.to,
-          className: 'shell-products-nav-item shell-products-nav-item--' + lowerName + ' shell-block shell-mr6 shell-color-blue-on-hover',
+          className: 'shell-products-nav-item shell-icon--' + lowerName + ' shell-block shell-mr6 shell-color-blue-on-hover',
           'data-nav-link': true,
           'data-test': 'nav-link-' + link.name
         },
@@ -1318,7 +1367,7 @@ var PlatformsNavItem = function (_React$Component) {
           href: link.to,
           'data-nav-link': true,
           'data-test': 'nav-link-' + link.name,
-          className: 'shell-platforms-nav-item shell-h30 shell-py6 shell-platforms-nav-item--' + lowerName + ' shell-block shell-color-blue-on-hover shell-txt-bold'
+          className: 'shell-platforms-nav-item shell-h30 shell-py6 shell-icon--' + lowerName + ' shell-block shell-color-blue-on-hover shell-txt-bold'
         },
         link.name
       );
@@ -1353,130 +1402,68 @@ var ProductsMenu = function (_React$Component) {
       var navSections = navigationMenuData.headerMainMenus.products;
       var productsNavSection = navSections.products;
       var platformsNavSection = navSections.platforms;
-      var useCasesNavSection = navSections.useCases;
 
       return React__default.createElement(
         PopupMenu,
         _extends({}, this.props, { name: 'Products' }),
         React__default.createElement(
           'div',
-          { className: 'shell-w-720-ml shell-w-600-mm' },
+          { style: { width: 500 }, className: 'shell-px30 shell-py30' },
           React__default.createElement(
             'div',
-            { className: 'shell-grid' },
+            { className: 'shell-border-b shell-border--gray-light shell-pb12' },
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--8 shell-pt24 shell-px24' },
-              React__default.createElement(
-                'div',
-                { className: 'shell-border-b shell-border--gray-light shell-pb12' },
-                React__default.createElement(
-                  'div',
-                  { className: shellStyles.popupMenuNavHeading },
-                  productsNavSection.title
-                ),
-                React__default.createElement(
-                  'div',
-                  { className: 'shell-grid' },
-                  productsNavSection.links.map(function (link) {
-                    return React__default.createElement(
-                      'div',
-                      {
-                        key: link.name,
-                        className: 'shell-col shell-col--6 shell-my12'
-                      },
-                      React__default.createElement(ProductsNavItem, { link: link })
-                    );
-                  })
-                )
-              ),
-              React__default.createElement(
-                'div',
-                { className: 'shell-py24' },
-                React__default.createElement(
-                  'div',
-                  {
-                    className: shellStyles.popupMenuNavHeading + ' shell-pb12'
-                  },
-                  platformsNavSection.title
-                ),
-                React__default.createElement(
-                  'div',
-                  { className: 'shell-flex-parent shell-flex-parent--space-between-main' },
-                  platformsNavSection.links.map(function (link) {
-                    return React__default.createElement(
-                      'div',
-                      { key: link.name, className: 'shell-flex-child' },
-                      React__default.createElement(PlatformsNavItem, { link: link })
-                    );
-                  })
-                )
-              )
+              { className: shellStyles.popupMenuNavHeading },
+              productsNavSection.title
             ),
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--4 shell-bg-gray-faint shell-round shell-pt24 shell-px24' },
-              React__default.createElement(
-                'div',
-                { className: shellStyles.popupMenuNavHeading + ' shell-pb12' },
-                useCasesNavSection.title
-              ),
-              React__default.createElement(
-                'ul',
-                null,
-                useCasesNavSection.links.map(function (link) {
-                  return React__default.createElement(
-                    'li',
-                    { key: link.name, className: 'shell-mb12' },
-                    React__default.createElement(
-                      'a',
-                      {
-                        href: link.to,
-                        className: shellStyles.popupMenuLink,
-                        'data-nav-link': true,
-                        'data-test': 'nav-link-' + link.name
-                      },
-                      link.name
-                    )
-                  );
-                })
-              )
+              { className: 'shell-grid' },
+              productsNavSection.links.map(function (link) {
+                return React__default.createElement(
+                  'div',
+                  {
+                    key: link.name,
+                    className: 'shell-col shell-col--6 shell-my12'
+                  },
+                  React__default.createElement(ProductsNavItem, { link: link })
+                );
+              })
             )
           ),
           React__default.createElement(
             'div',
-            { className: 'shell-grid' },
+            { className: 'shell-py24' },
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--8 shell-px24 shell-pb24' },
-              React__default.createElement(
-                'a',
-                {
-                  href: productsNavSection.more.to,
-                  className: shellStyles.popoverNavLinkHighlight,
-                  'data-nav-link': true,
-                  'data-test': 'nav-link-' + productsNavSection.more.title
-                },
-                React__default.createElement(NavigationHighlightLink, {
-                  label: productsNavSection.more.title
-                })
-              )
+              { className: shellStyles.popupMenuNavHeading + ' shell-pb12' },
+              platformsNavSection.title
             ),
             React__default.createElement(
               'div',
-              { className: 'shell-col shell-col--4 shell-bg-gray-faint shell-round shell-px24 shell-pb24' },
-              React__default.createElement(
-                'a',
-                {
-                  href: useCasesNavSection.more.to,
-                  className: shellStyles.popoverNavLinkHighlight,
-                  'data-nav-link': true,
-                  'data-test': 'nav-link-' + useCasesNavSection.more.title
-                },
-                React__default.createElement(NavigationHighlightLink, {
-                  label: useCasesNavSection.more.title
-                })
-              )
+              { className: 'shell-flex-parent shell-flex-parent--space-between-main' },
+              platformsNavSection.links.map(function (link) {
+                return React__default.createElement(
+                  'div',
+                  { key: link.name, className: 'shell-flex-child' },
+                  React__default.createElement(PlatformsNavItem, { link: link })
+                );
+              })
+            )
+          ),
+          React__default.createElement(
+            'div',
+            null,
+            React__default.createElement(
+              'a',
+              {
+                href: productsNavSection.more.to,
+                className: shellStyles.popoverNavLinkHighlight,
+                'data-nav-link': true,
+                'data-test': 'nav-link-' + productsNavSection.more.title
+              },
+              React__default.createElement(NavigationHighlightLink, { label: productsNavSection.more.title })
             )
           )
         )
@@ -1484,6 +1471,100 @@ var ProductsMenu = function (_React$Component) {
     }
   }]);
   return ProductsMenu;
+}(React__default.Component);
+
+var SolutionsMenu = function (_React$Component) {
+  inherits(SolutionsMenu, _React$Component);
+
+  function SolutionsMenu() {
+    classCallCheck(this, SolutionsMenu);
+    return possibleConstructorReturn(this, (SolutionsMenu.__proto__ || Object.getPrototypeOf(SolutionsMenu)).apply(this, arguments));
+  }
+
+  createClass(SolutionsMenu, [{
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate() {
+      return false;
+    }
+  }, {
+    key: 'renderMenuSideNavSection',
+    value: function renderMenuSideNavSection(navSection) {
+      return React__default.createElement(
+        'div',
+        { className: 'shell-pb12' },
+        React__default.createElement(
+          'div',
+          { className: shellStyles.popupMenuNavHeading + ' shell-pb12' },
+          navSection.title
+        ),
+        React__default.createElement(
+          'ul',
+          null,
+          navSection.links.map(function (link) {
+            return React__default.createElement(
+              'li',
+              { key: link.name, className: 'shell-mb12' },
+              React__default.createElement(
+                'a',
+                {
+                  href: link.to,
+                  className: shellStyles.popupMenuLink,
+                  'data-nav-link': true,
+                  'data-test': 'nav-link-' + link.name
+                },
+                link.name
+              )
+            );
+          })
+        )
+      );
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var navSections = navigationMenuData.headerMainMenus.solutions;
+      var useCasesNavSection = navSections.useCases;
+      var industriesNavSection = navSections.industries;
+
+      return React__default.createElement(
+        PopupMenu,
+        _extends({}, this.props, { name: 'Solutions' }),
+        React__default.createElement(
+          'div',
+          { style: { width: 380 }, className: 'shell-py30 shell-px30' },
+          React__default.createElement(
+            'div',
+            { className: 'shell-flex-parent shell-flex-parent--space-between-main' },
+            React__default.createElement(
+              'div',
+              { className: 'shell-flex-child' },
+              this.renderMenuSideNavSection(industriesNavSection)
+            ),
+            React__default.createElement(
+              'div',
+              { className: 'shell-flex-child' },
+              this.renderMenuSideNavSection(useCasesNavSection)
+            )
+          ),
+          React__default.createElement(
+            'div',
+            null,
+            React__default.createElement(
+              'a',
+              {
+                href: useCasesNavSection.more.to,
+                className: shellStyles.popoverNavLinkHighlight,
+                'data-nav-link': true,
+                'data-test': 'nav-link-' + useCasesNavSection.more.title
+              },
+              React__default.createElement(NavigationHighlightLink, { label: useCasesNavSection.more.title })
+            )
+          )
+        )
+      );
+    }
+  }]);
+  return SolutionsMenu;
 }(React__default.Component);
 
 var NavigationItem = function (_React$Component) {
@@ -1507,7 +1588,7 @@ var NavigationItem = function (_React$Component) {
       return React__default.createElement(
         'div',
         {
-          className: 'shell-flex-child shell-mx6 shell-mx12-ml shell-mx18-mxl',
+          className: 'shell-flex-child ' + shellStyles.navigationItem,
           style: { lineHeight: 1 }
         },
         React__default.createElement(
@@ -1962,7 +2043,7 @@ var MobileNavigation = function (_React$Component) {
                 React__default.createElement(
                   'div',
                   { className: 'shell-col shell-col--6' },
-                  React__default.createElement(NavigationLinkList, _extends({}, navigationMenuData.headerMainMenus.products.useCases, {
+                  React__default.createElement(NavigationLinkList, _extends({}, navigationMenuData.headerMainMenus.solutions.industries, {
                     navigationType: 'mobile-navigation'
                   }))
                 )
@@ -2107,6 +2188,7 @@ var PageHeader = function (_React$Component) {
                 style: { display: 'none' }
               },
               React__default.createElement(ProductsMenu, { darkText: this.props.darkText }),
+              React__default.createElement(SolutionsMenu, { darkText: this.props.darkText }),
               React__default.createElement(DocumentationMenu, { darkText: this.props.darkText }),
               React__default.createElement(CompanyMenu, { darkText: this.props.darkText }),
               React__default.createElement(
