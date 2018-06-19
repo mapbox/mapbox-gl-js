@@ -97,7 +97,6 @@ function logo() {
     var logo = mapboxlogo();
     img.src = logo.image64;
     img.onload = function() {
-    //(!) Doesn't work in Firefox
         ctx.drawImage(img, 3, snapshot.height - logo.height - 4, logo.width, logo.height);
     };
 }
