@@ -289,9 +289,19 @@ export default class Marker extends Evented {
      * @returns {Marker} `this`
      */
     setPopup(popup: ?Popup) {
+        const keypressListener = (e) => {
+            const code = e.charCode || e.keyCode;
+
+            if ((code === 32) || (code === 13)) { // space or enter
+                this.togglePopup();
+            }
+        };
+
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
+            this._element.removeEventListener('keypress', keypressListener);
+            this._element.removeAttribute('tabindex');
         }
 
         if (popup) {
@@ -313,13 +323,8 @@ export default class Marker extends Evented {
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
-            this._element.addEventListener('keypress', (e) => {
-                const code = e.charCode || e.keyCode;
-
-                if ((code === 32) || (code === 13)) { // space or enter
-                    this.togglePopup();
-                }
-            });
+            this._element.setAttribute('tabindex', 0);
+            this._element.addEventListener('keypress', keypressListener);
         }
 
         return this;
