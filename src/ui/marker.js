@@ -324,7 +324,7 @@ export default class Marker extends Evented {
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
-            this._element.setAttribute('tabindex', 0);
+            this._element.setAttribute('tabindex', '0');
             this._element.addEventListener('keypress', keypressListener);
         }
 
