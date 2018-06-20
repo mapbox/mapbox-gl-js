@@ -88,6 +88,7 @@ export default class Marker extends Evented {
         if (!options || !options.element) {
             this._defaultMarker = true;
             this._element = DOM.create('div');
+            this._element.setAttribute('aria-label', 'Map marker');
 
             // create default map marker SVG
             const svg = DOM.createNS('http://www.w3.org/2000/svg', 'svg');
