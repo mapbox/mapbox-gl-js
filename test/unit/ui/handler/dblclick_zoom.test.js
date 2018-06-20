@@ -4,12 +4,13 @@ import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-function createMap() {
+function createMap(t) {
+    t.stub(Map.prototype, '_detectMissingCSS');
     return new Map({ container: DOM.create('div', '', window.document.body) });
 }
 
 test('DoubleClickZoomHandler does not zoom if preventDefault is called on the dblclick event', (t) => {
-    const map = createMap();
+    const map = createMap(t);
 
     map.on('dblclick', e => e.preventDefault());
 

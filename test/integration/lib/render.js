@@ -125,7 +125,7 @@ exports.run = function (implementation, ignores, render) {
             if (err) return done(err);
 
             let stats;
-            const dir = path.join(directory, params.group, params.test);
+            const dir = path.join(directory, params.id);
             try {
                 stats = fs.statSync(dir, fs.R_OK | fs.W_OK);
                 if (!stats.isDirectory()) throw new Error();

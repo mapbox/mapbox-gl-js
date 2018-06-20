@@ -7,7 +7,7 @@ import DepthMode from './depth_mode';
 import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
 import { deepEqual } from '../util/util';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, LineWidth, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from './value';
+import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from './value';
 
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
@@ -28,7 +28,6 @@ class Context {
     gl: WebGLRenderingContext;
     extVertexArrayObject: any;
     currentNumAttributes: ?number;
-    lineWidthRange: [number, number];
 
     clearColor: ClearColor;
     clearDepth: ClearDepth;
@@ -46,7 +45,6 @@ class Context {
     blendFunc: BlendFunc;
     blendColor: BlendColor;
     program: Program;
-    lineWidth: LineWidth;
     activeTexture: ActiveTextureUnit;
     viewport: Viewport;
     bindFramebuffer: BindFramebuffer;
@@ -65,7 +63,6 @@ class Context {
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
-        this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
         this.clearColor = new ClearColor(this);
         this.clearDepth = new ClearDepth(this);
@@ -83,7 +80,6 @@ class Context {
         this.blendFunc = new BlendFunc(this);
         this.blendColor = new BlendColor(this);
         this.program = new Program(this);
-        this.lineWidth = new LineWidth(this);
         this.activeTexture = new ActiveTextureUnit(this);
         this.viewport = new Viewport(this);
         this.bindFramebuffer = new BindFramebuffer(this);

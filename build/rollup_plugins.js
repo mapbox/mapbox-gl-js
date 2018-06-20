@@ -30,7 +30,7 @@ export const plugins = () => [
     }),
     commonjs({
         namedExports: {
-            '@mapbox/gl-matrix': ['vec3', 'vec4', 'mat2', 'mat3', 'mat4']
+            '@mapbox/whoots-js': ['getTileBBox']
         }
     }),
     production ? uglify() : false

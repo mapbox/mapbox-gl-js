@@ -1,5 +1,13 @@
 [
   {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -84.26383852958679,
+        39.268954879518304
+      ]
+    },
+    "type": "Feature",
     "properties": {
       "ldir": "E",
       "localrank": 1,
@@ -13,13 +21,8 @@
       "type": "town"
     },
     "id": 1540753080,
-    "type": "Feature",
-    "geometry": {
-      "type": "Point",
-      "coordinates": [
-        -84.26383852958679,
-        39.268954879518304
-      ]
-    }
+    "source": "mapbox",
+    "sourceLayer": "place_label",
+    "state": {}
   }
 ]

@@ -21,10 +21,11 @@ const handlers = {
     touchZoomRotate
 };
 
-export default function bindHandlers(map: Map, options: {}) {
+export default function bindHandlers(map: Map, options: {interactive: boolean}) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
+    let startPos = null;
 
     for (const name in handlers) {
         (map: any)[name] = new handlers[name](map, options);
@@ -56,6 +57,7 @@ export default function bindHandlers(map: Map, options: {}) {
 
     function onMouseDown(e: MouseEvent) {
         mouseDown = true;
+        startPos = DOM.mousePos(el, e);
 
         const mapEvent = new MapMouseEvent('mousedown', map, e);
         map.fire(mapEvent);
@@ -97,7 +99,7 @@ export default function bindHandlers(map: Map, options: {}) {
         if (map.dragPan.isActive()) return;
         if (map.dragRotate.isActive()) return;
 
-        let target: any = e.toElement || e.target;
+        let target: ?Node = (e.target: any);
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
@@ -105,7 +107,7 @@ export default function bindHandlers(map: Map, options: {}) {
     }
 
     function onMouseOver(e: MouseEvent) {
-        let target: any = e.toElement || e.target;
+        let target: ?Node = (e.target: any);
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
@@ -149,7 +151,10 @@ export default function bindHandlers(map: Map, options: {}) {
     }
 
     function onClick(e: MouseEvent) {
-        map.fire(new MapMouseEvent('click', map, e));
+        const pos = DOM.mousePos(el, e);
+        if (pos.equals(startPos)) {
+            map.fire(new MapMouseEvent('click', map, e));
+        }
     }
 
     function onDblClick(e: MouseEvent) {

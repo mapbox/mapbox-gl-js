@@ -59,7 +59,6 @@ type MapOptions = {
     interactive?: boolean,
     container: HTMLElement | string,
     bearingSnap?: number,
-    classes?: Array<string>,
     attributionControl?: boolean,
     logoPosition?: ControlPosition,
     failIfMajorPerformanceCaveat?: boolean,
@@ -124,7 +123,8 @@ const defaultOptions = {
     maxTileCacheSize: null,
 
     transformRequest: null,
-    fadeDuration: 300
+    fadeDuration: 300,
+    crossSourceCollisions: true
 };
 
 /**
@@ -198,6 +198,8 @@ const defaultOptions = {
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
+ * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
+ * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -206,7 +208,7 @@ const defaultOptions = {
  *   style: style_object,
  *   hash: true,
  *   transformRequest: (url, resourceType)=> {
- *     if(resourceType == 'Source' && url.startsWith('http://myHost')) {
+ *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
  *       return {
  *        url: url.replace('http', 'https'),
  *        headers: { 'my-custom-header': true},
@@ -222,7 +224,7 @@ class Map extends Camera {
     painter: Painter;
 
     _container: HTMLElement;
-    _missingCSSContainer: HTMLElement;
+    _missingCSSCanary: HTMLElement;
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
     _controlPositions: {[string]: HTMLElement};
@@ -247,6 +249,7 @@ class Map extends Camera {
     _hash: Hash;
     _delegatedListeners: any;
     _fadeDuration: number;
+    _crossSourceCollisions: boolean;
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
@@ -306,6 +309,7 @@ class Map extends Camera {
         this._bearingSnap = options.bearingSnap;
         this._refreshExpiredTiles = options.refreshExpiredTiles;
         this._fadeDuration = options.fadeDuration;
+        this._crossSourceCollisions = options.crossSourceCollisions;
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._renderTaskQueue = new TaskQueue();
@@ -343,6 +347,9 @@ class Map extends Camera {
 
         this._setupContainer();
         this._setupPainter();
+        if (this.painter === undefined) {
+            throw new Error(`Failed to initialize WebGL.`);
+        }
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
@@ -798,9 +805,9 @@ class Map extends Camera {
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
      *
-     * Each feature includes a top-level `layer` property whose value is an object representing the style layer to
-     * which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated
-     * for the given zoom level and feature.
+     * Each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object
+     * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
+     * which are fully evaluated for the given zoom level and feature.
      *
      * Features from layers whose `visibility` property is `"none"`, or from layers whose zoom range excludes the
      * current zoom level are not included. Symbol features that have been hidden due to text or icon collision are
@@ -1151,7 +1158,7 @@ class Map extends Camera {
                 'or object with `width`, `height`, and `data` properties with the same format as `ImageData`')));
         } else {
             const {width, height, data} = image;
-            this.style.addImage(id, { data: new RGBAImage({width, height}, data.slice(0)), pixelRatio, sdf });
+            this.style.addImage(id, { data: new RGBAImage({width, height}, new Uint8Array(data)), pixelRatio, sdf });
         }
     }
 
@@ -1188,6 +1195,16 @@ class Map extends Camera {
      */
     loadImage(url: string, callback: Function) {
         getImage(this._transformRequest(url, ResourceType.Image), callback);
+    }
+
+    /**
+    * Returns an Array of strings containing the names of all sprites/images currently available in the map
+    *
+    * @returns {Array<string>} An Array of strings containing the names of all sprites/images currently available in the map
+    *
+    */
+    listImages() {
+        return this.style.listImages();
     }
 
     /**
@@ -1377,6 +1394,38 @@ class Map extends Camera {
     }
 
     /**
+     * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
+     *
+     * @param {Object} [feature] Feature identifier. Feature objects returned from
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {string} [feature.id] Unique id of the feature.
+     * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
+     */
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+        this.style.setFeatureState(feature, state);
+        this._update();
+    }
+
+    /**
+     * Gets the state of a feature.
+     *
+     * @param {Object} [feature] Feature identifier. Feature objects returned from
+     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
+     *  required.*
+     * @param {string} [feature.id] Unique id of the feature.
+     *
+     * @returns {Object} The state of the feature.
+     */
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }): any {
+        return this.style.getFeatureState(feature);
+    }
+
+    /**
      * Returns the map's containing HTML element.
      *
      * @returns {HTMLElement} The map's container.
@@ -1426,12 +1475,23 @@ class Map extends Camera {
         return [width, height];
     }
 
+    _detectMissingCSS(): void {
+        const computedColor = window.getComputedStyle(this._missingCSSCanary).getPropertyValue('background-color');
+        if (computedColor !== 'rgb(250, 128, 114)') {
+            warnOnce('This page appears to be missing CSS declarations for ' +
+                'Mapbox GL JS, which may cause the map to display incorrectly. ' +
+                'Please ensure your page includes mapbox-gl.css, as described ' +
+                'in https://www.mapbox.com/mapbox-gl-js/api/.');
+        }
+    }
+
     _setupContainer() {
         const container = this._container;
         container.classList.add('mapboxgl-map');
 
-        const missingCSSContainer = this._missingCSSContainer = DOM.create('div', 'mapboxgl-missing-css', container);
-        missingCSSContainer.innerHTML = 'Missing Mapbox GL JS CSS';
+        const missingCSSCanary = this._missingCSSCanary = DOM.create('div', 'mapboxgl-canary', container);
+        missingCSSCanary.style.visibility = 'hidden';
+        this._detectMissingCSS();
 
         const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
         if (this._interactive) {
@@ -1598,7 +1658,7 @@ class Map extends Camera {
             this.style._updateSources(this.transform);
         }
 
-        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration);
+        this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, this._fadeDuration, this._crossSourceCollisions);
 
         // Actually draw
         this.painter.render(this.style, {
@@ -1655,7 +1715,7 @@ class Map extends Camera {
         if (extension) extension.loseContext();
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);
-        removeNode(this._missingCSSContainer);
+        removeNode(this._missingCSSCanary);
         this._container.classList.remove('mapboxgl-map');
         this.fire(new Event('remove'));
     }

@@ -50,7 +50,7 @@ test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
     const options = {iconDependencies: {}, glyphDependencies: {}};
-    const placement = new Placement(transform, 0);
+    const placement = new Placement(transform, 0, true);
     const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
     const crossTileSymbolIndex = new CrossTileSymbolIndex();
 

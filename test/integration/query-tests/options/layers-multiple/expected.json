@@ -1,6 +1,5 @@
 [
   {
-    "type": "Feature",
     "geometry": {
       "type": "Point",
       "coordinates": [
@@ -8,12 +7,14 @@
         0
       ]
     },
+    "type": "Feature",
     "properties": {
       "key": "value"
-    }
+    },
+    "source": "geojson",
+    "state": {}
   },
   {
-    "type": "Feature",
     "geometry": {
       "type": "Point",
       "coordinates": [
@@ -21,8 +22,11 @@
         0
       ]
     },
+    "type": "Feature",
     "properties": {
       "key": "value"
-    }
+    },
+    "source": "geojson",
+    "state": {}
   }
 ]

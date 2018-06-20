@@ -1,7 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
 import Hash from '../../../src/ui/hash';
 import window from '../../../src/util/window';
-import Map from '../../../src/ui/map';
+import { createMap as globalCreateMap } from '../../util';
 
 test('hash', (t) => {
     function createHash() {
@@ -10,16 +10,16 @@ test('hash', (t) => {
         return hash;
     }
 
-    function createMap() {
+    function createMap(t) {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
-        return new Map({container: container});
+        return globalCreateMap(t, {container: container});
     }
 
 
     t.test('#addTo', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         const hash = createHash();
 
         t.notok(hash._map);
@@ -31,7 +31,7 @@ test('hash', (t) => {
     });
 
     t.test('#remove', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         const hash = createHash()
             .addTo(map);
 
@@ -44,7 +44,7 @@ test('hash', (t) => {
     });
 
     t.test('#_onHashChange', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         const hash = createHash()
             .addTo(map);
 
@@ -74,7 +74,7 @@ test('hash', (t) => {
     });
 
     t.test('#_onHashChange empty', (t) => {
-        const map = createMap();
+        const map = createMap(t);
         const hash = createHash()
             .addTo(map);
 
@@ -106,7 +106,7 @@ test('hash', (t) => {
             return window.location.hash.split('/');
         }
 
-        const map = createMap();
+        const map = createMap(t);
         createHash()
             .addTo(map);
 
@@ -154,12 +154,7 @@ test('hash', (t) => {
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
 
-        const map = new Map({
-            container,
-            center: [-74.50, 40],
-            zoom: 9,
-            hash: true,
-        });
+        const map = createMap(t, { hash: true });
 
         map.remove();
 

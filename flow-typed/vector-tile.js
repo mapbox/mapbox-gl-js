@@ -5,6 +5,7 @@ declare interface VectorTile {
 }
 
 declare interface VectorTileLayer {
+    version?: number;
     name: string;
     extent: number;
     length: number;

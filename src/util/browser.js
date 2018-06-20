@@ -46,6 +46,12 @@ const exported = {
         return context.getImageData(0, 0, img.width, img.height);
     },
 
+    resolveURL(path: string) {
+        const a = window.document.createElement('a');
+        a.href = path;
+        return a.href;
+    },
+
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
     get devicePixelRatio() { return window.devicePixelRatio; },
     supportsWebp: false

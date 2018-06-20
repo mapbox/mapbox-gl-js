@@ -153,7 +153,10 @@
       "name": "Ocean County",
       "pop_density": 2310.250993696356
     },
-    "id": 49
+    "id": 49,
+    "source": "us-counties",
+    "sourceLayer": "counties",
+    "state": {}
   },
   {
     "geometry": {
@@ -333,6 +336,9 @@
       "name": "Monmouth County",
       "pop_density": 3454.220015794825
     },
-    "id": 47
+    "id": 47,
+    "source": "us-counties",
+    "sourceLayer": "counties",
+    "state": {}
   }
 ]

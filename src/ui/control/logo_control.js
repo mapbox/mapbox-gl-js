@@ -21,6 +21,7 @@ class LogoControl {
 
     constructor() {
         bindAll(['_updateLogo'], this);
+        bindAll(['_updateCompact'], this);
     }
 
     onAdd(map: Map) {
@@ -30,17 +31,23 @@ class LogoControl {
         anchor.target = "_blank";
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", "Mapbox logo");
+        anchor.setAttribute("rel", "noopener");
         this._container.appendChild(anchor);
         this._container.style.display = 'none';
 
         this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
+
+        this._map.on('resize', this._updateCompact);
+        this._updateCompact();
+
         return this._container;
     }
 
     onRemove() {
         DOM.remove(this._container);
         this._map.off('sourcedata', this._updateLogo);
+        this._map.off('resize', this._updateCompact);
     }
 
     getDefaultPosition() {
@@ -65,6 +72,18 @@ class LogoControl {
         }
 
         return false;
+    }
+
+    _updateCompact() {
+        const containerChildren = this._container.children;
+        if (containerChildren.length) {
+            const anchor = containerChildren[0];
+            if (this._map.getCanvasContainer().offsetWidth < 250) {
+                anchor.classList.add('mapboxgl-compact');
+            } else {
+                anchor.classList.remove('mapboxgl-compact');
+            }
+        }
     }
 
 }

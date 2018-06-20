@@ -5,6 +5,7 @@ import type Style from '../style/style';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
+import type {FeatureStates} from '../source/source_state';
 
 export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
@@ -13,7 +14,8 @@ export type BucketParameters<Layer: TypedStyleLayer> = {
     pixelRatio: number,
     overscaling: number,
     collisionBoxArray: CollisionBoxArray,
-    sourceLayerIndex: number
+    sourceLayerIndex: number,
+    sourceID: string
 }
 
 export type PopulateParameters = {
@@ -53,12 +55,15 @@ export type IndexedFeature = {
  */
 export interface Bucket {
     layerIds: Array<string>;
+    +layers: Array<any>;
+    +stateDependentLayers: Array<any>;
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer): void;
     isEmpty(): boolean;
 
     upload(context: Context): void;
-    uploaded: boolean;
+    uploadPending(): boolean;
 
     /**
      * Release the WebGL resources associated with the buffers. Note that because
@@ -89,7 +94,7 @@ export function deserialize(input: Array<Bucket>, style: Style): {[string]: Buck
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
         (bucket: any).layers = layers;
-
+        (bucket: any).stateDependentLayers = layers.filter((l) => l.isStateDependent());
         for (const layer of layers) {
             output[layer.id] = bucket;
         }

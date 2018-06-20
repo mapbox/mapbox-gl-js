@@ -15,6 +15,7 @@ import definitions from './definitions';
 import * as isConstant from './is_constant';
 import RuntimeError from './runtime_error';
 import { success, error } from '../util/result';
+import { supportsPropertyExpression, supportsZoomExpression, supportsInterpolation } from '../util/properties';
 
 import type {Type} from './types';
 import type {Value} from './values';
@@ -28,6 +29,8 @@ export type Feature = {
     +id?: any,
     +properties: {[string]: any}
 };
+
+export type FeatureState = {[string]: any};
 
 export type GlobalProperties = $ReadOnly<{
     zoom: number,
@@ -53,24 +56,26 @@ export class StyleExpression {
         }
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature): any {
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
         if (!this._evaluator) {
             this._evaluator = new EvaluationContext();
         }
 
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
+        this._evaluator.featureState = featureState;
 
         return this.expression.evaluate(this._evaluator);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature): any {
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
         if (!this._evaluator) {
             this._evaluator = new EvaluationContext();
         }
 
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
+        this._evaluator.featureState = featureState;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -120,25 +125,28 @@ export function createExpression(expression: mixed, propertySpec: StylePropertyS
 
 export class ZoomConstantExpression<Kind> {
     kind: Kind;
+    isStateDependent: boolean;
     _styleExpression: StyleExpression;
 
     constructor(kind: Kind, expression: StyleExpression) {
         this.kind = kind;
         this._styleExpression = expression;
+        this.isStateDependent = kind !== 'constant' && !isConstant.isStateConstant(expression.expression);
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluate(globals, feature);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluate(globals, feature, featureState);
     }
 }
 
 export class ZoomDependentExpression<Kind> {
     kind: Kind;
     zoomStops: Array<number>;
+    isStateDependent: boolean;
 
     _styleExpression: StyleExpression;
     _interpolationType: ?InterpolationType;
@@ -147,17 +155,18 @@ export class ZoomDependentExpression<Kind> {
         this.kind = kind;
         this.zoomStops = zoomCurve.labels;
         this._styleExpression = expression;
+        this.isStateDependent = kind !== 'camera' && !isConstant.isStateConstant(expression.expression);
         if (zoomCurve instanceof Interpolate) {
             this._interpolationType = zoomCurve.interpolation;
         }
     }
 
-    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature);
+    evaluateWithoutErrorHandling(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState);
     }
 
-    evaluate(globals: GlobalProperties, feature?: Feature): any {
-        return this._styleExpression.evaluate(globals, feature);
+    evaluate(globals: GlobalProperties, feature?: Feature, featureState?: FeatureState): any {
+        return this._styleExpression.evaluate(globals, feature, featureState);
     }
 
     interpolationFactor(input: number, lower: number, upper: number): number {
@@ -176,19 +185,21 @@ export type ConstantExpression = {
 
 export type SourceExpression = {
     kind: 'source',
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    isStateDependent: boolean,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
 };
 
 export type CameraExpression = {
     kind: 'camera',
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };
 
 export type CompositeExpression = {
     kind: 'composite',
-    +evaluate: (globals: GlobalProperties, feature?: Feature) => any,
+    isStateDependent: boolean,
+    +evaluate: (globals: GlobalProperties, feature?: Feature, featureState?: FeatureState) => any,
     +interpolationFactor: (input: number, lower: number, upper: number) => number,
     zoomStops: Array<number>
 };
@@ -208,12 +219,12 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
     const parsed = expression.value.expression;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
-    if (!isFeatureConstant && !propertySpec['property-function']) {
-        return error([new ParsingError('', 'property expressions not supported')]);
+    if (!isFeatureConstant && !supportsPropertyExpression(propertySpec)) {
+        return error([new ParsingError('', 'data expressions not supported')]);
     }
 
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom']);
-    if (!isZoomConstant && propertySpec['zoom-function'] === false) {
+    if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
@@ -222,7 +233,7 @@ export function createPropertyExpression(expression: mixed, propertySpec: StyleP
         return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression.')]);
     } else if (zoomCurve instanceof ParsingError) {
         return error([zoomCurve]);
-    } else if (zoomCurve instanceof Interpolate && propertySpec['function'] === 'piecewise-constant') {
+    } else if (zoomCurve instanceof Interpolate && !supportsInterpolation(propertySpec)) {
         return error([new ParsingError('', '"interpolate" expressions cannot be used with this property')]);
     }
 

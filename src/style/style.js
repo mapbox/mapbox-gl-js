@@ -18,7 +18,8 @@ import Dispatcher from '../util/dispatcher';
 import { validateStyle, emitValidationErrors as _emitValidationErrors } from './validate_style';
 import {
     getType as getSourceType,
-    setType as setSourceType
+    setType as setSourceType,
+    type SourceClass
 } from '../source/source';
 import { queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures } from '../source/query_features';
 import SourceCache from '../source/source_cache';
@@ -43,7 +44,6 @@ const emitValidationErrors = (evented: Evented, errors: ?$ReadOnlyArray<{message
 
 import type Map from '../ui/map';
 import type Transform from '../geo/transform';
-import type {Source} from '../source/source';
 import type {StyleImage} from './style_image';
 import type {StyleGlyph} from './style_glyph';
 import type {Callback} from '../types/callback';
@@ -446,6 +446,12 @@ class Style extends Evented {
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
+    listImages() {
+        this._checkLoaded();
+
+        return this.imageManager.listImages();
+    }
+
     addSource(id: string, source: SourceSpecification, options?: {validate?: boolean}) {
         this._checkLoaded();
 
@@ -754,11 +760,8 @@ class Style extends Evented {
 
         if (deepEqual(layer.getPaintProperty(name), value)) return;
 
-        const wasDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
-        layer.setPaintProperty(name, value);
-        const isDataDriven = layer._transitionablePaint._values[name].value.isDataDriven();
-
-        if (isDataDriven || wasDataDriven) {
+        const requiresRelayout = layer.setPaintProperty(name, value);
+        if (requiresRelayout) {
             this._updateLayer(layer);
         }
 
@@ -768,6 +771,44 @@ class Style extends Evented {
 
     getPaintProperty(layer: string, name: string) {
         return this.getLayer(layer).getPaintProperty(name);
+    }
+
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+        this._checkLoaded();
+        const sourceId = feature.source;
+        const sourceLayer = feature.sourceLayer;
+        const sourceCache = this.sourceCaches[sourceId];
+
+        if (sourceCache === undefined) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+        const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'vector' && !sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
+            return;
+        }
+
+        sourceCache.setFeatureState(sourceLayer, feature.id, state);
+    }
+
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }) {
+        this._checkLoaded();
+        const sourceId = feature.source;
+        const sourceLayer = feature.sourceLayer;
+        const sourceCache = this.sourceCaches[sourceId];
+
+        if (sourceCache === undefined) {
+            this.fire(new ErrorEvent(new Error(`The source '${sourceId}' does not exist in the map's style.`)));
+            return;
+        }
+        const sourceType = sourceCache.getSource().type;
+        if (sourceType === 'vector' && !sourceLayer) {
+            this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
+            return;
+        }
+
+        return sourceCache.getFeatureState(sourceLayer, feature.id);
     }
 
     getTransition() {
@@ -858,6 +899,7 @@ class Style extends Evented {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._layers,
+                    this.sourceCaches,
                     queryGeometry.viewport,
                     params,
                     this.placement.collisionIndex,
@@ -875,7 +917,7 @@ class Style extends Evented {
         return sourceCache ? querySourceFeatures(sourceCache, params) : [];
     }
 
-    addSourceType(name: string, SourceType: Class<Source>, callback: Callback<void>) {
+    addSourceType(name: string, SourceType: SourceClass, callback: Callback<void>) {
         if (Style.getSourceType(name)) {
             return callback(new Error(`A source type called "${name}" already exists.`));
         }
@@ -962,7 +1004,7 @@ class Style extends Evented {
         }
     }
 
-    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number) {
+    _updatePlacement(transform: Transform, showCollisionBoxes: boolean, fadeDuration: number, crossSourceCollisions: boolean) {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
@@ -991,7 +1033,7 @@ class Style extends Evented {
         const forceFullPlacement = this._layerOrderChanged;
 
         if (forceFullPlacement || !this.pauseablePlacement || (this.pauseablePlacement.isDone() && !this.placement.stillRecent(browser.now()))) {
-            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration);
+            this.pauseablePlacement = new PauseablePlacement(transform, this._order, forceFullPlacement, showCollisionBoxes, fadeDuration, crossSourceCollisions);
             this._layerOrderChanged = false;
         }
 

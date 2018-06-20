@@ -9,11 +9,7 @@ import {number as interpolate} from '../style-spec/util/interpolate';
 import tileCover from '../util/tile_cover';
 import { CanonicalTileID, UnwrappedTileID } from '../source/tile_id';
 import EXTENT from '../data/extent';
-import glmatrix from '@mapbox/gl-matrix';
-
-const vec4 = glmatrix.vec4,
-    mat4 = glmatrix.mat4,
-    mat2 = glmatrix.mat2;
+import { vec4, mat4, mat2 } from 'gl-matrix';
 
 /**
  * A single transform, generally used for a single tile to be

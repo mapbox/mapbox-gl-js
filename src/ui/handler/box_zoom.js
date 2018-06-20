@@ -19,7 +19,8 @@ class BoxZoomHandler {
     _container: HTMLElement;
     _enabled: boolean;
     _active: boolean;
-    _startPos: any;
+    _startPos: Point;
+    _lastPos: Point;
     _box: HTMLElement;
 
     /**
@@ -86,13 +87,19 @@ class BoxZoomHandler {
         window.document.addEventListener('mouseup', this._onMouseUp, false);
 
         DOM.disableDrag();
-        this._startPos = DOM.mousePos(this._el, e);
+        this._startPos = this._lastPos = DOM.mousePos(this._el, e);
         this._active = true;
     }
 
     _onMouseMove(e: MouseEvent) {
-        const p0 = this._startPos,
-            p1 = DOM.mousePos(this._el, e);
+        const pos = DOM.mousePos(this._el, e);
+
+        if (this._lastPos.equals(pos)) {
+            return;
+        }
+
+        const p0 = this._startPos;
+        this._lastPos = pos;
 
         if (!this._box) {
             this._box = DOM.create('div', 'mapboxgl-boxzoom', this._container);
@@ -100,10 +107,10 @@ class BoxZoomHandler {
             this._fireEvent('boxzoomstart', e);
         }
 
-        const minX = Math.min(p0.x, p1.x),
-            maxX = Math.max(p0.x, p1.x),
-            minY = Math.min(p0.y, p1.y),
-            maxY = Math.max(p0.y, p1.y);
+        const minX = Math.min(p0.x, pos.x),
+            maxX = Math.max(p0.x, pos.x),
+            minY = Math.min(p0.y, pos.y),
+            maxY = Math.max(p0.y, pos.y);
 
         DOM.setTransform(this._box, `translate(${minX}px,${minY}px)`);
 
@@ -155,6 +162,9 @@ class BoxZoomHandler {
         }
 
         DOM.enableDrag();
+
+        delete this._startPos;
+        delete this._lastPos;
     }
 
     _fireEvent(type: string, e: *) {

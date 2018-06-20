@@ -15,6 +15,7 @@ import SegmentVector from '../data/segment';
 import { TriangleIndexArray } from '../data/index_array_type';
 import browser from '../util/browser';
 import EvaluationParameters from '../style/evaluation_parameters';
+import SourceFeatureState from '../source/source_state';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 
@@ -31,6 +32,7 @@ import type {OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Transform from '../geo/transform';
+import type {LayerFeatureStates} from './source_state';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.
@@ -219,9 +221,8 @@ class Tile {
     upload(context: Context) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (!bucket.uploaded) {
+            if (bucket.uploadPending()) {
                 bucket.upload(context);
-                bucket.uploaded = true;
             }
         }
 
@@ -241,6 +242,7 @@ class Tile {
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(layers: {[string]: StyleLayer},
+                          sourceFeatureState: SourceFeatureState,
                           queryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
@@ -258,7 +260,7 @@ class Tile {
             transform: transform,
             params: params,
             queryPadding: this.queryPadding * maxPitchScaleFactor
-        }, layers);
+        }, layers, sourceFeatureState);
     }
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params: any) {
@@ -412,6 +414,29 @@ class Tile {
         }
     }
 
+    setFeatureState(states: LayerFeatureStates, painter: any) {
+        if (!this.latestFeatureIndex ||
+            !this.latestFeatureIndex.rawTileData ||
+            Object.keys(states).length === 0) {
+            return;
+        }
+
+        const vtLayers = this.latestFeatureIndex.loadVTLayers();
+
+        for (const i in this.buckets) {
+            const bucket = this.buckets[i];
+            // Buckets are grouped by common source-layer
+            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
+            const sourceLayer = vtLayers[sourceLayerId];
+            const sourceLayerStates = states[sourceLayerId];
+            if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
+
+            bucket.update(sourceLayerStates, sourceLayer);
+            if (painter && painter.style) {
+                this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
+            }
+        }
+    }
 }
 
 export default Tile;

@@ -1,7 +1,5 @@
 [
   {
-    "properties": {},
-    "type": "Feature",
     "geometry": {
       "type": "LineString",
       "coordinates": [
@@ -14,6 +12,10 @@
           44.99588261816547
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {},
+    "source": "geojson",
+    "state": {}
   }
 ]

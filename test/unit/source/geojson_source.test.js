@@ -84,7 +84,7 @@ test('GeoJSONSource#setData', (t) => {
             _transformRequest: (data) => { return { url: data }; }
         };
         source.dispatcher.send = function(type, params, cb) {
-            if (type === 'geojson.id.loadData') {
+            if (type === 'geojson.loadData') {
                 t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
                 setTimeout(cb, 0);
                 t.end();
@@ -127,7 +127,7 @@ test('GeoJSONSource#update', (t) => {
     t.test('sends initial loadData request to dispatcher', (t) => {
         const mockDispatcher = {
             send: function(message) {
-                t.equal(message, 'geojson.id.loadData');
+                t.equal(message, 'geojson.loadData');
                 t.end();
             }
         };
@@ -139,7 +139,7 @@ test('GeoJSONSource#update', (t) => {
     t.test('forwards geojson-vt options with worker request', (t) => {
         const mockDispatcher = {
             send: function(message, params) {
-                t.equal(message, 'geojson.id.loadData');
+                t.equal(message, 'geojson.loadData');
                 t.deepEqual(params.geojsonVtOptions, {
                     extent: 8192,
                     maxZoom: 10,
@@ -211,7 +211,7 @@ test('GeoJSONSource#update', (t) => {
         let expectedLoadDataCalls = 2;
         const mockDispatcher = {
             send: function(message, args, callback) {
-                if (message === 'geojson.id.loadData' && --expectedLoadDataCalls <= 0) {
+                if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
                     t.end();
                 }
                 if (callback) {

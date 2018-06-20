@@ -1,6 +1,6 @@
 // @flow
 
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 import Texture from './texture';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
@@ -148,6 +148,7 @@ function renderTextureToMap(painter, layer) {
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
     context.setDepthMode(DepthMode.disabled);
+    context.setStencilMode(StencilMode.disabled);
 
     const program = painter.useProgram('heatmapTexture');
 

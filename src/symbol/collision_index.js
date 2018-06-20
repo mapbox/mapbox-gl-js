@@ -4,9 +4,7 @@ import Point from '@mapbox/point-geometry';
 
 import * as intersectionTests from '../util/intersection_tests';
 import Grid from './grid_index';
-import glmatrix from '@mapbox/gl-matrix';
-
-const mat4 = glmatrix.mat4;
+import { mat4 } from 'gl-matrix';
 
 import * as projection from '../symbol/projection';
 
@@ -44,6 +42,8 @@ class CollisionIndex {
     pitchfactor: number;
     screenRightBoundary: number;
     screenBottomBoundary: number;
+    gridRightBoundary: number;
+    gridBottomBoundary: number;
 
     constructor(
         transform: Transform,
@@ -58,9 +58,11 @@ class CollisionIndex {
 
         this.screenRightBoundary = transform.width + viewportPadding;
         this.screenBottomBoundary = transform.height + viewportPadding;
+        this.gridRightBoundary = transform.width + 2 * viewportPadding;
+        this.gridBottomBoundary = transform.height + 2 * viewportPadding;
     }
 
-    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4): { box: Array<number>, offscreen: boolean } {
+    placeCollisionBox(collisionBox: SingleCollisionBox, allowOverlap: boolean, textPixelRatio: number, posMatrix: mat4, collisionGroupPredicate?: any): { box: Array<number>, offscreen: boolean } {
         const projectedPoint = this.projectAndGetPerspectiveRatio(posMatrix, collisionBox.anchorPointX, collisionBox.anchorPointY);
         const tileToViewport = textPixelRatio * projectedPoint.perspectiveRatio;
         const tlX = collisionBox.x1 * tileToViewport + projectedPoint.point.x;
@@ -68,14 +70,14 @@ class CollisionIndex {
         const brX = collisionBox.x2 * tileToViewport + projectedPoint.point.x;
         const brY = collisionBox.y2 * tileToViewport + projectedPoint.point.y;
 
-        if (!allowOverlap) {
-            if (this.grid.hitTest(tlX, tlY, brX, brY)) {
-                return {
-                    box: [],
-                    offscreen: false
-                };
-            }
+        if (!this.isInsideGrid(tlX, tlY, brX, brY) ||
+            (!allowOverlap && this.grid.hitTest(tlX, tlY, brX, brY, collisionGroupPredicate))) {
+            return {
+                box: [],
+                offscreen: false
+            };
         }
+
         return {
             box: [tlX, tlY, brX, brY],
             offscreen: this.isOffscreen(tlX, tlY, brX, brY)
@@ -115,7 +117,8 @@ class CollisionIndex {
                           posMatrix: mat4,
                           labelPlaneMatrix: mat4,
                           showCollisionCircles: boolean,
-                          pitchWithMap: boolean): { circles: Array<number>, offscreen: boolean } {
+                          pitchWithMap: boolean,
+                          collisionGroupPredicate?: any): { circles: Array<number>, offscreen: boolean } {
         const placedCollisionCircles = [];
 
         const projectedAnchor = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY);
@@ -145,6 +148,7 @@ class CollisionIndex {
             /*return tile distance*/ true);
 
         let collisionDetected = false;
+        let inGrid = false;
         let entirelyOffscreen = true;
 
         const tileToViewport = projectedAnchor.perspectiveRatio * textPixelRatio;
@@ -207,10 +211,15 @@ class CollisionIndex {
             placedCollisionCircles.push(projectedPoint.x, projectedPoint.y, radius, collisionBoxArrayIndex);
             markCollisionCircleUsed(collisionCircles, k, true);
 
-            entirelyOffscreen = entirelyOffscreen && this.isOffscreen(projectedPoint.x - radius, projectedPoint.y - radius, projectedPoint.x + radius, projectedPoint.y + radius);
+            const x1 = projectedPoint.x - radius;
+            const y1 = projectedPoint.y - radius;
+            const x2 = projectedPoint.x + radius;
+            const y2 = projectedPoint.y + radius;
+            entirelyOffscreen = entirelyOffscreen && this.isOffscreen(x1, y1, x2, y2);
+            inGrid = inGrid || this.isInsideGrid(x1, y1, x2, y2);
 
             if (!allowOverlap) {
-                if (this.grid.hitTestCircle(projectedPoint.x, projectedPoint.y, radius)) {
+                if (this.grid.hitTestCircle(projectedPoint.x, projectedPoint.y, radius, collisionGroupPredicate)) {
                     if (!showCollisionCircles) {
                         return {
                             circles: [],
@@ -226,7 +235,7 @@ class CollisionIndex {
         }
 
         return {
-            circles: collisionDetected ? [] : placedCollisionCircles,
+            circles: (collisionDetected || !inGrid) ? [] : placedCollisionCircles,
             offscreen: entirelyOffscreen
         };
     }
@@ -298,17 +307,17 @@ class CollisionIndex {
         return result;
     }
 
-    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number) {
+    insertCollisionBox(collisionBox: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroupID: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex };
+        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex, collisionGroupID: collisionGroupID };
         grid.insert(key, collisionBox[0], collisionBox[1], collisionBox[2], collisionBox[3]);
     }
 
-    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number) {
+    insertCollisionCircles(collisionCircles: Array<number>, ignorePlacement: boolean, bucketInstanceId: number, featureIndex: number, collisionGroupID: number) {
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex };
+        const key = { bucketInstanceId: bucketInstanceId, featureIndex: featureIndex, collisionGroupID: collisionGroupID };
         for (let k = 0; k < collisionCircles.length; k += 4) {
             grid.insertCircle(key, collisionCircles[k], collisionCircles[k + 1], collisionCircles[k + 2]);
         }
@@ -350,6 +359,10 @@ class CollisionIndex {
 
     isOffscreen(x1: number, y1: number, x2: number, y2: number) {
         return x2 < viewportPadding || x1 >= this.screenRightBoundary || y2 < viewportPadding || y1 > this.screenBottomBoundary;
+    }
+
+    isInsideGrid(x1: number, y1: number, x2: number, y2: number) {
+        return x2 >= 0 && x1 < this.gridRightBoundary && y2 >= 0 && y1 < this.gridBottomBoundary;
     }
 }
 

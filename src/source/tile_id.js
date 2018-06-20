@@ -1,6 +1,6 @@
 // @flow
 
-import WhooTS from '@mapbox/whoots-js';
+import {getTileBBox} from '@mapbox/whoots-js';
 
 import assert from 'assert';
 import { register } from '../util/web_worker_transfer';
@@ -28,7 +28,7 @@ export class CanonicalTileID {
 
     // given a list of urls, choose a url template and return a tile URL
     url(urls: Array<string>, scheme: ?string) {
-        const bbox = WhooTS.getTileBBox(this.x, this.y, this.z);
+        const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
         return urls[(this.x + this.y) % urls.length]

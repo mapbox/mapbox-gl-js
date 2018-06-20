@@ -3,7 +3,6 @@
 import { Event, ErrorEvent, Evented } from '../util/evented';
 
 import { extend } from '../util/util';
-import window from '../util/window';
 import EXTENT from '../data/extent';
 import { ResourceType } from '../util/ajax';
 import browser from '../util/browser';
@@ -66,6 +65,7 @@ class GeoJSONSource extends Evented implements Source {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
+    attribution: string;
 
     isTileClipped: boolean;
     reparseOverscaled: boolean;
@@ -110,6 +110,7 @@ class GeoJSONSource extends Evented implements Source {
 
         if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
         if (options.type) this.type = options.type;
+        if (options.attribution) this.attribution = options.attribution;
 
         const scale = EXTENT / this.tileSize;
 
@@ -197,16 +198,16 @@ class GeoJSONSource extends Evented implements Source {
         const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
-            options.request = this.map._transformRequest(resolveURL(data), ResourceType.Source);
+            options.request = this.map._transformRequest(browser.resolveURL(data), ResourceType.Source);
             options.request.collectResourceTiming = this._collectResourceTiming;
         } else {
             options.data = JSON.stringify(data);
         }
 
-        // target {this.type}.{options.source}.loadData rather than literally geojson.loadData,
+        // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(`${this.type}.${options.source}.loadData`, options, (err, result) => {
+        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, (err, result) => {
             if (this._removed || (result && result.abandoned)) {
                 return;
             }
@@ -222,7 +223,7 @@ class GeoJSONSource extends Evented implements Source {
             // message queue. Waiting instead for the 'coalesce' to round-trip
             // through the foreground just means we're throttling the worker
             // to run at a little less than full-throttle.
-            this.dispatcher.send(`${this.type}.${options.source}.coalesce`, null, null, this.workerID);
+            this.dispatcher.send(`${this.type}.coalesce`, { source: options.source }, null, this.workerID);
             callback(err);
 
         }, this.workerID);
@@ -283,12 +284,6 @@ class GeoJSONSource extends Evented implements Source {
     hasTransition() {
         return false;
     }
-}
-
-function resolveURL(url) {
-    const a = window.document.createElement('a');
-    a.href = url;
-    return a.href;
 }
 
 export default GeoJSONSource;

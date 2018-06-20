@@ -19,7 +19,7 @@ class WorkerPool {
         this.active = {};
     }
 
-    acquire(mapId: number) {
+    acquire(mapId: number): Array<WorkerInterface> {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount so that
             // client code has had a chance to set it.

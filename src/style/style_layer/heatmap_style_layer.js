@@ -33,8 +33,7 @@ class HeatmapStyleLayer extends StyleLayer {
         this._updateColorRamp();
     }
 
-    setPaintProperty(name: string, value: mixed, options: {validate: boolean}) {
-        super.setPaintProperty(name, value, options);
+    _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'heatmap-color') {
             this._updateColorRamp();
         }

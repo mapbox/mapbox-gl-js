@@ -15,6 +15,10 @@ const meta = {
 
 const plugins = {
     "User Interface Plugins": {
+        "mapbox-gl-accessibility": {
+            "website": "https://github.com/mapbox/mapbox-gl-accessibility/",
+            "description": "integrates with ARIA-compatible screen readers for users with visual impairments"
+        },
         "mapbox-gl-boundaries": {
             "website": "https://github.com/mapbox/mapbox-gl-boundaries",
             "description": "enables users to show/hide disputed borders"
@@ -23,6 +27,11 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-compare",
             "description": "enables users to compare two maps by swiping left and right",
             "example": "mapbox-gl-compare"
+        },
+        "mapbox-gl-directions": {
+            "website": "https://github.com/mapbox/mapbox-gl-directions",
+            "description": "adds a control which allows users to plot driving, walking, and cycling directions on the map",
+            "example": "mapbox-gl-directions"
         },
         "mapbox-gl-draw": {
             "website": "https://github.com/mapbox/mapbox-gl-draw",
@@ -33,11 +42,6 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-geocoder",
             "description": "adds a Geocoder control to Mapbox GL JS",
             "example": "mapbox-gl-geocoder"
-        },
-        "mapbox-gl-directions": {
-            "website": "https://github.com/mapbox/mapbox-gl-directions",
-            "description": "adds a control which allows users to plot driving, walking, and cycling directions on the map",
-            "example": "mapbox-gl-directions"
         }
     },
     "Map Rendering Plugins": {

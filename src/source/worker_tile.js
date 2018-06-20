@@ -109,7 +109,8 @@ class WorkerTile {
                     pixelRatio: this.pixelRatio,
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
-                    sourceLayerIndex: sourceLayerIndex
+                    sourceLayerIndex: sourceLayerIndex,
+                    sourceID: this.source
                 });
 
                 bucket.populate(features, options);

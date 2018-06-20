@@ -24,10 +24,10 @@ class DragPanHandler {
     _map: Map;
     _el: HTMLElement;
     _state: 'disabled' | 'enabled' | 'pending' | 'active';
-    _pos: Point;
-    _previousPos: Point;
-    _inertia: Array<[number, Point]>;
+    _startPos: Point;
+    _lastPos: Point;
     _lastMoveEvent: MouseEvent | TouchEvent | void;
+    _inertia: Array<[number, Point]>;
     _frameId: ?TaskID;
 
     /**
@@ -140,17 +140,22 @@ class DragPanHandler {
         window.addEventListener('blur', this._onBlur);
 
         this._state = 'pending';
-        this._previousPos = DOM.mousePos(this._el, e);
-        this._inertia = [[browser.now(), this._previousPos]];
+        this._startPos = this._lastPos = DOM.mousePos(this._el, e);
+        this._inertia = [[browser.now(), this._startPos]];
     }
 
     _onMove(e: MouseEvent | TouchEvent) {
-        this._lastMoveEvent = e;
         e.preventDefault();
 
-        this._pos = DOM.mousePos(this._el, e);
+        const pos = DOM.mousePos(this._el, e);
+        if (this._lastPos.equals(pos)) {
+            return;
+        }
+
+        this._lastMoveEvent = e;
+        this._lastPos = pos;
         this._drainInertiaBuffer();
-        this._inertia.push([browser.now(), this._pos]);
+        this._inertia.push([browser.now(), this._lastPos]);
 
         if (this._state === 'pending') {
             // we treat the first move event (rather than the mousedown event)
@@ -175,11 +180,11 @@ class DragPanHandler {
         const e = this._lastMoveEvent;
         if (!e) return;
         const tr = this._map.transform;
-        tr.setLocationAtPoint(tr.pointLocation(this._previousPos), this._pos);
+        tr.setLocationAtPoint(tr.pointLocation(this._startPos), this._lastPos);
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
 
-        this._previousPos = this._pos;
+        this._startPos = this._lastPos;
         delete this._lastMoveEvent;
     }
 
@@ -254,8 +259,8 @@ class DragPanHandler {
             this._frameId = null;
         }
         delete this._lastMoveEvent;
-        delete this._previousPos;
-        delete this._pos;
+        delete this._startPos;
+        delete this._lastPos;
     }
 
     _inertialPan(e: MouseEvent | TouchEvent) {

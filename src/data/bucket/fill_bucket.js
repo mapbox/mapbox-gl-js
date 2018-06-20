@@ -25,6 +25,7 @@ import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type Point from '@mapbox/point-geometry';
+import type {FeatureStates} from '../../source/source_state';
 
 class FillBucket implements Bucket {
     index: number;
@@ -32,6 +33,7 @@ class FillBucket implements Bucket {
     overscaling: number;
     layers: Array<FillStyleLayer>;
     layerIds: Array<string>;
+    stateDependentLayers: Array<FillStyleLayer>;
 
     layoutVertexArray: FillLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -66,21 +68,32 @@ class FillBucket implements Bucket {
         for (const {feature, index, sourceLayerIndex} of features) {
             if (this.layers[0]._featureFilter(new EvaluationParameters(this.zoom), feature)) {
                 const geometry = loadGeometry(feature);
-                this.addFeature(feature, geometry);
+                this.addFeature(feature, geometry, index);
                 options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
             }
         }
+    }
+
+    update(states: FeatureStates, vtLayer: VectorTileLayer) {
+        if (!this.stateDependentLayers.length) return;
+        this.programConfigurations.updatePaintArrays(states, vtLayer, this.stateDependentLayers);
     }
 
     isEmpty() {
         return this.layoutVertexArray.length === 0;
     }
 
+    uploadPending(): boolean {
+        return !this.uploaded || this.programConfigurations.needsUpload;
+    }
     upload(context: Context) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray);
-        this.indexBuffer2 = context.createIndexBuffer(this.indexArray2);
+        if (!this.uploaded) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+            this.indexBuffer2 = context.createIndexBuffer(this.indexArray2);
+        }
         this.programConfigurations.upload(context);
+        this.uploaded = true;
     }
 
     destroy() {
@@ -93,7 +106,7 @@ class FillBucket implements Bucket {
         this.segments2.destroy();
     }
 
-    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>) {
+    addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>, index: number) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {
@@ -148,7 +161,7 @@ class FillBucket implements Bucket {
             triangleSegment.primitiveLength += indices.length / 3;
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index);
     }
 }
 

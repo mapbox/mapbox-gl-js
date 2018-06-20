@@ -19,7 +19,6 @@ import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 
-import type {Feature as ExpressionFeature} from '../../style-spec/expression';
 import type {
     Bucket,
     BucketParameters,
@@ -34,6 +33,7 @@ import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
+import type {FeatureStates} from '../../source/source_state';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -156,15 +156,19 @@ class SymbolBuffers {
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
-    upload(context: Context, dynamicIndexBuffer: boolean) {
-        this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
-        this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
-        this.programConfigurations.upload(context);
-        this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
-        this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
-        // This is a performance hack so that we can write to opacityVertexArray with uint32s
-        // even though the shaders read uint8s
-        this.opacityVertexBuffer.itemSize = 1;
+    upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean) {
+        if (upload) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
+            this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
+            this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
+            // This is a performance hack so that we can write to opacityVertexArray with uint32s
+            // even though the shaders read uint8s
+            this.opacityVertexBuffer.itemSize = 1;
+        }
+        if (upload || update) {
+            this.programConfigurations.upload(context);
+        }
     }
 
     destroy() {
@@ -261,6 +265,7 @@ class SymbolBucket implements Bucket {
     overscaling: number;
     layers: Array<SymbolStyleLayer>;
     layerIds: Array<string>;
+    stateDependentLayers: Array<SymbolStyleLayer>;
     index: number;
     sdfIcons: boolean;
     iconsNeedLinear: boolean;
@@ -288,6 +293,7 @@ class SymbolBucket implements Bucket {
     collisionCircle: CollisionBuffers;
     uploaded: boolean;
     sourceLayerIndex: number;
+    sourceID: string;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -308,11 +314,14 @@ class SymbolBucket implements Bucket {
         const layout = this.layers[0].layout;
         this.sortFeaturesByY = layout.get('text-allow-overlap') || layout.get('icon-allow-overlap') ||
             layout.get('text-ignore-placement') || layout.get('icon-ignore-placement');
+
+        this.sourceID = options.sourceID;
     }
 
     createArrays() {
         this.text = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^text/.test(property)));
         this.icon = new SymbolBuffers(new ProgramConfigurationSet(symbolLayoutAttributes.members, this.layers, this.zoom, property => /^icon/.test(property)));
+
         this.collisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.collisionCircle = new CollisionBuffers(CollisionCircleLayoutArray, collisionCircleLayout.members, TriangleIndexArray);
 
@@ -381,7 +390,7 @@ class SymbolBucket implements Bucket {
             }
 
             if (text) {
-                const fontStack = textFont.evaluate(feature).join(',');
+                const fontStack = textFont.evaluate(feature, {}).join(',');
                 const stack = stacks[fontStack] = stacks[fontStack] || {};
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') === 'line';
                 const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text);
@@ -404,16 +413,28 @@ class SymbolBucket implements Bucket {
         }
     }
 
+    update(states: FeatureStates, vtLayer: VectorTileLayer) {
+        if (!this.stateDependentLayers.length) return;
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, this.layers);
+    }
 
     isEmpty() {
         return this.symbolInstances.length === 0;
     }
 
+    uploadPending() {
+        return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload;
+    }
+
     upload(context: Context) {
-        this.text.upload(context, this.sortFeaturesByY);
-        this.icon.upload(context, this.sortFeaturesByY);
-        this.collisionBox.upload(context);
-        this.collisionCircle.upload(context);
+        if (!this.uploaded) {
+            this.collisionBox.upload(context);
+            this.collisionCircle.upload(context);
+        }
+        this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload);
+        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload);
+        this.uploaded = true;
     }
 
     destroy() {
@@ -457,7 +478,7 @@ class SymbolBucket implements Bucket {
                sizeVertex: any,
                lineOffset: [number, number],
                alongLine: boolean,
-               feature: ExpressionFeature,
+               feature: SymbolFeature,
                writingMode: any,
                labelAnchor: Anchor,
                lineStartIndex: number,
@@ -504,7 +525,7 @@ class SymbolBucket implements Bucket {
             lineOffset[0], lineOffset[1],
             writingMode, (false: any));
 
-        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature);
+        arrays.programConfigurations.populatePaintArrays(arrays.layoutVertexArray.length, feature, feature.index);
     }
 
     _addCollisionDebugVertex(layoutVertexArray: StructArray, collisionVertexArray: StructArray, point: Point, anchor: Point, extrude: Point) {

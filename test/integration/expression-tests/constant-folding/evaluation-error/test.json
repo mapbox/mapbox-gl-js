@@ -1,8 +1,10 @@
 {
   "propertySpec": {
     "type": "color",
-    "function": true,
-    "property-function": true
+    "property-type": "data-driven",
+    "expression": {
+      "parameters": ["zoom", "feature"]
+    }
   },
   "expression": ["step", ["get", "x"], "black", 0, "invalid", 10, "blue"],
   "inputs": [

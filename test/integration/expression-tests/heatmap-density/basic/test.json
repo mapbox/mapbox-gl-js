@@ -11,8 +11,10 @@
         [1, "red"]
       ]
     },
-    "function": true,
-    "property-function": true
+    "property-type": "data-driven",
+    "expression": {
+      "parameters": ["zoom", "feature"]
+    }
   },
   "expression": [
     "interpolate",

@@ -1,0 +1,47 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 128,
+            "height": 256,
+            "collisionDebug": true
+        }
+    },
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "Point",
+                "coordinates": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "offset",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-image": "oneway",
+                "icon-rotate": 45,
+                "icon-offset": [
+                    40,
+                    50
+                ],
+                "icon-allow-overlap": true
+            }
+        }
+    ]
+}

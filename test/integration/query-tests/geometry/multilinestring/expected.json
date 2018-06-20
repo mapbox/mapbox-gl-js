@@ -1,7 +1,5 @@
 [
   {
-    "properties": {},
-    "type": "Feature",
     "geometry": {
       "type": "MultiLineString",
       "coordinates": [
@@ -26,6 +24,10 @@
           ]
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {},
+    "source": "geojson",
+    "state": {}
   }
 ]

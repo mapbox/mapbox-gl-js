@@ -1,13 +1,16 @@
 // @flow
 
-import { extend, endsWith } from './util';
+import { extend } from './util';
 
 type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
 
 function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
-    listenerList[type] = listenerList[type] || [];
-    listenerList[type].push(listener);
+    const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
+    if (!listenerExists) {
+        listenerList[type] = listenerList[type] || [];
+        listenerList[type].push(listener);
+    }
 }
 
 function _removeEventListener(type: string, listener: Listener, listenerList: Listeners) {
@@ -29,6 +32,8 @@ export class Event {
 }
 
 export class ErrorEvent extends Event {
+    error: Error;
+
     constructor(error: Error, data: Object = {}) {
         super('error', extend({error}, data));
     }
@@ -127,10 +132,8 @@ export class Evented {
 
         // To ensure that no error events are dropped, print them to the
         // console if they have no listeners.
-        } else if (endsWith(type, 'error')) {
-            console.error((event && event.error) || event || 'Empty error event');
-        } else if (endsWith(type, 'warning')) {
-            console.warn((event && event.warning) || event || 'Empty warning event');
+        } else if (event instanceof ErrorEvent) {
+            console.error(event.error);
         }
 
         return this;

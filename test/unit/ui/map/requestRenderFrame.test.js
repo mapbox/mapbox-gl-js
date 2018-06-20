@@ -1,21 +1,8 @@
 import { test } from 'mapbox-gl-js-test';
-import window from '../../../../src/util/window';
-import Map from '../../../../src/ui/map';
-import DOM from '../../../../src/util/dom';
-
-function createMap() {
-    return new Map({
-        container: DOM.create('div', '', window.document.body),
-        style: {
-            "version": 8,
-            "sources": {},
-            "layers": []
-        }
-    });
-}
+import { createMap } from '../../../util';
 
 test('Map#_requestRenderFrame schedules a new render frame if necessary', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     t.stub(map, '_rerender');
     map._requestRenderFrame(() => {});
     t.equal(map._rerender.callCount, 1);
@@ -24,7 +11,7 @@ test('Map#_requestRenderFrame schedules a new render frame if necessary', (t) =>
 });
 
 test('Map#_requestRenderFrame queues a task for the next render frame', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     const cb = t.spy();
     map._requestRenderFrame(cb);
     map.once('render', () => {
@@ -35,7 +22,7 @@ test('Map#_requestRenderFrame queues a task for the next render frame', (t) => {
 });
 
 test('Map#_cancelRenderFrame cancels a queued task', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     const cb = t.spy();
     const id = map._requestRenderFrame(cb);
     map._cancelRenderFrame(id);

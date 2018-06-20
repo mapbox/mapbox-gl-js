@@ -141,37 +141,24 @@ function convertZoomAndPropertyFunction(parameters, propertySpec, stops, default
 function convertPropertyFunction(parameters, propertySpec, stops, defaultExpression) {
     const type = getFunctionType(parameters, propertySpec);
 
-    const inputType = typeof stops[0][0];
-    assert(
-        inputType === 'string' ||
-        inputType === 'number' ||
-        inputType === 'boolean'
-    );
-
-    let input = [inputType, ['get', parameters.property]];
-
     let expression;
     let isStep = false;
-    if (type === 'categorical' && inputType === 'boolean') {
+    if (type === 'categorical' && typeof stops[0][0] === 'boolean') {
         assert(parameters.stops.length > 0 && parameters.stops.length <= 2);
-        if (parameters.stops[0][0] === false) {
-            input = ['!', input];
+        expression = ['case'];
+        for (const stop of stops) {
+            expression.push(['==', ['get', parameters.property], stop[0]], stop[1]);
         }
-        expression = [ 'case', input, parameters.stops[0][1] ];
-        if (parameters.stops.length > 1) {
-            expression.push(parameters.stops[1][1]);
-        } else {
-            expression.push(defaultExpression);
-        }
+        expression.push(defaultExpression);
         return expression;
     } else if (type === 'categorical') {
-        expression = ['match', input];
+        expression = ['match', ['get', parameters.property]];
     } else if (type === 'interval') {
-        expression = ['step', input];
+        expression = ['step', ['number', ['get', parameters.property]]];
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['interpolate', ['exponential', base], input];
+        expression = ['interpolate', ['exponential', base], ['number', ['get', parameters.property]]];
     } else {
         throw new Error(`Unknown property function type ${type}`);
     }
@@ -236,10 +223,9 @@ function appendStopPair(curve, input, output, isStep) {
 function getFunctionType(parameters, propertySpec) {
     if (parameters.type) {
         return parameters.type;
-    } else if (propertySpec.function) {
-        return propertySpec.function === 'interpolated' ? 'exponential' : 'interval';
     } else {
-        return 'exponential';
+        assert(propertySpec.expression);
+        return (propertySpec.expression: any).interpolated ? 'exponential' : 'interval';
     }
 }
 

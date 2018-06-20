@@ -1,12 +1,5 @@
 [
   {
-    "properties": {
-      "id": "34029",
-      "name": "Ocean County",
-      "pop_density": 2310.250993696356
-    },
-    "id": 49,
-    "type": "Feature",
     "geometry": {
       "type": "Polygon",
       "coordinates": [
@@ -17,7 +10,7 @@
           ],
           [
             -74.25933837890625,
-            40.1620833816462
+            40.16208338164617
           ],
           [
             -74.2620849609375,
@@ -41,7 +34,7 @@
           ],
           [
             -74.20440673828125,
-            40.11378919157525
+            40.11378919157522
           ],
           [
             -74.16046142578125,
@@ -153,6 +146,16 @@
           ]
         ]
       ]
-    }
+    },
+    "type": "Feature",
+    "properties": {
+      "id": "34029",
+      "name": "Ocean County",
+      "pop_density": 2310.250993696356
+    },
+    "id": 49,
+    "source": "us-counties",
+    "sourceLayer": "counties",
+    "state": {}
   }
 ]

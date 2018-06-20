@@ -94,6 +94,10 @@ class ImageManager {
         }
     }
 
+    listImages() {
+        return Object.keys(this.images);
+    }
+
     getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.

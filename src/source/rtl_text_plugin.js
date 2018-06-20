@@ -1,6 +1,7 @@
 // @flow
 
 import { Event, Evented } from '../util/evented';
+import browser from '../util/browser';
 
 let pluginRequested = false;
 let pluginURL = null;
@@ -34,7 +35,7 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
         throw new Error('setRTLTextPlugin cannot be called multiple times.');
     }
     pluginRequested = true;
-    pluginURL = url;
+    pluginURL = browser.resolveURL(url);
     _completionCallback = (error?: Error) => {
         if (error) {
             // Clear loaded state to allow retries
