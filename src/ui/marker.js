@@ -313,13 +313,13 @@ export default class Marker extends Evented {
             this._popup = popup;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
-            this._element.addEventListener('keypress', ((e) => {
+            this._element.addEventListener('keypress', (e) => {
                 const code = e.charCode || e.keyCode;
 
                 if ((code === 32) || (code === 13)) { // space or enter
                     this.togglePopup();
                 }
-            }).bind(this));
+            });
         }
 
         return this;
