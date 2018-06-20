@@ -290,7 +290,7 @@ export default class Marker extends Evented {
      * @returns {Marker} `this`
      */
     setPopup(popup: ?Popup) {
-        const keypressListener = (e) => {
+        const keypressListener = (e: Event) => {
             const code = e.charCode || e.keyCode;
 
             if ((code === 32) || (code === 13)) { // space or enter
