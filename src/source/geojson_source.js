@@ -175,7 +175,8 @@ class GeoJSONSource extends Evented implements Source {
         this.fire(new Event('dataloading', {dataType: 'source'}));
         this._updateWorkerData((err) => {
             if (err) {
-                return this.fire(new ErrorEvent(err));
+                this.fire(new ErrorEvent(err));
+                return;
             }
 
             const data: Object = { dataType: 'source', sourceDataType: 'content' };
@@ -196,7 +197,7 @@ class GeoJSONSource extends Evented implements Source {
      * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
      * @returns {GeoJSONSource} this
      */
-    getClusterExpansionZoom(clusterId: number, callback: Function) {
+    getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
         this.dispatcher.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback, this.workerID);
         return this;
     }
@@ -208,7 +209,7 @@ class GeoJSONSource extends Evented implements Source {
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} this
      */
-    getClusterChildren(clusterId: number, callback: Function) {
+    getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
         this.dispatcher.send('geojson.getClusterChildren', { clusterId, source: this.id }, callback, this.workerID);
         return this;
     }
@@ -222,7 +223,7 @@ class GeoJSONSource extends Evented implements Source {
      * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
      * @returns {GeoJSONSource} this
      */
-    getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Function) {
+    getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
         this.dispatcher.send('geojson.getClusterLeaves', {
             source: this.id,
             clusterId,
@@ -237,7 +238,7 @@ class GeoJSONSource extends Evented implements Source {
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _updateWorkerData(callback: Function) {
+    _updateWorkerData(callback: Callback<void>) {
         const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {
