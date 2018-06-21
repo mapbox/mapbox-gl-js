@@ -23,8 +23,6 @@ import type {LoadVectorDataCallback} from './vector_tile_worker_source';
 import type {RequestParameters} from '../util/ajax';
 import type { Callback } from '../types/callback';
 
-export type GeoJSON = Object;
-
 export type LoadGeoJSONParameters = {
     request?: RequestParameters,
     data?: string,
@@ -37,6 +35,12 @@ export type LoadGeoJSONParameters = {
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<mixed>) => void;
 
 export interface GeoJSONIndex {
+    getTile(z: number, x: number, y: number): Object;
+
+    // supercluster methods
+    getClusterExpansionZoom(clusterId: number): number;
+    getChildren(clusterId: number): Array<GeoJSONFeature>;
+    getLeaves(clusterId: number, limit: number, offset: number): Array<GeoJSONFeature>;
 }
 
 function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
@@ -273,6 +277,18 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             this._pendingCallback(null, { abandoned: true });
         }
         callback();
+    }
+
+    getClusterExpansionZoom(params: {clusterId: number}, callback: Callback<number>) {
+        callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
+    }
+
+    getClusterChildren(params: {clusterId: number}, callback: Callback<Array<GeoJSONFeature>>) {
+        callback(null, this._geoJSONIndex.getChildren(params.clusterId));
+    }
+
+    getClusterLeaves(params: {clusterId: number, limit: number, offset: number}, callback: Callback<Array<GeoJSONFeature>>) {
+        callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
     }
 }
 
