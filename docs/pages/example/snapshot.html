@@ -7,45 +7,44 @@
     height: 100%;
   }
 
-  h3 {
-    font-size: 16px;
-    line-height: 20px;
-    font-family: "Open Sans", sans-serif;
-    margin: 5px 10px;
-    color: white;
-    padding: 10px;
-    background: rgba(100,100,100, 0.4);
+  #container {
+    display: flex;
+    height: 100%;
   }
 
-  #snapshot-container {
-    margin-left: 50%;
+  #container > * {
+    flex: 1;
+    height: 100%;
+  }
+
+  #map {
     position: relative;
-    height: 100%;
-    width: 50%;
-  }
-
-  #snapshot {
-    height: 100%;
-    width: 100%;
-    border-left: 5px solid white;
-    background:rgba(0,0,255,0.5);
+    margin-right: 5px;
   }
 
   #instructions {
+    background: rgba(100,100,100, 0.4);
+    color: white;
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;
+    line-height: 1.25;
+    margin: 5px 10px;
+    padding: 10px;
     position: absolute;
     top: 10px;
   }
 
-  #map {
-    position: fixed;
-    width: 50%;
+  #snapshot {
+    background-color: rgba(0,0,255,0.5);
   }
-
 </style>
-    <div id="map"></div>
-    <div id= "snapshot-container">
+    <div id="container">
+      <div id="map"></div>
+      <div>
         <h3 id="instructions">Drag and pan the map on the left to change the snapshot area, then click to generate a static image on the left</h3>
-        <canvas class="half" id='snapshot'></canvas>
+        <canvas id='snapshot'></canvas>
+      </div>
+    </div>
     </div>
 <script>
 
@@ -57,11 +56,10 @@ var map = new mapboxgl.Map({
         lng: -122.0325
     },
     zoom: 10,
-    preserveDrawingBuffer: true// required for the map's canvas to be exported to a PNG
+    preserveDrawingBuffer: true // required for the map's canvas to be exported to a PNG
 });
 
 var snapshot = document.querySelector('#snapshot');
-
 var ctx = snapshot.getContext('2d');
 // scale factor to use for sizing canvas elements based on device pixel ratio
 var scale = window.devicePixelRatio;
@@ -74,9 +72,6 @@ window.addEventListener('load', function() {
     // resize canvas after iframe is loaded and account for device pixel ratio
     snapshot.height = windowHeight;
     snapshot.width = halfWidth;
-
-    // unscale css height and width by pixel ratio
-    snapshot.style = "height: " + windowHeight / 2 + "; width: " + halfWidth;
 }, false);
 
 map.on('click', function() {
