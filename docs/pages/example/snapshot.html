@@ -9,7 +9,7 @@
 
   h3 {
     font-size: 16px;
-    line-height: 16px;
+    line-height: 20px;
     font-family: "Open Sans", sans-serif;
     margin: 5px 10px;
     color: white;
@@ -44,7 +44,7 @@
 </style>
     <div id="map"></div>
     <div id= "snapshot-container">
-        <h3 id="instructions">Drag and pan the map on the right to change the snapshot area, then click to generate a static image on the left</h3>
+        <h3 id="instructions">Drag and pan the map on the left to change the snapshot area, then click to generate a static image on the left</h3>
         <canvas class="half" id='snapshot'></canvas>
     </div>
 <script>
@@ -76,7 +76,7 @@ window.addEventListener('load', function() {
     snapshot.width = halfWidth;
 
     // unscale css height and width by pixel ratio
-    snapshot.style = `height: ${windowHeight / 2}; width: ${windowHeight / 2}`
+    snapshot.style = "height: " + windowHeight / 2 + "; width: " + halfWidth;
 }, false);
 
 map.on('click', function() {
@@ -144,7 +144,7 @@ function firefoxBugFix(dataURL, height, width) {
 
     // get raw SVG markup by removing the data type, charset, and escaped quotes
     var svg = unescape(dataURL.replace('data:image/svg+xml;charset=utf-8,', '').replace(/\\'/g, '"'));
-    var newHeader = `height= "${height}px" width= "${width}px"`;
+    var newHeader = "height= \"" + height + "px\" width= \"" + width + "px\"";
     var newSvg = svg.replace('<svg', '<svg ' + newHeader);
     var newBase64 = btoa(newSvg);
     var newDataURL = 'data:image/svg+xml;base64,' + newBase64;
