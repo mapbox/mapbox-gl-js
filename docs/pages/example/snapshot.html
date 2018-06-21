@@ -1,60 +1,52 @@
 <style>
   html, body {
     margin: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    font: sans-serif;
+    height: 100%;
   }
 
-  #left {
-    position: absolute;
-    width:50%;
-    height:100%;
-    background: rgba(0,255,0,0.5);
+  h3 {
+    font-size: 16px;
+    line-height: 20px;
+    font-family: "Open Sans", sans-serif;
+    margin: 5px 10px;
+    color: white;
+    padding: 10px;
+    background: rgba(100,100,100, 0.4);
   }
 
-  #right {
-    position: absolute;
-    width:50%;
-    height:100%;
-    background:rgba(0,0,255,0.5);
-    left:50%;
-  }
-
-  #map {
-    position: absolute;
-    width:98%;
-    height:98%;
-    left:1%;
-    top:1%;
+  #snapshot-container {
+    margin-left: 50%;
+    position: relative;
+    height: 100%;
+    width: 50%;
   }
 
   #snapshot {
+    height: 100%;
+    width: 100%;
+    border-left: 5px solid white;
+    background:rgba(0,0,255,0.5);
+  }
+
+  #instructions {
     position: absolute;
-    /* this canvas style will need
-       to be redefined with js */
-    width:98%;
-    height:98%;
-    left:1%;
-    top:1%;
+    top: 10px;
   }
 
-  h1 {
-    color:white;
-    text-align:center;
-    position: relative;
-    top:50%;
-    transform: translateY(-50%);
-    margin:0;
+  #map {
+    position: fixed;
+    width: 50%;
   }
- 
+
 </style>
-
-<div id="left">
-  <div id='map'></div>
-</div>
-
-<div id="right">
-  <canvas id='snapshot'></div>
-</div>
-
+    <div id="map"></div>
+    <div id= "snapshot-container">
+        <h3 id="instructions">Drag and pan the map on the right to change the snapshot area, then click to generate a static image on the left</h3>
+        <canvas class="half" id='snapshot'></canvas>
+    </div>
 <script>
 
 var map = new mapboxgl.Map({
@@ -69,21 +61,22 @@ var map = new mapboxgl.Map({
 });
 
 var snapshot = document.querySelector('#snapshot');
-var ctx = snapshot.getContext('2d');
 
-// draw snapshot canvas 
+var ctx = snapshot.getContext('2d');
+// scale factor to use for sizing canvas elements based on device pixel ratio
+var scale = window.devicePixelRatio;
+
+// draw snapshot canvas
 window.addEventListener('load', function() {
-    var text = 'Click on the map';
-    // css style needs to be redefined here
-    snapshot.height = window.innerHeight * 0.98;
-    snapshot.width = window.innerWidth / 2 * 0.98;
-    snapshot.style.top = window.innerHeight / 100;
-    snapshot.style.left = window.innerWidth / 100 / 2;
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = Math.round(snapshot.width / 10) + 'px Arial';
-    ctx.fillText(text, snapshot.width / 2, snapshot.height / 2);
+    var halfWidth = window.innerWidth / 2 * scale;
+    var windowHeight = window.innerHeight * scale;
+
+    // resize canvas after iframe is loaded and account for device pixel ratio
+    snapshot.height = windowHeight;
+    snapshot.width = halfWidth;
+
+    // unscale css height and width by pixel ratio
+    snapshot.style = "height: " + windowHeight / 2 + "; width: " + halfWidth;
 }, false);
 
 map.on('click', function() {
@@ -94,90 +87,69 @@ map.on('click', function() {
         ctx.drawImage(copy, 0, 0);
         logo();
         textbox();
-        clickMessage();
     };
 });
 
 function textbox() {
-    // OpenStreetMap and Mapbox attribution are required by 
+    // OpenStreetMap and Mapbox attribution are required by
     // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
+
+    // set text sizing
     var text = '© Mapbox © OpenStreetMap';
     if (snapshot.width < 300) text = '© OSM';
     var fontsize = 14;
-    var height = fontsize + 6;
-    var width = (text.length + 3) / fontsize * 100;
+    var height = (fontsize + 6) * scale;
+    var width = ((text.length + 3) / fontsize * 100) * scale;
+
+    // draw attribution to canvas
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.fillRect(snapshot.width - width, snapshot.height - height, width, height);
-    ctx.font = fontsize + 'px Arial';
+    ctx.font = (fontsize * scale) + 'px Arial';
     ctx.fillStyle = 'black';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(text, snapshot.width - width + 3, snapshot.height - 3);
+    ctx.fillText(text, snapshot.width - width + 5, snapshot.height - 5);
 }
 
 function logo() {
-    // OpenStreetMap and Mapbox attribution are required by 
+    // OpenStreetMap and Mapbox attribution are required by
     // the Mapbox terms of service: https://www.mapbox.com/tos/#[YmdMYmdM]
-
-    // define instance of Image
     var img = new Image();
 
-    // use mapbox logo as source
-    var logo = mapboxLogo();
+    // use the Mapbox logo within the LogoControl as the source image
+    var a = document.querySelector('a.mapboxgl-ctrl-logo');
+    var style = window.getComputedStyle(a, false);
+
+    // remove "url('')" from the background-image property
+    var dataURL = style.backgroundImage.slice(5, -2);
+
+    // logo size
+    var logoHeight = style.height.replace('px', '');
+    var logoWidth = style.width.replace('px', '');
+    var logoSVG = firefoxBugFix(dataURL, logoHeight * scale, logoWidth * scale);
+
+    var logo = {'image': logoSVG, 'height': logoHeight * scale, 'width': logoWidth * scale};
     img.src = logo.image;
 
     // draw the logo in img (when ready)
     img.onload = function() {
-        ctx.drawImage(img, 3, snapshot.height - logo.height - 4, logo.width, logo.height);
+        ctx.drawImage(img, 5, snapshot.height - logo.height - 5, logo.width, logo.height);
     };
 }
 
-function mapboxLogo() {
-    // logo image
-    var a = document.querySelector('a.mapboxgl-ctrl-logo');
-    var style = window.getComputedStyle(a, false);
-    var dataURL = style.backgroundImage.slice(5, -2);
-
-    // logo size
-    var height = style.height.replace('px', '');
-    var width = style.width.replace('px', '');
-
-    var safeDataURL = firefoxBugFix(dataURL, height, width);
-
-    return {'image':safeDataURL, 'height':height, 'width':width};
-}
 
 function firefoxBugFix(dataURL, height, width) {
     // Firefox requires SVG to have height and width specified
     // in the root SVG object when drawing to canvas
 
-    var base64 = dataURL.replace('data:image/svg+xml;base64,', '');
-    var svg = atob(base64);
-    var newHeader = 'height="' + height + 'px" width="' + width + 'px"';
+    // get raw SVG markup by removing the data type, charset, and escaped quotes
+    var svg = unescape(dataURL.replace('data:image/svg+xml;charset=utf-8,', '').replace(/\\'/g, '"'));
+    var newHeader = "height= \"" + height + "px\" width= \"" + width + "px\"";
     var newSvg = svg.replace('<svg', '<svg ' + newHeader);
     var newBase64 = btoa(newSvg);
     var newDataURL = 'data:image/svg+xml;base64,' + newBase64;
 
     return newDataURL;
-
-}
-
-function clickMessage() {
-    var text = 'click the map on the left to generate a new snapshot';
-    if (snapshot.width < 400) text = 'click map on the left';
-
-    var fontsize = 16;
-    var boxheight = fontsize + 6;
-    var boxwidth = (text.length + (text.length * 0.2)) / fontsize * 100;
-
-    ctx.fillStyle = 'rgba(200,200,100,0.9)';
-    ctx.fillRect((snapshot.width - boxwidth) / 2, boxheight, boxwidth, boxheight);
-
-    ctx.font = fontsize + 'px Arial';
-    ctx.fillStyle = 'rgb(50,50,100)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, snapshot.width / 2, boxheight * 1.5);
 }
 
 
