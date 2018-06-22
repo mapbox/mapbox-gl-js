@@ -185,7 +185,11 @@ class SourceExpressionBinder<T> implements Binder<T> {
 
     upload(context: Context) {
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
+                this.paintVertexBuffer.updateData(this.paintVertexArray);
+            } else {
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            }
         }
     }
 
@@ -280,7 +284,11 @@ class CompositeExpressionBinder<T> implements Binder<T> {
 
     upload(context: Context) {
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
+                this.paintVertexBuffer.updateData(this.paintVertexArray);
+            } else {
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent);
+            }
         }
     }
 
