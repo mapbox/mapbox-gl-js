@@ -314,7 +314,7 @@ export default class Popup extends Evented {
             }
         }
 
-        const offsetedPos = pos.add(offset[anchor]).round();
+        const offsetedPos = pos.add(offset[anchor]);
 
         DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
         applyAnchorClass(this._container, anchor, 'popup');
