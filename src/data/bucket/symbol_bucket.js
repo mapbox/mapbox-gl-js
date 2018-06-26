@@ -671,8 +671,8 @@ class SymbolBucket implements Bucket {
         symbolInstanceIndexes.sort((aIndex, bIndex) => {
             const a = this.symbolInstances[aIndex];
             const b = this.symbolInstances[bIndex];
-            const aRotated = (sin * a.anchor.x + cos * a.anchor.y) | 0;
-            const bRotated = (sin * b.anchor.x + cos * b.anchor.y) | 0;
+            const aRotated = Math.round(sin * a.anchor.x + cos * a.anchor.y) | 0;
+            const bRotated = Math.round(sin * b.anchor.x + cos * b.anchor.y) | 0;
             return (aRotated - bRotated) || (b.featureIndex - a.featureIndex);
         });
 
