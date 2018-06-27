@@ -468,8 +468,8 @@ class Map extends Camera {
             this.transform.pointLocation(new Point(this.transform.width, 0)));
 
         if (this.transform.angle || this.transform.pitch) {
-            bounds.extend(this.transform.pointLocation(new Point(this.transform.size.x, 0)));
-            bounds.extend(this.transform.pointLocation(new Point(0, this.transform.size.y)));
+            bounds.extend(this.transform.pointLocation(new Point(0, 0)));
+            bounds.extend(this.transform.pointLocation(this.transform.size));
         }
 
         return bounds;

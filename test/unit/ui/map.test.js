@@ -555,7 +555,7 @@ test('Map', (t) => {
         t.test('rotated bounds', (t) => {
             const map = createMap(t, { zoom: 1, bearing: 45, skipCSSStub: true });
             t.deepEqual(
-                toFixed([[-49.718445552178764, 0], [49.7184455522, 0]]),
+                toFixed([[-49.718445552178764, -44.44541580601936], [49.7184455522, 44.445415806019355]]),
                 toFixed(map.getBounds().toArray())
             );
             t.end();
