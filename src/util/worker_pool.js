@@ -1,17 +1,16 @@
 // @flow
 
-import assert from 'assert';
-
 import WebWorker from './web_worker';
-
 import type {WorkerInterface} from './web_worker';
-import mapboxgl from '../';
+import browser from './browser';
 
 /**
  * Constructs a worker pool.
  * @private
  */
-class WorkerPool {
+export default class WorkerPool {
+    static workerCount: number;
+
     active: {[number]: boolean};
     workers: Array<WorkerInterface>;
 
@@ -23,11 +22,8 @@ class WorkerPool {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount so that
             // client code has had a chance to set it.
-            const workerCount = mapboxgl.workerCount;
-            assert(typeof workerCount === 'number' && workerCount < Infinity);
-
             this.workers = [];
-            while (this.workers.length < workerCount) {
+            while (this.workers.length < WorkerPool.workerCount) {
                 this.workers.push(new WebWorker());
             }
         }
@@ -47,4 +43,4 @@ class WorkerPool {
     }
 }
 
-export default WorkerPool;
+WorkerPool.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
