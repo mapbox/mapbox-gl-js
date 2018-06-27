@@ -182,6 +182,10 @@ export default function bindHandlers(map: Map, options: {interactive: boolean, c
     }
 
     function onWheel(e: WheelEvent) {
+        if (options.interactive) {
+            map.stop();
+        }
+
         const mapEvent = new MapWheelEvent('wheel', map, e);
         map.fire(mapEvent);
 
