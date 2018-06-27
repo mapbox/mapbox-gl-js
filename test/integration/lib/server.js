@@ -1,16 +1,14 @@
-'use strict';
+import path from 'path';
+import fs from 'fs';
+import st from 'st';
+import {createServer} from 'http';
+import colors from 'chalk';
 
-const st = require('st');
-const http = require('http');
-const path = require('path');
-const colors = require('chalk');
-const fs = require('fs');
-
-module.exports = function () {
+export default function () {
     const integrationMount = st({path: path.join(__dirname, '..')});
     const mapboxGLStylesMount = st({path: path.dirname(require.resolve('mapbox-gl-styles')), url: 'mapbox-gl-styles'});
     const mapboxMVTFixturesMount = st({path: path.dirname(require.resolve('@mapbox/mvt-fixtures')), url: 'mvt-fixtures'});
-    const server = http.createServer((req, res) => {
+    const server = createServer((req, res) => {
         return mapboxMVTFixturesMount(req, res, () => {
             return mapboxGLStylesMount(req, res, () => {
                 return integrationMount(req, res);
@@ -125,4 +123,4 @@ module.exports = function () {
             }
         }
     };
-};
+}

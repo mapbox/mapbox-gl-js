@@ -1,4 +1,4 @@
-import { expression as expressionSuite } from './integration';
+import { run } from './integration/lib/expression';
 import { createPropertyExpression } from '../src/style-spec/expression';
 import { toString } from '../src/style-spec/expression/types';
 import ignores from './ignores.json';
@@ -9,7 +9,7 @@ if (process.argv[1] === __filename && process.argv.length > 2) {
     tests = process.argv.slice(2);
 }
 
-expressionSuite.run('js', { ignores, tests }, (fixture) => {
+run('js', { ignores, tests }, (fixture) => {
     const spec = Object.assign({}, fixture.propertySpec);
     spec['property-type'] = 'data-driven';
     spec['expression'] = {
