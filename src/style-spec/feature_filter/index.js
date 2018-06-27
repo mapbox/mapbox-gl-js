@@ -2,8 +2,7 @@
 
 import { createExpression } from '../expression';
 
-import type {FeatureState} from '../';
-import type {GlobalProperties} from '../expression';
+import type {GlobalProperties, FeatureState} from '../expression';
 export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature, featureState: FeatureState) => boolean;
 
 export default createFilter;
