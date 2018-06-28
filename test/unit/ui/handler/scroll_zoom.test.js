@@ -139,13 +139,13 @@ test('ScrollZoomHandler', (t) => {
         map._renderTaskQueue.run();
         const startZoom = map.getZoom();
         // Tick without ctrl key
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta})
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
         map._renderTaskQueue.run();
         // Tick with ctrl key
-        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, ctrlKey: true})
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, ctrlKey: true});
         map._renderTaskQueue.run();
 
-        now += 400
+        now += 400;
         map._renderTaskQueue.run();
 
         t.equalWithPrecision(map.getZoom() - startZoom,  0.0285, 0.001);
