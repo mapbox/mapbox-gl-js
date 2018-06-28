@@ -31,6 +31,7 @@ class ScrollZoomHandler {
     _map: Map;
     _el: HTMLElement;
     _enabled: boolean;
+    _ctrlEnabled: boolean;
     _active: boolean;
     _aroundCenter: boolean;
     _around: Point;
