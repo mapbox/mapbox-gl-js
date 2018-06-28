@@ -67,6 +67,7 @@ type MapOptions = {
     refreshExpiredTiles?: boolean,
     maxBounds?: LngLatBoundsLike,
     scrollZoom?: boolean,
+    ctrlScrollZoom?: boolean,
     minZoom?: ?number,
     maxZoom?: ?number,
     boxZoom?: boolean,
