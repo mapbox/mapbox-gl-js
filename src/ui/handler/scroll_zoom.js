@@ -78,6 +78,15 @@ class ScrollZoomHandler {
         return !!this._enabled;
     }
 
+    /**
+     * Returns a Boolean to indicate whether the "scroll with ctrl to zoom" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "scroll with ctrl to zoom" interaction is enabled.
+     */
+    isCtrlEnabled() {
+        return !!this._ctrlEnabled;
+    }
+
     isActive() {
         return !!this._active;
     }
