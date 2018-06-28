@@ -107,7 +107,7 @@ class ScrollZoomHandler {
         if (this.isEnabled() && this.isCtrlEnabled()) return;
 
         this._enabled = true;
-        this._ctrlEnabled = options && options.ctrl !== false;
+        this._ctrlEnabled = !(options && options.ctrl === false);
         this._aroundCenter = options && options.around === 'center';
     }
 
@@ -122,7 +122,7 @@ class ScrollZoomHandler {
     disable(ctrlEnabled: boolean = false) {
         if (!this.isEnabled() && !this.isCtrlEnabled() === ctrlEnabled) return;
         this._enabled = false;
-        this._ctrlEnabled = ctrlEnabled === true
+        this._ctrlEnabled = ctrlEnabled === true;
     }
 
     onWheel(e: WheelEvent) {
