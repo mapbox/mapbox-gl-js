@@ -1,21 +1,23 @@
 import { test } from 'mapbox-gl-js-test';
 import browser from '../../../../src/util/browser';
 import window from '../../../../src/util/window';
-import { extend } from '../../../../util/util';
+import { extend } from '../../../../src/util/util';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
-function createMap(t) {
+function createMap(t, options = {}) {
     t.stub(Map.prototype, '_detectMissingCSS');
-    return new Map({
+    const defaultOptions = {
         container: DOM.create('div', '', window.document.body),
         style: {
             "version": 8,
             "sources": {},
             "layers": []
         }
-    });
+    };
+
+    return new Map(extend(defaultOptions, options));
 }
 
 test('ScrollZoomHandler', (t) => {
@@ -132,12 +134,13 @@ test('ScrollZoomHandler', (t) => {
     });
 
     t.test('Still zooms with ctrl key pressed while scrolling if options set', (t) => {
-        const map = createMap(extend(t, { scrollZoom: { ctrl: true }}));
+        const map = createMap(t, { scrollZoom: { ctrl: true }});
 
         map._renderTaskQueue.run();
         const startZoom = map.getZoom();
         // Tick without ctrl key
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta})
+        map._renderTaskQueue.run();
         // Tick with ctrl key
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, ctrlKey: true})
         map._renderTaskQueue.run();
