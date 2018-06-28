@@ -107,7 +107,7 @@ class ScrollZoomHandler {
         if (this.isEnabled() && this.isCtrlEnabled()) return;
 
         this._enabled = true;
-        this._ctrlEnabled = options && options.ctrl === true;
+        this._ctrlEnabled = options && options.ctrl !== false;
         this._aroundCenter = options && options.around === 'center';
     }
 
