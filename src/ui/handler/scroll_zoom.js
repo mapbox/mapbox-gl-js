@@ -95,6 +95,7 @@ class ScrollZoomHandler {
      * Enables the "scroll to zoom" interaction.
      *
      * @param {Object} [options]
+     * @param {string} [options.ctrl] If scrolling zooming should work while holding ctrl key
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map
      *
      * @example
@@ -103,24 +104,29 @@ class ScrollZoomHandler {
      *  map.scrollZoom.enable({ around: 'center' })
      */
     enable(options: any) {
-        if (this.isEnabled()) return;
+        if (this.isEnabled() && this.isCtrlEnabled()) return;
+
         this._enabled = true;
+        this._ctrlEnabled = options && options.ctrl === true;
         this._aroundCenter = options && options.around === 'center';
     }
 
     /**
      * Disables the "scroll to zoom" interaction.
      *
+     * @param {boolean} [ctrlEnabled] Enables zooming with scrolling while holding the ctrl key.
+     *
      * @example
      *   map.scrollZoom.disable();
      */
-    disable() {
-        if (!this.isEnabled()) return;
+    disable(ctrlEnabled: boolean = false) {
+        if (!this.isEnabled() && !this.isCtrlEnabled() === ctrlEnabled) return;
         this._enabled = false;
+        this._ctrlEnabled = ctrlEnabled === true
     }
 
     onWheel(e: WheelEvent) {
-        if (!this.isEnabled()) return;
+        if (!this.isEnabled() && !this.isCtrlEnabled() && !e.ctrlKey) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
