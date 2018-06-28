@@ -1,6 +1,7 @@
 import { test } from 'mapbox-gl-js-test';
 import browser from '../../../../src/util/browser';
 import window from '../../../../src/util/window';
+import { extend } from '../../../util/util';
 import Map from '../../../../src/ui/map';
 import DOM from '../../../../src/util/dom';
 import simulate from 'mapbox-gl-js-test/simulate_interaction';
@@ -125,6 +126,26 @@ test('ScrollZoomHandler', (t) => {
         map._renderTaskQueue.run();
 
         t.equal(map.getZoom(), 0);
+
+        map.remove();
+        t.end();
+    });
+
+    t.test('Still zooms with ctrl key pressed while scrolling if options set', (t) => {
+        const map = createMap(extend(t, { scrollZoom: { ctrl: true }}));
+
+        map._renderTaskQueue.run();
+        const startZoom = map.getZoom();
+        // Tick without ctrl key
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta})
+        // Tick with ctrl key
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, ctrlKey: true})
+        map._renderTaskQueue.run();
+
+        now += 400
+        map._renderTaskQueue.run();
+
+        t.equalWithPrecision(map.getZoom() - startZoom,  0.0285, 0.001);
 
         map.remove();
         t.end();
