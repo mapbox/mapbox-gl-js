@@ -100,6 +100,7 @@ const defaultOptions = {
     interactive: true,
 
     scrollZoom: true,
+    ctrlScrollZoom: true,
     boxZoom: true,
     dragRotate: true,
     dragPan: true,
