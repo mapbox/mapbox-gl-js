@@ -95,7 +95,7 @@ class ScrollZoomHandler {
      * Enables the "scroll to zoom" interaction.
      *
      * @param {Object} [options]
-     * @param {string} [options.ctrl] If scrolling zooming should work while holding ctrl key
+     * @param {string} [options.ctrl] If scroll zooming should work while holding ctrl key
      * @param {string} [options.around] If "center" is passed, map will zoom around center of map
      *
      * @example
@@ -104,7 +104,7 @@ class ScrollZoomHandler {
      *  map.scrollZoom.enable({ around: 'center' })
      */
     enable(options: any) {
-        if (this.isEnabled()) return;
+        if (this.isEnabled() || this.isCtrlEnabled()) return;
 
         this._enabled = !(options && options.ctrl === true);
         this._ctrlEnabled = !(options && options.ctrl === false);
@@ -119,6 +119,7 @@ class ScrollZoomHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
+
         this._enabled = false;
         this._ctrlEnabled = false;
     }
