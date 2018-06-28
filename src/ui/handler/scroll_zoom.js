@@ -104,9 +104,9 @@ class ScrollZoomHandler {
      *  map.scrollZoom.enable({ around: 'center' })
      */
     enable(options: any) {
-        if (this.isEnabled() && this.isCtrlEnabled()) return;
+        if (this.isEnabled()) return;
 
-        this._enabled = true;
+        this._enabled = !(options && options.ctrl === true);
         this._ctrlEnabled = !(options && options.ctrl === false);
         this._aroundCenter = options && options.around === 'center';
     }
@@ -114,19 +114,17 @@ class ScrollZoomHandler {
     /**
      * Disables the "scroll to zoom" interaction.
      *
-     * @param {boolean} [ctrlEnabled] Enables zooming with scrolling while holding the ctrl key.
-     *
      * @example
      *   map.scrollZoom.disable();
      */
-    disable(ctrlEnabled: boolean = false) {
-        if (!this.isEnabled() && !this.isCtrlEnabled() === ctrlEnabled) return;
+    disable() {
+        if (!this.isEnabled()) return;
         this._enabled = false;
-        this._ctrlEnabled = ctrlEnabled === true;
+        this._ctrlEnabled = false;
     }
 
     onWheel(e: WheelEvent) {
-        if (!this.isEnabled() && !this.isCtrlEnabled() && !e.ctrlKey) return;
+        if (!this.isEnabled() && !(this.isCtrlEnabled() && e.ctrlKey)) return;
 
         // Remove `any` cast when https://github.com/facebook/flow/issues/4879 is fixed.
         let value = e.deltaMode === (window.WheelEvent: any).DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
