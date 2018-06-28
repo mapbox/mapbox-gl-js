@@ -67,7 +67,6 @@ type MapOptions = {
     refreshExpiredTiles?: boolean,
     maxBounds?: LngLatBoundsLike,
     scrollZoom?: boolean,
-    ctrlScrollZoom?: boolean,
     minZoom?: ?number,
     maxZoom?: ?number,
     boxZoom?: boolean,
@@ -184,7 +183,6 @@ const defaultOptions = {
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
  * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
  * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
- * @param {boolean} [options.ctrlScrollZoom] If set enables zooming with scrolling while holding the ctrl key, or pinching on the touchpad. The value set overrides the `ctrl` property of the object passed to `scrollZoom`.
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
  * @param {boolean} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled (see {@link DragPanHandler}).
