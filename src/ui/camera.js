@@ -11,8 +11,8 @@ import {
 } from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
-import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
+import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import { Event, Evented } from '../util/evented';
 
@@ -374,6 +374,11 @@ class Camera extends Evented {
      * });
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+        bounds = LngLatBounds.convert(bounds);
+        return this.cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
+    }
+
+    cameraForBoxAndBearing(p0: LngLat, p1: LngLat, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         options = extend({
             padding: {
                 top: 0,
@@ -405,8 +410,6 @@ class Camera extends Evented {
             return;
         }
 
-        bounds = LngLatBounds.convert(bounds);
-
         // we separate the passed padding option into two parts, the part that does not affect the map's center
         // (lateral and vertical padding), and the part that does (paddingOffset). We add the padding offset
         // to the options `offset` object where it can alter the map's center in the subsequent calls to
@@ -416,11 +419,19 @@ class Camera extends Evented {
             verticalPadding = Math.min(options.padding.top, options.padding.bottom);
         options.offset = [options.offset[0] + paddingOffset[0], options.offset[1] + paddingOffset[1]];
 
+        const tr = this.transform;
+        // we want to calculate the upper right and lower left of the box defined by p0 and p1
+        // in a coordinate system rotate to match the destination bearing.
+        const p0world = tr.project(p0);
+        const p1world = tr.project(p1);
+        const p0rotated = p0world.rotate(-bearing * Math.PI / 180);
+        const p1rotated = p1world.rotate(-bearing * Math.PI / 180);
+
+        const upperRight = new Point(Math.max(p0rotated.x, p1rotated.x), Math.max(p0rotated.y, p1rotated.y));
+        const lowerLeft = new Point(Math.min(p0rotated.x, p1rotated.x), Math.min(p0rotated.y, p1rotated.y));
+
         const offset = Point.convert(options.offset),
-            tr = this.transform,
-            nw = tr.project(bounds.getNorthWest()),
-            se = tr.project(bounds.getSouthEast()),
-            size = se.sub(nw),
+            size = upperRight.sub(lowerLeft),
             scaleX = (tr.width - lateralPadding * 2 - Math.abs(offset.x) * 2) / size.x,
             scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
 
@@ -430,10 +441,9 @@ class Camera extends Evented {
             );
             return;
         }
-
-        options.center = tr.unproject(nw.add(se).div(2));
+        options.center =  tr.unproject(p0world.add(p1world).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
-        options.bearing = 0;
+        options.bearing = bearing;
 
         return options;
     }
@@ -466,6 +476,22 @@ class Camera extends Evented {
      */
     fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
         const calculatedOptions = this.cameraForBounds(bounds, options);
+
+        // cameraForBounds warns + returns undefined if unable to fit:
+        if (!calculatedOptions) return this;
+
+        options = extend(calculatedOptions, options);
+
+        return options.linear ?
+            this.easeTo(options, eventData) :
+            this.flyTo(options, eventData);
+    }
+
+    /**
+     * 
+     */
+    fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
+        const calculatedOptions = this.cameraForBoxAndBearing(this.transform.pointLocation(Point.convert(p0)), this.transform.pointLocation(Point.convert(p1)), bearing, options);
 
         // cameraForBounds warns + returns undefined if unable to fit:
         if (!calculatedOptions) return this;
