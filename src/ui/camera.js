@@ -357,9 +357,9 @@ class Camera extends Evented {
 
     /**
      * @memberof Map#
-     * @param bounds Calculate the center for these bounds in the viewport and use
+     * @param {LatLngBoundsLike} bounds Calculate the center for these bounds in the viewport and use
      *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
-     *      in the viewport.
+     *      in the viewport. LatLngBounds represent a box that is always axis-aligned with bearing 0.
      * @param options
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
@@ -378,7 +378,30 @@ class Camera extends Evented {
         return this.cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
     }
 
-    cameraForBoxAndBearing(p0: LngLat, p1: LngLat, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    /**
+     * Calculate the center of these two points in the viewport and use
+     * the highest zoom level up to and including `Map#getMaxZoom()` that fits
+     * the points in the viewport at the specified bearing.
+     * @memberof Map#
+     * @param {LngLatLike} p0 First point
+     * @param {LngLatLike} p1 Second point
+     * @param bearing Desired map bearing at end of animation, in degrees
+     * @param options
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+     * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
+     * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
+     *      at least `center`, `zoom`, `bearing`, `offset`, `padding`, and `maxZoom`, as well as any other
+     *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
+     * @example
+     * var p0 = [-79, 43];
+     * var p1 = [-73, 45];
+     * var bearing = 90;
+     * var newCameraTransform = map.cameraForBoxAndBearing(p0, p1, bearing, {
+     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     * });
+     */
+    cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         options = extend({
             padding: {
                 top: 0,
@@ -422,8 +445,8 @@ class Camera extends Evented {
         const tr = this.transform;
         // we want to calculate the upper right and lower left of the box defined by p0 and p1
         // in a coordinate system rotate to match the destination bearing.
-        const p0world = tr.project(p0);
-        const p1world = tr.project(p1);
+        const p0world = tr.project(LngLat.convert(p0));
+        const p1world = tr.project(LngLat.convert(p1));
         const p0rotated = p0world.rotate(-bearing * Math.PI / 180);
         const p1rotated = p1world.rotate(-bearing * Math.PI / 180);
 
@@ -475,24 +498,53 @@ class Camera extends Evented {
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: AnimationOptions & CameraOptions, eventData?: Object) {
-        const calculatedOptions = this.cameraForBounds(bounds, options);
-
-        // cameraForBounds warns + returns undefined if unable to fit:
-        if (!calculatedOptions) return this;
-
-        options = extend(calculatedOptions, options);
-
-        return options.linear ?
-            this.easeTo(options, eventData) :
-            this.flyTo(options, eventData);
+        return this._fitInternal(
+            this.cameraForBounds(bounds, options),
+            options,
+            eventData);
     }
 
     /**
-     * 
+     * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
+     * once the map is rotated to the specified bearing. To zoom without rotating,
+     * pass in the current map bearing.
+     *
+     * @memberof Map#
+     * @param p0 First point on screen, in pixel coordinates
+     * @param p1 Second point on screen, in pixel coordinates
+     * @param bearing Desired map bearing at end of animation, in degrees
+     * @param options
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+     * @param {boolean} [options.linear=false] If `true`, the map transitions using
+     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+     *     those functions and {@link AnimationOptions} for information about options available.
+     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+	 * @example
+     * var p0 = [220, 400];
+     * var p1 = [500, 900];
+     * map.fitScreenCoordintes(p0, p1, map.getBearing(), {
+     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     * });
+     * @see [Used by BoxZoomHandler](https://www.mapbox.com/mapbox-gl-js/api/#boxzoomhandler)
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
-        const calculatedOptions = this.cameraForBoxAndBearing(this.transform.pointLocation(Point.convert(p0)), this.transform.pointLocation(Point.convert(p1)), bearing, options);
+        return this._fitInternal(
+            this.cameraForBoxAndBearing(
+                this.transform.pointLocation(Point.convert(p0)),
+                this.transform.pointLocation(Point.convert(p1)),
+                bearing,
+                options),
+            options,
+            eventData);
+    }
 
+    _fitInternal(calculatedOptions?: CameraOptions & AnimationOptions, options?: AnimationOptions & CameraOptions, eventData?: Object) {
         // cameraForBounds warns + returns undefined if unable to fit:
         if (!calculatedOptions) return this;
 
