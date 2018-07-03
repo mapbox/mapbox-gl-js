@@ -130,7 +130,7 @@ function validSchema(k, t, obj, ref, version, kind) {
             t.ok(ref['property-type'][obj['property-type']], `${k}.expression: property-type: ${obj['property-type']}`);
             t.equal('boolean', typeof expression.interpolated, `${k}.expression.interpolated.required (boolean)`);
             t.equal(true, Array.isArray(expression.parameters), `${k}.expression.parameters array`);
-            if (obj['property-type'] !== 'color-ramp') t.equal(true, expression.parameters.every(k => k === 'zoom' || k === 'feature'));
+            if (obj['property-type'] !== 'color-ramp') t.equal(true, expression.parameters.every(k => k === 'zoom' || k === 'feature' || k === 'feature-state'));
         }
 
         // schema key required checks

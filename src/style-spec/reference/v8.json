@@ -563,7 +563,7 @@
     },
     "filter": {
       "type": "filter",
-      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed. The `feature-state` expression is not supported in filter expressions."
     },
     "layout": {
       "type": "layout",
@@ -3259,7 +3259,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3292,7 +3293,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3327,7 +3329,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3466,7 +3469,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3577,7 +3581,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3610,7 +3615,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3642,7 +3648,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3675,7 +3682,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3765,7 +3773,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3795,7 +3804,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3824,7 +3834,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3854,7 +3865,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3968,7 +3980,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -3996,7 +4009,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4024,7 +4038,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4054,7 +4069,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4202,7 +4218,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4230,7 +4247,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4260,7 +4278,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4292,7 +4311,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4321,7 +4341,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4445,7 +4466,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4476,7 +4498,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4507,7 +4530,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4540,7 +4564,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4573,7 +4598,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4670,7 +4696,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4701,7 +4728,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4732,7 +4760,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4765,7 +4794,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -4798,7 +4828,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature"
+          "feature",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"

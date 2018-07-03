@@ -349,6 +349,7 @@ declare type RasterLayerSpecification = {|
         "raster-brightness-max"?: PropertyValueSpecification<number>,
         "raster-saturation"?: PropertyValueSpecification<number>,
         "raster-contrast"?: PropertyValueSpecification<number>,
+        "raster-resampling"?: PropertyValueSpecification<"linear" | "nearest">,
         "raster-fade-duration"?: PropertyValueSpecification<number>
     |}
 |}

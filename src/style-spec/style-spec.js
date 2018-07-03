@@ -1,7 +1,7 @@
 // @flow
 
 type ExpressionType = 'data-driven' | 'cross-faded' | 'cross-faded-data-driven' | 'color-ramp' | 'data-constant' | 'constant';
-type ExpressionParameters = Array<'zoom' | 'feature' | 'heatmap-density' | 'line-progress'>;
+type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress'>;
 
 type ExpressionSpecification = {
     interpolated: boolean,
