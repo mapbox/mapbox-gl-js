@@ -144,9 +144,9 @@
       "length": 4,
       "default": [
         -180,
-        -85.0511,
+        -85.051129,
         180,
-        85.0511
+        85.051129
       ],
       "doc": "An array containing the longitude and latitude of the southwest and northeast corners of the source's bounding box in the following order: `[sw.lng, sw.lat, ne.lng, ne.lat]`. When this property is included in a source, no tiles outside of the given bounds are requested by Mapbox GL."
     },
@@ -208,9 +208,9 @@
       "length": 4,
       "default": [
         -180,
-        -85.0511,
+        -85.051129,
         180,
-        85.0511
+        85.051129
       ],
       "doc": "An array containing the longitude and latitude of the southwest and northeast corners of the source's bounding box in the following order: `[sw.lng, sw.lat, ne.lng, ne.lat]`. When this property is included in a source, no tiles outside of the given bounds are requested by Mapbox GL."
     },
@@ -278,9 +278,9 @@
       "length": 4,
       "default": [
         -180,
-        -85.0511,
+        -85.051129,
         180,
-        85.0511
+        85.051129
       ],
       "doc": "An array containing the longitude and latitude of the southwest and northeast corners of the source's bounding box in the following order: `[sw.lng, sw.lat, ne.lng, ne.lat]`. When this property is included in a source, no tiles outside of the given bounds are requested by Mapbox GL."
     },

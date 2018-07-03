@@ -21,6 +21,7 @@ class Transform {
     tileZoom: number;
     lngRange: ?[number, number];
     latRange: ?[number, number];
+    maxValidLatitude: number;
     scale: number;
     width: number;
     height: number;
@@ -47,6 +48,7 @@ class Transform {
 
     constructor(minZoom: ?number, maxZoom: ?number, renderWorldCopies: boolean | void) {
         this.tileSize = 512; // constant
+        this.maxValidLatitude = 85.051129; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || 0;
@@ -284,7 +286,7 @@ class Transform {
     get point(): Point { return new Point(this.x, this.y); }
 
     /**
-     * latitude to absolute x coord
+     * longitude to absolute x coord
      * @returns {number} pixel coordinate
      */
     lngX(lng: number) {
@@ -295,6 +297,7 @@ class Transform {
      * @returns {number} pixel coordinate
      */
     latY(lat: number) {
+        lat = clamp(lat, -this.maxValidLatitude, this.maxValidLatitude);
         const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * this.worldSize / 360;
     }
@@ -433,7 +436,7 @@ class Transform {
             this._constrain();
         } else {
             this.lngRange = null;
-            this.latRange = [-85.05113, 85.05113];
+            this.latRange = [-this.maxValidLatitude, this.maxValidLatitude];
         }
     }
 

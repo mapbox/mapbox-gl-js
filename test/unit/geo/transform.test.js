@@ -13,6 +13,7 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         t.equal(transform.unmodified, true);
+        t.equal(transform.maxValidLatitude, 85.051129);
         t.equal(transform.tileSize, 512, 'tileSize');
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
@@ -213,6 +214,14 @@ test('transform', (t) => {
 
         t.deepEqual(transform.coveringZoomLevel(options), 13);
 
+        t.end();
+    });
+
+    t.test('clamps latitude', (t) => {
+        const transform = new Transform();
+
+        t.equal(transform.latY(-90), transform.latY(-transform.maxValidLatitude));
+        t.equal(transform.latY(90), transform.latY(transform.maxValidLatitude));
         t.end();
     });
 

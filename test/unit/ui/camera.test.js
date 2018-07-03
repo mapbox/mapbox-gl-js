@@ -503,7 +503,7 @@ test('camera', (t) => {
             const camera = createCamera({ zoom: 0 });
             camera.rotateTo(90, { around: [5, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 4.999999999999972, lat: 0.000014144426558004852 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 4.999999999999972, lat: 0.000002552471840999715 }));
             t.end();
         });
 
@@ -519,7 +519,7 @@ test('camera', (t) => {
             const camera = createCamera({ zoom: 0 });
             camera.rotateTo(90, { offset: [100, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 0.000014144426558004852 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 0.000002552471840999715 }));
             t.end();
         });
 
@@ -684,7 +684,7 @@ test('camera', (t) => {
             const camera = createCamera();
             camera.easeTo({ bearing: 90, offset: [100, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 0.0000141444 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 0.000002552471840999715 }));
             t.end();
         });
 
@@ -692,7 +692,7 @@ test('camera', (t) => {
             const camera = createCamera({bearing: 180});
             camera.easeTo({ bearing: 90, offset: [100, 0], duration: 0 });
             t.equal(camera.getBearing(), 90);
-            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: -70.3125, lat: 0.0000141444 }));
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: -70.3125, lat: 0.000002552471840999715 }));
             t.end();
         });
 
