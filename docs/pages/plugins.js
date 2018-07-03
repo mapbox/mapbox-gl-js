@@ -102,6 +102,10 @@ const plugins = {
         "mapbox-gl-sync-move": {
             "website": "https://github.com/mapbox/mapbox-gl-sync-move",
             "description": "syncs movement between two Mapbox GL JS maps"
+        },
+        "mapbox-choropleth": {
+            "website": "https://github.com/stevage/mapbox-choropleth",
+            "description": "create a choropleth layer from a CSV source and a geometry source"
         }
     },
     "Development Tools": {
