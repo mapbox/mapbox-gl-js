@@ -1,0 +1,54 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 64,
+            "height": 64,
+            "queryGeometry": [
+                45,
+                16
+            ]
+        }
+    },
+    "sources": {
+        "mapbox": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "id": 1,
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [ 0, 0],
+                                [ 50, 0]
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "line",
+            "type": "line",
+            "source": "mapbox",
+            "paint": {
+                "line-width": 5
+            }
+        },
+        {
+            "id": "line2",
+            "type": "line",
+            "source": "mapbox",
+            "paint": {
+                "line-color": "white",
+                "line-width": 50,
+                "line-opacity": 0.3
+            }
+        }
+    ]
+}

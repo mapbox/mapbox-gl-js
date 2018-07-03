@@ -185,7 +185,7 @@ class Tile {
         this.queryPadding = 0;
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
+            this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
         }
 
         if (data.iconAtlasImage) {
@@ -434,8 +434,8 @@ class Tile {
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
 
-        for (const i in this.buckets) {
-            const bucket = this.buckets[i];
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
@@ -444,7 +444,7 @@ class Tile {
 
             bucket.update(sourceLayerStates, sourceLayer);
             if (painter && painter.style) {
-                this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
+                this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(id).queryRadius(bucket));
             }
         }
     }
