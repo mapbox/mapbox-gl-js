@@ -1737,5 +1737,50 @@ test('camera', (t) => {
         t.end();
     });
 
+    t.test('#fitScreenCoordinates', (t) => {
+        t.test('bearing 225', (t) => {
+            const camera = createCamera();
+            const p0 = [128, 128];
+            const p1 = [256, 256];
+            const bearing = 225;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -45, lat: 40.9799 }, 'centers, rotates 225 degrees, and zooms based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 1.5);
+            t.equal(camera.getBearing(), -135);
+            t.end();
+        });
+
+        t.test('bearing 0', (t) => {
+            const camera = createCamera();
+
+            const p0 = [128, 128];
+            const p1 = [256, 256];
+            const bearing = 0;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -45, lat: 40.9799 }, 'centers and zooms in based on screen coordinates');
+            t.equal(fixedNum(camera.getZoom(), 3), 2);
+            t.equal(camera.getBearing(), 0);
+            t.end();
+        });
+
+        t.test('inverted points', (t) => {
+            const camera = createCamera();
+            const p1 = [128, 128];
+            const p0 = [256, 256];
+            const bearing = 0;
+
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter(), 4), { lng: -45, lat: 40.9799 }, 'centers and zooms based on screen coordinates in opposite order');
+            t.equal(fixedNum(camera.getZoom(), 3), 2);
+            t.equal(camera.getBearing(), 0);
+            t.end();
+        });
+
+        t.end();
+    });
+
+
     t.end();
 });
