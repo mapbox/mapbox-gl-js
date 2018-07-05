@@ -2,8 +2,8 @@
 
 import { createExpression } from '../expression';
 
-import type {GlobalProperties} from '../expression';
-export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature) => boolean;
+import type {GlobalProperties, FeatureState} from '../expression';
+export type FeatureFilter = (globalProperties: GlobalProperties, feature: VectorTileFeature, featureState?: FeatureState) => boolean;
 
 export default createFilter;
 export { isExpressionFilter };
@@ -77,7 +77,8 @@ function createFilter(filter: any): FeatureFilter {
     if (compiled.result === 'error') {
         throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
     } else {
-        return (globalProperties: GlobalProperties, feature: VectorTileFeature) => compiled.value.evaluate(globalProperties, feature);
+        return (globalProperties: GlobalProperties, feature: VectorTileFeature, featureState?: FeatureState = {}) =>
+            compiled.value.evaluate(globalProperties, feature, featureState);
     }
 }
 
