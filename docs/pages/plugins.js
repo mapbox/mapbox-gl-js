@@ -42,6 +42,10 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-geocoder",
             "description": "adds a Geocoder control to Mapbox GL JS",
             "example": "mapbox-gl-geocoder"
+        },
+        "mapboxgl-minimap": {
+            "website": "https://github.com/aesqe/mapboxgl-minimap",
+            "description": "adds a control showing a miniature overview of the current map"
         }
     },
     "Map Rendering Plugins": {
