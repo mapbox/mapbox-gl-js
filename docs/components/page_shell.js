@@ -5,9 +5,9 @@ import ReactPageShell from '../../vendor/dotcom-page-shell/react-page-shell.js';
 class PageShell extends React.Component {
     componentDidMount() {
         // initialize analytics
-        if (window && window.initializeMapboxAnalytics) {
-            window.initializeMapboxAnalytics();
-        }
+        window.initializeMapboxAnalytics({
+            segmentIntegrations: {'Customer.io': true}
+        });
     }
 
     render() {
