@@ -67,7 +67,7 @@ const exported = {
     /**
      * Gets and sets map's pixel ratio
      *
-     * @var {number} devicePixelRation
+     * @var {number} devicePixelRatio
      * @example
      * mapboxgl.devicePixelRatio = 2
      */
@@ -76,7 +76,7 @@ const exported = {
     },
 
     set devicePixelRatio(devicePixelRatio: number) {
-        Object.defineProperty(config, 'DEVICE_PIXEL_RATIO', { value: devicePixelRatio });
+        config.DEVICE_PIXEL_RATIO = devicePixelRatio;
     },
 
     workerUrl: ''
