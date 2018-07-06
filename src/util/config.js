@@ -13,9 +13,7 @@ const config: Config = {
     API_URL: 'https://api.mapbox.com',
     REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null,
-    get DEVICE_PIXEL_RATIO() {
-        return browser.devicePixelRatio;
-    }
+    DEVICE_PIXEL_RATIO: browser.devicePixelRatio,
 };
 
 export default config;

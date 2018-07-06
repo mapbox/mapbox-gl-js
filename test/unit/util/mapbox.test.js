@@ -2,7 +2,6 @@ import { test } from 'mapbox-gl-js-test';
 import * as mapbox from '../../../src/util/mapbox';
 import config from '../../../src/util/config';
 import browser from '../../../src/util/browser';
-import window from '../../../src/util/window';
 
 test("mapbox", (t) => {
     const mapboxSource = 'mapbox://user.map';
@@ -205,12 +204,12 @@ test("mapbox", (t) => {
         });
 
         t.test('inserts @2x on 2x devices', (t) => {
-            window.devicePixelRatio = 2;
+            config.DEVICE_PIXEL_RATIO = 2;
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile@2x.png');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile@2x.png32');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile@2x.jpg70');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile@2x.png?access_token=foo');
-            window.devicePixelRatio = 1;
+            config.DEVICE_PIXEL_RATIO = 1;
             t.end();
         });
 
