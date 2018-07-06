@@ -259,7 +259,10 @@ class GeolocateControl extends Evented {
     }
 
     _setupUI(supported: boolean) {
-        if (supported === false) return;
+        if (supported === false) {
+            warnOnce('Geolocation not supported. The Mapbox geolocate control will not be rendered.');
+            return;
+        }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
         this._geolocateButton = DOM.create('button',
             `${className}-icon ${className}-geolocate`,
