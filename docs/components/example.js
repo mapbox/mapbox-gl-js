@@ -128,7 +128,7 @@ ${html}
                                     <iframe id='demo' className='row10 col12' allowFullScreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'
                                         ref={(iframe) => { this.iframe = iframe; }}/>}
 
-                                <div className='fill-white js-replace-token keyline-top'>
+                                <div className='fill-white keyline-top'>
                                     <div id='code'>{highlightMarkup(this.displayHTML())}</div>
                                     <a className='button icon clipboard col12 round-bottom' href='#' onClick={(e) => this.copyExample(e)}>
                                         {this.state.copied ? 'Copied to clipboard!' : 'Copy example'}
