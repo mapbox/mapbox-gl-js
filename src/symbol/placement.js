@@ -186,16 +186,16 @@ export class Placement {
 
         const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayoutProperties.properties['text-size']);
 
-        const iconWithoutText = !bucket.hasTextData() || layout.get('text-optional');
-        const textWithoutIcon = !bucket.hasIconData() || layout.get('icon-optional');
+        const textOptional = layout.get('text-optional');
+        const iconOptional = layout.get('icon-optional');
 
         const collisionGroup = this.collisionGroups.get(bucket.sourceID);
 
         for (const symbolInstance of bucket.symbolInstances) {
             if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
 
-                let placeText = symbolInstance.feature.text !== undefined;
-                let placeIcon = symbolInstance.feature.icon !== undefined;
+                let placeText = false;
+                let placeIcon = false;
                 let offscreen = true;
 
                 let placedGlyphBoxes = null;
@@ -255,6 +255,9 @@ export class Placement {
                     placeIcon = placedIconBoxes.box.length > 0;
                     offscreen = offscreen && placedIconBoxes.offscreen;
                 }
+
+                const iconWithoutText = textOptional || (symbolInstance.numGlyphVertices === 0 && symbolInstance.numVerticalGlyphVertices === 0);
+                const textWithoutIcon = iconOptional || symbolInstance.numIconVertices === 0;
 
                 // Combine the scales for icons and text.
                 if (!iconWithoutText && !textWithoutIcon) {

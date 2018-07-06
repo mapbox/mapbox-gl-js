@@ -109,7 +109,7 @@ class CollisionFeature {
                            bucketIndex: number,
                            overscaling: number) {
         const step = boxSize / 2;
-        const nBoxes = Math.floor(labelLength / step);
+        const nBoxes = Math.floor(labelLength / step) || 1;
         // We calculate line collision circles out to 300% of what would normally be our
         // max size, to allow collision detection to work on labels that expand as
         // they move into the distance
