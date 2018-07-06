@@ -12,11 +12,11 @@
     "line": 29
   },
   {
-    "message": "layers[3].filter: filter array for operator \"==\" must have 3 elements",
+    "message": "layers[3].filter: Expected two or three arguments.",
     "line": 40
   },
   {
-    "message": "layers[4].filter: filter array for operator \"==\" must have 3 elements",
+    "message": "layers[4].filter: Expected two or three arguments." ,
     "line": 47
   },
   {
