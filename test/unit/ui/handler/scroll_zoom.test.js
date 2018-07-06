@@ -113,7 +113,25 @@ test('ScrollZoomHandler', (t) => {
         t.end();
     });
 
-    test('does not zoom if preventDefault is called on the wheel event', (t) => {
+    t.test('Gracefully handle wheel events that cancel each other out before the first scroll frame', (t) => {
+        // See also https://github.com/mapbox/mapbox-gl-js/issues/6782
+        const map = createMap(t);
+        map._renderTaskQueue.run();
+
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -1});
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -1});
+        now += 1;
+        simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 2});
+
+        map._renderTaskQueue.run();
+
+        now += 400;
+        map._renderTaskQueue.run();
+
+        t.end();
+    });
+
+    t.test('does not zoom if preventDefault is called on the wheel event', (t) => {
         const map = createMap(t);
 
         map.on('wheel', e => e.preventDefault());
