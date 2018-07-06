@@ -158,6 +158,7 @@ class Transform {
 
     get zoom(): number { return this._zoom; }
     set zoom(zoom: number) {
+        if (typeof zoom !== 'number' || !isFinite(zoom)) return;
         const z = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
         if (this._zoom === z) return;
         this._unmodified = false;
