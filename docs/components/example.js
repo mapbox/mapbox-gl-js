@@ -53,10 +53,7 @@ export default function (html) {
 </head>
 <body>
 
-${html
-        .replace("<script>", `<script>\nmapboxgl.accessToken = '${this.state.token}';`)
-        .replace("/mapbox-gl-js/assets/", "https://www.mapbox.com/mapbox-gl-js/assets/")
-}
+${html.replace("<script>", `<script>\nmapboxgl.accessToken = '${this.state.token}';`)}
 </body>
 </html>`;
         }

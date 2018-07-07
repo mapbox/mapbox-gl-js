@@ -784,7 +784,7 @@ export default class extends React.Component {
                                         {highlightJSON(`
                                             "image": {
                                                 "type": "image",
-                                                "url": "/mapbox-gl-js/assets/radar.gif",
+                                                "url": "https://www.mapbox.com/mapbox-gl-js/assets/radar.gif",
                                                 "coordinates": [
                                                     [-80.425, 46.437],
                                                     [-71.516, 46.437],
