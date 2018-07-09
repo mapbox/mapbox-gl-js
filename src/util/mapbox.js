@@ -3,6 +3,12 @@
 import config from './config';
 
 import browser from './browser';
+import window from './window';
+import { version } from '../../package.json';
+import { uuid, validateUuid, storageAvailable } from './util';
+import { postData } from './ajax';
+
+import type { RequestParameters } from './ajax';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 
@@ -119,3 +125,72 @@ function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
+
+const STORAGE_TOKEN = 'mapbox.userTurnstileData';
+const localStorageAvailable = storageAvailable('localStorage');
+
+export const postTurnstileEvent = function(tileUrls: Array<string>) {
+    //Enabled only when Mapbox Access Token is set and a source uses
+    // mapbox tiles.
+    if (!config.ACCESS_TOKEN ||
+        !tileUrls ||
+        !tileUrls.some((url) => { return /mapbox.com/i.test(url); })) {
+        return;
+    }
+
+    let anonId = null;
+    let lastUpdateTime = null;
+    let pending = false;
+    //Retrieve cached data
+    if (localStorageAvailable) {
+        const data = window.localStorage.getItem(STORAGE_TOKEN);
+        if (data) {
+            const json = JSON.parse(data);
+            anonId = json.anonId;
+            lastUpdateTime = Number(json.lastSuccess);
+        }
+    }
+
+    if (!validateUuid(anonId)) {
+        anonId = uuid();
+        pending = true;
+    }
+
+    // Record turnstile event once per calendar day.
+    if (lastUpdateTime) {
+        const lastUpdate = new Date(lastUpdateTime);
+        const now = new Date();
+        const daysElapsed = (+now - Number(lastUpdateTime)) / (24 * 60 * 60 * 1000);
+        pending = pending || daysElapsed >= 1 || daysElapsed < 0 || lastUpdate.getDate() !== now.getDate();
+    }
+    if (!pending) {
+        return;
+    }
+
+    const evenstUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
+    evenstUrlObject.params.push(`access_token=${config.ACCESS_TOKEN || ''}`);
+    const request: RequestParameters = {
+        url: formatUrl(evenstUrlObject),
+        headers: {
+            'Content-Type': 'text/plain' //Skip the pre-flight OPTIONS request
+        }
+    };
+
+    const payload = JSON.stringify([{
+        event: 'appUserTurnstile',
+        created: (new Date()).toISOString(),
+        sdkIdentifier: 'mapbox-gl-js',
+        sdkVersion: `${version}`,
+        'enabled.telemetry': false,
+        userId: anonId
+    }]);
+
+    postData(request, payload, (error) => {
+        if (!error && localStorageAvailable) {
+            window.localStorage.setItem(STORAGE_TOKEN, JSON.stringify({
+                lastSuccess: Date.now(),
+                anonId: anonId
+            }));
+        }
+    });
+};
