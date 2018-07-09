@@ -17,7 +17,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [ -3, -3, -3, -2, 2, 2, 2, 2 ],
+    "outputs": [-3, -3, -3, -2, 2, 2, 2, 2],
     "serialized": ["floor", ["number", ["get", "x"]]]
   }
 }

@@ -101,6 +101,8 @@ exports.run = function (implementation, options, runExpressionTest) {
                     serialized: result.serialized
                 };
 
+                delete fixture.metadata;
+
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
                 return;
             }

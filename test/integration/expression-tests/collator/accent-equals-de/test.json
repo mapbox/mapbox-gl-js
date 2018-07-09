@@ -43,7 +43,11 @@
           "resolved-locale",
           [
             "collator",
-            {"case-sensitive": true, "diacritic-sensitive": false, "locale": "de"}
+            {
+              "case-sensitive": true,
+              "diacritic-sensitive": false,
+              "locale": "de"
+            }
           ]
         ],
         "de"

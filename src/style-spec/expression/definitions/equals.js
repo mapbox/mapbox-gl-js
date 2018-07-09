@@ -56,7 +56,7 @@ function makeComparison(op: string, negate: boolean) {
             }
 
             if (lhs.type.kind !== rhs.type.kind && lhs.type.kind !== 'value' && rhs.type.kind !== 'value') {
-                return context.error(`Cannot compare ${toString(lhs.type)} and ${toString(rhs.type)}.`);
+                return context.error(`Cannot compare types '${toString(lhs.type)}' and '${toString(rhs.type)}'.`);
             }
 
             let collator = null;
