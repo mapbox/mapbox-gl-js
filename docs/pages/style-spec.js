@@ -300,17 +300,15 @@ class Item extends React.Component {
             return <span key={i}><em>Requires</em> <var>{req}</var>. </span>;
         } else if (req['!']) {
             return <span key={i}><em>Disabled by</em> <var>{req['!']}</var>. </span>;
-        } else if (req['<=']) {
-            return <span key={i}><em>Must be less than or equal to</em> <var>{req['<=']}</var>. </span>;
         } else {
             const [name, value] = entries(req)[0];
             if (Array.isArray(value)) {
                 return <span key={i}><em>Requires</em> <var>{name}</var> to be {
                     value
-                        .map((r, i) => <var key={i}>{r}</var>)
+                        .map((r, i) => <code key={i}>{JSON.stringify(r)}</code>)
                         .reduce((prev, curr) => [prev, ', or ', curr])}. </span>;
             } else {
-                return <span key={i}><em>Requires</em> <var>{name}</var> to be <var>{value}</var>. </span>;
+                return <span key={i}><em>Requires</em> <var>{name}</var> to be <code>{JSON.stringify(value)}</code>. </span>;
             }
         }
     }
@@ -705,7 +703,7 @@ export default class extends React.Component {
                                         {highlightJSON(`
                                             "image": {
                                                 "type": "image",
-                                                "url": "/mapbox-gl-js/assets/radar.gif",
+                                                "url": "https://www.mapbox.com/mapbox-gl-js/assets/radar.gif",
                                                 "coordinates": [
                                                     [-80.425, 46.437],
                                                     [-71.516, 46.437],

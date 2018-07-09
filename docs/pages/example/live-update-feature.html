@@ -12,7 +12,7 @@ map.on('load', function () {
     // We use D3 to fetch the JSON here so that we can parse and use it separately
     // from GL JS's use in the added source. You can use any request method (library
     // or otherwise) that you want.
-    d3.json('/mapbox-gl-js/assets/hike.geojson', function(err, data) {
+    d3.json('https://www.mapbox.com/mapbox-gl-js/assets/hike.geojson', function(err, data) {
         if (err) throw err;
 
         // save full coordinate list for later

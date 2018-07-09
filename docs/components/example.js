@@ -30,7 +30,7 @@ export default function (html) {
             this.state = {
                 filter: '',
                 copied: false,
-                token: '<your access token here>'
+                token: undefined
             };
         }
 
@@ -53,7 +53,7 @@ export default function (html) {
 </head>
 <body>
 
-${html.replace("<script>", `<script>\nmapboxgl.accessToken = '${this.state.token}';`)}
+${html.replace("<script>", `<script>\nmapboxgl.accessToken = '${this.state.token || '<your access token here>'}';`)}
 </body>
 </html>`;
         }
@@ -83,7 +83,7 @@ ${html}
             const {frontMatter} = this.props;
             const filter = this.state.filter.toLowerCase().trim();
             return (
-                <PageShell meta={frontMatter} onUser={(_, token) => this.setState({token})}>
+                <PageShell meta={frontMatter}>
                     <LeftNav>
                         <div className="space-bottom">
                             <input onChange={e => this.setState({filter: e.target.value})}
@@ -128,7 +128,7 @@ ${html}
                                     <iframe id='demo' className='row10 col12' allowFullScreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'
                                         ref={(iframe) => { this.iframe = iframe; }}/>}
 
-                                <div className='fill-white js-replace-token keyline-top'>
+                                <div className='fill-white keyline-top'>
                                     <div id='code'>{highlightMarkup(this.displayHTML())}</div>
                                     <a className='button icon clipboard col12 round-bottom' href='#' onClick={(e) => this.copyExample(e)}>
                                         {this.state.copied ? 'Copied to clipboard!' : 'Copy example'}
@@ -147,6 +147,10 @@ ${html}
             doc.open();
             doc.write(this.renderHTML());
             doc.close();
+
+            MapboxPageShell.afterUserCheck(() => {
+                this.setState({token: MapboxPageShell.getUserPublicAccessToken()});
+            });
         }
 
         copyExample(e) {
