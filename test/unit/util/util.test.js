@@ -3,7 +3,7 @@
 import { test } from 'mapbox-gl-js-test';
 
 import Coordinate from '../../../src/geo/coordinate';
-import { easeCubicInOut, keysDifference, extend, pick, uniqueId, getCoordinatesCenter, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl } from '../../../src/util/util';
+import { easeCubicInOut, keysDifference, extend, pick, uniqueId, getCoordinatesCenter, bindAll, asyncAll, clamp, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, isClosedPolygon, parseCacheControl, uuid, validateUuid } from '../../../src/util/util';
 import Point from '@mapbox/point-geometry';
 
 test('util', (t) => {
@@ -297,6 +297,14 @@ test('util', (t) => {
             t.end();
         });
 
+        t.end();
+    });
+
+    t.test('validateUuid', (t) => {
+        t.true(validateUuid(uuid()));
+        t.false(validateUuid(uuid().substr(0, 10)));
+        t.false(validateUuid('foobar'));
+        t.false(validateUuid(null));
         t.end();
     });
 
