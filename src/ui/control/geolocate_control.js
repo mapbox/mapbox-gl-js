@@ -260,7 +260,7 @@ class GeolocateControl extends Evented {
 
     _setupUI(supported: boolean) {
         if (supported === false) {
-            warnOnce('Geolocation not supported. The Mapbox geolocate control will not be rendered.');
+            warnOnce('Geolocation support is not available, the GeolocateControl will not be visible.');
             return;
         }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
