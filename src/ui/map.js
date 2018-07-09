@@ -457,21 +457,17 @@ class Map extends Camera {
     }
 
     /**
-     * Returns the map's geographical bounds.
+     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
+     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      *
-     * @returns {LngLatBounds} The map's geographical bounds.
+     * @returns {LngLatBounds}
      */
     getBounds() {
-        const bounds = new LngLatBounds(
-            this.transform.pointLocation(new Point(0, this.transform.height)),
-            this.transform.pointLocation(new Point(this.transform.width, 0)));
-
-        if (this.transform.angle || this.transform.pitch) {
-            bounds.extend(this.transform.pointLocation(new Point(0, 0)));
-            bounds.extend(this.transform.pointLocation(this.transform.size));
-        }
-
-        return bounds;
+        return new LngLatBounds()
+            .extend(this.transform.pointLocation(new Point(0, 0)))
+            .extend(this.transform.pointLocation(new Point(this.transform.width, 0)))
+            .extend(this.transform.pointLocation(new Point(this.transform.width, this.transform.height)))
+            .extend(this.transform.pointLocation(new Point(0, this.transform.height)));
     }
 
     /**
