@@ -4,17 +4,18 @@
     [{}, {"properties": {"x": 0, "y": 0}}],
     [{}, {"properties": {"x": "0", "y": "0"}}],
     [{}, {"properties": {"x": 0, "y": false}}],
-    [{}, {"properties": {"x": 0, "y": "0"}}]
+    [{}, {"properties": {"x": 0, "y": "0"}}],
+    [{}, {"properties": {"x": 0, "y": null}}],
+    [{}, {"properties": {"x": "0", "y": null}}]
   ],
   "expected": {
     "compiled": {
-      "result": "error",
-      "errors": [
-        {
-          "key": "",
-          "error": "Expected at least one argument to be a string, number, boolean, or null, but found (value, value) instead."
-        }
-      ]
-    }
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [true, true, false, false, false, false],
+    "serialized": ["==", ["get", "x"], ["get", "y"]]
   }
 }

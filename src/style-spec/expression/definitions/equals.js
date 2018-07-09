@@ -11,20 +11,19 @@ function isComparableType(type: Type) {
     return type.kind === 'string' ||
         type.kind === 'number' ||
         type.kind === 'boolean' ||
-        type.kind === 'null';
+        type.kind === 'null' ||
+        type.kind === 'value';
 }
 
 /**
- * Special form for ==, !=, implementing the following signatures:
- * - (T1: Comparable, T2: Comparable) => boolean { T1 == T2 }
- * - (Comparable, value) => boolean
- * - (value, Comparable) => boolean
- *
- * Where Comparable = string | number | boolean | null.
+ * Special form for ==, !=, implementing the signatures:
+ * - (T, T) => boolean { T is 'value', 'string', 'number', 'boolean', or 'null' }
+ * - (T, value) => boolean { T is 'string', 'number', 'boolean', or 'null' }
+ * - (value, T) => boolean { T is 'string', 'number', 'boolean', or 'null' }
  *
  * Evaluation semantics for the value cases are equivalent to Javascript's
- * strict equality (===/!==) -- i.e., when the value argument's type doesn't
- * match that of the Comparable argument, == evaluates to false, != to true.
+ * strict equality (===/!==) -- i.e., when the arguments' types don't match,
+ * == evaluates to false, != to true.
  *
  * @private
  */
@@ -48,14 +47,20 @@ function makeComparison(op: string, negate: boolean) {
 
             const lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;
+            if (!isComparableType(lhs.type)) {
+                return context.concat(1).error(`Equality comparisons are not supported for type '${toString(lhs.type)}'.`);
+            }
             const rhs = context.parse(args[2], 2, ValueType);
             if (!rhs) return null;
-
-            if (!isComparableType(lhs.type) && !isComparableType(rhs.type)) {
-                return context.error(`Expected at least one argument to be a string, number, boolean, or null, but found (${toString(lhs.type)}, ${toString(rhs.type)}) instead.`);
+            if (!isComparableType(rhs.type)) {
+                return context.concat(2).error(`Equality comparisons are not supported for type '${toString(rhs.type)}'.`);
             }
 
-            if (lhs.type.kind !== rhs.type.kind && lhs.type.kind !== 'value' && rhs.type.kind !== 'value') {
+            if (!(
+                lhs.type.kind === rhs.type.kind ||
+                lhs.type.kind === 'value' ||
+                rhs.type.kind === 'value'
+            )) {
                 return context.error(`Cannot compare types '${toString(lhs.type)}' and '${toString(rhs.type)}'.`);
             }
 

@@ -51,6 +51,9 @@ const types = {
     }, {
         type: 'boolean',
         parameters: ['value', 'null']
+    }, {
+        type: 'boolean',
+        parameters: ['value', 'value']
     }],
     '!=': [{
         type: 'boolean',
@@ -97,6 +100,9 @@ const types = {
     }, {
         type: 'boolean',
         parameters: ['value', 'null']
+    }, {
+        type: 'boolean',
+        parameters: ['value', 'value']
     }],
     string: [{
         type: 'string',

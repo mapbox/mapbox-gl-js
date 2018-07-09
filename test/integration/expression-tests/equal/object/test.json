@@ -5,8 +5,8 @@
       "result": "error",
       "errors": [
         {
-          "key": "",
-          "error": "Expected at least one argument to be a string, number, boolean, or null, but found (value, object) instead."
+          "key": "[2]",
+          "error": "Equality comparisons are not supported for type 'object'."
         }
       ]
     }
