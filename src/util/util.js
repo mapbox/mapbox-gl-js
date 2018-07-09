@@ -4,6 +4,7 @@ import UnitBezier from '@mapbox/unitbezier';
 
 import Coordinate from '../geo/coordinate';
 import Point from '@mapbox/point-geometry';
+import window from './window';
 
 import type {Callback} from '../types/callback';
 
@@ -194,6 +195,27 @@ let id = 1;
  */
 export function uniqueId(): number {
     return id++;
+}
+
+/**
+ * Return a random UUID (v4). Taken from: https://gist.github.com/jed/982883
+ */
+export function uuid(): string {
+    function b(a) {
+        return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) :
+        //$FlowFixMe
+        ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
+    }
+    return b();
+}
+
+/**
+ * Validate a string to match UUID(v4) of the
+ * form: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
+ * @param str string to validate.
+ */
+export function validateUuid(str: ?string): boolean {
+    return str ? /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str) : false;
 }
 
 /**
@@ -439,4 +461,15 @@ export function parseCacheControl(cacheControl: string): Object {
     }
 
     return header;
+}
+
+export function storageAvailable(type: string): boolean {
+    try {
+        const storage = window[type];
+        storage.setItem('_mapbox_test_', 1);
+        storage.removeItem('_mapbox_test_');
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
