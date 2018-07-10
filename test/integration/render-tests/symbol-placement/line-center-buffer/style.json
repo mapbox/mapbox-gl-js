@@ -39,8 +39,9 @@
         "text-field": "{name_en}",
         "symbol-placement": "line-center",
         "text-allow-overlap": true,
-        "text-size": 38,
-        "text-letter-spacing": 0.5,
+        "text-size": 35,
+        "text-letter-spacing": 0.4,
+        "text-offset": [3, 0],
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
