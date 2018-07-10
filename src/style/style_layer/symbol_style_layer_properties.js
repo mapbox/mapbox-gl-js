@@ -15,7 +15,7 @@ import {
 import type Color from '../../style-spec/util/color';
 
 export type LayoutProps = {|
-    "symbol-placement": DataConstantProperty<"point" | "line">,
+    "symbol-placement": DataConstantProperty<"point" | "line" | "line-center">,
     "symbol-spacing": DataConstantProperty<number>,
     "symbol-avoid-edges": DataConstantProperty<boolean>,
     "icon-allow-overlap": DataConstantProperty<boolean>,
