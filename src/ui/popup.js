@@ -95,9 +95,7 @@ export default class Popup extends Evented {
     addTo(map: Map) {
         this._map = map;
         this._map.on('move', this._update);
-        if (this.options.closeOnClick) {
-            this._map.on('click', this._onClickClose);
-        }
+        this._map.on('click', this._onClickClose);
         this._update();
 
         /**
@@ -321,7 +319,9 @@ export default class Popup extends Evented {
     }
 
     _onClickClose() {
-        this.remove();
+        if (this.options.closeOnClick) {
+            this.remove();
+        }
     }
 }
 

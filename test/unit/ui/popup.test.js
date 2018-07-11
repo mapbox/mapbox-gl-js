@@ -42,6 +42,26 @@ test('Popup closes on map click events by default', (t) => {
     t.end();
 });
 
+test('Popup options.closeOnClick can be dynamic', (t) => {
+    const map = createMap(t);
+    const popup = new Popup()
+        .setText("Test")
+        .setLngLat([0, 0])
+        .addTo(map);
+
+    // set closeOnClick => false
+    popup.options.closeOnClick = false;
+    simulateClick(map.getCanvas());
+    t.ok(popup.isOpen());
+
+    // set closeOnClick => true
+    popup.options.closeOnClick = true;
+    simulateClick(map.getCanvas());
+    t.ok(!popup.isOpen());
+
+    t.end();
+});
+
 test('Popup does not close on map click events when the closeOnClick option is false', (t) => {
     const map = createMap(t);
     const popup = new Popup({closeOnClick: false})
