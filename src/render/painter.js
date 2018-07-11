@@ -373,6 +373,7 @@ class Painter {
         {
             let sourceCache;
             let coords = [];
+            let symbolCoords = [];
 
             this.currentLayer = 0;
 
@@ -382,19 +383,26 @@ class Painter {
                 if (layer.source !== (sourceCache && sourceCache.id)) {
                     sourceCache = this.style.sourceCaches[layer.source];
                     coords = [];
+                    symbolCoords = [];
 
                     if (sourceCache) {
                         this.clearStencil();
-                        coords = sourceCache.getVisibleCoordinates();
+                        coords = sourceCache.getVisibleCoordinates(false);
+                        // For symbol layers in the translucent pass, we add extra tiles to
+                        // the renderable set for cross-tile symbol fading.
+                        // Symbol layers don't use tile clipping, so no need to render
+                        // separate clipping masks
+                        symbolCoords = sourceCache.getVisibleCoordinates(true);
                         if (sourceCache.getSource().isTileClipped) {
                             this._renderTileClippingMasks(coords);
                         }
                     }
 
                     coords.reverse();
+                    symbolCoords.reverse();
                 }
 
-                this.renderLayer(this, (sourceCache: any), layer, coords);
+                this.renderLayer(this, (sourceCache: any), layer, layer.type === 'symbol' ? symbolCoords : coords);
             }
         }
 
