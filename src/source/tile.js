@@ -91,6 +91,9 @@ class Tile {
     resourceTiming: ?Array<PerformanceResourceTiming>;
     queryPadding: number;
 
+    symbolFadeHoldUntil: ?number;
+    hasSymbolBuckets: boolean;
+
     /**
      * @param {OverscaledTileID} tileID
      * @param size
@@ -103,6 +106,7 @@ class Tile {
         this.buckets = {};
         this.expirationTime = null;
         this.queryPadding = 0;
+        this.hasSymbolBuckets = false;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
@@ -164,11 +168,15 @@ class Tile {
         this.collisionBoxArray = data.collisionBoxArray;
         this.buckets = deserializeBucket(data.buckets, painter.style);
 
-        if (justReloaded) {
-            for (const id in this.buckets) {
-                const bucket = this.buckets[id];
-                if (bucket instanceof SymbolBucket) {
+        this.hasSymbolBuckets = false;
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
+            if (bucket instanceof SymbolBucket) {
+                this.hasSymbolBuckets = true;
+                if (justReloaded) {
                     bucket.justReloaded = true;
+                } else {
+                    break;
                 }
             }
         }
@@ -437,6 +445,22 @@ class Tile {
                 this.queryPadding = Math.max(this.queryPadding, painter.style.getLayer(bucket.layerIds[0]).queryRadius(bucket));
             }
         }
+    }
+
+    holdingForFade(): boolean {
+        return this.symbolFadeHoldUntil !== undefined;
+    }
+
+    symbolFadeFinished(): boolean {
+        return !this.symbolFadeHoldUntil || this.symbolFadeHoldUntil < browser.now();
+    }
+
+    clearFadeHold() {
+        this.symbolFadeHoldUntil = undefined;
+    }
+
+    setHoldDuration(duration: number) {
+        this.symbolFadeHoldUntil = browser.now() + duration;
     }
 }
 
