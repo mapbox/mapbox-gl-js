@@ -29,6 +29,7 @@ export const plugins = () => [
         include: 'src/shaders/index.js'
     }),
     commonjs({
+        ignoreGlobal: true,
         namedExports: {
             '@mapbox/whoots-js': ['getTileBBox']
         }
