@@ -2,9 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-        "debug": true,
-        "collisionDebug": true,
-      "description": "'Carribean Sea' crosses a tile boundary, but we don't draw the tile boundary in the test because JS and Native render tile boundaries differently.",
+      "collisionDebug": true,
+      "description": "This test looks pretty boring -- what it does is make sure that a label without collision boxes won't get drawn.",
       "height": 256,
       "width": 1024
     }
@@ -41,7 +40,7 @@
         "text-field": "{name_en}",
         "symbol-placement": "line-center",
         "text-allow-overlap": true,
-        "text-size": 50,
+        "text-size": 40,
         "text-letter-spacing": 0.5,
         "text-font": [
           "Open Sans Semibold",
