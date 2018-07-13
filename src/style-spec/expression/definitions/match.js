@@ -32,6 +32,8 @@ class Match implements Expression {
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
+        if (args.length === 3)
+            args = args.concat(true, false);
         if (args.length < 5)
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 1)

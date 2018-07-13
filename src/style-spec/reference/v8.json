@@ -2359,6 +2359,9 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "two-argument shorthand": {
+            "js": "0.48.0"
           }
         }
       },
@@ -2387,7 +2390,7 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must either be a single literal value or an array of literal values (e.g. `\"a\"` or `[\"c\", \"b\"]`), and those values must be all strings or all numbers. (The values `\"1\"` and `1` cannot both be labels in the same match expression.) If the input type does not match the type of the labels, the result will be the fallback value. A two-argument shorthand form is also supported, `[\"match\", input, label]`, which is equivalent to `[\"match\", input, label, true, false]`.",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
