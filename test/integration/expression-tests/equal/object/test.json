@@ -6,7 +6,7 @@
       "errors": [
         {
           "key": "[2]",
-          "error": "Equality comparisons are not supported for type 'object'."
+          "error": "\"==\" comparisons are not supported for type 'object'."
         }
       ]
     }

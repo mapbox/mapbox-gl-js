@@ -1,12 +1,12 @@
 {
-  "expression": [">=", ["string", ["get", "x"]], ["get", "y"]],
+  "expression": [">=", ["get", "x"], ["get", "y"]],
   "expected": {
     "compiled": {
       "result": "error",
       "errors": [
         {
           "key": "",
-          "error": "Expected arguments of type (number, number) | (string, string), but found (string, value) instead."
+          "error": "Expected at least one argument to be a string, number, boolean, or null, but found (value, value) instead."
         }
       ]
     }

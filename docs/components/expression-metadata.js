@@ -5,105 +5,92 @@ import CompoundExpression from '../../src/style-spec/expression/compound_express
 // registers compound expressions
 import '../../src/style-spec/expression/definitions/index';
 
+const equalitySignatures = [{
+    type: 'boolean',
+    parameters: ['string', 'string']
+}, {
+    type: 'boolean',
+    parameters: ['string', 'string', 'collator']
+}, {
+    type: 'boolean',
+    parameters: ['number', 'number']
+}, {
+    type: 'boolean',
+    parameters: ['boolean', 'boolean']
+}, {
+    type: 'boolean',
+    parameters: ['null', 'null']
+}, {
+    type: 'boolean',
+    parameters: ['string', 'value']
+}, {
+    type: 'boolean',
+    parameters: ['string', 'value', 'collator']
+}, {
+    type: 'boolean',
+    parameters: ['number', 'value']
+}, {
+    type: 'boolean',
+    parameters: ['boolean', 'value']
+}, {
+    type: 'boolean',
+    parameters: ['null', 'value']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'string']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'string', 'collator']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'number']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'boolean']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'null']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'value']
+}];
+
+const inequalitySignatures = [{
+    type: 'boolean',
+    parameters: ['string', 'string']
+}, {
+    type: 'boolean',
+    parameters: ['string', 'string', 'collator']
+}, {
+    type: 'boolean',
+    parameters: ['number', 'number']
+}, {
+    type: 'boolean',
+    parameters: ['string', 'value']
+}, {
+    type: 'boolean',
+    parameters: ['string', 'value', 'collator']
+}, {
+    type: 'boolean',
+    parameters: ['number', 'value']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'string']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'string', 'collator']
+}, {
+    type: 'boolean',
+    parameters: ['value', 'number']
+}];
+
 const types = {
-    '==': [{
-        type: 'boolean',
-        parameters: ['string', 'string']
-    }, {
-        type: 'boolean',
-        parameters: ['string', 'string', 'collator']
-    }, {
-        type: 'boolean',
-        parameters: ['number', 'number']
-    }, {
-        type: 'boolean',
-        parameters: ['boolean', 'boolean']
-    }, {
-        type: 'boolean',
-        parameters: ['null', 'null']
-    }, {
-        type: 'boolean',
-        parameters: ['string', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['string', 'value', 'collator']
-    }, {
-        type: 'boolean',
-        parameters: ['number', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['boolean', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['null', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'string']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'string', 'collator']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'number']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'boolean']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'null']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'value']
-    }],
-    '!=': [{
-        type: 'boolean',
-        parameters: ['string', 'string']
-    }, {
-        type: 'boolean',
-        parameters: ['string', 'string', 'collator']
-    }, {
-        type: 'boolean',
-        parameters: ['number', 'number']
-    }, {
-        type: 'boolean',
-        parameters: ['boolean', 'boolean']
-    }, {
-        type: 'boolean',
-        parameters: ['null', 'null']
-    }, {
-        type: 'boolean',
-        parameters: ['string', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['string', 'value', 'collator']
-    }, {
-        type: 'boolean',
-        parameters: ['number', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['boolean', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['null', 'value']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'string']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'string', 'collator']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'number']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'boolean']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'null']
-    }, {
-        type: 'boolean',
-        parameters: ['value', 'value']
-    }],
+    '==': [].concat(equalitySignatures),
+    '!=': [].concat(equalitySignatures),
+    '<': [].concat(inequalitySignatures),
+    '<=': [].concat(inequalitySignatures),
+    '>': [].concat(inequalitySignatures),
+    '>=': [].concat(inequalitySignatures),
     string: [{
         type: 'string',
         parameters: ['value']
