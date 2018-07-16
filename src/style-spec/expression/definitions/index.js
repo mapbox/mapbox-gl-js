@@ -17,7 +17,7 @@ import Case from './case';
 import Step from './step';
 import Interpolate from './interpolate';
 import Coalesce from './coalesce';
-import { Equals, NotEquals } from './equals';
+import { Equals, NotEquals } from './comparison';
 import { CollatorExpression } from './collator';
 import Length from './length';
 
