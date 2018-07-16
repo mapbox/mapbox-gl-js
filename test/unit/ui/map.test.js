@@ -1298,7 +1298,27 @@ test('Map', (t) => {
                 map.setFeatureState({ source: 'vector', sourceLayer: 0, id: '12345'}, {'hover': true});
             });
         });
-
+        t.test('fires an error if id not provided', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+            });
+        });
         t.end();
     });
 
