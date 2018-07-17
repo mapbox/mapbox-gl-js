@@ -7,7 +7,7 @@ import DepthMode from './depth_mode';
 import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
 import { deepEqual } from '../util/util';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from './value';
+import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, CullFace, Blend, BlendFunc, BlendColor, BlendEquation, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY } from './value';
 
 
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
@@ -41,9 +41,11 @@ class Context {
     depthRange: DepthRange;
     depthTest: DepthTest;
     depthFunc: DepthFunc;
+    cullFace: CullFace;
     blend: Blend;
     blendFunc: BlendFunc;
     blendColor: BlendColor;
+    blendEquation: BlendEquation;
     program: Program;
     activeTexture: ActiveTextureUnit;
     viewport: Viewport;
@@ -55,6 +57,7 @@ class Context {
     bindVertexArrayOES: BindVertexArrayOES;
     pixelStoreUnpack: PixelStoreUnpack;
     pixelStoreUnpackPremultiplyAlpha: PixelStoreUnpackPremultiplyAlpha;
+    pixelStoreUnpackFlipY: PixelStoreUnpackFlipY;
 
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
@@ -76,9 +79,11 @@ class Context {
         this.depthRange = new DepthRange(this);
         this.depthTest = new DepthTest(this);
         this.depthFunc = new DepthFunc(this);
+        this.cullFace = new CullFace(this);
         this.blend = new Blend(this);
         this.blendFunc = new BlendFunc(this);
         this.blendColor = new BlendColor(this);
+        this.blendEquation = new BlendEquation(this);
         this.program = new Program(this);
         this.activeTexture = new ActiveTextureUnit(this);
         this.viewport = new Viewport(this);
@@ -90,6 +95,7 @@ class Context {
         this.bindVertexArrayOES = this.extVertexArrayObject && new BindVertexArrayOES(this);
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
+        this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
 
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
@@ -105,6 +111,40 @@ class Context {
             gl.getExtension('OES_texture_half_float_linear');
         }
 
+    }
+
+    setDirty() {
+        this.clearColor.dirty = true;
+        this.clearDepth.dirty = true;
+        this.clearStencil.dirty = true;
+        this.colorMask.dirty = true;
+        this.depthMask.dirty = true;
+        this.stencilMask.dirty = true;
+        this.stencilFunc.dirty = true;
+        this.stencilOp.dirty = true;
+        this.stencilTest.dirty = true;
+        this.depthRange.dirty = true;
+        this.depthTest.dirty = true;
+        this.depthFunc.dirty = true;
+        this.cullFace.dirty = true;
+        this.blend.dirty = true;
+        this.blendFunc.dirty = true;
+        this.blendColor.dirty = true;
+        this.blendEquation.dirty = true;
+        this.program.dirty = true;
+        this.activeTexture.dirty = true;
+        this.viewport.dirty = true;
+        this.bindFramebuffer.dirty = true;
+        this.bindRenderbuffer.dirty = true;
+        this.bindTexture.dirty = true;
+        this.bindVertexBuffer.dirty = true;
+        this.bindElementBuffer.dirty = true;
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.dirty = true;
+        }
+        this.pixelStoreUnpack.dirty = true;
+        this.pixelStoreUnpackPremultiplyAlpha.dirty = true;
+        this.pixelStoreUnpackFlipY.dirty = true;
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray | LineStripIndexArray, dynamicDraw?: boolean) {
@@ -192,6 +232,14 @@ class Context {
         }
 
         this.colorMask.set(colorMode.mask);
+    }
+
+    unbindVAO() {
+        // Unbinding the VAO prevents other things (custom layers, new buffer creation) from
+        // unintentionally changing the state of the last VAO used.
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.set(null);
+        }
     }
 }
 
