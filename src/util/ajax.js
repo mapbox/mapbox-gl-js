@@ -134,11 +134,7 @@ export const postData = function(requestParameters: RequestParameters, payload: 
         if (xhr.status >= 200 && xhr.status < 300) {
             callback(null, xhr.response);
         } else {
-            if (xhr.status === 401 && requestParameters.url.match(/mapbox.com/)) {
-                callback(new AJAXError(`${xhr.statusText}: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens`, xhr.status, requestParameters.url));
-            } else {
-                callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
-            }
+            callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
         }
     };
     xhr.send(payload);

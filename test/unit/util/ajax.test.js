@@ -109,29 +109,5 @@ test('ajax', (t) => {
         window.server.respond();
     });
 
-    t.test('postData, 401: non-Mapbox domain', (t) => {
-        window.server.respondWith(request => {
-            request.respond(401);
-        });
-        postData({ url:'' }, {}, (error) => {
-            t.equal(error.status, 401);
-            t.equal(error.message, "Unauthorized");
-            t.end();
-        });
-        window.server.respond();
-    });
-
-    t.test('postData, 401: Mapbox domain', (t) => {
-        window.server.respondWith(request => {
-            request.respond(401);
-        });
-        postData({ url:'api.mapbox.com' }, {}, (error) => {
-            t.equal(error.status, 401);
-            t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens");
-            t.end();
-        });
-        window.server.respond();
-    });
-
     t.end();
 });
