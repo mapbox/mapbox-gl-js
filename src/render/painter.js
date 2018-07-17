@@ -31,6 +31,7 @@ import hillshade from './draw_hillshade';
 import raster from './draw_raster';
 import background from './draw_background';
 import debug from './draw_debug';
+import custom from './draw_custom';
 
 const draw = {
     symbol,
@@ -42,7 +43,8 @@ const draw = {
     hillshade,
     raster,
     background,
-    debug
+    debug,
+    custom
 };
 
 import type Transform from '../geo/transform';
@@ -273,6 +275,10 @@ class Painter {
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
 
+        // A custom layer may have used the context asynchronously. Mark the state as dirty.
+        this.context.setDirty();
+        this.setBaseState();
+
         this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
 
         const layerIds = this.style._order;
@@ -317,7 +323,7 @@ class Painter {
             if (!layer.hasOffscreenPass() || layer.isHidden(this.transform.zoom)) continue;
 
             const coords = coordsDescending[layer.source];
-            if (!coords.length) continue;
+            if (layer.type !== 'custom' && !coords.length) continue;
 
             this.renderLayer(this, sourceCaches[layer.source], layer, coords);
         }
@@ -382,6 +388,11 @@ class Painter {
                 break;
             }
         }
+
+        // Prevent custom layers from unintentionally modify the last VAO used.
+        // All other state is state is restored on it's own, but for VAOs it's
+        // simpler to unbind so that we don't have to track the state of VAOs.
+        this.context.unbindVAO();
     }
 
     setupOffscreenDepthRenderbuffer(): void {
@@ -394,7 +405,7 @@ class Painter {
 
     renderLayer(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && !coords.length) return;
+        if (layer.type !== 'background' && layer.type !== 'custom' && !coords.length) return;
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);
@@ -461,6 +472,10 @@ class Painter {
         this.context.program.set(nextProgram.program);
 
         return nextProgram;
+    }
+
+    setBaseState() {
+        this.context.cullFace.set(false);
     }
 }
 

@@ -9,6 +9,8 @@ import line from './style_layer/line_style_layer';
 import symbol from './style_layer/symbol_style_layer';
 import background from './style_layer/background_style_layer';
 import raster from './style_layer/raster_style_layer';
+import CustomStyleLayer from './style_layer/custom_style_layer';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 
 const subclasses = {
     circle,
@@ -22,7 +24,11 @@ const subclasses = {
     raster
 };
 
-export default function createStyleLayer(layer: LayerSpecification) {
-    return new subclasses[layer.type](layer);
+export default function createStyleLayer(layer: LayerSpecification | CustomLayerInterface) {
+    if (layer.type === 'custom') {
+        return new CustomStyleLayer(layer);
+    } else {
+        return new subclasses[layer.type](layer);
+    }
 }
 

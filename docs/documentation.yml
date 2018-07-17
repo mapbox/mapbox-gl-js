@@ -8,6 +8,7 @@ toc:
   - CameraOptions
   - PaddingOptions
   - RequestParameters
+  - CustomLayerInterface
   - name: Geography & Geometry
     description: |
       `LngLat` and `LngLatBounds` represent points and rectanges in geographic

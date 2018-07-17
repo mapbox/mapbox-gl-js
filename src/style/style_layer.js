@@ -20,6 +20,8 @@ import type {FeatureFilter} from '../style-spec/feature_filter';
 import type {TransitionParameters} from './properties';
 import type EvaluationParameters from './evaluation_parameters';
 import type Transform from '../geo/transform';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
+import type Map from '../ui/map';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -53,38 +55,47 @@ class StyleLayer extends Evented {
                               pixelsToTileUnits: number,
                               posMatrix: Float32Array) => boolean;
 
-    constructor(layer: LayerSpecification, properties: {layout?: Properties<*>, paint: Properties<*>}) {
+    +onAdd: (map: Map) => void;
+    +onRemove: (map: Map) => void;
+
+    constructor(layer: LayerSpecification | CustomLayerInterface, properties: {layout?: Properties<*>, paint?: Properties<*>}) {
         super();
 
         this.id = layer.id;
-        this.metadata = layer.metadata;
         this.type = layer.type;
-        this.minzoom = layer.minzoom;
-        this.maxzoom = layer.maxzoom;
         this.visibility = 'visible';
-
-        if (layer.type !== 'background') {
-            this.source = layer.source;
-            this.sourceLayer = layer['source-layer'];
-            this.filter = layer.filter;
-        }
-
         this._featureFilter = () => true;
 
-        if (properties.layout) {
-            this._unevaluatedLayout = new Layout(properties.layout);
-        }
+        if (layer.type !== 'custom') {
+            layer = ((layer: any): LayerSpecification);
 
-        this._transitionablePaint = new Transitionable(properties.paint);
+            this.metadata = layer.metadata;
+            this.minzoom = layer.minzoom;
+            this.maxzoom = layer.maxzoom;
 
-        for (const property in layer.paint) {
-            this.setPaintProperty(property, layer.paint[property], {validate: false});
-        }
-        for (const property in layer.layout) {
-            this.setLayoutProperty(property, layer.layout[property], {validate: false});
-        }
+            if (layer.type !== 'background') {
+                this.source = layer.source;
+                this.sourceLayer = layer['source-layer'];
+                this.filter = layer.filter;
+            }
 
-        this._transitioningPaint = this._transitionablePaint.untransitioned();
+            if (properties.layout) {
+                this._unevaluatedLayout = new Layout(properties.layout);
+            }
+
+            if (properties.paint) {
+                this._transitionablePaint = new Transitionable(properties.paint);
+
+                for (const property in layer.paint) {
+                    this.setPaintProperty(property, layer.paint[property], {validate: false});
+                }
+                for (const property in layer.layout) {
+                    this.setLayoutProperty(property, layer.layout[property], {validate: false});
+                }
+
+                this._transitioningPaint = this._transitionablePaint.untransitioned();
+            }
+        }
     }
 
     getLayoutProperty(name: string) {

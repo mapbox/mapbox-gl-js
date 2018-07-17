@@ -78,7 +78,7 @@ class VideoSource extends ImageSource {
                 // Start repainting when video starts playing. hasTransition() will then return
                 // true to trigger additional frames as long as the videos continues playing.
                 this.video.addEventListener('playing', () => {
-                    this.map._rerender();
+                    this.map.triggerRepaint();
                 });
 
                 if (this.map) {

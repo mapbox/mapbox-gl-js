@@ -50,6 +50,7 @@ import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -289,7 +290,9 @@ class Style extends Evented {
     }
 
     _serializeLayers(ids: Array<string>) {
-        return ids.map((id) => this._layers[id].serialize());
+        return ids.map((id) => this._layers[id])
+            .filter((layer) => layer.type !== 'custom')
+            .map((layer) => layer.serialize());
     }
 
     hasTransitions() {
@@ -544,7 +547,7 @@ class Style extends Evented {
      * ID `before`, or appended if `before` is omitted.
      * @param {string} [before] ID of an existing layer to insert before
      */
-    addLayer(layerObject: LayerSpecification, before?: string, options?: {validate?: boolean}) {
+    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options?: {validate?: boolean}) {
         this._checkLoaded();
 
         const id = layerObject.id;
@@ -554,21 +557,26 @@ class Style extends Evented {
             return;
         }
 
-        if (typeof layerObject.source === 'object') {
-            this.addSource(id, layerObject.source);
-            layerObject = clone(layerObject);
-            layerObject = (extend(layerObject, {source: id}): any);
+        let layer;
+        if (layerObject.type === 'custom') {
+            layer = createStyleLayer(layerObject);
+
+        } else {
+            if (typeof layerObject.source === 'object') {
+                this.addSource(id, layerObject.source);
+                layerObject = clone(layerObject);
+                layerObject = (extend(layerObject, {source: id}): any);
+            }
+
+            // this layer is not in the style.layers array, so we pass an impossible array index
+            if (this._validate(validateStyle.layer,
+                `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
+
+            layer = createStyleLayer(layerObject);
+            this._validateLayer(layer);
+
+            layer.setEventedParent(this, {layer: {id: id}});
         }
-
-        // this layer is not in the style.layers array, so we pass an impossible array index
-        if (this._validate(validateStyle.layer,
-            `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
-
-        const layer = createStyleLayer(layerObject);
-        this._validateLayer(layer);
-
-        layer.setEventedParent(this, {layer: {id: id}});
-
 
         const index = before ? this._order.indexOf(before) : this._order.length;
         if (before && index === -1) {
@@ -581,7 +589,7 @@ class Style extends Evented {
 
         this._layers[id] = layer;
 
-        if (this._removedLayers[id] && layer.source) {
+        if (this._removedLayers[id] && layer.source && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
             // need to clear (rather than just reload) the underyling source's
@@ -599,6 +607,10 @@ class Style extends Evented {
             }
         }
         this._updateLayer(layer);
+
+        if (layer.onAdd) {
+            layer.onAdd(this.map);
+        }
     }
 
     /**
@@ -662,6 +674,10 @@ class Style extends Evented {
         delete this._layers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
+
+        if (layer.onRemove) {
+            layer.onRemove(this.map);
+        }
     }
 
     /**
