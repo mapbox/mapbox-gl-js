@@ -134,7 +134,7 @@ export const postTurnstileEvent = function(tileUrls: Array<string>) {
     // mapbox tiles.
     if (!config.ACCESS_TOKEN ||
         !tileUrls ||
-        !tileUrls.some((url) => { return /mapbox.com/i.test(url); })) {
+        !tileUrls.some((url) => { return /mapbox.c(n)|(om)/i.test(url); })) {
         return;
     }
 
