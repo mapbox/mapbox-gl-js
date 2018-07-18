@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map, #map2 { position: absolute; top: 0; bottom: 0; width: 50%;}
+        #map { left: 0; }
+        #map2 { right: 0; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='map2'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+const map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41',
+    hash: true
+});
+
+const map2 = window.map2 = new mapboxgl.Map({
+    container: 'map2',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41'
+});
+
+const polygon = {
+    type: 'Feature',
+    geometry: {
+        type: 'Polygon',
+        coordinates: [[]]
+    }
+};
+
+map.on('load', () => {
+
+    const update = () => {
+        const container = map.getContainer();
+        const w = container.offsetWidth;
+        const h = container.offsetHeight;
+        const tl = map.unproject([0, 0]);
+        const tr = map.unproject([w, 0]);
+        const bl = map.unproject([0, h]);
+        const br = map.unproject([w, h]);
+        polygon.geometry.coordinates = [[tl.toArray(), tr.toArray(), br.toArray(), bl.toArray(), tl.toArray()]];
+        const bounds = new mapboxgl.LngLatBounds();
+        for (const c of polygon.geometry.coordinates[0]) bounds.extend(c);
+        const layer = map2.getSource('polygon').setData(polygon);
+        map2.fitBounds(bounds, {duration: 0});
+    };
+
+    map2.addLayer({
+        id: 'polygon',
+        type: 'fill',
+        source: {
+            type: 'geojson',
+            data: polygon
+        },
+        paint: {
+            'fill-color': 'red',
+            'fill-opacity': 0.1
+        }
+    });
+
+    update();
+    map.on('move', update);
+});
+
+</script>
+</body>
+</html>

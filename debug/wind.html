@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script src='/debug/wind-gl.js'></script>
+<script>
+
+mapboxgl.accessToken = 'pk.eyJ1IjoibW91cm5lciIsImEiOiJWWnRiWG1VIn0.j6eccFHpE3Q04XPLI7JxbA';
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2,
+    center: [0, 40],
+    maxZoom: 18,
+    minZoom: 0,
+    style: 'mapbox://styles/mapbox/dark-v9',
+    hash: false
+});
+
+map.setMaxBounds([-179, -84, 179, 84]);
+
+let wind, update = true, draw = true;
+
+map.repaint = true;
+
+class WindLayer {
+    constructor() {
+        this.id = 'wind';
+        this.type = 'custom';
+    }
+
+    render(gl, matrix) {
+        if (!draw) return;
+
+        if (!wind) {
+            wind = window.wind = new WindGL(gl);
+            wind.numParticles = 100000;
+            // wind.dropRate = 0.003;
+        }
+
+        if (!wind.windData) return;
+
+        if (update) {
+            const bounds = map.getBounds();
+            const bbox = [
+                Math.max(0, (bounds.getWest() + 180) / 360),
+                Math.max(0, (bounds.getSouth() + 90) / 180),
+                Math.min(1.0, (bounds.getEast() + 180) / 360),
+                Math.min(1.0, (bounds.getNorth() + 90) / 180)
+            ];
+            wind.setView(bbox, new Float32Array(matrix));
+            wind.resize();
+            wind.numParticles = wind.numParticles;
+            update = false;
+        }
+
+        gl.disable(gl.BLEND);
+        wind.draw();
+    }
+
+    hasTransition() {
+        return false;
+    }
+}
+
+map.on('load', function () {
+
+    map.on('movestart', () => {
+        draw = false;
+    })
+
+    map.on('moveend', () => {
+        draw = true;
+        update = true;
+    });
+
+    getJSON('/debug/2016112000.json', function (windData) {
+        const windImage = new Image();
+        windData.image = windImage;
+        windImage.src = '/debug/2016112000.png';
+        windImage.onload = function () {
+
+            map.addLayer(new WindLayer());
+
+            setTimeout(function () {
+                wind.setWind(windData);
+            }, 100);
+        };
+    });
+});
+
+function getJSON(url, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.responseType = 'json';
+    xhr.open('get', url, true);
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            callback(xhr.response);
+        } else {
+            throw new Error(xhr.statusText);
+        }
+    };
+    xhr.send();
+}
+
+</script>
+</body>
+</html>
