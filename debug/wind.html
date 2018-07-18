@@ -25,8 +25,6 @@ var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 2,
     center: [0, 40],
-    maxZoom: 18,
-    minZoom: 0,
     style: 'mapbox://styles/mapbox/dark-v9',
     hash: false
 });
@@ -48,21 +46,23 @@ class WindLayer {
 
         if (!wind) {
             wind = window.wind = new WindGL(gl);
-            wind.numParticles = 100000;
-            // wind.dropRate = 0.003;
+            wind.numParticles = 32000;
+            wind.dropRate = 0.003;
         }
 
         if (!wind.windData) return;
 
+        const bounds = map.getBounds();
+        const bbox = [
+            Math.max(0, (bounds.getWest() + 180) / 360),
+            Math.max(0, (bounds.getSouth() + 90) / 180),
+            Math.min(1.0, (bounds.getEast() + 180) / 360),
+            Math.min(1.0, (bounds.getNorth() + 90) / 180)
+        ];
+        wind.setView(bbox, new Float32Array(matrix));
+
         if (update) {
-            const bounds = map.getBounds();
-            const bbox = [
-                Math.max(0, (bounds.getWest() + 180) / 360),
-                Math.max(0, (bounds.getSouth() + 90) / 180),
-                Math.min(1.0, (bounds.getEast() + 180) / 360),
-                Math.min(1.0, (bounds.getNorth() + 90) / 180)
-            ];
-            wind.setView(bbox, new Float32Array(matrix));
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
             wind.resize();
             wind.numParticles = wind.numParticles;
             update = false;
@@ -80,12 +80,16 @@ class WindLayer {
 map.on('load', function () {
 
     map.on('movestart', () => {
-        draw = false;
+        wind.fadeOpacity = 0.9;
+        wind.dropRate = 0.01;
+        // draw = false;
     })
 
     map.on('moveend', () => {
         draw = true;
-        update = true;
+        wind.fadeOpacity = 0.966;
+        wind.dropRate = 0.003;
+        // update = true;
     });
 
     getJSON('/debug/2016112000.json', function (windData) {
@@ -94,7 +98,7 @@ map.on('load', function () {
         windImage.src = '/debug/2016112000.png';
         windImage.onload = function () {
 
-            map.addLayer(new WindLayer());
+            map.addLayer(new WindLayer(), 'building');
 
             setTimeout(function () {
                 wind.setWind(windData);
