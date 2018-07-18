@@ -113,6 +113,10 @@ class ParsingContext {
                         if (!options.omitTypeAnnotations) {
                             parsed = new Coercion(expected, [parsed]);
                         }
+                    } else if (expected.kind === 'formatted' && (actual.kind === 'value' || actual.kind === 'string')) {
+                        if (!options.omitTypeAnnotations) {
+                            parsed = new Coercion(expected, [parsed]);
+                        }
                     } else if (this.checkSubtype(this.expectedType, parsed.type)) {
                         return null;
                     }
