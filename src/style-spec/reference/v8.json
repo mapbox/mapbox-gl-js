@@ -2501,7 +2501,9 @@
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.45.0"
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -2971,6 +2973,11 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "collator": {
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -2983,6 +2990,11 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "collator": {
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -2995,6 +3007,11 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "collator": {
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -3007,6 +3024,11 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "collator": {
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -3019,6 +3041,11 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "collator": {
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -3031,6 +3058,11 @@
             "android": "6.0.0",
             "ios": "4.0.0",
             "macos": "0.7.0"
+          },
+          "collator": {
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       },
@@ -3115,7 +3147,9 @@
         "group": "String",
         "sdk-support": {
           "basic functionality": {
-            "js": "0.45.0"
+            "js": "0.45.0",
+            "ios": "4.2.0",
+            "macos": "0.9.0"
           }
         }
       }
@@ -5086,7 +5120,9 @@
       "default": "linear",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.47.0"
+          "js": "0.47.0",
+          "ios": "4.2.0",
+          "macos": "0.9.0"
         },
         "data-driven styling": {}
       },
