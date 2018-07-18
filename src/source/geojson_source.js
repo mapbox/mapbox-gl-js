@@ -175,7 +175,8 @@ class GeoJSONSource extends Evented implements Source {
         this.fire(new Event('dataloading', {dataType: 'source'}));
         this._updateWorkerData((err) => {
             if (err) {
-                return this.fire(new ErrorEvent(err));
+                this.fire(new ErrorEvent(err));
+                return;
             }
 
             const data: Object = { dataType: 'source', sourceDataType: 'content' };
@@ -189,12 +190,55 @@ class GeoJSONSource extends Evented implements Source {
         return this;
     }
 
+    /**
+     * For clustered sources, fetches the zoom at which the given cluster expands.
+     *
+     * @param clusterId The value of the cluster's `cluster_id` property.
+     * @param callback A callback to be called when the zoom value is retrieved (`(error, zoom) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterExpansionZoom(clusterId: number, callback: Callback<number>) {
+        this.dispatcher.send('geojson.getClusterExpansionZoom', { clusterId, source: this.id }, callback, this.workerID);
+        return this;
+    }
+
+    /**
+     * For clustered sources, fetches the children of the given cluster on the next zoom level (as an array of GeoJSON features).
+     *
+     * @param clusterId The value of the cluster's `cluster_id` property.
+     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterChildren(clusterId: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.send('geojson.getClusterChildren', { clusterId, source: this.id }, callback, this.workerID);
+        return this;
+    }
+
+    /**
+     * For clustered sources, fetches the original points that belong to the cluster (as an array of GeoJSON features).
+     *
+     * @param clusterId The value of the cluster's `cluster_id` property.
+     * @param limit The maximum number of features to return.
+     * @param offset The number of features to skip (e.g. for pagination).
+     * @param callback A callback to be called when the features are retrieved (`(error, features) => { ... }`).
+     * @returns {GeoJSONSource} this
+     */
+    getClusterLeaves(clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.send('geojson.getClusterLeaves', {
+            source: this.id,
+            clusterId,
+            limit,
+            offset
+        }, callback, this.workerID);
+        return this;
+    }
+
     /*
      * Responsible for invoking WorkerSource's geojson.loadData target, which
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _updateWorkerData(callback: Function) {
+    _updateWorkerData(callback: Callback<void>) {
         const options = extend({}, this.workerOptions);
         const data = this._data;
         if (typeof data === 'string') {

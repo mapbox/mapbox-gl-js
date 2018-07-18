@@ -215,7 +215,7 @@ class SourceCache extends Evented {
         this._cache.reset();
 
         for (const i in this._tiles) {
-            this._reloadTile(i, 'reloading');
+            if (this._tiles[i].state !== "errored") this._reloadTile(i, 'reloading');
         }
     }
 

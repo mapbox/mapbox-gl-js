@@ -94,6 +94,10 @@ const plugins = {
             "website": "https://github.com/mapbox/mapbox-gl-layer-groups",
             "description": "manages layer groups in Mapbox GL JS"
         },
+        "expression-jamsession": {
+            "website": "https://github.com/mapbox/expression-jamsession/",
+            "description": md`converts [Mapbox Studio formulas](https://www.mapbox.com/help/studio-manual-styles/#use-a-formula) into [expressions](https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions)`
+        },
         "simplespec-to-gl-style": {
             "website": "https://github.com/mapbox/simplespec-to-gl-style",
             "description": md`converts GeoJSON styled with [\`simplestyle-spec\`](https://github.com/mapbox/simplestyle-spec/) to a Mapbox GL Style`

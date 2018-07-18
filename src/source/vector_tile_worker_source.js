@@ -43,7 +43,7 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  * @private
  */
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const xhr = getArrayBuffer(params.request, (err, response) => {
+    const request = getArrayBuffer(params.request, (err, response) => {
         if (err) {
             callback(err);
         } else if (response) {
@@ -56,7 +56,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
         }
     });
     return () => {
-        xhr.abort();
+        request.cancel();
         callback();
     };
 }

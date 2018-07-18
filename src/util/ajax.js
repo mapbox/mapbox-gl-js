@@ -3,6 +3,7 @@
 import window from './window';
 
 import type { Callback } from '../types/callback';
+import type { Cancelable } from '../types/cancelable';
 
 /**
  * The type of a resource.
@@ -69,7 +70,7 @@ function makeRequest(requestParameters: RequestParameters): XMLHttpRequest {
     return xhr;
 }
 
-export const getJSON = function(requestParameters: RequestParameters, callback: Callback<mixed>) {
+export const getJSON = function(requestParameters: RequestParameters, callback: Callback<mixed>): Cancelable {
     const xhr = makeRequest(requestParameters);
     xhr.setRequestHeader('Accept', 'application/json');
     xhr.onerror = function() {
@@ -93,10 +94,10 @@ export const getJSON = function(requestParameters: RequestParameters, callback: 
         }
     };
     xhr.send();
-    return xhr;
+    return { cancel: () => xhr.abort() };
 };
 
-export const getArrayBuffer = function(requestParameters: RequestParameters, callback: Callback<{data: ArrayBuffer, cacheControl: ?string, expires: ?string}>) {
+export const getArrayBuffer = function(requestParameters: RequestParameters, callback: Callback<{data: ArrayBuffer, cacheControl: ?string, expires: ?string}>): Cancelable {
     const xhr = makeRequest(requestParameters);
     xhr.responseType = 'arraybuffer';
     xhr.onerror = function() {
@@ -118,7 +119,7 @@ export const getArrayBuffer = function(requestParameters: RequestParameters, cal
         }
     };
     xhr.send();
-    return xhr;
+    return { cancel: () => xhr.abort() };
 };
 
 function sameOrigin(url) {
@@ -129,7 +130,7 @@ function sameOrigin(url) {
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
-export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>) {
+export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
     // request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
     return getArrayBuffer(requestParameters, (err, imgData) => {
@@ -150,8 +151,9 @@ export const getImage = function(requestParameters: RequestParameters, callback:
     });
 };
 
-export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVideoElement>) {
+export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVideoElement>): Cancelable {
     const video: HTMLVideoElement = window.document.createElement('video');
+    video.muted = true;
     video.onloadstart = function() {
         callback(null, video);
     };
@@ -163,5 +165,5 @@ export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVid
         s.src = urls[i];
         video.appendChild(s);
     }
-    return video;
+    return { cancel: () => {} };
 };

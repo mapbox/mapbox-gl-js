@@ -1,4 +1,10 @@
-## 13.0.0
+## 13.1.0
+
+## ✨ Features and improvements
+* Add `raster-resampling` raster paint property ([#6411](https://github.com/mapbox/mapbox-gl-js/pull/6411)) (h/t [andrewharvey](https://github.com/andrewharvey))
+* Add `symbol-placement: line-center` ([#6821](https://github.com/mapbox/mapbox-gl-js/pull/6821))
+
+## 13.0.1
 
 ### ⚠️ Breaking changes
 * Align implicit type behavior of `match` expressions with with `case/==` ([#6684](https://github.com/mapbox/mapbox-gl-js/pull/6684))
@@ -11,6 +17,9 @@
 
 ### 🐛 Bug fixes
 * Use named exports for style-spec entrypoint module ([#6601](https://github.com/mapbox/mapbox-gl-js/issues/6601)
+
+## 13.0.0
+Malformed package published to NPM.
 
 ## 12.0.0
 

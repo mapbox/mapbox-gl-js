@@ -24,6 +24,19 @@ test('filter', (t) => {
         t.end();
     });
 
+    t.test('expression, collator comparison', (t) => {
+        const caseSensitive = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': true }]]);
+        t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
+        t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), false);
+        t.equal(caseSensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
+
+        const caseInsensitive = filter(['==', ['string', ['get', 'x']], ['string', ['get', 'y']], ['collator', { 'case-sensitive': false }]]);
+        t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'b'}}), false);
+        t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'A'}}), true);
+        t.equal(caseInsensitive({zoom: 0}, {properties: {x: 'a', y: 'a'}}), true);
+        t.end();
+    });
+
     t.test('expression, any/all', (t) => {
         t.equal(filter(['all'])(), true);
         t.equal(filter(['all', true])(), true);
@@ -51,7 +64,6 @@ test('filter', (t) => {
 
         t.end();
     });
-
 
     t.test('degenerate', (t) => {
         t.equal(filter()(), true);

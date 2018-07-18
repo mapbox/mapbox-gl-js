@@ -39,6 +39,7 @@ import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/touch_zoom_rotate';
 import type {TaskID} from '../util/task_queue';
+import type {Cancelable} from '../types/cancelable';
 
 type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -107,6 +108,8 @@ const defaultOptions = {
 
     bearingSnap: 7,
 
+    clickTolerance: 3,
+
     hash: false,
 
     attributionControl: true,
@@ -170,6 +173,7 @@ const defaultOptions = {
  *   bearing will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
  *   the map within 7 degrees of north, the map will automatically snap to exact north.
  * @param {boolean} [options.pitchWithRotate=true] If `false`, the map's pitch (tilt) control with "drag to rotate" interaction will be disabled.
+ * @param {number} [options.clickTolerance=3] The max number of pixels a user can shift the mouse pointer during a click for it to be considered a valid click (as opposed to a mouse drag).
  * @param {boolean} [options.attributionControl=true] If `true`, an {@link AttributionControl} will be added to the map.
  * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the Mapbox wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
@@ -237,7 +241,7 @@ class Map extends Camera {
     _canvas: HTMLCanvasElement;
     _transformRequest: RequestTransformFunction;
     _maxTileCacheSize: number;
-    _frameId: any;
+    _frame: ?Cancelable;
     _styleDirty: ?boolean;
     _sourcesDirty: ?boolean;
     _placementDirty: ?boolean;
@@ -445,29 +449,26 @@ class Map extends Camera {
         this.transform.resize(width, height);
         this.painter.resize(width, height);
 
-        return this
-            .fire(new Event('movestart', eventData))
+        this.fire(new Event('movestart', eventData))
             .fire(new Event('move', eventData))
             .fire(new Event('resize', eventData))
             .fire(new Event('moveend', eventData));
+
+        return this;
     }
 
     /**
-     * Returns the map's geographical bounds.
+     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
+     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
      *
-     * @returns {LngLatBounds} The map's geographical bounds.
+     * @returns {LngLatBounds}
      */
     getBounds() {
-        const bounds = new LngLatBounds(
-            this.transform.pointLocation(new Point(0, this.transform.height)),
-            this.transform.pointLocation(new Point(this.transform.width, 0)));
-
-        if (this.transform.angle || this.transform.pitch) {
-            bounds.extend(this.transform.pointLocation(new Point(this.transform.size.x, 0)));
-            bounds.extend(this.transform.pointLocation(new Point(0, this.transform.size.y)));
-        }
-
-        return bounds;
+        return new LngLatBounds()
+            .extend(this.transform.pointLocation(new Point(0, 0)))
+            .extend(this.transform.pointLocation(new Point(this.transform.width, 0)))
+            .extend(this.transform.pointLocation(new Point(this.transform.width, this.transform.height)))
+            .extend(this.transform.pointLocation(new Point(0, this.transform.height)));
     }
 
     /**
@@ -1546,9 +1547,9 @@ class Map extends Camera {
 
     _contextLost(event: *) {
         event.preventDefault();
-        if (this._frameId) {
-            browser.cancelFrame(this._frameId);
-            this._frameId = null;
+        if (this._frame) {
+            this._frame.cancel();
+            this._frame = null;
         }
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
@@ -1703,9 +1704,11 @@ class Map extends Camera {
      */
     remove() {
         if (this._hash) this._hash.remove();
-        browser.cancelFrame(this._frameId);
+        if (this._frame) {
+            this._frame.cancel();
+            this._frame = null;
+        }
         this._renderTaskQueue.clear();
-        this._frameId = null;
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
@@ -1721,9 +1724,9 @@ class Map extends Camera {
     }
 
     _rerender() {
-        if (this.style && !this._frameId) {
-            this._frameId = browser.frame(() => {
-                this._frameId = null;
+        if (this.style && !this._frame) {
+            this._frame = browser.frame(() => {
+                this._frame = null;
                 this._render();
             });
         }
@@ -1735,7 +1738,7 @@ class Map extends Camera {
 
     _onWindowResize() {
         if (this._trackResize) {
-            this.stop().resize()._update();
+            this.resize()._update();
         }
     }
 

@@ -529,13 +529,11 @@ test('Map', (t) => {
         t.test('do resize if trackResize is true (default)', (t) => {
             const map = createMap(t);
 
-            t.spy(map, 'stop');
             t.spy(map, '_update');
             t.spy(map, 'resize');
 
             map._onWindowResize();
 
-            t.ok(map.stop.called);
             t.ok(map._update.called);
             t.ok(map.resize.called);
 
@@ -557,9 +555,16 @@ test('Map', (t) => {
         t.test('rotated bounds', (t) => {
             const map = createMap(t, { zoom: 1, bearing: 45, skipCSSStub: true });
             t.deepEqual(
-                toFixed([[-49.718445552178764, 0], [49.7184455522, 0]]),
+                toFixed([[-49.718445552178764, -44.44541580601936], [49.7184455522, 44.445415806019355]]),
                 toFixed(map.getBounds().toArray())
             );
+
+            map.setBearing(135);
+            t.deepEqual(
+                toFixed([[-49.718445552178764, -44.44541580601936], [49.7184455522, 44.445415806019355]]),
+                toFixed(map.getBounds().toArray())
+            );
+
             t.end();
         });
 
@@ -1443,6 +1448,21 @@ test('Map', (t) => {
         new Map({ container: window.document.createElement('div') });
 
         t.ok(stub.calledOnce);
+
+        t.end();
+    });
+
+    t.test('continues camera animation on resize', (t) => {
+        const map = createMap(t),
+            container = map.getContainer();
+
+        map.flyTo({ center: [200, 0], duration: 100 });
+
+        Object.defineProperty(container, 'offsetWidth', {value: 250});
+        Object.defineProperty(container, 'offsetHeight', {value: 250});
+        map.resize();
+
+        t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');
 
         t.end();
     });

@@ -15,6 +15,7 @@ import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -34,6 +35,7 @@ class VectorTileSource extends Evented implements Source {
     tileBounds: TileBounds;
     reparseOverscaled: boolean;
     isTileClipped: boolean;
+    _tileJSONRequest: ?Cancelable;
 
     constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
@@ -62,8 +64,8 @@ class VectorTileSource extends Evented implements Source {
 
     load() {
         this.fire(new Event('dataloading', {dataType: 'source'}));
-
-        loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+        this._tileJSONRequest = loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+            this._tileJSONRequest = null;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
@@ -86,6 +88,13 @@ class VectorTileSource extends Evented implements Source {
     onAdd(map: Map) {
         this.map = map;
         this.load();
+    }
+
+    onRemove() {
+        if (this._tileJSONRequest) {
+            this._tileJSONRequest.cancel();
+            this._tileJSONRequest = null;
+        }
     }
 
     serialize() {

@@ -9,6 +9,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "id": 108,
     "source": "geojson",
     "state": {}
   },
@@ -22,6 +23,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "id": 119,
     "source": "geojson",
     "state": {}
   },
@@ -35,6 +37,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "id": 107,
     "source": "geojson",
     "state": {}
   },
@@ -48,6 +51,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "id": 106,
     "source": "geojson",
     "state": {}
   },
@@ -61,6 +65,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "id": 96,
     "source": "geojson",
     "state": {}
   },
@@ -74,6 +79,7 @@
     },
     "type": "Feature",
     "properties": {},
+    "id": 118,
     "source": "geojson",
     "state": {}
   }
