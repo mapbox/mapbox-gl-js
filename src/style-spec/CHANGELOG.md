@@ -1,3 +1,9 @@
+## 13.1.0
+
+## ✨ Features and improvements
+* Add `raster-resampling` raster paint property ([#6411](https://github.com/mapbox/mapbox-gl-js/pull/6411)) (h/t [andrewharvey](https://github.com/andrewharvey))
+* Add `symbol-placement: line-center` ([#6821](https://github.com/mapbox/mapbox-gl-js/pull/6821))
+
 ## 13.0.1
 
 ### ⚠️ Breaking changes
