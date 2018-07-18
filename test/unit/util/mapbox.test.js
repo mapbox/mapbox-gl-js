@@ -284,6 +284,23 @@ test("mapbox", (t) => {
             callback();
         });
 
+        t.test('POSTs appuserTurnstile event', (t) => {
+            config.ACCESS_TOKEN = 'pk.*';
+
+            mapbox.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+            const req = window.server.requests[0];
+            const reqBody = JSON.parse(req.requestBody)[0];
+            console.log(req.url);
+            t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.*`);
+            t.equal(req.method, 'POST');
+            t.equal(reqBody.event, 'appUserTurnstile');
+            t.equal(reqBody.sdkVersion, version);
+            t.ok(reqBody.userId);
+
+            t.end();
+        });
+
         t.test('does not POST when mapboxgl.ACCESS_TOKEN is not set', (t) => {
             config.ACCESS_TOKEN = null;
 
@@ -296,26 +313,20 @@ test("mapbox", (t) => {
         t.test('does not POST when urls does not point to mapbox.com', (t) => {
             config.ACCESS_TOKEN = 'pk.*';
 
-            mapbox.postTurnstileEvent([' a.tiles.mapxbox.cn']);
+            mapbox.postTurnstileEvent(['a.tiles.boxmap.com']);
 
             t.equal(window.server.requests.length, 0);
             t.end();
         });
 
-        t.test('POSTs appuserTurnstile event', (t) => {
+        t.test('Doesnt POST appuserTurnstile event second time', (t) => {
+            //Depend on having a successful POST in a prior test.
             config.ACCESS_TOKEN = 'pk.*';
 
             mapbox.postTurnstileEvent(['a.tiles.mapbox.com']);
-            window.server.respond();
 
             const req = window.server.requests[0];
-            const reqBody = JSON.parse(req.requestBody)[0];
-
-            t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.*`);
-            t.equal(req.method, 'POST');
-            t.equal(reqBody.event, 'appUserTurnstile');
-            t.equal(reqBody.sdkVersion, version);
-            t.ok(reqBody.userId);
+            t.false(req);
 
             t.end();
         });
