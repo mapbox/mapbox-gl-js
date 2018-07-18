@@ -120,7 +120,6 @@ class Camera extends Evented {
      * @returns {Map} `this`
      * @example
      * map.setCenter([-74, 38]);
-     * @see [Move symbol with the keyboard](https://www.mapbox.com/mapbox-gl-js/example/rotating-controllable-marker/)
      */
     setCenter(center: LngLatLike, eventData?: Object) {
         return this.jumpTo({center: center}, eventData);
