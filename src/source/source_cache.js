@@ -327,9 +327,7 @@ class SourceCache extends Evented {
      * Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
      * adds found tiles to retain object; returns true if any child is found.
      */
-    _findLoadedChildren(tileID: OverscaledTileID, maxCoveringZoom: number, retain: {[any]: OverscaledTileID}): boolean {
-        let found = false;
-
+    _findLoadedChildren(tileID: OverscaledTileID, maxCoveringZoom: number, retain: {[any]: OverscaledTileID}) {
         for (const id in this._tiles) {
             let tile = this._tiles[id];
 
@@ -342,23 +340,20 @@ class SourceCache extends Evented {
                 Math.floor(tile.tileID.canonical.y / z2) !== tileID.canonical.y)
                 continue;
 
-            // found loaded child
-            retain[id] = tile.tileID;
-            found = true;
-
-            // loop through parents; retain the topmost loaded one if found
+            // found loaded child; loop through parents and retain the topmost loaded one if found
+            let topmostLoadedID = tile.tileID;
             while (tile && tile.tileID.overscaledZ - 1 > tileID.overscaledZ) {
-                const parent = tile.tileID.scaledTo(tile.tileID.overscaledZ - 1);
-                if (!parent) break;
+                const parentID = tile.tileID.scaledTo(tile.tileID.overscaledZ - 1);
+                if (!parentID) break;
 
-                tile = this._tiles[parent.key];
+                tile = this._tiles[parentID.key];
                 if (tile && tile.hasData()) {
-                    delete retain[id];
-                    retain[parent.key] = parent;
+                    topmostLoadedID = parentID;
                 }
             }
+
+            retain[topmostLoadedID.key] = topmostLoadedID;
         }
-        return found;
     }
 
     /**
