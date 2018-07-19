@@ -506,9 +506,8 @@ class SourceCache extends Evented {
                 // fadeEndTime is in the future, then this tile is still
                 // fading in. Find tiles to cross-fade with it.
                 if (typeof tile.fadeEndTime === 'undefined' || tile.fadeEndTime >= browser.now()) {
-                    if (this._findLoadedChildren(tileID, maxCoveringZoom, retain)) {
-                        retain[id] = tileID;
-                    }
+                    this._findLoadedChildren(tileID, maxCoveringZoom, retain);
+
                     const parentTile = this.findLoadedParent(tileID, minCoveringZoom, parentsForFading);
                     if (parentTile) {
                         this._addTile(parentTile.tileID);
@@ -559,26 +558,19 @@ class SourceCache extends Evented {
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
-        for (let i = 0; i < idealTileIDs.length; i++) {
-            const tileID = idealTileIDs[i];
+        for (const tileID of idealTileIDs) {
             let tile = this._addTile(tileID);
-            let parentWasRequested = false;
-            if (tile.hasData()) {
-                retain[tileID.key] = tileID;
-            } else {
+
+            // retain the tile even if it's not loaded because it's an ideal tile.
+            retain[tileID.key] = tileID;
+
+            if (!tile.hasData()) {
                 // The tile we require is not yet loaded or does not exist.
                 // We are now attempting to load child and parent tiles.
 
-                // As we descend up and down the tile pyramid of the ideal tile, we check whether the parent
-                // tile has been previously requested (and errored in this case due to the previous conditional)
-                // in order to determine if we need to request its parent.
-                parentWasRequested = tile.wasRequested();
-
-                // The tile isn't loaded yet, but retain it anyway because it's an ideal tile.
-                retain[tileID.key] = tileID;
                 let covered = true;
-                const overscaledZ = zoom + 1;
-                if (overscaledZ > this._source.maxzoom) {
+
+                if (zoom + 1 > this._source.maxzoom) {
                     // We're looking for an overzoomed child tile.
                     const childCoord = tileID.children(this._source.maxzoom)[0];
                     const childTile = this.getTile(childCoord);
@@ -591,8 +583,8 @@ class SourceCache extends Evented {
                     this._findLoadedChildren(tileID, maxCoveringZoom, retain);
                     // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
                     const children = tileID.children(this._source.maxzoom);
-                    for (let j = 0; j < children.length; j++) {
-                        if (!retain[children[j].key]) {
+                    for (const child of children) {
+                        if (!retain[child.key]) {
                             covered = false;
                             break;
                         }
@@ -600,8 +592,13 @@ class SourceCache extends Evented {
                 }
 
                 if (!covered) {
-
                     // We couldn't find child tiles that entirely cover the ideal tile.
+
+                    // As we ascend up the tile pyramid of the ideal tile, we check whether the parent
+                    // tile has been previously requested (and errored in this case due to the previous conditional)
+                    // in order to determine if we need to request its parent.
+                    let parentWasRequested = tile.wasRequested();
+
                     for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
 
                         const parentId = tileID.scaledTo(overscaledZ);
