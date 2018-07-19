@@ -564,66 +564,54 @@ class SourceCache extends Evented {
             // retain the tile even if it's not loaded because it's an ideal tile.
             retain[tileID.key] = tileID;
 
-            if (!tile.hasData()) {
-                // The tile we require is not yet loaded or does not exist.
-                // We are now attempting to load child and parent tiles.
+            if (tile.hasData()) continue;
 
-                let covered = true;
+            // The tile we require is not yet loaded or does not exist.
+            // We are now attempting to load child and parent tiles.
 
-                if (zoom + 1 > this._source.maxzoom) {
-                    // We're looking for an overzoomed child tile.
-                    const childCoord = tileID.children(this._source.maxzoom)[0];
-                    const childTile = this.getTile(childCoord);
-                    if (!!childTile && childTile.hasData()) {
-                        retain[childCoord.key] = childCoord;
-                    } else {
-                        covered = false;
-                    }
-                } else {
-                    this._findLoadedChildren(tileID, maxCoveringZoom, retain);
-                    // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
-                    const children = tileID.children(this._source.maxzoom);
-                    for (const child of children) {
-                        if (!retain[child.key]) {
-                            covered = false;
-                            break;
-                        }
-                    }
+            if (zoom + 1 > this._source.maxzoom) {
+                // We're looking for an overzoomed child tile.
+                const childCoord = tileID.children(this._source.maxzoom)[0];
+                const childTile = this.getTile(childCoord);
+                if (!!childTile && childTile.hasData()) {
+                    retain[childCoord.key] = childCoord;
+                    continue; // tile is covered by overzoomed child
                 }
+            } else {
+                this._findLoadedChildren(tileID, maxCoveringZoom, retain);
+                // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
+                const children = tileID.children(this._source.maxzoom);
 
-                if (!covered) {
-                    // We couldn't find child tiles that entirely cover the ideal tile.
+                if (retain[children[0].key] &&
+                    retain[children[1].key] &&
+                    retain[children[2].key] &&
+                    retain[children[3].key]) continue; // tile is covered by children
+            }
 
-                    // As we ascend up the tile pyramid of the ideal tile, we check whether the parent
-                    // tile has been previously requested (and errored in this case due to the previous conditional)
-                    // in order to determine if we need to request its parent.
-                    let parentWasRequested = tile.wasRequested();
+            // We couldn't find child tiles that entirely cover the ideal tile.
 
-                    for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
+            // As we ascend up the tile pyramid of the ideal tile, we check whether the parent
+            // tile has been previously requested (and errored in this case due to the previous conditional)
+            // in order to determine if we need to request its parent.
+            let parentWasRequested = tile.wasRequested();
 
-                        const parentId = tileID.scaledTo(overscaledZ);
-                        if (checked[parentId.key]) {
-                            // Break parent tile ascent, this route has been previously checked by another child.
-                            break;
-                        } else {
-                            checked[parentId.key] = true;
-                        }
+            for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
+                const parentId = tileID.scaledTo(overscaledZ);
 
-                        tile = this.getTile(parentId);
-                        if (!tile && parentWasRequested) {
-                            tile = this._addTile(parentId);
-                        }
+                // Break parent tile ascent if this route has been previously checked by another child.
+                if (checked[parentId.key]) break;
+                checked[parentId.key] = true;
 
-                        if (tile) {
-                            retain[parentId.key] = parentId;
-                            // Save the current values, since they're the parent of the next iteration
-                            // of the parent tile ascent loop.
-                            parentWasRequested = tile.wasRequested();
-                            if (tile.hasData()) {
-                                break;
-                            }
-                        }
-                    }
+                tile = this.getTile(parentId);
+                if (!tile && parentWasRequested) {
+                    tile = this._addTile(parentId);
+                }
+                if (tile) {
+                    retain[parentId.key] = parentId;
+                    // Save the current values, since they're the parent of the next iteration
+                    // of the parent tile ascent loop.
+                    parentWasRequested = tile.wasRequested();
+                    if (tile.hasData()) break;
                 }
             }
         }
