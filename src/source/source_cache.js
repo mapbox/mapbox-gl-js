@@ -490,42 +490,33 @@ class SourceCache extends Evented {
         // parent or child tiles that are *already* loaded.
         const retain = this._updateRetainedTiles(idealTileIDs, zoom);
 
-        const parentsForFading = {};
-
         if (isRasterType(this._source.type)) {
+            const parentsForFading = {};
             const ids = Object.keys(retain);
-            for (let k = 0; k < ids.length; k++) {
-                const id = ids[k];
+            for (const id of ids) {
                 const tileID = retain[id];
                 assert(tileID.key === +id);
+
                 const tile = this._tiles[id];
-                if (!tile) continue;
+                if (!tile || tile.fadeEndTime && tile.fadeEndTime <= browser.now()) continue;
 
-                // If the drawRasterTile has never seen this tile, then
-                // tile.fadeEndTime may be unset.  In that case, or if
-                // fadeEndTime is in the future, then this tile is still
-                // fading in. Find tiles to cross-fade with it.
-                if (typeof tile.fadeEndTime === 'undefined' || tile.fadeEndTime >= browser.now()) {
-                    this._findLoadedChildren(tileID, maxCoveringZoom, retain);
+                // if the tile is loaded but still fading in, find tiles to cross-fade with it.
+                this._findLoadedChildren(tileID, maxCoveringZoom, retain);
 
-                    const parentTile = this.findLoadedParent(tileID, minCoveringZoom, parentsForFading);
-                    if (parentTile) {
-                        this._addTile(parentTile.tileID);
-                    }
+                const parentTile = this.findLoadedParent(tileID, minCoveringZoom, parentsForFading);
+                if (parentTile) {
+                    this._addTile(parentTile.tileID);
+                }
+            }
+            for (const id in parentsForFading) {
+                if (!retain[id]) {
+                    // If a tile is only needed for fading, mark it as covered so that it isn't rendered on it's own.
+                    this._coveredTiles[id] = true;
+                    retain[id] = parentsForFading[id];
                 }
             }
         }
 
-        let fadedParent;
-        for (fadedParent in parentsForFading) {
-            if (!retain[fadedParent]) {
-                // If a tile is only needed for fading, mark it as covered so that it isn't rendered on it's own.
-                this._coveredTiles[fadedParent] = true;
-            }
-        }
-        for (fadedParent in parentsForFading) {
-            retain[fadedParent] = parentsForFading[fadedParent];
-        }
         for (const retainedId in retain) {
             // Make sure retained tiles always clear any existing fade holds
             // so that if they're removed again their fade timer starts fresh.
@@ -533,8 +524,7 @@ class SourceCache extends Evented {
         }
         // Remove the tiles we don't need anymore.
         const remove = keysDifference(this._tiles, retain);
-        for (let i = 0; i < remove.length; i++) {
-            const tileID = remove[i];
+        for (const tileID of remove) {
             const tile = this._tiles[tileID];
             if (tile.hasSymbolBuckets && !tile.holdingForFade()) {
                 tile.setHoldDuration(this.map._fadeDuration);
