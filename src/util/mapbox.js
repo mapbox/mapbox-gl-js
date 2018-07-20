@@ -128,16 +128,14 @@ function formatUrl(obj: UrlObject): string {
 }
 
 class TurnstileEvent {
-    STORAGE_TOKEN: string;
-    localStorageAvailable: boolean;
+    static STORAGE_TOKEN: string;
+    static localStorageAvailable: boolean;
     eventData: Object;
     queue: Array<number>;
     pending: boolean
     pendingRequest: ?Cancelable;
 
     constructor() {
-        this.STORAGE_TOKEN = 'mapbox.turnstileEventData';
-        this.localStorageAvailable = storageAvailable('localStorage');
         this.eventData = { anonId: null, lastSuccess: null };
         this.queue = [];
         this.pending = false;
@@ -150,16 +148,15 @@ class TurnstileEvent {
     }
 
     processRequests() {
-        if (this.pending || this.queue.length === 0) {
+        if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
-        this.pending = true;
         let dueForEvent = false;
         if (!this.eventData.anonId || !this.eventData.lastSuccess) {
             //Retrieve cached data
-            if (this.localStorageAvailable) {
+            if (TurnstileEvent.localStorageAvailable) {
                 try {
-                    const data = window.localStorage.getItem(this.STORAGE_TOKEN);
+                    const data = window.localStorage.getItem(TurnstileEvent.STORAGE_TOKEN);
                     if (data) {
                         const json = JSON.parse(data);
                         this.eventData.anonId = json.anonId;
@@ -207,19 +204,27 @@ class TurnstileEvent {
         }]);
 
         this.pendingRequest = postData(request, payload, (error) => {
-            if (!error && this.localStorageAvailable) {
+            this.pendingRequest = null;
+            if (!error) {
                 this.eventData.lastSuccess = nextUpdate;
-                window.localStorage.setItem(this.STORAGE_TOKEN, JSON.stringify({
-                    lastSuccess: this.eventData.lastSuccess,
-                    anonId: this.eventData.anonId
-                }));
-                this.pendingRequest = null;
-                this.pending = false;
+                if (TurnstileEvent.localStorageAvailable) {
+                    try {
+                        window.localStorage.setItem(TurnstileEvent.STORAGE_TOKEN, JSON.stringify({
+                            lastSuccess: this.eventData.lastSuccess,
+                            anonId: this.eventData.anonId
+                        }));
+                    } catch (e) {
+                        warnOnce('Unable to write to LocalStorage');
+                    }
+                }
                 this.processRequests();
             }
         });
     }
 }
+TurnstileEvent.STORAGE_TOKEN = 'mapbox.turnstileEventData';
+TurnstileEvent.localStorageAvailable = storageAvailable('localStorage');
+
 const turnstileEvent_ = new TurnstileEvent();
 
 export const postTurnstileEvent = function (tileUrls: Array<string>) {
@@ -228,6 +233,6 @@ export const postTurnstileEvent = function (tileUrls: Array<string>) {
     if (config.ACCESS_TOKEN &&
         Array.isArray(tileUrls) &&
         tileUrls.some((url) => { return /(mapbox\.c)(n|om)/i.test(url); })) {
-        turnstileEvent_.queueRequest(Date.now());
+        turnstileEvent_.queueRequest(browser.now());
     }
 };
