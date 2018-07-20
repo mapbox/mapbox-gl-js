@@ -1,6 +1,7 @@
 // @flow
 
 import window from './window';
+import { extend } from './util';
 
 import type { Callback } from '../types/callback';
 import type { Cancelable } from '../types/cancelable';
@@ -124,8 +125,7 @@ export const getArrayBuffer = function(requestParameters: RequestParameters, cal
 };
 
 export const postData = function(requestParameters: RequestParameters, payload: string, callback: Callback<mixed>): Cancelable {
-    requestParameters.method = 'POST';
-    const xhr = makeRequest(requestParameters);
+    const xhr = makeRequest(extend(requestParameters, {method: 'POST'}));
 
     xhr.onerror = function() {
         callback(new Error(xhr.statusText));
