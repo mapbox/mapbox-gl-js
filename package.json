@@ -13,7 +13,7 @@
     "node": ">=6.4.0"
   },
   "dependencies": {
-    "@mapbox/jsonlint-lines-primitives": "^2.0.1",
+    "@mapbox/jsonlint-lines-primitives": "^2.0.2",
     "@mapbox/mapbox-gl-supported": "^1.4.0",
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/shelf-pack": "^3.1.0",

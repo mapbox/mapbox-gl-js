@@ -27,7 +27,7 @@
     "gl-style-composite": "bin/gl-style-composite"
   },
   "dependencies": {
-    "@mapbox/jsonlint-lines-primitives": "~2.0.1",
+    "@mapbox/jsonlint-lines-primitives": "~2.0.2",
     "@mapbox/unitbezier": "^0.0.0",
     "csscolorparser": "~1.0.2",
     "minimist": "0.0.8",
