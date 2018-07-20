@@ -53,10 +53,9 @@ class SourceCache extends Evented {
     _shouldReloadOnResume: boolean;
     _coveredTiles: {[any]: boolean};
     transform: Transform;
-    _isIdRenderable: (id: number) => boolean;
-    _isIdRenderableForSymbols: (id: number) => boolean;
+    _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
-    _state: SourceFeatureState
+    _state: SourceFeatureState;
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -93,9 +92,6 @@ class SourceCache extends Evented {
         this._timers = {};
         this._cacheTimers = {};
         this._maxTileCacheSize = null;
-
-        this._isIdRenderable = this._isIdRenderable.bind(this);
-        this._isIdRenderableForSymbols = this._isIdRenderableForSymbols.bind(this);
 
         this._coveredTiles = {};
         this._state = new SourceFeatureState();
@@ -180,22 +176,24 @@ class SourceCache extends Evented {
      * Return all tile ids ordered with z-order, and cast to numbers
      */
     getIds(): Array<number> {
-
-        const compareKeyZoom = (a_, b_) => {
-            const a = this._tiles[a_].tileID;
-            const b = this._tiles[b_].tileID;
-            const rotatedA = (new Point(a.canonical.x, a.canonical.y)).rotate(this.transform.angle);
-            const rotatedB = (new Point(b.canonical.x, b.canonical.y)).rotate(this.transform.angle);
-            return a.overscaledZ - b.overscaledZ || rotatedB.y - rotatedA.y || rotatedB.x - rotatedA.x;
-        };
-
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     }
 
     getRenderableIds(symbolLayer?: boolean) {
-        return symbolLayer ?
-            this.getIds().filter(this._isIdRenderableForSymbols) :
-            this.getIds().filter(this._isIdRenderable);
+        const ids = [];
+        for (const id in this._tiles) {
+            if (this._isIdRenderable(+id, symbolLayer)) ids.push(+id);
+        }
+        if (symbolLayer) {
+            return ids.sort((a_, b_) => {
+                const a = this._tiles[a_].tileID;
+                const b = this._tiles[b_].tileID;
+                const rotatedA = (new Point(a.canonical.x, a.canonical.y))._rotate(this.transform.angle);
+                const rotatedB = (new Point(b.canonical.x, b.canonical.y))._rotate(this.transform.angle);
+                return a.overscaledZ - b.overscaledZ || rotatedB.y - rotatedA.y || rotatedB.x - rotatedA.x;
+            });
+        }
+        return ids.sort(compareKeyZoom);
     }
 
     hasRenderableParent(tileID: OverscaledTileID) {
@@ -206,12 +204,9 @@ class SourceCache extends Evented {
         return false;
     }
 
-    _isIdRenderable(id: number) {
-        return this._tiles[id] && this._tiles[id].hasData() && !this._coveredTiles[id] && !this._tiles[id].holdingForFade();
-    }
-
-    _isIdRenderableForSymbols(id: number) {
-        return this._tiles[id] && this._tiles[id].hasData() && !this._coveredTiles[id];
+    _isIdRenderable(id: number, symbolLayer?: boolean) {
+        return this._tiles[id] && this._tiles[id].hasData() &&
+            !this._coveredTiles[id] && (symbolLayer || !this._tiles[id].holdingForFade());
     }
 
     reload() {
@@ -851,6 +846,10 @@ function coordinateToTilePoint(tileID: OverscaledTileID, coord: Coordinate): Poi
         (zoomedCoord.column - (tileID.canonical.x + tileID.wrap * Math.pow(2, tileID.canonical.z))) * EXTENT,
         (zoomedCoord.row - tileID.canonical.y) * EXTENT
     );
+}
+
+function compareKeyZoom(a, b) {
+    return ((a % 32) - (b % 32)) || (b - a);
 }
 
 function isRasterType(type) {
