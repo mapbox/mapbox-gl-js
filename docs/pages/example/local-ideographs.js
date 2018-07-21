@@ -3,7 +3,7 @@ title: Use locally generated ideographs
 description: >-
   Rendering Chinese/Japanese/Korean (CJK) ideographs and precomposed Hangul
   Syllables requires downloading large amounts of font data, which can
-  significantly slow map load times. Use the 'localIdeographFontFamily' setting
+  significantly slow map load times. Use the `localIdeographFontFamily` setting
   to speed up map load times by using locally available fonts instead of font
   data fetched from the server. This setting defines a CSS 'font-family' for
   locally overriding generation of glyphs in the 'CJK Unified Ideographs' and

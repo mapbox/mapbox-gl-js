@@ -1,6 +1,6 @@
 /*---
 title: Display a popup
-description: Add a popup to the map
+description: Add a [`Popup`](/mapbox-gl-js/api/#popup) to the map
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/popup/

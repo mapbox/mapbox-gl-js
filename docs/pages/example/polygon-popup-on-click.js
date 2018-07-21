@@ -1,6 +1,6 @@
 /*---
 title: Show polygon information on click
-description: 'When a user clicks a polygon, show a popup containing more information.'
+description: 'When a user clicks a polygon, show a [`Popup`](/mapbox-gl-js/api/#popup) containing more information.'
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/polygon-popup-on-click/

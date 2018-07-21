@@ -1,6 +1,6 @@
 /*---
 title: Display a popup on hover
-description: 'When a user hovers over a symbol, show a popup containing more information.'
+description: 'When a user hovers over a [`symbol`](/mapbox-gl-js/style-spec#layers-symbol), show a [`Popup`](/mapbox-gl-js/api/#popup) containing more information.'
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/popup-on-hover/
