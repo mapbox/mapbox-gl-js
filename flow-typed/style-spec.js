@@ -72,11 +72,18 @@ declare type LightSpecification = {|
     "intensity"?: PropertyValueSpecification<number>
 |}
 
+declare type ClusterMapReduceSpecification = {|
+    "initial"?: mixed,
+    "map"?: mixed,
+    "reduce"?: mixed
+|}
+
 declare type VectorSourceSpecification = {
     "type": "vector",
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
+    "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
     "maxzoom"?: number,
     "attribution"?: string
@@ -116,6 +123,7 @@ declare type GeojsonSourceSpecification = {|
     "cluster"?: boolean,
     "clusterRadius"?: number,
     "clusterMaxZoom"?: number,
+    "clusterMapReduce"?: ClusterMapReduceSpecification,
     "lineMetrics"?: boolean
 |}
 

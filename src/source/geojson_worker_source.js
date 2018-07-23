@@ -225,7 +225,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             delete options.mapreduce;
             const { initial, map, reduce } = mapreduce;
             const globals = {};
-            const spec = styleSpec.source_geojson.clusterMapReduce;
+            const spec = styleSpec.clusterMapReduce;
 
             if (initial) {
                 const expressions = this._getExpressions(initial, createExpression, spec.initial);

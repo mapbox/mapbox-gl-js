@@ -165,6 +165,8 @@ ${flowObjectDeclaration('StyleSpecification', spec.$root)}
 
 ${flowObjectDeclaration('LightSpecification', spec.light)}
 
+${flowObjectDeclaration('ClusterMapReduceSpecification', spec.clusterMapReduce)}
+
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 
 declare type SourceSpecification =
