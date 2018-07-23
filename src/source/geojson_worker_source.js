@@ -3,6 +3,8 @@
 import { getJSON } from '../util/ajax';
 
 import performance from '../util/performance';
+import styleSpec from '../style-spec/reference/latest';
+import extend from '../style-spec/util/extend';
 import rewind from 'geojson-rewind';
 import GeoJSONWrapper from './geojson_wrapper';
 import vtpbf from 'vt-pbf';
@@ -10,6 +12,7 @@ import supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
+import { createExpression, createPropertyExpression } from '../style-spec/expression';
 
 import type {
     WorkerTileParameters,
@@ -22,6 +25,8 @@ import type StyleLayerIndex from '../style/style_layer_index';
 import type {LoadVectorDataCallback} from './vector_tile_worker_source';
 import type {RequestParameters} from '../util/ajax';
 import type { Callback } from '../types/callback';
+
+type ExpressionFunction = typeof createExpression | typeof createPropertyExpression;
 
 export type LoadGeoJSONParameters = {
     request?: RequestParameters,
@@ -170,7 +175,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
                 try {
                     this._geoJSONIndex = params.cluster ?
-                        supercluster(params.superclusterOptions).load(data.features) :
+                        supercluster(this._getSuperclusterOptions(params)).load(data.features) :
                         geojsonvt(data, params.geojsonVtOptions);
                 } catch (err) {
                     return callback(err);
@@ -191,6 +196,73 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                 callback(null, result);
             }
         });
+    }
+
+
+    _getExpressions(values: any, expressionFunction: ExpressionFunction, spec: any) {
+        const expressions = {};
+
+        Object.keys(values).forEach(key => {
+            const expression = expressionFunction(values[key], spec[key] || spec['*']);
+            if (expression.result === 'success') {
+                expressions[key] = expression.value;
+            } else {
+                const messages = expression.value.map(({ message }) => message).join(', ');
+                const value = JSON.stringify(values[key]);
+
+                console.log(`Error evaluating property "${key}" with value (${value}): ${messages}`);
+            }
+        });
+
+        return expressions;
+    }
+
+    _getSuperclusterOptions(params: LoadGeoJSONParameters) {
+        const options = extend({}, params.superclusterOptions);
+        const { mapreduce } = options;
+
+        if (mapreduce) {
+            delete options.mapreduce;
+            const { initial, map, reduce } = mapreduce;
+            const globals = {};
+            const spec = styleSpec.source_geojson.clusterMapReduce;
+
+            if (initial) {
+                const expressions = this._getExpressions(initial, createExpression, spec.initial);
+
+                options.initial = () => Object.keys(expressions).reduce(
+                    (_, key) => extend(_, ({ [key]: expressions[key].evaluate(globals) })),
+                    {}
+                );
+            }
+
+            if (map) {
+                const expressions = this._getExpressions(map, createPropertyExpression, spec.map);
+
+                options.map = (properties) => Object.keys(expressions).reduce(
+                    (_, key) => extend(_, ({ [key]: expressions[key].evaluate(globals, { properties }) })),
+                    {}
+                );
+            }
+
+            if (reduce) {
+                const expressions = this._getExpressions(reduce, createPropertyExpression, spec.reduce);
+
+                options.reduce = (cluster, point) => {
+                    const properties = { cluster, point };
+                    const newValues = Object.keys(expressions).reduce(
+                        (_, key) => extend(_, ({ [key]: expressions[key].evaluate(globals, { properties }) })),
+                        {}
+                    );
+
+                    Object.keys(newValues).forEach(key => {
+                        cluster[key] = newValues[key];
+                    });
+                };
+            }
+        }
+
+        return options;
     }
 
     /**

@@ -134,6 +134,7 @@ class GeoJSONSource extends Evented implements Source {
                     (this.maxzoom - 1),
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
+                mapreduce: options.clusterMapReduce,
                 log: false
             }
         }, options.workerOptions);

@@ -373,6 +373,29 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
+    "clusterMapReduce": {
+      "initial": {
+        "*": {
+          "type": "*",
+          "property-type": "data-constant"
+        },
+        "doc": "Initial properties of a cluster (before runnning the reducer)."
+      },
+      "map": {
+        "*": {
+          "type": "*",
+          "property-type": "data-driven"
+        },
+        "doc": "Properties to use for individual points when running the reducer. Point properties can be accessed directly."
+      },
+      "reduce": {
+        "*": {
+          "type": "*",
+          "property-type": "data-driven"
+        },
+        "doc": "Properties to add to the cluster. The cluster properties can be accessed from the `cluster` property (e.g. `cluster.total`, and the properties mapped in `map` can be accessed from `point` (e.g. `point.total`)."
+      }
+    },
     "lineMetrics": {
       "type": "boolean",
       "default": false,

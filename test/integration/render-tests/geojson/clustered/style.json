@@ -16,7 +16,27 @@
       "type": "geojson",
       "data": "local://data/places.geojson",
       "cluster": true,
-      "clusterRadius": 25
+      "clusterRadius": 25,
+      "clusterMapReduce": {
+        "initial": {
+          "max": 1,
+          "sum": 0
+        },
+        "map": {
+          "max": ["get", "scalerank"],
+          "sum": ["get", "scalerank"]
+        },
+        "reduce": {
+          "max": ["max",
+            ["get", "max", ["get", "cluster"]],
+            ["get", "max", ["get", "point"]]
+          ],
+          "sum": ["+",
+            ["get", "sum", ["get", "cluster"]],
+            ["get", "sum", ["get", "point"]]
+          ]
+        }
+      }
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
@@ -32,7 +52,7 @@
       ],
       "paint": {
         "circle-color": "rgba(0, 200, 0, 1)",
-        "circle-radius": 20
+        "circle-radius": ["*", ["get", "max"], 5]
       }
     },
     {
@@ -45,7 +65,17 @@
         true
       ],
       "layout": {
-        "text-field": "{point_count}",
+        "text-field": ["to-string",
+          ["/",
+            ["round",
+              ["*",
+                ["/", ["get", "sum"], ["get", "point_count"]],
+                100
+              ]
+            ],
+            100
+          ]
+        ],
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
