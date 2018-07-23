@@ -139,6 +139,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         if (!sameOrigin(url)) {
             img.crossOrigin = 'Anonymous';
         }
+        img.onerror = () => callback(new Error(`Could not load image: ${url}`));
         img.onload = () => callback(null, img);
         img.src = url;
         return {cancel: () => { img.src = transparentPngUrl; }};
