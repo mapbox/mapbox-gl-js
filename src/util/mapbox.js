@@ -151,12 +151,18 @@ class TurnstileEvent {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
-        let dueForEvent = false;
+        const storageKey = `${turnstileEventStorageKey}:${config.ACCESS_TOKEN || ''}`;
+        let dueForEvent = (this.eventData.accessToken !== config.ACCESS_TOKEN);
+
+        //Reset event data cache if the access token changed.
+        if (dueForEvent) {
+            this.eventData.anonId = this.eventData.lastSuccess = null;
+        }
         if (!this.eventData.anonId || !this.eventData.lastSuccess &&
             isLocalStorageAvailable) {
             //Retrieve cached data
             try {
-                const data = window.localStorage.getItem(turnstileEventStorageKey);
+                const data = window.localStorage.getItem(storageKey);
                 if (data) {
                     this.eventData = JSON.parse(data);
                 }
@@ -178,8 +184,6 @@ class TurnstileEvent {
             const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
             dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < 0 || lastUpdate.getDate() !== nextDate.getDate();
         }
-
-        dueForEvent = dueForEvent || (this.eventData.accessToken !== config.ACCESS_TOKEN);
 
         if (!dueForEvent) {
             return this.processRequests();
@@ -210,7 +214,7 @@ class TurnstileEvent {
                 this.eventData.accessToken = config.ACCESS_TOKEN;
                 if (isLocalStorageAvailable) {
                     try {
-                        window.localStorage.setItem(turnstileEventStorageKey, this.eventData);
+                        window.localStorage.setItem(storageKey, JSON.stringify(this.eventData));
                     } catch (e) {
                         warnOnce('Unable to write to LocalStorage');
                     }
