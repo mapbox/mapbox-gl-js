@@ -285,6 +285,7 @@ test("mapbox", (t) => {
         });
 
         t.test('POSTs appuserTurnstile event', (t) => {
+            t.stub(console, 'warn');
             config.ACCESS_TOKEN = 'pk.*';
 
             mapbox.postTurnstileEvent(['a.tiles.mapbox.com']);
@@ -299,6 +300,7 @@ test("mapbox", (t) => {
             t.equal(reqBody.sdkVersion, version);
             t.ok(reqBody.userId);
 
+            t.ok(console.warn.calledOnce);
             t.end();
         });
 
@@ -332,7 +334,26 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('POSTs appuserTurnstile event when access token changes', (t) => {
+            config.ACCESS_TOKEN = 'pk.new.*';
+
+            mapbox.postTurnstileEvent(['a.tiles.mapbox.com']);
+
+            const req = window.server.requests[0];
+            req.respond(200);
+
+            const reqBody = JSON.parse(req.requestBody)[0];
+            t.equal(req.url, `${config.EVENTS_URL}?access_token=pk.new.*`);
+            t.equal(req.method, 'POST');
+            t.equal(reqBody.event, 'appUserTurnstile');
+            t.equal(reqBody.sdkVersion, version);
+            t.ok(reqBody.userId);
+
+            t.end();
+        });
+
         t.test('POSTs appuserTurnstile event on next calendar day', (t) => {
+            config.ACCESS_TOKEN = 'pk.*';
             const today = Date.now();
             const tomorrow = today + (25 * 60 * 60 * 1000); // Add a day
             t.stub(browser, 'now').callsFake(() => tomorrow);
@@ -348,6 +369,34 @@ test("mapbox", (t) => {
             t.equal(reqBody.event, 'appUserTurnstile');
             t.equal(reqBody.sdkVersion, version);
             t.ok(reqBody.userId);
+            t.ok(reqBody.created, new Date(tomorrow).toISOString());
+
+            t.end();
+        });
+
+        t.test('POSTs consecutive appuserTurnstile events on different calendar days', (t) => {
+            config.ACCESS_TOKEN = 'pk.*';
+            const today = Date.now();
+            const laterToday = today + 1;
+            const tomorrow = today + (25 * 60 * 60 * 1000); // Add a day
+
+            const stub = t.stub(browser, 'now');
+            stub.onCall(0).returns(today);
+            stub.onCall(1).returns(laterToday);
+            stub.onCall(2).returns(tomorrow);
+
+            mapbox.postTurnstileEvent(['a.tiles.mapbox.com']);
+            mapbox.postTurnstileEvent(['b.tiles.mapbox.com']);
+            mapbox.postTurnstileEvent(['c.tiles.mapbox.com']);
+
+            const reqToday = window.server.requests[0];
+            reqToday.respond(200);
+            let reqBody = JSON.parse(reqToday.requestBody)[0];
+            t.ok(reqBody.created, new Date(today).toISOString());
+
+            const reqTomorrow = window.server.requests[1];
+            reqTomorrow.respond(200);
+            reqBody = JSON.parse(reqTomorrow.requestBody)[0];
             t.ok(reqBody.created, new Date(tomorrow).toISOString());
 
             t.end();
