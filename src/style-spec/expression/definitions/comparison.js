@@ -61,20 +61,21 @@ function gteqCollate(ctx, a, b, c) { return c.compare(a, b) >= 0; }
  * @private
  */
 function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollator) {
+    const isOrderComparison = op !== '==' && op !== '!=';
+
     return class Comparison implements Expression {
         type: Type;
         lhs: Expression;
         rhs: Expression;
         collator: ?Expression;
-        needsRuntimeTypeCheck: boolean;
+        hasUntypedArgument: boolean;
 
         constructor(lhs: Expression, rhs: Expression, collator: ?Expression) {
             this.type = BooleanType;
             this.lhs = lhs;
             this.rhs = rhs;
             this.collator = collator;
-            this.needsRuntimeTypeCheck = op !== '==' && op !== '!=' &&
-                lhs.type.kind === 'value' && rhs.type.kind === 'value';
+            this.hasUntypedArgument = lhs.type.kind === 'value' || rhs.type.kind === 'value';
         }
 
         static parse(args: Array<mixed>, context: ParsingContext): ?Expression {
@@ -94,15 +95,15 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
                 return context.concat(2).error(`"${op}" comparisons are not supported for type '${toString(rhs.type)}'.`);
             }
 
-            if (!(
-                lhs.type.kind === rhs.type.kind ||
-                lhs.type.kind === 'value' ||
-                rhs.type.kind === 'value'
-            )) {
+            if (
+                lhs.type.kind !== rhs.type.kind &&
+                lhs.type.kind !== 'value' &&
+                rhs.type.kind !== 'value'
+            ) {
                 return context.error(`Cannot compare types '${toString(lhs.type)}' and '${toString(rhs.type)}'.`);
             }
 
-            if (op !== '==' && op !== '!=') {
+            if (isOrderComparison) {
                 // typing rules specific to less/greater than operators
                 if (lhs.type.kind === 'value' && rhs.type.kind !== 'value') {
                     // (value, T)
@@ -115,7 +116,12 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
 
             let collator = null;
             if (args.length === 4) {
-                if (lhs.type.kind !== 'string' && rhs.type.kind !== 'string') {
+                if (
+                    lhs.type.kind !== 'string' &&
+                    rhs.type.kind !== 'string' &&
+                    lhs.type.kind !== 'value' &&
+                    rhs.type.kind !== 'value'
+                ) {
                     return context.error(`Cannot use collator to compare non-string types.`);
                 }
                 collator = context.parse(args[3], 3, CollatorType);
@@ -128,12 +134,21 @@ function makeComparison(op: ComparisonOperator, compareBasic, compareWithCollato
         evaluate(ctx: EvaluationContext) {
             const lhs = this.lhs.evaluate(ctx);
             const rhs = this.rhs.evaluate(ctx);
-            if (this.needsRuntimeTypeCheck) {
+
+            if (isOrderComparison && this.hasUntypedArgument) {
                 const lt = typeOf(lhs);
                 const rt = typeOf(rhs);
                 // check that type is string or number, and equal
                 if (lt.kind !== rt.kind || !(lt.kind === 'string' || lt.kind === 'number')) {
                     throw new RuntimeError(`Expected arguments for "${op}" to be (string, string) or (number, number), but found (${lt.kind}, ${rt.kind}) instead.`);
+                }
+            }
+
+            if (this.collator && !isOrderComparison && this.hasUntypedArgument) {
+                const lt = typeOf(lhs);
+                const rt = typeOf(rhs);
+                if (lt.kind !== 'string' || rt.kind !== 'string') {
+                    return compareBasic(ctx, lhs, rhs);
                 }
             }
 
