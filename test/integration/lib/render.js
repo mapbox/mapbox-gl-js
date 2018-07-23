@@ -138,8 +138,8 @@ exports.run = function (implementation, ignores, render) {
             const diff     = path.join(dir, 'diff.png');
 
             const png = new PNG({
-                width: params.width * params.pixelRatio,
-                height: params.height * params.pixelRatio
+                width: Math.floor(params.width * params.pixelRatio),
+                height: Math.floor(params.height * params.pixelRatio)
             });
 
             // PNG data must be unassociated (not premultiplied)
