@@ -12,6 +12,8 @@ import type { RequestParameters } from './ajax';
 import type { Cancelable } from '../types/cancelable';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
+const turnstileEventStorageKey = 'mapbox.turnstileEventData';
+const isLocalStorageAvailable = storageAvailable('localStorage');
 
 type UrlObject = {|
     protocol: string,
@@ -128,15 +130,13 @@ function formatUrl(obj: UrlObject): string {
 }
 
 class TurnstileEvent {
-    static STORAGE_TOKEN: string;
-    static localStorageAvailable: boolean;
-    eventData: Object;
+    eventData: { anonId: ?string, lastSuccess: ?number, accessToken: ?string};
     queue: Array<number>;
     pending: boolean
     pendingRequest: ?Cancelable;
 
     constructor() {
-        this.eventData = { anonId: null, lastSuccess: null };
+        this.eventData = { anonId: null, lastSuccess: null, accessToken: config.ACCESS_TOKEN};
         this.queue = [];
         this.pending = false;
         this.pendingRequest = null;
@@ -152,19 +152,16 @@ class TurnstileEvent {
             return;
         }
         let dueForEvent = false;
-        if (!this.eventData.anonId || !this.eventData.lastSuccess) {
+        if (!this.eventData.anonId || !this.eventData.lastSuccess &&
+            isLocalStorageAvailable) {
             //Retrieve cached data
-            if (TurnstileEvent.localStorageAvailable) {
-                try {
-                    const data = window.localStorage.getItem(TurnstileEvent.STORAGE_TOKEN);
-                    if (data) {
-                        const json = JSON.parse(data);
-                        this.eventData.anonId = json.anonId;
-                        this.eventData.lastSuccess = Number(json.lastSuccess);
-                    }
-                } catch (e) {
-                    warnOnce('Unable to read from LocalStorage');
+            try {
+                const data = window.localStorage.getItem(turnstileEventStorageKey);
+                if (data) {
+                    this.eventData = JSON.parse(data);
                 }
+            } catch (e) {
+                warnOnce('Unable to read from LocalStorage');
             }
         }
 
@@ -181,8 +178,11 @@ class TurnstileEvent {
             const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
             dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < 0 || lastUpdate.getDate() !== nextDate.getDate();
         }
+
+        dueForEvent = dueForEvent || (this.eventData.accessToken !== config.ACCESS_TOKEN);
+
         if (!dueForEvent) {
-            return;
+            return this.processRequests();
         }
 
         const evenstUrlObject: UrlObject = parseUrl(config.EVENTS_URL);
@@ -198,7 +198,7 @@ class TurnstileEvent {
             event: 'appUserTurnstile',
             created: (new Date(nextUpdate)).toISOString(),
             sdkIdentifier: 'mapbox-gl-js',
-            sdkVersion: `${version}`,
+            sdkVersion: version,
             'enabled.telemetry': false,
             userId: this.eventData.anonId
         }]);
@@ -207,12 +207,10 @@ class TurnstileEvent {
             this.pendingRequest = null;
             if (!error) {
                 this.eventData.lastSuccess = nextUpdate;
-                if (TurnstileEvent.localStorageAvailable) {
+                this.eventData.accessToken = config.ACCESS_TOKEN;
+                if (isLocalStorageAvailable) {
                     try {
-                        window.localStorage.setItem(TurnstileEvent.STORAGE_TOKEN, JSON.stringify({
-                            lastSuccess: this.eventData.lastSuccess,
-                            anonId: this.eventData.anonId
-                        }));
+                        window.localStorage.setItem(turnstileEventStorageKey, this.eventData);
                     } catch (e) {
                         warnOnce('Unable to write to LocalStorage');
                     }
@@ -222,8 +220,6 @@ class TurnstileEvent {
         });
     }
 }
-TurnstileEvent.STORAGE_TOKEN = 'mapbox.turnstileEventData';
-TurnstileEvent.localStorageAvailable = storageAvailable('localStorage');
 
 const turnstileEvent_ = new TurnstileEvent();
 
