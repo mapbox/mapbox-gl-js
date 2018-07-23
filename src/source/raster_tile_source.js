@@ -38,6 +38,7 @@ class RasterTileSource extends Evented implements Source {
     tiles: Array<string>;
 
     _loaded: boolean;
+    _avoidXHR: boolean;
     _options: RasterSourceSpecification | RasterDEMSourceSpecification;
     _tileJSONRequest: ?Cancelable;
 
@@ -56,6 +57,7 @@ class RasterTileSource extends Evented implements Source {
         this._loaded = false;
 
         this._options = extend({}, options);
+        this._avoidXHR = false;
         extend(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
@@ -114,6 +116,13 @@ class RasterTileSource extends Evented implements Source {
                 delete (img: any).cacheControl;
                 delete (img: any).expires;
 
+                // if the tiles have aggressive caching (retained for at least 1 hour),
+                // switch to faster image loading technique for subsequent tile loads
+                const timeout = tile.getExpiryTimeout();
+                if (timeout === undefined || timeout > 1000 * 60 * 60) {
+                    this._avoidXHR = true;
+                }
+
                 const context = this.map.painter.context;
                 const gl = context.gl;
                 tile.texture = this.map.painter.getTileTexture(img.width);
@@ -132,7 +141,7 @@ class RasterTileSource extends Evented implements Source {
 
                 callback(null);
             }
-        });
+        }, this._avoidXHR);
     }
 
     abortTile(tile: Tile, callback: Callback<void>) {

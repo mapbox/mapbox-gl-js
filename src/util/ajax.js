@@ -130,8 +130,21 @@ function sameOrigin(url) {
 
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
-export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>): Cancelable {
-    // request the image with XHR to work around caching issues
+export const getImage = function(requestParameters: RequestParameters, callback: Callback<HTMLImageElement>, avoidXHR?: boolean): Cancelable {
+    // if we know for sure that the tile is cached for a long time, avoid XHR for better performance
+    // https://github.com/mapbox/mapbox-gl-js/issues/6643
+    if (avoidXHR && requestParameters.headers === undefined && requestParameters.credentials === undefined) {
+        const img: HTMLImageElement = new window.Image();
+        const url = requestParameters.url;
+        if (!sameOrigin(url)) {
+            img.crossOrigin = 'Anonymous';
+        }
+        img.onload = () => callback(null, img);
+        img.src = url;
+        return {cancel: () => { img.src = transparentPngUrl; }};
+    }
+
+    // otherwise request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
     return getArrayBuffer(requestParameters, (err, imgData) => {
         if (err) {
