@@ -1,9 +1,7 @@
 // @flow
 
-import { getImage, ResourceType } from '../util/ajax';
 import { extend } from '../util/util';
 import { Evented } from '../util/evented';
-import { normalizeTileURL as normalizeURL } from '../util/mapbox';
 import browser from '../util/browser';
 import { OverscaledTileID } from './tile_id';
 import RasterTileSource from './raster_tile_source';
@@ -40,53 +38,32 @@ class RasterDEMTileSource extends RasterTileSource implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url, this.tileSize);
-        tile.request = getImage(this.map._transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
-
         tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
-        function imageLoaded(err, img) {
-            delete tile.request;
-            if (tile.aborted) {
-                tile.state = 'unloaded';
-                callback(null);
-            } else if (err) {
-                tile.state = 'errored';
-                callback(err);
-            } else if (img) {
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
-                delete (img: any).cacheControl;
-                delete (img: any).expires;
+        super.loadTile(tile, callback);
+    }
 
-                const rawImageData = browser.getImageData(img);
-                const params = {
-                    uid: tile.uid,
-                    coord: tile.tileID,
-                    source: this.id,
-                    rawImageData: rawImageData,
-                    encoding: this.encoding
-                };
+    onTileLoad(tile: Tile, img: HTMLImageElement, callback: Callback<void>) {
+        if (tile.workerID && tile.state !== 'expired') return;
 
-                if (!tile.workerID || tile.state === 'expired') {
-                    tile.workerID = this.dispatcher.send('loadDEMTile', params, done.bind(this));
-                }
-            }
-        }
-
-        function done(err, dem) {
+        tile.workerID = this.dispatcher.send('loadDEMTile', {
+            uid: tile.uid,
+            coord: tile.tileID,
+            source: this.id,
+            rawImageData: browser.getImageData(img),
+            encoding: this.encoding
+        }, (err, dem) => {
             if (err) {
                 tile.state = 'errored';
                 callback(err);
-            }
 
-            if (dem) {
+            } else if (dem) {
                 tile.dem = dem;
                 tile.needsHillshadePrepare = true;
                 tile.state = 'loaded';
                 callback(null);
             }
-        }
+        });
     }
-
 
     _getNeighboringTiles(tileID: OverscaledTileID) {
         const canonical = tileID.canonical;
