@@ -377,6 +377,11 @@
       "type": "boolean",
       "default": false,
       "doc": "Whether to calculate line distance metrics. This is required for line layers that specify `line-gradient` values."
+    },
+    "generateId": {
+        "type": "boolean",
+        "default": false,
+        "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned, over-writing any previous values."
     }
   },
   "source_video": {

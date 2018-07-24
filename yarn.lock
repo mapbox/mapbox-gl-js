@@ -4355,9 +4355,9 @@ geojson-rewind@^0.3.0:
     concat-stream "~1.6.0"
     minimist "1.2.0"
 
-geojson-vt@^3.1.4:
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/geojson-vt/-/geojson-vt-3.1.4.tgz#c8ffefbe3613d3ad2747e963b0b63b9e62ff11b8"
+geojson-vt@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/geojson-vt/-/geojson-vt-3.2.0.tgz#039cea549df5f892c48cff8eb66c2e217d61c241"
 
 get-caller-file@^1.0.1:
   version "1.0.2"
@@ -9613,9 +9613,9 @@ sugarss@^1.0.0:
   dependencies:
     postcss "^6.0.14"
 
-supercluster@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-4.0.1.tgz#eead7ab49f50322b265e0087859ebcabdc5c2ed8"
+supercluster@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/supercluster/-/supercluster-4.1.1.tgz#cf13c3b28a3fb3db5290bfad7f524e244bd4ce78"
   dependencies:
     kdbush "^2.0.1"
 
