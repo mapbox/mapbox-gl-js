@@ -1,6 +1,6 @@
 /*---
 title: Display a popup on click
-description: 'When a user clicks a symbol, show a popup containing more information.'
+description: 'When a user clicks a symbol, show a [`Popup`](/mapbox-gl-js/api/#popup) containing more information.'
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/popup-on-click/
