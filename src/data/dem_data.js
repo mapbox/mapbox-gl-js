@@ -54,7 +54,7 @@ export default class DEMData {
         this.uid = uid;
         this.scale = scale || 1;
         // if no data is provided, use a temporary empty level to satisfy flow
-        this.level = data || new Level(256, 512);
+        this.level = data || new Level(1, 0);
         this.loaded = !!data;
     }
 
