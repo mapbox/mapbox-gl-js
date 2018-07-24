@@ -22,7 +22,8 @@ const AttributeType = {
     Uint16: 'UNSIGNED_SHORT',
     Int32:  'INT',
     Uint32: 'UNSIGNED_INT',
-    Float32: 'FLOAT'
+    Float32: 'FLOAT',
+    Float64: 'FLOAT'
 };
 
 /**

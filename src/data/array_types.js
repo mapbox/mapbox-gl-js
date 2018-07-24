@@ -637,6 +637,56 @@ register('StructArrayLayout1ul2ui8', StructArrayLayout1ul2ui8);
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Float64[1]
+ * [8]: Uint32[1]
+ * [12]: Uint16[2]
+ *
+ * @private
+ */
+class StructArrayLayout1lf1ul2ui16 extends StructArray {
+    uint8: Uint8Array;
+    float64: Float64Array;
+    uint32: Uint32Array;
+    uint16: Uint16Array;
+
+    _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float64 = new Float64Array(this.arrayBuffer);
+        this.uint32 = new Uint32Array(this.arrayBuffer);
+        this.uint16 = new Uint16Array(this.arrayBuffer);
+    }
+
+    emplaceBack(v0: number, v1: number, v2: number, v3: number) {
+        const i = this.length;
+        this.resize(i + 1);
+        const o8 = i * 2;
+        const o4 = i * 4;
+        const o2 = i * 8;
+        this.float64[o8 + 0] = v0;
+        this.uint32[o4 + 2] = v1;
+        this.uint16[o2 + 6] = v2;
+        this.uint16[o2 + 7] = v3;
+        return i;
+    }
+
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number) {
+        const o8 = i * 2;
+        const o4 = i * 4;
+        const o2 = i * 8;
+        this.float64[o8 + 0] = v0;
+        this.uint32[o4 + 2] = v1;
+        this.uint16[o2 + 6] = v2;
+        this.uint16[o2 + 7] = v3;
+        return i;
+    }
+}
+
+StructArrayLayout1lf1ul2ui16.prototype.bytesPerElement = 16;
+register('StructArrayLayout1lf1ul2ui16', StructArrayLayout1lf1ul2ui16);
+
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint16[3]
  *
  * @private
@@ -1012,6 +1062,43 @@ export class FeatureIndexArray extends StructArrayLayout1ul2ui8 {
 
 register('FeatureIndexArray', FeatureIndexArray);
 
+class PaintBufferOffsetStruct extends Struct {
+    _structArray: PaintBufferOffsetArray;
+    featureId: number;
+    featureIndex: number;
+    start: number;
+    end: number;
+    get featureId() { return this._structArray.float64[this._pos8 + 0]; }
+    set featureId(x) { this._structArray.float64[this._pos8 + 0] = x; }
+    get featureIndex() { return this._structArray.uint32[this._pos4 + 2]; }
+    set featureIndex(x) { this._structArray.uint32[this._pos4 + 2] = x; }
+    get start() { return this._structArray.uint16[this._pos2 + 6]; }
+    set start(x) { this._structArray.uint16[this._pos2 + 6] = x; }
+    get end() { return this._structArray.uint16[this._pos2 + 7]; }
+    set end(x) { this._structArray.uint16[this._pos2 + 7] = x; }
+}
+
+PaintBufferOffsetStruct.prototype.size = 16;
+
+export type PaintBufferOffset = PaintBufferOffsetStruct;
+
+
+/**
+ * @private
+ */
+export class PaintBufferOffsetArray extends StructArrayLayout1lf1ul2ui16 {
+    /**
+     * Return the PaintBufferOffsetStruct at the given location in the array.
+     * @param {number} index The index of the element.
+     */
+    get(index: number): PaintBufferOffsetStruct {
+        assert(!this.isTransferred);
+        return new PaintBufferOffsetStruct(this, index);
+    }
+}
+
+register('PaintBufferOffsetArray', PaintBufferOffsetArray);
+
 
 export {
     StructArrayLayout2i4,
@@ -1028,6 +1115,7 @@ export {
     StructArrayLayout1f4,
     StructArrayLayout3i6,
     StructArrayLayout1ul2ui8,
+    StructArrayLayout1lf1ul2ui16,
     StructArrayLayout3ui6,
     StructArrayLayout2ui4,
     StructArrayLayout2f8,

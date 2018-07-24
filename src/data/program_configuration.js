@@ -5,7 +5,7 @@ import Color from '../style-spec/util/color';
 import { supportsPropertyExpression } from '../style-spec/util/properties';
 import { register } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
-import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
+import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PaintBufferOffsetArray } from './array_types';
 import EvaluationParameters from '../style/evaluation_parameters';
 
 import type Context from '../gl/context';
@@ -339,6 +339,7 @@ export default class ProgramConfiguration {
     _buffers: Array<VertexBuffer>;
 
     _idMap: FeaturePaintBufferMap;
+    _idMapArray: PaintBufferOffsetArray;
     _bufferOffset: number;
 
     constructor() {
@@ -347,6 +348,7 @@ export default class ProgramConfiguration {
 
         this._buffers = [];
         this._idMap = {};
+        this._idMapArray = new PaintBufferOffsetArray();
         this._bufferOffset = 0;
     }
 
@@ -381,24 +383,37 @@ export default class ProgramConfiguration {
         return self;
     }
 
+    deserializeIdMap() {
+        if (this._idMapArray) {
+            this._idMap = {};
+            for (let i = 0; i < this._idMapArray.length; i++) {
+                const struct = this._idMapArray.get(i);
+                const featureId = String(struct.featureId);
+                this._idMap[featureId] = this._idMap[featureId] || [];
+                this._idMap[featureId].push({
+                    index: struct.featureIndex,
+                    start: struct.start,
+                    end: struct.end
+                });
+            }
+            delete this._idMapArray;
+        }
+    }
+
     populatePaintArrays(newLength: number, feature: Feature, index: number) {
         for (const property in this.binders) {
             this.binders[property].populatePaintArray(newLength, feature);
         }
-        if (feature.id) {
-            const featureId = String(feature.id);
-            this._idMap[featureId] = this._idMap[featureId] || [];
-            this._idMap[featureId].push({
-                index: index,
-                start: this._bufferOffset,
-                end: newLength
-            });
+        if (feature.id !== undefined) {
+            this._idMapArray.emplaceBack(feature.id, index, this._bufferOffset, newLength);
         }
 
         this._bufferOffset = newLength;
     }
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layer: TypedStyleLayer): boolean {
+        this.deserializeIdMap();
+
         let dirty: boolean = false;
         for (const id in featureStates) {
             const posArray = this._idMap[id];
@@ -447,7 +462,7 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             this.binders[property].upload(context);
         }
-
+        this.deserializeIdMap();
         const buffers = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
@@ -535,5 +550,5 @@ function paintAttributeName(property, type) {
 register('ConstantBinder', ConstantBinder);
 register('SourceExpressionBinder', SourceExpressionBinder);
 register('CompositeExpressionBinder', CompositeExpressionBinder);
-register('ProgramConfiguration', ProgramConfiguration, {omit: ['_buffers']});
+register('ProgramConfiguration', ProgramConfiguration, {omit: ['_buffers', '_bufferOffset', '_idMap']});
 register('ProgramConfigurationSet', ProgramConfigurationSet);
