@@ -12,22 +12,15 @@ import type {
 
 class RasterDEMTileWorkerSource {
     actor: Actor;
-    loading: {[string]: DEMData};
     loaded: {[string]: DEMData};
 
     constructor() {
-        this.loading = {};
         this.loaded = {};
     }
 
     loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        const uid = params.uid,
-            encoding = params.encoding;
-
-        const dem = new DEMData(uid);
-        this.loading[uid] = dem;
-        dem.loadFromImage(params.rawImageData, encoding);
-        delete this.loading[uid];
+        const {uid, encoding, rawImageData} = params;
+        const dem = new DEMData(uid, rawImageData, encoding);
 
         this.loaded = this.loaded || {};
         this.loaded[uid] = dem;
