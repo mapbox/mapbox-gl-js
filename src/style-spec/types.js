@@ -119,7 +119,8 @@ export type GeoJSONSourceSpecification = {|
     "cluster"?: boolean,
     "clusterRadius"?: number,
     "clusterMaxZoom"?: number,
-    "lineMetrics"?: boolean
+    "lineMetrics"?: boolean,
+    "generateId"?: boolean
 |}
 
 export type VideoSourceSpecification = {|
