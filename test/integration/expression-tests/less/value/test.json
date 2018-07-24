@@ -1,14 +1,28 @@
 {
-  "expression": ["<", ["string", ["get", "x"]], ["get", "y"]],
+  "expression": ["<", ["get", "x"], ["get", "y"]],
+  "inputs": [
+    [{}, {"properties": {"x": "10", "y": "2"}}],
+    [{}, {"properties": {"x": 1, "y": 10}}],
+    [{}, {"properties": {"x": "1", "y": 1}}],
+    [{}, {"properties": {"x": 1, "y": "1"}}]
+  ],
   "expected": {
     "compiled": {
-      "result": "error",
-      "errors": [
-        {
-          "key": "",
-          "error": "Expected arguments of type (number, number) | (string, string), but found (string, value) instead."
-        }
-      ]
-    }
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [
+      true,
+      true,
+      {
+        "error": "Expected arguments for \"<\" to be (string, string) or (number, number), but found (string, number) instead."
+      },
+      {
+        "error": "Expected arguments for \"<\" to be (string, string) or (number, number), but found (number, string) instead."
+      }
+    ],
+    "serialized": ["<", ["get", "x"], ["get", "y"]]
   }
 }

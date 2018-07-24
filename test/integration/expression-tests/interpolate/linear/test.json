@@ -2,9 +2,7 @@
   "propertySpec": {
     "type": "number",
     "property-type": "data-driven",
-    "expression": {
-      "parameters": ["zoom", "feature"]
-    }
+    "expression": {"parameters": ["zoom", "feature"]}
   },
   "expression": ["interpolate", ["linear"], ["get", "x"], 0, 100, 10, 200],
   "inputs": [
