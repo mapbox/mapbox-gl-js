@@ -197,7 +197,7 @@ class SourceCache extends Evented {
     }
 
     hasRenderableParent(tileID: OverscaledTileID) {
-        const parentTile = this.findLoadedParent(tileID, 0, {});
+        const parentTile = this.findLoadedParent(tileID, 0);
         if (parentTile) {
             return this._isIdRenderable(parentTile.tileID.key);
         }
@@ -372,18 +372,16 @@ class SourceCache extends Evented {
      * Find a loaded parent of the given tile (up to minCoveringZoom);
      * adds the found tile to retain object and returns the tile if found
      */
-    findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number, retain: {[any]: OverscaledTileID}): ?Tile {
+    findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
             const parent = tileID.scaledTo(z);
             if (!parent) return;
             const id = String(parent.key);
             const tile = this._tiles[id];
             if (tile && tile.hasData()) {
-                retain[id] = parent;
                 return tile;
             }
             if (this._cache.has(parent)) {
-                retain[id] = parent;
                 return this._cache.get(parent);
             }
         }
@@ -509,9 +507,10 @@ class SourceCache extends Evented {
                 if (!tile || tile.fadeEndTime && tile.fadeEndTime <= browser.now()) continue;
 
                 // if the tile is loaded but still fading in, find parents to cross-fade with it
-                const parentTile = this.findLoadedParent(tileID, minCoveringZoom, parentsForFading);
+                const parentTile = this.findLoadedParent(tileID, minCoveringZoom);
                 if (parentTile) {
                     this._addTile(parentTile.tileID);
+                    parentsForFading[parentTile.tileID.key] = parentTile.tileID;
                 }
 
                 fadingTiles[id] = tileID;
