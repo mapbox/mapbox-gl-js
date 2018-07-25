@@ -21,7 +21,8 @@ const config = [{
         dir: 'rollup/build/mapboxgl',
         format: 'amd',
         sourcemap: 'inline',
-        indent: false
+        indent: false,
+        chunkFileNames: 'shared.js'
     },
     experimentalCodeSplitting: true,
     treeshake: production,
