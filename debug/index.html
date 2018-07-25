@@ -18,14 +18,69 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-var map = window.map = new mapboxgl.Map({
+// var map = window.map = new mapboxgl.Map({
+//     container: 'map',
+//     zoom: 12.5,
+//     center: [-77.01866, 38.888],
+//     style: 'mapbox://styles/mapbox/streets-v10',
+//     hash: true
+// });
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiZ3NkcG0iLCJhIjoiY2lqbmN5eG9mMDBndHVmbTU5Mmg1djF6MiJ9.QqFCD7tcmccysN8GUClW8w';
+const style = {
+  "version": 8,
+  "light": {
+      "position": [1.15, 225, 60]
+  },
+  "sources": {
+      "streets": {
+          "url": 'mapbox://gsdpm.e7248292',
+          "type": 'vector'
+      }
+  },
+  "layers": [
+    {
+      'id': 'PAK_District_Circles',
+      'type': 'circle',
+      'source': 'streets',
+      'source-layer': 'PAK_District_Points',
+      'layout': {},
+      'paint': {
+        'circle-opacity': .5,
+        'circle-color': "#fdbf6f",
+        'circle-stroke-width': .75,
+        'circle-stroke-color': '#555555',
+        'circle-stroke-opacity': .5,
+        'circle-blur': .05,
+        'circle-radius':
+        {
+          property: 'P14_DIST',
+          type: 'exponential',
+          stops: [[{"zoom": 4,"value": 5}, 1],
+                  [{"zoom": 4,"value": 95}, 9],
+                  [{"zoom": 5,"value": 5}, 2],
+                  [{"zoom": 5,"value": 95}, 18],
+                  [{"zoom": 6,"value": 5}, 4],
+                  [{"zoom": 6,"value": 95}, 36],
+                  [{"zoom": 7,"value": 5}, 8],
+                  [{"zoom": 7,"value": 95}, 72],
+                  [{"zoom": 8,"value": 5}, 16],
+                  [{"zoom": 8,"value": 95}, 144]]
+        }
+      }
+    }
+  ]
+};
+
+var map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
+    style,
+    minZoom: 4,
+    zoom: 5,
+    center: [68.919, 30.081]
 });
 
+map.showTileBoundaries = true;
 </script>
 </body>
 </html>

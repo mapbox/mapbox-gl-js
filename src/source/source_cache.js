@@ -479,6 +479,7 @@ class SourceCache extends Evented {
                 idealTileIDs = idealTileIDs.filter((coord) => (this._source.hasTile: any)(coord));
             }
         }
+        // console.log('idealTileIDs', idealTileIDs);
 
         // Determine the overzooming/underzooming amounts.
         const zoom = (this._source.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
@@ -515,6 +516,27 @@ class SourceCache extends Evented {
                     }
                 }
             }
+        // } else {
+        //   // // console.log('retain', retain);
+        //   for (const tileIDKey in retain) {
+        //       // console.log('obj');
+        //       const tileID = retain[tileIDKey];
+        //       // check that this works
+        //       if (idealTileIDs.indexOf(tileID) > -1) {
+        //         return;
+        //       }
+        //
+        //       const children = tileID.children();
+        //       const shouldNotRenderParent = children.some((child) => {
+        //           const childTile = this.getTile(child);
+        //           return childTile && childTile.hasData();
+        //       });
+        //       if (shouldNotRenderParent) {
+        //         // console.log('shouldNotRenderParent', tileID, tileID.children());
+        //         delete retain[tileIDKey];
+        //         // this._removeTile(tileIDKey); // makes it much worse
+        //       }
+        //   }
         }
 
         let fadedParent;
@@ -534,6 +556,7 @@ class SourceCache extends Evented {
         }
         // Remove the tiles we don't need anymore.
         const remove = keysDifference(this._tiles, retain);
+        // console.log('remove', remove);
         for (let i = 0; i < remove.length; i++) {
             const tileID = remove[i];
             const tile = this._tiles[tileID];
@@ -573,6 +596,11 @@ class SourceCache extends Evented {
                 // tile has been previously requested (and errored in this case due to the previous conditional)
                 // in order to determine if we need to request its parent.
                 parentWasRequested = tile.wasRequested();
+                if (tileID.canonical.x === 45 && tileID.canonical.y === 27 && tileID.canonical.z === 6) {
+                  console.log('parentWasRequested', parentWasRequested);
+                  console.log('tile', tile);
+                  console.log('tileID', tileID);
+                }
 
                 // The tile isn't loaded yet, but retain it anyway because it's an ideal tile.
                 retain[tileID.key] = tileID;
@@ -591,6 +619,7 @@ class SourceCache extends Evented {
                     this._findLoadedChildren(tileID, maxCoveringZoom, retain);
                     // check if all 4 immediate children are loaded (i.e. the missing ideal tile is covered)
                     const children = tileID.children(this._source.maxzoom);
+                    // console.log('children', children);
                     for (let j = 0; j < children.length; j++) {
                         if (!retain[children[j].key]) {
                             covered = false;
@@ -598,13 +627,20 @@ class SourceCache extends Evented {
                         }
                     }
                 }
-
+                // console.log('covered', covered);
                 if (!covered) {
-
                     // We couldn't find child tiles that entirely cover the ideal tile.
                     for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
 
                         const parentId = tileID.scaledTo(overscaledZ);
+                        const siblings = tileID.scaledTo(overscaledZ + 1).siblings();
+                        // is errored enough of a check? what if a tile is still loading then errors?
+                        const siblingHasData = siblings.some((sibling) => {
+                          const siblingTile = this.getTile(sibling);
+                          return siblingTile && siblingTile.hasData();
+                        });
+                        console.log('siblingsHasData', siblingHasData);
+                        // console.log('siblings', siblings);
                         if (checked[parentId.key]) {
                             // Break parent tile ascent, this route has been previously checked by another child.
                             break;
@@ -613,12 +649,18 @@ class SourceCache extends Evented {
                         }
 
                         tile = this.getTile(parentId);
+                        console.log('parentId', parentId, tile);
                         if (!tile && parentWasRequested) {
                             tile = this._addTile(parentId);
                         }
 
                         if (tile) {
-                            retain[parentId.key] = parentId;
+                            // console.log('parentId', parentId);
+                            if (!siblingHasData) {
+                              retain[parentId.key] = parentId; // NOTE: this line is the source of the overdrawing problem but removing it causes tiles to flicker when loaded for the first time
+                            } else {
+                              break;
+                            }
                             // Save the current values, since they're the parent of the next iteration
                             // of the parent tile ascent loop.
                             parentWasRequested = tile.wasRequested();
