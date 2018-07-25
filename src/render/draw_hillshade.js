@@ -110,8 +110,8 @@ function prepareHillshade(painter, tile, sourceMaxZoom) {
     // base 10 - 0, 1, 6, 236 (this order is reversed in the resulting array via the overflow.
     // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
     // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
-    if (tile.dem && tile.dem.level) {
-        const tileSize = tile.dem.level.dim;
+    if (tile.dem && tile.dem.data) {
+        const tileSize = tile.dem.dim;
 
         const pixelData = tile.dem.getPixels();
         context.activeTexture.set(gl.TEXTURE1);
