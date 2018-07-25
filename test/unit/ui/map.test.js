@@ -54,8 +54,12 @@ test('Map', (t) => {
     });
 
     t.test('initial bounds in constructor options', (t) => {
+        const container = window.document.createElement('div');
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
+
         const bounds = [[-133, 16], [-68, 50]];
-        const map = createMap({bounds});
+        const map = createMap(t, {container, bounds});
 
         t.deepEqual(fixedLngLat(map.getCenter(), 4), { lng: -100.5, lat: 34.7171 });
         t.equal(fixedNum(map.getZoom(), 3), 2.469);
