@@ -89,7 +89,7 @@
     "remark-html": "^5.0.1",
     "remark-react": "^4.0.1",
     "request": "^2.79.0",
-    "rollup": "^0.57.0",
+    "rollup": "^0.63.4",
     "rollup-plugin-browserify-transform": "^1.0.1",
     "rollup-plugin-buble": "^0.18.0",
     "rollup-plugin-commonjs": "^9.1.3",
