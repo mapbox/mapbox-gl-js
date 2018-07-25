@@ -327,7 +327,7 @@ class SourceCache extends Evented {
      * Retain children of the given set of tiles (up to maxCoveringZoom) that are already loaded;
      */
     _retainLoadedChildren(
-        tiles: {[any]: OverscaledTileID},
+        idealTiles: {[any]: OverscaledTileID},
         zoom: number,
         maxCoveringZoom: number,
         retain: {[any]: OverscaledTileID}
@@ -359,7 +359,7 @@ class SourceCache extends Evented {
             while (tileID.overscaledZ > zoom) {
                 tileID = tileID.scaledTo(tileID.overscaledZ - 1);
 
-                if (tiles[tileID.key]) {
+                if (idealTiles[tileID.key]) {
                     // found a parent that needed a loaded child; retain that child
                     retain[topmostLoadedID.key] = topmostLoadedID;
                     break;
@@ -575,7 +575,7 @@ class SourceCache extends Evented {
             }
         }
 
-        // retain any loaded children of ideal riles up to maxCoveringZoom
+        // retain any loaded children of ideal tiles up to maxCoveringZoom
         this._retainLoadedChildren(missingTiles, zoom, maxCoveringZoom, retain);
 
         for (const tileID of idealTileIDs) {
@@ -583,8 +583,8 @@ class SourceCache extends Evented {
 
             if (tile.hasData()) continue;
 
-            // The tile we require is not yet loaded or does not exist.
-            // We are now attempting to load a parent tile if children are not enough.
+            // The tile we require is not yet loaded or does not exist;
+            // Attempt to find children that fully cover it.
 
             if (zoom + 1 > this._source.maxzoom) {
                 // We're looking for an overzoomed child tile.
@@ -604,10 +604,10 @@ class SourceCache extends Evented {
                     retain[children[3].key]) continue; // tile is covered by children
             }
 
-            // We couldn't find child tiles that entirely cover the ideal tile.
+            // We couldn't find child tiles that entirely cover the ideal tile; look for parents now.
 
             // As we ascend up the tile pyramid of the ideal tile, we check whether the parent
-            // tile has been previously requested (and errored in this case due to the previous conditional)
+            // tile has been previously requested (and errored because we only loop over tiles with no data)
             // in order to determine if we need to request its parent.
             let parentWasRequested = tile.wasRequested();
 
