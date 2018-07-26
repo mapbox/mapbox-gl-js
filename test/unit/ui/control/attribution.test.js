@@ -154,3 +154,25 @@ test('AttributionControl is hidden if empty', (t) => {
         }
     });
 });
+
+test('AttributionControl shows custom attribution if customAttribution option is provided', (t) => {
+    const map = createMap(t);
+    const attributionControl = new AttributionControl({
+        customAttribution: 'Custom string'
+    });
+    map.addControl(attributionControl);
+
+    t.equal(attributionControl._container.innerHTML, 'Custom string');
+    t.end();
+});
+
+test('AttributionControl shows all custom attributions if customAttribution array of strings is provided', (t) => {
+    const map = createMap(t);
+    const attributionControl = new AttributionControl({
+        customAttribution: ['Custom string', 'Second custom string']
+    });
+    map.addControl(attributionControl);
+
+    t.equal(attributionControl._container.innerHTML, 'Custom string | Second custom string');
+    t.end();
+});
