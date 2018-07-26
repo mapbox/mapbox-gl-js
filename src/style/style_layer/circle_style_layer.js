@@ -14,6 +14,7 @@ import type { FeatureState } from '../../style-spec/expression';
 import type Transform from '../../geo/transform';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {PaintProps} from './circle_style_layer_properties';
+import type {LayerSpecification} from '../../style-spec/types';
 
 class CircleStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;

@@ -8,6 +8,7 @@ import EvaluationParameters from '../style/evaluation_parameters';
 
 import type {Property, PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
 import type {CameraExpression, CompositeExpression} from '../style-spec/expression/index';
+import type {PropertyValueSpecification} from '../style-spec/types';
 
 export { getSizeData, evaluateSizeForFeature, evaluateSizeForZoom };
 

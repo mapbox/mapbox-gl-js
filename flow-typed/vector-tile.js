@@ -1,4 +1,6 @@
 import type Pbf from 'pbf';
+import type Point from '@mapbox/point-geometry';
+import type { Feature } from 'flow-geojson';
 
 declare interface VectorTile {
     layers: {[string]: VectorTileLayer};
@@ -19,7 +21,7 @@ declare interface VectorTileFeature {
     properties: {[string]: string | number | boolean};
 
     loadGeometry(): Array<Array<Point>>;
-    toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
+    toGeoJSON(x: number, y: number, z: number): Feature;
 }
 
 declare module "@mapbox/vector-tile" {
@@ -29,7 +31,7 @@ declare module "@mapbox/vector-tile" {
 
     declare class VectorTileFeatureImpl {
         static types: ['Unknown', 'Point', 'LineString', 'Polygon'];
-        toGeoJSON(x: number, y: number, z: number): GeoJSONFeature;
+        toGeoJSON(x: number, y: number, z: number): Feature;
     }
 
     declare module.exports: {

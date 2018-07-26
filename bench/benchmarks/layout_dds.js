@@ -4,6 +4,8 @@ import Layout from './layout';
 
 import { OverscaledTileID } from '../../src/source/tile_id';
 
+import type {StyleSpecification} from '../../src/style-spec/types';
+
 const LAYER_COUNT = 2;
 
 export default class LayoutDDS extends Layout {

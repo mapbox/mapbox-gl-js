@@ -22,6 +22,10 @@ import type Tile from './tile';
 import type Coordinate from '../geo/coordinate';
 import type {Callback} from '../types/callback';
 import type VertexBuffer from '../gl/vertex_buffer';
+import type {
+    ImageSourceSpecification,
+    VideoSourceSpecification
+} from '../style-spec/types';
 
 /**
  * A data source containing an image.

@@ -10,6 +10,8 @@ import symbol from './style_layer/symbol_style_layer';
 import background from './style_layer/background_style_layer';
 import raster from './style_layer/raster_style_layer';
 
+import type {LayerSpecification} from '../style-spec/types';
+
 const subclasses = {
     circle,
     heatmap,

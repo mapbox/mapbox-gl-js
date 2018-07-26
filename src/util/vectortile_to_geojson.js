@@ -1,4 +1,5 @@
 // @flow
+import type {GeoJSONGeometry} from '../types/geojson';
 
 class Feature {
     type: 'Feature';

@@ -110,7 +110,7 @@ function flowLayer(key) {
 
 const layerTypes = Object.keys(spec.layer.type.values);
 
-fs.writeFileSync('flow-typed/style-spec.js', `// Generated code; do not edit. Edit build/generate-flow-typed-style-spec.js instead.
+fs.writeFileSync('src/style-spec/types.js', `// Generated code; do not edit. Edit build/generate-flow-typed-style-spec.js instead.
 
 declare type ColorSpecification = string;
 

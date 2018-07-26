@@ -6,6 +6,7 @@ import type Coordinate from '../geo/coordinate';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type { RetainedQueryData } from '../symbol/placement';
+import type {FilterSpecification} from '../style-spec/types';
 import assert from 'assert';
 
 export function queryRenderedFeatures(sourceCache: SourceCache,

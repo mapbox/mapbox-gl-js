@@ -12,6 +12,7 @@ import type Map from './map';
 import type Popup from './popup';
 import type {LngLatLike} from "../geo/lng_lat";
 import type {MapMouseEvent, MapTouchEvent} from './events';
+import type {PointLike} from '@mapbox/point-geometry';
 
 type Options = {
     element?: HTMLElement,

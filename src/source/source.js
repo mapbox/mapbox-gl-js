@@ -91,6 +91,8 @@ import video from '../source/video_source';
 import image from '../source/image_source';
 import canvas from '../source/canvas_source';
 
+import type {SourceSpecification} from '../style-spec/types';
+
 const sourceTypes = {
     vector,
     raster,

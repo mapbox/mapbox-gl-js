@@ -20,6 +20,10 @@ import type {FeatureFilter} from '../style-spec/feature_filter';
 import type {TransitionParameters} from './properties';
 import type EvaluationParameters from './evaluation_parameters';
 import type Transform from '../geo/transform';
+import type {
+    LayerSpecification,
+    FilterSpecification
+} from '../style-spec/types';
 
 const TRANSITION_SUFFIX = '-transition';
 

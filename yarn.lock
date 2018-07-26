@@ -4176,6 +4176,10 @@ flow-coverage-report@^0.3.0:
     terminal-table "0.0.12"
     yargs "5.0.0"
 
+flow-geojson@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/flow-geojson/-/flow-geojson-2.0.6.tgz#6c32fa83a52fabc03b47276a07bbeeb928bd5b29"
+
 flush-write-stream@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/flush-write-stream/-/flush-write-stream-1.0.2.tgz#c81b90d8746766f1a609a46809946c45dd8ae417"

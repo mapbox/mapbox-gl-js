@@ -20,6 +20,7 @@ import type {
 
 import type {WorkerGlobalScopeInterface} from '../util/web_worker';
 import type {Callback} from '../types/callback';
+import type {LayerSpecification} from '../style-spec/types';
 
 /**
  * @private

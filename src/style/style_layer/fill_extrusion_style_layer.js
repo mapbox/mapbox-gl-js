@@ -14,6 +14,7 @@ import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_extrusion_style_layer_properties';
 import type Framebuffer from '../../gl/framebuffer';
 import type Transform from '../../geo/transform';
+import type {LayerSpecification} from '../../style-spec/types';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;
