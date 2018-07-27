@@ -8,7 +8,7 @@ import type Map from '../map';
 
 type Options = {
     compact?: boolean,
-    customAttribution?: string | string[]
+    customAttribution?: string | Array<string>
 };
 
 /**
@@ -114,7 +114,7 @@ class AttributionControl {
         if (!this._map.style) return;
         let attributions: Array<string> = [];
         if (this.options.customAttribution) {
-            if (this.options.customAttribution instanceof Array) {
+            if (Array.isArray(this.options.customAttribution)) {
                 attributions = attributions.concat(this.options.customAttribution);
             } else if (typeof this.options.customAttribution === 'string') {
                 attributions.push(this.options.customAttribution);

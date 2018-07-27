@@ -61,7 +61,7 @@ type MapOptions = {
     container: HTMLElement | string,
     bearingSnap?: number,
     attributionControl?: boolean,
-    customAttribution?: string | string[],
+    customAttribution?: string | Array<string>,
     logoPosition?: ControlPosition,
     failIfMajorPerformanceCaveat?: boolean,
     preserveDrawingBuffer?: boolean,
