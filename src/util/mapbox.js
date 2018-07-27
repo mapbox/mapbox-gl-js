@@ -13,7 +13,6 @@ import type { Cancelable } from '../types/cancelable';
 
 const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 const turnstileEventStorageKey = 'mapbox.turnstileEventData';
-const isLocalStorageAvailable = storageAvailable('localStorage');
 
 type UrlObject = {|
     protocol: string,
@@ -152,13 +151,14 @@ class TurnstileEvent {
             return;
         }
         const storageKey = `${turnstileEventStorageKey}:${config.ACCESS_TOKEN || ''}`;
-        let dueForEvent = (this.eventData.accessToken !== config.ACCESS_TOKEN);
+        const isLocalStorageAvailable = storageAvailable('localStorage');
+        let dueForEvent = this.eventData.accessToken ? (this.eventData.accessToken !== config.ACCESS_TOKEN) : false;
 
         //Reset event data cache if the access token changed.
         if (dueForEvent) {
             this.eventData.anonId = this.eventData.lastSuccess = null;
         }
-        if (!this.eventData.anonId || !this.eventData.lastSuccess &&
+        if ((!this.eventData.anonId || !this.eventData.lastSuccess) &&
             isLocalStorageAvailable) {
             //Retrieve cached data
             try {
