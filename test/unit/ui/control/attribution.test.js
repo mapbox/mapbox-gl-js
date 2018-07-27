@@ -169,10 +169,13 @@ test('AttributionControl shows custom attribution if customAttribution option is
 test('AttributionControl shows all custom attributions if customAttribution array of strings is provided', (t) => {
     const map = createMap(t);
     const attributionControl = new AttributionControl({
-        customAttribution: ['Custom string', 'Second custom string']
+        customAttribution: ['Some very long custom string', 'Custom string', 'Another custom string']
     });
     map.addControl(attributionControl);
 
-    t.equal(attributionControl._container.innerHTML, 'Custom string | Second custom string');
+    t.equal(
+        attributionControl._container.innerHTML,
+        'Custom string | Another custom string | Some very long custom string'
+    );
     t.end();
 });
