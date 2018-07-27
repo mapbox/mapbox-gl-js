@@ -144,9 +144,9 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@mapbox/link-to-location/-/link-to-location-1.0.0.tgz#484a4d922e3e6f7b54fd7964d8035bcb00bbf59a"
 
-"@mapbox/mapbox-gl-rtl-text@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-0.1.2.tgz#c6bdcc05ac71c1caa4dfa09022466d1e278083bc"
+"@mapbox/mapbox-gl-rtl-text@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-0.2.0.tgz#332fa991dcf6913be369c21f4c20c6c73b5d1c8c"
 
 "@mapbox/mapbox-gl-supported@^1.4.0":
   version "1.4.0"
