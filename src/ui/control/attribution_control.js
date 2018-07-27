@@ -7,7 +7,8 @@ import config from '../../util/config';
 import type Map from '../map';
 
 type Options = {
-    compact?: boolean
+    compact?: boolean,
+    customAttribution?: string | Array<string>
 };
 
 /**
@@ -16,6 +17,7 @@ type Options = {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {boolean} [options.compact] If `true` force a compact attribution that shows the full attribution on mouse hover, or if `false` force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide.
+ * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({
@@ -111,6 +113,13 @@ class AttributionControl {
     _updateAttributions() {
         if (!this._map.style) return;
         let attributions: Array<string> = [];
+        if (this.options.customAttribution) {
+            if (Array.isArray(this.options.customAttribution)) {
+                attributions = attributions.concat(this.options.customAttribution);
+            } else if (typeof this.options.customAttribution === 'string') {
+                attributions.push(this.options.customAttribution);
+            }
+        }
 
         if (this._map.style.stylesheet) {
             const stylesheet: any = this._map.style.stylesheet;
