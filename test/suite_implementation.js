@@ -10,6 +10,7 @@ import path from 'path';
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
+rtlTextPlugin['processStyledBidirectionalText'] = rtlText.processStyledBidirectionalText;
 
 module.exports = function(style, options, _callback) { // eslint-disable-line import/no-commonjs
     let wasCallbackCalled = false;
