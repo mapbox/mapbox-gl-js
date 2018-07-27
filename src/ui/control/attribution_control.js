@@ -17,7 +17,7 @@ type Options = {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {boolean} [options.compact] If `true` force a compact attribution that shows the full attribution on mouse hover, or if `false` force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide.
- * @param {string | Array<string>} [options.customAttribution] String or strings to show ahead of any other attributions.
+ * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({
