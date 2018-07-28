@@ -790,17 +790,45 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#remove calls onRemove on added controls', (t) => {
+        const map = createMap(t);
+        const control = {
+            onRemove: t.spy(),
+            onAdd: function (_) {
+                return window.document.createElement('div');
+            }
+        };
+        map.addControl(control);
+        map.remove();
+        t.ok(control.onRemove.calledOnce);
+        t.end();
+    });
+
     t.test('#addControl', (t) => {
         const map = createMap(t);
         const control = {
             onAdd: function(_) {
                 t.equal(map, _, 'addTo() called with map');
-                t.end();
                 return window.document.createElement('div');
             }
         };
         map.addControl(control);
+        t.equal(map._controls[1], control, "saves reference to added controls");
+        t.end();
     });
+
+    t.test('#removeControl errors on invalid arguments', (t) => {
+        const map = createMap(t);
+        const control = {};
+        const stub = t.stub(console, 'error');
+
+        map.addControl(control);
+        map.removeControl(control);
+        t.ok(stub.calledTwice);
+        t.end();
+
+    });
+
 
     t.test('#removeControl', (t) => {
         const map = createMap(t);
@@ -810,11 +838,13 @@ test('Map', (t) => {
             },
             onRemove: function(_) {
                 t.equal(map, _, 'onRemove() called with map');
-                t.end();
             }
         };
         map.addControl(control);
         map.removeControl(control);
+        t.equal(map._controls.length, 1, "removes removed controls from map's control array");
+        t.end();
+
     });
 
     t.test('#project', (t) => {

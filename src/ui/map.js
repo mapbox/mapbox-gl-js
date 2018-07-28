@@ -259,6 +259,7 @@ class Map extends Camera {
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
     _renderTaskQueue: TaskQueue;
+    _controls: Array<IControl>;
 
     /**
      * The map's {@link ScrollZoomHandler}, which implements zooming in and out with a scroll wheel or trackpad.
@@ -319,6 +320,7 @@ class Map extends Camera {
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
         this._renderTaskQueue = new TaskQueue();
+        this._controls = [];
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?  (url, type) => transformRequestFn(url, type) || ({ url }) : (url) => ({ url });
@@ -411,7 +413,13 @@ class Map extends Camera {
         if (position === undefined) {
             position = 'top-right';
         }
+        if (!control || !control.onAdd) {
+            return this.fire(new ErrorEvent(new Error(
+                'Invalid argument to map.addControl(). Argument must be a control with onAdd and onRemove methods.')));
+        }
         const controlElement = control.onAdd(this);
+        this._controls.push(control);
+
         const positionContainer = this._controlPositions[position];
         if (position.indexOf('bottom') !== -1) {
             positionContainer.insertBefore(controlElement, positionContainer.firstChild);
@@ -428,6 +436,12 @@ class Map extends Camera {
      * @returns {Map} `this`
      */
     removeControl(control: IControl) {
+        if (!control || !control.onRemove) {
+            return this.fire(new ErrorEvent(new Error(
+                'Invalid argument to map.removeControl(). Argument must be a control with onAdd and onRemove methods.')));
+        }
+        const ci = this._controls.indexOf(control);
+        if (ci > -1) this._controls.splice(ci, 1);
         control.onRemove(this);
         return this;
     }
@@ -1723,6 +1737,10 @@ class Map extends Camera {
             window.removeEventListener('resize', this._onWindowResize, false);
             window.removeEventListener('online', this._onWindowOnline, false);
         }
+
+        for (const control of this._controls) control.onRemove(this);
+        this._controls = [];
+
         const extension = this.painter.context.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
         removeNode(this._canvasContainer);
