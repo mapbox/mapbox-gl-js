@@ -77,6 +77,7 @@ declare type VectorSourceSpecification = {
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
+    "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
     "maxzoom"?: number,
     "attribution"?: string
