@@ -33,6 +33,7 @@ class ScrollZoomHandler {
     _el: HTMLElement;
     _enabled: boolean;
     _active: boolean;
+    _scrolling: boolean;
     _aroundCenter: boolean;
     _around: Point;
     _aroundPoint: Point;
@@ -80,6 +81,10 @@ class ScrollZoomHandler {
 
     isActive() {
         return !!this._active;
+    }
+
+    isScrolling() {
+        return !!this._scrolling;
     }
 
     /**
@@ -157,7 +162,7 @@ class ScrollZoomHandler {
         if (this._type) {
             this._lastWheelEvent = e;
             this._delta -= value;
-            if (!this.isActive()) {
+            if (!this.isScrolling()) {
                 this._start(e);
             }
         }
@@ -168,7 +173,7 @@ class ScrollZoomHandler {
     _onTimeout(initialEvent: any) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
-        if (!this.isActive()) {
+        if (!this.isScrolling()) {
             this._start(initialEvent);
         }
     }
@@ -182,6 +187,7 @@ class ScrollZoomHandler {
         }
 
         this._active = true;
+        this._scrolling = true;
         this._map.fire(new Event('movestart', {originalEvent: e}));
         this._map.fire(new Event('zoomstart', {originalEvent: e}));
         if (this._finishTimeout) {
@@ -200,7 +206,7 @@ class ScrollZoomHandler {
     _onScrollFrame() {
         this._frameId = null;
 
-        if (!this.isActive()) return;
+        if (!this.isScrolling()) return;
         const tr = this._map.transform;
 
         // if we've had scroll events since the last render frame, consume the
@@ -259,8 +265,9 @@ class ScrollZoomHandler {
         this._map.fire(new Event('zoom', {originalEvent: this._lastWheelEvent}));
 
         if (finished) {
-            this._active = false;
+            this._scrolling = false;
             this._finishTimeout = setTimeout(() => {
+                this._active = false;
                 this._map.fire(new Event('zoomend', {originalEvent: this._lastWheelEvent}));
                 this._map.fire(new Event('moveend', {originalEvent: this._lastWheelEvent}));
                 delete this._targetZoom;
