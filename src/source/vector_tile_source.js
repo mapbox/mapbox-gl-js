@@ -7,7 +7,7 @@ import loadTileJSON from './load_tilejson';
 import { normalizeTileURL as normalizeURL } from '../util/mapbox';
 import TileBounds from './tile_bounds';
 import { ResourceType } from '../util/ajax';
-import browser from '../util/browser';
+import config from '../util/config';
 
 import type {Source} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -111,7 +111,7 @@ class VectorTileSource extends Evented implements Source {
             tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             source: this.id,
-            pixelRatio: browser.devicePixelRatio,
+            pixelRatio: config.DEVICE_PIXEL_RATIO,
             showCollisionBoxes: this.map.showCollisionBoxes,
         };
         params.request.collectResourceTiming = this._collectResourceTiming;

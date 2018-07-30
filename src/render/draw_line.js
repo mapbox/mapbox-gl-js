@@ -1,6 +1,6 @@
 // @flow
 
-import browser from '../util/browser';
+import config from '../util/config';
 
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 import DepthMode from '../gl/depth_mode';
@@ -72,7 +72,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
             gl.uniform2f(program.uniforms.u_patternscale_a, tileRatio / widthA, -posA.height / 2);
             gl.uniform2f(program.uniforms.u_patternscale_b, tileRatio / widthB, -posB.height / 2);
-            gl.uniform1f(program.uniforms.u_sdfgamma, painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2);
+            gl.uniform1f(program.uniforms.u_sdfgamma, painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * config.DEVICE_PIXEL_RATIO) / 2);
 
         } else if (image) {
             imagePosA = painter.imageManager.getPattern(image.from);

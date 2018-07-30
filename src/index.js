@@ -57,6 +57,21 @@ const exported = {
         config.ACCESS_TOKEN = token;
     },
 
+    /**
+     * Gets and sets map's pixel ratio
+     * 
+     * @var {number} devicePixelRatio
+     * @example
+     * mapboxgl.devicePixelRatio = 2
+     */
+    get devicePixelRatio() {
+        return config.DEVICE_PIXEL_RATIO;
+    },
+
+    set devicePixelRatio(devicePixelRatio: number) {
+        config.DEVICE_PIXEL_RATIO = devicePixelRatio;
+    },
+
     workerUrl: ''
 };
 

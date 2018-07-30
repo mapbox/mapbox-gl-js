@@ -1,6 +1,6 @@
 // @flow
 
-import browser from '../util/browser';
+import config from '../util/config';
 
 import shaders from '../shaders';
 import assert from 'assert';
@@ -30,7 +30,7 @@ class Program {
         this.program = gl.createProgram();
 
         const defines = configuration.defines().concat(
-            `#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}`);
+            `#define DEVICE_PIXEL_RATIO ${config.DEVICE_PIXEL_RATIO.toFixed(1)}`);
         if (showOverdrawInspector) {
             defines.push('#define OVERDRAW_INSPECTOR;');
         }
