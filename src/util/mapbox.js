@@ -128,7 +128,7 @@ function formatUrl(obj: UrlObject): string {
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
 
-class TurnstileEvent {
+export class TurnstileEvent {
     eventData: { anonId: ?string, lastSuccess: ?number, accessToken: ?string};
     queue: Array<number>;
     pending: boolean
@@ -139,6 +139,16 @@ class TurnstileEvent {
         this.queue = [];
         this.pending = false;
         this.pendingRequest = null;
+    }
+
+    postTurnstileEvent(tileUrls: Array<string>) {
+        //Enabled only when Mapbox Access Token is set and a source uses
+        // mapbox tiles.
+        if (config.ACCESS_TOKEN &&
+            Array.isArray(tileUrls) &&
+            tileUrls.some((url) => { return /(mapbox\.c)(n|om)/i.test(url); })) {
+            this.queueRequest(browser.now());
+        }
     }
 
     queueRequest(date: number) {
@@ -182,7 +192,7 @@ class TurnstileEvent {
             const lastUpdate = new Date(this.eventData.lastSuccess);
             const nextDate = new Date(nextUpdate);
             const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
-            dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < 0 || lastUpdate.getDate() !== nextDate.getDate();
+            dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 || lastUpdate.getDate() !== nextDate.getDate();
         }
 
         if (!dueForEvent) {
@@ -227,12 +237,4 @@ class TurnstileEvent {
 
 const turnstileEvent_ = new TurnstileEvent();
 
-export const postTurnstileEvent = function (tileUrls: Array<string>) {
-    //Enabled only when Mapbox Access Token is set and a source uses
-    // mapbox tiles.
-    if (config.ACCESS_TOKEN &&
-        Array.isArray(tileUrls) &&
-        tileUrls.some((url) => { return /(mapbox\.c)(n|om)/i.test(url); })) {
-        turnstileEvent_.queueRequest(browser.now());
-    }
-};
+export const postTurnstileEvent = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
