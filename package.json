@@ -64,7 +64,6 @@
     "execcommand-copy": "^1.1.0",
     "flow-bin": "^0.69.0",
     "flow-coverage-report": "^0.3.0",
-    "flow-geojson": "^2.0.6",
     "github-slugger": "^1.1.1",
     "gl": "^4.0.1",
     "glob": "^7.0.3",

@@ -14,7 +14,7 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
-import type {GeojsonSourceSpecification} from '../style-spec/types';
+import type {GeoJSONSourceSpecification} from '../style-spec/types';
 
 /**
  * A source containing GeoJSON.
@@ -85,7 +85,7 @@ class GeoJSONSource extends Evented implements Source {
     /**
      * @private
      */
-    constructor(id: string, options: GeojsonSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: GeoJSONSourceSpecification & {workerOptions?: any, collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
 
         this.id = id;

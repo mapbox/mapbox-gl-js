@@ -109,7 +109,7 @@ export type RasterDEMSourceSpecification = {
     "encoding"?: "terrarium" | "mapbox"
 }
 
-export type GeojsonSourceSpecification = {|
+export type GeoJSONSourceSpecification = {|
     "type": "geojson",
     "data"?: mixed,
     "maxzoom"?: number,
@@ -138,7 +138,7 @@ export type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
     | RasterDEMSourceSpecification
-    | GeojsonSourceSpecification
+    | GeoJSONSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification
 
