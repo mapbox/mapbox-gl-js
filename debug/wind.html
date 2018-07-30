@@ -26,31 +26,56 @@ var map = window.map = new mapboxgl.Map({
     zoom: 2,
     center: [0, 40],
     style: 'mapbox://styles/mapbox/dark-v9',
-    hash: false
+    hash: true
 });
 
 map.setMaxBounds([-179, -84, 179, 84]);
 
-let wind, update = true, draw = true;
-
-map.repaint = true;
-
 class WindLayer {
-    constructor() {
+    constructor(url) {
         this.id = 'wind';
         this.type = 'custom';
+        this.url = url;
+    }
+
+    onAdd(map, gl) {
+        this.wind = new WindGL(gl);
+
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        this.wind.numParticles = 65535;
+        this.wind.dropRate = 0.003;
+
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        xhr.open('get', this.url + '.json', true);
+
+        xhr.onload = () => {
+            if (xhr.status < 200 || xhr.status >= 300) throw new Error(xhr.statusText);
+
+            this.windData = xhr.response;
+            const windImage = new Image();
+            this.windData.image = windImage;
+
+            windImage.onload = () => this.wind.setWind(this.windData);
+
+            windImage.src = this.url + '.png';
+        };
+
+        map.on('movestart', () => {
+            this.wind.fadeOpacity = 0.9;
+            this.wind.dropRate = 0.01;
+        });
+
+        map.on('moveend', () => {
+            this.wind.fadeOpacity = 0.996;
+            this.wind.dropRate = 0.003;
+        });
+
+        xhr.send();
     }
 
     render(gl, matrix) {
-        if (!draw) return;
-
-        if (!wind) {
-            wind = window.wind = new WindGL(gl);
-            wind.numParticles = 32000;
-            wind.dropRate = 0.003;
-        }
-
-        if (!wind.windData) return;
+        if (!this.wind.windData) return;
 
         const bounds = map.getBounds();
         const bbox = [
@@ -59,67 +84,18 @@ class WindLayer {
             Math.min(1.0, (bounds.getEast() + 180) / 360),
             Math.min(1.0, (bounds.getNorth() + 90) / 180)
         ];
-        wind.setView(bbox, new Float32Array(matrix));
-
-        if (update) {
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-            wind.resize();
-            wind.numParticles = wind.numParticles;
-            update = false;
-        }
+        this.wind.setView(bbox, matrix);
 
         gl.disable(gl.BLEND);
-        wind.draw();
-    }
-
-    hasTransition() {
-        return false;
+        this.wind.draw();
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        map.triggerRepaint();
     }
 }
 
 map.on('load', function () {
-
-    map.on('movestart', () => {
-        wind.fadeOpacity = 0.9;
-        wind.dropRate = 0.01;
-        // draw = false;
-    })
-
-    map.on('moveend', () => {
-        draw = true;
-        wind.fadeOpacity = 0.966;
-        wind.dropRate = 0.003;
-        // update = true;
-    });
-
-    getJSON('/debug/2016112000.json', function (windData) {
-        const windImage = new Image();
-        windData.image = windImage;
-        windImage.src = '/debug/2016112000.png';
-        windImage.onload = function () {
-
-            map.addLayer(new WindLayer(), 'building');
-
-            setTimeout(function () {
-                wind.setWind(windData);
-            }, 100);
-        };
-    });
+    map.addLayer(new WindLayer('/debug/2016112000'), 'building');
 });
-
-function getJSON(url, callback) {
-    const xhr = new XMLHttpRequest();
-    xhr.responseType = 'json';
-    xhr.open('get', url, true);
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            callback(xhr.response);
-        } else {
-            throw new Error(xhr.statusText);
-        }
-    };
-    xhr.send();
-}
 
 </script>
 </body>
