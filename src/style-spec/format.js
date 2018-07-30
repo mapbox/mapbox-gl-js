@@ -1,6 +1,7 @@
 
 import reference from './reference/latest.js';
 import sortObject from 'sort-object';
+import stringifyPretty from 'json-stringify-pretty-compact';
 
 function sameOrderAs(reference) {
     const keyOrder = {};
@@ -38,17 +39,14 @@ function sameOrderAs(reference) {
  * fs.writeFileSync('./dest.json', format(style));
  * fs.writeFileSync('./dest.min.json', format(style, 0));
  */
-function format(style, space) {
-    if (space === undefined) space = 2;
+function format(style, space = 2) {
     style = sortObject(style, sameOrderAs(reference.$root));
 
     if (style.layers) {
-        style.layers = style.layers.map((layer) => {
-            return sortObject(layer, sameOrderAs(reference.layer));
-        });
+        style.layers = style.layers.map((layer) => sortObject(layer, sameOrderAs(reference.layer)));
     }
 
-    return JSON.stringify(style, null, space);
+    return stringifyPretty(style, {indent: space});
 }
 
 export default format;
