@@ -50,7 +50,7 @@ import type {Callback} from '../types/callback';
 import type EvaluationParameters from './evaluation_parameters';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
-import type {GeoJSON} from '../types/geojson';
+import type {GeoJSON} from '@mapbox/geojson-types';
 import type {
     LayerSpecification,
     FilterSpecification,

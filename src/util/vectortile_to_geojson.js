@@ -1,5 +1,5 @@
 // @flow
-import type {GeoJSONGeometry} from '../types/geojson';
+import type {GeoJSONGeometry} from '@mapbox/geojson-types';
 
 class Feature {
     type: 'Feature';

@@ -13,8 +13,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
-import type {GeoJSON} from '../types/geojson';
-import type {Feature as GeoJSONFeature} from 'flow-geojson';
+import type {GeoJSON, GeoJSONFeature} from '@mapbox/geojson-types';
 import type {GeojsonSourceSpecification} from '../style-spec/types';
 
 /**
