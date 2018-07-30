@@ -142,7 +142,7 @@ export const getImage = function(requestParameters: RequestParameters, callback:
         img.onerror = () => callback(new Error(`Could not load image: ${url}`));
         img.onload = () => callback(null, img);
         img.src = url;
-        return {cancel: () => { img.src = transparentPngUrl; }};
+        return {cancel: () => { img.onload = null; img.src = transparentPngUrl; }};
     }
 
     // otherwise request the image with XHR to work around caching issues
