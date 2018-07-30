@@ -56,6 +56,7 @@ class SourceCache extends Evented {
     _isIdRenderable: (id: number, symbolLayer?: boolean) => boolean;
     used: boolean;
     _state: SourceFeatureState;
+    sparse: boolean;
 
     static maxUnderzooming: number;
     static maxOverzooming: number;
@@ -559,7 +560,6 @@ class SourceCache extends Evented {
         const checked: {[number]: boolean } = {};
         const minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
-
         const missingTiles = {};
         for (const tileID of idealTileIDs) {
             const tile = this._addTile(tileID);
@@ -610,13 +610,34 @@ class SourceCache extends Evented {
             // tile has been previously requested (and errored because we only loop over tiles with no data)
             // in order to determine if we need to request its parent.
             let parentWasRequested = tile.wasRequested();
+            const raster = isRasterType(this._source.type);
 
-            for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minCoveringZoom; --overscaledZ) {
+            const minZoom = this.sparse ? tileID.overscaledZ - 1 : minCoveringZoom;
+            for (let overscaledZ = tileID.overscaledZ - 1; overscaledZ >= minZoom; --overscaledZ) {
                 const parentId = tileID.scaledTo(overscaledZ);
-
                 // Break parent tile ascent if this route has been previously checked by another child.
                 if (checked[parentId.key]) break;
                 checked[parentId.key] = true;
+
+                if (!raster) {
+                    let siblingFailed = false, siblingLoaded = false;
+                    parentId.children(this._source.maxzoom).forEach((sibID) => {
+                        const sibling = this.getTile(sibID);
+                        if (sibling) {
+                            if (sibling.hasData()) {
+                                siblingLoaded = true;
+                            }
+                            if (sibling.state === 'errored') siblingFailed =  true;
+                        }
+                    });
+                    if (siblingLoaded && siblingFailed) {
+                        // mark this tileset as sparse, so other tiles' only retain parents one ZL above the
+                        // ideal zoom to prevent overdraw from other anscenstors
+                        if (!this.sparse) this.sparse = true;
+                        // don't retain parent for errored tiles with loaded siblings to prevent overdraw
+                        break;
+                    }
+                }
 
                 tile = this.getTile(parentId);
                 if (!tile && parentWasRequested) {
