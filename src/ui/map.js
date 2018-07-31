@@ -1339,11 +1339,17 @@ class Map extends Camera {
      *
      * @param {Object} [feature] Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+     * @param {string} [feature.id] Unique id of the feature.
      * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
-     * @param {string} [feature.id] Unique id of the feature.
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
+     *
+     * This method requires the `feature.id` attribute on data sets. For GeoJSON sources without 
+     * feature ids, set the `generateIds` option in the `GeoJSONSourceSpecification` to auto-assign them. This 
+     * option assigns ids based on a feature's index in the source data. Changing the feature data using 
+     * `map.getSource('some id').setData(..)` resets the cache of feature states and requires the 
+     * caller re-apply the state as needed with the updated `id` values.
      */
     setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
         this.style.setFeatureState(feature, state);
