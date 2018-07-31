@@ -1443,13 +1443,8 @@ test('SourceCache#findLoadedParent', (t) => {
 
         sourceCache._tiles[tile.tileID.key] = tile;
 
-        const retain = {};
-        const expectedRetain = {};
-        expectedRetain[tile.tileID.key] = tile.tileID;
-
-        t.equal(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 3, 3), 0, retain), undefined);
-        t.deepEqual(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 0, 0), 0, retain), tile);
-        t.deepEqual(retain, expectedRetain);
+        t.equal(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 3, 3), 0), undefined);
+        t.deepEqual(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 0, 0), 0), tile);
         t.end();
     });
 
@@ -1464,13 +1459,8 @@ test('SourceCache#findLoadedParent', (t) => {
         const tile = new Tile(new OverscaledTileID(1, 0, 1, 0, 0), 512, 22);
         sourceCache._cache.add(tile.tileID, tile);
 
-        const retain = {};
-        const expectedRetain = {};
-        expectedRetain[tile.tileID.key] = tile.tileID;
-
-        t.equal(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 3, 3), 0, retain), undefined);
-        t.equal(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 0, 0), 0, retain), tile);
-        t.deepEqual(retain, expectedRetain);
+        t.equal(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 3, 3), 0), undefined);
+        t.equal(sourceCache.findLoadedParent(new OverscaledTileID(2, 0, 2, 0, 0), 0), tile);
         t.equal(sourceCache._cache.order.length, 1);
 
         t.end();
