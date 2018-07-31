@@ -324,7 +324,8 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Retain children of the given set of tiles (up to maxCoveringZoom) that are already loaded;
+     * For a given set of tiles, retain children that are loaded and have a zoom
+     * between `zoom` (exclusive) and `maxCoveringZoom` (inclusive)
      */
     _retainLoadedChildren(
         idealTiles: {[any]: OverscaledTileID},
@@ -369,8 +370,7 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Find a loaded parent of the given tile (up to minCoveringZoom);
-     * adds the found tile to retain object and returns the tile if found
+     * Find a loaded parent of the given tile (up to minCoveringZoom)
      */
     findLoadedParent(tileID: OverscaledTileID, minCoveringZoom: number): ?Tile {
         for (let z = tileID.overscaledZ - 1; z >= minCoveringZoom; z--) {
