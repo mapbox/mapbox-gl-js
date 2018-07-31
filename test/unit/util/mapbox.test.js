@@ -388,7 +388,7 @@ test("mapbox", (t) => {
                 const req = window.server.requests[0];
                 req.respond(200);
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.ok(reqBody.created, new Date(now).toISOString());
+                t.equal(reqBody.created, new Date(now).toISOString());
 
                 t.end();
             });
@@ -409,7 +409,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.ok(reqBody.created, new Date(firstEvent).toISOString());
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
 
                 t.end();
             });
@@ -430,7 +430,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.ok(reqBody.created, new Date(firstEvent).toISOString());
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
 
                 t.end();
             });
@@ -484,7 +484,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.ok(reqBody.created, new Date(firstEvent).toISOString());
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
 
                 t.end();
             });
@@ -505,7 +505,7 @@ test("mapbox", (t) => {
                 t.equal(window.server.requests.length, 1);
 
                 const reqBody = JSON.parse(req.requestBody)[0];
-                t.ok(reqBody.created, new Date(firstEvent).toISOString());
+                t.equal(reqBody.created, new Date(firstEvent).toISOString());
 
                 t.end();
             });
@@ -538,16 +538,18 @@ test("mapbox", (t) => {
                 const tomorrow = now;
                 event.postTurnstileEvent(['a.tiles.mapbox.com']);
 
-                const req = window.server.requests[0];
+                let req = window.server.requests[0];
                 req.respond(200);
 
+                req = window.server.requests[1];
+                req.respond(200);
                 const reqBody = JSON.parse(req.requestBody)[0];
                 t.equal(req.url, `${config.EVENTS_URL}?access_token=key`);
                 t.equal(req.method, 'POST');
                 t.equal(reqBody.event, 'appUserTurnstile');
                 t.equal(reqBody.sdkVersion, version);
                 t.ok(reqBody.userId);
-                t.ok(reqBody.created, new Date(tomorrow).toISOString());
+                t.equal(reqBody.created, new Date(tomorrow).toISOString());
 
                 t.end();
             });
@@ -570,12 +572,12 @@ test("mapbox", (t) => {
                 const reqToday = window.server.requests[0];
                 reqToday.respond(200);
                 let reqBody = JSON.parse(reqToday.requestBody)[0];
-                t.ok(reqBody.created, new Date(today).toISOString());
+                t.equal(reqBody.created, new Date(today).toISOString());
 
                 const reqTomorrow = window.server.requests[1];
                 reqTomorrow.respond(200);
                 reqBody = JSON.parse(reqTomorrow.requestBody)[0];
-                t.ok(reqBody.created, new Date(tomorrow).toISOString());
+                t.equal(reqBody.created, new Date(tomorrow).toISOString());
 
                 t.end();
             });
