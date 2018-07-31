@@ -324,10 +324,21 @@ export default class Popup extends Evented {
         }
     }
 
+    /**
+     * Returns the closeOnClick option of the popup
+     *
+     * @returns {boolean} the closeOnClick option
+     */
     getCloseOnClick() {
         return this.options.closeOnClick;
     }
 
+    /**
+     * Sets the closeOnClick option of the popup
+     *
+     * @param val The closeOnClick option to set to the popup
+     * @returns {Popup} `this`
+     */
     setCloseOnClick(val: boolean) {
         this.options.closeOnClick = val;
         return this;
