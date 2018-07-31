@@ -11,7 +11,7 @@ const config = [{
     // First, use code splitting to bundle GL JS into three "chunks":
     // - rollup/build/index.js: the main module, plus all its dependencies not shared by the worker module
     // - rollup/build/worker.js: the worker module, plus all dependencies not shared by the main module
-    // - rollup/build/chunk1.js: the set of modules that are dependencies of both the main module and the worker module
+    // - rollup/build/shared.js: the set of modules that are dependencies of both the main module and the worker module
     //
     // This is also where we do all of our source transformations: removing
     // flow annotations, transpiling ES6 features using buble, inlining shader

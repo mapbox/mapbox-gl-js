@@ -17,7 +17,8 @@ const config = [{
     output: {
         dir: 'rollup/build/benchmarks',
         format: 'amd',
-        sourcemap: 'inline'
+        sourcemap: 'inline',
+        chunkFileNames: 'shared.js'
     },
     experimentalCodeSplitting: true,
     plugins: plugins()
