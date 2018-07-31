@@ -284,7 +284,7 @@ class Transform {
     get point(): Point { return new Point(this.x, this.y); }
 
     /**
-     * latitude to absolute x coord
+     * longitude to absolute x coord
      * @returns {number} pixel coordinate
      */
     lngX(lng: number) {
