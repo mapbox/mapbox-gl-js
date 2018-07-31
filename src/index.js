@@ -3,7 +3,6 @@
 import assert from 'assert';
 import supported from '@mapbox/mapbox-gl-supported';
 
-import browser from './util/browser';
 import { version } from '../package.json';
 import Map from './ui/map';
 import NavigationControl from './ui/control/navigation_control';
@@ -20,11 +19,11 @@ import Point from '@mapbox/point-geometry';
 import {Evented} from './util/evented';
 import config from './util/config';
 import {setRTLTextPlugin} from './source/rtl_text_plugin';
+import WorkerPool from './util/worker_pool';
 
 const exported = {
     version,
     supported,
-    workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
     setRTLTextPlugin: setRTLTextPlugin,
     Map,
     NavigationControl,
@@ -55,6 +54,14 @@ const exported = {
 
     set accessToken(token: string) {
         config.ACCESS_TOKEN = token;
+    },
+
+    get workerCount() {
+        return WorkerPool.workerCount;
+    },
+
+    set workerCount(count: number) {
+        WorkerPool.workerCount = count;
     },
 
     workerUrl: ''
