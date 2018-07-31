@@ -323,6 +323,15 @@ export default class Popup extends Evented {
             this.remove();
         }
     }
+
+    getCloseOnClick() {
+        return this.options.closeOnClick;
+    }
+
+    setCloseOnClick(val: boolean) {
+        this.options.closeOnClick = val;
+        return this;
+    }
 }
 
 function normalizeOffset(offset: ?Offset) {

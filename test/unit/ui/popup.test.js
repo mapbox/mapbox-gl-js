@@ -49,13 +49,16 @@ test('Popup options.closeOnClick can be dynamic', (t) => {
         .setLngLat([0, 0])
         .addTo(map);
 
+    // initial closeOnClick = true
+    t.ok(popup.getCloseOnClick());
+
     // set closeOnClick => false
-    popup.options.closeOnClick = false;
+    popup.setCloseOnClick(false);
     simulateClick(map.getCanvas());
     t.ok(popup.isOpen());
 
     // set closeOnClick => true
-    popup.options.closeOnClick = true;
+    popup.setCloseOnClick(true);
     simulateClick(map.getCanvas());
     t.ok(!popup.isOpen());
 
