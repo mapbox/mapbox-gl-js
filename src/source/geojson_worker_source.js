@@ -22,6 +22,7 @@ import type StyleLayerIndex from '../style/style_layer_index';
 import type {LoadVectorDataCallback} from './vector_tile_worker_source';
 import type {RequestParameters} from '../util/ajax';
 import type { Callback } from '../types/callback';
+import type {GeoJSONFeature} from '@mapbox/geojson-types';
 
 export type LoadGeoJSONParameters = {
     request?: RequestParameters,

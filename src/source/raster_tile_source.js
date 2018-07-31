@@ -16,6 +16,10 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
+import type {
+    RasterSourceSpecification,
+    RasterDEMSourceSpecification
+} from '../style-spec/types';
 
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';

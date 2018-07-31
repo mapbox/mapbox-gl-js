@@ -22,6 +22,7 @@ import type Dispatcher from '../util/dispatcher';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
+import type {SourceSpecification} from '../style-spec/types';
 
 /**
  * `SourceCache` is responsible for

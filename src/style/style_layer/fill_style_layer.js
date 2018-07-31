@@ -14,6 +14,7 @@ import type Point from '@mapbox/point-geometry';
 import type {PaintProps} from './fill_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type Transform from '../../geo/transform';
+import type {LayerSpecification} from '../../style-spec/types';
 
 class FillStyleLayer extends StyleLayer {
     _transitionablePaint: Transitionable<PaintProps>;

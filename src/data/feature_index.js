@@ -19,6 +19,7 @@ import SourceFeatureState from '../source/source_state';
 import type StyleLayer from '../style/style_layer';
 import type {FeatureFilter} from '../style-spec/feature_filter';
 import type Transform from '../geo/transform';
+import type {FilterSpecification} from '../style-spec/types';
 
 import { FeatureIndexArray } from './array_types';
 

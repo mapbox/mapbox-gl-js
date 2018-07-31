@@ -23,6 +23,7 @@ import type {Expression} from './expression';
 import type {StylePropertySpecification} from '../style-spec';
 import type {Result} from '../util/result';
 import type {InterpolationType} from './definitions/interpolate';
+import type {PropertyValueSpecification} from '../types';
 
 export type Feature = {
     +type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'MultiPoint' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon',

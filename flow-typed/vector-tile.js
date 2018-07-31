@@ -1,4 +1,6 @@
 import type Pbf from 'pbf';
+import type Point from '@mapbox/point-geometry';
+import type { GeoJSONFeature } from '@mapbox/geojson-types';
 
 declare interface VectorTile {
     layers: {[string]: VectorTileLayer};

@@ -34,6 +34,7 @@ import type {PerformanceResourceTiming} from '../types/performance_resource_timi
 import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
+import type {FilterSpecification} from '../style-spec/types';
 
 export type TileState =
     | 'loading'   // Tile data is in the process of loading.

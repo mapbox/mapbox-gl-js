@@ -11,6 +11,7 @@ import { ErrorEvent } from '../util/evented';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type {Evented} from '../util/evented';
+import type {VideoSourceSpecification} from '../style-spec/types';
 
 /**
  * A data source containing video.

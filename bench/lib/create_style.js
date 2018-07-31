@@ -4,6 +4,8 @@ import Style from '../../src/style/style';
 
 import { Evented } from '../../src/util/evented';
 
+import type {StyleSpecification} from '../../src/style-spec/types';
+
 class StubMap extends Evented {
     _transformRequest(url) {
         return { url };

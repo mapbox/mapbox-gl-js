@@ -5,6 +5,7 @@ import assert from 'assert';
 import extend from '../util/extend';
 
 import type {StylePropertySpecification} from '../style-spec';
+import type {PropertyValueSpecification} from '../types';
 
 export default convertFunction;
 
