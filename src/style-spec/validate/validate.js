@@ -69,9 +69,6 @@ export default function validate(options) {
         const valid = validateObject(extend({}, options, {
             valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
         }));
-        if (!valid) {
-            console.log("not valid");
-        }
         return valid;
     }
 }

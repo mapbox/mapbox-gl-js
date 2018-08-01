@@ -24,7 +24,6 @@ function transformText(text: string, layer: SymbolStyleLayer, feature: Feature) 
 
 export default function(text: string | Formatted, layer: SymbolStyleLayer, feature: Feature) {
     if (text instanceof Formatted) {
-        // OK to transform in place?
         text.sections.forEach(section => {
             section.text = transformText(section.text, layer, feature);
         });

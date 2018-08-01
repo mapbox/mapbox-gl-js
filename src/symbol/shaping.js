@@ -44,7 +44,7 @@ type TextJustify = 'left' | 'center' | 'right';
 
 class TaggedString {
     text: string;
-    sectionIndex: Array<number>
+    sectionIndex: Array<number> // maps each character in 'text' to its corresponding entry in 'sections'
     sections: Array<{ scale: number, fontStack: string }>
 
     constructor() {
