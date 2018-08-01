@@ -1,21 +1,20 @@
 
 import reference from './reference/latest.js';
-import sortObject from 'sort-object';
 import stringifyPretty from 'json-stringify-pretty-compact';
 
-function sameOrderAs(reference) {
-    const keyOrder = {};
-
-    Object.keys(reference).forEach((k, i) => {
-        keyOrder[k] = i + 1;
-    });
-
-    return {
-        sort: function (a, b) {
-            return (keyOrder[a] || Infinity) -
-                   (keyOrder[b] || Infinity);
+function sortKeysBy(obj, reference) {
+    const result = {};
+    for (const key in reference) {
+        if (obj[key] !== undefined) {
+            result[key] = obj[key];
         }
-    };
+    }
+    for (const key in obj) {
+        if (result[key] === undefined) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
 }
 
 /**
@@ -40,10 +39,10 @@ function sameOrderAs(reference) {
  * fs.writeFileSync('./dest.min.json', format(style, 0));
  */
 function format(style, space = 2) {
-    style = sortObject(style, sameOrderAs(reference.$root));
+    style = sortKeysBy(style, reference.$root);
 
     if (style.layers) {
-        style.layers = style.layers.map((layer) => sortObject(layer, sameOrderAs(reference.layer)));
+        style.layers = style.layers.map((layer) => sortKeysBy(layer, reference.layer));
     }
 
     return stringifyPretty(style, {indent: space});
