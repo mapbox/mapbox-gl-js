@@ -12,7 +12,6 @@ import simulate from 'mapbox-gl-js-test/simulate_interaction';
 import fixed from 'mapbox-gl-js-test/fixed';
 const fixedNum = fixed.Num;
 const fixedLngLat = fixed.LngLat;
-const fixedCoord = fixed.Coord;
 
 function createStyleSource() {
     return {
@@ -908,7 +907,7 @@ test('Map', (t) => {
                 const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
-                t.deepEqual(args[0].worldCoordinate.map(c => fixedCoord(c)), [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
+                t.deepEqual(args[0], [{ x: 100, y: 100 }]); // query geometry
                 t.deepEqual(args[1], {}); // params
                 t.deepEqual(args[2], map.transform); // transform
                 t.deepEqual(output, []);
@@ -956,11 +955,7 @@ test('Map', (t) => {
 
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
-                const coords = map.style.queryRenderedFeatures.getCall(0).args[0].worldCoordinate.map(c => fixedCoord(c));
-                t.equal(coords[0].column, 1.5);
-                t.equal(coords[0].row, 0.5);
-                t.equal(coords[0].zoom, 0);
-
+                t.deepEqual(map.style.queryRenderedFeatures.getCall(0).args[0], [{x: 612, y: 100}]);
                 t.end();
             });
         });

@@ -879,64 +879,29 @@ class Map extends Camera {
         //
         // There no way to express that in a way that's compatible with both flow and documentation.js.
         // Related: https://github.com/facebook/flow/issues/1556
-        if (arguments.length === 2) {
-            geometry = arguments[0];
-            options = arguments[1];
-        } else if (arguments.length === 1 && isPointLike(arguments[0])) {
-            geometry = arguments[0];
-            options = {};
-        } else if (arguments.length === 1) {
-            geometry = undefined;
-            options = arguments[0];
-        } else {
-            geometry = undefined;
-            options = {};
-        }
 
         if (!this.style) {
             return [];
         }
 
-        return this.style.queryRenderedFeatures(
-            this._makeQueryGeometry(geometry),
-            options,
-            this.transform
-        );
-
-        function isPointLike(input) {
-            return input instanceof Point || Array.isArray(input);
+        if (options === undefined && geometry !== undefined && !(geometry instanceof Point) && !Array.isArray(geometry)) {
+            options = (geometry: Object);
+            geometry = undefined;
         }
-    }
 
-    _makeQueryGeometry(pointOrBox?: PointLike | [PointLike, PointLike]) {
-        if (pointOrBox === undefined) {
-            // bounds was omitted: use full viewport
-            pointOrBox = [
-                Point.convert([0, 0]),
-                Point.convert([this.transform.width, this.transform.height])
-            ];
-        }
+        options = options || {};
+        geometry = geometry || [[0, 0], [this.transform.width, this.transform.height]];
 
         let queryGeometry;
-
-        if (pointOrBox instanceof Point || typeof pointOrBox[0] === 'number') {
-            const point = Point.convert(pointOrBox);
-            queryGeometry = [point];
+        if (geometry instanceof Point || typeof geometry[0] === 'number') {
+            queryGeometry = [Point.convert(geometry)];
         } else {
-            const box = [Point.convert(pointOrBox[0]), Point.convert(pointOrBox[1])];
-            queryGeometry = [
-                box[0],
-                new Point(box[1].x, box[0].y),
-                box[1],
-                new Point(box[0].x, box[1].y),
-                box[0]
-            ];
+            const tl = Point.convert(geometry[0]);
+            const br = Point.convert(geometry[1]);
+            queryGeometry = [tl, new Point(br.x, tl.y), br, new Point(tl.x, br.y), tl];
         }
 
-        return {
-            viewport: queryGeometry,
-            worldCoordinate: queryGeometry.map((p) => this.transform.pointCoordinate(p))
-        };
+        return this.style.queryRenderedFeatures(queryGeometry, options, this.transform);
     }
 
     /**
