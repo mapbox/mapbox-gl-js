@@ -26,7 +26,7 @@ import {
     GreaterThanOrEqual
 } from './comparison';
 import { CollatorExpression } from './collator';
-import { Formatted, FormattedExpression } from './formatted';
+import { Formatted, FormatExpression } from './formatted';
 import Length from './length';
 
 import type { Type } from '../types';
@@ -47,7 +47,7 @@ const expressions: ExpressionRegistry = {
     'case': Case,
     'coalesce': Coalesce,
     'collator': CollatorExpression,
-    'format': FormattedExpression,
+    'format': FormatExpression,
     'interpolate': Interpolate,
     'length': Length,
     'let': Let,

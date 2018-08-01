@@ -50,7 +50,7 @@ type FormattedSectionExpression = {
     font: Expression | null;
 }
 
-export class FormattedExpression implements Expression {
+export class FormatExpression implements Expression {
     type: Type;
     sections: Array<FormattedSectionExpression>;
 
@@ -94,7 +94,7 @@ export class FormattedExpression implements Expression {
             sections.push({text, scale, font});
         }
 
-        return new FormattedExpression(sections);
+        return new FormatExpression(sections);
     }
 
     evaluate(ctx: EvaluationContext) {
