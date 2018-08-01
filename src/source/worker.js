@@ -55,12 +55,13 @@ export default class Worker {
             this.workerSourceTypes[name] = WorkerSource;
         };
 
-        this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function}) => {
+        this.self.registerRTLTextPlugin = (rtlTextPlugin: {applyArabicShaping: Function, processBidirectionalText: Function, processStyledBidirectionalText?: Function}) => {
             if (globalRTLTextPlugin.isLoaded()) {
                 throw new Error('RTL text plugin already registered.');
             }
             globalRTLTextPlugin['applyArabicShaping'] = rtlTextPlugin.applyArabicShaping;
             globalRTLTextPlugin['processBidirectionalText'] = rtlTextPlugin.processBidirectionalText;
+            globalRTLTextPlugin['processStyledBidirectionalText'] = rtlTextPlugin.processStyledBidirectionalText;
         };
     }
 
@@ -197,4 +198,3 @@ if (typeof WorkerGlobalScope !== 'undefined' &&
     self instanceof WorkerGlobalScope) {
     new Worker(self);
 }
-

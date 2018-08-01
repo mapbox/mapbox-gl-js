@@ -134,6 +134,14 @@ const types = {
     collator: [{
         type: 'collator',
         parameters: [ '{ "case-sensitive": boolean, "diacritic-sensitive": boolean, "locale": string }' ]
+    }],
+    format: [{
+        type: 'formatted',
+        parameters: [
+            'input_1: string, options_1: { "font-scale": number, "text-font": array<string> }',
+            '...',
+            'input_n: string, options_n: { "font-scale": number, "text-font": array<string> }'
+        ]
     }]
 };
 

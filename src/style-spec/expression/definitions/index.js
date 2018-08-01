@@ -26,6 +26,7 @@ import {
     GreaterThanOrEqual
 } from './comparison';
 import { CollatorExpression } from './collator';
+import { Formatted, FormattedExpression } from './formatted';
 import Length from './length';
 
 import type { Type } from '../types';
@@ -46,6 +47,7 @@ const expressions: ExpressionRegistry = {
     'case': Case,
     'coalesce': Coalesce,
     'collator': CollatorExpression,
+    'format': FormattedExpression,
     'interpolate': Interpolate,
     'length': Length,
     'let': Let,
@@ -117,7 +119,7 @@ CompoundExpression.register(expressions, {
                 return '';
             } else if (type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
-            } else if (v instanceof Color) {
+            } else if (v instanceof Color || v instanceof Formatted) {
                 return v.toString();
             } else {
                 return JSON.stringify(v);

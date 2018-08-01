@@ -54,10 +54,12 @@ export const setRTLTextPlugin = function(url: string, callback: ErrorCallback) {
 export const plugin: {
     applyArabicShaping: ?Function,
     processBidirectionalText: ?(string, Array<number>) => Array<string>,
+    processStyledBidirectionalText: ?(string, Array<number>, Array<number>) => Array<[string, Array<number>]>,
     isLoaded: () => boolean
 } = {
     applyArabicShaping: null,
     processBidirectionalText: null,
+    processStyledBidirectionalText: null,
     isLoaded: function() {
         return foregroundLoadComplete ||       // Foreground: loaded if the completion callback returned successfully
             plugin.applyArabicShaping != null; // Background: loaded if the plugin functions have been compiled

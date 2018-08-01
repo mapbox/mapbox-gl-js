@@ -160,6 +160,9 @@ const navigation = [
                 "title": "String"
             },
             {
+                "title": "Formatted"
+            },
+            {
                 "title": "Boolean"
             },
             {
@@ -946,6 +949,19 @@ export default class extends React.Component {
                                             "line-color": "yellow"
                                         }`)}
                                     <p>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
+                                </div>
+
+                                <div className='pad2 keyline-bottom'>
+                                    <a id='types-formatted' className='anchor'/>
+                                    <h3 className='space-bottom1'><a href='#types-formatted' title='link to formatted'>Formatted</a></h3>
+                                    <p>The <code>formatted</code> type represents a string broken into sections annotated with separate formatting options.</p>
+                                    {highlightJSON(`
+                                        {
+                                            "text-field": ["format",
+                                              "foo", { "font-scale": 1.2 },
+                                              "bar", { "font-scale": 0.8 }
+                                            ]
+                                        }`)}
                                 </div>
 
                                 <div className='pad2 keyline-bottom'>
