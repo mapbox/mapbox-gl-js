@@ -899,13 +899,15 @@ class Style extends Evented {
         }
 
         const sourceResults = [];
+        const queryCoordinates = queryGeometry.map((p) => transform.pointCoordinate(p));
+
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
             sourceResults.push(
                 queryRenderedFeatures(
                     this.sourceCaches[id],
                     this._layers,
-                    queryGeometry.worldCoordinate,
+                    queryCoordinates,
                     params,
                     transform)
             );
@@ -918,7 +920,7 @@ class Style extends Evented {
                 queryRenderedSymbols(
                     this._layers,
                     this.sourceCaches,
-                    queryGeometry.viewport,
+                    queryGeometry,
                     params,
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData)
