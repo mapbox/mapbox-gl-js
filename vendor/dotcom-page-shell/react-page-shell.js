@@ -835,7 +835,7 @@ var navigationMenuData = {
                 links: [{
                   name: 'iOS',
                   showFor: true,
-                  to: '/mapbox-navigation-ios/'
+                  to: '/ios-sdk/navigation/'
                 }, {
                   name: 'Android',
                   showFor: true,
@@ -869,7 +869,7 @@ var navigationMenuData = {
         },
         more: {
           title: 'More documentation',
-          to: '/developers/'
+          to: '/documentation/'
         }
       },
       help: {
@@ -947,7 +947,7 @@ var navigationMenuData = {
     name: 'Resources',
     links: [{
       name: 'Documentation',
-      to: '/developers/'
+      to: '/documentation/'
     }, {
       name: 'Help',
       to: '/help/'
@@ -998,7 +998,7 @@ var navigationMenuData = {
       to: '/showcase/'
     }, {
       name: 'Documentation',
-      to: '/developers/'
+      to: '/documentation/'
     }, {
       name: 'Pricing',
       to: '/pricing/'
@@ -2165,6 +2165,24 @@ var PageHeader = function (_React$Component) {
       return menuID + '-pointer';
     }
   }, {
+    key: 'renderIconReference',
+    value: function renderIconReference() {
+      // Reference shell specific icon for chevron-right
+      return React__default.createElement(
+        'svg',
+        {
+          xmlns: 'http://www.w3.org/2000/svg',
+          xmlnsXlink: 'http://www.w3.org/1999/xlink',
+          className: 'shell-none'
+        },
+        React__default.createElement(
+          'symbol',
+          { id: 'shell-icon-chevron-right', viewBox: '0 0 18 18' },
+          React__default.createElement('path', { d: 'M7.5 13.105a.806.806 0 0 1-.537-1.407l3.055-2.724-3.08-2.997a.806.806 0 1 1 1.124-1.155l3.7 3.6a.805.805 0 0 1-.025 1.18l-3.7 3.3a.803.803 0 0 1-.537.204z' })
+        )
+      );
+    }
+  }, {
     key: 'render',
     value: function render() {
       var logoClasses = 'shell-mb-logo';
@@ -2284,7 +2302,8 @@ var PageHeader = function (_React$Component) {
           ),
           React__default.createElement(MobileMenuButton, { darkText: this.props.darkText })
         ),
-        React__default.createElement(MobileNavigation, null)
+        React__default.createElement(MobileNavigation, null),
+        this.renderIconReference()
       );
     }
   }]);
@@ -2640,24 +2659,6 @@ var PageFooter = function (_Component) {
       );
     }
   }, {
-    key: 'renderIconReference',
-    value: function renderIconReference() {
-      // Reference shell specific icon for chevron-right
-      return React__default.createElement(
-        'svg',
-        {
-          xmlns: 'http://www.w3.org/2000/svg',
-          xmlnsXlink: 'http://www.w3.org/1999/xlink',
-          className: 'shell-none'
-        },
-        React__default.createElement(
-          'symbol',
-          { id: 'shell-icon-chevron-right', viewBox: '0 0 18 18' },
-          React__default.createElement('path', { d: 'M7.5 13.105a.806.806 0 0 1-.537-1.407l3.055-2.724-3.08-2.997a.806.806 0 1 1 1.124-1.155l3.7 3.6a.805.805 0 0 1-.025 1.18l-3.7 3.3a.803.803 0 0 1-.537.204z' })
-        )
-      );
-    }
-  }, {
     key: 'render',
     value: function render() {
       return React__default.createElement(
@@ -2680,8 +2681,7 @@ var PageFooter = function (_Component) {
             this.renderMenus()
           ),
           this.renderLegalAndSocialMedia()
-        ),
-        this.renderIconReference()
+        )
       );
     }
   }]);
