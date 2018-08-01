@@ -14,6 +14,8 @@ import {
 
 import type Color from '../../style-spec/util/color';
 
+import type {Formatted} from '../../style-spec/expression/definitions/formatted';
+
 export type LayoutProps = {|
     "symbol-placement": DataConstantProperty<"point" | "line" | "line-center">,
     "symbol-spacing": DataConstantProperty<number>,
@@ -34,7 +36,7 @@ export type LayoutProps = {|
     "icon-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
-    "text-field": DataDrivenProperty<string>,
+    "text-field": DataDrivenProperty<string | Formatted>,
     "text-font": DataDrivenProperty<Array<string>>,
     "text-size": DataDrivenProperty<number>,
     "text-max-width": DataDrivenProperty<number>,

@@ -4,61 +4,81 @@
       "glyph": 97,
       "x": -32.5,
       "y": -29,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 98,
       "x": -19.5,
       "y": -29,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 99,
       "x": -5.5,
       "y": -29,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 100,
       "x": 5.5,
       "y": -29,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 101,
       "x": 19.5,
       "y": -29,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 97,
       "x": -32.5,
       "y": -5,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 98,
       "x": -19.5,
       "y": -5,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 99,
       "x": -5.5,
       "y": -5,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 100,
       "x": 5.5,
       "y": -5,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 101,
       "x": 19.5,
       "y": -5,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     }
   ],
   "text": "abcde\nabcde",

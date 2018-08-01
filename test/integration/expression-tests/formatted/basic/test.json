@@ -1,0 +1,80 @@
+{
+  "expression": [
+    "format",
+    "a",
+    {},
+    "b",
+    {
+      "font-scale": 2
+    },
+    "c",
+    {
+      "text-font": [
+        "literal",
+        [
+          "a",
+          "b"
+        ]
+      ]
+    }
+  ],
+  "inputs": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "formatted"
+    },
+    "outputs": [
+      {
+        "sections": [
+          {
+            "text": "a",
+            "scale": null,
+            "fontStack": null
+          },
+          {
+            "text": "b",
+            "scale": 2,
+            "fontStack": null
+          },
+          {
+            "text": "c",
+            "scale": null,
+            "fontStack": "a,b"
+          }
+        ]
+      }
+    ],
+    "serialized": [
+      "format",
+      "a",
+      {
+        "font-scale": null,
+        "text-font": null
+      },
+      "b",
+      {
+        "font-scale": 2,
+        "text-font": null
+      },
+      "c",
+      {
+        "font-scale": null,
+        "text-font": [
+          "literal",
+          [
+            "a",
+            "b"
+          ]
+        ]
+      }
+    ]
+  }
+}

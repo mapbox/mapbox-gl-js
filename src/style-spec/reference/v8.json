@@ -1505,10 +1505,10 @@
       "property-type": "data-constant"
     },
     "text-field": {
-      "type": "string",
+      "type": "formatted",
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label.",
+      "doc": "Value to use for a text label. If a plain `string` is provided, it will be treated as a `formatted` with default/inherited formatting options.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -2505,6 +2505,15 @@
           }
         }
       },
+      "format": {
+        "doc": "Returns `formatted` text containing annotations for use in mixed-format `text-field` entries. If set, the `text-font` argument overrides the font specified by the root layout properties. If set, the `font-scale` argument specifies a scaling factor relative to the `text-size` specified in the root layout properties.",
+        "group": "Types",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.48.0"
+          }
+        }
+      },
       "to-string": {
         "doc": "Converts the input value to a string. If the input is `null`, the result is `\"\"`. If the input is a boolean, the result is `\"true\"` or `\"false\"`. If the input is a number, it is converted to a string as specified by the [\"NumberToString\" algorithm](https://tc39.github.io/ecma262/#sec-tostring-applied-to-the-number-type) of the ECMAScript Language Specification. If the input is a color, it is converted to a string of the form `\"rgba(r,g,b,a)\"`, where `r`, `g`, and `b` are numerals ranging from 0 to 255, and `a` ranges from 0 to 1. Otherwise, the input is converted to a string in the format specified by the [`JSON.stringify`](https://tc39.github.io/ecma262/#sec-json.stringify) function of the ECMAScript Language Specification.",
         "group": "Types",
@@ -3099,7 +3108,7 @@
         }
       },
       "concat": {
-        "doc": "Returns a string consisting of the concatenation of the inputs.",
+        "doc": "Returns a `string` consisting of the concatenation of the inputs. If any inputs are `formatted`, returns a `formatted` with default formatting options for all unformatted inputs.",
         "group": "String",
         "sdk-support": {
           "basic functionality": {

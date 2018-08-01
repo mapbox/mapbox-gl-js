@@ -9,6 +9,7 @@ export type ObjectTypeT = { kind: 'object' };
 export type ValueTypeT = { kind: 'value' };
 export type ErrorTypeT = { kind: 'error' };
 export type CollatorTypeT = { kind: 'collator' };
+export type FormattedTypeT = { kind: 'formatted' };
 
 export type Type =
     NullTypeT |
@@ -20,7 +21,8 @@ export type Type =
     ValueTypeT |
     ArrayType | // eslint-disable-line no-use-before-define
     ErrorTypeT |
-    CollatorTypeT
+    CollatorTypeT |
+    FormattedTypeT
 
 export type ArrayType = {
     kind: 'array',
@@ -37,6 +39,7 @@ export const ObjectType = { kind: 'object' };
 export const ValueType = { kind: 'value' };
 export const ErrorType = { kind: 'error' };
 export const CollatorType = { kind: 'collator' };
+export const FormattedType = { kind: 'formatted' };
 
 export function array(itemType: Type, N: ?number): ArrayType {
     return {
@@ -63,6 +66,7 @@ const valueMemberTypes = [
     StringType,
     BooleanType,
     ColorType,
+    FormattedType,
     ObjectType,
     array(ValueType)
 ];

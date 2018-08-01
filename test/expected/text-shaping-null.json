@@ -4,13 +4,17 @@
       "glyph": 104,
       "x": -10,
       "y": -17,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     },
     {
       "glyph": 105,
       "x": 4,
       "y": -17,
-      "vertical": false
+      "vertical": false,
+      "scale": 1,
+      "fontStack": "Test"
     }
   ],
   "text": "hi\u0000",

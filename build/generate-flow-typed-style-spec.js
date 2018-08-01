@@ -118,6 +118,8 @@ fs.writeFileSync('src/style-spec/types.js', `// @flow
 
 export type ColorSpecification = string;
 
+export type FormattedSpecification = string;
+
 export type FilterSpecification =
     | ['has', string]
     | ['!has', string]
