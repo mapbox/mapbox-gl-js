@@ -477,32 +477,16 @@ class Map extends Camera {
     /**
      * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
      * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
-     *
-     * @returns {LngLatBounds}
      */
-    getBounds() {
-        return new LngLatBounds()
-            .extend(this.transform.pointLocation(new Point(0, 0)))
-            .extend(this.transform.pointLocation(new Point(this.transform.width, 0)))
-            .extend(this.transform.pointLocation(new Point(this.transform.width, this.transform.height)))
-            .extend(this.transform.pointLocation(new Point(0, this.transform.height)));
+    getBounds(): LngLatBounds {
+        return this.transform.getBounds();
     }
 
     /**
-     * Gets the map's geographical bounds.
-     *
-     * Returns the LngLatBounds by which pan and zoom operations on the map are constrained.
-     *
-     * @returns {LngLatBounds | null} The maximum bounds the map is constrained to, or `null` if none set.
+     * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
      */
-    getMaxBounds () {
-        if (this.transform.latRange && this.transform.latRange.length === 2 &&
-            this.transform.lngRange && this.transform.lngRange.length === 2) {
-            return new LngLatBounds([this.transform.lngRange[0], this.transform.latRange[0]],
-                [this.transform.lngRange[1], this.transform.latRange[1]]);
-        } else {
-            return null;
-        }
+    getMaxBounds(): LngLatBounds | null {
+        return this.transform.getMaxBounds();
     }
 
     /**
@@ -515,21 +499,12 @@ class Map extends Camera {
      * as close as possible to the operation's request while still
      * remaining within the bounds.
      *
-     * @param {LngLatBoundsLike | null | undefined} lnglatbounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
+     * @param {LngLatBoundsLike | null | undefined} bounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
      * @returns {Map} `this`
      */
-    setMaxBounds(lnglatbounds: LngLatBoundsLike) {
-        if (lnglatbounds) {
-            const b = LngLatBounds.convert(lnglatbounds);
-            this.transform.lngRange = [b.getWest(), b.getEast()];
-            this.transform.latRange = [b.getSouth(), b.getNorth()];
-            this.transform._constrain();
-        } else if (lnglatbounds === null || lnglatbounds === undefined) {
-            this.transform.lngRange = null;
-            this.transform.latRange = null;
-        }
+    setMaxBounds(bounds: LngLatBoundsLike) {
+        this.transform.setMaxBounds(LngLatBounds.convert(bounds));
         return this._update();
-
     }
 
     /**

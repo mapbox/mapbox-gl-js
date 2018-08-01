@@ -1,7 +1,7 @@
 // @flow
 
 import LngLat from './lng_lat';
-
+import LngLatBounds from './lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
 import Coordinate from './coordinate';
 import { wrap, clamp } from '../util/util';
@@ -52,7 +52,7 @@ class Transform {
         this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
 
-        this.latRange = [-85.05113, 85.05113];
+        this.setMaxBounds();
 
         this.width = 0;
         this.height = 0;
@@ -399,6 +399,42 @@ class Transform {
         const p = [zoomedCoord.column * this.tileSize, zoomedCoord.row * this.tileSize, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
+    }
+
+    /**
+     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
+     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+     */
+    getBounds(): LngLatBounds {
+        return new LngLatBounds()
+            .extend(this.pointLocation(new Point(0, 0)))
+            .extend(this.pointLocation(new Point(this.width, 0)))
+            .extend(this.pointLocation(new Point(this.width, this.height)))
+            .extend(this.pointLocation(new Point(0, this.height)));
+    }
+
+    /**
+     * Returns the maximum geographical bounds the map is constrained to, or `null` if none set.
+     */
+    getMaxBounds(): LngLatBounds | null {
+        if (!this.latRange || this.latRange.length !== 2 ||
+            !this.lngRange || this.lngRange.length !== 2) return null;
+
+        return new LngLatBounds([this.lngRange[0], this.latRange[0]], [this.lngRange[1], this.latRange[1]]);
+    }
+
+    /**
+     * Sets or clears the map's geographical constraints.
+     */
+    setMaxBounds(bounds?: LngLatBounds) {
+        if (bounds) {
+            this.lngRange = [bounds.getWest(), bounds.getEast()];
+            this.latRange = [bounds.getSouth(), bounds.getNorth()];
+            this._constrain();
+        } else {
+            this.lngRange = null;
+            this.latRange = [-85.05113, 85.05113];
+        }
     }
 
     /**
