@@ -284,12 +284,13 @@ class Tile {
         if (!layer) return;
 
         const filter = featureFilter(params && params.filter);
-        const coord = { z: this.tileID.overscaledZ, x: this.tileID.canonical.x, y: this.tileID.canonical.y };
+        const {z, x, y} = this.tileID.canonical;
+        const coord = {z, x, y};
 
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i);
             if (filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
-                const geojsonFeature = new GeoJSONFeature(feature, coord.z, coord.x, coord.y);
+                const geojsonFeature = new GeoJSONFeature(feature, z, x, y);
                 (geojsonFeature: any).tile = coord;
                 result.push(geojsonFeature);
             }
