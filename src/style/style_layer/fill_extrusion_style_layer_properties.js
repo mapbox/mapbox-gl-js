@@ -35,4 +35,6 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
 });
 
-export default { paint };
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

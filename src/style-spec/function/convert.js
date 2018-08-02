@@ -55,7 +55,7 @@ function convertFunction(parameters: PropertyValueSpecification<any>, propertySp
     return expression;
 }
 
-function convertIdentityFunction(parameters, propertySpec, defaultExpression) {
+function convertIdentityFunction(parameters, propertySpec, defaultExpression): Array<mixed> {
     const get = ['get', parameters.property];
 
     if (propertySpec.type === 'color') {
@@ -235,8 +235,7 @@ function convertTokenString(s) {
     const result = ['concat'];
     const re = /{([^{}]+)}/g;
     let pos = 0;
-    let match;
-    while ((match = re.exec(s)) !== null) {
+    for (let match = re.exec(s); match !== null; match = re.exec(s)) {
         const literal = s.slice(pos, re.lastIndex - match[0].length);
         pos = re.lastIndex;
         if (literal.length > 0) result.push(literal);

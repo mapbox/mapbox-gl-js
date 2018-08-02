@@ -94,7 +94,7 @@ class ImageManager {
         }
     }
 
-    listImages() {
+    listImages(): Array<string> {
         return Object.keys(this.images);
     }
 

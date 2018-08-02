@@ -31,7 +31,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     gl.uniform1f(program.uniforms.u_brightness_high, layer.paint.get('raster-brightness-max'));
     gl.uniform1f(program.uniforms.u_saturation_factor, saturationFactor(layer.paint.get('raster-saturation')));
     gl.uniform1f(program.uniforms.u_contrast_factor, contrastFactor(layer.paint.get('raster-contrast')));
-    gl.uniform3fv(program.uniforms.u_spin_weights, spinWeights(layer.paint.get('raster-hue-rotate')));
+    gl.uniform3fv(program.uniforms.u_spin_weights, (spinWeights(layer.paint.get('raster-hue-rotate')): Array<number>));
     gl.uniform1f(program.uniforms.u_buffer_scale, 1);
     gl.uniform1i(program.uniforms.u_image0, 0);
     gl.uniform1i(program.uniforms.u_image1, 1);
@@ -73,7 +73,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         // cross-fade parameters
-        gl.uniform2fv(program.uniforms.u_tl_parent, parentTL || [0, 0]);
+        gl.uniform2fv(program.uniforms.u_tl_parent, ((parentTL || [0, 0]): Array<number>));
         gl.uniform1f(program.uniforms.u_scale_parent, parentScaleBy || 1);
         gl.uniform1f(program.uniforms.u_fade_t, fade.mix);
         gl.uniform1f(program.uniforms.u_opacity, fade.opacity * layer.paint.get('raster-opacity'));

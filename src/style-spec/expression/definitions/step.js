@@ -8,6 +8,7 @@ import type { Stops } from '../stops';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 class Step implements Expression {
@@ -105,7 +106,7 @@ class Step implements Expression {
         }
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
     }
 

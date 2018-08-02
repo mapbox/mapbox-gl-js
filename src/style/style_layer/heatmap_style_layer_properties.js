@@ -31,4 +31,6 @@ const paint: Properties<PaintProps> = new Properties({
     "heatmap-opacity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-opacity"]),
 });
 
-export default { paint };
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

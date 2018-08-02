@@ -17,6 +17,7 @@ import { typeOf } from '../values';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 const types = {
@@ -73,11 +74,11 @@ class Assertion implements Expression {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
     }
 
-    serialize() {
+    serialize(): Array<mixed> {
         return [this.type.kind].concat(this.args.map(arg => arg.serialize()));
     }
 }

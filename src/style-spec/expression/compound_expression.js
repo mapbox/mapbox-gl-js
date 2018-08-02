@@ -43,7 +43,7 @@ class CompoundExpression implements Expression {
         return [undefined];
     }
 
-    serialize() {
+    serialize(): Array<mixed> {
         return [this.name].concat(this.args.map(arg => arg.serialize()));
     }
 

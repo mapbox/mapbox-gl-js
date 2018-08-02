@@ -47,4 +47,6 @@ const paint: Properties<PaintProps> = new Properties({
 <% } -%>
 });
 
-export default { paint<% if (layoutProperties.length) { %>, layout<% } %> };
+export default ({ paint<% if (layoutProperties.length) { %>, layout<% } %> }: $Exact<{
+  paint: Properties<PaintProps><% if (layoutProperties.length) { %>, layout: Properties<LayoutProps><% } %>
+}>);

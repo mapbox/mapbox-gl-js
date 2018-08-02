@@ -180,7 +180,7 @@ class SourceCache extends Evented {
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     }
 
-    getRenderableIds(symbolLayer?: boolean) {
+    getRenderableIds(symbolLayer?: boolean): Array<number> {
         const ids = [];
         for (const id in this._tiles) {
             if (this._isIdRenderable(+id, symbolLayer)) ids.push(+id);
@@ -791,7 +791,7 @@ class SourceCache extends Evented {
         return tileResults;
     }
 
-    getVisibleCoordinates(symbolLayer?: boolean) {
+    getVisibleCoordinates(symbolLayer?: boolean): Array<OverscaledTileID> {
         const coords = this.getRenderableIds(symbolLayer).map((id) => this._tiles[id].tileID);
         for (const coord of coords) {
             coord.posMatrix = this.transform.calculatePosMatrix(coord.toUnwrapped());

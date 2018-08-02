@@ -27,4 +27,6 @@ const paint: Properties<PaintProps> = new Properties({
     "background-opacity": new DataConstantProperty(styleSpec["paint_background"]["background-opacity"]),
 });
 
-export default { paint };
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

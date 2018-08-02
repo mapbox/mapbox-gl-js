@@ -296,7 +296,7 @@ class Style extends Evented {
         return true;
     }
 
-    _serializeLayers(ids: Array<string>) {
+    _serializeLayers(ids: Array<string>): Array<Object> {
         return ids.map((id) => this._layers[id].serialize());
     }
 

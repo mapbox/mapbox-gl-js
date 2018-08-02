@@ -56,4 +56,6 @@ const paint: Properties<PaintProps> = new Properties({
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
 });
 
-export default { paint, layout };
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
+}>);

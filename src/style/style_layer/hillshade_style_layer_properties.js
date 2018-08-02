@@ -33,4 +33,6 @@ const paint: Properties<PaintProps> = new Properties({
     "hillshade-accent-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-accent-color"]),
 });
 
-export default { paint };
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

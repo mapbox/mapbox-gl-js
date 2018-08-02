@@ -126,4 +126,6 @@ const paint: Properties<PaintProps> = new Properties({
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
 });
 
-export default { paint, layout };
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
+}>);

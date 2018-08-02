@@ -35,7 +35,7 @@ export const prepare = function (image: CrossFaded<string>, painter: Painter, pr
     gl.uniform2fv(program.uniforms.u_pattern_tl_b, (imagePosB: any).tl);
     gl.uniform2fv(program.uniforms.u_pattern_br_b, (imagePosB: any).br);
     const {width, height} = painter.imageManager.getPixelSize();
-    gl.uniform2fv(program.uniforms.u_texsize, [width, height]);
+    gl.uniform2fv(program.uniforms.u_texsize, ([width, height]: Array<number>));
     gl.uniform1f(program.uniforms.u_mix, image.t);
     gl.uniform2fv(program.uniforms.u_pattern_size_a, (imagePosA: any).displaySize);
     gl.uniform2fv(program.uniforms.u_pattern_size_b, (imagePosB: any).displaySize);

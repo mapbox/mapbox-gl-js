@@ -7,6 +7,7 @@ import { checkSubtype, ValueType } from '../types';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 class Coalesce implements Expression {
@@ -63,7 +64,7 @@ class Coalesce implements Expression {
         this.args.forEach(fn);
     }
 
-    possibleOutputs() {
+    possibleOutputs(): Array<Value | void> {
         return [].concat(...this.args.map((arg) => arg.possibleOutputs()));
     }
 

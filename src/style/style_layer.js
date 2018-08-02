@@ -57,7 +57,7 @@ class StyleLayer extends Evented {
                               pixelsToTileUnits: number,
                               posMatrix: Float32Array) => boolean;
 
-    constructor(layer: LayerSpecification, properties: {layout?: Properties<*>, paint: Properties<*>}) {
+    constructor(layer: LayerSpecification, properties: $ReadOnly<{layout?: Properties<*>, paint: Properties<*>}>) {
         super();
 
         this.id = layer.id;

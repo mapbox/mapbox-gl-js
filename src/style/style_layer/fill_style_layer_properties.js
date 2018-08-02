@@ -35,4 +35,6 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-pattern": new CrossFadedProperty(styleSpec["paint_fill"]["fill-pattern"]),
 });
 
-export default { paint };
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

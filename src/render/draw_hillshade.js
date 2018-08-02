@@ -67,7 +67,7 @@ function renderHillshade(painter, tile, layer) {
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
-    gl.uniform2fv(program.uniforms.u_latrange, latRange);
+    gl.uniform2fv(program.uniforms.u_latrange, (latRange: Array<number>));
     gl.uniform1i(program.uniforms.u_image, 0);
 
     const shadowColor = layer.paint.get("hillshade-shadow-color");
@@ -154,7 +154,7 @@ function prepareHillshade(painter, tile, sourceMaxZoom) {
 
         gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
         gl.uniform1f(program.uniforms.u_zoom, tile.tileID.overscaledZ);
-        gl.uniform2fv(program.uniforms.u_dimension, [tileSize * 2, tileSize * 2]);
+        gl.uniform2fv(program.uniforms.u_dimension, ([tileSize * 2, tileSize * 2]: Array<number>));
         gl.uniform1i(program.uniforms.u_image, 1);
         gl.uniform1f(program.uniforms.u_maxzoom, sourceMaxZoom);
 
