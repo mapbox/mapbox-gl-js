@@ -33,6 +33,9 @@ const paint: Properties<PaintProps> = new Properties({
     "hillshade-accent-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-accent-color"]),
 });
 
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
 export default ({ paint }: $Exact<{
   paint: Properties<PaintProps>
 }>);

@@ -126,6 +126,9 @@ const paint: Properties<PaintProps> = new Properties({
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
 });
 
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
 export default ({ paint, layout }: $Exact<{
   paint: Properties<PaintProps>, layout: Properties<LayoutProps>
 }>);
