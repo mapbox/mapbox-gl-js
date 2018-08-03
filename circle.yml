@@ -132,6 +132,7 @@ jobs:
       - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
+      - run: yarn run build-flow-types
       - run: yarn run test-build
       - persist_to_workspace:
           root: .
