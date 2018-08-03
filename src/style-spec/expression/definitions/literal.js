@@ -52,7 +52,7 @@ class Literal implements Expression {
         return [this.value];
     }
 
-    serialize() {
+    serialize(): Array<mixed> {
         if (this.type.kind === 'array' || this.type.kind === 'object') {
             return ["literal", this.value];
         } else if (this.value instanceof Color) {

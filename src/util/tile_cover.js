@@ -7,7 +7,7 @@ import { OverscaledTileID } from '../source/tile_id';
 export default tileCover;
 
 function tileCover(z: number, bounds: [Coordinate, Coordinate, Coordinate, Coordinate],
-        actualZ: number, renderWorldCopies: boolean | void) {
+    actualZ: number, renderWorldCopies: boolean | void): Array<OverscaledTileID> {
     if (renderWorldCopies === undefined) {
         renderWorldCopies = true;
     }

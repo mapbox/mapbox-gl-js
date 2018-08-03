@@ -5,8 +5,7 @@ import CollisionIndex from './collision_index';
 import EXTENT from '../data/extent';
 import * as symbolSize from './symbol_size';
 import * as projection from './projection';
-import properties from '../style/style_layer/symbol_style_layer_properties';
-const symbolLayoutProperties = properties.layout;
+import symbolLayerProperties from '../style/style_layer/symbol_style_layer_properties';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
@@ -184,7 +183,7 @@ export class Placement {
             collisionBoxArray: ?CollisionBoxArray) {
         const layout = bucket.layers[0].layout;
 
-        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayoutProperties.properties['text-size']);
+        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayerProperties.layout.properties['text-size']);
 
         const textOptional = layout.get('text-optional');
         const iconOptional = layout.get('icon-optional');
