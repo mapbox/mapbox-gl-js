@@ -1,27 +1,24 @@
-<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.min.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css' type='text/css' />
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css' />
 <div id='map'></div>
 
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v9',
-    center: [-87.6244, 41.8756],
+    center: [-79.4512, 43.6568],
     zoom: 13
 });
-
 /* given a query in the form "lng, lat" or "lat, lng" returns the matching
  * geographic coordinate(s) as search results in carmen geojson format,
  * https://github.com/mapbox/carmen/blob/master/carmen-geojson.md
  */
-/*
 var coordinatesGeocoder = function (query) {
     // match anything which looks like a decimal degrees coordinate pair
     var matches = query.match(/^[ ]*(?:Lat: )?(-?\d+\.?\d*)[, ]+(?:Lng: )?(-?\d+\.?\d*)[ ]*$/i);
     if (!matches) {
         return null;
     }
-
     function coordinateFeature(lng, lat) {
         return {
             center: [lng, lat],
@@ -35,192 +32,28 @@ var coordinatesGeocoder = function (query) {
             type: 'Feature'
         };
     }
-
-
-
     var coord1 = Number(matches[1]);
     var coord2 = Number(matches[2]);
     var geocodes = [];
-
     if (coord1 < -90 || coord1 > 90) {
         // must be lng, lat
         geocodes.push(coordinateFeature(coord1, coord2));
     }
-
     if (coord2 < -90 || coord2 > 90) {
         // must be lat, lng
         geocodes.push(coordinateFeature(coord2, coord1));
     }
-
     if (geocodes.length === 0) {
         // else could be either lng, lat or lat, lng
         geocodes.push(coordinateFeature(coord1, coord2));
         geocodes.push(coordinateFeature(coord2, coord1));
     }
-
     return geocodes;
 };
-*/
-
-var customData =
-{
-    "features": [
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Lincoln Park",
-                "description": "A northside park that is home to the Lincoln Park Zoo"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.637596,
-                    41.940403
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Burnham Park",
-                "description": "A lakefront park on Chicago's south side"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.603735,
-                    41.829985
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Millennium Park",
-                "description": "A downtown park known for its art installations and unique architecture"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.622554,
-                    41.882534
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Grant Park",
-                "description": "A downtown park that is the site of many of Chicago's favorite festivals and events"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.619185,
-                    41.876367
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Humboldt Park",
-                "description": "A large park on Chicago's northwest side"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.70199,
-                    41.905423
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Douglas Park",
-                "description": "A large park near in Chicago's North Lawndale neighborhood"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.699329,
-                    41.860092
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Calumet Park",
-                "description": "A park on the Illinois-Indiana border featuring a historic fieldhouse"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.530221,
-                    41.715515
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Jackson Park",
-                "description": "A lakeside park that was the site of the 1893 World's Fair"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.580389,
-                    41.783185
-                ],
-                "type": "Point"
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "title": "Columbus Park",
-                "description": "A large park in Chicago's Austin neighborhood"
-            },
-            "geometry": {
-                "coordinates": [
-                    -87.769775,
-                    41.873683
-                ],
-                "type": "Point"
-            }
-        }
-    ],
-    "type": "FeatureCollection"
-};
-
-
-
-function forwardGeocoder(query) {
-    var matchingFeatures = [];
-    for (var i = 0; i < customData.features.length; i++) {
-        var feature = customData.features[i];
-        // handle queries with different capitalization than the source data by calling toLowerCase()
-        if (feature.properties.title.toLowerCase().search(query.toLowerCase()) !== -1) {
-            // add a tree emoji as a prefix for custom data results
-            feature['place_name'] = '🌲 ' + feature.properties.title;
-            feature['center'] = feature.geometry.coordinates;
-            feature['place_type'] = ['park'];
-            matchingFeatures.push(feature);
-        }
-
-        console.log(query, matchingFeatures);
-    }
-    return matchingFeatures;
-
-}
-
-
 map.addControl(new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
-    localGeocoder: forwardGeocoder,
-    zoom: 14,
-    placeholder: "Enter search e.g. Lincoln Park"
+    localGeocoder: coordinatesGeocoder,
+    zoom: 4,
+    placeholder: "Try: -40, 170"
 }));
 </script>
