@@ -1,6 +1,6 @@
 // @flow
 
-import { NumberType, ValueType, FormattedType } from '../types';
+import { NumberType, ValueType, FormattedType, array, StringType } from '../types';
 
 
 import type { Expression } from '../expression';
@@ -88,7 +88,7 @@ export class FormatExpression implements Expression {
 
             let font = null;
             if (options['text-font']) {
-                font = context.parse(options['text-font'], 1, ValueType); // Require array of strings?
+                font = context.parse(options['text-font'], 1, array(StringType));
                 if (!font) return null;
             }
             sections.push({text, scale, font});
