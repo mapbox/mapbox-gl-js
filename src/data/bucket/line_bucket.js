@@ -86,6 +86,9 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
  */
 class LineBucket implements Bucket {
     distance: number;
+    tileDistance: number;
+    clipStart: number;
+    clipEnd: number;
     e1: number;
     e2: number;
     e3: number;
@@ -188,23 +191,21 @@ class LineBucket implements Bucket {
         // Ignore invalid geometry.
         if (len < (isPolygon ? 3 : 2)) return;
 
-        let lineDistances = null;
+        this.distance = 0;
+        this.tileDistance = 0;
 
         if (feature.properties &&
             feature.properties['mapbox_clip_start'] !== undefined &&
             feature.properties['mapbox_clip_end'] !== undefined) {
 
-            lineDistances = {
-                start: feature.properties.mapbox_clip_start,
-                end: feature.properties.mapbox_clip_end,
-                tileTotal: 0
-            };
+            this.clipStart = +feature.properties['mapbox_clip_start'];
+            this.clipEnd = +feature.properties['mapbox_clip_end'];
 
             // Calculate the total distance, in tile units, of this tiled line feature
             for (let i = first; i < len - 1; i++) {
                 const dx = vertices[i + 1].x - vertices[i].x;
                 const dy = vertices[i + 1].y - vertices[i].y;
-                lineDistances.tileTotal += Math.sqrt(dx * dx + dy * dy);
+                this.tileDistance += Math.sqrt(dx * dx + dy * dy);
             }
         }
 
@@ -214,8 +215,6 @@ class LineBucket implements Bucket {
 
         // we could be more precise, but it would only save a negligible amount of space
         const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
-
-        this.distance = 0;
 
         const beginCap = cap;
         const endCap = isPolygon ? 'butt' : cap;
@@ -249,9 +248,8 @@ class LineBucket implements Bucket {
             // if two consecutive vertices exist, skip the current one
             if (nextVertex && vertices[i].x === nextVertex.x && vertices[i].y === nextVertex.y) continue;
 
-            if (nextNormal) prevNormal = nextNormal;
+            prevNormal = nextNormal;
             if (currentVertex) prevVertex = currentVertex;
-
             currentVertex = vertices[i];
 
             // Calculate the normal towards the next vertex in this line. In case
@@ -314,7 +312,7 @@ class LineBucket implements Bucket {
                     const dx1 = newPrevVertex.x - prevVertex.x;
                     const dy1 = newPrevVertex.y - prevVertex.y;
                     this.distance += Math.sqrt(dx1 * dx1 + dy1 * dy1);
-                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, false, segment, lineDistances);
+                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, false, segment);
                     prevVertex = newPrevVertex;
                 }
             }
@@ -351,7 +349,7 @@ class LineBucket implements Bucket {
             if (currentJoin === 'miter') {
                 joinNormal.x *= miterLength;
                 joinNormal.y *= miterLength;
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, false, segment, lineDistances);
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, false, segment);
 
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
@@ -374,8 +372,8 @@ class LineBucket implements Bucket {
                     joinNormal.x = -joinNormal.y * bevelLength * direction;
                     joinNormal.y = x;
                 }
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, false, segment, lineDistances);
-                this.addCurrentVertex(currentVertex, new Point(-joinNormal.x, -joinNormal.y), 0, 0, false, segment, lineDistances);
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, false, segment);
+                this.addCurrentVertex(currentVertex, new Point(-joinNormal.x, -joinNormal.y), 0, 0, false, segment);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
                 const lineTurnsLeft = (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
@@ -390,7 +388,7 @@ class LineBucket implements Bucket {
 
                 // Close previous segment with a bevel
                 if (!startOfLine) {
-                    this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, false, segment);
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -408,41 +406,41 @@ class LineBucket implements Bucket {
                         const x = nextNormal.x * c + prevNormal.x;
                         const y = nextNormal.y * c + prevNormal.y;
                         const d = Math.sqrt(x * x + y * y);
-                        this.addPieSliceVertex(currentVertex, new Point(x / d, y / d), lineTurnsLeft, segment, lineDistances);
+                        this.addPieSliceVertex(currentVertex, new Point(x / d, y / d), lineTurnsLeft, segment);
                     }
 
-                    this.addPieSliceVertex(currentVertex, joinNormal, lineTurnsLeft, segment, lineDistances);
+                    this.addPieSliceVertex(currentVertex, joinNormal, lineTurnsLeft, segment);
 
                     for (let m = n - 1; m >= 0; m--) {
                         const c = (m + 1) / (n + 1);
                         const x = prevNormal.x * c + nextNormal.x;
                         const y = prevNormal.y * c + nextNormal.y;
                         const d = Math.sqrt(x * x + y * y);
-                        this.addPieSliceVertex(currentVertex, new Point(x / d, y / d), lineTurnsLeft, segment, lineDistances);
+                        this.addPieSliceVertex(currentVertex, new Point(x / d, y / d), lineTurnsLeft, segment);
                     }
                 }
 
                 // Start next segment
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, false, segment);
                 }
 
             } else if (currentJoin === 'butt') {
                 if (!startOfLine) {
                     // Close previous segment with a butt
-                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, false, segment);
                 }
 
                 // Start next segment with a butt
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, false, segment);
                 }
 
             } else if (currentJoin === 'square') {
 
                 if (!startOfLine) {
                     // Close previous segment with a square cap
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, false, segment);
 
                     // The segment is done. Unset vertices to disconnect segments.
                     this.e1 = this.e2 = -1;
@@ -450,17 +448,17 @@ class LineBucket implements Bucket {
 
                 // Start next segment
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, false, segment);
                 }
 
             } else if (currentJoin === 'round') {
 
                 if (!startOfLine) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, false, segment);
 
                     // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, true, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, true, segment);
 
                     // The segment is done. Unset vertices to disconnect segments.
                     this.e1 = this.e2 = -1;
@@ -470,9 +468,9 @@ class LineBucket implements Bucket {
                 // Start next segment with a butt
                 if (nextVertex) {
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, true, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, true, segment);
 
-                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, false, segment, lineDistances);
+                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, false, segment);
                 }
             }
 
@@ -488,7 +486,7 @@ class LineBucket implements Bucket {
                     const dx1 = newCurrentVertex.x - currentVertex.x;
                     const dy1 = newCurrentVertex.y - currentVertex.y;
                     this.distance += Math.sqrt(dx1 * dx1 + dy1 * dy1);
-                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, false, segment, lineDistances);
+                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, false, segment);
                     currentVertex = newCurrentVertex;
                 }
             }
@@ -514,13 +512,14 @@ class LineBucket implements Bucket {
                      endLeft: number,
                      endRight: number,
                      round: boolean,
-                     segment: Segment,
-                     distancesForScaling: ?Object) {
+                     segment: Segment) {
         let extrude;
         const layoutVertexArray = this.layoutVertexArray;
         const indexArray = this.indexArray;
 
-        const distance = distancesForScaling ? scaleDistance(this.distance, distancesForScaling) : this.distance;
+        const distance = this.tileDistance ?
+            scaleDistance(this.distance, this.tileDistance, this.clipStart, this.clipEnd) :
+            this.distance;
 
         extrude = new Point(normal.x, normal.y);
         if (endLeft) {
@@ -554,7 +553,7 @@ class LineBucket implements Bucket {
         // When we get close to the distance, reset it to zero and add the vertex again with
         // a distance of zero. The max distance is determined by the number of bits we allocate
         // to `linesofar`.
-        if (distance > MAX_LINE_DISTANCE / 2 && !distancesForScaling) {
+        if (distance > MAX_LINE_DISTANCE / 2 && !this.tileDistance) {
             this.distance = 0;
             this.addCurrentVertex(currentVertex, normal, endLeft, endRight, round, segment);
         }
@@ -572,8 +571,7 @@ class LineBucket implements Bucket {
     addPieSliceVertex(currentVertex: Point,
                       extrude: Point,
                       lineTurnsLeft: boolean,
-                      segment: Segment,
-                      distancesForScaling: ?Object) {
+                      segment: Segment) {
 
         if (lineTurnsLeft) {
             extrude.x *= -1;
@@ -582,7 +580,9 @@ class LineBucket implements Bucket {
         const layoutVertexArray = this.layoutVertexArray;
         const indexArray = this.indexArray;
 
-        const distance = distancesForScaling ? scaleDistance(this.distance, distancesForScaling) : this.distance;
+        const distance = this.tileDistance ?
+            scaleDistance(this.distance, this.tileDistance, this.clipStart, this.clipEnd) :
+            this.distance;
 
         addLineVertex(layoutVertexArray, currentVertex, extrude, false, lineTurnsLeft, 0, distance);
         this.e3 = segment.vertexLength++;
@@ -605,16 +605,14 @@ class LineBucket implements Bucket {
  * (in tile units) of the current vertex, we can determine the relative distance
  * of this vertex along the full linestring feature and scale it to [0, 2^15)
  *
- * @param {number} tileDistance the distance from the beginning of the tiled line to this vertex
- * @param {Object} stats
- * @param {number} stats.start the ratio (0-1) along a full original linestring feature of the start of this tiled line feature
- * @param {number} stats.end the ratio (0-1) along a full original linestring feature of the end of this tiled line feature
- * @param {number} stats.tileTotal the total distance, in tile units, of this tiled line feature
- *
+ * @param {number} distance the distance from the beginning of the tiled line to this vertex
+ * @param {number} tileDistance the total distance, in tile units, of this tiled line feature
+ * @param {number} clipStart the ratio (0-1) along a full original linestring feature of the start of this tiled line feature
+ * @param {number} clipEnd the ratio (0-1) along a full original linestring feature of the end of this tiled line feature
  * @private
  */
-function scaleDistance(tileDistance: number, stats: Object) {
-    return ((tileDistance / stats.tileTotal) * (stats.end - stats.start) + stats.start) * (MAX_LINE_DISTANCE - 1);
+function scaleDistance(distance: number, tileDistance: number, clipStart: number, clipEnd: number) {
+    return ((distance / tileDistance) * (clipEnd - clipStart) + clipStart) * (MAX_LINE_DISTANCE - 1);
 }
 
 register('LineBucket', LineBucket, {omit: ['layers']});
