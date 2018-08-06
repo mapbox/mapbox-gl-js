@@ -20,6 +20,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - check-size:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - test-flow:
           requires:
             - prepare
@@ -138,6 +144,13 @@ jobs:
           root: .
           paths:
             - dist
+
+  check-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
 
   test-flow:
     <<: *defaults
