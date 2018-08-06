@@ -128,7 +128,7 @@
     "start-debug": "run-p build-token watch-css watch-dev start-server",
     "start-bench": "run-p build-token watch-benchmarks watch-benchmarks-view start-server",
     "build-docs": "documentation build --github --format json --config ./docs/documentation.yml --output docs/components/api.json src/index.js",
-    "build": "run-s build-docs && build/set-deploy-env.sh && batfish build # invoked by publisher when publishing docs on the mb-pages branch",
+    "build": "run-s build-docs && . build/set-deploy-env.sh && batfish build # invoked by publisher when publishing docs on the mb-pages branch",
     "start-docs": "run-s build-min build-css build-docs && DEPLOY_ENV=local batfish start",
     "lint": "eslint --cache --ignore-path .gitignore src test bench docs docs/pages/example/*.html debug/*.html",
     "lint-docs": "documentation lint src/index.js",
