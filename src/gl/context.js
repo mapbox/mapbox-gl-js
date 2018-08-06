@@ -135,6 +135,7 @@ class Context {
         this.program.dirty = true;
         this.activeTexture.dirty = true;
         this.viewport.dirty = true;
+        this.bindVertexBuffer.dirty = true;
         this.bindFramebuffer.dirty = true;
         this.bindRenderbuffer.dirty = true;
         this.bindTexture.dirty = true;
