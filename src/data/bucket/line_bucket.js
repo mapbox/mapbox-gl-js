@@ -60,7 +60,14 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
-function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: boolean, up: boolean, dir: number, linesofar: number) {
+function addLineVertex(layoutVertexBuffer,
+                       point: Point,
+                       extrudeX: number,
+                       extrudeY: number,
+                       round: boolean,
+                       up: boolean,
+                       dir: number,
+                       linesofar: number) {
     layoutVertexBuffer.emplaceBack(
         // a_pos_normal
         point.x,
@@ -69,8 +76,8 @@ function addLineVertex(layoutVertexBuffer, point: Point, extrude: Point, round: 
         up ? 1 : -1,
         // a_data
         // add 128 to store a byte in an unsigned byte
-        Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-        Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+        Math.round(EXTRUDE_SCALE * extrudeX) + 128,
+        Math.round(EXTRUDE_SCALE * extrudeY) + 128,
         // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
         // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
         // room for the direction value). The upper 8 bits of `linesofar` are placed in
@@ -223,8 +230,10 @@ class LineBucket implements Bucket {
         let currentVertex;
         let prevVertex = ((undefined: any): Point);
         let nextVertex = ((undefined: any): Point);
-        let prevNormal = ((undefined: any): Point);
-        let nextNormal = ((undefined: any): Point);
+        let prevNormalX = 0;
+        let prevNormalY = 0;
+        let nextNormalX = 0;
+        let nextNormalY = 0;
         let offsetA;
         let offsetB;
 
@@ -236,7 +245,8 @@ class LineBucket implements Bucket {
             const dx = vertices[first].x - currentVertex.x;
             const dy = vertices[first].y - currentVertex.y;
             const d = Math.sqrt(dx * dx + dy * dy);
-            nextNormal = new Point(-dy / d, dx / d);
+            nextNormalX = -dy / d;
+            nextNormalY = dx / d;
         }
 
         for (let i = first; i < len; i++) {
@@ -248,7 +258,8 @@ class LineBucket implements Bucket {
             // if two consecutive vertices exist, skip the current one
             if (nextVertex && vertices[i].x === nextVertex.x && vertices[i].y === nextVertex.y) continue;
 
-            prevNormal = nextNormal;
+            prevNormalX = nextNormalX;
+            prevNormalY = nextNormalY;
             if (currentVertex) prevVertex = currentVertex;
             currentVertex = vertices[i];
 
@@ -259,14 +270,19 @@ class LineBucket implements Bucket {
                 const dx = nextVertex.x - currentVertex.x;
                 const dy = nextVertex.y - currentVertex.y;
                 const d = Math.sqrt(dx * dx + dy * dy);
-                nextNormal = new Point(-dy / d, dx / d);
+                nextNormalX = -dy / d;
+                nextNormalY = dx / d;
             } else {
-                nextNormal = prevNormal;
+                nextNormalX = prevNormalX;
+                nextNormalY = prevNormalY;
             }
 
             // If we still don't have a previous normal, this is the beginning of a
             // non-closed line, so we're doing a straight "join".
-            prevNormal = prevNormal || nextNormal;
+            if (prevNormalX === 0 && prevNormalY === 0) {
+                prevNormalX = nextNormalX;
+                prevNormalY = nextNormalY;
+            }
 
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
@@ -274,13 +290,12 @@ class LineBucket implements Bucket {
             // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
             // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
             // below will also become 0 and miterLength will become Infinity.
-            let joinNormal = new Point(
-                prevNormal.x + nextNormal.x,
-                prevNormal.y + nextNormal.y);
-            if (joinNormal.x !== 0 || joinNormal.y !== 0) {
-                const d = Math.sqrt(joinNormal.x * joinNormal.x + joinNormal.y * joinNormal.y);
-                joinNormal.x /= d;
-                joinNormal.y /= d;
+            let joinNormalX = prevNormalX + nextNormalX;
+            let joinNormalY = prevNormalY + nextNormalY;
+            if (joinNormalX !== 0 || joinNormalY !== 0) {
+                const d = Math.sqrt(joinNormalX * joinNormalX + joinNormalY * joinNormalY);
+                joinNormalX /= d;
+                joinNormalY /= d;
             }
             /*  joinNormal     prevNormal
              *             ↖      ↑
@@ -295,7 +310,7 @@ class LineBucket implements Bucket {
             // Calculate the length of the miter (the ratio of the miter to the width).
             // Find the cosine of the angle between the next and join normals
             // using dot product. The inverse of that is the miter length.
-            const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+            const cosHalfAngle = joinNormalX * nextNormalX + joinNormalY * nextNormalY;
             const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
@@ -312,7 +327,7 @@ class LineBucket implements Bucket {
                     const dx1 = newPrevVertex.x - prevVertex.x;
                     const dy1 = newPrevVertex.y - prevVertex.y;
                     this.distance += Math.sqrt(dx1 * dx1 + dy1 * dy1);
-                    this.addCurrentVertex(newPrevVertex, prevNormal, segment);
+                    this.addCurrentVertex(newPrevVertex, prevNormalX, prevNormalY, segment);
                     prevVertex = newPrevVertex;
                 }
             }
@@ -347,36 +362,37 @@ class LineBucket implements Bucket {
             if (prevVertex) this.distance += currentVertex.dist(prevVertex);
 
             if (currentJoin === 'miter') {
-                joinNormal.x *= miterLength;
-                joinNormal.y *= miterLength;
-                this.addCurrentVertex(currentVertex, joinNormal, segment);
+                joinNormalX *= miterLength;
+                joinNormalY *= miterLength;
+                this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, segment);
 
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
 
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = new Point(-nextNormal.x, -nextNormal.y);
+                    joinNormalX = -nextNormalX;
+                    joinNormalY = -nextNormalY;
 
                 } else {
-                    const direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
-                    const dx0 = prevNormal.x + nextNormal.x;
-                    const dy0 = prevNormal.y + nextNormal.y;
-                    const dx1 = prevNormal.x - nextNormal.x;
-                    const dy1 = prevNormal.y - nextNormal.y;
+                    const direction = prevNormalX * nextNormalY - prevNormalY * nextNormalX > 0 ? -1 : 1;
+                    const dx0 = prevNormalX + nextNormalX;
+                    const dy0 = prevNormalY + nextNormalY;
+                    const dx1 = prevNormalX - nextNormalX;
+                    const dy1 = prevNormalY - nextNormalY;
                     const mag0 = Math.sqrt(dx0 * dx0 + dy0 * dy0);
                     const mag1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
                     const bevelLength = miterLength * mag0 / mag1;
 
-                    const x = joinNormal.x * bevelLength * direction;
-                    joinNormal.x = -joinNormal.y * bevelLength * direction;
-                    joinNormal.y = x;
+                    const x = joinNormalX * bevelLength * direction;
+                    joinNormalX = -joinNormalY * bevelLength * direction;
+                    joinNormalY = x;
                 }
-                this.addCurrentVertex(currentVertex, joinNormal, segment);
-                this.addCurrentVertex(currentVertex, new Point(-joinNormal.x, -joinNormal.y), segment);
+                this.addCurrentVertex(currentVertex, joinNormalX, joinNormalY, segment);
+                this.addCurrentVertex(currentVertex, -joinNormalX, -joinNormalY, segment);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
-                const lineTurnsLeft = (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
+                const lineTurnsLeft = (prevNormalX * nextNormalY - prevNormalY * nextNormalX) > 0;
                 const offset = -Math.sqrt(miterLength * miterLength - 1);
                 if (lineTurnsLeft) {
                     offsetB = 0;
@@ -388,7 +404,7 @@ class LineBucket implements Bucket {
 
                 // Close previous segment with a bevel
                 if (!startOfLine) {
-                    this.addCurrentVertex(currentVertex, prevNormal, segment, offsetA, offsetB);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, segment, offsetA, offsetB);
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -403,44 +419,44 @@ class LineBucket implements Bucket {
 
                     for (let m = 0; m < n; m++) {
                         const c = (m + 1) / (n + 1);
-                        const x = nextNormal.x * c + prevNormal.x;
-                        const y = nextNormal.y * c + prevNormal.y;
+                        const x = nextNormalX * c + prevNormalX;
+                        const y = nextNormalY * c + prevNormalY;
                         const d = Math.sqrt(x * x + y * y);
-                        this.addPieSliceVertex(currentVertex, new Point(x / d, y / d), lineTurnsLeft, segment);
+                        this.addPieSliceVertex(currentVertex, x / d, y / d, lineTurnsLeft, segment);
                     }
 
-                    this.addPieSliceVertex(currentVertex, joinNormal, lineTurnsLeft, segment);
+                    this.addPieSliceVertex(currentVertex, joinNormalX, joinNormalY, lineTurnsLeft, segment);
 
                     for (let m = n - 1; m >= 0; m--) {
                         const c = (m + 1) / (n + 1);
-                        const x = prevNormal.x * c + nextNormal.x;
-                        const y = prevNormal.y * c + nextNormal.y;
+                        const x = prevNormalX * c + nextNormalX;
+                        const y = prevNormalY * c + nextNormalY;
                         const d = Math.sqrt(x * x + y * y);
-                        this.addPieSliceVertex(currentVertex, new Point(x / d, y / d), lineTurnsLeft, segment);
+                        this.addPieSliceVertex(currentVertex, x / d, y / d, lineTurnsLeft, segment);
                     }
                 }
 
                 // Start next segment
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, nextNormal, segment, -offsetA, -offsetB);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, segment, -offsetA, -offsetB);
                 }
 
             } else if (currentJoin === 'butt') {
                 if (!startOfLine) {
                     // Close previous segment with a butt
-                    this.addCurrentVertex(currentVertex, prevNormal, segment);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, segment);
                 }
 
                 // Start next segment with a butt
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, nextNormal, segment);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, segment);
                 }
 
             } else if (currentJoin === 'square') {
 
                 if (!startOfLine) {
                     // Close previous segment with a square cap
-                    this.addCurrentVertex(currentVertex, prevNormal, segment, 1, 1);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, segment, 1, 1);
 
                     // The segment is done. Unset vertices to disconnect segments.
                     this.e1 = this.e2 = -1;
@@ -448,17 +464,17 @@ class LineBucket implements Bucket {
 
                 // Start next segment
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, nextNormal, segment, -1, -1);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, segment, -1, -1);
                 }
 
             } else if (currentJoin === 'round') {
 
                 if (!startOfLine) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, prevNormal, segment);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, segment);
 
                     // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, prevNormal, segment, 1, 1, true);
+                    this.addCurrentVertex(currentVertex, prevNormalX, prevNormalY, segment, 1, 1, true);
 
                     // The segment is done. Unset vertices to disconnect segments.
                     this.e1 = this.e2 = -1;
@@ -468,9 +484,9 @@ class LineBucket implements Bucket {
                 // Start next segment with a butt
                 if (nextVertex) {
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, nextNormal, segment, -1, -1, true);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, segment, -1, -1, true);
 
-                    this.addCurrentVertex(currentVertex, nextNormal, segment);
+                    this.addCurrentVertex(currentVertex, nextNormalX, nextNormalY, segment);
                 }
             }
 
@@ -486,7 +502,7 @@ class LineBucket implements Bucket {
                     const dx1 = newCurrentVertex.x - currentVertex.x;
                     const dy1 = newCurrentVertex.y - currentVertex.y;
                     this.distance += Math.sqrt(dx1 * dx1 + dy1 * dy1);
-                    this.addCurrentVertex(newCurrentVertex, nextNormal, segment);
+                    this.addCurrentVertex(newCurrentVertex, nextNormalX, nextNormalY, segment);
                     currentVertex = newCurrentVertex;
                 }
             }
@@ -501,20 +517,21 @@ class LineBucket implements Bucket {
      * Add two vertices to the buffers.
      *
      * @param currentVertex the line vertex to add buffer vertices for
-     * @param normal the vertex normal
-     * @param the segment object to add the vertex to
+     * @param normalX x component of the vertex normal
+     * @param normalY y component of the vertex normal
+     * @param segment the segment object to add the vertex to
      * @param endLeft extrude to shift the left vertex along the line
      * @param endRight extrude to shift the left vertex along the line
      * @param round whether this is a round cap
      * @private
      */
     addCurrentVertex(currentVertex: Point,
-                     normal: Point,
+                     normalX: number,
+                     normalY: number,
                      segment: Segment,
                      endLeft: number = 0,
                      endRight: number = 0,
                      round: boolean = false) {
-        let extrude;
         const layoutVertexArray = this.layoutVertexArray;
         const indexArray = this.indexArray;
 
@@ -522,12 +539,13 @@ class LineBucket implements Bucket {
             scaleDistance(this.distance, this.tileDistance, this.clipStart, this.clipEnd) :
             this.distance;
 
-        extrude = new Point(normal.x, normal.y);
+        let extrudeX = normalX;
+        let extrudeY = normalY;
         if (endLeft) {
-            extrude.x -= -normal.y * endLeft;
-            extrude.y -= normal.x * endLeft;
+            extrudeX -= -normalY * endLeft;
+            extrudeY -= normalX * endLeft;
         }
-        addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, endLeft, distance);
+        addLineVertex(layoutVertexArray, currentVertex, extrudeX, extrudeY, round, false, endLeft, distance);
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             indexArray.emplaceBack(this.e1, this.e2, this.e3);
@@ -536,12 +554,13 @@ class LineBucket implements Bucket {
         this.e1 = this.e2;
         this.e2 = this.e3;
 
-        extrude = new Point(-normal.x, -normal.y);
+        extrudeX = -normalX;
+        extrudeY = -normalY;
         if (endRight) {
-            extrude.x -= -normal.y * endRight;
-            extrude.y -= normal.x * endRight;
+            extrudeX -= -normalY * endRight;
+            extrudeY -= normalX * endRight;
         }
-        addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, -endRight, distance);
+        addLineVertex(layoutVertexArray, currentVertex, extrudeX, extrudeY, round, true, -endRight, distance);
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             indexArray.emplaceBack(this.e1, this.e2, this.e3);
@@ -556,7 +575,7 @@ class LineBucket implements Bucket {
         // to `linesofar`.
         if (distance > MAX_LINE_DISTANCE / 2 && !this.tileDistance) {
             this.distance = 0;
-            this.addCurrentVertex(currentVertex, normal, segment, endLeft, endRight, round);
+            this.addCurrentVertex(currentVertex, normalX, normalY, segment, endLeft, endRight, round);
         }
     }
 
@@ -565,19 +584,21 @@ class LineBucket implements Bucket {
      * This adds a pie slice triangle near a join to simulate round joins
      *
      * @param currentVertex the line vertex to add buffer vertices for
-     * @param extrude the offset of the new vertex from the currentVertex
+     * @param extrudeX the x component of the offset of the new vertex from the currentVertex
+     * @param extrudeY the y component of the offset of the new vertex from the currentVertex
      * @param lineTurnsLeft whether the line is turning left or right at this angle
      * @param segment the segment object to add the vertex to
      * @private
      */
     addPieSliceVertex(currentVertex: Point,
-                      extrude: Point,
+                      extrudeX: number,
+                      extrudeY: number,
                       lineTurnsLeft: boolean,
                       segment: Segment) {
 
         if (lineTurnsLeft) {
-            extrude.x *= -1;
-            extrude.y *= -1;
+            extrudeX *= -1;
+            extrudeY *= -1;
         }
         const layoutVertexArray = this.layoutVertexArray;
         const indexArray = this.indexArray;
@@ -586,7 +607,7 @@ class LineBucket implements Bucket {
             scaleDistance(this.distance, this.tileDistance, this.clipStart, this.clipEnd) :
             this.distance;
 
-        addLineVertex(layoutVertexArray, currentVertex, extrude, false, lineTurnsLeft, 0, distance);
+        addLineVertex(layoutVertexArray, currentVertex, extrudeX, extrudeY, false, lineTurnsLeft, 0, distance);
         this.e3 = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             indexArray.emplaceBack(this.e1, this.e2, this.e3);
