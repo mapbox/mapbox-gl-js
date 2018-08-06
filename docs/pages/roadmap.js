@@ -108,7 +108,7 @@ export default class extends React.Component {
                                     <div key={i} className='col6'>
                                         <div className='roadmap-block fill-white prose keyline-all'>
                                             <div className='pad2'>
-                                                <h2 style={{"margin-bottom": 0}}>{r.term}</h2>
+                                                <h2 style={{marginBottom: 0}}>{r.term}</h2>
                                                 <small className="quiet">{r.description}</small>
                                             </div>
                                             {r.items.map((item, i) =>

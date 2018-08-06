@@ -41,7 +41,7 @@
     "vt-pbf": "^3.0.1"
   },
   "devDependencies": {
-    "@mapbox/batfish": "^1.0.4",
+    "@mapbox/batfish": "^1.9.4",
     "@mapbox/flow-remove-types": "^1.3.0-await.upstream.1",
     "@mapbox/mapbox-gl-rtl-text": "^0.1.2",
     "@mapbox/mapbox-gl-test-suite": "file:test/integration",
