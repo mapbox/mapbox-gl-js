@@ -275,10 +275,6 @@ class Painter {
         this.imageManager = style.imageManager;
         this.glyphManager = style.glyphManager;
 
-        // A custom layer may have used the context asynchronously. Mark the state as dirty.
-        this.context.setDirty();
-        this.setBaseState();
-
         this.symbolFadeChange = style.placement.symbolFadeChange(browser.now());
 
         const layerIds = this.style._order;
