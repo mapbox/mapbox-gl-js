@@ -2,9 +2,9 @@ import { test } from 'mapbox-gl-js-test';
 import {
     Uniform1i,
     Uniform1f,
-    Uniform2fv,
-    Uniform3fv,
-    Uniform4fv
+    Uniform2f,
+    Uniform3f,
+    Uniform4f
 } from '../../../src/render/uniform_binding';
 
 test('Uniform1i', (t) => {
@@ -46,7 +46,7 @@ test('Uniform1f', (t) => {
     t.end();
 });
 
-test('Uniform2fv', (t) => {
+test('Uniform2f', (t) => {
     t.plan(4);
 
     const context = {
@@ -55,7 +55,7 @@ test('Uniform2fv', (t) => {
         }
     };
 
-    const u = new Uniform2fv(context, 0);
+    const u = new Uniform2f(context, 0);
 
     t.deepEqual(u.current, [0, 0], 'not set upon initialization');
     u.set([1, 1]);
@@ -65,7 +65,7 @@ test('Uniform2fv', (t) => {
     t.end();
 });
 
-test('Uniform3fv', (t) => {
+test('Uniform3f', (t) => {
     t.plan(4);
 
     const context = {
@@ -74,7 +74,7 @@ test('Uniform3fv', (t) => {
         }
     };
 
-    const u = new Uniform3fv(context, 0);
+    const u = new Uniform3f(context, 0);
 
     t.deepEqual(u.current, [0, 0, 0], 'not set upon initialization');
     u.set([1, 1, 1]);
@@ -84,7 +84,7 @@ test('Uniform3fv', (t) => {
     t.end();
 });
 
-test('Uniform4fv', (t) => {
+test('Uniform4f', (t) => {
     t.plan(4);
 
     const context = {
@@ -93,7 +93,7 @@ test('Uniform4fv', (t) => {
         }
     };
 
-    const u = new Uniform4fv(context, 0);
+    const u = new Uniform4f(context, 0);
 
     t.deepEqual(u.current, [0, 0, 0, 0], 'not set upon initialization');
     u.set([1, 1, 1, 1]);

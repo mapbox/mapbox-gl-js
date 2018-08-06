@@ -49,7 +49,7 @@ class Uniform1f extends Uniform<number> {
     }
 }
 
-class Uniform2fv extends Uniform<[number, number]> {
+class Uniform2f extends Uniform<[number, number]> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
         this.current = [0, 0];
@@ -63,7 +63,7 @@ class Uniform2fv extends Uniform<[number, number]> {
     }
 }
 
-class Uniform3fv extends Uniform<[number, number, number]> {
+class Uniform3f extends Uniform<[number, number, number]> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
         this.current = [0, 0, 0];
@@ -77,7 +77,7 @@ class Uniform3fv extends Uniform<[number, number, number]> {
     }
 }
 
-class Uniform4fv extends Uniform<[number, number, number, number]> {
+class Uniform4f extends Uniform<[number, number, number, number]> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
         this.current = [0, 0, 0, 0];
@@ -108,7 +108,7 @@ class UniformColor extends Uniform<Color> {
 }
 
 const emptyMat4 = new Float32Array(16);
-class UniformMatrix4fv extends Uniform<Float32Array> {
+class UniformMatrix4f extends Uniform<Float32Array> {
     constructor(context: Context, location: WebGLUniformLocation) {
         super(context, location);
         this.current = emptyMat4;
@@ -137,11 +137,11 @@ export {
     Uniform,
     Uniform1i,
     Uniform1f,
-    Uniform2fv,
-    Uniform3fv,
-    Uniform4fv,
+    Uniform2f,
+    Uniform3f,
+    Uniform4f,
     UniformColor,
-    UniformMatrix4fv
+    UniformMatrix4f
 };
 
 export type UniformBindings = {[string]: Uniform<any>};
