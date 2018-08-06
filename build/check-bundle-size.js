@@ -47,16 +47,31 @@ github.authenticate({type: 'app', token});
 
 function getMergeBase() {
     const pr = process.env['CIRCLE_PULL_REQUEST'];
-    const number = +pr.match(/\/(\d+)\/?$/)[1];
-    return github.pullRequests.get({
-        owner: 'mapbox',
-        repo: 'mapbox-gl-js',
-        number
-    }).then(({data}) => {
-        const base = data.base.ref;
+    if (pr) {
+        const number = +pr.match(/\/(\d+)\/?$/)[1];
+        return github.pullRequests.get({
+            owner: 'mapbox',
+            repo: 'mapbox-gl-js',
+            number
+        }).then(({data}) => {
+            const base = data.base.ref;
+            const head = process.env['CIRCLE_SHA1'];
+            return execSync(`git merge-base origin/${base} ${head}`).toString().trim();
+        });
+    } else {
+        // Walk backward through the history (maximum of 10 commits) until
+        // finding a commit on either master or release-*; assume that's the
+        // base branch.
         const head = process.env['CIRCLE_SHA1'];
-        return execSync(`git merge-base origin/${base} ${head}`).toString().trim();
-    });
+        for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
+            const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/mb-pages`).toString().trim().replace(/^origin\//, '');
+            if (base) {
+                return Promise.resolve(execSync(`git merge-base origin/${base} ${head}`).toString().trim());
+            }
+        }
+    }
+
+    return Promise.resolve(null);
 }
 
 function getPriorSize(mergeBase) {
