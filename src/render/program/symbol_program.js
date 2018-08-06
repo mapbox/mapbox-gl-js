@@ -3,8 +3,8 @@
 import {
     Uniform1i,
     Uniform1f,
-    Uniform2fv,
-    UniformMatrix4fv
+    Uniform2f,
+    UniformMatrix4f
 } from '../uniform_binding';
 import { extend } from '../../util/util';
 
@@ -22,12 +22,12 @@ export type SymbolIconUniformsType = {|
     'u_rotate_symbol': Uniform1i,
     'u_aspect_ratio': Uniform1f,
     'u_fade_change': Uniform1f,
-    'u_matrix': UniformMatrix4fv,
-    'u_label_plane_matrix': UniformMatrix4fv,
-    'u_gl_coord_matrix': UniformMatrix4fv,
+    'u_matrix': UniformMatrix4f,
+    'u_label_plane_matrix': UniformMatrix4f,
+    'u_gl_coord_matrix': UniformMatrix4f,
     'u_is_text': Uniform1f,
     'u_pitch_with_map': Uniform1i,
-    'u_texsize': Uniform2fv,
+    'u_texsize': Uniform2f,
     'u_texture': Uniform1i
 |};
 
@@ -41,12 +41,12 @@ export type SymbolSDFUniformsType = {|
     'u_rotate_symbol': Uniform1i,
     'u_aspect_ratio': Uniform1f,
     'u_fade_change': Uniform1f,
-    'u_matrix': UniformMatrix4fv,
-    'u_label_plane_matrix': UniformMatrix4fv,
-    'u_gl_coord_matrix': UniformMatrix4fv,
+    'u_matrix': UniformMatrix4f,
+    'u_label_plane_matrix': UniformMatrix4f,
+    'u_gl_coord_matrix': UniformMatrix4f,
     'u_is_text': Uniform1f,
     'u_pitch_with_map': Uniform1i,
-    'u_texsize': Uniform2fv,
+    'u_texsize': Uniform2f,
     'u_texture': Uniform1i,
     'u_gamma_scale': Uniform1f,
     'u_is_halo': Uniform1f
@@ -62,12 +62,12 @@ const symbolIconUniforms = (context: Context, locations: UniformLocations): Symb
     'u_rotate_symbol': new Uniform1i(context, locations.u_rotate_symbol),
     'u_aspect_ratio': new Uniform1f(context, locations.u_aspect_ratio),
     'u_fade_change': new Uniform1f(context, locations.u_fade_change),
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
-    'u_label_plane_matrix': new UniformMatrix4fv(context, locations.u_label_plane_matrix),
-    'u_gl_coord_matrix': new UniformMatrix4fv(context, locations.u_gl_coord_matrix),
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
+    'u_gl_coord_matrix': new UniformMatrix4f(context, locations.u_gl_coord_matrix),
     'u_is_text': new Uniform1f(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_texsize': new Uniform2fv(context, locations.u_texsize),
+    'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_texture': new Uniform1i(context, locations.u_texture)
 });
 
@@ -81,12 +81,12 @@ const symbolSDFUniforms = (context: Context, locations: UniformLocations): Symbo
     'u_rotate_symbol': new Uniform1i(context, locations.u_rotate_symbol),
     'u_aspect_ratio': new Uniform1f(context, locations.u_aspect_ratio),
     'u_fade_change': new Uniform1f(context, locations.u_fade_change),
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
-    'u_label_plane_matrix': new UniformMatrix4fv(context, locations.u_label_plane_matrix),
-    'u_gl_coord_matrix': new UniformMatrix4fv(context, locations.u_gl_coord_matrix),
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_label_plane_matrix': new UniformMatrix4f(context, locations.u_label_plane_matrix),
+    'u_gl_coord_matrix': new UniformMatrix4f(context, locations.u_gl_coord_matrix),
     'u_is_text': new Uniform1f(context, locations.u_is_text),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_texsize': new Uniform2fv(context, locations.u_texsize),
+    'u_texsize': new Uniform2f(context, locations.u_texsize),
     'u_texture': new Uniform1i(context, locations.u_texture),
     'u_gamma_scale': new Uniform1f(context, locations.u_gamma_scale),
     'u_is_halo': new Uniform1f(context, locations.u_is_halo)

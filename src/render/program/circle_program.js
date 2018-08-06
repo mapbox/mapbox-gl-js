@@ -3,8 +3,8 @@
 import {
     Uniform1i,
     Uniform1f,
-    Uniform2fv,
-    UniformMatrix4fv
+    Uniform2f,
+    UniformMatrix4f
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
@@ -19,16 +19,16 @@ export type CircleUniformsType = {|
     'u_camera_to_center_distance': Uniform1f,
     'u_scale_with_map': Uniform1i,
     'u_pitch_with_map': Uniform1i,
-    'u_extrude_scale': Uniform2fv,
-    'u_matrix': UniformMatrix4fv
+    'u_extrude_scale': Uniform2f,
+    'u_matrix': UniformMatrix4f
 |};
 
 const circleUniforms = (context: Context, locations: UniformLocations): CircleUniformsType => ({
     'u_camera_to_center_distance': new Uniform1f(context, locations.u_camera_to_center_distance),
     'u_scale_with_map': new Uniform1i(context, locations.u_scale_with_map),
     'u_pitch_with_map': new Uniform1i(context, locations.u_pitch_with_map),
-    'u_extrude_scale': new Uniform2fv(context, locations.u_extrude_scale),
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix)
+    'u_extrude_scale': new Uniform2f(context, locations.u_extrude_scale),
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
 });
 
 const circleUniformValues = (

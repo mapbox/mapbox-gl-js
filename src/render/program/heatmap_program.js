@@ -5,8 +5,8 @@ import { mat4 } from 'gl-matrix';
 import {
     Uniform1i,
     Uniform1f,
-    Uniform2fv,
-    UniformMatrix4fv
+    Uniform2f,
+    UniformMatrix4f
 } from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
@@ -19,12 +19,12 @@ import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer'
 export type HeatmapUniformsType = {|
     'u_extrude_scale': Uniform1f,
     'u_intensity': Uniform1f,
-    'u_matrix': UniformMatrix4fv
+    'u_matrix': UniformMatrix4f
 |};
 
 export type HeatmapTextureUniformsType = {|
-    'u_matrix': UniformMatrix4fv,
-    'u_world': Uniform2fv,
+    'u_matrix': UniformMatrix4f,
+    'u_world': Uniform2f,
     'u_image': Uniform1i,
     'u_color_ramp': Uniform1i,
     'u_opacity': Uniform1f
@@ -33,12 +33,12 @@ export type HeatmapTextureUniformsType = {|
 const heatmapUniforms = (context: Context, locations: UniformLocations): HeatmapUniformsType => ({
     'u_extrude_scale': new Uniform1f(context, locations.u_extrude_scale),
     'u_intensity': new Uniform1f(context, locations.u_intensity),
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix)
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix)
 });
 
 const heatmapTextureUniforms = (context: Context, locations: UniformLocations): HeatmapTextureUniformsType => ({
-    'u_matrix': new UniformMatrix4fv(context, locations.u_matrix),
-    'u_world': new Uniform2fv(context, locations.u_world),
+    'u_matrix': new UniformMatrix4f(context, locations.u_matrix),
+    'u_world': new Uniform2f(context, locations.u_world),
     'u_image': new Uniform1i(context, locations.u_image),
     'u_color_ramp': new Uniform1i(context, locations.u_color_ramp),
     'u_opacity': new Uniform1f(context, locations.u_opacity)
