@@ -1624,6 +1624,10 @@ class Map extends Camera {
      * @private
      */
     _render() {
+        // A custom layer may have used the context asynchronously. Mark the state as dirty.
+        this.painter.context.setDirty();
+        this.painter.setBaseState();
+
         this._renderTaskQueue.run();
 
         let crossFading = false;
