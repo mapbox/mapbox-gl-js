@@ -411,21 +411,27 @@ function placeGlyphAlongLine(offsetX: number,
         }
 
         distanceToPrev += currentSegmentDistance;
-        currentSegmentDistance = prev.dist(current);
+
+        const dx = current.x - prev.x;
+        const dy = current.y - prev.y;
+        currentSegmentDistance = Math.sqrt(dx * dx + dy * dy);
     }
 
     // The point is on the current segment. Interpolate to find it.
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
-    const prevToCurrent = current.sub(prev);
-    const p = prevToCurrent.mult(segmentInterpolationT)._add(prev);
+    const dx = current.x - prev.x;
+    const dy = current.y - prev.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // offset the point from the line to text-offset and icon-offset
-    p._add(prevToCurrent._unit()._perp()._mult(lineOffsetY * dir));
-
+    // and offset the point from the line to text-offset and icon-offset
+    const point = new Point(
+        prev.x + dx * segmentInterpolationT + lineOffsetY * dir * -dy / dist,
+        prev.y + dy * segmentInterpolationT + lineOffsetY * dir * dx / dist
+    );
     const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
 
     return {
-        point: p,
+        point,
         angle: segmentAngle,
         tileDistance: returnTileDistance ?
             {
