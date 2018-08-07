@@ -8,6 +8,7 @@
 .*/node_modules/htmltojsx/.*
 .*/node_modules/documentation/.*
 .*/node_modules/module-deps/.*
+.*/node_modules/bcryptjs/.*
 .*/test/unit/style-spec/fixture/invalidjson.input.json
 .*/test/integration/render-tests/.*
 

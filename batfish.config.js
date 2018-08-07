@@ -42,9 +42,9 @@ module.exports = () => {
 
     // Local builds treat the `dist` directory as static assets, allowing you to test examples against the
     // local branch build. Non-local builds ignore the `dist` directory, and examples load assets from the CDN.
-    config.unprocessedPageFiles = ['dist/**/*.*'];
+    config.unprocessedPageFiles = ['**/dist/**/*.*'];
     if (process.env.DEPLOY_ENV !== 'local') {
-        config.ignoreWithinPagesDirectory.push('dist/**/*.*');
+        config.ignoreWithinPagesDirectory.push('**/dist/**/*.*');
     }
 
     return config;
