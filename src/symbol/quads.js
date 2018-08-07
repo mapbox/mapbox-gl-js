@@ -54,37 +54,36 @@ export function getIconQuads(anchor: Anchor,
     // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
     // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
     // on one edge in some cases.
-    const border = 1;
-
-    const top = shapedIcon.top - border / image.pixelRatio;
-    const left = shapedIcon.left - border / image.pixelRatio;
-    const bottom = shapedIcon.bottom + border / image.pixelRatio;
-    const right = shapedIcon.right + border / image.pixelRatio;
+    const borderPadding = 1.0 / image.pixelRatio;
+    const top = shapedIcon.top - borderPadding;
+    const left = shapedIcon.left - borderPadding;
+    const bottom = shapedIcon.bottom + borderPadding;
+    const right = shapedIcon.right + borderPadding;
     let tl, tr, br, bl;
 
     // text-fit mode
     if (layout.get('icon-text-fit') !== 'none' && shapedText) {
-        const iconWidth = (right - left),
-            iconHeight = (bottom - top),
-            size = layout.get('text-size').evaluate(feature, {}) / 24,
-            textLeft = shapedText.left * size,
-            textRight = shapedText.right * size,
-            textTop = shapedText.top * size,
-            textBottom = shapedText.bottom * size,
-            textWidth = textRight - textLeft,
-            textHeight = textBottom - textTop,
-            padT = layout.get('icon-text-fit-padding')[0],
-            padR = layout.get('icon-text-fit-padding')[1],
-            padB = layout.get('icon-text-fit-padding')[2],
-            padL = layout.get('icon-text-fit-padding')[3],
-            offsetY = layout.get('icon-text-fit') === 'width' ? (textHeight - iconHeight) * 0.5 : 0,
-            offsetX = layout.get('icon-text-fit') === 'height' ? (textWidth - iconWidth) * 0.5 : 0,
-            width = layout.get('icon-text-fit') === 'width' || layout.get('icon-text-fit') === 'both' ? textWidth : iconWidth,
-            height = layout.get('icon-text-fit') === 'height' || layout.get('icon-text-fit') === 'both' ? textHeight : iconHeight;
+        const iconWidth = right - left;
+        const iconHeight = bottom - top;
+        const size = layout.get('text-size').evaluate(feature, {}) / 24;
+        const textLeft = shapedText.left * size;
+        const textRight = shapedText.right * size;
+        const textTop = shapedText.top * size;
+        const textBottom = shapedText.bottom * size;
+        const textWidth = textRight - textLeft;
+        const textHeight = textBottom - textTop;
+        const [padT, padR, padB, padL] = layout.get('icon-text-fit-padding');
+        const fit = layout.get('icon-text-fit');
+        const offsetY = fit === 'width' ? (textHeight - iconHeight) / 2 : 0;
+        const offsetX = fit === 'height' ? (textWidth - iconWidth) / 2 : 0;
+        const width = fit === 'width' || fit === 'both' ? textWidth : iconWidth;
+        const height = fit === 'height' || fit === 'both' ? textHeight : iconHeight;
+
         tl = new Point(textLeft + offsetX - padL,         textTop + offsetY - padT);
         tr = new Point(textLeft + offsetX + padR + width, textTop + offsetY - padT);
         br = new Point(textLeft + offsetX + padR + width, textTop + offsetY + padB + height);
         bl = new Point(textLeft + offsetX - padL,         textTop + offsetY + padB + height);
+
     // Normal icon size mode
     } else {
         tl = new Point(left, top);
@@ -96,14 +95,13 @@ export function getIconQuads(anchor: Anchor,
     const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
 
     if (angle) {
-        const sin = Math.sin(angle),
-            cos = Math.cos(angle),
-            matrix = [cos, -sin, sin, cos];
+        const sin = Math.sin(angle);
+        const cos = Math.cos(angle);
 
-        tl._matMult(matrix);
-        tr._matMult(matrix);
-        bl._matMult(matrix);
-        br._matMult(matrix);
+        rotatePoint(tl, sin, cos);
+        rotatePoint(tr, sin, cos);
+        rotatePoint(bl, sin, cos);
+        rotatePoint(br, sin, cos);
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
@@ -123,14 +121,12 @@ export function getGlyphQuads(anchor: Anchor,
 
     const oneEm = 24;
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
-    const textOffset = layer.layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm);
+    const textOffset = layer.layout.get('text-offset').evaluate(feature, {});
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
 
-
-    for (let k = 0; k < positionedGlyphs.length; k++) {
-        const positionedGlyph = positionedGlyphs[k];
+    for (const positionedGlyph of positionedGlyphs) {
         const glyphPositions = positions[positionedGlyph.fontStack];
         const glyph = glyphPositions && glyphPositions[positionedGlyph.glyph];
         if (!glyph) continue;
@@ -141,19 +137,13 @@ export function getGlyphQuads(anchor: Anchor,
         // The rects have an addditional buffer that is not included in their size.
         const glyphPadding = 1.0;
         const rectBuffer = GLYPH_PBF_BORDER + glyphPadding;
-
         const halfAdvance = glyph.metrics.advance * positionedGlyph.scale / 2;
+        const glyphOffset = alongLine ? [positionedGlyph.x + halfAdvance, positionedGlyph.y] : [0, 0];
+        const builtInOffsetX = alongLine ? 0 : positionedGlyph.x + halfAdvance + textOffset[0] * oneEm;
+        const builtInOffsetY = alongLine ? 0 : positionedGlyph.y + textOffset[1] * oneEm;
 
-        const glyphOffset = alongLine ?
-            [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
-            [0, 0];
-
-        const builtInOffset = alongLine ?
-            [0, 0] :
-            [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1]];
-
-        const x1 = (glyph.metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
-        const y1 = (-glyph.metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
+        const x1 = (glyph.metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffsetX;
+        const y1 = (-glyph.metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffsetY;
         const x2 = x1 + rect.w * positionedGlyph.scale;
         const y2 = y1 + rect.h * positionedGlyph.scale;
 
@@ -170,28 +160,42 @@ export function getGlyphQuads(anchor: Anchor,
             // edge of a 24x24 layout box centered below the midline, we align the center
             // of the glyphs with the horizontal midline, so the yOffset is no longer
             // necessary, but we also pull the glyph to the left along the x axis
-            const center = new Point(-halfAdvance, halfAdvance);
             const verticalRotation = -Math.PI / 2;
-            const xOffsetCorrection = new Point(5, 0);
-            tl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
-            tr._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
-            bl._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
-            br._rotateAround(verticalRotation, center)._add(xOffsetCorrection);
+            const xOffsetCorrection = 5;
+
+            const sin = Math.sin(verticalRotation);
+            const cos = Math.cos(verticalRotation);
+
+            rotatePoint(tl, sin, cos, -halfAdvance, halfAdvance);
+            rotatePoint(tr, sin, cos, -halfAdvance, halfAdvance);
+            rotatePoint(bl, sin, cos, -halfAdvance, halfAdvance);
+            rotatePoint(br, sin, cos, -halfAdvance, halfAdvance);
+
+            tl.x += xOffsetCorrection;
+            tr.x += xOffsetCorrection;
+            bl.x += xOffsetCorrection;
+            br.x += xOffsetCorrection;
         }
 
         if (textRotate) {
-            const sin = Math.sin(textRotate),
-                cos = Math.cos(textRotate),
-                matrix = [cos, -sin, sin, cos];
+            const sin = Math.sin(textRotate);
+            const cos = Math.cos(textRotate);
 
-            tl._matMult(matrix);
-            tr._matMult(matrix);
-            bl._matMult(matrix);
-            br._matMult(matrix);
+            rotatePoint(tl, sin, cos);
+            rotatePoint(tr, sin, cos);
+            rotatePoint(bl, sin, cos);
+            rotatePoint(br, sin, cos);
         }
 
         quads.push({tl, tr, bl, br, tex: rect, writingMode: shaping.writingMode, glyphOffset});
     }
 
     return quads;
+}
+
+function rotatePoint(p: Point, sin: number, cos: number, offsetX = 0, offsetY = 0) {
+    const x = p.x - offsetX;
+    const y = p.y - offsetY;
+    p.x = offsetX + cos * x - sin * y;
+    p.y = offsetY + sin * x + cos * y;
 }
