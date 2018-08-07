@@ -59,7 +59,8 @@ export const getArrayBuffer = function({ url }, callback) {
             cache[url] = {data: body};
             callback(null, {data: body});
         } else {
-            callback(error || new Error(response.statusCode));
+            if (!error) error = { status: +response.statusCode };
+            callback(error);
         }
     });
 };

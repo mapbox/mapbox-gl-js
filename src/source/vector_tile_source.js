@@ -132,14 +132,14 @@ class VectorTileSource extends Evented implements Source {
             if (tile.aborted)
                 return callback(null);
 
-            if (err) {
+            if (err && err.status !== 404) {
                 return callback(err);
             }
 
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
+            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
 
             callback(null);
