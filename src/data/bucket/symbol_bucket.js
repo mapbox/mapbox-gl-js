@@ -19,6 +19,7 @@ import { getSizeData } from '../../symbol/symbol_size';
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {Formatted} from '../../style-spec/expression/definitions/formatted';
+import { hypot } from '../../util/util';
 
 import type {
     Bucket,
@@ -458,27 +459,32 @@ class SymbolBucket implements Bucket {
         this.collisionCircle.destroy();
     }
 
-    addToLineVertexArray(anchor: Anchor, line: any) {
+    addToLineVertexArray(anchor: Anchor, line: Array<Point>) {
         const lineStartIndex = this.lineVertexArray.length;
         if (anchor.segment !== undefined) {
-            let sumForwardLength = anchor.dist(line[anchor.segment + 1]);
-            let sumBackwardLength = anchor.dist(line[anchor.segment]);
-            const vertices = {};
-            for (let i = anchor.segment + 1; i < line.length; i++) {
-                vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumForwardLength };
+            const start = +anchor.segment;
+            let sumForwardLength = hypot(line[start + 1].x - anchor.x, line[start + 1].y - anchor.y);
+            let sumBackwardLength = hypot(line[start].x - anchor.x, line[start].y - anchor.y);
+
+            const vertexData = new Float64Array(line.length * 3);
+            for (let i = start + 1; i < line.length; i++) {
+                vertexData[i * 3 + 0] = line[i].x;
+                vertexData[i * 3 + 1] = line[i].y;
+                vertexData[i * 3 + 2] = sumForwardLength; // tile unit distance from anchor
                 if (i < line.length - 1) {
-                    sumForwardLength += line[i + 1].dist(line[i]);
+                    sumForwardLength += hypot(line[i + 1].x - line[i].x, line[i + 1].y - line[i].y);
                 }
             }
-            for (let i = anchor.segment || 0; i >= 0; i--) {
-                vertices[i] = { x: line[i].x, y: line[i].y, tileUnitDistanceFromAnchor: sumBackwardLength };
+            for (let i = start; i >= 0; i--) {
+                vertexData[i * 3 + 0] = line[i].x;
+                vertexData[i * 3 + 1] = line[i].y;
+                vertexData[i * 3 + 2] = sumBackwardLength; // tile unit distance from anchor
                 if (i > 0) {
-                    sumBackwardLength += line[i - 1].dist(line[i]);
+                    sumBackwardLength += hypot(line[i - 1].x - line[i].x, line[i - 1].y - line[i].y);
                 }
             }
             for (let i = 0; i < line.length; i++) {
-                const vertex = vertices[i];
-                this.lineVertexArray.emplaceBack(vertex.x, vertex.y, vertex.tileUnitDistanceFromAnchor);
+                this.lineVertexArray.emplaceBack(vertexData[3 * i], vertexData[3 * i + 1], vertexData[3 * i + 2]);
             }
         }
         return {

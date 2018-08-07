@@ -1,6 +1,6 @@
 // @flow
 
-import { warnOnce } from '../util/util';
+import { warnOnce, hypot } from '../util/util';
 
 import type Context from '../gl/context';
 
@@ -106,9 +106,9 @@ class LineAtlas {
                     const distMiddle = n ? y / n * (halfWidth + 1) : 0;
                     if (inside) {
                         const distEdge = halfWidth - Math.abs(distMiddle);
-                        signedDistance = Math.sqrt(dist * dist + distEdge * distEdge);
+                        signedDistance = hypot(dist, distEdge);
                     } else {
-                        signedDistance = halfWidth - Math.sqrt(dist * dist + distMiddle * distMiddle);
+                        signedDistance = halfWidth - hypot(dist, distMiddle);
                     }
                 } else {
                     signedDistance = (inside ? 1 : -1) * dist;

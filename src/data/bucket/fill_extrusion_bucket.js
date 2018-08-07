@@ -12,6 +12,7 @@ import classifyRings from '../../util/classify_rings';
 import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
 import { register } from '../../util/web_worker_transfer';
+import { hypot } from '../../util/util';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
 
@@ -138,7 +139,7 @@ class FillExtrusionBucket implements Bucket {
 
                     const dx = p1.x - p0.x;
                     const dy = p1.y - p0.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const dist = hypot(dx, dy);
                     const perp = new Point(-dy / dist, dx / dist);
 
                     if (edgeDistance + dist > 32768) edgeDistance = 0;

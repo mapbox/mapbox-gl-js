@@ -13,6 +13,7 @@ const vectorTileFeatureTypes = mvt.VectorTileFeature.types;
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
+import { hypot } from '../../util/util';
 
 import type {
     Bucket,
@@ -210,9 +211,7 @@ class LineBucket implements Bucket {
 
             // Calculate the total distance, in tile units, of this tiled line feature
             for (let i = first; i < len - 1; i++) {
-                const dx = vertices[i + 1].x - vertices[i].x;
-                const dy = vertices[i + 1].y - vertices[i].y;
-                this.tileDistance += Math.sqrt(dx * dx + dy * dy);
+                this.tileDistance += hypot(vertices[i + 1].x - vertices[i].x, vertices[i + 1].y - vertices[i].y);
             }
         }
 
@@ -244,7 +243,7 @@ class LineBucket implements Bucket {
             currentVertex = vertices[len - 2];
             const dx = vertices[first].x - currentVertex.x;
             const dy = vertices[first].y - currentVertex.y;
-            const d = Math.sqrt(dx * dx + dy * dy);
+            const d = hypot(dx, dy);
             nextNormalX = -dy / d;
             nextNormalY = dx / d;
         }
@@ -269,7 +268,7 @@ class LineBucket implements Bucket {
             if (nextVertex) {
                 const dx = nextVertex.x - currentVertex.x;
                 const dy = nextVertex.y - currentVertex.y;
-                const d = Math.sqrt(dx * dx + dy * dy);
+                const d = hypot(dx, dy);
                 nextNormalX = -dy / d;
                 nextNormalY = dx / d;
             } else {
@@ -293,7 +292,7 @@ class LineBucket implements Bucket {
             let joinNormalX = prevNormalX + nextNormalX;
             let joinNormalY = prevNormalY + nextNormalY;
             if (joinNormalX !== 0 || joinNormalY !== 0) {
-                const d = Math.sqrt(joinNormalX * joinNormalX + joinNormalY * joinNormalY);
+                const d = hypot(joinNormalX, joinNormalY);
                 joinNormalX /= d;
                 joinNormalY /= d;
             }
@@ -318,15 +317,13 @@ class LineBucket implements Bucket {
             if (isSharpCorner && i > first) {
                 const dx0 = currentVertex.x - prevVertex.x;
                 const dy0 = currentVertex.y - prevVertex.y;
-                const prevSegmentLength = Math.sqrt(dx0 * dx0 + dy0 * dy0);
+                const prevSegmentLength = hypot(dx0, dy0);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = new Point(
                         currentVertex.x - Math.round(dx0 * sharpCornerOffset / prevSegmentLength),
                         currentVertex.y - Math.round(dy0 * sharpCornerOffset / prevSegmentLength)
                     );
-                    const dx1 = newPrevVertex.x - prevVertex.x;
-                    const dy1 = newPrevVertex.y - prevVertex.y;
-                    this.distance += Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                    this.distance += hypot(newPrevVertex.x - prevVertex.x, newPrevVertex.y - prevVertex.y);
                     this.addCurrentVertex(newPrevVertex, prevNormalX, prevNormalY, segment);
                     prevVertex = newPrevVertex;
                 }
@@ -359,7 +356,7 @@ class LineBucket implements Bucket {
             }
 
             // Calculate how far along the line the currentVertex is
-            if (prevVertex) this.distance += currentVertex.dist(prevVertex);
+            if (prevVertex) this.distance += hypot(currentVertex.x - prevVertex.x, currentVertex.y - prevVertex.y);
 
             if (currentJoin === 'miter') {
                 joinNormalX *= miterLength;
@@ -376,12 +373,8 @@ class LineBucket implements Bucket {
 
                 } else {
                     const direction = prevNormalX * nextNormalY - prevNormalY * nextNormalX > 0 ? -1 : 1;
-                    const dx0 = prevNormalX + nextNormalX;
-                    const dy0 = prevNormalY + nextNormalY;
-                    const dx1 = prevNormalX - nextNormalX;
-                    const dy1 = prevNormalY - nextNormalY;
-                    const mag0 = Math.sqrt(dx0 * dx0 + dy0 * dy0);
-                    const mag1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                    const mag0 = hypot(prevNormalX + nextNormalX, prevNormalY + nextNormalY);
+                    const mag1 = hypot(prevNormalX - nextNormalX, prevNormalY - nextNormalY);
                     const bevelLength = miterLength * mag0 / mag1;
 
                     const x = joinNormalX * bevelLength * direction;
@@ -421,7 +414,7 @@ class LineBucket implements Bucket {
                         const c = (m + 1) / (n + 1);
                         const x = nextNormalX * c + prevNormalX;
                         const y = nextNormalY * c + prevNormalY;
-                        const d = Math.sqrt(x * x + y * y);
+                        const d = hypot(x, y);
                         this.addPieSliceVertex(currentVertex, x / d, y / d, lineTurnsLeft, segment);
                     }
 
@@ -431,7 +424,7 @@ class LineBucket implements Bucket {
                         const c = (m + 1) / (n + 1);
                         const x = prevNormalX * c + nextNormalX;
                         const y = prevNormalY * c + nextNormalY;
-                        const d = Math.sqrt(x * x + y * y);
+                        const d = hypot(x, y);
                         this.addPieSliceVertex(currentVertex, x / d, y / d, lineTurnsLeft, segment);
                     }
                 }
@@ -493,15 +486,13 @@ class LineBucket implements Bucket {
             if (isSharpCorner && i < len - 1) {
                 const dx = nextVertex.x - currentVertex.x;
                 const dy = nextVertex.y - currentVertex.y;
-                const nextSegmentLength = Math.sqrt(dx * dx + dy * dy);
+                const nextSegmentLength = hypot(dx, dy);
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = new Point(
                         currentVertex.x + Math.round(dx * sharpCornerOffset / nextSegmentLength),
                         currentVertex.y + Math.round(dy * sharpCornerOffset / nextSegmentLength)
                     );
-                    const dx1 = newCurrentVertex.x - currentVertex.x;
-                    const dy1 = newCurrentVertex.y - currentVertex.y;
-                    this.distance += Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                    this.distance += hypot(newCurrentVertex.x - currentVertex.x, newCurrentVertex.y - currentVertex.y);
                     this.addCurrentVertex(newCurrentVertex, nextNormalX, nextNormalY, segment);
                     currentVertex = newCurrentVertex;
                 }

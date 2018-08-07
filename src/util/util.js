@@ -387,6 +387,13 @@ export function calculateSignedArea(ring: Array<Point>): number {
 }
 
 /**
+ * Returns the length of the vector (dx, dy).
+ */
+export function hypot(dx: number, dy: number): number {
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
  * Detects closed polygons, first + last point are equal
  *
  * @private

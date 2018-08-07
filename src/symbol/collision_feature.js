@@ -1,5 +1,7 @@
 // @flow
 
+import { hypot } from '../util/util';
+
 import type {CollisionBoxArray} from '../data/array_types';
 import type Point from '@mapbox/point-geometry';
 import type Anchor from './anchor';
@@ -145,16 +147,14 @@ class CollisionFeature {
                     break;
                 }
             } else {
-                const dx = line[index].x - p.x;
-                const dy = line[index].y - p.y;
-                anchorDistance -= Math.sqrt(dx * dx + dy * dy);
+                anchorDistance -= hypot(line[index].x - p.x, line[index].y - p.y);
                 p = line[index];
             }
         } while (anchorDistance > paddingStartDistance);
 
         let dx = line[index + 1].x - line[index].x;
         let dy = line[index + 1].y - line[index].y;
-        let segmentLength = Math.sqrt(dx * dx + dy * dy);
+        let segmentLength = hypot(dx, dy);
 
         for (let i = -nPitchPaddingBoxes; i < nBoxes + nPitchPaddingBoxes; i++) {
 
@@ -184,7 +184,7 @@ class CollisionFeature {
 
                 dx = line[index + 1].x - line[index].x;
                 dy = line[index + 1].y - line[index].y;
-                segmentLength = Math.sqrt(dx * dx + dy * dy);
+                segmentLength = hypot(dx, dy);
             }
 
             // the distance the box will be from the beginning of the segment

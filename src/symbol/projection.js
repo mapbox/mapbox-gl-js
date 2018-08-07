@@ -4,6 +4,7 @@ import Point from '@mapbox/point-geometry';
 
 import { mat4, vec4 } from 'gl-matrix';
 import * as symbolSize from './symbol_size';
+import { hypot } from '../util/util';
 import { addDynamicAttributes } from '../data/bucket/symbol_bucket';
 import properties from '../style/style_layer/symbol_style_layer_properties';
 const symbolLayoutProperties = properties.layout;
@@ -411,17 +412,14 @@ function placeGlyphAlongLine(offsetX: number,
         }
 
         distanceToPrev += currentSegmentDistance;
-
-        const dx = current.x - prev.x;
-        const dy = current.y - prev.y;
-        currentSegmentDistance = Math.sqrt(dx * dx + dy * dy);
+        currentSegmentDistance = hypot(current.x - prev.x, current.y - prev.y);
     }
 
     // The point is on the current segment. Interpolate to find it.
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
     const dx = current.x - prev.x;
     const dy = current.y - prev.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const dist = hypot(dx, dy);
 
     // and offset the point from the line to text-offset and icon-offset
     const point = new Point(
