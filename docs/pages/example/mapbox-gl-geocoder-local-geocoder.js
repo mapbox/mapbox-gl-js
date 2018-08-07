@@ -1,5 +1,5 @@
 /*---
-title: Supplement reverse geocoding search results from another data source
+title: Supplement geocoding search results from another data source
 description: >-
   Use the [mapbox-gl-geocoder](https://github.com/mapbox/mapbox-gl-geocoder)
   control to search for places using Mapbox Geocoding API, supplementing
