@@ -1,7 +1,6 @@
 // @flow
 
 import { FillExtrusionLayoutArray } from '../array_types';
-
 import { members as layoutAttributes } from './fill_extrusion_attributes';
 import SegmentVector from '../segment';
 import { ProgramConfigurationSet } from '../program_configuration';
@@ -14,6 +13,7 @@ import assert from 'assert';
 const EARCUT_MAX_RINGS = 500;
 import { register } from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import Point from '@mapbox/point-geometry';
 
 import type {
     Bucket,
@@ -25,7 +25,6 @@ import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import type Point from '@mapbox/point-geometry';
 import type {FeatureStates} from '../../source/source_state';
 
 const FACTOR = Math.pow(2, 13);
@@ -119,54 +118,46 @@ class FillExtrusionBucket implements Bucket {
     addFeature(feature: VectorTileFeature, geometry: Array<Array<Point>>, index: number) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
-            for (const ring of polygon) {
-                numVertices += ring.length;
-            }
             let segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
 
             for (const ring of polygon) {
-                if (ring.length === 0) {
-                    continue;
-                }
-
-                if (isEntirelyOutside(ring)) {
-                    continue;
-                }
+                numVertices += ring.length;
+                if (ring.length === 0 || isEntirelyOutside(ring)) continue;
 
                 let edgeDistance = 0;
 
-                for (let p = 0; p < ring.length; p++) {
-                    const p1 = ring[p];
+                for (let i = 0; i < ring.length - 1; i++) {
+                    const p0 = ring[i];
+                    const p1 = ring[i + 1];
 
-                    if (p >= 1) {
-                        const p2 = ring[p - 1];
+                    if (isBoundaryEdge(p0, p1)) continue;
 
-                        if (!isBoundaryEdge(p1, p2)) {
-                            if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
-                                segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
-                            }
-
-                            const perp = p1.sub(p2)._perp()._unit();
-                            const dist = p2.dist(p1);
-                            if (edgeDistance + dist > 32768) edgeDistance = 0;
-
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
-
-                            edgeDistance += dist;
-
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 0, edgeDistance);
-                            addVertex(this.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 1, edgeDistance);
-
-                            const bottomRight = segment.vertexLength;
-
-                            this.indexArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
-                            this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
-
-                            segment.vertexLength += 4;
-                            segment.primitiveLength += 2;
-                        }
+                    if (segment.vertexLength + 4 > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) {
+                        segment = this.segments.prepareSegment(4, this.layoutVertexArray, this.indexArray);
                     }
+
+                    const dx = p1.x - p0.x;
+                    const dy = p1.y - p0.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const perp = new Point(-dy / dist, dx / dist);
+
+                    if (edgeDistance + dist > 32768) edgeDistance = 0;
+
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
+
+                    edgeDistance += dist;
+
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, perp.x, perp.y, 0, 0, edgeDistance);
+                    addVertex(this.layoutVertexArray, p0.x, p0.y, perp.x, perp.y, 0, 1, edgeDistance);
+
+                    const bottomRight = segment.vertexLength;
+
+                    this.indexArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                    this.indexArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+
+                    segment.vertexLength += 4;
+                    segment.primitiveLength += 2;
                 }
             }
 
@@ -179,19 +170,14 @@ class FillExtrusionBucket implements Bucket {
             const triangleIndex = segment.vertexLength;
 
             for (const ring of polygon) {
-                if (ring.length === 0) {
-                    continue;
-                }
+                if (ring.length === 0) continue;
 
                 if (ring !== polygon[0]) {
                     holeIndices.push(flattened.length / 2);
                 }
 
-                for (let i = 0; i < ring.length; i++) {
-                    const p = ring[i];
-
+                for (const p of ring) {
                     addVertex(this.layoutVertexArray, p.x, p.y, 0, 0, 1, 1, 0);
-
                     flattened.push(p.x);
                     flattened.push(p.y);
                 }
@@ -225,8 +211,8 @@ function isBoundaryEdge(p1, p2) {
 }
 
 function isEntirelyOutside(ring) {
-    return ring.every(p => p.x < 0) ||
-        ring.every(p => p.x > EXTENT) ||
-        ring.every(p => p.y < 0) ||
-        ring.every(p => p.y > EXTENT);
+    for (const p of ring) {
+        if (p.x >= 0 && p.x <= EXTENT && p.y >= 0 && p.y <= EXTENT) return false;
+    }
+    return true;
 }
