@@ -1,7 +1,7 @@
 // @flow
 
 import type {CollisionBoxArray} from '../data/array_types';
-import Point from '@mapbox/point-geometry';
+import type Point from '@mapbox/point-geometry';
 import type Anchor from './anchor';
 
 /**
@@ -62,29 +62,28 @@ class CollisionFeature {
                 // Account for *-rotate in point collision boxes
                 // See https://github.com/mapbox/mapbox-gl-js/issues/6075
                 // Doesn't account for icon-text-fit
+                const cos = Math.cos(rotate * Math.PI / 180);
+                const sin = Math.sin(rotate * Math.PI / 180);
 
-                const tl = new Point(x1, y1);
-                const tr = new Point(x2, y1);
-                const bl = new Point(x1, y2);
-                const br = new Point(x2, y2);
+                const xr0 = cos * x1 - sin * y1;
+                const xr1 = cos * x2 - sin * y1;
+                const xr2 = cos * x1 - sin * y2;
+                const xr3 = cos * x2 - sin * y2;
 
-                const rotateRadians = rotate * Math.PI / 180;
-
-                tl._rotate(rotateRadians);
-                tr._rotate(rotateRadians);
-                bl._rotate(rotateRadians);
-                br._rotate(rotateRadians);
+                const yr0 = sin * x1 + cos * y1;
+                const yr1 = sin * x2 + cos * y1;
+                const yr2 = sin * x1 + cos * y2;
+                const yr3 = sin * x2 + cos * y2;
 
                 // Collision features require an "on-axis" geometry,
                 // so take the envelope of the rotated geometry
                 // (may be quite large for wide labels rotated 45 degrees)
-                x1 = Math.min(tl.x, tr.x, bl.x, br.x);
-                x2 = Math.max(tl.x, tr.x, bl.x, br.x);
-                y1 = Math.min(tl.y, tr.y, bl.y, br.y);
-                y2 = Math.max(tl.y, tr.y, bl.y, br.y);
+                x1 = Math.min(xr0, xr1, xr2, xr3);
+                x2 = Math.max(xr0, xr1, xr2, xr3);
+                y1 = Math.min(yr0, yr1, yr2, yr3);
+                y2 = Math.max(yr0, yr1, yr2, yr3);
             }
-            collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex,
-                0, 0);
+            collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex, 0, 0);
         }
 
         this.boxEndIndex = collisionBoxArray.length;
@@ -146,12 +145,16 @@ class CollisionFeature {
                     break;
                 }
             } else {
-                anchorDistance -= line[index].dist(p);
+                const dx = line[index].x - p.x;
+                const dy = line[index].y - p.y;
+                anchorDistance -= Math.sqrt(dx * dx + dy * dy);
                 p = line[index];
             }
         } while (anchorDistance > paddingStartDistance);
 
-        let segmentLength = line[index].dist(line[index + 1]);
+        let dx = line[index + 1].x - line[index].x;
+        let dy = line[index + 1].y - line[index].y;
+        let segmentLength = Math.sqrt(dx * dx + dy * dy);
 
         for (let i = -nPitchPaddingBoxes; i < nBoxes + nPitchPaddingBoxes; i++) {
 
@@ -179,15 +182,16 @@ class CollisionFeature {
                     return;
                 }
 
-                segmentLength = line[index].dist(line[index + 1]);
+                dx = line[index + 1].x - line[index].x;
+                dy = line[index + 1].y - line[index].y;
+                segmentLength = Math.sqrt(dx * dx + dy * dy);
             }
 
             // the distance the box will be from the beginning of the segment
             const segmentBoxDistance = boxDistanceToAnchor - anchorDistance;
 
-            const p0 = line[index];
-            const p1 = line[index + 1];
-            const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
+            const boxAnchorPointX = line[index].x + Math.round(dx * segmentBoxDistance / segmentLength);
+            const boxAnchorPointY = line[index].y + Math.round(dy * segmentBoxDistance / segmentLength);
 
             // If the box is within boxSize of the anchor, force the box to be used
             // (so even 0-width labels use at least one box)
@@ -197,7 +201,7 @@ class CollisionFeature {
                 0 :
                 (boxDistanceToAnchor - firstBoxOffset) * 0.8;
 
-            collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
+            collisionBoxArray.emplaceBack(boxAnchorPointX, boxAnchorPointY,
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2,
                 featureIndex, sourceLayerIndex, bucketIndex,
                 boxSize / 2, paddedAnchorDistance);
