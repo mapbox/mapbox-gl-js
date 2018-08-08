@@ -25,7 +25,9 @@ const {size} = fs.statSync(file);
 const gzipSize = zlib.gzipSync(fs.readFileSync(file)).length;
 
 process.on('unhandledRejection', error => {
-    console.log(error);
+    // don't log `error` directly, because errors from child_process.execSync
+    // contain an (undocumented) `envPairs` with environment variable values
+    console.log(error.message || 'Error');
     process.exit(1)
 });
 
@@ -64,7 +66,7 @@ function getMergeBase() {
         // base branch.
         const head = process.env['CIRCLE_SHA1'];
         for (const sha of execSync(`git rev-list --max-count=10 ${head}`).toString().trim().split('\n')) {
-            const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/mb-pages`).toString().trim().replace(/^origin\//, '');
+            const base = execSync(`git branch -r --contains ${sha} origin/master origin/release-* origin/mb-pages`).toString().split('\n')[0].trim().replace(/^origin\//, '');
             if (base) {
                 return Promise.resolve(execSync(`git merge-base origin/${base} ${head}`).toString().trim());
             }
@@ -115,6 +117,8 @@ github.apps.createInstallationToken({installation_id: SIZE_CHECK_APP_INSTALLATIO
             const downloadTime4G = (gzipSize / (10 * megabit)).toFixed(0);
             const summary = `\`${file}\` is ${size} bytes (${prettyBytes(size)}) uncompressed, ${gzipSize} (${prettyBytes(gzipSize)}) gzipped.
 That's **${downloadTime3G} seconds** over slow 3G (3 Mbps), **${downloadTime4G} seconds** over fast 4G (10 Mbps).`;
+
+            console.log(`Posting check result:\n${title}\n${summary}`);
 
             return github.checks.create({
                 owner: 'mapbox',
