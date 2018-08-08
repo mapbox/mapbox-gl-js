@@ -787,7 +787,7 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name);
     }
 
-    setFeatureState(feature: { source: string; sourceLayer?: string; id: string; }, state: Object) {
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: number; }, state: Object) {
         this._checkLoaded();
         const sourceId = feature.source;
         const sourceLayer = feature.sourceLayer;
@@ -802,15 +802,15 @@ class Style extends Evented {
             this.fire(new ErrorEvent(new Error(`The sourceLayer parameter must be provided for vector source types.`)));
             return;
         }
-        if (feature.id == null || feature.id === "") {
-            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided.`)));
+        if (feature.id == null || feature.id < 0) {
+            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and positive.`)));
             return;
         }
 
         sourceCache.setFeatureState(sourceLayer, feature.id, state);
     }
 
-    getFeatureState(feature: { source: string; sourceLayer?: string; id: string; }) {
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: number; }) {
         this._checkLoaded();
         const sourceId = feature.source;
         const sourceLayer = feature.sourceLayer;
