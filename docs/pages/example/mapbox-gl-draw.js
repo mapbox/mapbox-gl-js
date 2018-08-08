@@ -1,7 +1,7 @@
 /*---
 title: Show drawn polygon area
 description: >-
-  Use GL draw to draw a polygon and turf.js to calculate its area in square
+  Use [mapbox-gl-draw](https://github.com/mapbox/mapbox-gl-draw) to draw a polygon and [Turf.js](http://turfjs.org/) to calculate its area in square
   meters.
 tags:
   - controls-and-overlays
