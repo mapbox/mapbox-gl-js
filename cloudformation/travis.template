@@ -44,7 +44,7 @@
                 ]
             }
         },
-        "BuildUserKey": {
+        "BuildUserAccessKey": {
             "Type": "AWS::IAM::AccessKey",
             "Properties": {
                 "UserName": {
@@ -56,13 +56,13 @@
     "Outputs": {
         "AccessKeyId": {
             "Value": {
-                "Ref": "BuildUserKey"
+                "Ref": "BuildUserAccessKey"
             }
         },
         "SecretAccessKey": {
             "Value": {
                 "Fn::GetAtt": [
-                    "BuildUserKey",
+                    "BuildUserAccessKey",
                     "SecretAccessKey"
                 ]
             }
