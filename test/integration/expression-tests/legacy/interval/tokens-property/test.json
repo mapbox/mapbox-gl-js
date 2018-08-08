@@ -1,0 +1,34 @@
+{
+  "expression": {
+    "type": "interval",
+    "property": "p",
+    "stops": [[0, "0 {a}"], [1, "1 {b}"]]
+  },
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"interpolated": true, "parameters": ["zoom", "feature"]},
+    "tokens": true
+  },
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": 0, "a": "a"}}],
+    [{}, {"properties": {"p": 1, "b": "b"}}],
+    [{}, {"properties": {"p": 0}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      {"error": "Expected value to be of type number, but found null instead."},
+      "0 {a}",
+      "1 {b}",
+      "0 {a}"
+    ],
+    "serialized": ["step", ["number", ["get", "p"]], "0 {a}", 1, "1 {b}"]
+  }
+}
