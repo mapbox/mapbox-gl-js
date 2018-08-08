@@ -1,0 +1,24 @@
+{
+  "expression": {"type": "identity", "property": "p", "default": "default"},
+  "inputs": [
+    [{}, {"properties": {}}],
+    [{}, {"properties": {"p": "0"}}],
+    [{}, {"properties": {"p": "1"}}],
+    [{}, {"properties": {"p": 0}}]
+  ],
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"interpolated": false, "parameters": ["zoom", "feature"]}
+  },
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": ["default", "0", "1", "default"],
+    "serialized": ["string", ["get", "p"], "default"]
+  }
+}

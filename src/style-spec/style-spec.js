@@ -71,6 +71,7 @@ import featureFilter from './feature_filter';
 import Color from './util/color';
 import { createFunction, isFunction } from './function';
 import convertFunction from './function/convert';
+import { eachSource, eachLayer, eachProperty } from './visit';
 
 import validate from './validate_style';
 
@@ -91,6 +92,8 @@ const styleFunction = {
     isFunction
 };
 
+const visit = { eachSource, eachLayer, eachProperty };
+
 export {
     v8,
     latest,
@@ -104,7 +107,8 @@ export {
     featureFilter,
     Color,
     styleFunction as function,
-    validate
+    validate,
+    visit
 };
 
 validate.parsed = validate;

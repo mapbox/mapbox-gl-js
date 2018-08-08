@@ -1,32 +1,6 @@
 
-import Reference from '../reference/v8.json';
 import URL from 'url';
-
-function getPropertyReference(propertyName) {
-    for (let i = 0; i < Reference.layout.length; i++) {
-        for (const key in Reference[Reference.layout[i]]) {
-            if (key === propertyName) return Reference[Reference.layout[i]][key];
-        }
-    }
-    for (let i = 0; i < Reference.paint.length; i++) {
-        for (const key in Reference[Reference.paint[i]]) {
-            if (key === propertyName) return Reference[Reference.paint[i]][key];
-        }
-    }
-}
-
-function eachSource(style, callback) {
-    for (const k in style.sources) {
-        callback(style.sources[k]);
-    }
-}
-
-function eachLayer(style, callback) {
-    for (const k in style.layers) {
-        callback(style.layers[k]);
-        eachLayer(style.layers[k], callback);
-    }
-}
+import {eachSource, eachLayer, eachProperty} from '../visit';
 
 function eachLayout(layer, callback) {
     for (const k in layer) {
@@ -50,42 +24,6 @@ function resolveConstant(style, value) {
     } else {
         return value;
     }
-}
-
-function eachProperty(style, options, callback) {
-    if (arguments.length === 2) {
-        callback = options;
-        options = {};
-    }
-
-    options.layout = options.layout === undefined ? true : options.layout;
-    options.paint = options.paint === undefined ? true : options.paint;
-
-    function inner(layer, properties) {
-        Object.keys(properties).forEach((key) => {
-            callback({
-                key: key,
-                value: properties[key],
-                reference: getPropertyReference(key),
-                set: function(x) {
-                    properties[key] = x;
-                }
-            });
-        });
-    }
-
-    eachLayer(style, (layer) => {
-        if (options.paint) {
-            eachPaint(layer, (paint) => {
-                inner(layer, paint);
-            });
-        }
-        if (options.layout) {
-            eachLayout(layer, (layout) => {
-                inner(layer, layout);
-            });
-        }
-    });
 }
 
 function isFunction(value) {
@@ -132,7 +70,7 @@ export default function(style) {
     });
 
     // Inline Constants
-    eachProperty(style, (property) => {
+    eachProperty(style, {paint: true, layout: true}, (property) => {
         const value = resolveConstant(style, property.value);
 
         if (isFunction(value)) {
