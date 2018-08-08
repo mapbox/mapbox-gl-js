@@ -148,7 +148,7 @@ class FeatureIndex {
                     let featureState = {};
                     if (feature.id) {
                         // `feature-state` expression evaluation requires feature state to be available
-                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', String(feature.id));
+                        featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', feature.id);
                     }
                     return styleLayer.queryIntersectsFeature(queryGeometry, feature, featureState, featureGeometry, this.z, args.transform, pixelsToTileUnits, args.posMatrix);
                 }
