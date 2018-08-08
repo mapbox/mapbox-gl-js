@@ -52,41 +52,31 @@ export default class ImageAtlas {
     positions: {[string]: ImagePosition};
 
     constructor(images: {[string]: StyleImage}) {
-        const image = new RGBAImage({width: 0, height: 0});
         const positions = {};
-
         const pack = new ShelfPack(0, 0, {autoResize: true});
+        const bins = [];
 
         for (const id in images) {
             const src = images[id];
-
-            const bin = pack.packOne(
-                src.data.width + 2 * padding,
-                src.data.height + 2 * padding);
-
-            image.resize({
-                width: pack.w,
-                height: pack.h
-            });
-
-            RGBAImage.copy(
-                src.data,
-                image,
-                { x: 0, y: 0 },
-                {
-                    x: bin.x + padding,
-                    y: bin.y + padding
-                },
-                src.data);
-
+            const bin = {
+                x: 0,
+                y: 0,
+                w: src.data.width + 2 * padding,
+                h: src.data.height + 2 * padding,
+            };
+            bins.push(bin);
             positions[id] = new ImagePosition(bin, src);
         }
 
-        pack.shrink();
-        image.resize({
-            width: pack.w,
-            height: pack.h
-        });
+        pack.pack(bins, {inPlace: true});
+
+        const image = new RGBAImage({width: pack.w, height: pack.h});
+
+        for (const id in images) {
+            const src = images[id];
+            const bin = positions[id].paddedRect;
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + padding, y: bin.y + padding}, src.data);
+        }
 
         this.image = image;
         this.positions = positions;
