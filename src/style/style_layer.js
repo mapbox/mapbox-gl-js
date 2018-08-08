@@ -170,7 +170,7 @@ class StyleLayer extends Evented {
     }
 
     serialize() {
-        const output : any = {
+        const output: any = {
             'id': this.id,
             'type': this.type,
             'source': this.source,
