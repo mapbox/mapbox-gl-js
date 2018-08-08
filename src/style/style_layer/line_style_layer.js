@@ -8,7 +8,7 @@ import { RGBAImage } from '../../util/image';
 import { multiPolygonIntersectsBufferedMultiLine } from '../../util/intersection_tests';
 import { getMaximumPaintValue, translateDistance, translate } from '../query_utils';
 import properties from './line_style_layer_properties';
-import { extend } from '../../util/util';
+import { extend, hypot } from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import renderColorRamp from '../../util/color_ramp';
 import { Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty } from '../properties';
@@ -123,22 +123,31 @@ function getLineWidth(lineWidth, lineGapWidth) {
 
 function offsetLine(rings, offset) {
     const newRings = [];
-    const zero = new Point(0, 0);
-    for (let k = 0; k < rings.length; k++) {
-        const ring = rings[k];
+    for (const ring of rings) {
         const newRing = [];
         for (let i = 0; i < ring.length; i++) {
-            const a = ring[i - 1];
-            const b = ring[i];
-            const c = ring[i + 1];
-            const aToB = i === 0 ? zero : b.sub(a)._unit()._perp();
-            const bToC = i === ring.length - 1 ? zero : c.sub(b)._unit()._perp();
-            const extrude = aToB._add(bToC)._unit();
+            const {x, y} = ring[i];
 
-            const cosHalfAngle = extrude.x * bToC.x + extrude.y * bToC.y;
-            extrude._mult(1 / cosHalfAngle);
+            const dx0 = i === 0 ? ring[i + 1].x - x : x - ring[i - 1].x;
+            const dy0 = i === 0 ? ring[i + 1].y - y : y - ring[i - 1].y;
+            const dx1 = i === ring.length - 1 ? dx0 : ring[i + 1].x - x;
+            const dy1 = i === ring.length - 1 ? dy0 : ring[i + 1].y - y;
 
-            newRing.push(extrude._mult(offset)._add(b));
+            const d0 = hypot(dx0, dy0);
+            const d1 = hypot(dx1, dy1);
+            const prevNormalX = -dy0 / d0;
+            const prevNormalY = dx0 / d0;
+            const nextNormalX = -dy1 / d1;
+            const nextNormalY = dx1 / d1;
+
+            const extrudeX = prevNormalX + nextNormalX;
+            const extrudeY = prevNormalY + nextNormalY;
+            const cosHalfAngle = extrudeX * nextNormalX + extrudeY * nextNormalY;
+
+            newRing.push(new Point(
+                x + extrudeX * offset / cosHalfAngle,
+                y + extrudeY * offset / cosHalfAngle
+            ));
         }
         newRings.push(newRing);
     }
