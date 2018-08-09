@@ -26,40 +26,42 @@ function clipLine(lines: Array<Array<Point>>, x1: number, y1: number, x2: number
             let p0 = line[i];
             let p1 = line[i + 1];
 
-
             if (p0.x < x1 && p1.x < x1) {
                 continue;
             } else if (p0.x < x1) {
-                p0 = new Point(x1, p0.y + (p1.y - p0.y) * ((x1 - p0.x) / (p1.x - p0.x)))._round();
+                p0 = new Point(x1, Math.round(p0.y + (p1.y - p0.y) * ((x1 - p0.x) / (p1.x - p0.x))));
             } else if (p1.x < x1) {
-                p1 = new Point(x1, p0.y + (p1.y - p0.y) * ((x1 - p0.x) / (p1.x - p0.x)))._round();
+                p1 = new Point(x1, Math.round(p0.y + (p1.y - p0.y) * ((x1 - p0.x) / (p1.x - p0.x))));
             }
 
             if (p0.y < y1 && p1.y < y1) {
                 continue;
             } else if (p0.y < y1) {
-                p0 = new Point(p0.x + (p1.x - p0.x) * ((y1 - p0.y) / (p1.y - p0.y)), y1)._round();
+                p0 = new Point(Math.round(p0.x + (p1.x - p0.x) * ((y1 - p0.y) / (p1.y - p0.y))), y1);
             } else if (p1.y < y1) {
-                p1 = new Point(p0.x + (p1.x - p0.x) * ((y1 - p0.y) / (p1.y - p0.y)), y1)._round();
+                p1 = new Point(Math.round(p0.x + (p1.x - p0.x) * ((y1 - p0.y) / (p1.y - p0.y))), y1);
             }
 
             if (p0.x >= x2 && p1.x >= x2) {
                 continue;
             } else if (p0.x >= x2) {
-                p0 = new Point(x2, p0.y + (p1.y - p0.y) * ((x2 - p0.x) / (p1.x - p0.x)))._round();
+                p0 = new Point(x2, Math.round(p0.y + (p1.y - p0.y) * ((x2 - p0.x) / (p1.x - p0.x))));
             } else if (p1.x >= x2) {
-                p1 = new Point(x2, p0.y + (p1.y - p0.y) * ((x2 - p0.x) / (p1.x - p0.x)))._round();
+                p1 = new Point(x2, Math.round(p0.y + (p1.y - p0.y) * ((x2 - p0.x) / (p1.x - p0.x))));
             }
 
             if (p0.y >= y2 && p1.y >= y2) {
                 continue;
             } else if (p0.y >= y2) {
-                p0 = new Point(p0.x + (p1.x - p0.x) * ((y2 - p0.y) / (p1.y - p0.y)), y2)._round();
+                p0 = new Point(Math.round(p0.x + (p1.x - p0.x) * ((y2 - p0.y) / (p1.y - p0.y))), y2);
             } else if (p1.y >= y2) {
-                p1 = new Point(p0.x + (p1.x - p0.x) * ((y2 - p0.y) / (p1.y - p0.y)), y2)._round();
+                p1 = new Point(Math.round(p0.x + (p1.x - p0.x) * ((y2 - p0.y) / (p1.y - p0.y))), y2);
             }
 
-            if (!clippedLine || !p0.equals(clippedLine[clippedLine.length - 1])) {
+            if (!clippedLine ||
+                p0.x !== clippedLine[clippedLine.length - 1].x ||
+                p0.y !== clippedLine[clippedLine.length - 1].y) {
+
                 clippedLine = [p0];
                 clippedLines.push(clippedLine);
             }
