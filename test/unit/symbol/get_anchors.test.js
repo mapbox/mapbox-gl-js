@@ -79,8 +79,8 @@ test('getAnchors', (t) => {
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             let found = false;
-            for (let k = 0; k < childAnchors.length; k++) {
-                if (anchor.equals(childAnchors[k])) {
+            for (const child of childAnchors) {
+                if (anchor.x === child.x && anchor.y === child.y && anchor.angle === child.angle && anchor.segment === child.segment) {
                     found = true;
                     break;
                 }

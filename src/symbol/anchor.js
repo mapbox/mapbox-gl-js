@@ -1,26 +1,15 @@
 // @flow
 
-import Point from '@mapbox/point-geometry';
-
-import { register } from '../util/web_worker_transfer';
-
-class Anchor extends Point {
-    angle: any;
-    segment: number | void;
+export default class Anchor {
+    x: number;
+    y: number;
+    angle: number;
+    segment: ?number;
 
     constructor(x: number, y: number, angle: number, segment?: number) {
-        super(x, y);
+        this.x = x;
+        this.y = y;
         this.angle = angle;
-        if (segment !== undefined) {
-            this.segment = segment;
-        }
-    }
-
-    clone() {
-        return new Anchor(this.x, this.y, this.angle, this.segment);
+        this.segment = segment;
     }
 }
-
-register('Anchor', Anchor);
-
-export default Anchor;

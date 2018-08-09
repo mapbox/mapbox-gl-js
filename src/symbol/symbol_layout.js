@@ -8,7 +8,7 @@ import OpacityState from './opacity_state';
 import { shapeText, shapeIcon, WritingMode } from './shaping';
 import { getGlyphQuads, getIconQuads } from './quads';
 import CollisionFeature from './collision_feature';
-import { warnOnce } from '../util/util';
+import { warnOnce, hypot } from '../util/util';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
@@ -443,7 +443,8 @@ function anchorIsTooClose(bucket: any, text: string, repeatDistance: number, anc
     } else {
         const otherAnchors = compareText[text];
         for (let k = otherAnchors.length - 1; k >= 0; k--) {
-            if (anchor.dist(otherAnchors[k]) < repeatDistance) {
+            const dist = hypot(anchor.x - otherAnchors[k].x, anchor.y - otherAnchors[k].y);
+            if (dist < repeatDistance) {
                 // If it's within repeatDistance of one anchor, stop looking
                 return true;
             }
