@@ -131,7 +131,9 @@ function lineSegmentIntersectsLineSegment(a0: Point, a1: Point, b0: Point, b1: P
 function pointIntersectsBufferedLine(p: Point, line: Line, radius: number) {
     const radiusSquared = radius * radius;
 
-    if (line.length === 1) return p.distSqr(line[0]) < radiusSquared;
+    const dx = p.x - line[0].x;
+    const dy = p.y - line[0].y;
+    if (line.length === 1) return dx * dx + dy * dy < radiusSquared;
 
     for (let i = 1; i < line.length; i++) {
         // Find line segments that have a distance <= radius^2 to p
@@ -142,14 +144,24 @@ function pointIntersectsBufferedLine(p: Point, line: Line, radius: number) {
     return false;
 }
 
-// Code from http://stackoverflow.com/a/1501725/331379.
-function distToSegmentSquared(p: Point, v: Point, w: Point) {
-    const l2 = v.distSqr(w);
-    if (l2 === 0) return p.distSqr(v);
-    const t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
-    if (t < 0) return p.distSqr(v);
-    if (t > 1) return p.distSqr(w);
-    return p.distSqr(w.sub(v)._mult(t)._add(v));
+function distToSegmentSquared(p: Point, p1: Point, p2: Point): number {
+    let x = p1.x;
+    let y = p1.y;
+    let dx = p2.x - x;
+    let dy = p2.y - y;
+    if (dx !== 0 || dy !== 0) {
+        const t = ((p.x - x) * dx + (p.y - y) * dy) / (dx * dx + dy * dy);
+        if (t > 1) {
+            x = p2.x;
+            y = p2.y;
+        } else if (t > 0) {
+            x += dx * t;
+            y += dy * t;
+        }
+    }
+    dx = p.x - x;
+    dy = p.y - y;
+    return dx * dx + dy * dy;
 }
 
 // point in polygon ray casting algorithm

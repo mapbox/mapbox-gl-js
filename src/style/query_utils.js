@@ -26,22 +26,26 @@ export function translate(queryGeometry: Array<Array<Point>>,
                    translateAnchor: 'viewport' | 'map',
                    bearing: number,
                    pixelsToTileUnits: number) {
-    if (!translate[0] && !translate[1]) {
+    let [dx, dy] = translate;
+    if (!dx && !dy) {
         return queryGeometry;
     }
 
-    const pt = Point.convert(translate);
-
     if (translateAnchor === "viewport") {
-        pt._rotate(-bearing);
+        const sin = Math.sin(-bearing);
+        const cos = Math.cos(-bearing);
+        const tmp = cos * dx - sin * dy;
+        dy = sin * dx + cos * dy;
+        dx = tmp;
     }
 
     const translated = [];
     for (let i = 0; i < queryGeometry.length; i++) {
-        const ring = queryGeometry[i];
         const translatedRing = [];
-        for (let k = 0; k < ring.length; k++) {
-            translatedRing.push(ring[k].sub(pt._mult(pixelsToTileUnits)));
+        for (const p of queryGeometry[i]) {
+            translatedRing.push(new Point(
+                p.x - dx * pixelsToTileUnits,
+                p.y - dy * pixelsToTileUnits));
         }
         translated.push(translatedRing);
     }
