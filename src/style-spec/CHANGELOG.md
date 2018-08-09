@@ -1,3 +1,11 @@
+## 13.1.1-beta
+
+## 🐛 Bug fixes
+* Fix mapboxgl-style-spec (v13.0.1): import broken "Can't resolve 'fs' in browser ([#6984](https://github.com/mapbox/mapbox-gl-js/issues/6984), fixed by [#6997](https://api.github.com/repos/mapbox/mapbox-gl-js/pulls/6997))
+
+## ✨ Features and improvements
+* Produce nicer style formatting ([#7029](https://github.com/mapbox/mapbox-gl-js/pull/7029))
+
 ## 13.1.0
 
 ## ✨ Features and improvements
