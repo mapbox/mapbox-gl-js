@@ -337,10 +337,19 @@ function projectTruncatedLineSegment(previousTilePoint: Point, currentTilePoint:
     // If it did, that would mean our label extended all the way out from within the viewport to a (very distant)
     // point near the plane of the camera. We wouldn't be able to render the label anyway once it crossed the
     // plane of the camera.
-    const projectedUnitVertex = project(previousTilePoint.add(previousTilePoint.sub(currentTilePoint)._unit()), projectionMatrix).point;
-    const projectedUnitSegment = previousProjectedPoint.sub(projectedUnitVertex);
+    const dx = previousTilePoint.x - currentTilePoint.x;
+    const dy = previousTilePoint.y - currentTilePoint.y;
+    const d = hypot(dx, dy);
+    const unitVertex = new Point(previousTilePoint.x + dx / d, previousTilePoint.y + dy / d);
+    const projectedUnitVertex = project(unitVertex, projectionMatrix).point;
 
-    return previousProjectedPoint.add(projectedUnitSegment._mult(minimumLength / projectedUnitSegment.mag()));
+    const dx1 = previousProjectedPoint.x - projectedUnitVertex.x;
+    const dy1 = previousProjectedPoint.y - projectedUnitVertex.y;
+    const d1 = hypot(dx1, dy1);
+    return new Point(
+        previousProjectedPoint.x + dx1 * minimumLength / d1,
+        previousProjectedPoint.y + dy1 * minimumLength / d1
+    );
 }
 
 function placeGlyphAlongLine(offsetX: number,
