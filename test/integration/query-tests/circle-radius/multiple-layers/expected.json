@@ -1,0 +1,16 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ]
+    },
+    "type": "Feature",
+    "properties": {},
+    "id": 1,
+    "source": "mapbox",
+    "state": {}
+  }
+]

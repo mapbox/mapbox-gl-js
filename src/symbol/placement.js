@@ -5,8 +5,7 @@ import CollisionIndex from './collision_index';
 import EXTENT from '../data/extent';
 import * as symbolSize from './symbol_size';
 import * as projection from './projection';
-import properties from '../style/style_layer/symbol_style_layer_properties';
-const symbolLayoutProperties = properties.layout;
+import symbolLayerProperties from '../style/style_layer/symbol_style_layer_properties';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
@@ -176,26 +175,32 @@ export class Placement {
         );
 
         this.placeLayerBucket(symbolBucket, posMatrix, textLabelPlaneMatrix, iconLabelPlaneMatrix, scale, textPixelRatio,
-                showCollisionBoxes, seenCrossTileIDs, collisionBoxArray);
+                showCollisionBoxes, tile.holdingForFade(), seenCrossTileIDs, collisionBoxArray);
     }
 
     placeLayerBucket(bucket: SymbolBucket, posMatrix: mat4, textLabelPlaneMatrix: mat4, iconLabelPlaneMatrix: mat4,
-            scale: number, textPixelRatio: number, showCollisionBoxes: boolean, seenCrossTileIDs: { [string | number]: boolean },
+            scale: number, textPixelRatio: number, showCollisionBoxes: boolean, holdingForFade: boolean, seenCrossTileIDs: { [string | number]: boolean },
             collisionBoxArray: ?CollisionBoxArray) {
         const layout = bucket.layers[0].layout;
 
-        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayoutProperties.properties['text-size']);
+        const partiallyEvaluatedTextSize = symbolSize.evaluateSizeForZoom(bucket.textSizeData, this.transform.zoom, symbolLayerProperties.layout.properties['text-size']);
 
-        const iconWithoutText = !bucket.hasTextData() || layout.get('text-optional');
-        const textWithoutIcon = !bucket.hasIconData() || layout.get('icon-optional');
+        const textOptional = layout.get('text-optional');
+        const iconOptional = layout.get('icon-optional');
 
         const collisionGroup = this.collisionGroups.get(bucket.sourceID);
 
         for (const symbolInstance of bucket.symbolInstances) {
             if (!seenCrossTileIDs[symbolInstance.crossTileID]) {
+                if (holdingForFade) {
+                    // Mark all symbols from this tile as "not placed", but don't add to seenCrossTileIDs, because we don't
+                    // know yet if we have a duplicate in a parent tile that _should_ be placed.
+                    this.placements[symbolInstance.crossTileID] = new JointPlacement(false, false, false);
+                    continue;
+                }
 
-                let placeText = symbolInstance.feature.text !== undefined;
-                let placeIcon = symbolInstance.feature.icon !== undefined;
+                let placeText = false;
+                let placeIcon = false;
                 let offscreen = true;
 
                 let placedGlyphBoxes = null;
@@ -255,6 +260,9 @@ export class Placement {
                     placeIcon = placedIconBoxes.box.length > 0;
                     offscreen = offscreen && placedIconBoxes.offscreen;
                 }
+
+                const iconWithoutText = textOptional || (symbolInstance.numGlyphVertices === 0 && symbolInstance.numVerticalGlyphVertices === 0);
+                const textWithoutIcon = iconOptional || symbolInstance.numIconVertices === 0;
 
                 // Combine the scales for icons and text.
                 if (!iconWithoutText && !textWithoutIcon) {

@@ -9,8 +9,10 @@
 .*/node_modules/documentation/.*
 .*/node_modules/module-deps/.*
 .*/node_modules/bcryptjs/.*
+.*/node_modules/@mapbox/geojson-types/fixtures/.*
 .*/test/unit/style-spec/fixture/invalidjson.input.json
 .*/test/integration/render-tests/.*
+.*/test/build/downstream-flow-fixture/.*
 
 [version]
-0.69.0
+0.77.0

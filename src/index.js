@@ -3,7 +3,6 @@
 import assert from 'assert';
 import supported from '@mapbox/mapbox-gl-supported';
 
-import browser from './util/browser';
 import { version } from '../package.json';
 import Map from './ui/map';
 import NavigationControl from './ui/control/navigation_control';
@@ -20,11 +19,11 @@ import Point from '@mapbox/point-geometry';
 import {Evented} from './util/evented';
 import config from './util/config';
 import {setRTLTextPlugin} from './source/rtl_text_plugin';
+import WorkerPool from './util/worker_pool';
 
 const exported = {
     version,
     supported,
-    workerCount: Math.max(Math.floor(browser.hardwareConcurrency / 2), 1),
     setRTLTextPlugin: setRTLTextPlugin,
     Map,
     NavigationControl,
@@ -55,6 +54,14 @@ const exported = {
 
     set accessToken(token: string) {
         config.ACCESS_TOKEN = token;
+    },
+
+    get workerCount() {
+        return WorkerPool.workerCount;
+    },
+
+    set workerCount(count: number) {
+        WorkerPool.workerCount = count;
     },
 
     workerUrl: ''
@@ -89,7 +96,7 @@ const exported = {
  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
  * @param {Function} callback Called with an error argument if there is an error.
  * @example
- * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.1.2/mapbox-gl-rtl-text.js');
+ * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
  */
 

@@ -4,8 +4,9 @@ import { plugin as rtlTextPlugin } from '../source/rtl_text_plugin';
 
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
+import {Formatted} from '../style-spec/expression/definitions/formatted';
 
-export default function(text: string, layer: SymbolStyleLayer, feature: Feature) {
+function transformText(text: string, layer: SymbolStyleLayer, feature: Feature) {
     const transform = layer.layout.get('text-transform').evaluate(feature, {});
     if (transform === 'uppercase') {
         text = text.toLocaleUpperCase();
@@ -18,4 +19,16 @@ export default function(text: string, layer: SymbolStyleLayer, feature: Feature)
     }
 
     return text;
+}
+
+
+export default function(text: string | Formatted, layer: SymbolStyleLayer, feature: Feature) {
+    if (text instanceof Formatted) {
+        text.sections.forEach(section => {
+            section.text = transformText(section.text, layer, feature);
+        });
+        return text;
+    } else {
+        return transformText(text, layer, feature);
+    }
 }

@@ -185,6 +185,11 @@ createStructArrayType('line_index', createLayout([
     { type: 'Uint16', name: 'vertices', components: 2 }
 ]));
 
+// line strip index array
+createStructArrayType('line_strip_index', createLayout([
+    { type: 'Uint16', name: 'vertices', components: 1 }
+]));
+
 // paint vertex arrays
 
 // used by SourceBinder for float properties

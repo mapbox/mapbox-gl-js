@@ -1,10 +1,8 @@
-'use strict';
-
-const path = require('path');
-const harness = require('./harness');
-const diff = require('diff');
-const fs = require('fs');
-const compactStringify = require('json-stringify-pretty-compact');
+import path from 'path';
+import diff from 'diff';
+import fs from 'fs';
+import harness from './harness';
+import compactStringify from 'json-stringify-pretty-compact';
 
 // we have to handle this edge case here because we have test fixtures for this
 // edge case, and we don't want UPDATE=1 to mess with them
@@ -75,6 +73,7 @@ function deepEqual(a, b) {
 
     return true;
 }
+
 /**
  * Run the expression suite.
  *
@@ -86,7 +85,7 @@ function deepEqual(a, b) {
  * @param {} runExpressionTest - a function that runs a single expression test fixture
  * @returns {undefined} terminates the process when testing is complete
  */
-exports.run = function (implementation, options, runExpressionTest) {
+export function run(implementation, options, runExpressionTest) {
     const directory = path.join(__dirname, '../expression-tests');
     options.fixtureFilename = 'test.json';
     harness(directory, implementation, options, (fixture, params, done) => {
@@ -100,6 +99,8 @@ exports.run = function (implementation, options, runExpressionTest) {
                     outputs: stripPrecision(result.outputs),
                     serialized: result.serialized
                 };
+
+                delete fixture.metadata;
 
                 fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
                 return;
@@ -169,12 +170,12 @@ exports.run = function (implementation, options, runExpressionTest) {
             };
 
             if (compileOk && !evalOk) {
-                const differences = diffOutputs(result.outputs);
+                const differences = `Original\n${diffOutputs(result.outputs)}\n`;
                 diffOutput.text += differences;
                 diffOutput.html += differences;
             }
             if (recompileOk && !roundTripOk) {
-                const differences = diffOutputs(result.roundTripOutputs);
+                const differences = `\nRoundtripped through serialize()\n${diffOutputs(result.roundTripOutputs)}\n`;
                 diffOutput.text += differences;
                 diffOutput.html += differences;
             }
@@ -190,4 +191,4 @@ exports.run = function (implementation, options, runExpressionTest) {
             done(e);
         }
     });
-};
+}

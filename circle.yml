@@ -20,6 +20,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - check-size:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
       - test-flow:
           requires:
             - prepare
@@ -132,11 +138,19 @@ jobs:
       - run: yarn run build-dev
       - run: yarn run build-css
       - run: yarn run build-style-spec
+      - run: yarn run build-flow-types
       - run: yarn run test-build
       - persist_to_workspace:
           root: .
           paths:
             - dist
+
+  check-size:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node build/check-bundle-size.js "dist/mapbox-gl.js" "GL JS - Minified"
 
   test-flow:
     <<: *defaults

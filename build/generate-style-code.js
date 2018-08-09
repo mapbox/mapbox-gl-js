@@ -24,6 +24,8 @@ global.flowType = function (property) {
             return Object.keys(property.values).map(JSON.stringify).join(' | ');
         case 'color':
             return `Color`;
+        case 'formatted':
+            return `string | Formatted`;
         case 'array':
             if (property.length) {
                 return `[${new Array(property.length).fill(flowType({type: property.value})).join(', ')}]`;
@@ -61,6 +63,8 @@ global.runtimeType = function (property) {
             return 'StringType';
         case 'color':
             return `ColorType`;
+        case 'formatted':
+            return `FormattedType`;
         case 'array':
             if (property.length) {
                 return `array(${runtimeType({type: property.value})}, ${property.length})`;
@@ -131,4 +135,3 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
 for (const layer of layers) {
     fs.writeFileSync(`src/style/style_layer/${layer.type.replace('-', '_')}_style_layer_properties.js`, propertiesJs(layer))
 }
-

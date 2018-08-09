@@ -1,11 +1,12 @@
 {
-    "plugins": [
-        "html"
-    ],
-    "parserOptions": {
+  "plugins": [
+      "html"
+  ],
+  "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "sourceType": "script"
   },
   "rules": {
     "flowtype/require-valid-file-annotation": [0],

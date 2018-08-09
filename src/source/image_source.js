@@ -11,7 +11,7 @@ import browser from '../util/browser';
 import EXTENT from '../data/extent';
 import { RasterBoundsArray } from '../data/array_types';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
-import VertexArrayObject from '../render/vertex_array_object';
+import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
 
 import type {Source} from './source';
@@ -22,6 +22,10 @@ import type Tile from './tile';
 import type Coordinate from '../geo/coordinate';
 import type {Callback} from '../types/callback';
 import type VertexBuffer from '../gl/vertex_buffer';
+import type {
+    ImageSourceSpecification,
+    VideoSourceSpecification
+} from '../style-spec/types';
 
 /**
  * A data source containing an image.
@@ -71,7 +75,7 @@ class ImageSource extends Evented implements Source {
     tileID: CanonicalTileID;
     _boundsArray: RasterBoundsArray;
     boundsBuffer: VertexBuffer;
-    boundsVAO: VertexArrayObject;
+    boundsSegments: SegmentVector;
 
     /**
      * @private
@@ -193,8 +197,8 @@ class ImageSource extends Evented implements Source {
             this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
         }
 
-        if (!this.boundsVAO) {
-            this.boundsVAO = new VertexArrayObject();
+        if (!this.boundsSegments) {
+            this.boundsSegments = SegmentVector.simpleSegment(0, 0, 4, 2);
         }
 
         if (!this.texture) {

@@ -11,6 +11,7 @@ import { Transitionable, Transitioning, PossiblyEvaluated } from '../properties'
 import type Texture from '../../render/texture';
 import type Framebuffer from '../../gl/framebuffer';
 import type {PaintProps} from './heatmap_style_layer_properties';
+import type {LayerSpecification} from '../../style-spec/types';
 
 class HeatmapStyleLayer extends StyleLayer {
 

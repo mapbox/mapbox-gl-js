@@ -1,0 +1,42 @@
+{
+  "expression": [
+    "to-string",
+    [
+      "format",
+      "a",
+      {},
+      "b",
+      {
+        "font-scale": 2
+      },
+      "c",
+      {
+        "text-font": [
+          "literal",
+          [
+            "a",
+            "b"
+          ]
+        ]
+      }
+    ]
+  ],
+  "inputs": [
+    [
+      {},
+      {}
+    ]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      "abc"
+    ],
+    "serialized": "abc"
+  }
+}

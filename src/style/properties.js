@@ -11,6 +11,10 @@ import EvaluationParameters from './evaluation_parameters';
 
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {CrossFaded} from './cross_faded';
+import type {
+    TransitionSpecification,
+    PropertyValueSpecification
+} from '../style-spec/types';
 
 import type {
     Feature,
