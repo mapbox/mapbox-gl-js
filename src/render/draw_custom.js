@@ -4,7 +4,7 @@ export default drawCustom;
 
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
-import {drawToOffscreenFramebuffer, drawOffscreenTexture} from './offscreen';
+import {prepareOffscreenFramebuffer, drawOffscreenTexture} from './offscreen';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -13,33 +13,46 @@ import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer) {
 
     const context = painter.context;
+    const implementation = layer.implementation;
 
-    if (painter.renderPass === 'translucent') {
-        if (layer.implementation.render) {
-            context.setStencilMode(StencilMode.disabled);
-            context.setDepthMode(DepthMode.disabled);
-            context.unbindVAO();
+    if (painter.renderPass === 'offscreen') {
 
-            layer.implementation.render(context.gl, painter.transform.customLayerMatrix());
+        const prerender = implementation.prerender;
+        if (prerender) {
+            painter.setCustomLayerDefaults();
+
+            prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
 
             context.setDirty();
             painter.setBaseState();
         }
 
-        if (layer.implementation.render3D) {
-            drawOffscreenTexture(painter, layer, 1);
+        if (implementation.renderingMode === '3d') {
+            painter.setCustomLayerDefaults();
+
+            prepareOffscreenFramebuffer(painter, layer);
+            implementation.render(context.gl, painter.transform.customLayerMatrix());
+
+            context.setDirty();
+            painter.setBaseState();
         }
 
-    } else if (painter.renderPass === 'offscreen' && layer.implementation.render3D) {
+    } else if (painter.renderPass === 'translucent') {
 
-        drawToOffscreenFramebuffer(painter, layer);
-        const context = painter.context;
+        if (implementation.renderingMode === '3d') {
+            drawOffscreenTexture(painter, layer, 1);
 
-        context.unbindVAO();
+        } else {
+            painter.setCustomLayerDefaults();
 
-        layer.implementation.render3D(context.gl, painter.transform.customLayerMatrix());
+            context.setStencilMode(StencilMode.disabled);
+            context.setDepthMode(DepthMode.disabled);
 
-        context.setDirty();
-        painter.setBaseState();
+            implementation.render(context.gl, painter.transform.customLayerMatrix());
+
+            context.setDirty();
+            painter.setBaseState();
+            context.bindFramebuffer.set(null);
+        }
     }
 }

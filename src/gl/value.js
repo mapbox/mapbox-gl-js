@@ -18,23 +18,29 @@ import type {
 export interface Value<T> {
     context: Context;
     current: T;
+    default: T;
     dirty: boolean;
     get(): T;
+    setDefault(): void;
     set(value: T): void;
 }
 
 export class ClearColor implements Value<Color> {
     context: Context;
     current: Color;
+    default: Color;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = Color.transparent;
+        this.default = Color.transparent;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): Color { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: Color): void {
         const c = this.current;
@@ -49,15 +55,19 @@ export class ClearColor implements Value<Color> {
 export class ClearDepth implements Value<number> {
     context: Context;
     current: number;
+    default: number;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = 1;
+        this.default = 1;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): number { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: number): void {
         if (this.current !== v || this.dirty === true) {
@@ -71,15 +81,19 @@ export class ClearDepth implements Value<number> {
 export class ClearStencil implements Value<number> {
     context: Context;
     current: number;
+    default: number;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = 0;
+        this.default = 0;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): number { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: number): void {
         if (this.current !== v || this.dirty === true) {
@@ -93,15 +107,19 @@ export class ClearStencil implements Value<number> {
 export class ColorMask implements Value<ColorMaskType> {
     context: Context;
     current: ColorMaskType;
+    default: ColorMaskType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = [true, true, true, true];
+        this.default = [true, true, true, true];
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ColorMaskType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ColorMaskType): void {
         const c = this.current;
@@ -116,15 +134,19 @@ export class ColorMask implements Value<ColorMaskType> {
 export class DepthMask implements Value<DepthMaskType> {
     context: Context;
     current: DepthMaskType;
+    default: DepthMaskType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = true;
+        this.default = true;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): DepthMaskType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: DepthMaskType): void {
         if (this.current !== v || this.dirty === true) {
@@ -138,15 +160,19 @@ export class DepthMask implements Value<DepthMaskType> {
 export class StencilMask implements Value<number> {
     context: Context;
     current: number;
+    default: number;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = 0xFF;
+        this.default = 0xFF;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): number { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: number): void {
         if (this.current !== v || this.dirty === true) {
@@ -160,19 +186,23 @@ export class StencilMask implements Value<number> {
 export class StencilFunc implements Value<StencilFuncType> {
     context: Context;
     current: StencilFuncType;
+    default: StencilFuncType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = {
+        this.default = {
             func: context.gl.ALWAYS,
             ref: 0,
             mask: 0xFF
         };
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): StencilFuncType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: StencilFuncType): void {
         const c = this.current;
@@ -187,16 +217,20 @@ export class StencilFunc implements Value<StencilFuncType> {
 export class StencilOp implements Value<StencilOpType> {
     context: Context;
     current: StencilOpType;
+    default: StencilOpType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
         const gl = this.context.gl;
-        this.current = [gl.KEEP, gl.KEEP, gl.KEEP];
+        this.default = [gl.KEEP, gl.KEEP, gl.KEEP];
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): StencilOpType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: StencilOpType): void {
         const c = this.current;
@@ -211,15 +245,19 @@ export class StencilOp implements Value<StencilOpType> {
 export class StencilTest implements Value<boolean> {
     context: Context;
     current: boolean;
+    default: boolean;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = false;
+        this.default = false;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): boolean { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: boolean): void {
         if (this.current !== v || this.dirty === true) {
@@ -238,15 +276,19 @@ export class StencilTest implements Value<boolean> {
 export class DepthRange implements Value<DepthRangeType> {
     context: Context;
     current: DepthRangeType;
+    default: DepthRangeType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = [0, 1];
+        this.default = [0, 1];
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): DepthRangeType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: DepthRangeType): void {
         const c = this.current;
@@ -261,15 +303,19 @@ export class DepthRange implements Value<DepthRangeType> {
 export class DepthTest implements Value<boolean> {
     context: Context;
     current: boolean;
+    default: boolean;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = false;
+        this.default = false;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): boolean { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: boolean): void {
         if (this.current !== v || this.dirty === true) {
@@ -288,15 +334,19 @@ export class DepthTest implements Value<boolean> {
 export class DepthFunc implements Value<DepthFuncType> {
     context: Context;
     current: DepthFuncType;
+    default: DepthFuncType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = context.gl.LESS;
+        this.default = context.gl.LESS;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): DepthFuncType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: DepthFuncType): void {
         if (this.current !== v || this.dirty === true) {
@@ -310,15 +360,19 @@ export class DepthFunc implements Value<DepthFuncType> {
 export class CullFace implements Value<boolean> {
     context: Context;
     current: boolean;
+    default: boolean;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = false;
+        this.default = false;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): boolean { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: boolean): void {
         if (this.current !== v || this.dirty === true) {
@@ -337,15 +391,19 @@ export class CullFace implements Value<boolean> {
 export class Blend implements Value<boolean> {
     context: Context;
     current: boolean;
+    default: boolean;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = false;
+        this.default = false;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): boolean { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: boolean): void {
         if (this.current !== v || this.dirty === true) {
@@ -364,16 +422,20 @@ export class Blend implements Value<boolean> {
 export class BlendFunc implements Value<BlendFuncType> {
     context: Context;
     current: BlendFuncType;
+    default: BlendFuncType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
         const gl = this.context.gl;
-        this.current = [gl.ONE, gl.ZERO];
+        this.default = [gl.ONE, gl.ZERO];
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): BlendFuncType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: BlendFuncType): void {
         const c = this.current;
@@ -388,15 +450,19 @@ export class BlendFunc implements Value<BlendFuncType> {
 export class BlendColor implements Value<Color> {
     context: Context;
     current: Color;
+    default: Color;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = Color.transparent;
+        this.default = Color.transparent;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): Color { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: Color): void {
         const c = this.current;
@@ -411,15 +477,19 @@ export class BlendColor implements Value<Color> {
 export class Program implements Value<?WebGLProgram> {
     context: Context;
     current: ?WebGLProgram;
+    default: ?WebGLProgram;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ?WebGLProgram { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLProgram): void {
         if (this.current !== v || this.dirty === true) {
@@ -433,15 +503,19 @@ export class Program implements Value<?WebGLProgram> {
 export class ActiveTextureUnit implements Value<TextureUnitType> {
     context: Context;
     current: TextureUnitType;
+    default: TextureUnitType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = context.gl.TEXTURE0;
+        this.default = context.gl.TEXTURE0;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): TextureUnitType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: TextureUnitType): void {
         if (this.current !== v || this.dirty === true) {
@@ -455,16 +529,20 @@ export class ActiveTextureUnit implements Value<TextureUnitType> {
 export class Viewport implements Value<ViewportType> {
     context: Context;
     current: ViewportType;
+    default: ViewportType;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
         const gl = this.context.gl;
-        this.current = [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
+        this.default = [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight];
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ViewportType { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ViewportType): void {
         const c = this.current;
@@ -479,15 +557,19 @@ export class Viewport implements Value<ViewportType> {
 export class BindFramebuffer implements Value<?WebGLFramebuffer> {
     context: Context;
     current: ?WebGLFramebuffer;
+    default: ?WebGLFramebuffer;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ?WebGLFramebuffer { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLFramebuffer): void {
         if (this.current !== v || this.dirty === true) {
@@ -502,15 +584,19 @@ export class BindFramebuffer implements Value<?WebGLFramebuffer> {
 export class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
     context: Context;
     current: ?WebGLRenderbuffer;
+    default: ?WebGLRenderbuffer;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ?WebGLRenderbuffer { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLRenderbuffer): void {
         if (this.current !== v || this.dirty === true) {
@@ -525,15 +611,19 @@ export class BindRenderbuffer implements Value<?WebGLRenderbuffer> {
 export class BindTexture implements Value<?WebGLTexture> {
     context: Context;
     current: ?WebGLTexture;
+    default: ?WebGLTexture;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ?WebGLTexture { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLTexture): void {
         if (this.current !== v || this.dirty === true) {
@@ -548,15 +638,19 @@ export class BindTexture implements Value<?WebGLTexture> {
 export class BindVertexBuffer implements Value<?WebGLBuffer> {
     context: Context;
     current: ?WebGLBuffer;
+    default: ?WebGLBuffer;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ?WebGLBuffer { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLBuffer): void {
         if (this.current !== v || this.dirty === true) {
@@ -571,15 +665,19 @@ export class BindVertexBuffer implements Value<?WebGLBuffer> {
 export class BindElementBuffer implements Value<?WebGLBuffer> {
     context: Context;
     current: ?WebGLBuffer;
+    default: ?WebGLBuffer;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): ?WebGLBuffer { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLBuffer): void {
         // Always rebind
@@ -593,15 +691,19 @@ export class BindElementBuffer implements Value<?WebGLBuffer> {
 export class BindVertexArrayOES implements Value<any> {
     context: Context;
     current: any;
+    default: any;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): any { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: any): void {
         if (this.current !== v && this.context.extVertexArrayObject || this.dirty === true) {
@@ -615,15 +717,19 @@ export class BindVertexArrayOES implements Value<any> {
 export class PixelStoreUnpack implements Value<number> {
     context: Context;
     current: number;
+    default: number;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = 4;
+        this.default = 4;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): number { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: number): void {
         if (this.current !== v || this.dirty === true) {
@@ -638,20 +744,51 @@ export class PixelStoreUnpack implements Value<number> {
 export class PixelStoreUnpackPremultiplyAlpha implements Value<boolean> {
     context: Context;
     current: boolean;
+    default: boolean;
     dirty: boolean;
 
     constructor(context: Context) {
         this.context = context;
-        this.current = false;
+        this.default = false;
+        this.current = this.default;
         this.dirty = false;
     }
 
     get(): boolean { return this.current; }
 
+    setDefault(): void { this.set(this.default); }
+
     set(v: boolean): void {
         if (this.current !== v || this.dirty === true) {
             const gl = this.context.gl;
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v: any));
+            this.current = v;
+            this.dirty = false;
+        }
+    }
+}
+
+export class PixelStoreUnpackFlipY implements Value<boolean> {
+    context: Context;
+    current: boolean;
+    default: boolean;
+    dirty: boolean;
+
+    constructor(context: Context) {
+        this.context = context;
+        this.default = false;
+        this.current = this.default;
+        this.dirty = false;
+    }
+
+    get(): boolean { return this.current; }
+
+    setDefault(): void { this.set(this.default); }
+
+    set(v: boolean): void {
+        if (this.current !== v || this.dirty === true) {
+            const gl = this.context.gl;
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, (v: any));
             this.current = v;
             this.dirty = false;
         }
@@ -666,11 +803,13 @@ export class FramebufferValue<T> {
     context: Context;
     parent: WebGLFramebuffer;
     current: ?T;
+    default: ?T;
     dirty: boolean;
 
     constructor(context: Context, parent: WebGLFramebuffer) {
         this.context = context;
-        this.current = null;
+        this.default = null;
+        this.current = this.default;
         this.dirty = false;
         this.parent = parent;
     }
@@ -685,6 +824,8 @@ export class ColorAttachment extends FramebufferValue<?WebGLTexture> implements 
         super(context, parent);
         this.dirty = false;
     }
+
+    setDefault(): void { this.set(this.default); }
 
     set(v: ?WebGLTexture): void {
         if (this.dirty || this.current !== v) {
@@ -704,6 +845,9 @@ export class ColorAttachment extends FramebufferValue<?WebGLTexture> implements 
 }
 
 export class DepthAttachment extends FramebufferValue<?WebGLRenderbuffer> implements Value<?WebGLRenderbuffer> {
+
+    setDefault(): void { this.set(this.default); }
+
     set(v: ?WebGLRenderbuffer): void {
         if (this.current !== v || this.dirty === true) {
             const gl = this.context.gl;

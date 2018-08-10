@@ -7,7 +7,7 @@ import DepthMode from './depth_mode';
 import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
 import { deepEqual } from '../util/util';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, CullFace, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha } from './value';
+import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, CullFace, Blend, BlendFunc, BlendColor, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY } from './value';
 
 
 import type {TriangleIndexArray, LineIndexArray} from '../data/index_array_type';
@@ -56,6 +56,7 @@ class Context {
     bindVertexArrayOES: BindVertexArrayOES;
     pixelStoreUnpack: PixelStoreUnpack;
     pixelStoreUnpackPremultiplyAlpha: PixelStoreUnpackPremultiplyAlpha;
+    pixelStoreUnpackFlipY: PixelStoreUnpackFlipY;
 
     extTextureFilterAnisotropic: any;
     extTextureFilterAnisotropicMax: any;
@@ -92,6 +93,7 @@ class Context {
         this.bindVertexArrayOES = this.extVertexArrayObject && new BindVertexArrayOES(this);
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
+        this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
 
         this.extTextureFilterAnisotropic = (
             gl.getExtension('EXT_texture_filter_anisotropic') ||
@@ -110,12 +112,6 @@ class Context {
     }
 
     setDirty() {
-        if (this.extVertexArrayObject) {
-            this.bindVertexArrayOES.dirty = true;
-        } else {
-            this.bindVertexBuffer.dirty = true;
-            this.bindElementBuffer.dirty = true;
-        }
         this.clearColor.dirty = true;
         this.clearDepth.dirty = true;
         this.clearStencil.dirty = true;
@@ -135,12 +131,17 @@ class Context {
         this.program.dirty = true;
         this.activeTexture.dirty = true;
         this.viewport.dirty = true;
-        this.bindVertexBuffer.dirty = true;
         this.bindFramebuffer.dirty = true;
         this.bindRenderbuffer.dirty = true;
         this.bindTexture.dirty = true;
+        this.bindVertexBuffer.dirty = true;
+        this.bindElementBuffer.dirty = true;
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.dirty = true;
+        }
         this.pixelStoreUnpack.dirty = true;
         this.pixelStoreUnpackPremultiplyAlpha.dirty = true;
+        this.pixelStoreUnpackFlipY.dirty = true;
     }
 
     createIndexBuffer(array: TriangleIndexArray | LineIndexArray, dynamicDraw?: boolean) {

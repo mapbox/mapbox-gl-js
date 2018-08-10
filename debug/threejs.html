@@ -36,6 +36,8 @@ class ThreeJSCube {
     constructor() {
         this.id = 'mycustomlayer';
         this.type = 'custom';
+        this.renderingMode = '3d';
+
         this.translate = [0.279471, 0.364935, 0.0000025];
         this.scale = 0.000003;
 
@@ -63,7 +65,7 @@ class ThreeJSCube {
         this.renderer.autoClear = false;
     }
 
-    render3D(gl, matrix) {
+    render(gl, matrix) {
         const m = new THREE.Matrix4().fromArray(matrix);
         const l = new THREE.Matrix4().makeTranslation(this.translate[0], this.translate[1], this.translate[2])
             .scale(new THREE.Vector3(this.scale, -this.scale, this.scale));

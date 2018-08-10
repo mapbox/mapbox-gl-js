@@ -7,7 +7,7 @@ import {
     setPatternUniforms,
     prepare as preparePattern
 } from './pattern';
-import {drawToOffscreenFramebuffer, drawOffscreenTexture} from './offscreen';
+import {prepareOffscreenFramebuffer, drawOffscreenTexture} from './offscreen';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -23,7 +23,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 
     if (painter.renderPass === 'offscreen') {
-        drawToOffscreenFramebuffer(painter, layer);
+        prepareOffscreenFramebuffer(painter, layer);
 
         let first = true;
         for (const coord of coords) {

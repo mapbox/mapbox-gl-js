@@ -33,6 +33,7 @@ class Custom {
     constructor() {
         this.id = 'mycustomlayer';
         this.type = 'custom';
+        this.renderingMode = '3d';
     }
 
     onAdd(map, gl) {
@@ -96,7 +97,7 @@ class Custom {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
     }
 
-    render3D(gl, matrix) {
+    render(gl, matrix) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);

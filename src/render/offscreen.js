@@ -10,7 +10,7 @@ import type Painter from './painter';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 
-export function drawToOffscreenFramebuffer(painter: Painter, layer: CustomStyleLayer | FillExtrusionStyleLayer) {
+export function prepareOffscreenFramebuffer(painter: Painter, layer: CustomStyleLayer | FillExtrusionStyleLayer) {
     const context = painter.context;
     const gl = context.gl;
 

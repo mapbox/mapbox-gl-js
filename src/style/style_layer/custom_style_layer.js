@@ -16,20 +16,22 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * These layers can be added between any regular layers using {@link Map#addLayer}.
  *
  * Custom layers must have a unique `id` and must have the `type` of `"custom"`.
- * They should implement at least one of `render` and `render3D` and should implement
- * `onAdd` and `onRemove`. They can trigger rendering using {@link Map#triggerRepaint}
+ * They must implement `render` and may implement `prerender`, `onAdd` and `onRemove`.
+ * They can trigger rendering using {@link Map#triggerRepaint}
  * and they should appropriately handle {@link Map.event:webglcontextlost} and
  * {@link Map.event:webglcontextrestored}.
  *
  * @interface CustomLayerInterface
  * @property {string} id A unique layer id.
  * @property {string} type The layer's type. Must be `"custom"`.
+ * @property {string} renderingMode Either `"2d"` or `"3d"`. Defaults to `"2d"`.
  * @example
  * // Custom layer implemented as ES6 class
  * class NullIslandLayer {
  *     constructor() {
  *         this.id = 'null-island';
  *         this.type = 'custom';
+ *         this.renderingMode = '2d';
  *     }
  * 
  *     onAdd(map, gl) {
@@ -71,7 +73,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  */
 
 /**
- * Called when the layer has been added to the Map with {@link Map#addLayer}. This
+ * Optional method called when the layer has been added to the Map with {@link Map#addLayer}. This
  * gives the layer a chance to initialize gl resources and register event listeners.
  *
  * @function
@@ -83,7 +85,7 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  */
 
 /**
- * Called when the layer has been removed from the Map with {@link Map#removeLayer}. This
+ * Optional method called when the layer has been removed from the Map with {@link Map#removeLayer}. This
  * gives the layer a chance to clean up gl resources and event listeners.
  *
  * @function
@@ -94,29 +96,31 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  */
 
 /**
- * Called during a render frame allowing the layer to draw 2D features into the GL context.
- *
- * The layer cannot make any assumptions about the current GL state.
- * The layer must not change any state related to the depth buffer.
+ * Optional method called during a render frame to allow a layer to prepare resources or render into a texture.
+ * 
+ * The layer cannot make any assumptions about the current GL state and must bind a framebuffer before rendering.
  *
  * @function
  * @memberof CustomLayerInterface
  * @instance
- * @name render3D
+ * @name prerender
  * @param {WebGLRenderingContext} gl The map's gl context.
  * @param {Array<number>} matrix The map's camera matrix. It projects spherical mercator
  * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
- * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. The z coordinate
- * is conformal. A box with identical x, y, and z lengths in mercator units would be rendered as
- * a cube.
+ * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
+ * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
+ * lengths in mercator units would be rendered as a cube.
  */
 
 /**
- * Called during a render frame allowing the layer to draw 3D features into the GL context.
+ * Called during a render frame allowing the layer to draw into the GL context.
  *
- * The layer cannot make any assumptions about the current GL state.
- * The layer must not change any state related to the depth buffer.
- * Correct feature order is only supported for opaque features.
+ * The layer can assume blending and depth state is set to allow the layer to properly
+ * blend and clip other layers. The layer cannot make any other assumptions about the
+ * current GL state.
+ *
+ * If the layer needs to render to a texture, it should implement the `prerender` method
+ * to do this and only use the `render` method for drawing directly into the main framebuffer.
  *
  * @function
  * @memberof CustomLayerInterface
@@ -125,15 +129,45 @@ type CustomRenderMethod = (gl: WebGLRenderingContext, matrix: Array<number>) => 
  * @param {WebGLRenderingContext} gl The map's gl context.
  * @param {Array<number>} matrix The map's camera matrix. It projects spherical mercator
  * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
- * top left corner of the mercator world and `[1, 1]` represents the bottom right corner.
+ * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
+ * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
+ * lengths in mercator units would be rendered as a cube.
  */
 export type CustomLayerInterface = {
     id: string,
     type: "custom",
+    renderingMode: "2d" | "3d",
     render: CustomRenderMethod,
-    render3D: CustomRenderMethod,
+    prerender: ?CustomRenderMethod,
     onAdd: (map: Map, gl: WebGLRenderingContext) => void,
     onRemove(map: Map): void
+}
+
+export function validateCustomStyleLayer(layerObject: CustomLayerInterface) {
+    const errors = [];
+    const id = layerObject.id;
+
+    if (id === undefined) {
+        errors.push({
+            message: `layers.${id}: missing required property "id"`
+        });
+    }
+
+    if (layerObject.render === undefined) {
+        errors.push({
+            message: `layers.${id}: missing required method "render"`
+        });
+    }
+
+    if (layerObject.renderingMode &&
+        layerObject.renderingMode !== '2d' &&
+        layerObject.renderingMode !== '3d') {
+        errors.push({
+            message: `layers.${id}: property "renderingMode" must be either "2d" or "3d"`
+        });
+    }
+
+    return errors;
 }
 
 class CustomStyleLayer extends StyleLayer {
@@ -148,7 +182,7 @@ class CustomStyleLayer extends StyleLayer {
 
 
     hasOffscreenPass() {
-        return this.implementation.render3D !== undefined;
+        return this.implementation.prerender !== undefined || this.implementation.renderingMode === '3d';
     }
 
     recalculate() {}

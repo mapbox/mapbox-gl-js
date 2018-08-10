@@ -35,6 +35,7 @@ import {
 import PauseablePlacement from './pauseable_placement';
 import ZoomHistory from './zoom_history';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
+import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -559,6 +560,9 @@ class Style extends Evented {
 
         let layer;
         if (layerObject.type === 'custom') {
+
+            if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
+
             layer = createStyleLayer(layerObject);
 
         } else {
@@ -855,7 +859,9 @@ class Style extends Evented {
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
             sources: mapObject(this.sourceCaches, (source) => source.serialize()),
-            layers: this._order.map((id) => this._layers[id].serialize())
+            layers: this._order.map((id) => this._layers[id])
+                .filter((layer) => layer.type !== 'custom')
+                .map((layer) => layer.serialize())
         }, (value) => { return value !== undefined; });
     }
 

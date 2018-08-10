@@ -55,8 +55,8 @@ class StyleLayer extends Evented {
                               pixelsToTileUnits: number,
                               posMatrix: Float32Array) => boolean;
 
-    +onAdd: (map: Map) => void;
-    +onRemove: (map: Map) => void;
+    +onAdd: ?(map: Map) => void;
+    +onRemove: ?(map: Map) => void;
 
     constructor(layer: LayerSpecification | CustomLayerInterface, properties: {layout?: Properties<*>, paint?: Properties<*>}) {
         super();
@@ -66,35 +66,35 @@ class StyleLayer extends Evented {
         this.visibility = 'visible';
         this._featureFilter = () => true;
 
-        if (layer.type !== 'custom') {
-            layer = ((layer: any): LayerSpecification);
+        if (layer.type === 'custom') return;
 
-            this.metadata = layer.metadata;
-            this.minzoom = layer.minzoom;
-            this.maxzoom = layer.maxzoom;
+        layer = ((layer: any): LayerSpecification);
 
-            if (layer.type !== 'background') {
-                this.source = layer.source;
-                this.sourceLayer = layer['source-layer'];
-                this.filter = layer.filter;
+        this.metadata = layer.metadata;
+        this.minzoom = layer.minzoom;
+        this.maxzoom = layer.maxzoom;
+
+        if (layer.type !== 'background') {
+            this.source = layer.source;
+            this.sourceLayer = layer['source-layer'];
+            this.filter = layer.filter;
+        }
+
+        if (properties.layout) {
+            this._unevaluatedLayout = new Layout(properties.layout);
+        }
+
+        if (properties.paint) {
+            this._transitionablePaint = new Transitionable(properties.paint);
+
+            for (const property in layer.paint) {
+                this.setPaintProperty(property, layer.paint[property], {validate: false});
+            }
+            for (const property in layer.layout) {
+                this.setLayoutProperty(property, layer.layout[property], {validate: false});
             }
 
-            if (properties.layout) {
-                this._unevaluatedLayout = new Layout(properties.layout);
-            }
-
-            if (properties.paint) {
-                this._transitionablePaint = new Transitionable(properties.paint);
-
-                for (const property in layer.paint) {
-                    this.setPaintProperty(property, layer.paint[property], {validate: false});
-                }
-                for (const property in layer.layout) {
-                    this.setLayoutProperty(property, layer.layout[property], {validate: false});
-                }
-
-                this._transitioningPaint = this._transitionablePaint.untransitioned();
-            }
+            this._transitioningPaint = this._transitionablePaint.untransitioned();
         }
     }
 

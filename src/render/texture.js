@@ -58,6 +58,8 @@ class Texture {
         this.useMipmap = Boolean(options && options.useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
+        context.pixelStoreUnpackFlipY.set(false);
+
         if (resize) {
             this.size = [width, height];
 
