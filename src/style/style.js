@@ -803,7 +803,7 @@ class Style extends Evented {
             return;
         }
         if (feature.id == null || feature.id < 0) {
-            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and positive.`)));
+            this.fire(new ErrorEvent(new Error(`The feature id parameter must be provided and non-negative.`)));
             return;
         }
 
