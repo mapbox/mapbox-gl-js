@@ -1262,8 +1262,8 @@ test('Map', (t) => {
                 }
             });
             map.on('load', () => {
-                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
-                const fState = map.getFeatureState({ source: 'geojson', id: '12345'});
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
+                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
                 t.equal(fState.hover, true);
                 t.end();
             });
@@ -1311,7 +1311,7 @@ test('Map', (t) => {
                 }
             });
             t.throws(() => {
-                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'geojson', id: 12345}, {'hover': true});
             }, Error, /load/i);
 
             t.end();
@@ -1331,7 +1331,7 @@ test('Map', (t) => {
                     t.match(error.message, /source/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'vector', id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if sourceLayer not provided for a vector source', (t) => {
@@ -1352,7 +1352,7 @@ test('Map', (t) => {
                     t.match(error.message, /sourceLayer/);
                     t.end();
                 });
-                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: '12345'}, {'hover': true});
+                map.setFeatureState({ source: 'vector', sourceLayer: 0, id: 12345}, {'hover': true});
             });
         });
         t.test('fires an error if id not provided', (t) => {
@@ -1374,6 +1374,27 @@ test('Map', (t) => {
                     t.end();
                 });
                 map.setFeatureState({ source: 'vector', sourceLayer: "1"}, {'hover': true});
+            });
+        });
+        t.test('fires an error if id is less than zero', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
             });
         });
         t.end();
