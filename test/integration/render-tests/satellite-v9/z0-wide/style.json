@@ -1,0 +1,23 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 512,
+      "center": [0, 0],
+      "zoom": 0,
+      "operations": [
+        ["setStyle", "local://mapbox-gl-styles/styles/satellite-v9.json"],
+        ["wait"],
+        ["setPaintProperty",
+         "satellite",
+         "raster-fade-duration",
+         0
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}
