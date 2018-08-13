@@ -2405,6 +2405,24 @@
           }
         }
       },
+      "interpolate-hcl": {
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). Works like `interpolate`, but the output type must be `color`, and the interpolation is performed in the Hue-Chroma-Luminance color space.",
+        "group": "Ramps, scales, curves",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.49.0"
+          }
+        }
+      },
+      "interpolate-lab": {
+        "doc": "Produces continuous, smooth results by interpolating between pairs of input and output values (\"stops\"). Works like `interpolate`, but the output type must be `color`, and the interpolation is performed in the CIELAB color space.",
+        "group": "Ramps, scales, curves",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.49.0"
+          }
+        }
+      },
       "ln2": {
         "doc": "Returns mathematical constant ln(2).",
         "group": "Math",
