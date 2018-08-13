@@ -103,6 +103,24 @@ const types = {
             'stop_input_n: number, stop_output_n: OutputType, ...'
         ]
     }],
+    'interpolate-hcl': [{
+        type: 'Color',
+        parameters: [
+            'interpolation: ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
+            'input: number',
+            'stop_input_1: number, stop_output_1: Color',
+            'stop_input_n: number, stop_output_n: Color, ...'
+        ]
+    }],
+    'interpolate-lab': [{
+        type: 'Color',
+        parameters: [
+            'interpolation: ["linear"] | ["exponential", base] | ["cubic-bezier", x1, y1, x2, y2 ]',
+            'input: number',
+            'stop_input_1: number, stop_output_1: Color',
+            'stop_input_n: number, stop_output_n: Color, ...'
+        ]
+    }],
     length: [{
         type: 'number',
         parameters: ['string | array | value']

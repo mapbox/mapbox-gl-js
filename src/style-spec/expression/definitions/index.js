@@ -49,6 +49,8 @@ const expressions: ExpressionRegistry = {
     'collator': CollatorExpression,
     'format': FormatExpression,
     'interpolate': Interpolate,
+    'interpolate-hcl': Interpolate,
+    'interpolate-lab': Interpolate,
     'length': Length,
     'let': Let,
     'literal': Literal,
