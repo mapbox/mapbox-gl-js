@@ -1,8 +1,10 @@
+'use strict';
+
 class NullIsland {
     constructor() {
         this.id = 'null-island';
         this.type = 'custom';
-		this.renderingMode = '2d';
+        this.renderingMode = '2d';
     }
 
     onAdd(map, gl) {
@@ -45,7 +47,7 @@ class Tent3D {
         this.renderingMode = '3d';
     }
 
-	onAdd(map, gl) {
+    onAdd(map, gl) {
 
         const vertexSource = `
 
@@ -117,9 +119,5 @@ class Tent3D {
     }
 }
 
-const customLayerIntegrations = {};
-
-customLayerIntegrations["tent-3d"] = Tent3D;
-customLayerIntegrations["null-island"] = NullIsland;
-
-export default customLayerIntegrations;
+module.exports["tent-3d"] = Tent3D;
+module.exports["null-island"] = NullIsland;
