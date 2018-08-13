@@ -81,10 +81,10 @@ class Tent3D {
         this.program.aPos = gl.getAttribLocation(this.program, "aPos");
         this.program.uMatrix = gl.getUniformLocation(this.program, "uMatrix");
 
-        const x = 0.5 - 0.00015;
-        const y = 0.5 - 0.0001;
-        const z = 0.0001;
-        const d = 0.0001;
+        const x = 0.5 - 0.015;
+        const y = 0.5 - 0.01;
+        const z = 0.01;
+        const d = 0.01;
 
         const vertexArray = new Float32Array([
             x, y, 0,
