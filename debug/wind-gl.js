@@ -190,33 +190,29 @@ WindGL.prototype.setView = function setView (bbox, matrix) {
     }
 };
 
-WindGL.prototype.draw = function draw () {
+WindGL.prototype.prerender = function prerender () {
     var gl = this.gl;
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
+    gl.disable(gl.BLEND);
 
     bindTexture(gl, this.windTexture, 0);
     bindTexture(gl, this.particleStateTexture0, 1);
 
-    this.drawScreen();
     this.updateParticles();
-};
 
-WindGL.prototype.drawScreen = function drawScreen () {
-    var gl = this.gl;
     // draw the screen into a temporary framebuffer to retain it as the background on the next frame
     bindFramebuffer(gl, this.framebuffer, this.screenTexture);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     this.drawTexture(this.backgroundTexture, this.fadeOpacity);
     this.drawParticles();
+};
 
-    bindFramebuffer(gl, null);
-    // enable blending to support drawing on top of an existing background (e.g. a map)
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+WindGL.prototype.render = function render () {
+    var gl = this.gl;
+
     this.drawTexture(this.screenTexture, 1.0);
-    gl.disable(gl.BLEND);
 
     // save the current screen as the background for the next frame
     var temp = this.backgroundTexture;
@@ -241,6 +237,7 @@ WindGL.prototype.drawParticles = function drawParticles () {
     var gl = this.gl;
     var program = this.drawProgram;
     gl.useProgram(program.program);
+    gl.enable(gl.BLEND);
 
     bindAttribute(gl, this.particleIndexBuffer, program.a_index, 1);
     bindTexture(gl, this.colorRampTexture, 2);

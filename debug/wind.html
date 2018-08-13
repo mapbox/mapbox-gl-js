@@ -74,7 +74,7 @@ class WindLayer {
         xhr.send();
     }
 
-    render(gl, matrix) {
+    prerender(gl, matrix) {
         if (!this.wind.windData) return;
 
         const bounds = map.getBounds();
@@ -85,10 +85,13 @@ class WindLayer {
             Math.min(1.0, (bounds.getNorth() + 90) / 180)
         ];
         this.wind.setView(bbox, matrix);
+        this.wind.prerender();
+    }
 
-        gl.disable(gl.BLEND);
-        this.wind.draw();
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    render(gl, matrix) {
+        if (!this.wind.windData) return;
+
+        this.wind.render();
         map.triggerRepaint();
     }
 }
