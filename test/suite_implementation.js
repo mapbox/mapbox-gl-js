@@ -30,8 +30,8 @@ module.exports = function(style, options, _callback) { // eslint-disable-line im
     window.devicePixelRatio = options.pixelRatio;
 
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: options.width});
-    Object.defineProperty(container, 'offsetHeight', {value: options.height});
+    Object.defineProperty(container, 'clientWidth', {value: options.width});
+    Object.defineProperty(container, 'clientHeight', {value: options.height});
 
     // We are self-hosting test files.
     config.REQUIRE_ACCESS_TOKEN = false;

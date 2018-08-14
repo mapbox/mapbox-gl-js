@@ -1414,8 +1414,8 @@ class Map extends Camera {
         let height = 0;
 
         if (this._container) {
-            width = this._container.offsetWidth || 400;
-            height = this._container.offsetHeight || 300;
+            width = this._container.clientWidth || 400;
+            height = this._container.clientHeight || 300;
         }
 
         return [width, height];

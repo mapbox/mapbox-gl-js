@@ -9,8 +9,8 @@ import simulate from 'mapbox-gl-js-test/simulate_interaction';
 
 function createMap(t) {
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: 512});
-    Object.defineProperty(container, 'offsetHeight', {value: 512});
+    Object.defineProperty(container, 'clientWidth', {value: 512});
+    Object.defineProperty(container, 'clientHeight', {value: 512});
     return globalCreateMap(t, {container: container});
 }
 
@@ -193,7 +193,7 @@ test('Popup anchors around default Marker', (t) => {
     // open the popup
     marker.togglePopup();
 
-    const mapHeight = map.getContainer().offsetHeight;
+    const mapHeight = map.getContainer().clientHeight;
     const markerTop = -marker.getPopup().options.offset.bottom[1]; // vertical distance from tip of marker to the top in pixels
     const markerRight = -marker.getPopup().options.offset.right[0]; // horizontal distance from the tip of the marker to the right in pixels
 
@@ -206,7 +206,7 @@ test('Popup anchors around default Marker', (t) => {
 
     // move marker to the top forcing the popup to below
     marker.setLngLat(map.unproject([mapHeight / 2, markerTop]));
-    t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-top'), 'popup anchors bolow marker');
+    t.ok(marker.getPopup()._container.classList.contains('mapboxgl-popup-anchor-top'), 'popup anchors below marker');
 
     // move marker to the right forcing the popup to the left
     marker.setLngLat(map.unproject([mapHeight - markerRight, mapHeight / 2]));

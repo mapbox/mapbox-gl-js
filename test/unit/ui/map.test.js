@@ -465,12 +465,12 @@ test('Map', (t) => {
     });
 
     t.test('#resize', (t) => {
-        t.test('sets width and height from container offsets', (t) => {
+        t.test('sets width and height from container clients', (t) => {
             const map = createMap(t),
                 container = map.getContainer();
 
-            Object.defineProperty(container, 'offsetWidth', {value: 250});
-            Object.defineProperty(container, 'offsetHeight', {value: 250});
+            Object.defineProperty(container, 'clientWidth', {value: 250});
+            Object.defineProperty(container, 'clientHeight', {value: 250});
             map.resize();
 
             t.equal(map.transform.width, 250);
@@ -1562,8 +1562,8 @@ test('Map', (t) => {
 
         map.flyTo({ center: [200, 0], duration: 100 });
 
-        Object.defineProperty(container, 'offsetWidth', {value: 250});
-        Object.defineProperty(container, 'offsetHeight', {value: 250});
+        Object.defineProperty(container, 'clientWidth', {value: 250});
+        Object.defineProperty(container, 'clientHeight', {value: 250});
         map.resize();
 
         t.ok(map.isMoving(), 'map is still moving after resize due to camera animation');
