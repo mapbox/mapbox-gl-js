@@ -1339,7 +1339,7 @@ class Map extends Camera {
      *
      * @param {Object} [feature] Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {number} [feature.id] Unique id of the feature.
+     * @param {string | number} [feature.id] Unique id of the feature.
      * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
@@ -1351,7 +1351,7 @@ class Map extends Camera {
      * `map.getSource('some id').setData(..)` resets the cache of feature states and requires the 
      * caller re-apply the state as needed with the updated `id` values.
      */
-    setFeatureState(feature: { source: string; sourceLayer?: string; id: number; }, state: Object) {
+    setFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }, state: Object) {
         this.style.setFeatureState(feature, state);
         return this._update();
     }
@@ -1364,11 +1364,11 @@ class Map extends Camera {
      * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
-     * @param {number} [feature.id] Unique id of the feature.
+     * @param {string | number} [feature.id] Unique id of the feature.
      *
      * @returns {Object} The state of the feature.
      */
-    getFeatureState(feature: { source: string; sourceLayer?: string; id: number; }): any {
+    getFeatureState(feature: { source: string; sourceLayer?: string; id: string | number; }): any {
         return this.style.getFeatureState(feature);
     }
 
