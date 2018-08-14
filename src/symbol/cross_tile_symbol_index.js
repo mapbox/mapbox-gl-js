@@ -26,7 +26,7 @@ const roundingFactor = 512 / EXTENT / 2;
 
 class TileLayerIndex {
     tileID: OverscaledTileID;
-    indexedSymbolInstances: {[string]: Array<{
+    indexedSymbolInstances: {[number]: Array<{
         crossTileID: number,
         coord: {
             x: number,
@@ -211,7 +211,7 @@ class CrossTileSymbolLayerIndex {
 
     removeBucketCrossTileIDs(zoom: string | number, removedBucket: TileLayerIndex) {
         for (const key in removedBucket.indexedSymbolInstances) {
-            for (const symbolInstance of removedBucket.indexedSymbolInstances[key]) {
+            for (const symbolInstance of removedBucket.indexedSymbolInstances[(key: any)]) {
                 delete this.usedCrossTileIDs[zoom][symbolInstance.crossTileID];
             }
         }

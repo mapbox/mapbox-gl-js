@@ -233,7 +233,6 @@ export class Placement {
                             layout.get('text-allow-overlap'),
                             scale,
                             textPixelRatio,
-                            symbolInstance.key,
                             placedSymbol,
                             bucket.lineVertexArray,
                             bucket.glyphOffsetArray,
