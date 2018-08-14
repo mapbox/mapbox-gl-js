@@ -1337,10 +1337,10 @@ class Map extends Camera {
     /**
      * Sets the state of a feature. The `state` object is merged in with the existing state of the feature.
      *
-     * @param {Object} [feature] Feature identifier. Feature objects returned from
+     * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} [feature.id] Unique id of the feature.
-     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string | number} feature.id Unique id of the feature.
+     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
      * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
@@ -1359,12 +1359,12 @@ class Map extends Camera {
     /**
      * Gets the state of a feature.
      *
-     * @param {Object} [feature] Feature identifier. Feature objects returned from
+     * @param {Object} feature Feature identifier. Feature objects returned from
      * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string} [feature.source] The Id of the vector source or GeoJSON source for the feature.
+     * @param {string | number} feature.id Unique id of the feature.
+     * @param {string} feature.source The Id of the vector source or GeoJSON source for the feature.
      * @param {string} [feature.sourceLayer] (optional)  *For vector tile sources, the sourceLayer is
      *  required.*
-     * @param {string | number} [feature.id] Unique id of the feature.
      *
      * @returns {Object} The state of the feature.
      */
