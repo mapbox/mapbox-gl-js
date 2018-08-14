@@ -70,10 +70,7 @@ export type SymbolInstance = {
     textBoxEndIndex: number,
     iconBoxStartIndex: number,
     iconBoxEndIndex: number,
-    textOffset: [number, number],
-    iconOffset: [number, number],
     anchor: Anchor,
-    line: Array<Point>,
     featureIndex: number,
     textCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
@@ -82,7 +79,6 @@ export type SymbolInstance = {
     numVerticalGlyphVertices: number;
     numIconVertices: number;
     // Populated/modified on foreground during placement
-    isDuplicate: boolean;
     crossTileID: number;
     collisionArrays?: CollisionArrays;
     placedText?: boolean;
