@@ -9,7 +9,6 @@ import Let from './let';
 import Var from './var';
 import Literal from './literal';
 import Assertion from './assertion';
-import ArrayAssertion from './array';
 import Coercion from './coercion';
 import At from './at';
 import Match from './match';
@@ -41,7 +40,7 @@ const expressions: ExpressionRegistry = {
     '<': LessThan,
     '>=': GreaterThanOrEqual,
     '<=': LessThanOrEqual,
-    'array': ArrayAssertion,
+    'array': Assertion,
     'at': At,
     'boolean': Assertion,
     'case': Case,
