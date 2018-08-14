@@ -19,6 +19,7 @@ import EXTENT from '../data/extent';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import EvaluationParameters from '../style/evaluation_parameters';
 import {Formatted} from '../style-spec/expression/definitions/formatted';
+import {SIZE_PACK_FACTOR} from './symbol_size';
 
 import type {Shaping, PositionedIcon} from './shaping';
 import type {CollisionBoxArray} from '../data/array_types';
@@ -289,12 +290,12 @@ function addTextVertices(bucket: SymbolBucket,
 
     if (sizeData.functionType === 'source') {
         textSizeData = [
-            10 * layer.layout.get('text-size').evaluate(feature, {})
+            SIZE_PACK_FACTOR * layer.layout.get('text-size').evaluate(feature, {})
         ];
     } else if (sizeData.functionType === 'composite') {
         textSizeData = [
-            10 * sizes.compositeTextSizes[0].evaluate(feature, {}),
-            10 * sizes.compositeTextSizes[1].evaluate(feature, {})
+            SIZE_PACK_FACTOR * sizes.compositeTextSizes[0].evaluate(feature, {}),
+            SIZE_PACK_FACTOR * sizes.compositeTextSizes[1].evaluate(feature, {})
         ];
     }
 
@@ -382,12 +383,12 @@ function addSymbol(bucket: SymbolBucket,
 
         if (sizeData.functionType === 'source') {
             iconSizeData = [
-                10 * layer.layout.get('icon-size').evaluate(feature, {})
+                SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {})
             ];
         } else if (sizeData.functionType === 'composite') {
             iconSizeData = [
-                10 * sizes.compositeIconSizes[0].evaluate(feature, {}),
-                10 * sizes.compositeIconSizes[1].evaluate(feature, {})
+                SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}),
+                SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {})
             ];
         }
 
