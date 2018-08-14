@@ -13,7 +13,7 @@ export function getMaximumPaintValue(property: string, layer: StyleLayer, bucket
         return value.value;
     } else {
         const binders = bucket.programConfigurations.get(layer.id).binders;
-        return binders[property].statistics.max;
+        return binders[property].maxValue;
     }
 }
 

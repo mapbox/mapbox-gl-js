@@ -70,7 +70,7 @@ function packColor(color: Color): [number, number] {
  */
 
 interface Binder<T> {
-    statistics: { max: number };
+    maxValue: number;
     uniformName: string;
 
     populatePaintArray(length: number, feature: Feature): void;
@@ -89,7 +89,7 @@ interface Binder<T> {
 class ConstantBinder<T> implements Binder<T> {
     value: T;
     name: string;
-    statistics: { max: number };
+    maxValue: number;
     type: string;
     uniformName: string;
 
@@ -98,7 +98,7 @@ class ConstantBinder<T> implements Binder<T> {
         this.name = name;
         this.uniformName = `u_${this.name}`;
         this.type = type;
-        this.statistics = { max: -Infinity };
+        this.maxValue = -Infinity;
     }
 
     defines() {
@@ -127,7 +127,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
     name: string;
     uniformName: string;
     type: string;
-    statistics: { max: number };
+    maxValue: number;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -138,7 +138,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
         this.name = name;
         this.type = type;
         this.uniformName = `a_${name}`;
-        this.statistics = { max: -Infinity };
+        this.maxValue = -Infinity;
         const PaintVertexArray = type === 'color' ? StructArrayLayout2f8 : StructArrayLayout1f4;
         this.paintVertexAttributes = [{
             name: `a_${name}`,
@@ -171,7 +171,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
                 paintArray.emplaceBack(value);
             }
 
-            this.statistics.max = Math.max(this.statistics.max, value);
+            this.maxValue = Math.max(this.maxValue, value);
         }
     }
 
@@ -189,7 +189,7 @@ class SourceExpressionBinder<T> implements Binder<T> {
                 paintArray.emplace(i, value);
             }
 
-            this.statistics.max = Math.max(this.statistics.max, value);
+            this.maxValue = Math.max(this.maxValue, value);
         }
     }
 
@@ -225,7 +225,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
     type: string;
     useIntegerZoom: boolean;
     zoom: number;
-    statistics: { max: number };
+    maxValue: number;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -238,7 +238,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
         this.type = type;
         this.useIntegerZoom = useIntegerZoom;
         this.zoom = zoom;
-        this.statistics = { max: -Infinity };
+        this.maxValue = -Infinity;
         const PaintVertexArray = type === 'color' ? StructArrayLayout4f16 : StructArrayLayout2f8;
         this.paintVertexAttributes = [{
             name: `a_${name}`,
@@ -272,8 +272,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
             for (let i = start; i < newLength; i++) {
                 paintArray.emplaceBack(min, max);
             }
-
-            this.statistics.max = Math.max(this.statistics.max, min, max);
+            this.maxValue = Math.max(this.maxValue, min, max);
         }
     }
 
@@ -293,8 +292,7 @@ class CompositeExpressionBinder<T> implements Binder<T> {
             for (let i = start; i < end; i++) {
                 paintArray.emplace(i, min, max);
             }
-
-            this.statistics.max = Math.max(this.statistics.max, min, max);
+            this.maxValue = Math.max(this.maxValue, min, max);
         }
     }
 
