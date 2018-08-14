@@ -408,3 +408,4 @@ export type LayerSpecification =
     | RasterLayerSpecification
     | HillshadeLayerSpecification
     | BackgroundLayerSpecification;
+
