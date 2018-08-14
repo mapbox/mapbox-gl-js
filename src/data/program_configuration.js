@@ -3,7 +3,7 @@
 import { packUint8ToFloat } from '../shaders/encode_attribute';
 import Color from '../style-spec/util/color';
 import { supportsPropertyExpression } from '../style-spec/util/properties';
-import { register } from '../util/web_worker_transfer';
+import { register, serialize, deserialize } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -119,6 +119,16 @@ class ConstantBinder<T> implements Binder<T> {
         return (this.type === 'color') ?
             new UniformColor(context, location) :
             new Uniform1f(context, location);
+    }
+
+    static serialize(binder: ConstantBinder<T>) {
+        const {value, name, type} = binder;
+        return {value: serialize(value), name, type};
+    }
+
+    static deserialize(serialized: {value: T, name: string, type: string}) {
+        const {value, name, type} = serialized;
+        return new ConstantBinder(deserialize(value), name, type);
     }
 }
 
@@ -384,7 +394,7 @@ export default class ProgramConfiguration {
             const useIntegerZoom = value.property.useIntegerZoom;
 
             if (value.value.kind === 'constant') {
-                self.binders[property] = new ConstantBinder(value.value, name, type);
+                self.binders[property] = new ConstantBinder(value.value.value, name, type);
                 keys.push(`/u_${name}`);
             } else if (value.value.kind === 'source') {
                 self.binders[property] = new SourceExpressionBinder(value.value, name, type);
