@@ -1268,6 +1268,38 @@ test('Map', (t) => {
                 t.end();
             });
         });
+
+        t.test('resets state if source data is updated', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                const fState = map.getFeatureState({ source: 'geojson', id: '12345'});
+                t.equal(fState.hover, true);
+
+                map.on('data', () => {
+                    if (map.isSourceLoaded('geojson')) {
+                        const cleanState = map.getFeatureState({ source: 'geojson', id: '12345'});
+                        t.notOk(cleanState.hover);
+                        t.end();
+                    }
+                });
+
+                map.getSource('geojson')
+                    .setData({
+                        type: "FeatureCollection",
+                        features: []
+                    });
+            });
+        });
+
         t.test('throw before loaded', (t) => {
             const map = createMap(t, {
                 style: {
