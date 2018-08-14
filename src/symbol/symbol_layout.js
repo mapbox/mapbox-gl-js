@@ -31,6 +31,7 @@ import type {GlyphPosition} from '../render/glyph_atlas';
 import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
 
 import Point from '@mapbox/point-geometry';
+import murmur3 from 'murmurhash-js';
 
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
 // `icon-size` at up to three:
@@ -359,7 +360,7 @@ function addSymbol(bucket: SymbolBucket,
     let numIconVertices = 0;
     let numGlyphVertices = 0;
     let numVerticalGlyphVertices = 0;
-    const key = shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '';
+    const key = murmur3(shapedTextOrientations.horizontal ? shapedTextOrientations.horizontal.text : '');
     const placedTextSymbolIndices = [];
     if (shapedTextOrientations.horizontal) {
         // As a collision approximation, we can use either the vertical or the horizontal version of the feature

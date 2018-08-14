@@ -65,7 +65,7 @@ export type SymbolFeature = {|
 |};
 
 export type SymbolInstance = {
-    key: string,
+    key: number,
     textBoxStartIndex: number,
     textBoxEndIndex: number,
     iconBoxStartIndex: number,
