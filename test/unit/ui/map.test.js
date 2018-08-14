@@ -1268,6 +1268,23 @@ test('Map', (t) => {
                 t.end();
             });
         });
+        t.test('parses feature id as an int', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": createStyleSource()
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.setFeatureState({ source: 'geojson', id: '12345'}, {'hover': true});
+                const fState = map.getFeatureState({ source: 'geojson', id: 12345});
+                t.equal(fState.hover, true);
+                t.end();
+            });
+        });
 
         t.test('resets state if source data is updated', (t) => {
             const map = createMap(t, {
@@ -1395,6 +1412,27 @@ test('Map', (t) => {
                     t.end();
                 });
                 map.setFeatureState({ source: 'vector', sourceLayer: "1", id: -1}, {'hover': true});
+            });
+        });
+        t.test('fires an error if id cannot be parsed as an int', (t) => {
+            const map = createMap(t, {
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "vector": {
+                            "type": "vector",
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
+                        }
+                    },
+                    "layers": []
+                }
+            });
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /id/);
+                    t.end();
+                });
+                map.setFeatureState({ source: 'vector', sourceLayer: "1", id: 'abc'}, {'hover': true});
             });
         });
         t.end();
