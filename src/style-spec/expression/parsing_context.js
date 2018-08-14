@@ -107,7 +107,7 @@ class ParsingContext {
                         }
                     } else if (expected.kind === 'array' && actual.kind === 'value') {
                         if (!options.omitTypeAnnotations) {
-                            parsed = new ArrayAssertion(expected, parsed);
+                            parsed = new ArrayAssertion(expected, [parsed]);
                         }
                     } else if (expected.kind === 'color' && (actual.kind === 'value' || actual.kind === 'string')) {
                         if (!options.omitTypeAnnotations) {
