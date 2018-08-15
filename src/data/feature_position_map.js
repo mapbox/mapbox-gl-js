@@ -4,8 +4,7 @@ import { register } from '../util/web_worker_transfer';
 
 type SerializedFeaturePositionMap = {
     ids: Float64Array;
-    indices: Uint32Array;
-    offsets: Uint32Array;
+    positions: Uint32Array;
 };
 
 type FeaturePosition = {
@@ -17,21 +16,18 @@ type FeaturePosition = {
 // A transferable data structure that maps feature ids to their indices and buffer offsets
 export default class FeaturePositionMap {
     ids: Array<number>;
-    indices: Array<number>;
-    offsets: Array<number>;
+    positions: Array<number>;
     _bufferLen: number;
 
     constructor() {
         this.ids = [];
-        this.indices = [];
-        this.offsets = [];
+        this.positions = [];
         this._bufferLen = 0;
     }
 
     add(id: number, index: number, newLength: number) {
         this.ids.push(id);
-        this.indices.push(index);
-        this.offsets.push(this._bufferLen, newLength);
+        this.positions.push(index, this._bufferLen, newLength);
         this._bufferLen = newLength;
     }
 
@@ -49,9 +45,9 @@ export default class FeaturePositionMap {
         }
         const positions = [];
         while (this.ids[i] === id) {
-            const index = this.indices[i];
-            const start = this.offsets[2 * i];
-            const end = this.offsets[2 * i + 1];
+            const index = this.positions[3 * i];
+            const start = this.positions[3 * i + 1];
+            const end = this.positions[3 * i + 2];
             positions.push({index, start, end});
             i++;
         }
@@ -60,14 +56,13 @@ export default class FeaturePositionMap {
 
     static serialize(map: FeaturePositionMap, transferables: Array<ArrayBuffer>): SerializedFeaturePositionMap {
         const ids = new Float64Array(map.ids);
-        const indices = new Uint32Array(map.indices);
-        const offsets = new Uint32Array(map.offsets);
+        const positions = new Uint32Array(map.positions);
 
-        sort(ids, indices, offsets, 0, ids.length - 1);
+        sort(ids, positions, 0, ids.length - 1);
 
-        transferables.push(ids.buffer, indices.buffer, offsets.buffer);
+        transferables.push(ids.buffer, positions.buffer);
 
-        return {ids, indices, offsets};
+        return {ids, positions};
     }
 
     static deserialize(obj: SerializedFeaturePositionMap): FeaturePositionMap {
@@ -75,14 +70,13 @@ export default class FeaturePositionMap {
         // after transferring, we only use these arrays statically (no pushes),
         // so TypedArray vs Array distinction that flow points out doesn't matter
         map.ids = (obj.ids: any);
-        map.indices = (obj.indices: any);
-        map.offsets = (obj.offsets: any);
+        map.positions = (obj.positions: any);
         return map;
     }
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)
-function sort(ids, indices, offsets, left, right) {
+function sort(ids, positions, left, right) {
     if (left >= right) return;
 
     const pivot = ids[(left + right) >> 1];
@@ -94,13 +88,13 @@ function sort(ids, indices, offsets, left, right) {
         do j--; while (ids[j] > pivot);
         if (i >= j) break;
         swap(ids, i, j);
-        swap(indices, i, j);
-        swap(offsets, 2 * i, 2 * j);
-        swap(offsets, 2 * i + 1, 2 * j + 1);
+        swap(positions, 3 * i, 3 * j);
+        swap(positions, 3 * i + 1, 3 * j + 1);
+        swap(positions, 3 * i + 2, 3 * j + 2);
     }
 
-    sort(ids, indices, offsets, left, j);
-    sort(ids, indices, offsets, j + 1, right);
+    sort(ids, positions, left, j);
+    sort(ids, positions, j + 1, right);
 }
 
 function swap(arr, i, j) {
