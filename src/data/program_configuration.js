@@ -7,6 +7,7 @@ import { register, serialize, deserialize } from '../util/web_worker_transfer';
 import { PossiblyEvaluatedPropertyValue } from '../style/properties';
 import { StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16 } from './array_types';
 import EvaluationParameters from '../style/evaluation_parameters';
+import FeaturePositionMap from './feature_position_map';
 import {
     Uniform,
     Uniform1f,
@@ -28,14 +29,6 @@ import type {
 } from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 import type {FeatureStates} from '../source/source_state';
-
-type FeaturePaintBufferMap = {
-    [feature_id: string]: Array<{
-        index: number,
-        start: number,
-        end: number
-    }>
-};
 
 function packColor(color: Color): [number, number] {
     return [
@@ -366,17 +359,14 @@ export default class ProgramConfiguration {
     layoutAttributes: Array<StructArrayMember>;
 
     _buffers: Array<VertexBuffer>;
-
-    _idMap: FeaturePaintBufferMap;
-    _bufferOffset: number;
+    _featureMap: FeaturePositionMap;
 
     constructor() {
         this.binders = {};
         this.cacheKey = '';
 
         this._buffers = [];
-        this._idMap = {};
-        this._bufferOffset = 0;
+        this._featureMap = new FeaturePositionMap();
     }
 
     static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
@@ -414,27 +404,17 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             this.binders[property].populatePaintArray(newLength, feature);
         }
-        if (feature.id) {
-            const featureId = String(feature.id);
-            this._idMap[featureId] = this._idMap[featureId] || [];
-            this._idMap[featureId].push({
-                index: index,
-                start: this._bufferOffset,
-                end: newLength
-            });
+        if (feature.id !== undefined) {
+            this._featureMap.add(+feature.id, index, newLength);
         }
-
-        this._bufferOffset = newLength;
     }
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layer: TypedStyleLayer): boolean {
         let dirty: boolean = false;
         for (const id in featureStates) {
-            const posArray = this._idMap[id];
-            if (!posArray) continue;
+            const positions = this._featureMap.getPositions(+id);
 
-            const featureState = featureStates[id];
-            for (const pos of posArray) {
+            for (const pos of positions) {
                 const feature = vtLayer.feature(pos.index);
 
                 for (const property in this.binders) {
@@ -444,7 +424,7 @@ export default class ProgramConfiguration {
                         //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                         const value = layer.paint.get(property);
                         (binder: any).expression = value.value;
-                        binder.updatePaintArray(pos.start, pos.end, feature, featureState);
+                        binder.updatePaintArray(pos.start, pos.end, feature, featureStates[id]);
                         dirty = true;
                     }
                 }
