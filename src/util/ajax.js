@@ -79,7 +79,7 @@ export const getJSON = function(requestParameters: RequestParameters, callback: 
         callback(new Error(xhr.statusText));
     };
     xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response) {
             let data;
             try {
                 data = JSON.parse(xhr.response);
@@ -110,7 +110,7 @@ export const getArrayBuffer = function(requestParameters: RequestParameters, cal
         if (response.byteLength === 0 && xhr.status === 200) {
             return callback(new Error('http status 200 returned without content.'));
         }
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        if (((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) && xhr.response) {
             callback(null, {
                 data: response,
                 cacheControl: xhr.getResponseHeader('Cache-Control'),
