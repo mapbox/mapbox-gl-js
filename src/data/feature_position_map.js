@@ -5,7 +5,7 @@ import { register } from '../util/web_worker_transfer';
 type SerializedFeaturePositionMap = {
     ids: Float64Array;
     indices: Uint32Array;
-    offsets: Uint16Array;
+    offsets: Uint32Array;
 };
 
 type FeaturePosition = {
@@ -61,7 +61,7 @@ export default class FeaturePositionMap {
     static serialize(map: FeaturePositionMap, transferables: Array<ArrayBuffer>): SerializedFeaturePositionMap {
         const ids = new Float64Array(map.ids);
         const indices = new Uint32Array(map.indices);
-        const offsets = new Uint16Array(map.offsets);
+        const offsets = new Uint32Array(map.offsets);
 
         sort(ids, indices, offsets, 0, ids.length - 1);
 
