@@ -1,6 +1,7 @@
 // @flow
 
 import { register } from '../util/web_worker_transfer';
+import assert from 'assert';
 
 type SerializedFeaturePositionMap = {
     ids: Float64Array;
@@ -17,22 +18,24 @@ type FeaturePosition = {
 export default class FeaturePositionMap {
     ids: Array<number>;
     positions: Array<number>;
-    _bufferLen: number;
+    indexed: boolean;
 
     constructor() {
         this.ids = [];
         this.positions = [];
-        this._bufferLen = 0;
+        this.indexed = false;
     }
 
-    add(id: number, index: number, newLength: number) {
+    add(id: number, index: number, start: number, end: number) {
         this.ids.push(id);
-        this.positions.push(index, this._bufferLen, newLength);
-        this._bufferLen = newLength;
+        this.positions.push(index, start, end);
     }
 
     getPositions(id: number): Array<FeaturePosition> {
-        // binary search for the first occurrence of id in this.ids
+        assert(this.indexed);
+
+        // binary search for the first occurrence of id in this.ids;
+        // relies on ids/positions being sorted by id, which happens in serialization
         let i = 0;
         let j = this.ids.length - 1;
         while (i < j) {
@@ -71,6 +74,7 @@ export default class FeaturePositionMap {
         // so TypedArray vs Array distinction that flow points out doesn't matter
         map.ids = (obj.ids: any);
         map.positions = (obj.positions: any);
+        map.indexed = true;
         return map;
     }
 }

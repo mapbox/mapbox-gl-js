@@ -360,6 +360,7 @@ export default class ProgramConfiguration {
 
     _buffers: Array<VertexBuffer>;
     _featureMap: FeaturePositionMap;
+    _bufferOffset: number;
 
     constructor() {
         this.binders = {};
@@ -367,6 +368,7 @@ export default class ProgramConfiguration {
 
         this._buffers = [];
         this._featureMap = new FeaturePositionMap();
+        this._bufferOffset = 0;
     }
 
     static createDynamic<Layer: TypedStyleLayer>(layer: Layer, zoom: number, filterProperties: (string) => boolean) {
@@ -405,8 +407,9 @@ export default class ProgramConfiguration {
             this.binders[property].populatePaintArray(newLength, feature);
         }
         if (feature.id !== undefined) {
-            this._featureMap.add(+feature.id, index, newLength);
+            this._featureMap.add(+feature.id, index, this._bufferOffset, newLength);
         }
+        this._bufferOffset = newLength;
     }
 
     updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layer: TypedStyleLayer): boolean {
