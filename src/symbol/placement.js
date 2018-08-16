@@ -227,7 +227,7 @@ export class Placement {
                 }
                 const textCircles = symbolInstance.collisionArrays.textCircles;
                 if (textCircles) {
-                    const placedSymbol = bucket.text.placedSymbolArray.get(symbolInstance.placedTextSymbolIndices[0]);
+                    const placedSymbol = bucket.text.placedSymbolArray.get(symbolInstance.horizontalPlacedTextSymbolIndex);
                     const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
                     placedGlyphCircles = this.collisionIndex.placeCollisionCircles(textCircles,
                             layout.get('text-allow-overlap'),
@@ -401,11 +401,14 @@ export class Placement {
                 for (let i = 0; i < opacityEntryCount; i++) {
                     bucket.text.opacityVertexArray.emplaceBack(packedOpacity);
                 }
-                for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                    const placedSymbol = bucket.text.placedSymbolArray.get(placedTextSymbolIndex);
-                    // If this label is completely faded, mark it so that we don't have to calculate
-                    // its position at render time
-                    placedSymbol.hidden = (opacityState.text.isHidden(): any);
+                // If this label is completely faded, mark it so that we don't have to calculate
+                // its position at render time
+                bucket.text.placedSymbolArray.get(symbolInstance.horizontalPlacedTextSymbolIndex).hidden =
+                    (opacityState.text.isHidden(): any);
+
+                if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
+                    bucket.text.placedSymbolArray.get(symbolInstance.verticalPlacedTextSymbolIndex).hidden =
+                        (opacityState.text.isHidden(): any);
                 }
             }
 
