@@ -125,7 +125,7 @@ createStructArrayType('raster_bounds', rasterBoundsAttributes);
 
 const circleAttributes = require('../src/data/bucket/circle_attributes').default;
 const fillAttributes = require('../src/data/bucket/fill_attributes').default;
-const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default ;
+const fillExtrusionAttributes = require('../src/data/bucket/fill_extrusion_attributes').default;
 const lineAttributes = require('../src/data/bucket/line_attributes').default;
 
 // layout vertex arrays
@@ -150,6 +150,7 @@ const {
     collisionCircleLayout,
     collisionVertexAttributes,
     placement,
+    symbolInstance,
     glyphOffset,
     lineVertex
 } = require('../src/data/bucket/symbol_attributes');
@@ -162,6 +163,7 @@ createStructArrayType(`collision_box_layout`, collisionBoxLayout);
 createStructArrayType(`collision_circle_layout`, collisionCircleLayout);
 createStructArrayType(`collision_vertex`, collisionVertexAttributes);
 createStructArrayType('placed_symbol', placement, true);
+createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 
@@ -233,4 +235,3 @@ export {
     ${[...arrayTypeEntries].join(',\n    ')}
 };
 `);
-
