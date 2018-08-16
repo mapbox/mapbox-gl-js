@@ -74,7 +74,8 @@ export type SymbolInstance = {
     featureIndex: number,
     textCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
     iconCollisionFeature?: {boxStartIndex: number, boxEndIndex: number},
-    placedTextSymbolIndices: Array<number>;
+    horizontalPlacedTextSymbolIndex: number;
+    verticalPlacedTextSymbolIndex: number;
     numGlyphVertices: number;
     numVerticalGlyphVertices: number;
     numIconVertices: number;
@@ -655,6 +656,16 @@ class SymbolBucket implements Bucket {
         return this.collisionCircle.segments.get().length > 0;
     }
 
+    addIndicesForPlacedTextSymbol(placedTextSymbolIndex: number) {
+        const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
+
+        const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
+        for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
+            this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+            this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
+        }
+    }
+
     sortFeatures(angle: number) {
         if (!this.sortFeaturesByY) return;
 
@@ -695,14 +706,11 @@ class SymbolBucket implements Bucket {
             const symbolInstance = this.symbolInstances[i];
             this.featureSortOrder.push(symbolInstance.featureIndex);
 
-            for (const placedTextSymbolIndex of symbolInstance.placedTextSymbolIndices) {
-                const placedSymbol = this.text.placedSymbolArray.get(placedTextSymbolIndex);
-
-                const endIndex = placedSymbol.vertexStartIndex + placedSymbol.numGlyphs * 4;
-                for (let vertexIndex = placedSymbol.vertexStartIndex; vertexIndex < endIndex; vertexIndex += 4) {
-                    this.text.indexArray.emplaceBack(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-                    this.text.indexArray.emplaceBack(vertexIndex + 1, vertexIndex + 2, vertexIndex + 3);
-                }
+            if (symbolInstance.horizontalPlacedTextSymbolIndex >= 0) {
+                this.addIndicesForPlacedTextSymbol(symbolInstance.horizontalPlacedTextSymbolIndex);
+            }
+            if (symbolInstance.verticalPlacedTextSymbolIndex >= 0) {
+                this.addIndicesForPlacedTextSymbol(symbolInstance.verticalPlacedTextSymbolIndex);
             }
 
             const placedIcon = this.icon.placedSymbolArray.get(i);
