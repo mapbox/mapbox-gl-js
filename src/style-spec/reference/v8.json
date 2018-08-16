@@ -889,7 +889,10 @@
           "macos": "0.1.0"
         },
         "`line-center` value": {
-          "js": "0.47.0"
+          "js": "0.47.0",
+          "android": "6.4.0",
+          "ios": "4.3.0",
+          "macos": "0.10.0"
         },
         "data-driven styling": {}
       },
