@@ -2,7 +2,7 @@
 ### ✨ Features and improvements
 * Add `Map#fitScreenCoordinates`: fits viewport to two points, similar to `Map#fitBounds` but uses screen coordinates and supports non-zero map bearings. ([#6894](https://github.com/mapbox/mapbox-gl-js/pull/6894))
 
-## 0.48.0-beta.1
+## 0.48.0
 
 ## ⚠️ Breaking changes
 * Treat tiles that error with status 404 as empty renderable tiles to prevent rendering duplicate features in some sparse tilesets ([#6803](https://github.com/mapbox/mapbox-gl-js/pull/6803))
