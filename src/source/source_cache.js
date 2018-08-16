@@ -75,6 +75,7 @@ class SourceCache extends Evented {
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
             if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
+                if (this._source.type === "geojson") this.resetState();
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
@@ -217,9 +218,6 @@ class SourceCache extends Evented {
         }
 
         this._cache.reset();
-        //Reset the SourceCache when the source has been reloaded. For GeoJSON sources, 
-        // the `id`  of features is not guaranteed to be identical when updated
-        this._state = new SourceFeatureState();
 
         for (const i in this._tiles) {
             if (this._tiles[i].state !== "errored") this._reloadTile(i, 'reloading');
@@ -835,6 +833,14 @@ class SourceCache extends Evented {
     getFeatureState(sourceLayer?: string, feature: string) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, feature);
+    }
+
+    /**
+     * Reset the SourceFeatureState when the source has been reloaded. For GeoJSON sources,
+     * the `id`  of features is not guaranteed to be identical when updated
+     */
+    resetState() {
+        this._state = new SourceFeatureState();
     }
 }
 
