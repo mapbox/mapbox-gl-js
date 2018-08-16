@@ -66,13 +66,6 @@ export default class Layout extends Benchmark {
                 this.glyphs = {};
                 this.icons = {};
 
-                const preloadGlyphs = (params, callback) => {
-                    style.getGlyphs('', params, (err, glyphs) => {
-                        this.glyphs[JSON.stringify(params)] = glyphs;
-                        callback(err, glyphs);
-                    });
-                };
-
                 const preloadImages = (params, callback) => {
                     style.getImages('', params, (err, icons) => {
                         this.icons[JSON.stringify(params)] = icons;
@@ -80,26 +73,31 @@ export default class Layout extends Benchmark {
                     });
                 };
 
-                return this.bench(preloadGlyphs, preloadImages);
+                const preloadGlyphs = (params, callback) => {
+                    style.getGlyphs('', params, (err, glyphs) => {
+                        this.glyphs[JSON.stringify(params)] = glyphs;
+                        callback(err, glyphs);
+                    });
+                };
+
+                return this.parseTiles(preloadImages, preloadGlyphs);
             });
     }
 
-    bench(getGlyphs: Function = (params, callback) => callback(null, this.glyphs[JSON.stringify(params)]),
-          getImages: Function = (params, callback) => callback(null, this.icons[JSON.stringify(params)])) {
+    parseTiles(loadImages: Function, loadGlyphs: Function) {
+        let promise: Promise<void> = Promise.resolve();
 
         const actor = {
             send(action, params, callback) {
                 setTimeout(() => {
                     if (action === 'getImages') {
-                        getImages(params, callback);
+                        loadImages(params, callback);
                     } else if (action === 'getGlyphs') {
-                        getGlyphs(params, callback);
+                        loadGlyphs(params, callback);
                     } else assert(false);
                 }, 0);
             }
         };
-
-        let promise: Promise<void> = Promise.resolve();
 
         for (const {tileID, buffer} of this.tiles) {
             promise = promise.then(() => {
@@ -126,9 +124,23 @@ export default class Layout extends Benchmark {
                 const parse = promisify(workerTile.parse.bind(workerTile));
 
                 return parse(tile, this.layerIndex, actor);
+            }).then((data) => {
+                this.onTileParse(data);
             });
         }
 
         return promise;
+    }
+
+    onTileParse(data: any) {
+        /* eslint no-unused-vars: 0 */
+        // noop
+    }
+
+    bench() {
+        const loadGlyphs = (params, callback) => callback(null, this.glyphs[JSON.stringify(params)]);
+        const loadImages = (params, callback) => callback(null, this.icons[JSON.stringify(params)]);
+
+        return this.parseTiles(loadImages, loadGlyphs);
     }
 }
