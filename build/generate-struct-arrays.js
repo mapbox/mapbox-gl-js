@@ -28,7 +28,8 @@ const typeAbbreviations = {
     'Uint16': 'ui',
     'Int32': 'l',
     'Uint32': 'ul',
-    'Float32': 'f'
+    'Float32': 'f',
+    'Float64': 'lf'
 };
 
 const arraysWithStructAccessors = [];
@@ -174,6 +175,18 @@ createStructArrayType('feature_index', createLayout([
     // the bucket the feature appears in
     { type: 'Uint16', name: 'bucketIndex' }
 ]), true);
+
+createStructArrayType('paint_buffer_offset', createLayout([
+    // the index of the feature in the original vectortile
+    { type: 'Float64', name: 'featureId' },
+    // the index of the feature in the original vectortile
+    { type: 'Uint32', name: 'featureIndex' },
+    // the starting offset of the feature in the paint buffer
+    { type: 'Uint16', name: 'start' },
+    // the end offset of the feature in the paint buffer
+    { type: 'Uint16', name: 'end' }
+]), true);
+
 
 // triangle index array
 createStructArrayType('triangle_index', createLayout([

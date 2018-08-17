@@ -13,7 +13,8 @@ const viewTypes = {
     'Uint16': Uint16Array,
     'Int32': Int32Array,
     'Uint32': Uint32Array,
-    'Float32': Float32Array
+    'Float32': Float32Array,
+    'Float64': Float64Array
 };
 
 export type ViewType = $Keys<typeof viewTypes>;
