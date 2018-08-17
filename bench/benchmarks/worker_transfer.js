@@ -4,17 +4,16 @@ import Benchmark from '../lib/benchmark';
 import fetchStyle from '../lib/fetch_style';
 import TileParser from '../lib/tile_parser';
 import { OverscaledTileID } from '../../src/source/tile_id';
-import { serialize } from '../../src/util/web_worker_transfer';
+import { serialize, deserialize } from '../../src/util/web_worker_transfer';
 import { values } from '../../src/util/util';
 
 export default class WorkerTransfer extends Benchmark {
     parser: TileParser;
-    payload: Array<any>;
+    payloadTiles: Array<any>;
+    payloadJSON: Array<any>;
     worker: Worker;
 
     setup(): Promise<void> {
-        this.payload = [];
-
         const src = `
         onmessage = (e) => {
             postMessage(e.data);
@@ -24,10 +23,10 @@ export default class WorkerTransfer extends Benchmark {
         this.worker = new Worker(url);
 
         const tileIDs = [
-            new OverscaledTileID(12, 0, 12, 655, 1583),
-            new OverscaledTileID(8, 0, 8, 40, 98),
-            new OverscaledTileID(4, 0, 4, 3, 6),
-            new OverscaledTileID(0, 0, 0, 0, 0)
+            new OverscaledTileID(8, 0, 8, 73, 97),
+            new OverscaledTileID(11, 0, 11, 585, 783),
+            new OverscaledTileID(11, 0, 11, 596, 775),
+            new OverscaledTileID(13, 0, 13, 2412, 3079)
         ];
 
         return fetchStyle(`mapbox://styles/mapbox/streets-v9`)
@@ -41,9 +40,11 @@ export default class WorkerTransfer extends Benchmark {
             .then((tiles) => {
                 return Promise.all(tiles.map(tile => this.parser.parseTile(tile)));
             }).then((tileResults) => {
-                this.payload = tileResults.map(barePayload)
-                    .concat(values(this.parser.icons).map(barePayload))
-                    .concat(values(this.parser.glyphs).map(barePayload));
+                const payload = tileResults
+                    .concat(values(this.parser.icons))
+                    .concat(values(this.parser.glyphs)).map((obj) => serialize(obj, []));
+                this.payloadJSON = payload.map(barePayload);
+                this.payloadTiles = payload.slice(0, tileResults.length);
             });
     }
 
@@ -57,19 +58,24 @@ export default class WorkerTransfer extends Benchmark {
     bench(): Promise<void> {
         let promise: Promise<void> = Promise.resolve();
 
-        for (const obj of this.payload) {
+        // benchmark sending raw JSON payload
+        for (const obj of this.payloadJSON) {
             promise = promise.then(() => {
                 return this.sendPayload(obj);
             });
         }
 
-        return promise;
+        return promise.then(() => {
+            // benchmark deserializing full tile payload because it happens on the main thread
+            for (const obj of this.payloadTiles) {
+                deserialize(obj);
+            }
+        });
     }
 }
 
 function barePayload(obj) {
     // strip all transferables from a worker payload, because we can't transfer them repeatedly in the bench:
     // as soon as it's transfered once, it's no longer available on the main thread
-    const str = JSON.stringify(serialize(obj, []), (key, value) => ArrayBuffer.isView(value) ? {} : value);
-    return JSON.parse(str);
+    return JSON.parse(JSON.stringify(obj, (key, value) => ArrayBuffer.isView(value) ? {} : value));
 }
