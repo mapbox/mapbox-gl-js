@@ -1,15 +1,23 @@
 // @flow
 
-import Layout from './layout';
-import { serialize } from '../../src/util/web_worker_transfer';
+import Benchmark from '../lib/benchmark';
+import fetchStyle from '../lib/fetch_style';
+import createStyle from '../lib/create_style';
+import fetchTiles from '../lib/fetch_tiles';
+import parseTiles from '../lib/parse_tiles';
 
-export default class WorkerTransfer extends Layout {
+import { serialize } from '../../src/util/web_worker_transfer';
+import StyleLayerIndex from '../../src/style/style_layer_index';
+import {OverscaledTileID} from '../../src/source/tile_id';
+import deref from '../../src/style-spec/deref';
+
+export default class WorkerTransfer extends Benchmark {
+    layerIndex: StyleLayerIndex;
     payload: Array<any>;
     worker: Worker;
 
     setup(): Promise<void> {
         this.payload = [];
-        const promise = super.setup();
 
         const src = `
         onmessage = (e) => {
@@ -19,15 +27,45 @@ export default class WorkerTransfer extends Layout {
         const url = window.URL.createObjectURL(new Blob([src], {type: 'text/javascript'}));
         this.worker = new Worker(url);
 
-        return promise.then(() => {
-            for (const key in this.glyphs) this.payload.push(barePayload(this.glyphs[key]));
-            for (const key in this.icons) this.payload.push(barePayload(this.icons[key]));
-            // console.log(this.payload.map(p => JSON.stringify(p).length));
-        });
-    }
+        const tileIDs = [
+            new OverscaledTileID(12, 0, 12, 655, 1583),
+            new OverscaledTileID(8, 0, 8, 40, 98),
+            new OverscaledTileID(4, 0, 4, 3, 6),
+            new OverscaledTileID(0, 0, 0, 0, 0)
+        ];
 
-    onTileParse(data: any) {
-        this.payload.push(barePayload(data));
+        return fetchStyle(`mapbox://styles/mapbox/streets-v9`)
+            .then((styleJSON) => {
+                this.layerIndex = new StyleLayerIndex(deref(styleJSON.layers));
+                return Promise.all([
+                    createStyle(styleJSON),
+                    fetchTiles((styleJSON.sources.composite: any).url, tileIDs)
+                ]);
+            })
+            .then(([style, tiles]) => {
+                const preloadImages = (params, callback) => {
+                    style.getImages('', params, (err, icons) => {
+                        this.payload.push(barePayload(icons));
+                        callback(err, icons);
+                    });
+                };
+
+                const preloadGlyphs = (params, callback) => {
+                    style.getGlyphs('', params, (err, glyphs) => {
+                        this.payload.push(barePayload(glyphs));
+                        callback(err, glyphs);
+                    });
+                };
+
+                return parseTiles('composite',
+                                  tiles,
+                                  this.layerIndex,
+                                  preloadImages,
+                                  preloadGlyphs);
+            }).then((tileResults) => {
+                for (const data of tileResults) this.payload.push(barePayload(data));
+                // console.log(this.payload.map(p => JSON.stringify(p).length));
+            });
     }
 
     sendPayload(obj: any) {
