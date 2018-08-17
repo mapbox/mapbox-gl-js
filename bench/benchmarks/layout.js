@@ -2,18 +2,12 @@
 
 import Benchmark from '../lib/benchmark';
 import fetchStyle from '../lib/fetch_style';
-import createStyle from '../lib/create_style';
-import fetchTiles from '../lib/fetch_tiles';
-import parseTiles from '../lib/parse_tiles';
-import StyleLayerIndex from '../../src/style/style_layer_index';
-import deref from '../../src/style-spec/deref';
+import TileParser from '../lib/tile_parser';
 import { OverscaledTileID } from '../../src/source/tile_id';
 
 export default class Layout extends Benchmark {
-    glyphs: Object;
-    icons: Object;
-    layerIndex: StyleLayerIndex;
     tiles: Array<{tileID: OverscaledTileID, buffer: ArrayBuffer}>;
+    parser: TileParser;
 
     setup(): Promise<void> {
         const tileIDs = [
@@ -22,52 +16,29 @@ export default class Layout extends Benchmark {
             new OverscaledTileID(4, 0, 4, 3, 6),
             new OverscaledTileID(0, 0, 0, 0, 0)
         ];
-
         return fetchStyle(`mapbox://styles/mapbox/streets-v9`)
             .then((styleJSON) => {
-                this.layerIndex = new StyleLayerIndex(deref(styleJSON.layers));
-                return Promise.all([
-                    createStyle(styleJSON),
-                    fetchTiles((styleJSON.sources.composite: any).url, tileIDs)
-                ]);
+                this.parser = new TileParser(styleJSON, 'composite');
+                return this.parser.setup();
             })
-            .then(([style, tiles]) => {
+            .then(() => {
+                return Promise.all(tileIDs.map(tileID => this.parser.fetchTile(tileID)));
+            })
+            .then((tiles) => {
                 this.tiles = tiles;
-                this.glyphs = {};
-                this.icons = {};
-
-                const preloadImages = (params, callback) => {
-                    style.getImages('', params, (err, icons) => {
-                        this.icons[JSON.stringify(params)] = icons;
-                        callback(err, icons);
-                    });
-                };
-
-                const preloadGlyphs = (params, callback) => {
-                    style.getGlyphs('', params, (err, glyphs) => {
-                        this.glyphs[JSON.stringify(params)] = glyphs;
-                        callback(err, glyphs);
-                    });
-                };
-
-                return parseTiles('composite',
-                                  this.tiles,
-                                  this.layerIndex,
-                                  preloadImages,
-                                  preloadGlyphs)
-                    .then(() => {});
-            });
+                // parse tiles once to populate glyph/icon cache
+                return Promise.all(tiles.map(tile => this.parser.parseTile(tile)));
+            })
+            .then(() => {});
     }
 
     bench() {
-        const loadGlyphs = (params, callback) => callback(null, this.glyphs[JSON.stringify(params)]);
-        const loadImages = (params, callback) => callback(null, this.icons[JSON.stringify(params)]);
-
-        return parseTiles('composite',
-                          this.tiles,
-                          this.layerIndex,
-                          loadImages,
-                          loadGlyphs)
-            .then(() => {});
+        let promise = Promise.resolve();
+        for (const tile of this.tiles) {
+            promise = promise.then(() => {
+                return this.parser.parseTile(tile).then(() => {});
+            });
+        }
+        return promise;
     }
 }

@@ -1,17 +1,15 @@
 // @flow
 
-import assert from 'assert';
 import Benchmark from '../lib/benchmark';
-import fetchTiles from '../lib/fetch_tiles';
-import parseTiles from '../lib/parse_tiles';
-import StyleLayerIndex from '../../src/style/style_layer_index';
+import TileParser from '../lib/tile_parser';
 import { OverscaledTileID } from '../../src/source/tile_id';
+
 
 const LAYER_COUNT = 2;
 
 export default class LayoutDDS extends Benchmark {
-    layerIndex: StyleLayerIndex;
     tiles: Array<{tileID: OverscaledTileID, buffer: ArrayBuffer}>;
+    parser: TileParser;
 
     setup(): Promise<void> {
         const tileIDs = [
@@ -91,26 +89,26 @@ export default class LayoutDDS extends Benchmark {
             }
         }
 
-        this.layerIndex = new StyleLayerIndex(styleJSON.layers);
-
-        return fetchTiles(styleJSON.sources.mapbox.url, tileIDs)
-            .then(tiles => {
+        this.parser = new TileParser(styleJSON, 'mapbox');
+        return this.parser.setup()
+            .then(() => {
+                return Promise.all(tileIDs.map(tileID => this.parser.fetchTile(tileID)));
+            })
+            .then((tiles) => {
                 this.tiles = tiles;
-                return parseTiles('mapbox',
-                                  this.tiles,
-                                  this.layerIndex,
-                                  () => assert(false), // The style above doesn't use any glyphs or icons.
-                                  () => assert(false));
+                // parse tiles once to populate glyph/icon cache
+                return Promise.all(tiles.map(tile => this.parser.parseTile(tile)));
             })
             .then(() => {});
     }
 
     bench() {
-        return parseTiles('mapbox',
-                          this.tiles,
-                          this.layerIndex,
-                          () => assert(false),
-                          () => assert(false))
-            .then(() => {});
+        let promise = Promise.resolve();
+        for (const tile of this.tiles) {
+            promise = promise.then(() => {
+                return this.parser.parseTile(tile).then(() => {});
+            });
+        }
+        return promise;
     }
 }
