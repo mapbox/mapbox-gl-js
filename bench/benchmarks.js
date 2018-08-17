@@ -17,6 +17,7 @@ function register(Benchmark) {
 
 import Layout from './benchmarks/layout';
 import LayoutDDS from './benchmarks/layout_dds';
+import WorkerTransfer from './benchmarks/worker_transfer';
 import Paint from './benchmarks/paint';
 import PaintStates from './benchmarks/paint_states';
 import LayerBenchmarks from './benchmarks/layers';
@@ -31,6 +32,7 @@ import FilterEvaluate from './benchmarks/filter_evaluate';
 
 register(Layout);
 register(LayoutDDS);
+register(WorkerTransfer);
 register(Paint);
 register(PaintStates);
 LayerBenchmarks.forEach(register);
