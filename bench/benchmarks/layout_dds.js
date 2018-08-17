@@ -4,7 +4,6 @@ import Benchmark from '../lib/benchmark';
 import TileParser from '../lib/tile_parser';
 import { OverscaledTileID } from '../../src/source/tile_id';
 
-
 const LAYER_COUNT = 2;
 
 export default class LayoutDDS extends Benchmark {
