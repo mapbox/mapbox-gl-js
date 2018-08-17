@@ -2,17 +2,13 @@
 
 import Benchmark from '../lib/benchmark';
 import fetchStyle from '../lib/fetch_style';
-import createStyle from '../lib/create_style';
-import fetchTiles from '../lib/fetch_tiles';
-import parseTiles from '../lib/parse_tiles';
-
+import TileParser from '../lib/tile_parser';
+import { OverscaledTileID } from '../../src/source/tile_id';
 import { serialize } from '../../src/util/web_worker_transfer';
-import StyleLayerIndex from '../../src/style/style_layer_index';
-import {OverscaledTileID} from '../../src/source/tile_id';
-import deref from '../../src/style-spec/deref';
+import { values } from '../../src/util/util';
 
 export default class WorkerTransfer extends Benchmark {
-    layerIndex: StyleLayerIndex;
+    parser: TileParser;
     payload: Array<any>;
     worker: Worker;
 
@@ -36,35 +32,18 @@ export default class WorkerTransfer extends Benchmark {
 
         return fetchStyle(`mapbox://styles/mapbox/streets-v9`)
             .then((styleJSON) => {
-                this.layerIndex = new StyleLayerIndex(deref(styleJSON.layers));
-                return Promise.all([
-                    createStyle(styleJSON),
-                    fetchTiles((styleJSON.sources.composite: any).url, tileIDs)
-                ]);
+                this.parser = new TileParser(styleJSON, 'composite');
+                return this.parser.setup();
             })
-            .then(([style, tiles]) => {
-                const preloadImages = (params, callback) => {
-                    style.getImages('', params, (err, icons) => {
-                        this.payload.push(barePayload(icons));
-                        callback(err, icons);
-                    });
-                };
-
-                const preloadGlyphs = (params, callback) => {
-                    style.getGlyphs('', params, (err, glyphs) => {
-                        this.payload.push(barePayload(glyphs));
-                        callback(err, glyphs);
-                    });
-                };
-
-                return parseTiles('composite',
-                                  tiles,
-                                  this.layerIndex,
-                                  preloadImages,
-                                  preloadGlyphs);
+            .then(() => {
+                return Promise.all(tileIDs.map(tileID => this.parser.fetchTile(tileID)));
+            })
+            .then((tiles) => {
+                return Promise.all(tiles.map(tile => this.parser.parseTile(tile)));
             }).then((tileResults) => {
-                for (const data of tileResults) this.payload.push(barePayload(data));
-                // console.log(this.payload.map(p => JSON.stringify(p).length));
+                this.payload = tileResults.map(barePayload)
+                    .concat(values(this.parser.icons).map(barePayload))
+                    .concat(values(this.parser.glyphs).map(barePayload));
             });
     }
 
@@ -89,6 +68,8 @@ export default class WorkerTransfer extends Benchmark {
 }
 
 function barePayload(obj) {
-    // strip all transferables from a worker payload
-    return JSON.parse(JSON.stringify(serialize(obj, []), (key, value) => ArrayBuffer.isView(value) ? {} : value));
+    // strip all transferables from a worker payload, because we can't transfer them repeatedly in the bench:
+    // as soon as it's transfered once, it's no longer available on the main thread
+    const str = JSON.stringify(serialize(obj, []), (key, value) => ArrayBuffer.isView(value) ? {} : value);
+    return JSON.parse(str);
 }
