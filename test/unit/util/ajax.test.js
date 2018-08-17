@@ -1,7 +1,8 @@
 import { test } from 'mapbox-gl-js-test';
 import {
     getArrayBuffer,
-    getJSON
+    getJSON,
+    postData
 } from '../../../src/util/ajax';
 import window from '../../../src/util/window';
 
@@ -92,6 +93,17 @@ test('ajax', (t) => {
         getJSON({ url:'api.mapbox.com' }, (error) => {
             t.equal(error.status, 401);
             t.equal(error.message, "Unauthorized: you may have provided an invalid Mapbox access token. See https://www.mapbox.com/api-documentation/#access-tokens");
+            t.end();
+        });
+        window.server.respond();
+    });
+
+    t.test('postData, 204(no content): no error', (t) => {
+        window.server.respondWith(request => {
+            request.respond(204);
+        });
+        postData({ url:'api.mapbox.com' }, {}, (error) => {
+            t.equal(error, null);
             t.end();
         });
         window.server.respond();

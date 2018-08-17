@@ -11,6 +11,7 @@ import { type Anchor, anchorTranslate, applyAnchorClass } from './anchor';
 
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
+import type {PointLike} from '@mapbox/point-geometry';
 
 const defaultOptions = {
     closeButton: true,

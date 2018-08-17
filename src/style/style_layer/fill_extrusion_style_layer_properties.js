@@ -14,6 +14,8 @@ import {
 
 import type Color from '../../style-spec/util/color';
 
+import type {Formatted} from '../../style-spec/expression/definitions/formatted';
+
 
 export type PaintProps = {|
     "fill-extrusion-opacity": DataConstantProperty<number>,
@@ -35,4 +37,9 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
 });
 
-export default { paint };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint }: $Exact<{
+  paint: Properties<PaintProps>
+}>);

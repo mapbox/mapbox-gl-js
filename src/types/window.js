@@ -1,4 +1,8 @@
-declare interface Window extends EventTarget, IDBEnvironment {
+// @flow
+
+/* global EventTarget, IDBEnvironment */
+
+export interface Window extends EventTarget, IDBEnvironment {
     +caches: CacheStorage;
     +clientInformation: Navigator;
     +closed: boolean;

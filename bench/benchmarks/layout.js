@@ -14,6 +14,7 @@ import { OverscaledTileID } from '../../src/source/tile_id';
 import { normalizeStyleURL, normalizeSourceURL, normalizeTileURL } from '../../src/util/mapbox';
 
 import type {TileJSON} from '../../src/types/tilejson';
+import type {StyleSpecification} from '../../src/style-spec/types';
 
 // Note: this class is extended in turn by the LayoutDDS benchmark.
 export default class Layout extends Benchmark {

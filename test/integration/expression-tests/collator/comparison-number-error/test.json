@@ -9,7 +9,7 @@
     "compiled": {
       "result": "error",
       "errors": [
-        {"key": "[1]", "error": "Expected string but found number instead."}
+        {"key": "", "error": "Cannot use collator to compare non-string types."}
       ]
     }
   }

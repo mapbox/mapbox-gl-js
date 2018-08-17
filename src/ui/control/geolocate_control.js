@@ -129,7 +129,7 @@ class GeolocateControl extends Evented {
         }
 
         // clear the marker from the map
-        if (this.options.showUserLocation) {
+        if (this.options.showUserLocation && this._userLocationDotMarker) {
             this._userLocationDotMarker.remove();
         }
 

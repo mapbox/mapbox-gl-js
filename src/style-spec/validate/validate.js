@@ -18,6 +18,7 @@ import validateLayer from './validate_layer';
 import validateSource from './validate_source';
 import validateLight from './validate_light';
 import validateString from './validate_string';
+import validateFormatted from './validate_formatted';
 
 const VALIDATORS = {
     '*': function() {
@@ -35,7 +36,8 @@ const VALIDATORS = {
     'object': validateObject,
     'source': validateSource,
     'light': validateLight,
-    'string': validateString
+    'string': validateString,
+    'formatted': validateFormatted
 };
 
 
@@ -64,8 +66,9 @@ export default function validate(options) {
         return VALIDATORS[valueSpec.type](options);
 
     } else {
-        return validateObject(extend({}, options, {
+        const valid = validateObject(extend({}, options, {
             valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
         }));
+        return valid;
     }
 }

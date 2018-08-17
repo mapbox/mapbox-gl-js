@@ -26,7 +26,7 @@ function getAngleWindowSize(shapedText: ?Shaping,
         0;
 }
 
-function getLabelLength(shapedText: ?Shaping, shapedIcon: ?PositionedIcon): number {
+function getShapedLabelLength(shapedText: ?Shaping, shapedIcon: ?PositionedIcon): number {
     return Math.max(
         shapedText ? shapedText.right - shapedText.left : 0,
         shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
@@ -39,7 +39,7 @@ function getCenterAnchor(line: Array<Point>,
                          glyphSize: number,
                          boxScale: number) {
     const angleWindowSize = getAngleWindowSize(shapedText, glyphSize, boxScale);
-    const labelLength = getLabelLength(shapedText, shapedIcon);
+    const labelLength = getShapedLabelLength(shapedText, shapedIcon) * boxScale;
 
     let prevDistance = 0;
     const centerDistance = getLineLength(line) / 2;
@@ -59,12 +59,11 @@ function getCenterAnchor(line: Array<Point>,
 
             const anchor = new Anchor(x, y, b.angleTo(a), i);
             anchor._round();
-            if (angleWindowSize &&
-                !checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
+            if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
+                return anchor;
+            } else {
                 return;
             }
-
-            return anchor;
         }
 
         prevDistance += segmentDistance;
@@ -86,15 +85,16 @@ function getAnchors(line: Array<Point>,
     // on the line.
 
     const angleWindowSize = getAngleWindowSize(shapedText, glyphSize, boxScale);
-    const labelLength = getLabelLength(shapedText, shapedIcon);
+    const shapedLabelLength = getShapedLabelLength(shapedText, shapedIcon);
+    const labelLength = shapedLabelLength * boxScale;
 
     // Is the line continued from outside the tile boundary?
     const isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
 
     // Is the label long, relative to the spacing?
     // If so, adjust the spacing so there is always a minimum space of `spacing / 4` between label edges.
-    if (spacing - labelLength * boxScale  < spacing / 4) {
-        spacing = labelLength * boxScale + spacing / 4;
+    if (spacing - labelLength < spacing / 4) {
+        spacing = labelLength + spacing / 4;
     }
 
     // Offset the first anchor by:
@@ -105,10 +105,10 @@ function getAnchors(line: Array<Point>,
     const fixedExtraOffset = glyphSize * 2;
 
     const offset = !isLineContinued ?
-        ((labelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
+        ((shapedLabelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
-    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, isLineContinued, false, tileExtent);
+    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, false, tileExtent);
 }
 
 

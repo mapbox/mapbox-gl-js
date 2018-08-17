@@ -14,8 +14,10 @@ import {
 
 import type Color from '../../style-spec/util/color';
 
+import type {Formatted} from '../../style-spec/expression/definitions/formatted';
+
 export type LayoutProps = {|
-    "symbol-placement": DataConstantProperty<"point" | "line">,
+    "symbol-placement": DataConstantProperty<"point" | "line" | "line-center">,
     "symbol-spacing": DataConstantProperty<number>,
     "symbol-avoid-edges": DataConstantProperty<boolean>,
     "icon-allow-overlap": DataConstantProperty<boolean>,
@@ -34,7 +36,7 @@ export type LayoutProps = {|
     "icon-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
-    "text-field": DataDrivenProperty<string>,
+    "text-field": DataDrivenProperty<string | Formatted>,
     "text-font": DataDrivenProperty<Array<string>>,
     "text-size": DataDrivenProperty<number>,
     "text-max-width": DataDrivenProperty<number>,
@@ -126,4 +128,9 @@ const paint: Properties<PaintProps> = new Properties({
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
 });
 
-export default { paint, layout };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
+}>);

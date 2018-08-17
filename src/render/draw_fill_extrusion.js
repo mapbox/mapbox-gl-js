@@ -157,7 +157,7 @@ function setLight(program, painter) {
 
     const color = light.properties.get('color');
 
-    gl.uniform3fv(program.uniforms.u_lightpos, lightPos);
+    gl.uniform3fv(program.uniforms.u_lightpos, (lightPos: Array<number>));
     gl.uniform1f(program.uniforms.u_lightintensity, light.properties.get('intensity'));
     gl.uniform3f(program.uniforms.u_lightcolor, color.r, color.g, color.b);
 }

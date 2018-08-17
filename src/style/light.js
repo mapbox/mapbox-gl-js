@@ -23,6 +23,8 @@ import type {
     TransitionParameters
 } from './properties';
 
+import type {LightSpecification} from '../style-spec/types';
+
 type LightPosition = {
     x: number,
     y: number,

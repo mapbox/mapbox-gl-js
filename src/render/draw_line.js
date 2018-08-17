@@ -83,7 +83,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
             gl.uniform2f(program.uniforms.u_pattern_size_b, imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]);
 
             const {width, height} = painter.imageManager.getPixelSize();
-            gl.uniform2fv(program.uniforms.u_texsize, [width, height]);
+            gl.uniform2fv(program.uniforms.u_texsize, ([width, height]: Array<number>));
         }
 
         gl.uniform2f(program.uniforms.u_gl_units_to_pixels, 1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]);

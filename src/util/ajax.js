@@ -1,6 +1,7 @@
 // @flow
 
 import window from './window';
+import { extend } from './util';
 
 import type { Callback } from '../types/callback';
 import type { Cancelable } from '../types/cancelable';
@@ -37,6 +38,7 @@ if (typeof Object.freeze == 'function') {
 export type RequestParameters = {
     url: string,
     headers?: Object,
+    method?: 'GET' | 'POST' | 'PUT',
     credentials?: 'same-origin' | 'include',
     collectResourceTiming?: boolean
 };
@@ -62,7 +64,7 @@ class AJAXError extends Error {
 function makeRequest(requestParameters: RequestParameters): XMLHttpRequest {
     const xhr: XMLHttpRequest = new window.XMLHttpRequest();
 
-    xhr.open('GET', requestParameters.url, true);
+    xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
     for (const k in requestParameters.headers) {
         xhr.setRequestHeader(k, requestParameters.headers[k]);
     }
@@ -119,6 +121,23 @@ export const getArrayBuffer = function(requestParameters: RequestParameters, cal
         }
     };
     xhr.send();
+    return { cancel: () => xhr.abort() };
+};
+
+export const postData = function(requestParameters: RequestParameters, payload: string, callback: Callback<mixed>): Cancelable {
+    const xhr = makeRequest(extend(requestParameters, {method: 'POST'}));
+
+    xhr.onerror = function() {
+        callback(new Error(xhr.statusText));
+    };
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            callback(null, xhr.response);
+        } else {
+            callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
+        }
+    };
+    xhr.send(payload);
     return { cancel: () => xhr.abort() };
 };
 

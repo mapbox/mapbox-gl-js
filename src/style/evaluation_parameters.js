@@ -4,6 +4,8 @@ import ZoomHistory from './zoom_history';
 import {isStringInSupportedScript} from '../util/script_detection';
 import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
 
+import type {TransitionSpecification} from '../style-spec/types';
+
 class EvaluationParameters {
     zoom: number;
     now: number;

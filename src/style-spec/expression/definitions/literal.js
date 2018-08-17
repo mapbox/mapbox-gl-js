@@ -2,6 +2,7 @@
 
 import assert from 'assert';
 import { isValue, typeOf, Color } from '../values';
+import { Formatted } from './formatted';
 
 import type { Type } from '../types';
 import type { Value }  from '../values';
@@ -52,7 +53,7 @@ class Literal implements Expression {
         return [this.value];
     }
 
-    serialize() {
+    serialize(): Array<mixed> {
         if (this.type.kind === 'array' || this.type.kind === 'object') {
             return ["literal", this.value];
         } else if (this.value instanceof Color) {
@@ -60,6 +61,9 @@ class Literal implements Expression {
             // couldn't actually generate with a "literal" expression,
             // so we have to implement an equivalent serialization here
             return ["rgba"].concat(this.value.toArray());
+        } else if (this.value instanceof Formatted) {
+            // Same as Color
+            return this.value.serialize();
         } else {
             assert(this.value === null ||
                 typeof this.value === 'string' ||
