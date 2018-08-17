@@ -393,6 +393,7 @@ class Camera extends Evented {
      * @returns {CameraOptions | void} If map is able to fit to provided bounds, returns `CameraOptions` with
      *      at least `center`, `zoom`, `bearing`, `offset`, `padding`, and `maxZoom`, as well as any other
      *      `options` provided in arguments. If map is unable to fit, method will warn and return undefined.
+     * @private
      * @example
      * var p0 = [-79, 43];
      * var p1 = [-73, 45];
@@ -401,7 +402,7 @@ class Camera extends Evented {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
-    cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
+    _cameraForBoxAndBearing(p0: LngLatLike, p1: LngLatLike, bearing: number, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         options = extend({
             padding: {
                 top: 0,
