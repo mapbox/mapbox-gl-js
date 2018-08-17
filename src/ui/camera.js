@@ -375,7 +375,7 @@ class Camera extends Evented {
      */
     cameraForBounds(bounds: LngLatBoundsLike, options?: CameraOptions): void | CameraOptions & AnimationOptions {
         bounds = LngLatBounds.convert(bounds);
-        return this.cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
+        return this._cameraForBoxAndBearing(bounds.getNorthWest(), bounds.getSouthEast(), 0, options);
     }
 
     /**
@@ -398,7 +398,7 @@ class Camera extends Evented {
      * var p0 = [-79, 43];
      * var p1 = [-73, 45];
      * var bearing = 90;
-     * var newCameraTransform = map.cameraForBoxAndBearing(p0, p1, bearing, {
+     * var newCameraTransform = map._cameraForBoxAndBearing(p0, p1, bearing, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      */
@@ -536,7 +536,7 @@ class Camera extends Evented {
      */
     fitScreenCoordinates(p0: PointLike, p1: PointLike, bearing: number, options?: AnimationOptions & CameraOptions, eventData?: Object) {
         return this._fitInternal(
-            this.cameraForBoxAndBearing(
+            this._cameraForBoxAndBearing(
                 this.transform.pointLocation(Point.convert(p0)),
                 this.transform.pointLocation(Point.convert(p1)),
                 bearing,
