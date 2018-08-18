@@ -1,7 +1,7 @@
 uniform sampler2D u_image;
 varying vec2 v_pos;
 
-uniform vec2 u_latrange;
+//uniform vec2 u_latrange;
 uniform vec2 u_light;
 uniform vec4 u_shadow;
 uniform vec4 u_highlight;
@@ -16,7 +16,7 @@ void main() {
 
     // We divide the slope by a scale factor based on the cosin of the pixel's approximate latitude
     // to account for mercator projection distortion. see #4807 for details
-    float scaleFactor = cos(radians((u_latrange[0] - u_latrange[1]) * (1.0 - v_pos.y) + u_latrange[1]));
+    float scaleFactor = 1.0;//cos(radians((u_latrange[0] - u_latrange[1]) * (1.0 - v_pos.y) + u_latrange[1]));
     // We also multiply the slope by an arbitrary z-factor of 1.25
     float slope = atan(1.25 * length(deriv) / scaleFactor);
     float aspect = deriv.x != 0.0 ? atan(deriv.y, -deriv.x) : PI / 2.0 * (deriv.y > 0.0 ? 1.0 : -1.0);

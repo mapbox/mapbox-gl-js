@@ -34,7 +34,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
         // Turn on additive blending for kernels, which is a key aspect of kernel density estimation formula
         const colorMode = new ColorMode([gl.ONE, gl.ONE], Color.transparent, [true, true, true, true]);
 
-        bindFramebuffer(context, painter, layer);
+        bindHeatmapFramebuffer(context, painter, layer);
 
         context.clear({ color: Color.transparent });
 
@@ -64,13 +64,15 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         context.viewport.set([0, 0, painter.width, painter.height]);
 
+        convertHeatmapToSlope(painter, layer);
+
     } else if (painter.renderPass === 'translucent') {
         painter.context.setColorMode(painter.colorModeForRenderPass());
-        renderTextureToMap(painter, layer);
+        renderHillshadeToMap(painter, layer);
     }
 }
 
-function bindFramebuffer(context, painter, layer) {
+function bindHeatmapFramebuffer(context, painter, layer) {
     const gl = context.gl;
     context.activeTexture.set(gl.TEXTURE1);
 
@@ -113,24 +115,94 @@ function bindTextureToFramebuffer(context, painter, texture, fbo) {
     }
 }
 
-function renderTextureToMap(painter, layer) {
+// hillshade rendering is done in two steps. the prepare step first calculates the slope of the terrain in the x and y
+// directions for each pixel, and saves those values to a framebuffer texture in the r and g channels.
+function convertHeatmapToSlope(painter, layer, sourceMaxZoom) {
+
+    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const stencilMode = StencilMode.disabled;
+    const colorMode = painter.colorModeForRenderPass();
     const context = painter.context;
     const gl = context.gl;
+    // decode rgba levels by using integer overflow to convert each Uint32Array element -> 4 Uint8Array elements.
+    // ex.
+    // Uint32:
+    // base 10 - 67308
+    // base 2 - 0000 0000 0000 0001 0000 0110 1110 1100
+    //
+    // Uint8:
+    // base 10 - 0, 1, 6, 236 (this order is reversed in the resulting array via the overflow.
+    // first 8 bits represent 236, so the r component of the texture pixel will be 236 etc.)
+    // base 2 - 0000 0000, 0000 0001, 0000 0110, 1110 1100
+    if (tile.dem && tile.dem.data) {
+        const tileSize = tile.dem.dim;
+
+        const pixelData = tile.dem.getPixels();
+        context.activeTexture.set(gl.TEXTURE1);
+
+        // if UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to true prior to drawHillshade being called
+        // tiles will appear blank, because as you can see above the alpha value for these textures
+        // is always 0
+        context.pixelStoreUnpackPremultiplyAlpha.set(false);
+        tile.demTexture = tile.demTexture || painter.getTileTexture(tile.tileSize);
+        if (tile.demTexture) {
+            const demTexture = tile.demTexture;
+            demTexture.update(pixelData, { premultiply: false });
+            demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+        } else {
+            tile.demTexture = new Texture(context, pixelData, gl.RGBA, { premultiply: false });
+            tile.demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+        }
+
+        context.activeTexture.set(gl.TEXTURE0);
+
+        let fbo = tile.fbo;
+
+        if (!fbo) {
+            const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+            renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+            fbo = tile.fbo = context.createFramebuffer(tileSize, tileSize);
+            fbo.colorAttachment.set(renderTexture.texture);
+        }
+
+        context.bindFramebuffer.set(fbo.framebuffer);
+        context.viewport.set([0, 0, tileSize, tileSize]);
+
+        painter.useProgram('hillshadePrepare').draw(context, gl.TRIANGLES,
+            depthMode, stencilMode, colorMode,
+            hillshadeUniformPrepareValues(tile, sourceMaxZoom),
+            layer.id, painter.rasterBoundsBuffer,
+            painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
+
+        tile.needsHillshadePrepare = false;
+    }
+}
+
+function renderHillshadeToMap(painter, layer) {
+    const context = painter.context;
+    const gl = context.gl;
+
+    const program = painter.useProgram('hillshade');
 
     // Here we bind two different textures from which we'll sample in drawing
     // heatmaps: the kernel texture, prepared in the offscreen pass, and a
     // color ramp texture.
-    const fbo = layer.heatmapFbo;
+    const fbo = layer.heatmapSlopeFbo;
     if (!fbo) return;
     context.activeTexture.set(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
 
-    context.activeTexture.set(gl.TEXTURE1);
-    let colorRampTexture = layer.colorRampTexture;
-    if (!colorRampTexture) {
-        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
-    }
-    colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+
+    const uniformValues = hillshadeUniformValues(painter, layer);
+
+    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const stencilMode = StencilMode.disabled;
+    const colorMode = painter.colorModeForRenderPass();
+
+    program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+            uniformValues, layer.id, painter.rasterBoundsBuffer,
+            painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
 
     painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(),

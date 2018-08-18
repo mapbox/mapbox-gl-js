@@ -83,6 +83,33 @@ const hillshadeUniformValues = (
     };
 };
 
+const globalHillshadeUniformValues = (
+    painter: Painter,
+    layer,
+    textureUnit
+): UniformValues<HillshadeUniformsType> => {
+
+    const matrix = mat4.create();
+    mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
+
+    const shadow = Color.black;
+    const highlight = Color.white;
+    const accent = Color.black;
+
+    let azimuthal = 335 * (Math.PI / 180);
+    // modify azimuthal angle by map rotation if light is anchored at the viewport
+    azimuthal -= painter.transform.angle;
+
+    return {
+        'u_matrix': matrix,
+        'u_image': 0,
+        'u_light': [0.5, azimuthal],
+        'u_shadow': shadow,
+        'u_highlight': highlight,
+        'u_accent': accent
+    };
+};
+
 const hillshadeUniformPrepareValues = (
     tile: {dem: ?DEMData, tileID: OverscaledTileID}, maxzoom: number
 ): UniformValues<HillshadePrepareUniformsType> => {

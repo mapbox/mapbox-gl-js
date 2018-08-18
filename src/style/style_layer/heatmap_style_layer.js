@@ -16,6 +16,7 @@ import type {LayerSpecification} from '../../style-spec/types';
 class HeatmapStyleLayer extends StyleLayer {
 
     heatmapFbo: ?Framebuffer;
+    heatmapSlopeFbo: ?Framebuffer;
     colorRamp: RGBAImage;
     colorRampTexture: ?Texture;
 
