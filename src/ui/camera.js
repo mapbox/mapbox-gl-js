@@ -11,8 +11,8 @@ import {
 } from '../util/util';
 import { number as interpolate } from '../style-spec/util/interpolate';
 import browser from '../util/browser';
-import LngLatBounds from '../geo/lng_lat_bounds';
 import LngLat from '../geo/lng_lat';
+import LngLatBounds from '../geo/lng_lat_bounds';
 import Point from '@mapbox/point-geometry';
 import { Event, Evented } from '../util/evented';
 
