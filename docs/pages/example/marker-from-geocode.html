@@ -2,6 +2,7 @@
 <script src='https://unpkg.com/es6-promise@4.2.4/dist/es6-promise.auto.min.js'></script>
 <script src="https://unpkg.com/@mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
 <script>
+// eslint-disable-next-line no-undef
 var mapboxClient = mapboxSdk({ accessToken: mapboxgl.accessToken });
 mapboxClient.geocoding.forwardGeocode({
     query: 'Wellington, New Zealand',
