@@ -82,7 +82,7 @@ export default class extends React.Component {
                     <p className='space-bottom2 pad1y'>Mapbox GL JS 是一个JavaScript库， 它使用WebGL渲染交互地图的<a href='https://www.mapbox.com/help/define-vector-tiles'>矢量纹理</a> 与 <a
                             href={prefixUrl('/style-spec')}>Mapbox风格</a>.
                         这些是Mapbox GL生态系统的一部分, 包括<a
-                            href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>, 一个基于C++编写的针对桌面和移动端的强力渲染工具. 更多新功能，请查看我们最新的<a href={prefixUrl('/roadmap')}>路线图</a>.</p>
+                            href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>, 是一个基于C++编写的针对桌面和移动端的强力渲染工具. 更多新功能，请查看我们最新的<a href={prefixUrl('/roadmap')}>路线图</a>.</p>
 
                     <div className='col12 fill-light round pad2 clearfix space-top2'>
                         <div className='space-bottom2 space-left1 space-top1 contain'>
