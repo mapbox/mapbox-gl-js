@@ -1,0 +1,25 @@
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v10', // stylesheet location
+    center: [9.49, 49.01], // starting position [lng, lat]
+    zoom: 4 // starting zoom
+});
+
+map.on('load', function() {
+    var layers = ['country-label-lg', 'country-label-md', 'country-label-sm'];
+
+    layers.forEach(function(layer) {
+        map.setLayoutProperty(layer, 'text-field', ['format',
+            ['get', 'name_en'], { 'font-scale': 1.2 },
+            '\n', {},
+            ['get', 'name'], {
+                'font-scale': 0.8,
+                'text-font': ['literal', [ 'DIN Offc Pro Italic', 'Arial Unicode MS Regular' ]]
+            }
+        ]);
+    });
+
+});
+</script>
