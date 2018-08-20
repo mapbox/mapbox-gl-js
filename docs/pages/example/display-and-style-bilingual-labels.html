@@ -8,13 +8,18 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function(){
-    map.setLayoutProperty('country-label-lg', 'text-field', ['format',
-        ['get', 'name_en'], { 'font-scale': 1.2 },
-        '\n', {},
-        ['get', 'name'], {
-            'font-scale': 0.8,
-            'text-font': ['literal', [ 'DIN Offc Pro Italic', 'Arial Unicode MS Regular' ]]
-        }
-    ]);
+    var layers = ['country-label-lg', 'country-label-md', 'country-label-sm'];
+
+    layers.forEach(function(layer){
+        map.setLayoutProperty(layer, 'text-field', ['format',
+            ['get', 'name_en'], { 'font-scale': 1.2 },
+            '\n', {},
+            ['get', 'name'], {
+                'font-scale': 0.8,
+                'text-font': ['literal', [ 'DIN Offc Pro Italic', 'Arial Unicode MS Regular' ]]
+            }
+        ]);
+    })
+
 });
 </script>
