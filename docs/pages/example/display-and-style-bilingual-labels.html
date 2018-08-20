@@ -7,10 +7,10 @@ var map = new mapboxgl.Map({
     zoom: 4 // starting zoom
 });
 
-map.on('load', function(){
+map.on('load', function() {
     var layers = ['country-label-lg', 'country-label-md', 'country-label-sm'];
 
-    layers.forEach(function(layer){
+    layers.forEach(function(layer) {
         map.setLayoutProperty(layer, 'text-field', ['format',
             ['get', 'name_en'], { 'font-scale': 1.2 },
             '\n', {},
@@ -19,7 +19,7 @@ map.on('load', function(){
                 'text-font': ['literal', [ 'DIN Offc Pro Italic', 'Arial Unicode MS Regular' ]]
             }
         ]);
-    })
+    });
 
 });
 </script>
