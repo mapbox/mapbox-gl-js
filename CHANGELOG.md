@@ -1,14 +1,11 @@
-## master
-### ✨ Features and improvements
-* Add `Map#fitScreenCoordinates`: fits viewport to two points, similar to `Map#fitBounds` but uses screen coordinates and supports non-zero map bearings. ([#6894](https://github.com/mapbox/mapbox-gl-js/pull/6894))
-
 ## 0.48.0
+August 16, 2018
 
 ## ⚠️ Breaking changes
 * Treat tiles that error with status 404 as empty renderable tiles to prevent rendering duplicate features in some sparse tilesets ([#6803](https://github.com/mapbox/mapbox-gl-js/pull/6803))
 
 ## 🐛 Bug fixes
-* Fix issue where `text-max-angle` property was being calculated incorectly internally, causing potential rendering errors when `"text-placement": line`
+* Fix issue where `text-max-angle` property was being calculated incorrectly internally, causing potential rendering errors when `"text-placement": line`
 * Require `feature.id` when using `Map#setFeatureState` ([#6974](https://github.com/mapbox/mapbox-gl-js/pull/6974))
 * Fix issue with removing the `GeolocateControl` when user location is being used ([#6977](https://github.com/mapbox/mapbox-gl-js/pull/6977)) (h/t [sergei-zelinsky](https://github.com/sergei-zelinsky))
 * Fix memory leak caused by a failure to remove all controls added to the map ([#7042](https://github.com/mapbox/mapbox-gl-js/pull/7042))
@@ -27,7 +24,7 @@
   * Optimize and simplify tile retention logic ([#6995](https://github.com/mapbox/mapbox-gl-js/pull/6995))
 * Add a user turnstile event for users accessing Mapbox APIs ([#6980](https://github.com/mapbox/mapbox-gl-js/pull/6980))
 * Add support for autogenerating feature ids for GeoJSON sources so they can be used more easily with the `Map#setFeatureState` API ([#7043](https://www.github.com/mapbox/mapbox-gl-js/pull/7043))) ([#7091](https://github.com/mapbox/mapbox-gl-js/pull/7091))
-* Add ability to style a symbol layer labels with multple fonts and text sizes via `"format"` expression ([#6994](https://www.github.com/mapbox/mapbox-gl-js/pull/6994))
+* Add ability to style symbol layers labels with multiple fonts and text sizes via `"format"` expression ([#6994](https://www.github.com/mapbox/mapbox-gl-js/pull/6994))
 * Add customAttribution option to AttributionControl ([#7033](https://github.com/mapbox/mapbox-gl-js/pull/7033)) (h/t [mklopets](https://github.com/mklopets))
 * Publish Flow type definitions alongside compiled bundle ([#7079](https://api.github.com/repos/mapbox/mapbox-gl-js/pulls/7079))
 * Introduce symbol cross fading when crossing integer zoom levels to prevent labels from disappearing before newly loaded tiles' labels can be rendered ([#6951](https://github.com/mapbox/mapbox-gl-js/pull/6951))
@@ -291,7 +288,7 @@
 
 - Provide default element for Marker class [#5661](https://github.com/mapbox/mapbox-gl-js/pull/5661)
 
-# 0.42.0 (November 10, 2017)
+## 0.42.0 (November 10, 2017)
 
 ### ⚠️ Breaking changes
 
