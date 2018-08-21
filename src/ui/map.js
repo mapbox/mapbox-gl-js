@@ -1837,18 +1837,14 @@ function removeNode(node) {
 }
 
 /**
- * Interface for interactive controls added to the map. This is an
- * specification for implementers to model: it is not
- * an exported method or class.
+ * 添加到地图中的交互控件接口。这是实现模型的规范，它不导出任何方法或类。
  *
- * Controls must implement `onAdd` and `onRemove`, and must own an
- * element, which is often a `div` element. To use Mapbox GL JS's
- * default control styling, add the `mapboxgl-ctrl` class to your control's
- * node.
+ * 控件必须实现 `onAdd` 和 `onRemove` 方法，必须拥有一个元素，通常为 `div` 元素。
+ * 要想使用 Mapbox GL JS 的默认控件样式，需要为控件节点元素添加 `mapboxgl-ctrl` 类。
  *
  * @interface IControl
  * @example
- * // Control implemented as ES6 class
+ * // 使用 ES6 实现的控件
  * class HelloWorldControl {
  *     onAdd(map) {
  *         this._map = map;
@@ -1864,7 +1860,7 @@ function removeNode(node) {
  *     }
  * }
  *
- * // Control implemented as ES5 prototypical class
+ * // 使用 ES5 的原型类型实现控件
  * function HelloWorldControl() { }
  *
  * HelloWorldControl.prototype.onAdd = function(map) {
@@ -1882,50 +1878,42 @@ function removeNode(node) {
  */
 
 /**
- * Register a control on the map and give it a chance to register event listeners
- * and resources. This method is called by {@link Map#addControl}
- * internally.
+ * 注册控件，并在此设置事件监听和资源。在内部由 {@link Map#addControl} 调用。
  *
  * @function
  * @memberof IControl
  * @instance
  * @name onAdd
- * @param {Map} map the Map this control will be added to
- * @returns {HTMLElement} The control's container element. This should
- * be created by the control and returned by onAdd without being attached
- * to the DOM: the map will insert the control's element into the DOM
- * as necessary.
+ * @param {Map} map 添加控件的地图实例
+ * @returns {HTMLElement} 控件的容器元素。它应该由控件创建并由 onAdd 返回，
+ * 你不用将它显性地添加到DOM中，地图实例会在必要的时候自动插入。
  */
 
 /**
- * Unregister a control on the map and give it a chance to detach event listeners
- * and resources. This method is called by {@link Map#removeControl}
- * internally.
+ * 注销控件，并在此解除事件和释放资源。在内部由 {@link Map#removeControl} 调用。
  *
  * @function
  * @memberof IControl
  * @instance
  * @name onRemove
- * @param {Map} map the Map this control will be removed from
- * @returns {undefined} there is no required return value for this method
+ * @param {Map} map 将要移除控件的地图实例。
+ * @returns {undefined} 该方法没有返回值。
  */
 
 /**
- * Optionally provide a default position for this control. If this method
- * is implemented and {@link Map#addControl} is called without the `position`
- * parameter, the value returned by getDefaultPosition will be used as the
- * control's position.
+ * 可选，为控件提供一个默认位置。如果实现了该方法且调用 {@link Map#addControl} 时没有
+ * `position` 参数，getDefaultPosition 的返回值则为控件的位置。
  *
  * @function
  * @memberof IControl
  * @instance
  * @name getDefaultPosition
- * @returns {string} a control position, one of the values valid in addControl.
+ * @returns {string} 控件位置，有效的 addControl 值。
  */
 
 /**
- * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
- * `x` and `y` properties representing screen coordinates in pixels.
+ * [`Point` geometry](https://github.com/mapbox/point-geometry) 对象包含 `x` 和 `y` 两个
+ * 属性，用来表示屏幕的像素坐标点。
  *
  * @typedef {Object} Point
  */
