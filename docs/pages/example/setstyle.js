@@ -1,6 +1,6 @@
 /*---
-title: Change a map's style
-description: Switch to another map style.
+title: 更改地图样式
+description: 切换到另一个地图样式。
 tags:
   - styles
   - user-interaction

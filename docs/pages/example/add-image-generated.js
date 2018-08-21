@@ -1,6 +1,6 @@
 /*---
-title: Add a generated icon to the map
-description: Add an icon to the map that was generated at runtime.
+title: 向地图添加一个动态生成的图标
+description: 向地图添加一个在运行时生成的图标。
 tags:
   - styles
   - layers
