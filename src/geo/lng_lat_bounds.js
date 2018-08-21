@@ -5,17 +5,15 @@ import LngLat from './lng_lat';
 import type {LngLatLike} from './lng_lat';
 
 /**
- * A `LngLatBounds` object represents a geographical bounding box,
- * defined by its southwest and northeast points in longitude and latitude.
+ * `LngLatBounds` 对象表示一个地理上的边界框，由西南和东北两个经纬度点所定义。
+ * 
+ * 如果没有为构造器提供参数，将会创建一个为`null`的边界框。
  *
- * If no arguments are provided to the constructor, a `null` bounding box is created.
- *
- * Note that any Mapbox GL method that accepts a `LngLatBounds` object as an argument or option
- * can also accept an `Array` of two {@link LngLatLike} constructs and will perform an implicit conversion.
- * This flexible type is documented as {@link LngLatBoundsLike}.
- *
- * @param {LngLatLike} [sw] The southwest corner of the bounding box.
- * @param {LngLatLike} [ne] The northeast corner of the bounding box.
+ * 任何接受 `LngLatBounds` 参数的 Mapbox GL 方法也同时接受两个由 {@link LngLatLike} 组成的数组，并会执行一个隐式转换。
+ * 这种易变型的定义请参见 {@link LngLatBoundsLike}。
+ * 
+ * @param {LngLatLike} [sw] 边界框的西南角。
+ * @param {LngLatLike} [ne] 边界框的东北角。
  * @example
  * var sw = new mapboxgl.LngLat(-73.9876, 40.7661);
  * var ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -39,7 +37,7 @@ class LngLatBounds {
     }
 
     /**
-     * Set the northeast corner of the bounding box
+     * 设置边界框的东北角坐标。
      *
      * @param {LngLatLike} ne
      * @returns {LngLatBounds} `this`
@@ -50,7 +48,7 @@ class LngLatBounds {
     }
 
     /**
-     * Set the southwest corner of the bounding box
+     * 设置边界框的西南角坐标。
      *
      * @param {LngLatLike} sw
      * @returns {LngLatBounds} `this`
@@ -61,9 +59,9 @@ class LngLatBounds {
     }
 
     /**
-     * Extend the bounds to include a given LngLat or LngLatBounds.
+     * 根据给定的 LngLat 或 LngLatBounds 扩展边界范围。
      *
-     * @param {LngLat|LngLatBounds} obj object to extend to
+     * @param {LngLat|LngLatBounds} obj 扩展对象
      * @returns {LngLatBounds} `this`
      */
     extend(obj: LngLat | LngLatBounds) {
@@ -107,9 +105,9 @@ class LngLatBounds {
     }
 
     /**
-     * Returns the geographical coordinate equidistant from the bounding box's corners.
+     * 返回距离边框等距的地理坐标点。
      *
-     * @returns {LngLat} The bounding box's center.
+     * @returns {LngLat} 边界框的中心点。
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.getCenter(); // = LngLat {lng: -73.96365, lat: 40.78315}
@@ -119,66 +117,65 @@ class LngLatBounds {
     }
 
     /**
-     * Returns the southwest corner of the bounding box.
+     * 返回边界框的西南角坐标。
      *
-     * @returns {LngLat} The southwest corner of the bounding box.
+     * @returns {LngLat} 边界框的西南角坐标。
      */
     getSouthWest(): LngLat { return this._sw; }
 
     /**
-    * Returns the northeast corner of the bounding box.
+    * 返回边界框的东北角坐标。
     *
-    * @returns {LngLat} The northeast corner of the bounding box.
+    * @returns {LngLat} 边界框的东北角坐标。
      */
     getNorthEast(): LngLat { return this._ne; }
 
     /**
-    * Returns the northwest corner of the bounding box.
+    * 返回边界框的西北角坐标。
     *
-    * @returns {LngLat} The northwest corner of the bounding box.
+    * @returns {LngLat} 边界框的西北角坐标。
      */
     getNorthWest(): LngLat { return new LngLat(this.getWest(), this.getNorth()); }
 
     /**
-    * Returns the southeast corner of the bounding box.
+    * 返回边界框的东南角坐标。
     *
-    * @returns {LngLat} The southeast corner of the bounding box.
+    * @returns {LngLat} 边界框的东南角坐标。
      */
     getSouthEast(): LngLat { return new LngLat(this.getEast(), this.getSouth()); }
 
     /**
-    * Returns the west edge of the bounding box.
+    * 返回边界框的西边界。
     *
-    * @returns {number} The west edge of the bounding box.
+    * @returns {number} 边界框的西边界。
      */
     getWest(): number { return this._sw.lng; }
 
     /**
-    * Returns the south edge of the bounding box.
+    * 返回边界框的南边界。
     *
-    * @returns {number} The south edge of the bounding box.
+    * @returns {number} 边界框的南边界。
      */
     getSouth(): number { return this._sw.lat; }
 
     /**
-    * Returns the east edge of the bounding box.
+    * 返回边界框的东边界。
     *
-    * @returns {number} The east edge of the bounding box.
+    * @returns {number} 边界框的东边界。
      */
     getEast(): number { return this._ne.lng; }
 
     /**
-    * Returns the north edge of the bounding box.
+    * 返回边界框的北边界。
     *
-    * @returns {number} The north edge of the bounding box.
+    * @returns {number} 边界框的北边界。
      */
     getNorth(): number { return this._ne.lat; }
 
     /**
-     * Returns the bounding box represented as an array.
+     * 返回表示边界框的数组。
      *
-     * @returns {Array<Array<number>>} The bounding box represented as an array, consisting of the
-     *   southwest and northeast coordinates of the bounding represented as arrays of numbers.
+     * @returns {Array<Array<number>>} 表示边界的数组, 它由代表西南角和东北角坐标的数值数组组成。
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
@@ -188,10 +185,10 @@ class LngLatBounds {
     }
 
     /**
-     * Return the bounding box represented as a string.
-     *
-     * @returns {string} The bounding box represents as a string of the format
-     *   `'LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))'`.
+     * 返回表示边界框的字符串。
+     * 
+     * @returns {string} 边界框字符串的格式为 
+     *   `'LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))'`。
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
@@ -201,23 +198,24 @@ class LngLatBounds {
     }
 
     /**
-     * Check if the bounding box is an empty/`null`-type box.
+     * 检测边界框是否为空。
      *
      * @returns {boolean} True if bounds have been defined, otherwise false.
+     * @returns {boolean} 已定义的边界返回ture，否则返回false。
      */
     isEmpty() {
         return !(this._sw && this._ne);
     }
 
     /**
-     * Converts an array to a `LngLatBounds` object.
+     * 将数组转换为 `LngLatBounds` 对象。
      *
-     * If a `LngLatBounds` object is passed in, the function returns it unchanged.
+     * 如果传入 `LngLatBounds` 对象，会直接返回该对象。
      *
-     * Internally, the function calls `LngLat#convert` to convert arrays to `LngLat` values.
+     * 在内部，它使用 `LngLat#convert` 将数组转换为 `LngLat` 值。
      *
-     * @param {LngLatBoundsLike} input An array of two coordinates to convert, or a `LngLatBounds` object to return.
-     * @returns {LngLatBounds} A new `LngLatBounds` object, if a conversion occurred, or the original `LngLatBounds` object.
+     * @param {LngLatBoundsLike} input 包含两个坐标的数组，或者 `LngLatBounds` 对象。
+     * @returns {LngLatBounds} 如果发生转换则返回一个新的 `LngLatBounds` 对象，否则将直接返回传入的 `LngLatBounds` 对象。
      * @example
      * var arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
      * var llb = mapboxgl.LngLatBounds.convert(arr);
@@ -230,8 +228,8 @@ class LngLatBounds {
 }
 
 /**
- * A {@link LngLatBounds} object, an array of {@link LngLatLike} objects in [sw, ne] order,
- * or an array of numbers in [west, south, east, north] order.
+ * 一个 {@link LngLatBounds} 对象、一个 {@link LngLatLike} 对象以 [西南，东北] 顺序组成的数组，或者
+ * 一个以 [西, 南, 东, 北] 四个数值组成的数组。
  *
  * @typedef {LngLatBounds | [LngLatLike, LngLatLike] | [number, number, number, number]} LngLatBoundsLike
  * @example
