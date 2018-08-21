@@ -259,6 +259,7 @@ class Tile {
     queryRenderedFeatures(layers: {[string]: StyleLayer},
                           sourceFeatureState: SourceFeatureState,
                           queryGeometry: Array<Array<Point>>,
+                          cameraQueryGeometry: Array<Array<Point>>,
                           scale: number,
                           params: { filter: FilterSpecification, layers: Array<string> },
                           transform: Transform,
@@ -269,6 +270,7 @@ class Tile {
 
         return this.latestFeatureIndex.query({
             queryGeometry,
+            cameraQueryGeometry,
             scale,
             tileSize: this.tileSize,
             posMatrix,

@@ -2,9 +2,9 @@
 
 import { isCounterClockwise } from './util';
 
-import type Point from '@mapbox/point-geometry';
+import Point from '@mapbox/point-geometry';
 
-export { multiPolygonIntersectsBufferedPoint, multiPolygonIntersectsBufferedMultiPoint, multiPolygonIntersectsMultiPolygon, multiPolygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared };
+export { multiPolygonIntersectsBufferedPoint, multiPolygonIntersectsBufferedMultiPoint, multiPolygonIntersectsMultiPolygon, multiPolygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox };
 
 type Line = Array<Point>;
 type MultiLine = Array<Line>;
@@ -180,4 +180,49 @@ function polygonContainsPoint(ring: Ring, p: Point) {
         }
     }
     return c;
+}
+
+function polygonIntersectsBox(ring: Ring, boxX1: number, boxY1: number, boxX2: number, boxY2: number) {
+    for (const p of ring) {
+        if (boxX1 <= p.x &&
+            boxY1 <= p.y &&
+            boxX2 >= p.x &&
+            boxY2 >= p.y) return true;
+    }
+
+    const corners = [
+        new Point(boxX1, boxY1),
+        new Point(boxX1, boxY2),
+        new Point(boxX2, boxY2),
+        new Point(boxX2, boxY1)];
+
+    if (ring.length > 2) {
+        for (const corner of corners) {
+            if (polygonContainsPoint(ring, corner)) return true;
+        }
+    }
+
+    for (let i = 0; i < ring.length - 1; i++) {
+        const p1 = ring[i];
+        const p2 = ring[i + 1];
+        if (edgeIntersectsBox(p1, p2, corners)) return true;
+    }
+
+    return false;
+}
+
+function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
+    const tl = corners[0];
+    const br = corners[2];
+    // the edge and box do not intersect in either the x or y dimensions
+    if (((e1.x < tl.x) && (e2.x < tl.x)) ||
+        ((e1.x > br.x) && (e2.x > br.x)) ||
+        ((e1.y < tl.y) && (e2.y < tl.y)) ||
+        ((e1.y > br.y) && (e2.y > br.y))) return false;
+
+    // check if all corners of the box are on the same side of the edge
+    const dir = isCounterClockwise(e1, e2, corners[0]);
+    return dir !== isCounterClockwise(e1, e2, corners[1]) ||
+        dir !== isCounterClockwise(e1, e2, corners[2]) ||
+        dir !== isCounterClockwise(e1, e2, corners[3]);
 }

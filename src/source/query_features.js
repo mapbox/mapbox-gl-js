@@ -2,20 +2,27 @@
 
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
-import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type { RetainedQueryData } from '../symbol/placement';
 import type {FilterSpecification} from '../style-spec/types';
 import assert from 'assert';
+import { mat4 } from 'gl-matrix';
+
+function getMatrix(transform, tileID) {
+    const t = mat4.identity([]);
+    mat4.translate(t, t, [1, 1, 0]);
+    mat4.scale(t, t, [transform.width * 0.5, transform.height * 0.5, 1]);
+    return mat4.multiply(t, t, transform.calculatePosMatrix(tileID.toUnwrapped()));
+}
 
 export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
-                            queryGeometry: Array<MercatorCoordinate>,
+                            queryGeometry: Array<Point>,
                             params: { filter: FilterSpecification, layers: Array<string> },
                             transform: Transform) {
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
-    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor);
+    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor, transform);
 
     tilesIn.sort(sortTilesIn);
 
@@ -27,11 +34,12 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
                 styleLayers,
                 sourceCache._state,
                 tileIn.queryGeometry,
+                tileIn.cameraQueryGeometry,
                 tileIn.scale,
                 params,
                 transform,
                 maxPitchScaleFactor,
-                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()))
+                getMatrix(sourceCache.transform, tileIn.tileID))
         });
     }
 
@@ -39,7 +47,8 @@ export function queryRenderedFeatures(sourceCache: SourceCache,
 
     // Merge state from SourceCache into the results
     for (const layerID in result) {
-        result[layerID].forEach((feature) => {
+        result[layerID].forEach((featureWrapper) => {
+            const feature = featureWrapper.feature;
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.source = feature.layer.source;
             if (feature.layer['source-layer']) {
@@ -161,7 +170,7 @@ function mergeRenderedFeatureLayers(tiles) {
             for (const tileFeature of tileFeatures) {
                 if (!wrappedIDFeatures[tileFeature.featureIndex]) {
                     wrappedIDFeatures[tileFeature.featureIndex] = true;
-                    resultFeatures.push(tileFeature.feature);
+                    resultFeatures.push(tileFeature);
                 }
             }
         }
