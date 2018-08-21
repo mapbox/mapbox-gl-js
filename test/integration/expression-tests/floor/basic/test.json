@@ -1,0 +1,23 @@
+{
+  "expression": ["floor", ["get", "x"]],
+  "inputs": [
+    [{}, {"properties": {"x": -2.6}}],
+    [{}, {"properties": {"x": -2.5}}],
+    [{}, {"properties": {"x": -2.4}}],
+    [{}, {"properties": {"x": -2}}],
+    [{}, {"properties": {"x": 2.6}}],
+    [{}, {"properties": {"x": 2.5}}],
+    [{}, {"properties": {"x": 2.4}}],
+    [{}, {"properties": {"x": 2}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [-3, -3, -3, -2, 2, 2, 2, 2],
+    "serialized": ["floor", ["number", ["get", "x"]]]
+  }
+}

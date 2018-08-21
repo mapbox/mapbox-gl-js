@@ -6,6 +6,9 @@
     table td { vertical-align: top; }
     ul { margin-top: 0; }
     .hide { display: none; }
+    del { background-color: #ffeef0; }
+    ins { background-color: #e6ffed; }
+    del,ins { text-decoration: none; }
 </style>
 <script>
   document.addEventListener('mouseover', handleHover);
@@ -23,19 +26,19 @@
 <% if (shuffle) { %>
 <div>Shuffle seed: <%- seed %></div>
 <% } %>
-<% if (failed.length) { %>
+<% if (unsuccessful.length) { %>
 <div>
   <strong style="color: darkred;">Failed Tests:</strong>
-  <% for (const r of failed) { %><%- r.group %>/<%- r.test %> <% } %>
+  <% for (const r of unsuccessful) { %><%- r.id %> <% } %>
 </div>
 <% } else { %>
 <div><strong style="color: darkgreen;">All tests passed!</div>
 <% } %>
-<% if (sequence.length) { %>
+<% if (tests.length) { %>
 <button id='toggle-sequence'>Toggle showing test sequence</button>
 <div id='test-sequence' style='display:none'>
     <strong style="color: black;">Test sequence:</strong>
-    <% for (const s of sequence) { %><%- s.params.group %>/<%- s.params.test %> <% } %>
+    <% for (const s of tests) { %><%- s.id %> <% } %>
 </div>
 <% } %>
 <button id='toggle-passed'>Toggle showing passed tests</button>

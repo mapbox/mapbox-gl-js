@@ -1,9 +1,15 @@
-const assert = require('assert');
-const extend = require('../util/extend');
+// @flow
 
-module.exports = convertFunction;
+import assert from 'assert';
 
-function convertFunction(parameters, propertySpec, name) {
+import extend from '../util/extend';
+
+import type {StylePropertySpecification} from '../style-spec';
+import type {PropertyValueSpecification} from '../types';
+
+export default convertFunction;
+
+function convertFunction(parameters: PropertyValueSpecification<any>, propertySpec: StylePropertySpecification) {
     let expression;
 
     parameters = extend({}, parameters);
@@ -23,7 +29,7 @@ function convertFunction(parameters, propertySpec, name) {
         const zoomDependent = zoomAndFeatureDependent || !featureDependent;
 
         const stops = parameters.stops.map((stop) => {
-            if (!featureDependent && (name === 'icon-image' || name === 'text-field') && typeof stop[1] === 'string') {
+            if (!featureDependent && propertySpec.tokens && typeof stop[1] === 'string') {
                 return [stop[0], convertTokenString(stop[1])];
 
             }
@@ -49,17 +55,16 @@ function convertFunction(parameters, propertySpec, name) {
     return expression;
 }
 
-function convertIdentityFunction(parameters, propertySpec, defaultExpression) {
+function convertIdentityFunction(parameters, propertySpec, defaultExpression): Array<mixed> {
     const get = ['get', parameters.property];
-    const type = propertySpec.type;
 
-    if (type === 'color') {
+    if (propertySpec.type === 'color') {
         return parameters.default === undefined ? get : ['to-color', get, parameters.default];
-    } else if (type === 'array' && typeof propertySpec.length === 'number') {
+    } else if (propertySpec.type === 'array' && typeof propertySpec.length === 'number') {
         return ['array', propertySpec.value, propertySpec.length, get];
-    } else if (type === 'array') {
+    } else if (propertySpec.type === 'array') {
         return ['array', propertySpec.value, get];
-    } else if (type === 'enum') {
+    } else if (propertySpec.type === 'enum') {
         return [
             'let',
             'property_value', ['string', get],
@@ -137,37 +142,24 @@ function convertZoomAndPropertyFunction(parameters, propertySpec, stops, default
 function convertPropertyFunction(parameters, propertySpec, stops, defaultExpression) {
     const type = getFunctionType(parameters, propertySpec);
 
-    const inputType = typeof stops[0][0];
-    assert(
-        inputType === 'string' ||
-        inputType === 'number' ||
-        inputType === 'boolean'
-    );
-
-    let input = [inputType, ['get', parameters.property]];
-
     let expression;
     let isStep = false;
-    if (type === 'categorical' && inputType === 'boolean') {
+    if (type === 'categorical' && typeof stops[0][0] === 'boolean') {
         assert(parameters.stops.length > 0 && parameters.stops.length <= 2);
-        if (parameters.stops[0][0] === false) {
-            input = ['!', input];
+        expression = ['case'];
+        for (const stop of stops) {
+            expression.push(['==', ['get', parameters.property], stop[0]], stop[1]);
         }
-        expression = [ 'case', input, parameters.stops[0][1] ];
-        if (parameters.stops.length > 1) {
-            expression.push(parameters.stops[1][1]);
-        } else {
-            expression.push(defaultExpression);
-        }
+        expression.push(defaultExpression);
         return expression;
     } else if (type === 'categorical') {
-        expression = ['match', input];
+        expression = ['match', ['get', parameters.property]];
     } else if (type === 'interval') {
-        expression = ['step', input];
+        expression = ['step', ['number', ['get', parameters.property]]];
         isStep = true;
     } else if (type === 'exponential') {
         const base = parameters.base !== undefined ? parameters.base : 1;
-        expression = ['interpolate', ['exponential', base], input];
+        expression = ['interpolate', ['exponential', base], ['number', ['get', parameters.property]]];
     } else {
         throw new Error(`Unknown property function type ${type}`);
     }
@@ -232,10 +224,9 @@ function appendStopPair(curve, input, output, isStep) {
 function getFunctionType(parameters, propertySpec) {
     if (parameters.type) {
         return parameters.type;
-    } else if (propertySpec.function) {
-        return propertySpec.function === 'interpolated' ? 'exponential' : 'interval';
     } else {
-        return 'exponential';
+        assert(propertySpec.expression);
+        return (propertySpec.expression: any).interpolated ? 'exponential' : 'interval';
     }
 }
 
@@ -244,8 +235,7 @@ function convertTokenString(s) {
     const result = ['concat'];
     const re = /{([^{}]+)}/g;
     let pos = 0;
-    let match;
-    while ((match = re.exec(s)) !== null) {
+    for (let match = re.exec(s); match !== null; match = re.exec(s)) {
         const literal = s.slice(pos, re.lastIndex - match[0].length);
         pos = re.lastIndex;
         if (literal.length > 0) result.push(literal);
@@ -258,6 +248,8 @@ function convertTokenString(s) {
 
     if (pos < s.length) {
         result.push(s.slice(pos));
+    } else if (result.length === 2) {
+        return result[1];
     }
 
     return result;

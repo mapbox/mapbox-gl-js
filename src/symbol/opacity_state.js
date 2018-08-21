@@ -1,5 +1,7 @@
 // @flow
 
+import { register } from '../util/web_worker_transfer';
+
 class OpacityState {
     opacity: number;
     targetOpacity: number;
@@ -20,4 +22,6 @@ class OpacityState {
     }
 }
 
-module.exports = OpacityState;
+register('OpacityState', OpacityState);
+
+export default OpacityState;

@@ -1,0 +1,33 @@
+{
+  "propertySpec": {
+    "type": "array",
+    "value": "number",
+    "length": 2,
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
+  "expression": ["get", "array"],
+  "inputs": [
+    [{}, {"properties": {"array": [1, 2]}}],
+    [{}, {"properties": {"array": [1, 2, 3]}}],
+    [{}, {"properties": {"array": "not"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<number, 2>"
+    },
+    "outputs": [
+      [1, 2],
+      {
+        "error": "Expected value to be of type array<number, 2>, but found array<number, 3> instead."
+      },
+      {
+        "error": "Expected value to be of type array<number, 2>, but found string instead."
+      }
+    ],
+    "serialized": ["array", "number", 2, ["get", "array"]]
+  }
+}

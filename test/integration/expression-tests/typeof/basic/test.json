@@ -28,6 +28,7 @@
       "array<boolean, 2>",
       "array<value, 2>",
       "object"
-    ]
+    ],
+    "serialized": ["typeof", ["get", "x"]]
   }
 }

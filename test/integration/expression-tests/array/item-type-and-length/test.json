@@ -20,6 +20,7 @@
       {
         "error": "Expected value to be of type array<number, 2>, but found array<number, 3> instead."
       }
-    ]
+    ],
+    "serialized": ["array", "number", 2, ["get", "x"]]
   }
 }

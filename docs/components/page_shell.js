@@ -3,6 +3,13 @@ import Helmet from 'react-helmet';
 import ReactPageShell from '../../vendor/dotcom-page-shell/react-page-shell.js';
 
 class PageShell extends React.Component {
+    componentDidMount() {
+        // initialize analytics
+        if (window && window.initializeMapboxAnalytics) {
+            window.initializeMapboxAnalytics();
+        }
+    }
+
     render() {
         return (
             <ReactPageShell darkHeaderText={true} includeFooter={false} {...this.props}>

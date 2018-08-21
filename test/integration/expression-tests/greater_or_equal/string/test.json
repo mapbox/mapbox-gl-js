@@ -15,6 +15,7 @@
       "isZoomConstant": true,
       "type": "boolean"
     },
-    "outputs": [true, false, true, false, true, true]
+    "outputs": [true, false, true, false, true, true],
+    "serialized": [">=", ["string", ["get", "x"]], ["string", ["get", "y"]]]
   }
 }

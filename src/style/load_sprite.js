@@ -1,21 +1,24 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const browser = require('../util/browser');
-const {normalizeSpriteURL} = require('../util/mapbox');
-const {RGBAImage} = require('../util/image');
+import { getJSON, getImage, ResourceType } from '../util/ajax';
+
+import browser from '../util/browser';
+import { normalizeSpriteURL } from '../util/mapbox';
+import { RGBAImage } from '../util/image';
 
 import type {StyleImage} from './style_image';
 import type {RequestTransformFunction} from '../ui/map';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
 
-module.exports = function(baseURL: string,
+export default function(baseURL: string,
                           transformRequestCallback: RequestTransformFunction,
-                          callback: Callback<{[string]: StyleImage}>) {
+                          callback: Callback<{[string]: StyleImage}>): Cancelable {
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    ajax.getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ajax.ResourceType.SpriteJSON), (err, data) => {
+    let jsonRequest = getJSON(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err, data) => {
+        jsonRequest = null;
         if (!error) {
             error = err;
             json = data;
@@ -23,7 +26,8 @@ module.exports = function(baseURL: string,
         }
     });
 
-    ajax.getImage(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.png'), ajax.ResourceType.SpriteImage), (err, img) => {
+    let imageRequest = getImage(transformRequestCallback(normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
+        imageRequest = null;
         if (!error) {
             error = err;
             image = img;
@@ -40,7 +44,7 @@ module.exports = function(baseURL: string,
 
             for (const id in json) {
                 const {width, height, x, y, sdf, pixelRatio} = json[id];
-                const data = RGBAImage.create({width, height});
+                const data = new RGBAImage({width, height});
                 RGBAImage.copy(imageData, data, {x, y}, {x: 0, y: 0}, {width, height});
                 result[id] = {data, pixelRatio, sdf};
             }
@@ -48,4 +52,17 @@ module.exports = function(baseURL: string,
             callback(null, result);
         }
     }
-};
+
+    return {
+        cancel() {
+            if (jsonRequest) {
+                jsonRequest.cancel();
+                jsonRequest = null;
+            }
+            if (imageRequest) {
+                imageRequest.cancel();
+                imageRequest = null;
+            }
+        }
+    };
+}

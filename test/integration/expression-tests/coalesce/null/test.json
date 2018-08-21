@@ -1,14 +1,7 @@
 {
   "expectExpressionType": null,
-  "expression": [
-    "coalesce",
-    ["get", "z"],
-    0
-  ],
-  "inputs": [
-    [{}, {"properties": {"z": 1}}],
-    [{}, {"properties": {"z": null}}]
-  ],
+  "expression": ["coalesce", ["get", "z"], 0],
+  "inputs": [[{}, {"properties": {"z": 1}}], [{}, {"properties": {"z": null}}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -16,6 +9,7 @@
       "isZoomConstant": true,
       "type": "value"
     },
-    "outputs": [1, 0]
+    "outputs": [1, 0],
+    "serialized": ["coalesce", ["get", "z"], 0]
   }
 }

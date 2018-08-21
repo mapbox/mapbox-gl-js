@@ -2,7 +2,9 @@
   "propertySpec": {
     "type": "array",
     "value": "string",
-    "length": 2
+    "length": 2,
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
   },
   "expression": ["array", "number", 2, ["get", "x"]],
   "inputs": [],

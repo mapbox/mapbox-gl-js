@@ -4,7 +4,7 @@
     "line": 4
   },
   {
-    "message": "sources.invalid-type.type: expected one of [vector, raster, geojson, video, image, canvas], \"invalid\" found",
+    "message": "sources.invalid-type.type: expected one of [vector, raster, raster-dem, geojson, video, image], \"invalid\" found",
     "line": 7
   },
   {
@@ -34,5 +34,9 @@
   {
     "message": "sources.video-wrong-coordinates.coordinates[3]: array length 2 expected, length 0 found",
     "line": 34
+  },
+  {
+    "message": "sources.canvas: Please use runtime APIs to add canvas sources, rather than including them in stylesheets.",
+    "identifier": "source.canvas"
   }
 ]

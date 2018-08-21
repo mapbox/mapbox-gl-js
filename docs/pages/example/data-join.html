@@ -10,7 +10,7 @@ var map = new mapboxgl.Map({
 });
 
 // Join local JSON data with vector tile geometry
-// USA unemplyoment rate in 2009
+// USA unemployment rate in 2009
 // Source https://data.bls.gov/timeseries/LNS14000000
 var maxValue = 13;
 var data = [
@@ -66,45 +66,35 @@ var data = [
     {"STATE_ID": "56", "unemployment": 7.59}
 ];
 
-// Get the vector geometries to join
-// US Census Data Source
-// https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
-var mapId = "mapbox.us_census_states_2015";
-var layerName = "states";
-var vtMatchProp = "STATEFP";
-var dataMatchProp = "STATE_ID";
-var dataStyleProp = "unemployment";
-
 map.on('load', function() {
 
-    // Add source for state polygons hosted on Mapbox
+    // Add source for state polygons hosted on Mapbox, based on US Census Data:
+    // https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
     map.addSource("states", {
         type: "vector",
-        url: "mapbox://" + mapId
+        url: "mapbox://mapbox.us_census_states_2015"
     });
 
-    // First value is the default, used where the is no data
-    var stops = [["0", "rgba(0,0,0,0)"]];
+    var expression = ["match", ["get", "STATE_ID"]];
 
     // Calculate color for each state based on the unemployment rate
     data.forEach(function(row) {
-        var green = ((row[dataStyleProp] / maxValue) * 255);
+        var green = (row["unemployment"] / maxValue) * 255;
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
-        stops.push([row[dataMatchProp], color]);
+        expression.push(row["STATE_ID"], color);
     });
+
+    // Last value is the default, used where there is no data
+    expression.push("rgba(0,0,0,0)");
 
     // Add layer from the vector tile source with data-driven style
     map.addLayer({
         "id": "states-join",
         "type": "fill",
         "source": "states",
-        "source-layer": layerName,
+        "source-layer": "states",
         "paint": {
-            "fill-color": {
-                "property": vtMatchProp,
-                "type": "categorical",
-                "stops": stops
-            }
+            "fill-color": expression
         }
     }, 'waterway-label');
 });

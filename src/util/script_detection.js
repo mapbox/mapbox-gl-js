@@ -2,30 +2,30 @@
 
 /* eslint-disable new-cap */
 
-const isChar = require('./is_char_in_unicode_block');
+import isChar from './is_char_in_unicode_block';
 
-module.exports.allowsIdeographicBreaking = function(chars: string) {
+export function allowsIdeographicBreaking(chars: string) {
     for (const char of chars) {
-        if (!exports.charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
+        if (!charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
     }
     return true;
-};
+}
 
-module.exports.allowsVerticalWritingMode = function(chars: string) {
+export function allowsVerticalWritingMode(chars: string) {
     for (const char of chars) {
-        if (exports.charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
+        if (charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
     }
     return false;
-};
+}
 
-module.exports.allowsLetterSpacing = function(chars: string) {
+export function allowsLetterSpacing(chars: string) {
     for (const char of chars) {
-        if (!exports.charAllowsLetterSpacing(char.charCodeAt(0))) return false;
+        if (!charAllowsLetterSpacing(char.charCodeAt(0))) return false;
     }
     return true;
-};
+}
 
-module.exports.charAllowsLetterSpacing = function(char: number) {
+export function charAllowsLetterSpacing(char: number) {
     if (isChar['Arabic'](char)) return false;
     if (isChar['Arabic Supplement'](char)) return false;
     if (isChar['Arabic Extended-A'](char)) return false;
@@ -33,9 +33,9 @@ module.exports.charAllowsLetterSpacing = function(char: number) {
     if (isChar['Arabic Presentation Forms-B'](char)) return false;
 
     return true;
-};
+}
 
-module.exports.charAllowsIdeographicBreaking = function(char: number) {
+export function charAllowsIdeographicBreaking(char: number) {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
@@ -61,7 +61,7 @@ module.exports.charAllowsIdeographicBreaking = function(char: number) {
     if (isChar['Yi Syllables'](char)) return true;
 
     return false;
-};
+}
 
 // The following logic comes from
 // <http://www.unicode.org/Public/vertical/revision-17/VerticalOrientation-17.txt>.
@@ -81,8 +81,9 @@ module.exports.charAllowsIdeographicBreaking = function(char: number) {
  * adjacent characters can be rotated. For example, a Chinese character is
  * always drawn upright. An uprightly oriented character causes an adjacent
  * “neutral” character to be drawn upright as well.
+ * @private
  */
-exports.charHasUprightVerticalOrientation = function(char: number) {
+export function charHasUprightVerticalOrientation(char: number) {
     if (char === 0x02EA /* modifier letter yin departing tone mark */ ||
         char === 0x02EB /* modifier letter yang departing tone mark */) {
         return true;
@@ -95,7 +96,7 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
     if (isChar['Bopomofo Extended'](char)) return true;
     if (isChar['Bopomofo'](char)) return true;
     if (isChar['CJK Compatibility Forms'](char)) {
-        if (!(char >= 0xFE49 /* dashed overline */ && char <= 0xFE4F /* wavy low line */)) {
+        if (!((char >= 0xFE49 /* dashed overline */ && char <= 0xFE4F) /* wavy low line */)) {
             return true;
         }
     }
@@ -104,8 +105,8 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
     if (isChar['CJK Radicals Supplement'](char)) return true;
     if (isChar['CJK Strokes'](char)) return true;
     if (isChar['CJK Symbols and Punctuation'](char)) {
-        if (!(char >= 0x3008 /* left angle bracket */ && char <= 0x3011 /* right black lenticular bracket */) &&
-            !(char >= 0x3014 /* left tortoise shell bracket */ && char <= 0x301F /* low double prime quotation mark */) &&
+        if (!((char >= 0x3008 /* left angle bracket */ && char <= 0x3011) /* right black lenticular bracket */) &&
+            !((char >= 0x3014 /* left tortoise shell bracket */ && char <= 0x301F) /* low double prime quotation mark */) &&
             char !== 0x3030 /* wavy dash */) {
             return true;
         }
@@ -132,7 +133,7 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
         if (char !== 0xFF08 /* fullwidth left parenthesis */ &&
             char !== 0xFF09 /* fullwidth right parenthesis */ &&
             char !== 0xFF0D /* fullwidth hyphen-minus */ &&
-            !(char >= 0xFF1A /* fullwidth colon */ && char <= 0xFF1E /* fullwidth greater-than sign */) &&
+            !((char >= 0xFF1A /* fullwidth colon */ && char <= 0xFF1E) /* fullwidth greater-than sign */) &&
             char !== 0xFF3B /* fullwidth left square bracket */ &&
             char !== 0xFF3D /* fullwidth right square bracket */ &&
             char !== 0xFF3F /* fullwidth low line */ &&
@@ -143,8 +144,8 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
         }
     }
     if (isChar['Small Form Variants'](char)) {
-        if (!(char >= 0xFE58 /* small em dash */ && char <= 0xFE5E /* small right tortoise shell bracket */) &&
-            !(char >= 0xFE63 /* small hyphen-minus */ && char <= 0xFE66 /* small equals sign */)) {
+        if (!((char >= 0xFE58 /* small em dash */ && char <= 0xFE5E) /* small right tortoise shell bracket */) &&
+            !((char >= 0xFE63 /* small hyphen-minus */ && char <= 0xFE66) /* small equals sign */)) {
             return true;
         }
     }
@@ -156,7 +157,7 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
     if (isChar['Yi Radicals'](char)) return true;
 
     return false;
-};
+}
 
 /**
  * Returns true if the given Unicode codepoint identifies a character with
@@ -168,8 +169,9 @@ exports.charHasUprightVerticalOrientation = function(char: number) {
  * fraction ½ is drawn upright among Chinese characters but rotated among Latin
  * letters. A neutrally oriented character does not influence whether an
  * adjacent character is drawn upright or rotated.
+ * @private
  */
-exports.charHasNeutralVerticalOrientation = function(char: number) {
+export function charHasNeutralVerticalOrientation(char: number) {
     if (isChar['Latin-1 Supplement'](char)) {
         if (char === 0x00A7 /* section sign */ ||
             char === 0x00A9 /* copyright sign */ ||
@@ -219,7 +221,7 @@ exports.charHasNeutralVerticalOrientation = function(char: number) {
     if (isChar['Enclosed Alphanumerics'](char)) return true;
     if (isChar['Geometric Shapes'](char)) return true;
     if (isChar['Miscellaneous Symbols'](char)) {
-        if (!(char >= 0x261A /* black left pointing index */ && char <= 0x261F /* white down pointing index */)) {
+        if (!((char >= 0x261A /* black left pointing index */ && char <= 0x261F) /* white down pointing index */)) {
             return true;
         }
     }
@@ -248,7 +250,7 @@ exports.charHasNeutralVerticalOrientation = function(char: number) {
     }
 
     return false;
-};
+}
 
 /**
  * Returns true if the given Unicode codepoint identifies a character with
@@ -258,8 +260,47 @@ exports.charHasNeutralVerticalOrientation = function(char: number) {
  * oriented vertically, even if both adjacent characters are upright. For
  * example, a Latin letter is drawn rotated along a vertical line. A rotated
  * character causes an adjacent “neutral” character to be drawn rotated as well.
+ * @private
  */
-exports.charHasRotatedVerticalOrientation = function(char: number) {
-    return !(exports.charHasUprightVerticalOrientation(char) ||
-             exports.charHasNeutralVerticalOrientation(char));
-};
+export function charHasRotatedVerticalOrientation(char: number) {
+    return !(charHasUprightVerticalOrientation(char) ||
+             charHasNeutralVerticalOrientation(char));
+}
+
+export function charInSupportedScript(char: number, canRenderRTL: boolean) {
+    // This is a rough heuristic: whether we "can render" a script
+    // actually depends on the properties of the font being used
+    // and whether differences from the ideal rendering are considered
+    // semantically significant.
+
+    // Even in Latin script, we "can't render" combinations such as the fi
+    // ligature, but we don't consider that semantically significant.
+    if (!canRenderRTL &&
+        ((char >= 0x0590 && char <= 0x08FF) ||
+         isChar['Arabic Presentation Forms-A'](char) ||
+         isChar['Arabic Presentation Forms-B'](char))) {
+        // Main blocks for Hebrew, Arabic, Thaana and other RTL scripts
+        return false;
+    }
+    if ((char >= 0x0900 && char <= 0x0DFF) ||
+        // Main blocks for Indic scripts and Sinhala
+        (char >= 0x0F00 && char <= 0x109F) ||
+        // Main blocks for Tibetan and Myanmar
+        isChar['Khmer'](char)) {
+        // These blocks cover common scripts that require
+        // complex text shaping, based on unicode script metadata:
+        // http://www.unicode.org/repos/cldr/trunk/common/properties/scriptMetadata.txt
+        // where "Web Rank <= 32" "Shaping Required = YES"
+        return false;
+    }
+    return true;
+}
+
+export function isStringInSupportedScript(chars: string, canRenderRTL: boolean) {
+    for (const char of chars) {
+        if (!charInSupportedScript(char.charCodeAt(0), canRenderRTL)) {
+            return false;
+        }
+    }
+    return true;
+}

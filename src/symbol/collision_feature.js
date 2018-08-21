@@ -1,7 +1,7 @@
 // @flow
 
-import type CollisionBoxArray from './collision_box';
-import type Point from '@mapbox/point-geometry';
+import type {CollisionBoxArray} from '../data/array_types';
+import Point from '@mapbox/point-geometry';
 import type Anchor from './anchor';
 
 /**
@@ -36,11 +36,12 @@ class CollisionFeature {
                 boxScale: number,
                 padding: number,
                 alignLine: boolean,
-                overscaling: number) {
-        const y1 = shaped.top * boxScale - padding;
-        const y2 = shaped.bottom * boxScale + padding;
-        const x1 = shaped.left * boxScale - padding;
-        const x2 = shaped.right * boxScale + padding;
+                overscaling: number,
+                rotate: number) {
+        let y1 = shaped.top * boxScale - padding;
+        let y2 = shaped.bottom * boxScale + padding;
+        let x1 = shaped.left * boxScale - padding;
+        let x2 = shaped.right * boxScale + padding;
 
         this.boxStartIndex = collisionBoxArray.length;
 
@@ -57,6 +58,31 @@ class CollisionFeature {
             }
 
         } else {
+            if (rotate) {
+                // Account for *-rotate in point collision boxes
+                // See https://github.com/mapbox/mapbox-gl-js/issues/6075
+                // Doesn't account for icon-text-fit
+
+                const tl = new Point(x1, y1);
+                const tr = new Point(x2, y1);
+                const bl = new Point(x1, y2);
+                const br = new Point(x2, y2);
+
+                const rotateRadians = rotate * Math.PI / 180;
+
+                tl._rotate(rotateRadians);
+                tr._rotate(rotateRadians);
+                bl._rotate(rotateRadians);
+                br._rotate(rotateRadians);
+
+                // Collision features require an "on-axis" geometry,
+                // so take the envelope of the rotated geometry
+                // (may be quite large for wide labels rotated 45 degrees)
+                x1 = Math.min(tl.x, tr.x, bl.x, br.x);
+                x2 = Math.max(tl.x, tr.x, bl.x, br.x);
+                y1 = Math.min(tl.y, tr.y, bl.y, br.y);
+                y2 = Math.max(tl.y, tr.y, bl.y, br.y);
+            }
             collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, featureIndex, sourceLayerIndex, bucketIndex,
                 0, 0);
         }
@@ -83,7 +109,7 @@ class CollisionFeature {
                            bucketIndex: number,
                            overscaling: number) {
         const step = boxSize / 2;
-        const nBoxes = Math.floor(labelLength / step);
+        const nBoxes = Math.floor(labelLength / step) || 1;
         // We calculate line collision circles out to 300% of what would normally be our
         // max size, to allow collision detection to work on labels that expand as
         // they move into the distance
@@ -179,4 +205,4 @@ class CollisionFeature {
     }
 }
 
-module.exports = CollisionFeature;
+export default CollisionFeature;

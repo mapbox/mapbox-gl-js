@@ -1,14 +1,12 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const fs = require('fs');
-const path = require('path');
-const Protobuf = require('pbf');
-const VectorTile = require('@mapbox/vector-tile').VectorTile;
-const Point = require('@mapbox/point-geometry');
-const segment = require('../../../src/data/segment');
-const LineBucket = require('../../../src/data/bucket/line_bucket');
-const LineStyleLayer = require('../../../src/style/style_layer/line_style_layer');
+import { test } from 'mapbox-gl-js-test';
+import fs from 'fs';
+import path from 'path';
+import Protobuf from 'pbf';
+import { VectorTile } from '@mapbox/vector-tile';
+import Point from '@mapbox/point-geometry';
+import segment from '../../../src/data/segment';
+import LineBucket from '../../../src/data/bucket/line_bucket';
+import LineStyleLayer from '../../../src/style/style_layer/line_style_layer';
 
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -100,6 +98,8 @@ test('LineBucket', (t) => {
 });
 
 test('LineBucket segmentation', (t) => {
+    t.stub(console, 'warn');
+
     // Stub MAX_VERTEX_ARRAY_LENGTH so we can test features
     // breaking across array groups without tests taking a _long_ time.
     t.stub(segment, 'MAX_VERTEX_ARRAY_LENGTH').value(256);
@@ -132,6 +132,8 @@ test('LineBucket segmentation', (t) => {
         primitiveOffset: 18,
         primitiveLength: 254
     }]);
+
+    t.equal(console.warn.callCount, 1);
 
     t.end();
 });

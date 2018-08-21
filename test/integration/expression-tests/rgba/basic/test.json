@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "color"
     },
-    "outputs": [[0, 0, 1, 1]]
+    "outputs": [[0, 0, 1, 1]],
+    "serialized": ["rgba", 0, 0, 255, 1]
   }
 }

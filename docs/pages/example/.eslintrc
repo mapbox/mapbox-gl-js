@@ -1,28 +1,32 @@
 {
-  "parser": "espree",
-  "parserOptions": {
-      "ecmaVersion": 5
-  },
-  "plugins": ["html"],
-  "globals": {
-    "mapboxgl": true,
-    "MapboxGeocoder": true,
-    "MapboxDirections": true,
-    "turf": true,
-    "d3": true,
-    "Uint8Array": true
-  },
-  "rules": {
-    "flowtype/require-valid-file-annotation": [0],
-    "strict": "off",
-    "no-unused-vars": ["error", {"varsIgnorePattern": "map|popup"}],
-    "no-loop-func": "off",
-    "no-var": "off",
-    "prefer-arrow-callback": "off",
-    "prefer-template": "off"
-  },
-  "env": {
-    "es6": false,
-    "browser": true
+  "overrides": {
+      "files": ["*.html"],
+      "parser": "espree",
+      "parserOptions": {
+          "ecmaVersion": 5,
+          "sourceType": "script"
+      },
+      "plugins": ["html"],
+      "globals": {
+        "mapboxgl": true,
+        "MapboxGeocoder": true,
+        "MapboxDirections": true,
+        "turf": true,
+        "d3": true,
+        "Uint8Array": true
+      },
+      "rules": {
+        "flowtype/require-valid-file-annotation": [0],
+        "strict": "off",
+        "no-unused-vars": ["error", {"varsIgnorePattern": "map|popup"}],
+        "no-loop-func": "off",
+        "no-var": "off",
+        "prefer-arrow-callback": "off",
+        "prefer-template": "off"
+      },
+      "env": {
+        "es6": false,
+        "browser": true
+      }
   }
 }

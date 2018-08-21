@@ -1,5 +1,9 @@
 {
-  "propertySpec": {"type": "string"},
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
   "expression": ["at", 1, ["literal", [1, 2, 3]]],
   "inputs": [],
   "expected": {

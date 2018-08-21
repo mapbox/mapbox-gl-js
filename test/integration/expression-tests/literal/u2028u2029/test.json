@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": ["ah\u2028\u2029oy!"]
+    "outputs": ["ah\u2028\u2029oy!"],
+    "serialized": "ah\u2028\u2029oy!"
   }
 }

@@ -1,16 +1,38 @@
 // @flow
 
-const ImageSource = require('./image_source');
-const window = require('../util/window');
+import ImageSource from './image_source';
+
+import window from '../util/window';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
+import { ErrorEvent } from '../util/evented';
+import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Evented} from '../util/evented';
+
+export type CanvasSourceSpecification = {|
+    "type": "canvas",
+    "coordinates": [[number, number], [number, number], [number, number], [number, number]],
+    "animate"?: boolean,
+    "canvas": string | HTMLCanvasElement
+|};
 
 /**
- * A data source containing the contents of an HTML canvas.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
- * @interface CanvasSource
+ * Options to add a canvas source type to the map.
+ *
+ * @typedef {Object} CanvasSourceOptions
+ * @property {string} type Source type. Must be `"canvas"`.
+ * @property {string|HTMLCanvasElement} canvas Canvas source from which to read pixels. Can be a string representing the ID of the canvas element, or the `HTMLCanvasElement` itself.
+ * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
+ * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (i.e. pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
+ */
+
+/**
+ * A data source containing the contents of an HTML canvas. See {@link CanvasSourceOptions} for detailed documentation of options.
+ *
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -42,13 +64,34 @@ class CanvasSource extends ImageSource {
     canvas: HTMLCanvasElement;
     width: number;
     height: number;
-    canvasData: ?ImageData;
     play: () => void;
     pause: () => void;
     _playing: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: CanvasSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
+
+        // We build in some validation here, since canvas sources aren't included in the style spec:
+        if (!options.coordinates) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'missing required property "coordinates"')));
+        } else if (!Array.isArray(options.coordinates) || options.coordinates.length !== 4 ||
+                options.coordinates.some(c => !Array.isArray(c) || c.length !== 2 || c.some(l => typeof l !== 'number'))) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, '"coordinates" property must be an array of 4 longitude/latitude array pairs')));
+        }
+
+        if (options.animate && typeof options.animate !== 'boolean') {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'optional "animate" property must be a boolean value')));
+        }
+
+        if (!options.canvas) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, 'missing required property "canvas"')));
+        } else if (typeof options.canvas !== 'string' && !(options.canvas instanceof window.HTMLCanvasElement)) {
+            this.fire(new ErrorEvent(new ValidationError(`sources.${id}`, null, '"canvas" must be either a string representing the ID of the canvas element from which to read, or an HTMLCanvasElement instance')));
+        }
+
         this.options = options;
         this.animate = options.animate !== undefined ? options.animate : true;
     }
@@ -68,10 +111,18 @@ class CanvasSource extends ImageSource {
      */
 
     load() {
-        this.canvas = this.canvas || window.document.getElementById(this.options.canvas);
+        if (!this.canvas) {
+            this.canvas = (this.options.canvas instanceof window.HTMLCanvasElement) ?
+                this.options.canvas :
+                window.document.getElementById(this.options.canvas);
+        }
         this.width = this.canvas.width;
         this.height = this.canvas.height;
-        if (this._hasInvalidDimensions()) return this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
+
+        if (this._hasInvalidDimensions()) {
+            this.fire(new ErrorEvent(new Error('Canvas dimensions cannot be less than or equal to zero.')));
+            return;
+        }
 
         this.play = function() {
             this._playing = true;
@@ -135,13 +186,39 @@ class CanvasSource extends ImageSource {
 
         if (Object.keys(this.tiles).length === 0) return; // not enough data for current position
 
-        this._prepareImage(this.map.painter.gl, this.canvas, resize);
+        const context = this.map.painter.context;
+        const gl = context.gl;
+
+        if (!this.boundsBuffer) {
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+        }
+
+        if (!this.boundsVAO) {
+            this.boundsVAO = new VertexArrayObject();
+        }
+
+        if (!this.texture) {
+            this.texture = new Texture(context, this.canvas, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        } else if (resize) {
+            this.texture.update(this.canvas);
+        } else if (this._playing) {
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+        }
+
+        for (const w in this.tiles) {
+            const tile = this.tiles[w];
+            if (tile.state !== 'loaded') {
+                tile.state = 'loaded';
+                tile.texture = this.texture;
+            }
+        }
     }
 
     serialize(): Object {
         return {
             type: 'canvas',
-            canvas: this.canvas,
             coordinates: this.coordinates
         };
     }
@@ -158,4 +235,4 @@ class CanvasSource extends ImageSource {
     }
 }
 
-module.exports = CanvasSource;
+export default CanvasSource;

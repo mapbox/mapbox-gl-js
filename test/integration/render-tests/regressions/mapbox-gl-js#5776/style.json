@@ -1,0 +1,85 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 256,
+            "height": 256
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0.5,
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "MultiPoint",
+                "coordinates": [
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            }
+        }
+    },
+    "layers": [
+        {
+          "id": "background",
+          "type": "background",
+          "paint": {
+            "background-color": "white"
+          }
+        },
+        {
+            "id": "bottom",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": "Bottom Layer",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            },
+            "paint": {
+                "text-color": "black"
+            }
+        },
+        {
+            "id": "middle",
+            "type": "symbol",
+            "source": "geojson",
+            "minzoom": 0.8,
+            "layout": {
+                "text-field": "Middle Minzoom Layer",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            },
+            "paint": {
+                "text-color": "blue"
+            }
+        },
+        {
+            "id": "top",
+            "type": "symbol",
+            "source": "geojson",
+            "maxzoom": 0.3,
+            "layout": {
+                "text-field": "Top Maxzoom Layer",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            },
+            "paint": {
+                "text-color": "blue"
+            }
+        }
+    ]
+}

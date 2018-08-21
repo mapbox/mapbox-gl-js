@@ -1,0 +1,69 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 256,
+            "height": 256
+        }
+    },
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": { "name": "តីរវិថី ព្រះស៊ីសុវត្តិ" },
+                        "geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              -100,
+                              -10
+                            ],
+                            [
+                              100,
+                              -10
+                            ]
+                          ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": { "name": "This one should render." },
+                        "geometry": {
+                          "type": "LineString",
+                          "coordinates": [
+                            [
+                              -100,
+                              10
+                            ],
+                            [
+                              100,
+                              10
+                            ]
+                          ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "symbol-placement": "line",
+                "text-field": "{name}",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}

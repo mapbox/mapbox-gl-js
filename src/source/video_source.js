@@ -1,16 +1,22 @@
 // @flow
 
-const ajax = require('../util/ajax');
-const ImageSource = require('./image_source');
+import { getVideo, ResourceType } from '../util/ajax';
+
+import ImageSource from './image_source';
+import rasterBoundsAttributes from '../data/raster_bounds_attributes';
+import VertexArrayObject from '../render/vertex_array_object';
+import Texture from '../render/texture';
+import { ErrorEvent } from '../util/evented';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type Evented from '../util/evented';
+import type {Evented} from '../util/evented';
+import type {VideoSourceSpecification} from '../style-spec/types';
 
 /**
  * A data source containing video.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
- * @interface VideoSource
+ *
  * @example
  * // add to map
  * map.addSource('some id', {
@@ -45,6 +51,9 @@ class VideoSource extends ImageSource {
     video: HTMLVideoElement;
     roundZoom: boolean;
 
+    /**
+     * @private
+     */
     constructor(id: string, options: VideoSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;
@@ -54,11 +63,15 @@ class VideoSource extends ImageSource {
 
     load() {
         const options = this.options;
-        this.urls = options.urls;
 
-        ajax.getVideo(options.urls, (err, video) => {
+        this.urls = [];
+        for (const url of options.urls) {
+            this.urls.push(this.map._transformRequest(url, ResourceType.Source).url);
+        }
+
+        getVideo(this.urls, (err, video) => {
             if (err) {
-                this.fire('error', {error: err});
+                this.fire(new ErrorEvent(err));
             } else if (video) {
                 this.video = video;
                 this.video.loop = true;
@@ -112,8 +125,36 @@ class VideoSource extends ImageSource {
     // setCoordinates inherited from ImageSource
 
     prepare() {
-        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) return; // not enough data for current position
-        this._prepareImage(this.map.painter.gl, this.video);
+        if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) {
+            return; // not enough data for current position
+        }
+
+        const context = this.map.painter.context;
+        const gl = context.gl;
+
+        if (!this.boundsBuffer) {
+            this.boundsBuffer = context.createVertexBuffer(this._boundsArray, rasterBoundsAttributes.members);
+        }
+
+        if (!this.boundsVAO) {
+            this.boundsVAO = new VertexArrayObject();
+        }
+
+        if (!this.texture) {
+            this.texture = new Texture(context, this.video, gl.RGBA);
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+        } else if (!this.video.paused) {
+            this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
+        }
+
+        for (const w in this.tiles) {
+            const tile = this.tiles[w];
+            if (tile.state !== 'loaded') {
+                tile.state = 'loaded';
+                tile.texture = this.texture;
+            }
+        }
     }
 
     serialize() {
@@ -129,4 +170,4 @@ class VideoSource extends ImageSource {
     }
 }
 
-module.exports = VideoSource;
+export default VideoSource;

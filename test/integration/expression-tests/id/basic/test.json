@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "value"
     },
-    "outputs": [null, 1, "one"]
+    "outputs": [null, 1, "one"],
+    "serialized": ["id"]
   }
 }

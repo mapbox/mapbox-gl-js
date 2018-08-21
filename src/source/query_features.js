@@ -1,39 +1,125 @@
 // @flow
 
-const TileCoord = require('./tile_coord');
-
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type Coordinate from '../geo/coordinate';
+import type CollisionIndex from '../symbol/collision_index';
+import type Transform from '../geo/transform';
+import type { RetainedQueryData } from '../symbol/placement';
+import type {FilterSpecification} from '../style-spec/types';
+import assert from 'assert';
 
-exports.rendered = function(sourceCache: SourceCache,
+export function queryRenderedFeatures(sourceCache: SourceCache,
                             styleLayers: {[string]: StyleLayer},
                             queryGeometry: Array<Coordinate>,
                             params: { filter: FilterSpecification, layers: Array<string> },
-                            zoom: number,
-                            bearing: number) {
-    const tilesIn = sourceCache.tilesIn(queryGeometry);
+                            transform: Transform) {
+    const maxPitchScaleFactor = transform.maxPitchScaleFactor();
+    const tilesIn = sourceCache.tilesIn(queryGeometry, maxPitchScaleFactor);
 
     tilesIn.sort(sortTilesIn);
 
     const renderedFeatureLayers = [];
     for (const tileIn of tilesIn) {
         renderedFeatureLayers.push({
-            wrappedTileID: tileIn.coord.wrapped().id,
+            wrappedTileID: tileIn.tileID.wrapped().key,
             queryResults: tileIn.tile.queryRenderedFeatures(
                 styleLayers,
+                sourceCache._state,
                 tileIn.queryGeometry,
                 tileIn.scale,
                 params,
-                bearing,
-                sourceCache.id)
+                transform,
+                maxPitchScaleFactor,
+                sourceCache.transform.calculatePosMatrix(tileIn.tileID.toUnwrapped()))
         });
     }
 
-    return mergeRenderedFeatureLayers(renderedFeatureLayers);
-};
+    const result = mergeRenderedFeatureLayers(renderedFeatureLayers);
 
-exports.source = function(sourceCache: SourceCache, params: any) {
+    // Merge state from SourceCache into the results
+    for (const layerID in result) {
+        result[layerID].forEach((feature) => {
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
+            feature.source = feature.layer.source;
+            if (feature.layer['source-layer']) {
+                feature.sourceLayer = feature.layer['source-layer'];
+            }
+            feature.state = state;
+        });
+    }
+    return result;
+}
+
+export function queryRenderedSymbols(styleLayers: {[string]: StyleLayer},
+                            sourceCaches: {[string]: SourceCache},
+                            queryGeometry: Array<Point>,
+                            params: { filter: FilterSpecification, layers: Array<string> },
+                            collisionIndex: CollisionIndex,
+                            retainedQueryData: {[number]: RetainedQueryData}) {
+    const result = {};
+    const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
+    const bucketQueryData = [];
+    for (const bucketInstanceId of Object.keys(renderedSymbols).map(Number)) {
+        bucketQueryData.push(retainedQueryData[bucketInstanceId]);
+    }
+    bucketQueryData.sort(sortTilesIn);
+
+    for (const queryData of bucketQueryData) {
+        const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
+                renderedSymbols[queryData.bucketInstanceId],
+                queryData.bucketIndex,
+                queryData.sourceLayerIndex,
+                params.filter,
+                params.layers,
+                styleLayers);
+
+        for (const layerID in bucketSymbols) {
+            const resultFeatures = result[layerID] = result[layerID] || [];
+            const layerSymbols = bucketSymbols[layerID];
+            layerSymbols.sort((a, b) => {
+                // Match topDownFeatureComparator from FeatureIndex, but using
+                // most recent sorting of features from bucket.sortFeatures
+                const featureSortOrder = queryData.featureSortOrder;
+                if (featureSortOrder) {
+                    // queryRenderedSymbols documentation says we'll return features in
+                    // "top-to-bottom" rendering order (aka last-to-first).
+                    // Actually there can be multiple symbol instances per feature, so
+                    // we sort each feature based on the first matching symbol instance.
+                    const sortedA = featureSortOrder.indexOf(a.featureIndex);
+                    const sortedB = featureSortOrder.indexOf(b.featureIndex);
+                    assert(sortedA >= 0);
+                    assert(sortedB >= 0);
+                    return sortedB - sortedA;
+                } else {
+                    // Bucket hasn't been re-sorted based on angle, so use the
+                    // reverse of the order the features appeared in the data.
+                    return b.featureIndex - a.featureIndex;
+                }
+            });
+            for (const symbolFeature of layerSymbols) {
+                resultFeatures.push(symbolFeature.feature);
+            }
+        }
+    }
+
+    // Merge state from SourceCache into the results
+    for (const layerName in result) {
+        result[layerName].forEach((feature) => {
+            const layer = styleLayers[layerName];
+            const sourceCache = sourceCaches[layer.source];
+            const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
+            feature.source = feature.layer.source;
+            if (feature.layer['source-layer']) {
+                feature.sourceLayer = feature.layer['source-layer'];
+            }
+            feature.state = state;
+        });
+    }
+    return result;
+}
+
+export function querySourceFeatures(sourceCache: SourceCache, params: any) {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });
@@ -43,7 +129,7 @@ exports.source = function(sourceCache: SourceCache, params: any) {
     const dataTiles = {};
     for (let i = 0; i < tiles.length; i++) {
         const tile = tiles[i];
-        const dataID = new TileCoord(Math.min(tile.sourceMaxZoom, tile.coord.z), tile.coord.x, tile.coord.y, 0).id;
+        const dataID = tile.tileID.canonical.key;
         if (!dataTiles[dataID]) {
             dataTiles[dataID] = true;
             tile.querySourceFeatures(result, params);
@@ -51,12 +137,12 @@ exports.source = function(sourceCache: SourceCache, params: any) {
     }
 
     return result;
-};
+}
 
 function sortTilesIn(a, b) {
-    const coordA = a.coord;
-    const coordB = b.coord;
-    return (coordA.z - coordB.z) || (coordA.y - coordB.y) || (coordA.w - coordB.w) || (coordA.x - coordB.x);
+    const idA = a.tileID;
+    const idB = b.tileID;
+    return (idA.overscaledZ - idB.overscaledZ) || (idA.canonical.y - idB.canonical.y) || (idA.wrap - idB.wrap) || (idA.canonical.x - idB.canonical.x);
 }
 
 function mergeRenderedFeatureLayers(tiles) {

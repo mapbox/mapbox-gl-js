@@ -1,12 +1,9 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Point = require('@mapbox/point-geometry');
-const Transform = require('../../../src/geo/transform');
-const TileCoord = require('../../../src/source/tile_coord');
-const LngLat = require('../../../src/geo/lng_lat');
-
-const fixed = require('mapbox-gl-js-test/fixed');
+import { test } from 'mapbox-gl-js-test';
+import Point from '@mapbox/point-geometry';
+import Transform from '../../../src/geo/transform';
+import LngLat from '../../../src/geo/lng_lat';
+import { OverscaledTileID, CanonicalTileID } from '../../../src/source/tile_id';
+import fixed from 'mapbox-gl-js-test/fixed';
 const fixedLngLat = fixed.LngLat;
 const fixedCoord = fixed.Coord;
 
@@ -16,6 +13,7 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         t.equal(transform.unmodified, true);
+        t.equal(transform.maxValidLatitude, 85.051129);
         t.equal(transform.tileSize, 512, 'tileSize');
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
@@ -129,16 +127,32 @@ test('transform', (t) => {
         t.deepEqual(transform.coveringTiles(options), []);
 
         transform.zoom = 1;
-        t.deepEqual(transform.coveringTiles(options), ['1', '33', '65', '97'].map(TileCoord.fromID));
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(1, 0, 1, 0, 0),
+            new OverscaledTileID(1, 0, 1, 1, 0),
+            new OverscaledTileID(1, 0, 1, 0, 1),
+            new OverscaledTileID(1, 0, 1, 1, 1)]);
 
         transform.zoom = 2.4;
-        t.deepEqual(transform.coveringTiles(options), ['162', '194', '290', '322'].map(TileCoord.fromID));
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(2, 0, 2, 1, 1),
+            new OverscaledTileID(2, 0, 2, 2, 1),
+            new OverscaledTileID(2, 0, 2, 1, 2),
+            new OverscaledTileID(2, 0, 2, 2, 2)]);
 
         transform.zoom = 10;
-        t.deepEqual(transform.coveringTiles(options), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(10, 0, 10, 511, 511),
+            new OverscaledTileID(10, 0, 10, 512, 511),
+            new OverscaledTileID(10, 0, 10, 511, 512),
+            new OverscaledTileID(10, 0, 10, 512, 512)]);
 
         transform.zoom = 11;
-        t.deepEqual(transform.coveringTiles(options), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
+        t.deepEqual(transform.coveringTiles(options), [
+            new OverscaledTileID(10, 0, 10, 511, 511),
+            new OverscaledTileID(10, 0, 10, 512, 511),
+            new OverscaledTileID(10, 0, 10, 511, 512),
+            new OverscaledTileID(10, 0, 10, 512, 512)]);
 
         t.end();
     });
@@ -203,6 +217,14 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('clamps latitude', (t) => {
+        const transform = new Transform();
+
+        t.equal(transform.latY(-90), transform.latY(-transform.maxValidLatitude));
+        t.equal(transform.latY(90), transform.latY(transform.maxValidLatitude));
+        t.end();
+    });
+
     t.test('clamps pitch', (t) => {
         const transform = new Transform();
 
@@ -214,6 +236,23 @@ test('transform', (t) => {
 
         transform.pitch = 90;
         t.equal(transform.pitch, 60);
+
+        t.end();
+    });
+
+    t.test('visibleUnwrappedCoordinates', (t) => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+        transform.zoom = 0;
+        transform.center = { lng: -170.01, lat: 0.01 };
+
+        let unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
+        t.equal(unwrappedCoords.length, 2);
+
+        //getVisibleUnwrappedCoordinates should honor _renderWorldCopies
+        transform._renderWorldCopies = false;
+        unwrappedCoords = transform.getVisibleUnwrappedCoordinates(new CanonicalTileID(0, 0, 0));
+        t.equal(unwrappedCoords.length, 1);
 
         t.end();
     });

@@ -36,6 +36,7 @@
         "error": "Expected value to be of type boolean, but found number instead."
       },
       {"error": "Expected value to be of type boolean, but found null instead."}
-    ]
+    ],
+    "serialized": ["boolean", ["get", "x"]]
   }
 }

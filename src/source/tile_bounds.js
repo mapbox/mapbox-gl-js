@@ -1,9 +1,10 @@
 // @flow
 
-const LngLatBounds = require('../geo/lng_lat_bounds');
-const clamp = require('../util/util').clamp;
+import LngLatBounds from '../geo/lng_lat_bounds';
 
-import type TileCoord from './tile_coord';
+import { clamp } from '../util/util';
+
+import type {CanonicalTileID} from './tile_id';
 
 class TileBounds {
     bounds: LngLatBounds;
@@ -22,18 +23,14 @@ class TileBounds {
         return [Math.max(-180, bounds[0]), Math.max(-90, bounds[1]), Math.min(180, bounds[2]), Math.min(90, bounds[3])];
     }
 
-    contains(coord: TileCoord, maxzoom: number) {
-        // TileCoord returns incorrect z for overscaled tiles, so we use this
-        // to make sure overzoomed tiles still get displayed.
-        const tileZ = maxzoom ? Math.min(coord.z, maxzoom) : coord.z;
-
+    contains(tileID: CanonicalTileID) {
         const level = {
-            minX: Math.floor(this.lngX(this.bounds.getWest(), tileZ)),
-            minY: Math.floor(this.latY(this.bounds.getNorth(), tileZ)),
-            maxX: Math.ceil(this.lngX(this.bounds.getEast(), tileZ)),
-            maxY: Math.ceil(this.latY(this.bounds.getSouth(), tileZ))
+            minX: Math.floor(this.lngX(this.bounds.getWest(), tileID.z)),
+            minY: Math.floor(this.latY(this.bounds.getNorth(), tileID.z)),
+            maxX: Math.ceil(this.lngX(this.bounds.getEast(), tileID.z)),
+            maxY: Math.ceil(this.latY(this.bounds.getSouth(), tileID.z))
         };
-        const hit = coord.x >= level.minX && coord.x < level.maxX && coord.y >= level.minY && coord.y < level.maxY;
+        const hit = tileID.x >= level.minX && tileID.x < level.maxX && tileID.y >= level.minY && tileID.y < level.maxY;
         return hit;
     }
 
@@ -48,4 +45,4 @@ class TileBounds {
     }
 }
 
-module.exports = TileBounds;
+export default TileBounds;

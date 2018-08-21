@@ -1,21 +1,32 @@
 // @flow
 
-const jsdom = require('jsdom');
-const gl = require('gl');
-const sinon = require('sinon');
-const util = require('./util');
+import jsdom from 'jsdom';
+
+import gl from 'gl';
+import sinon from 'sinon';
+import { extend } from './util';
+
+import type {Window} from '../types/window';
+
+const { window: _window } = new jsdom.JSDOM('', {
+    virtualConsole: new jsdom.VirtualConsole().sendTo(console)
+});
+
+restore();
+
+export default _window;
 
 function restore(): Window {
-    // Remove previous window from module.exports
-    const previousWindow = module.exports;
+    // Remove previous window from exported object
+    const previousWindow = _window;
     if (previousWindow.close) previousWindow.close();
     for (const key in previousWindow) {
         if (previousWindow.hasOwnProperty(key)) {
-            delete previousWindow[key];
+            delete (previousWindow: any)[key];
         }
     }
 
-    // Create new window and inject into module.exports
+    // Create new window and inject into exported object
     const { window } = new jsdom.JSDOM('', {
         // Send jsdom console output to the node console object.
         virtualConsole: new jsdom.VirtualConsole().sendTo(console)
@@ -57,9 +68,8 @@ function restore(): Window {
 
     window.ImageData = window.ImageData || function() { return false; };
     window.ImageBitmap = window.ImageBitmap || function() { return false; };
-    util.extend(module.exports, window);
+    window.WebGLFramebuffer = window.WebGLFramebuffer || Object;
+    extend(_window, window);
 
     return window;
 }
-
-module.exports = restore();

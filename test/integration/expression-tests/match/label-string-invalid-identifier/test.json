@@ -20,6 +20,13 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": ["match", "match", "match", "match", "otherwise"]
+    "outputs": ["match", "match", "match", "match", "otherwise"],
+    "serialized": [
+      "match",
+      ["string", ["get", "x"]],
+      ["0-1", "a.b", "weird\u2028json\u2029issue", "{}"],
+      "match",
+      "otherwise"
+    ]
   }
 }

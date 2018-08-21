@@ -1,161 +1,115 @@
-'use strict';
-
 /* eslint-disable no-process-exit */
 
-const fs = require('fs');
-const path = require('path');
-const queue = require('d3-queue').queue;
-const colors = require('colors/safe');
-const template = require('lodash').template;
-const shuffler = require('shuffle-seed');
+import path from 'path';
+import fs from 'fs';
+import glob from 'glob';
+import {shuffle} from 'shuffle-seed';
+import {queue} from 'd3-queue';
+import colors from 'chalk';
+import template from 'lodash.template';
+import createServer from './server';
 
-module.exports = function (directory, implementation, options, run) {
+export default function (directory, implementation, options, run) {
     const q = queue(1);
-    const server = require('./server')();
+    const server = createServer();
 
     const tests = options.tests || [];
     const ignores = options.ignores || {};
 
-    const available = [];
-    const fixtureFilename = options.fixtureFilename || 'style.json';
+    let sequence = glob.sync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
+        .map(fixture => {
+            const id = path.dirname(fixture);
+            const style = require(path.join(directory, fixture));
 
-    fs.readdirSync(directory).forEach((group) => {
-        if (
-            group === 'index.html' ||
-            group === 'index-recycle-map.html' ||
-            group === 'results.html.tmpl' ||
-            group === 'result_item.html.tmpl' ||
-            group[0] === '.'
-        ) {
-            return;
-        }
+            server.localizeURLs(style);
 
-        fs.readdirSync(path.join(directory, group)).forEach((test) => {
-            if (test[0] === '.')
-                return;
+            style.metadata = style.metadata || {};
+            const test = style.metadata.test = Object.assign({
+                id,
+                ignored: ignores[`${path.basename(directory)}/${id}`],
+                width: 512,
+                height: 512,
+                pixelRatio: 1,
+                recycleMap: options.recycleMap || false,
+                allowed: 0.00015
+            }, style.metadata.test);
 
-            available.push({ group: group, test: test });
-        });
-    });
-
-    let sequence = [];
-
-    function shouldRunTest(group, test) {
-        try {
-            if (!fs.lstatSync(path.join(directory, group, test)).isDirectory())
-                return false;
-            if (!fs.lstatSync(path.join(directory, group, test, fixtureFilename)).isFile())
-                return false;
-        } catch (err) {
-            console.log(colors.blue(`* omitting ${group} ${test} due to missing ${fixtureFilename}`));
-            return false;
-        }
-
-        if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && group === 'debug') {
-            console.log(colors.gray(`* skipped ${group} ${test}`));
-            return false;
-        }
-
-        const id = `${path.basename(directory)}/${group}/${test}`;
-        const ignored = ignores[id];
-        if (/^skip/.test(ignored)) {
-            console.log(colors.gray(`* skipped ${group} ${test} (${ignored})`));
-            return false;
-        }
-
-        return true;
-    }
-
-    function addTestToSequence(group, test) {
-        // Skip ignored and malformed tests.
-        if (!shouldRunTest(group, test)) return;
-
-        const style = require(path.join(directory, group, test, fixtureFilename));
-
-        server.localizeURLs(style);
-
-        const id = `${path.basename(directory)}/${group}/${test}`;
-        const ignored = ignores[id];
-
-        const params = Object.assign({
-            group,
-            test,
-            width: 512,
-            height: 512,
-            pixelRatio: 1,
-            recycleMap: options.recycleMap || false,
-            allowed: 0.00015
-        }, style.metadata && style.metadata.test, {ignored});
-
-        if ('diff' in params) {
-            if (typeof params.diff === 'number') {
-                params.allowed = params.diff;
-            } else if (implementation in params.diff) {
-                params.allowed = params.diff[implementation];
-            }
-        }
-
-        sequence.push({ style: style, params: params });
-    }
-
-    if (tests.length) {
-        tests.forEach((test) => {
-            available.forEach((availableTest) => {
-                if (`${availableTest.group}/${availableTest.test}`.indexOf(test) !== -1) {
-                    let unique = true;
-                    // Avoid duplicates in the test sequence.
-                    sequence.forEach((checkedTest) => {
-                        if (checkedTest.params.group === availableTest.group && checkedTest.params.test === availableTest.test) {
-                            unique = false;
-                            return;
-                        }
-                    });
-                    if (unique) {
-                        addTestToSequence(availableTest.group, availableTest.test);
-                    }
+            if ('diff' in test) {
+                if (typeof test.diff === 'number') {
+                    test.allowed = test.diff;
+                } else if (implementation in test.diff) {
+                    test.allowed = test.diff[implementation];
                 }
-            });
-        });
-    } else {
-        // No specific test requested, run all available.
-        available.forEach((availableTest) => {
-            addTestToSequence(availableTest.group, availableTest.test);
-        });
-    }
+            }
 
+            return style;
+        })
+        .filter(style => {
+            const test = style.metadata.test;
+
+            if (tests.length !== 0 && !tests.some(t => test.id.indexOf(t) !== -1)) {
+                return false;
+            }
+
+            if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && test.id.match(/^debug\//)) {
+                console.log(colors.gray(`* skipped ${test.id}`));
+                return false;
+            }
+
+            if (/^skip/.test(test.ignored)) {
+                console.log(colors.gray(`* skipped ${test.id} (${test.ignored})`));
+                return false;
+            }
+
+            return true;
+        });
 
     if (options.shuffle) {
         console.log(colors.white(`* shuffle seed: `) + colors.bold(`${options.seed}`));
-        sequence = shuffler.shuffle(sequence, options.seed);
+        sequence = shuffle(sequence, options.seed);
     }
 
     q.defer(server.listen);
 
-    sequence.forEach((test) => {
+    sequence.forEach(style => {
         q.defer((callback) => {
-            run(test.style, test.params, (err) => {
-                if (err) return callback(err);
+            const test = style.metadata.test;
 
-                if (test.params.ignored && !test.params.ok) {
-                    test.params.color = '#9E9E9E';
-                    test.params.status = 'ignored failed';
-                    console.log(colors.white(`* ignore ${test.params.group} ${test.params.test} (${test.params.ignored})`));
-                } else if (test.params.ignored) {
-                    test.params.color = '#E8A408';
-                    test.params.status = 'ignored passed';
-                    console.log(colors.yellow(`* ignore ${test.params.group} ${test.params.test} (${test.params.ignored})`));
-                } else if (!test.params.ok) {
-                    test.params.color = 'red';
-                    test.params.status = 'failed';
-                    console.log(colors.red(`* failed ${test.params.group} ${test.params.test}`));
-                } else {
-                    test.params.color = 'green';
-                    test.params.status = 'passed';
-                    console.log(colors.green(`* passed ${test.params.group} ${test.params.test}`));
+            try {
+                run(style, test, handleResult);
+            } catch (error) {
+                handleResult(error);
+            }
+
+            function handleResult (error) {
+                if (error) {
+                    test.error = error;
                 }
 
-                callback(null, test.params);
-            });
+                if (test.ignored && !test.ok) {
+                    test.color = '#9E9E9E';
+                    test.status = 'ignored failed';
+                    console.log(colors.white(`* ignore ${test.id} (${test.ignored})`));
+                } else if (test.ignored) {
+                    test.color = '#E8A408';
+                    test.status = 'ignored passed';
+                    console.log(colors.yellow(`* ignore ${test.id} (${test.ignored})`));
+                } else if (test.error) {
+                    test.color = 'red';
+                    test.status = 'errored';
+                    console.log(colors.red(`* errored ${test.id}`));
+                } else if (!test.ok) {
+                    test.color = 'red';
+                    test.status = 'failed';
+                    console.log(colors.red(`* failed ${test.id}`));
+                } else {
+                    test.color = 'green';
+                    test.status = 'passed';
+                    console.log(colors.green(`* passed ${test.id}`));
+                }
+
+                callback(null, test);
+            }
         });
     });
 
@@ -168,31 +122,34 @@ module.exports = function (directory, implementation, options, run) {
             return;
         }
 
-        results = results.slice(1, -1);
+        const tests = results.slice(1, -1);
 
         if (process.env.UPDATE) {
-            console.log(`Updated ${results.length} tests.`);
+            console.log(`Updated ${tests.length} tests.`);
             process.exit(0);
         }
 
         let passedCount = 0,
             ignoreCount = 0,
             ignorePassCount = 0,
-            failedCount = 0;
+            failedCount = 0,
+            erroredCount = 0;
 
-        results.forEach((params) => {
-            if (params.ignored && !params.ok) {
+        tests.forEach((test) => {
+            if (test.ignored && !test.ok) {
                 ignoreCount++;
-            } else if (params.ignored) {
+            } else if (test.ignored) {
                 ignorePassCount++;
-            } else if (!params.ok) {
+            } else if (test.error) {
+                erroredCount++;
+            } else if (!test.ok) {
                 failedCount++;
             } else {
                 passedCount++;
             }
         });
 
-        const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount;
+        const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount + erroredCount;
 
         if (passedCount > 0) {
             console.log(colors.green('%d passed (%s%)'),
@@ -214,12 +171,18 @@ module.exports = function (directory, implementation, options, run) {
                 failedCount, (100 * failedCount / totalCount).toFixed(1));
         }
 
+        if (erroredCount > 0) {
+            console.log(colors.red('%d errored (%s%)'),
+                erroredCount, (100 * erroredCount / totalCount).toFixed(1));
+        }
+
         const resultsTemplate = template(fs.readFileSync(path.join(__dirname, '..', 'results.html.tmpl'), 'utf8'));
         const itemTemplate = template(fs.readFileSync(path.join(directory, 'result_item.html.tmpl'), 'utf8'));
 
-        const failed = results.filter(r => r.status === 'failed');
+        const unsuccessful = tests.filter(test =>
+            test.status === 'failed' || test.status === 'errored');
 
-        const resultsShell = resultsTemplate({ failed, sequence, shuffle: options.shuffle, seed: options.seed })
+        const resultsShell = resultsTemplate({ unsuccessful, tests, shuffle: options.shuffle, seed: options.seed })
             .split('<!-- results go here -->');
 
         const p = path.join(directory, options.recycleMap ? 'index-recycle-map.html' : 'index.html');
@@ -227,19 +190,19 @@ module.exports = function (directory, implementation, options, run) {
 
         const q = queue(1);
         q.defer(write, out, resultsShell[0]);
-        for (const r of results) {
-            q.defer(write, out, itemTemplate({ r, hasFailedTests: failed.length > 0 }));
+        for (const test of tests) {
+            q.defer(write, out, itemTemplate({ r: test, hasFailedTests: unsuccessful.length > 0 }));
         }
         q.defer(write, out, resultsShell[1]);
         q.await(() => {
             out.end();
             out.on('close', () => {
                 console.log(`Results at: ${p}`);
-                process.exit(failedCount === 0 ? 0 : 1);
+                process.exit((failedCount + erroredCount) === 0 ? 0 : 1);
             });
         });
     });
-};
+}
 
 function write(stream, data, cb) {
     if (!stream.write(data)) {

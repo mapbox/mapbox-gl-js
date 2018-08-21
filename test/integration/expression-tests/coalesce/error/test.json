@@ -25,6 +25,12 @@
       {"error": "Expected value to be of type number, but found null instead."},
       {"error": "Expected value to be of type number, but found null instead."},
       {"error": "Expected value to be of type number, but found null instead."}
+    ],
+    "serialized": [
+      "coalesce",
+      ["number", ["get", "x"]],
+      ["number", ["get", "y"]],
+      ["number", ["get", "z"]]
     ]
   }
 }

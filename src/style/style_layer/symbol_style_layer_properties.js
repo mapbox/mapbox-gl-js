@@ -1,21 +1,23 @@
-// This file is generated. Edit build/generate-style-code.js, then run `node build/generate-style-code.js`.
+// This file is generated. Edit build/generate-style-code.js, then run `yarn run codegen`.
 // @flow
 /* eslint-disable */
 
-const styleSpec = require('../../style-spec/reference/latest');
+import styleSpec from '../../style-spec/reference/latest';
 
-const {
+import {
     Properties,
     DataConstantProperty,
     DataDrivenProperty,
     CrossFadedProperty,
-    HeatmapColorProperty
-} = require('../properties');
+    ColorRampProperty
+} from '../properties';
 
 import type Color from '../../style-spec/util/color';
 
+import type {Formatted} from '../../style-spec/expression/definitions/formatted';
+
 export type LayoutProps = {|
-    "symbol-placement": DataConstantProperty<"point" | "line">,
+    "symbol-placement": DataConstantProperty<"point" | "line" | "line-center">,
     "symbol-spacing": DataConstantProperty<number>,
     "symbol-avoid-edges": DataConstantProperty<boolean>,
     "icon-allow-overlap": DataConstantProperty<boolean>,
@@ -34,8 +36,8 @@ export type LayoutProps = {|
     "icon-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-pitch-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
     "text-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">,
-    "text-field": DataDrivenProperty<string>,
-    "text-font": DataConstantProperty<Array<string>>,
+    "text-field": DataDrivenProperty<string | Formatted>,
+    "text-font": DataDrivenProperty<Array<string>>,
     "text-size": DataDrivenProperty<number>,
     "text-max-width": DataDrivenProperty<number>,
     "text-line-height": DataConstantProperty<number>,
@@ -74,7 +76,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-pitch-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["text-pitch-alignment"]),
     "text-rotation-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["text-rotation-alignment"]),
     "text-field": new DataDrivenProperty(styleSpec["layout_symbol"]["text-field"]),
-    "text-font": new DataConstantProperty(styleSpec["layout_symbol"]["text-font"]),
+    "text-font": new DataDrivenProperty(styleSpec["layout_symbol"]["text-font"]),
     "text-size": new DataDrivenProperty(styleSpec["layout_symbol"]["text-size"]),
     "text-max-width": new DataDrivenProperty(styleSpec["layout_symbol"]["text-max-width"]),
     "text-line-height": new DataConstantProperty(styleSpec["layout_symbol"]["text-line-height"]),
@@ -126,4 +128,9 @@ const paint: Properties<PaintProps> = new Properties({
     "text-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["text-translate-anchor"]),
 });
 
-module.exports = { paint, layout };
+// Note: without adding the explicit type annotation, Flow infers weaker types
+// for these objects from their use in the constructor to StyleLayer, as
+// {layout?: Properties<...>, paint: Properties<...>}
+export default ({ paint, layout }: $Exact<{
+  paint: Properties<PaintProps>, layout: Properties<LayoutProps>
+}>);

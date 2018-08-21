@@ -1,5 +1,5 @@
 [ignore]
-.*/node_modules/jsonlint-lines-primitives/.*
+.*/node_modules/@mapbox/jsonlint-lines-primitives/.*
 .*/node_modules/stylelint/.*
 .*/node_modules/unflowify/.*
 .*/node_modules/flow-coverage-report/.*
@@ -7,10 +7,12 @@
 .*/node_modules/conventional-changelog-core/.*
 .*/node_modules/htmltojsx/.*
 .*/node_modules/documentation/.*
+.*/node_modules/module-deps/.*
+.*/node_modules/bcryptjs/.*
+.*/node_modules/@mapbox/geojson-types/fixtures/.*
 .*/test/unit/style-spec/fixture/invalidjson.input.json
-
-[options]
-unsafe.enable_getters_and_setters=true
+.*/test/integration/render-tests/.*
+.*/test/build/downstream-flow-fixture/.*
 
 [version]
-0.57.3
+0.77.0

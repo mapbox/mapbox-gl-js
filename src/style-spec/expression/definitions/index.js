@@ -1,64 +1,75 @@
 // @flow
 
-const {
-    NullType,
-    NumberType,
-    StringType,
-    BooleanType,
-    ColorType,
-    ObjectType,
-    ValueType,
-    ErrorType,
-    array,
-    toString
-} = require('../types');
+import { NumberType, StringType, BooleanType, ColorType, ObjectType, ValueType, ErrorType, CollatorType, array, toString } from '../types';
 
-const { typeOf, Color, validateRGBA } = require('../values');
-const { CompoundExpression, varargs } = require('../compound_expression');
-const RuntimeError = require('../runtime_error');
-const Let = require('./let');
-const Var = require('./var');
-const Literal = require('./literal');
-const Assertion = require('./assertion');
-const ArrayAssertion = require('./array');
-const Coercion = require('./coercion');
-const At = require('./at');
-const Match = require('./match');
-const Case = require('./case');
-const Step = require('./step');
-const Interpolate = require('./interpolate');
-const Coalesce = require('./coalesce');
+import { typeOf, Color, validateRGBA } from '../values';
+import CompoundExpression from '../compound_expression';
+import RuntimeError from '../runtime_error';
+import Let from './let';
+import Var from './var';
+import Literal from './literal';
+import Assertion from './assertion';
+import ArrayAssertion from './array';
+import Coercion from './coercion';
+import At from './at';
+import Match from './match';
+import Case from './case';
+import Step from './step';
+import Interpolate from './interpolate';
+import Coalesce from './coalesce';
+import {
+    Equals,
+    NotEquals,
+    LessThan,
+    GreaterThan,
+    LessThanOrEqual,
+    GreaterThanOrEqual
+} from './comparison';
+import { CollatorExpression } from './collator';
+import { Formatted, FormatExpression } from './formatted';
+import Length from './length';
 
-import type { Expression } from '../expression';
+import type { Type } from '../types';
+import type { Varargs } from '../compound_expression';
+import type { ExpressionRegistry } from '../expression';
 
-const expressions: { [string]: Class<Expression> } = {
+const expressions: ExpressionRegistry = {
     // special forms
-    'let': Let,
-    'var': Var,
-    'literal': Literal,
-    'string': Assertion,
-    'number': Assertion,
-    'boolean': Assertion,
-    'object': Assertion,
+    '==': Equals,
+    '!=': NotEquals,
+    '>': GreaterThan,
+    '<': LessThan,
+    '>=': GreaterThanOrEqual,
+    '<=': LessThanOrEqual,
     'array': ArrayAssertion,
-    'to-number': Coercion,
-    'to-color': Coercion,
     'at': At,
+    'boolean': Assertion,
     'case': Case,
-    'match': Match,
     'coalesce': Coalesce,
+    'collator': CollatorExpression,
+    'format': FormatExpression,
+    'interpolate': Interpolate,
+    'length': Length,
+    'let': Let,
+    'literal': Literal,
+    'match': Match,
+    'number': Assertion,
+    'object': Assertion,
     'step': Step,
-    'interpolate': Interpolate
+    'string': Assertion,
+    'to-color': Coercion,
+    'to-number': Coercion,
+    'var': Var
 };
 
 function rgba(ctx, [r, g, b, a]) {
     r = r.evaluate(ctx);
     g = g.evaluate(ctx);
     b = b.evaluate(ctx);
-    a = a && a.evaluate(ctx);
-    const error = validateRGBA(r, g, b, a);
+    const alpha = a ? a.evaluate(ctx) : 1;
+    const error = validateRGBA(r, g, b, alpha);
     if (error) throw new RuntimeError(error);
-    return new Color(r / 255, g / 255, b / 255, a);
+    return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
 }
 
 function has(key, obj) {
@@ -70,16 +81,22 @@ function get(key, obj) {
     return typeof v === 'undefined' ? null : v;
 }
 
-function length(ctx, [v]) {
-    return v.evaluate(ctx).length;
+function binarySearch(v, a, i, j) {
+    while (i <= j) {
+        const m = (i + j) >> 1;
+        if (a[m] === v)
+            return true;
+        if (a[m] > v)
+            j = m - 1;
+        else
+            i = m + 1;
+    }
+    return false;
 }
 
-function eq(ctx, [a, b]) { return a.evaluate(ctx) === b.evaluate(ctx); }
-function ne(ctx, [a, b]) { return a.evaluate(ctx) !== b.evaluate(ctx); }
-function lt(ctx, [a, b]) { return a.evaluate(ctx) < b.evaluate(ctx); }
-function gt(ctx, [a, b]) { return a.evaluate(ctx) > b.evaluate(ctx); }
-function lteq(ctx, [a, b]) { return a.evaluate(ctx) <= b.evaluate(ctx); }
-function gteq(ctx, [a, b]) { return a.evaluate(ctx) >= b.evaluate(ctx); }
+function varargs(type: Type): Varargs {
+    return { type };
+}
 
 CompoundExpression.register(expressions, {
     'error': [
@@ -98,10 +115,12 @@ CompoundExpression.register(expressions, {
         (ctx, [v]) => {
             v = v.evaluate(ctx);
             const type = typeof v;
-            if (v === null || type === 'string' || type === 'number' || type === 'boolean') {
+            if (v === null) {
+                return '';
+            } else if (type === 'string' || type === 'number' || type === 'boolean') {
                 return String(v);
-            } else if (v instanceof Color) {
-                return `rgba(${v.r * 255},${v.g * 255},${v.b * 255},${v.a})`;
+            } else if (v instanceof Color || v instanceof Formatted) {
+                return v.toString();
             } else {
                 return JSON.stringify(v);
             }
@@ -116,8 +135,7 @@ CompoundExpression.register(expressions, {
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
-            const {r, g, b, a} = v.evaluate(ctx);
-            return [r, g, b, a];
+            return v.evaluate(ctx).toArray();
         }
     ],
     'rgb': [
@@ -130,18 +148,6 @@ CompoundExpression.register(expressions, {
         [NumberType, NumberType, NumberType, NumberType],
         rgba
     ],
-    'length': {
-        type: NumberType,
-        overloads: [
-            [
-                [StringType],
-                length
-            ], [
-                [array(ValueType)],
-                length
-            ]
-        ]
-    },
     'has': {
         type: BooleanType,
         overloads: [
@@ -166,6 +172,11 @@ CompoundExpression.register(expressions, {
             ]
         ]
     },
+    'feature-state': [
+        ValueType,
+        [StringType],
+        (ctx, [key]) => get(key.evaluate(ctx), ctx.featureState || {})
+    ],
     'properties': [
         ObjectType,
         [],
@@ -190,6 +201,11 @@ CompoundExpression.register(expressions, {
         NumberType,
         [],
         (ctx) => ctx.globals.heatmapDensity || 0
+    ],
+    'line-progress': [
+        NumberType,
+        [],
+        (ctx) => ctx.globals.lineProgress || 0
     ],
     '+': [
         NumberType,
@@ -315,52 +331,151 @@ CompoundExpression.register(expressions, {
         varargs(NumberType),
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
     ],
-    '==': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], eq],
-            [[StringType, StringType], eq],
-            [[BooleanType, BooleanType], eq],
-            [[NullType, NullType], eq]
-        ]
-    },
-    '!=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], ne],
-            [[StringType, StringType], ne],
-            [[BooleanType, BooleanType], ne],
-            [[NullType, NullType], ne]
-        ]
-    },
-    '>': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], gt],
-            [[StringType, StringType], gt]
-        ]
-    },
-    '<': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], lt],
-            [[StringType, StringType], lt]
-        ]
-    },
-    '>=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], gteq],
-            [[StringType, StringType], gteq]
-        ]
-    },
-    '<=': {
-        type: BooleanType,
-        overloads: [
-            [[NumberType, NumberType], lteq],
-            [[StringType, StringType], lteq]
-        ]
-    },
+    'abs': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.abs(n.evaluate(ctx))
+    ],
+    'round': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => {
+            const v = n.evaluate(ctx);
+            // Javascript's Math.round() rounds towards +Infinity for halfway
+            // values, even when they're negative. It's more common to round
+            // away from 0 (e.g., this is what python and C++ do)
+            return v < 0 ? -Math.round(-v) : Math.round(v);
+        }
+    ],
+    'floor': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.floor(n.evaluate(ctx))
+    ],
+    'ceil': [
+        NumberType,
+        [NumberType],
+        (ctx, [n]) => Math.ceil(n.evaluate(ctx))
+    ],
+    'filter-==': [
+        BooleanType,
+        [StringType, ValueType],
+        (ctx, [k, v]) => ctx.properties()[(k: any).value] === (v: any).value
+    ],
+    'filter-id-==': [
+        BooleanType,
+        [ValueType],
+        (ctx, [v]) => ctx.id() === (v: any).value
+    ],
+    'filter-type-==': [
+        BooleanType,
+        [StringType],
+        (ctx, [v]) => ctx.geometryType() === (v: any).value
+    ],
+    'filter-<': [
+        BooleanType,
+        [StringType, ValueType],
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a < b;
+        }
+    ],
+    'filter-id-<': [
+        BooleanType,
+        [ValueType],
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a < b;
+        }
+    ],
+    'filter->': [
+        BooleanType,
+        [StringType, ValueType],
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a > b;
+        }
+    ],
+    'filter-id->': [
+        BooleanType,
+        [ValueType],
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a > b;
+        }
+    ],
+    'filter-<=': [
+        BooleanType,
+        [StringType, ValueType],
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a <= b;
+        }
+    ],
+    'filter-id-<=': [
+        BooleanType,
+        [ValueType],
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a <= b;
+        }
+    ],
+    'filter->=': [
+        BooleanType,
+        [StringType, ValueType],
+        (ctx, [k, v]) => {
+            const a = ctx.properties()[(k: any).value];
+            const b = (v: any).value;
+            return typeof a === typeof b && a >= b;
+        }
+    ],
+    'filter-id->=': [
+        BooleanType,
+        [ValueType],
+        (ctx, [v]) => {
+            const a = ctx.id();
+            const b = (v: any).value;
+            return typeof a === typeof b && a >= b;
+        }
+    ],
+    'filter-has': [
+        BooleanType,
+        [ValueType],
+        (ctx, [k]) => (k: any).value in ctx.properties()
+    ],
+    'filter-has-id': [
+        BooleanType,
+        [],
+        (ctx) => ctx.id() !== null
+    ],
+    'filter-type-in': [
+        BooleanType,
+        [array(StringType)],
+        (ctx, [v]) => (v: any).value.indexOf(ctx.geometryType()) >= 0
+    ],
+    'filter-id-in': [
+        BooleanType,
+        [array(ValueType)],
+        (ctx, [v]) => (v: any).value.indexOf(ctx.id()) >= 0
+    ],
+    'filter-in-small': [
+        BooleanType,
+        [StringType, array(ValueType)],
+        // assumes v is an array literal
+        (ctx, [k, v]) => (v: any).value.indexOf(ctx.properties()[(k: any).value]) >= 0
+    ],
+    'filter-in-large': [
+        BooleanType,
+        [StringType, array(ValueType)],
+        // assumes v is a array literal with values sorted in ascending order and of a single type
+        (ctx, [k, v]) => binarySearch(ctx.properties()[(k: any).value], (v: any).value, 0, (v: any).value.length - 1)
+    ],
     'all': {
         type: BooleanType,
         overloads: [
@@ -404,6 +519,18 @@ CompoundExpression.register(expressions, {
         [BooleanType],
         (ctx, [b]) => !b.evaluate(ctx)
     ],
+    'is-supported-script': [
+        BooleanType,
+        [StringType],
+        // At parse time this will always return true, so we need to exclude this expression with isGlobalPropertyConstant
+        (ctx, [s]) => {
+            const isSupportedScript = ctx.globals && ctx.globals.isSupportedScript;
+            if (isSupportedScript) {
+                return isSupportedScript(s.evaluate(ctx));
+            }
+            return true;
+        }
+    ],
     'upcase': [
         StringType,
         [StringType],
@@ -418,7 +545,12 @@ CompoundExpression.register(expressions, {
         StringType,
         varargs(StringType),
         (ctx, args) => args.map(arg => arg.evaluate(ctx)).join('')
+    ],
+    'resolved-locale': [
+        StringType,
+        [CollatorType],
+        (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
     ]
 });
 
-module.exports = expressions;
+export default expressions;

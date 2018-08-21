@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": ["rgba(85,255,0,0.5)"]
+    "outputs": ["rgba(85,255,0,0.5)"],
+    "serialized": "rgba(85,255,0,0.5)"
   }
 }

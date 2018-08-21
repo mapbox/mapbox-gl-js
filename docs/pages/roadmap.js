@@ -10,36 +10,18 @@ const meta = {
 };
 
 const roadmap = {
-    "updated_at": "August 1, 2017",
+    "updated_at": "January 26, 2018",
     "roadmap_items": [
         {
             "term": "Active",
             "description": "Things actively being built right now.",
             "items": [
                 {
-                    "name": "Client-side hillshade rendering",
+                    "name": "Improved feature interactivity",
                     "issues": [
-                        "3730",
-                        "4701"
-                    ]
-                },
-                {
-                    "name": "Arbitrary expressions for property functions",
-                    "issues": [
-                        "4715"
-                    ]
-                },
-                {
-                    "name": "Viewport label placement",
-                    "issues": [
-                        "4704",
-                        "#4972"
-                    ]
-                },
-                {
-                    "name": "Heatmaps",
-                    "issues": [
-                        "4756"
+                        "6020",
+                        "6021",
+                        "6022"
                     ]
                 }
             ]
@@ -126,7 +108,7 @@ export default class extends React.Component {
                                     <div key={i} className='col6'>
                                         <div className='roadmap-block fill-white prose keyline-all'>
                                             <div className='pad2'>
-                                                <h2 style={{"margin-bottom": 0}}>{r.term}</h2>
+                                                <h2 style={{marginBottom: 0}}>{r.term}</h2>
                                                 <small className="quiet">{r.description}</small>
                                             </div>
                                             {r.items.map((item, i) =>

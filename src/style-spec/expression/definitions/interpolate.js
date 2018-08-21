@@ -1,14 +1,16 @@
 // @flow
 
-const UnitBezier = require('@mapbox/unitbezier');
-const interpolate = require('../../util/interpolate');
-const { toString, NumberType } = require('../types');
-const { findStopLessThanOrEqualTo } = require("../stops");
+import UnitBezier from '@mapbox/unitbezier';
+
+import * as interpolate from '../../util/interpolate';
+import { toString, NumberType } from '../types';
+import { findStopLessThanOrEqualTo } from '../stops';
 
 import type { Stops } from '../stops';
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+import type { Value } from '../values';
 import type { Type } from '../types';
 
 export type InterpolationType =
@@ -164,7 +166,7 @@ class Interpolate implements Expression {
         const outputLower = outputs[index].evaluate(ctx);
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
-        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t);
+        return (interpolate[this.type.kind.toLowerCase()]: any)(outputLower, outputUpper, t); // eslint-disable-line import/namespace
     }
 
     eachChild(fn: (Expression) => void) {
@@ -172,6 +174,35 @@ class Interpolate implements Expression {
         for (const expression of this.outputs) {
             fn(expression);
         }
+    }
+
+    possibleOutputs(): Array<Value | void> {
+        return [].concat(...this.outputs.map((output) => output.possibleOutputs()));
+    }
+
+    serialize(): Array<mixed> {
+        let interpolation;
+        if (this.interpolation.name === 'linear') {
+            interpolation = ["linear"];
+        } else if (this.interpolation.name === 'exponential') {
+            if  (this.interpolation.base === 1) {
+                interpolation = ["linear"];
+            } else {
+                interpolation = ["exponential", this.interpolation.base];
+            }
+        } else {
+            interpolation = ["cubic-bezier" ].concat(this.interpolation.controlPoints);
+        }
+
+        const serialized = ["interpolate", interpolation, this.input.serialize()];
+
+        for (let i = 0; i < this.labels.length; i++) {
+            serialized.push(
+                this.labels[i],
+                this.outputs[i].serialize()
+            );
+        }
+        return serialized;
     }
 }
 
@@ -223,4 +254,4 @@ function exponentialInterpolation(input, base, lowerValue, upperValue) {
     }
 }
 
-module.exports = Interpolate;
+export default Interpolate;

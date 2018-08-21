@@ -136,7 +136,7 @@ export default class extends React.Component {
                             a <a href='https://developer.mozilla.org/en-US/docs/Web/Security/CSP'>Content Security Policy (CSP)</a> to
                             specify security policies for your website. If you do, Mapbox GL JS requires the following CSP
                             directives:</p>
-                        <pre><code>{`child-src blob: ;\nimg-src data: blob: ;\nscript-src 'unsafe-eval' ;`}</code></pre>
+                        <pre><code>{`worker-src blob: ;\nchild-src blob: ;\nimg-src data: blob: ;`}</code></pre>
 
                         <p>Requesting styles from Mapbox or other services will require additional
                             directives. For Mapbox, you can use this <code>connect-src</code> directive:</p>

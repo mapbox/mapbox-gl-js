@@ -1,61 +1,220 @@
 // @flow
 
+import { Event } from '../util/evented';
+
+import DOM from '../util/dom';
+import Point from '@mapbox/point-geometry';
+import { extend } from '../util/util';
+
 import type Map from './map';
-import type Point from '@mapbox/point-geometry';
 import type LngLat from '../geo/lng_lat';
 import type LngLatBounds from '../geo/lng_lat_bounds';
 
 /**
- * @typedef {Object} MapMouseEvent
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {MouseEvent} originalEvent
- * @property {Point} point The pixel coordinates of the mouse event target, relative to the map
- *   and measured from the top left corner.
- * @property {LngLat} lngLat The geographic location on the map of the mouse event target.
+ * `MapMouseEvent` is the event type for mouse-related map events.
+ * @extends {Object}
  */
-export type MapMouseEvent = {
+export class MapMouseEvent extends Event {
+    /**
+     * The event type.
+     */
     type: 'mousedown'
         | 'mouseup'
         | 'click'
         | 'dblclick'
         | 'mousemove'
+        | 'mouseover'
         | 'mouseenter'
         | 'mouseleave'
         | 'mouseover'
         | 'mouseout'
-        | 'contextmenu',
-    map: Map,
-    originalEvent: MouseEvent,
-    point: Point,
-    lngLat: LngLat
-};
+        | 'contextmenu';
+
+    /**
+     * The `Map` object that fired the event.
+     */
+    target: Map;
+
+    /**
+     * The DOM event which caused the map event.
+     */
+    originalEvent: MouseEvent;
+
+    /**
+     * The pixel coordinates of the mouse cursor, relative to the map and measured from the top left corner.
+     */
+    point: Point;
+
+    /**
+     * The geographic location on the map of the mouse cursor.
+     */
+    lngLat: LngLat;
+
+    /**
+     * Prevents subsequent default processing of the event by the map.
+     *
+     * Calling this method will prevent the following default map behaviors:
+     *
+     *   * On `mousedown` events, the behavior of {@link DragPanHandler}
+     *   * On `mousedown` events, the behavior of {@link DragRotateHandler}
+     *   * On `mousedown` events, the behavior of {@link BoxZoomHandler}
+     *   * On `dblclick` events, the behavior of {@link DoubleClickZoomHandler}
+     *
+     */
+    preventDefault() {
+        this._defaultPrevented = true;
+    }
+
+    /**
+     * `true` if `preventDefault` has been called.
+     */
+    get defaultPrevented(): boolean {
+        return this._defaultPrevented;
+    }
+
+    _defaultPrevented: boolean;
+
+    /**
+     * @private
+     */
+    constructor(type: string, map: Map, originalEvent: MouseEvent, data: Object = {}) {
+        const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
+        const lngLat = map.unproject(point);
+        super(type, extend({ point, lngLat, originalEvent }, data));
+        this._defaultPrevented = false;
+        this.target = map;
+    }
+}
 
 /**
- * @typedef {Object} MapTouchEvent
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {TouchEvent} originalEvent
- * @property {Point} point The pixel coordinates of the center of the touch event points, relative to the map
- *   and measured from the top left corner.
- * @property {LngLat} lngLat The geographic location on the map of the center of the touch event points.
- * @property {Array<Point>} points The array of pixel coordinates corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property.
- * @property {Array<LngLat>} lngLats The geographical locations on the map corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property.
+ * `MapTouchEvent` is the event type for touch-related map events.
+ * @extends {Object}
  */
-export type MapTouchEvent = {
+export class MapTouchEvent extends Event {
+    /**
+     * The event type.
+     */
     type: 'touchstart'
         | 'touchend'
-        | 'touchcancel',
-    map: Map,
-    originalEvent: TouchEvent,
-    lngLat: LngLat,
-    points: Array<Point>,
-    lngLats: Array<LngLat>
-};
+        | 'touchcancel';
+
+    /**
+     * The `Map` object that fired the event.
+     */
+    target: Map;
+
+    /**
+     * The DOM event which caused the map event.
+     */
+    originalEvent: TouchEvent;
+
+    /**
+     * The geographic location on the map of the center of the touch event points.
+     */
+    lngLat: LngLat;
+
+    /**
+     * The pixel coordinates of the center of the touch event points, relative to the map and measured from the top left
+     * corner.
+     */
+    point: Point;
+
+    /**
+     * The array of pixel coordinates corresponding to a
+     * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
+     */
+    points: Array<Point>;
+
+    /**
+     * The geographical locations on the map corresponding to a
+     * [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches) property.
+     */
+    lngLats: Array<LngLat>;
+
+    /**
+     * Prevents subsequent default processing of the event by the map.
+     *
+     * Calling this method will prevent the following default map behaviors:
+     *
+     *   * On `touchstart` events, the behavior of {@link DragPanHandler}
+     *   * On `touchstart` events, the behavior of {@link TouchZoomRotateHandler}
+     *
+     */
+    preventDefault() {
+        this._defaultPrevented = true;
+    }
+
+    /**
+     * `true` if `preventDefault` has been called.
+     */
+    get defaultPrevented(): boolean {
+        return this._defaultPrevented;
+    }
+
+    _defaultPrevented: boolean;
+
+    /**
+     * @private
+     */
+    constructor(type: string, map: Map, originalEvent: TouchEvent) {
+        const points = DOM.touchPos(map.getCanvasContainer(), originalEvent);
+        const lngLats = points.map((t) => map.unproject(t));
+        const point = points.reduce((prev, curr, i, arr) => {
+            return prev.add(curr.div(arr.length));
+        }, new Point(0, 0));
+        const lngLat = map.unproject(point);
+        super(type, { points, point, lngLats, lngLat, originalEvent });
+        this._defaultPrevented = false;
+    }
+}
+
+
+/**
+ * `MapWheelEvent` is the event type for the `wheel` map event.
+ * @extends {Object}
+ */
+export class MapWheelEvent extends Event {
+    /**
+     * The event type.
+     */
+    type: 'wheel';
+
+    /**
+     * The `Map` object that fired the event.
+     */
+    target: Map;
+
+    /**
+     * The DOM event which caused the map event.
+     */
+    originalEvent: WheelEvent;
+
+    /**
+     * Prevents subsequent default processing of the event by the map.
+     *
+     * Calling this method will prevent the the behavior of {@link ScrollZoomHandler}.
+     */
+    preventDefault() {
+        this._defaultPrevented = true;
+    }
+
+    /**
+     * `true` if `preventDefault` has been called.
+     */
+    get defaultPrevented(): boolean {
+        return this._defaultPrevented;
+    }
+
+    _defaultPrevented: boolean;
+
+    /**
+     * @private
+     */
+    constructor(type: string, map: Map, originalEvent: WheelEvent) {
+        super(type, { originalEvent });
+        this._defaultPrevented = false;
+    }
+}
 
 /**
  * @typedef {Object} MapBoxZoomEvent
@@ -130,13 +289,26 @@ export type MapEvent =
     /**
      * Fired when a pointing device (usually a mouse) is moved within the map.
      *
-     * @event mousemove
+     * @event mouseover
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
      * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
      * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     */
+    | 'mouseover'
+
+    /**
+     * Fired when a pointing device (usually a mouse) is moved within the map.
+     *
+     * @event mousemove
+     * @memberof Map
+     * @instance
+     * @property {MapMouseEvent} data
+     * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+     * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+     * @see [Display a popup on over](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
      */
     | 'mousemove'
 
@@ -216,6 +388,16 @@ export type MapEvent =
      * @property {MapMouseEvent} data
      */
     | 'contextmenu'
+
+    /**
+     * Fired when a [`wheel`](https://developer.mozilla.org/en-US/docs/Web/Events/wheel) event occurs within the map.
+     *
+     * @event wheel
+     * @memberof Map
+     * @instance
+     * @property {MapWheelEvent} data
+     */
+    | 'wheel'
 
     /**
      * Fired when a [`touchstart`](https://developer.mozilla.org/en-US/docs/Web/Events/touchstart) event occurs within the map.

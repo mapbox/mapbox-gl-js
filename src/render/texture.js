@@ -1,9 +1,10 @@
 // @flow
 
-const {HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData} = require('../util/window');
+import window from '../util/window';
+const { HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, ImageData } = window;
 
+import type Context from '../gl/context';
 import type {RGBAImage, AlphaImage} from '../util/image';
-import type {ImageTextureSource} from '../source/image_source';
 
 export type TextureFormat =
     | $PropertyType<WebGLRenderingContext, 'RGBA'>
@@ -17,52 +18,82 @@ export type TextureWrap =
     | $PropertyType<WebGLRenderingContext, 'CLAMP_TO_EDGE'>
     | $PropertyType<WebGLRenderingContext, 'MIRRORED_REPEAT'>;
 
+type EmptyImage = {
+    width: number,
+    height: number,
+    data: null
+}
+
 export type TextureImage =
     | RGBAImage
     | AlphaImage
-    | ImageTextureSource;
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | HTMLVideoElement
+    | ImageData
+    | EmptyImage;
 
 class Texture {
-    gl: WebGLRenderingContext;
+    context: Context;
     size: Array<number>;
     texture: WebGLTexture;
     format: TextureFormat;
     filter: ?TextureFilter;
     wrap: ?TextureWrap;
+    useMipmap: boolean;
 
-    constructor(gl: WebGLRenderingContext, image: TextureImage, format: TextureFormat) {
-        this.gl = gl;
-
-        const {width, height} = image;
-        this.size = [width, height];
+    constructor(context: Context, image: TextureImage, format: TextureFormat, options: ?{ premultiply?: boolean, useMipmap?: boolean }) {
+        this.context = context;
         this.format = format;
-
-        this.texture = gl.createTexture();
-        this.update(image);
+        this.texture = context.gl.createTexture();
+        this.update(image, options);
     }
 
-    update(image: TextureImage) {
+    update(image: TextureImage, options: ?{premultiply?: boolean, useMipmap?: boolean}) {
         const {width, height} = image;
-        this.size = [width, height];
+        const resize = !this.size || this.size[0] !== width || this.size[1] !== height;
+        const {context} = this;
+        const {gl} = context;
 
-        const {gl} = this;
+        this.useMipmap = Boolean(options && options.useMipmap);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
-        if (this.format === gl.RGBA) {
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (true: any));
+        if (resize) {
+            this.size = [width, height];
+
+            context.pixelStoreUnpack.set(1);
+
+            if (this.format === gl.RGBA && (!options || options.premultiply !== false)) {
+                context.pixelStoreUnpackPremultiplyAlpha.set(true);
+            }
+
+            if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+            } else {
+                gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
+            }
+
+        } else {
+            if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            } else {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, image.data);
+            }
         }
 
-        if (image instanceof HTMLImageElement || image instanceof HTMLCanvasElement || image instanceof HTMLVideoElement || image instanceof ImageData) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
-        } else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, gl.UNSIGNED_BYTE, image.data);
+        if (this.useMipmap && this.isSizePowerOfTwo()) {
+            gl.generateMipmap(gl.TEXTURE_2D);
         }
     }
 
     bind(filter: TextureFilter, wrap: TextureWrap, minFilter: ?TextureFilter) {
-        const {gl} = this;
+        const {context} = this;
+        const {gl} = context;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+        if (minFilter === gl.LINEAR_MIPMAP_NEAREST && !this.isSizePowerOfTwo()) {
+            minFilter = gl.LINEAR;
+        }
 
         if (filter !== this.filter) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
@@ -77,11 +108,15 @@ class Texture {
         }
     }
 
+    isSizePowerOfTwo() {
+        return this.size[0] === this.size[1] && (Math.log(this.size[0]) / Math.LN2) % 1 === 0;
+    }
+
     destroy() {
-        const {gl} = this;
+        const {gl} = this.context;
         gl.deleteTexture(this.texture);
         this.texture = (null: any);
     }
 }
 
-module.exports = Texture;
+export default Texture;

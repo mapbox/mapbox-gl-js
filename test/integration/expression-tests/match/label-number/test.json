@@ -20,14 +20,11 @@
       "match",
       "otherwise",
       "otherwise",
-      {
-        "error": "Expected value to be of type number, but found string instead."
-      },
-      {
-        "error": "Expected value to be of type number, but found boolean instead."
-      },
-      {"error": "Expected value to be of type number, but found null instead."},
-      {"error": "Expected value to be of type number, but found null instead."}
-    ]
+      "otherwise",
+      "otherwise",
+      "otherwise",
+      "otherwise"
+    ],
+    "serialized": ["match", ["get", "x"], 0, "match", "otherwise"]
   }
 }

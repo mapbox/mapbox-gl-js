@@ -5,12 +5,16 @@
   ],
   "inputs": [[{"zoom": 5}, {}]],
   "expected": {
-    "outputs": [5],
     "compiled": {
       "result": "success",
-      "isZoomConstant": false,
       "isFeatureConstant": true,
+      "isZoomConstant": false,
       "type": "number"
-    }
+    },
+    "outputs": [5],
+    "serialized": [
+      "coalesce",
+      ["interpolate", ["linear"], ["zoom"], 0, 0, 30, 30]
+    ]
   }
 }

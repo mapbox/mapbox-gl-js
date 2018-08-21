@@ -1,10 +1,8 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const VectorTileSource = require('../../../src/source/vector_tile_source');
-const TileCoord = require('../../../src/source/tile_coord');
-const window = require('../../../src/util/window');
-const Evented = require('../../../src/util/evented');
+import { test } from 'mapbox-gl-js-test';
+import VectorTileSource from '../../../src/source/vector_tile_source';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import window from '../../../src/util/window';
+import { Evented } from '../../../src/util/evented';
 
 function createSource(options, transformCallback) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
@@ -153,7 +151,9 @@ test('VectorTileSource', (t) => {
             };
 
             source.on('data', (e) => {
-                if (e.sourceDataType === 'metadata') source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, () => {});
+                if (e.sourceDataType === 'metadata') source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5)
+                }, () => {});
             });
         });
     }
@@ -169,7 +169,7 @@ test('VectorTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
                     loadVectorData: function () {},
                     setExpiryData: function() {}
@@ -199,7 +199,7 @@ test('VectorTileSource', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 const tile = {
-                    coord: new TileCoord(10, 5, 5, 0),
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
                     loadVectorData: function () {
                         this.state = 'loaded';
@@ -227,8 +227,8 @@ test('VectorTileSource', (t) => {
         });
         source.on('data', (e)=>{
             if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
-                t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
                 t.end();
             }
         });
@@ -263,12 +263,44 @@ test('VectorTileSource', (t) => {
 
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
-                t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
-                t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+                t.false(source.hasTile(new OverscaledTileID(8, 0, 8, 96, 132)), 'returns false for tiles outside bounds');
+                t.true(source.hasTile(new OverscaledTileID(8, 0, 8, 95, 132)), 'returns true for tiles inside bounds');
                 t.end();
             }
         });
         window.server.respond();
+    });
+
+    t.test('respects collectResourceTiming parameter on source', (t) => {
+        const source = createSource({
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+            collectResourceTiming: true
+        });
+        source.dispatcher.send = function(type, params, cb) {
+            t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+            setTimeout(cb, 0);
+            t.end();
+            return 1;
+        };
+
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const tile = {
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                    state: 'loading',
+                    loadVectorData: function () {},
+                    setExpiryData: function() {}
+                };
+                source.loadTile(tile, () => {});
+            }
+        });
+    });
+
+    t.test('cancels TileJSON request if removed', (t) => {
+        const source = createSource({ url: "/source.json" });
+        source.onRemove();
+        t.equal(window.server.lastRequest.aborted, true);
+        t.end();
     });
 
     t.end();

@@ -6,9 +6,9 @@ import PageShell from './page_shell';
 import LeftNav from './left_nav';
 import TopNav from './top_nav';
 import {highlightMarkup} from './prism_highlight';
-import supported from 'mapbox-gl-supported';
+import supported from '@mapbox/mapbox-gl-supported';
 import {copy} from 'execcommand-copy';
-import examples from '@mapbox/batfish/data/examples';
+import examples from '@mapbox/batfish/data/examples'; // eslint-disable-line import/no-unresolved
 import entries from 'object.entries';
 
 const tags = {
@@ -18,6 +18,7 @@ const tags = {
     "user-interaction": "User interaction",
     "camera": "Camera",
     "controls-and-overlays": "Controls and overlays",
+    "geocoder": "Geocoder",
     "browser-support": "Browser support",
     "internationalization": "Internationalization support"
 };
@@ -29,7 +30,7 @@ export default function (html) {
             this.state = {
                 filter: '',
                 copied: false,
-                token: '<your access token here>'
+                token: undefined
             };
         }
 
@@ -52,7 +53,7 @@ export default function (html) {
 </head>
 <body>
 
-${html.replace("<script>", `<script>\nmapboxgl.accessToken = '${this.state.token}';`)}
+${html.replace("<script>", `<script>\nmapboxgl.accessToken = '${this.state.token || '<your access token here>'}';`)}
 </body>
 </html>`;
         }
@@ -82,7 +83,7 @@ ${html}
             const {frontMatter} = this.props;
             const filter = this.state.filter.toLowerCase().trim();
             return (
-                <PageShell meta={frontMatter} onUser={(_, token) => this.setState({token})}>
+                <PageShell meta={frontMatter}>
                     <LeftNav>
                         <div className="space-bottom">
                             <input onChange={e => this.setState({filter: e.target.value})}
@@ -92,8 +93,8 @@ ${html}
                             <div key={i} className='space-bottom1'>
                                 {!filter && <h3 className='heading'>{title}</h3>}
                                 {examples
-                                    .filter(({tags, title}) =>
-                                        tags.indexOf(tag) !== -1 && title.toLowerCase().indexOf(filter) !== -1)
+                                    .filter(({tags, title, description}) =>
+                                        tags.indexOf(tag) !== -1 && (title.toLowerCase().indexOf(filter) !== -1 || description.toLowerCase().indexOf(filter) !== -1))
                                     .map(({pathname, title}, i) =>
                                         <a key={i} href={prefixUrl(pathname)}
                                             className={`block small truncate ${title === frontMatter.title && 'active'}`}>{title}</a>
@@ -127,7 +128,7 @@ ${html}
                                     <iframe id='demo' className='row10 col12' allowFullScreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'
                                         ref={(iframe) => { this.iframe = iframe; }}/>}
 
-                                <div className='fill-white js-replace-token keyline-top'>
+                                <div className='fill-white keyline-top'>
                                     <div id='code'>{highlightMarkup(this.displayHTML())}</div>
                                     <a className='button icon clipboard col12 round-bottom' href='#' onClick={(e) => this.copyExample(e)}>
                                         {this.state.copied ? 'Copied to clipboard!' : 'Copy example'}
@@ -146,6 +147,10 @@ ${html}
             doc.open();
             doc.write(this.renderHTML());
             doc.close();
+
+            MapboxPageShell.afterUserCheck(() => {
+                this.setState({token: MapboxPageShell.getUserPublicAccessToken()});
+            });
         }
 
         copyExample(e) {

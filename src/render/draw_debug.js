@@ -1,36 +1,39 @@
 // @flow
 
-const browser = require('../util/browser');
-const mat4 = require('@mapbox/gl-matrix').mat4;
-const EXTENT = require('../data/extent');
-const VertexBuffer = require('../gl/vertex_buffer');
-const VertexArrayObject = require('./vertex_array_object');
-const PosArray = require('../data/pos_array');
+import { mat4 } from 'gl-matrix';
+import EXTENT from '../data/extent';
+import VertexArrayObject from './vertex_array_object';
+import { PosArray } from '../data/array_types';
+import posAttributes from '../data/pos_attributes';
+import DepthMode from '../gl/depth_mode';
+import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type TileCoord from '../source/tile_coord';
+import type {OverscaledTileID} from '../source/tile_id';
 
-module.exports = drawDebug;
+export default drawDebug;
 
-function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<TileCoord>) {
+function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
     for (let i = 0; i < coords.length; i++) {
         drawDebugTile(painter, sourceCache, coords[i]);
     }
 }
 
 function drawDebugTile(painter, sourceCache, coord) {
-    const gl = painter.gl;
-
-    gl.disable(gl.STENCIL_TEST);
-    painter.lineWidth(1 * browser.devicePixelRatio);
+    const context = painter.context;
+    const gl = context.gl;
 
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');
 
+    context.setDepthMode(DepthMode.disabled);
+    context.setStencilMode(StencilMode.disabled);
+    context.setColorMode(painter.colorModeForRenderPass());
+
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform4f(program.uniforms.u_color, 1, 0, 0, 1);
-    painter.debugVAO.bind(gl, program, painter.debugBuffer);
+    painter.debugVAO.bind(context, program, painter.debugBuffer, []);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
 
     const vertices = createTextVerticies(coord.toString(), 50, 200, 5);
@@ -38,15 +41,15 @@ function drawDebugTile(painter, sourceCache, coord) {
     for (let v = 0; v < vertices.length; v += 2) {
         debugTextArray.emplaceBack(vertices[v], vertices[v + 1]);
     }
-    const debugTextBuffer = new VertexBuffer(gl, debugTextArray);
+    const debugTextBuffer = context.createVertexBuffer(debugTextArray, posAttributes.members);
     const debugTextVAO = new VertexArrayObject();
-    debugTextVAO.bind(gl, program, debugTextBuffer);
+    debugTextVAO.bind(context, program, debugTextBuffer, []);
     gl.uniform4f(program.uniforms.u_color, 1, 1, 1, 1);
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
     const tileSize = sourceCache.getTile(coord).tileSize;
-    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.z) * tileSize);
+    const onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.overscaledZ) * tileSize);
     const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (let i = 0; i < translations.length; i++) {
         const translation = translations[i];

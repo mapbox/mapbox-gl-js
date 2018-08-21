@@ -1,37 +1,35 @@
 // @flow
 
-const Benchmark = require('../lib/benchmark');
-const createStyle = require('../lib/create_style');
+import Benchmark from '../lib/benchmark';
 
-const VT = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const assert = require('assert');
-const promisify = require('pify');
+import createStyle from '../lib/create_style';
+import VT from '@mapbox/vector-tile';
+import Protobuf from 'pbf';
+import assert from 'assert';
+import promisify from 'pify';
+import WorkerTile from '../../src/source/worker_tile';
+import StyleLayerIndex from '../../src/style/style_layer_index';
+import deref from '../../src/style-spec/deref';
+import { OverscaledTileID } from '../../src/source/tile_id';
+import { normalizeStyleURL, normalizeSourceURL, normalizeTileURL } from '../../src/util/mapbox';
 
-const WorkerTile = require('../../src/source/worker_tile');
-const StyleLayerIndex = require('../../src/style/style_layer_index');
-const deref = require('../../src/style-spec/deref');
-const TileCoord = require('../../src/source/tile_coord');
-const {
-    normalizeStyleURL,
-    normalizeSourceURL,
-    normalizeTileURL
-} = require('../../src/util/mapbox');
+import type {TileJSON} from '../../src/types/tilejson';
+import type {StyleSpecification} from '../../src/style-spec/types';
 
 // Note: this class is extended in turn by the LayoutDDS benchmark.
-module.exports = class Layout extends Benchmark {
+export default class Layout extends Benchmark {
     glyphs: Object;
     icons: Object;
     workerTile: WorkerTile;
     layerIndex: StyleLayerIndex;
-    tiles: Array<{coord: TileCoord, buffer: ArrayBuffer}>;
+    tiles: Array<{tileID: OverscaledTileID, buffer: ArrayBuffer}>;
 
-    tileCoords(): Array<TileCoord> {
+    tileIDs(): Array<OverscaledTileID> {
         return [
-            new TileCoord(12, 655, 1583),
-            new TileCoord(8, 40, 98),
-            new TileCoord(4, 3, 6),
-            new TileCoord(0, 0, 0)
+            new OverscaledTileID(12, 0, 12, 655, 1583),
+            new OverscaledTileID(8, 0, 8, 40, 98),
+            new OverscaledTileID(4, 0, 4, 3, 6),
+            new OverscaledTileID(0, 0, 0, 0, 0)
         ];
     }
 
@@ -44,15 +42,15 @@ module.exports = class Layout extends Benchmark {
             .then(response => response.json());
     }
 
-    fetchTiles(styleJSON: StyleSpecification): Promise<Array<{coord: TileCoord, buffer: ArrayBuffer}>> {
+    fetchTiles(styleJSON: StyleSpecification): Promise<Array<{tileID: OverscaledTileID, buffer: ArrayBuffer}>> {
         const sourceURL: string = (styleJSON.sources[this.sourceID()]: any).url;
         return fetch(normalizeSourceURL(sourceURL))
             .then(response => response.json())
             .then((tileJSON: TileJSON) => {
-                return Promise.all(this.tileCoords().map(coord => {
-                    return fetch((normalizeTileURL(coord.url(tileJSON.tiles))))
+                return Promise.all(this.tileIDs().map(tileID => {
+                    return fetch((normalizeTileURL(tileID.canonical.url(tileJSON.tiles))))
                         .then(response => response.arrayBuffer())
-                        .then(buffer => ({coord, buffer}));
+                        .then(buffer => ({tileID, buffer}));
                 }));
             });
     }
@@ -103,11 +101,11 @@ module.exports = class Layout extends Benchmark {
 
         let promise: Promise<void> = Promise.resolve();
 
-        for (const {coord, buffer} of this.tiles) {
+        for (const {tileID, buffer} of this.tiles) {
             promise = promise.then(() => {
                 const workerTile = new WorkerTile({
-                    coord,
-                    zoom: coord.z,
+                    tileID: tileID,
+                    zoom: tileID.overscaledZ,
                     tileSize: 512,
                     overscaling: 1,
                     showCollisionBoxes: false,
@@ -133,4 +131,4 @@ module.exports = class Layout extends Benchmark {
 
         return promise;
     }
-};
+}

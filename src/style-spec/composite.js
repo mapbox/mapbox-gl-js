@@ -1,5 +1,5 @@
 
-module.exports = function (style) {
+export default function (style) {
     const styleIDs = [];
     const sourceIDs = [];
     const compositedSourceLayers = [];
@@ -47,4 +47,4 @@ module.exports = function (style) {
     });
 
     return style;
-};
+}

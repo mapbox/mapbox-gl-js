@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const LngLat = require('../../../src/geo/lng_lat');
-const LngLatBounds = require('../../../src/geo/lng_lat_bounds');
+import { test } from 'mapbox-gl-js-test';
+import LngLat from '../../../src/geo/lng_lat';
+import LngLatBounds from '../../../src/geo/lng_lat_bounds';
 
 test('LngLatBounds', (t) => {
     t.test('#constructor', (t) => {
@@ -163,6 +161,14 @@ test('LngLatBounds', (t) => {
     t.test('#toString', (t) => {
         const llb = new LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
         t.deepEqual(llb.toString(), 'LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))');
+        t.end();
+    });
+
+    t.test('#isEmpty', (t) => {
+        const nullBounds = new LngLatBounds();
+        t.equal(nullBounds.isEmpty(), true);
+        nullBounds.extend([-73.9876, 40.7661], [-73.9397, 40.8002]);
+        t.equal(nullBounds.isEmpty(), false);
         t.end();
     });
 

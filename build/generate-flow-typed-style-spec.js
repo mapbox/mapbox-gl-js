@@ -1,4 +1,5 @@
 const spec = require('../src/style-spec/reference/v8.json');
+const properties = require('../src/style-spec/util/properties');
 const fs = require('fs');
 
 function flowEnum(values) {
@@ -40,10 +41,12 @@ function flowType(property) {
         }
     })();
 
-    if (property['property-function']) {
+    if (properties.supportsPropertyExpression(property)) {
         return `DataDrivenPropertyValueSpecification<${baseType}>`;
-    } else if (property['zoom-function']) {
+    } else if (properties.supportsZoomExpression(property)) {
         return `PropertyValueSpecification<${baseType}>`;
+    } else if (property.expression) {
+        return `ExpressionSpecification`;
     } else {
         return baseType;
     }
@@ -54,7 +57,7 @@ function flowProperty(key, property) {
 }
 
 function flowObjectDeclaration(key, properties) {
-    return `declare type ${key} = ${flowObject(properties, '', '*' in properties ? '' : '|')}`;
+    return `export type ${key} = ${flowObject(properties, '', '*' in properties ? '' : '|')}`;
 }
 
 function flowObject(properties, indent, sealing = '') {
@@ -67,7 +70,9 @@ ${indent}${sealing}}`
 }
 
 function flowSourceTypeName(key) {
-    return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}SourceSpecification`);
+    return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}SourceSpecification`)
+        .replace(/_dem/, 'DEM')
+        .replace(/Geojson/, 'GeoJSON');
 }
 
 function flowLayerTypeName(key) {
@@ -107,11 +112,15 @@ function flowLayer(key) {
 
 const layerTypes = Object.keys(spec.layer.type.values);
 
-fs.writeFileSync('flow-typed/style-spec.js', `// Generated code; do not edit. Edit build/generate-flow-typed-style-spec.js instead.
+fs.writeFileSync('src/style-spec/types.js', `// @flow
+// Generated code; do not edit. Edit build/generate-flow-typed-style-spec.js instead.
+/* eslint-disable */
 
-declare type ColorSpecification = string;
+export type ColorSpecification = string;
 
-declare type FilterSpecification =
+export type FormattedSpecification = string;
+
+export type FilterSpecification =
     | ['has', string]
     | ['!has', string]
     | ['==', string, string | number | boolean]
@@ -122,36 +131,36 @@ declare type FilterSpecification =
     | ['<=', string, string | number | boolean]
     | Array<string | FilterSpecification>; // Can't type in, !in, all, any, none -- https://github.com/facebook/flow/issues/2443
 
-declare type TransitionSpecification = {
+export type TransitionSpecification = {
     duration?: number,
     delay?: number
 };
 
 // Note: doesn't capture interpolatable vs. non-interpolatable types.
 
-declare type CameraFunctionSpecification<T> =
+export type CameraFunctionSpecification<T> =
     | {| type: 'exponential', stops: Array<[number, T]> |}
     | {| type: 'interval',    stops: Array<[number, T]> |};
 
-declare type SourceFunctionSpecification<T> =
+export type SourceFunctionSpecification<T> =
     | {| type: 'exponential', stops: Array<[number, T]>, property: string, default?: T |}
     | {| type: 'interval',    stops: Array<[number, T]>, property: string, default?: T |}
     | {| type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T |}
     | {| type: 'identity', property: string, default?: T |};
 
-declare type CompositeFunctionSpecification<T> =
+export type CompositeFunctionSpecification<T> =
     | {| type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T |}
     | {| type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T |}
     | {| type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T |};
 
-declare type ExpressionSpecification = Array<mixed>;
+export type ExpressionSpecification = Array<mixed>;
 
-declare type PropertyValueSpecification<T> =
+export type PropertyValueSpecification<T> =
     | T
     | CameraFunctionSpecification<T>
     | ExpressionSpecification;
 
-declare type DataDrivenPropertyValueSpecification<T> =
+export type DataDrivenPropertyValueSpecification<T> =
     | T
     | CameraFunctionSpecification<T>
     | SourceFunctionSpecification<T>
@@ -164,12 +173,12 @@ ${flowObjectDeclaration('LightSpecification', spec.light)}
 
 ${spec.source.map(key => flowObjectDeclaration(flowSourceTypeName(key), spec[key])).join('\n\n')}
 
-declare type SourceSpecification =
+export type SourceSpecification =
 ${spec.source.map(key => `    | ${flowSourceTypeName(key)}`).join('\n')}
 
 ${layerTypes.map(key => flowLayer(key)).join('\n\n')}
 
-declare type LayerSpecification =
+export type LayerSpecification =
 ${layerTypes.map(key => `    | ${flowLayerTypeName(key)}`).join('\n')};
 
 `);

@@ -1,9 +1,9 @@
 
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
-const validateSpec = require('./validate');
+import ValidationError from '../error/validation_error';
+import getType from '../util/get_type';
+import validateSpec from './validate';
 
-module.exports = function validateObject(options) {
+export default function validateObject(options) {
     const key = options.key;
     const object = options.value;
     const elementSpecs = options.valueSpec || {};
@@ -14,7 +14,7 @@ module.exports = function validateObject(options) {
 
     const type = getType(object);
     if (type !== 'object') {
-        return [new ValidationError(key, object, 'object expected, %s found', type)];
+        return [new ValidationError(key, object, `object expected, ${type} found`)];
     }
 
     for (const objectKey in object) {
@@ -31,7 +31,7 @@ module.exports = function validateObject(options) {
         } else if (elementSpecs['*']) {
             validateElement = validateSpec;
         } else {
-            errors.push(new ValidationError(key, object[objectKey], 'unknown property "%s"', objectKey));
+            errors.push(new ValidationError(key, object[objectKey], `unknown property "${objectKey}"`));
             continue;
         }
 
@@ -47,10 +47,15 @@ module.exports = function validateObject(options) {
     }
 
     for (const elementSpecKey in elementSpecs) {
+        // Don't check `required` when there's a custom validator for that property.
+        if (elementValidators[elementSpecKey]) {
+            continue;
+        }
+
         if (elementSpecs[elementSpecKey].required && elementSpecs[elementSpecKey]['default'] === undefined && object[elementSpecKey] === undefined) {
-            errors.push(new ValidationError(key, object, 'missing required property "%s"', elementSpecKey));
+            errors.push(new ValidationError(key, object, `missing required property "${elementSpecKey}"`));
         }
     }
 
     return errors;
-};
+}

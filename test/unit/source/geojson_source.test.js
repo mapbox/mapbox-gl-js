@@ -1,11 +1,10 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Tile = require('../../../src/source/tile');
-const TileCoord = require('../../../src/source/tile_coord');
-const GeoJSONSource = require('../../../src/source/geojson_source');
-const Transform = require('../../../src/geo/transform');
-const LngLat = require('../../../src/geo/lng_lat');
+import { test } from 'mapbox-gl-js-test';
+import Tile from '../../../src/source/tile';
+import { OverscaledTileID } from '../../../src/source/tile_id';
+import GeoJSONSource from '../../../src/source/geojson_source';
+import Transform from '../../../src/geo/transform';
+import LngLat from '../../../src/geo/lng_lat';
+import { extend } from '../../../src/util/util';
 
 const mockDispatcher = {
     send: function () {}
@@ -46,10 +45,14 @@ const hawkHill = {
 };
 
 test('GeoJSONSource#setData', (t) => {
-    function createSource() {
-        return new GeoJSONSource('id', {data: {}}, {
+    function createSource(opts) {
+        opts = opts || {};
+        opts = extend(opts, { data: {} });
+        return new GeoJSONSource('id', opts, {
             send: function (type, data, callback) {
-                return setTimeout(callback, 0);
+                if (callback) {
+                    return setTimeout(callback, 0);
+                }
             }
         });
     }
@@ -75,19 +78,35 @@ test('GeoJSONSource#setData', (t) => {
         source.load();
     });
 
+    t.test('respects collectResourceTiming parameter on source', (t) => {
+        const source = createSource({ collectResourceTiming: true });
+        source.map = {
+            _transformRequest: (data) => { return { url: data }; }
+        };
+        source.dispatcher.send = function(type, params, cb) {
+            if (type === 'geojson.loadData') {
+                t.true(params.request.collectResourceTiming, 'collectResourceTiming is true on dispatcher message');
+                setTimeout(cb, 0);
+                t.end();
+            }
+            return 1;
+        };
+        source.setData('http://localhost/nonexistent');
+    });
+
     t.end();
 });
 
 test('GeoJSONSource#onRemove', (t) => {
     t.test('broadcasts "removeSource" event', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, {
-            broadcast: function (type, data, callback) {
+            send: function (type, data, callback) {
                 t.false(callback);
                 t.equal(type, 'removeSource');
                 t.deepEqual(data, { type: 'geojson', source: 'id' });
                 t.end();
             },
-            send: function() {
+            broadcast: function() {
                 // Ignore
             }
         });
@@ -125,7 +144,9 @@ test('GeoJSONSource#update', (t) => {
                     extent: 8192,
                     maxZoom: 10,
                     tolerance: 4,
-                    buffer: 256
+                    buffer: 256,
+                    lineMetrics: false,
+                    generateId: true
                 });
                 t.end();
             }
@@ -135,7 +156,8 @@ test('GeoJSONSource#update', (t) => {
             data: {},
             maxzoom: 10,
             tolerance: 0.25,
-            buffer: 16
+            buffer: 16,
+            generateId: true
         }, mockDispatcher).load();
     });
 
@@ -153,7 +175,9 @@ test('GeoJSONSource#update', (t) => {
     t.test('fires event when metadata loads', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
-                setTimeout(callback, 0);
+                if (callback) {
+                    setTimeout(callback, 0);
+                }
             }
         };
 
@@ -169,7 +193,9 @@ test('GeoJSONSource#update', (t) => {
     t.test('fires "error"', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
-                setTimeout(callback.bind(null, 'error'), 0);
+                if (callback) {
+                    setTimeout(callback.bind(null, 'error'), 0);
+                }
             }
         };
 
@@ -190,7 +216,9 @@ test('GeoJSONSource#update', (t) => {
                 if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
                     t.end();
                 }
-                setTimeout(callback, 0);
+                if (callback) {
+                    setTimeout(callback, 0);
+                }
             }
         };
 
@@ -202,7 +230,7 @@ test('GeoJSONSource#update', (t) => {
         source.on('data', (e) => {
             if (e.sourceDataType === 'metadata') {
                 source.setData({});
-                source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+                source.loadTile(new Tile(new OverscaledTileID(0, 0, 0, 0, 0), 512), () => {});
             }
         });
 

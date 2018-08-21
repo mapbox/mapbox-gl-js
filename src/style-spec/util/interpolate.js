@@ -1,18 +1,12 @@
 // @flow
 
-const Color = require('./color');
+import Color from './color';
 
-module.exports = {
-    number,
-    color,
-    array
-};
-
-function number(a: number, b: number, t: number) {
+export function number(a: number, b: number, t: number) {
     return (a * (1 - t)) + (b * t);
 }
 
-function color(from: Color, to: Color, t: number) {
+export function color(from: Color, to: Color, t: number) {
     return new Color(
         number(from.r, to.r, t),
         number(from.g, to.g, t),
@@ -21,7 +15,7 @@ function color(from: Color, to: Color, t: number) {
     );
 }
 
-function array(from: Array<number>, to: Array<number>, t: number) {
+export function array(from: Array<number>, to: Array<number>, t: number): Array<number> {
     return from.map((d, i) => {
         return number(d, to[i], t);
     });

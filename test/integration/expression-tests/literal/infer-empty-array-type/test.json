@@ -1,5 +1,10 @@
 {
-  "propertySpec": {"type": "array", "value": "number"},
+  "propertySpec": {
+    "type": "array",
+    "value": "number",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
   "expression": ["literal", []],
   "inputs": [],
   "expected": {
@@ -9,6 +14,7 @@
       "isZoomConstant": true,
       "type": "array<number>"
     },
-    "outputs": []
+    "outputs": [],
+    "serialized": ["literal", []]
   }
 }

@@ -1,19 +1,22 @@
 // @flow
 
-const Evented = require('../util/evented');
-const util = require('../util/util');
-const loadTileJSON = require('./load_tilejson');
-const normalizeURL = require('../util/mapbox').normalizeTileURL;
-const TileBounds = require('./tile_bounds');
-const ResourceType = require('../util/ajax').ResourceType;
-const browser = require('../util/browser');
+import { Event, ErrorEvent, Evented } from '../util/evented';
+
+import { extend, pick } from '../util/util';
+import loadTileJSON from './load_tilejson';
+import { normalizeTileURL as normalizeURL, postTurnstileEvent } from '../util/mapbox';
+import TileBounds from './tile_bounds';
+import { ResourceType } from '../util/ajax';
+import browser from '../util/browser';
 
 import type {Source} from './source';
-import type TileCoord from './tile_coord';
+import type {OverscaledTileID} from './tile_id';
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
+import type {VectorSourceSpecification} from '../style-spec/types';
 
 class VectorTileSource extends Evented implements Source {
     type: 'vector';
@@ -25,6 +28,7 @@ class VectorTileSource extends Evented implements Source {
     tileSize: number;
 
     _options: VectorSourceSpecification;
+    _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
     bounds: ?[number, number, number, number];
@@ -32,8 +36,9 @@ class VectorTileSource extends Evented implements Source {
     tileBounds: TileBounds;
     reparseOverscaled: boolean;
     isTileClipped: boolean;
+    _tileJSONRequest: ?Cancelable;
 
-    constructor(id: string, options: VectorSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -46,8 +51,10 @@ class VectorTileSource extends Evented implements Source {
         this.reparseOverscaled = true;
         this.isTileClipped = true;
 
-        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-        this._options = util.extend({ type: 'vector' }, options);
+        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = extend({ type: 'vector' }, options);
+
+        this._collectResourceTiming = options.collectResourceTiming;
 
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
@@ -57,26 +64,28 @@ class VectorTileSource extends Evented implements Source {
     }
 
     load() {
-        this.fire('dataloading', {dataType: 'source'});
-
-        loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+        this.fire(new Event('dataloading', {dataType: 'source'}));
+        this._tileJSONRequest = loadTileJSON(this._options, this.map._transformRequest, (err, tileJSON) => {
+            this._tileJSONRequest = null;
             if (err) {
-                this.fire('error', err);
+                this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                util.extend(this, tileJSON);
+                extend(this, tileJSON);
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
+
+                postTurnstileEvent(tileJSON.tiles);
 
                 // `content` is included here to prevent a race condition where `Style#_updateSources` is called
                 // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
                 // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
-                this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
-                this.fire('data', {dataType: 'source', sourceDataType: 'content'});
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
+                this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
             }
         });
     }
 
-    hasTile(coord: TileCoord) {
-        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
+    hasTile(tileID: OverscaledTileID) {
+        return !this.tileBounds || this.tileBounds.contains(tileID.canonical);
     }
 
     onAdd(map: Map) {
@@ -84,26 +93,32 @@ class VectorTileSource extends Evented implements Source {
         this.load();
     }
 
+    onRemove() {
+        if (this._tileJSONRequest) {
+            this._tileJSONRequest.cancel();
+            this._tileJSONRequest = null;
+        }
+    }
+
     serialize() {
-        return util.extend({}, this._options);
+        return extend({}, this._options);
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
-        const url = normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url);
+        const url = normalizeURL(tile.tileID.canonical.url(this.tiles, this.scheme), this.url);
         const params = {
             request: this.map._transformRequest(url, ResourceType.Tile),
             uid: tile.uid,
-            coord: tile.coord,
-            zoom: tile.coord.z,
-            tileSize: this.tileSize * overscaling,
+            tileID: tile.tileID,
+            zoom: tile.tileID.overscaledZ,
+            tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             options: this._options,
             source: this.id,
             pixelRatio: browser.devicePixelRatio,
-            overscaling: overscaling,
-            showCollisionBoxes: this.map.showCollisionBoxes
+            showCollisionBoxes: this.map.showCollisionBoxes,
         };
+        params.request.collectResourceTiming = this._collectResourceTiming;
 
         if (tile.workerID === undefined || tile.state === 'expired') {
             tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
@@ -118,11 +133,14 @@ class VectorTileSource extends Evented implements Source {
             if (tile.aborted)
                 return callback(null);
 
-            if (err) {
+            if (err && err.status !== 404) {
                 return callback(err);
             }
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
+            if (data && data.resourceTiming)
+                tile.resourceTiming = data.resourceTiming;
+
+            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
 
             callback(null);
@@ -171,4 +189,4 @@ class VectorTileSource extends Evented implements Source {
     }
 }
 
-module.exports = VectorTileSource;
+export default VectorTileSource;

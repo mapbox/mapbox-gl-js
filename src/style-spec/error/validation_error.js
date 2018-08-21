@@ -1,12 +1,11 @@
 
-const format = require('util').format;
+export default class ValidationError {
+    constructor(key, value, message, identifier) {
+        this.message = (key ? `${key}: ` : '') + message;
+        if (identifier) this.identifier = identifier;
 
-function ValidationError(key, value, ...args) {
-    this.message = (key ? `${key}: ` : '') + format.apply(format, args);
-
-    if (value !== null && value !== undefined && value.__line__) {
-        this.line = value.__line__;
+        if (value !== null && value !== undefined && value.__line__) {
+            this.line = value.__line__;
+        }
     }
 }
-
-module.exports = ValidationError;

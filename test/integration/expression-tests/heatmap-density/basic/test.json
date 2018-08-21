@@ -10,9 +10,19 @@
         [0.7, "yellow"],
         [1, "red"]
       ]
-    }
+    },
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
   },
-  "expression": ["interpolate", ["linear"], ["heatmap-density"], 0, "#000000", 1, "#ff0000"],
+  "expression": [
+    "interpolate",
+    ["linear"],
+    ["heatmap-density"],
+    0,
+    "#000000",
+    1,
+    "#ff0000"
+  ],
   "inputs": [[{"heatmapDensity": 0.5}, {}]],
   "expected": {
     "compiled": {
@@ -21,6 +31,15 @@
       "isZoomConstant": true,
       "type": "color"
     },
-    "outputs": [[0.5, 0, 0, 1]]
+    "outputs": [[0.5, 0, 0, 1]],
+    "serialized": [
+      "interpolate",
+      ["linear"],
+      ["heatmap-density"],
+      0,
+      ["rgba", 0, 0, 0, 1],
+      1,
+      ["rgba", 255, 0, 0, 1]
+    ]
   }
 }

@@ -1,18 +1,14 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
-const {GLYPH_PBF_BORDER} = require('../style/parse_glyph_pbf');
+import Point from '@mapbox/point-geometry';
+
+import { GLYPH_PBF_BORDER } from '../style/parse_glyph_pbf';
 
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression';
 import type {GlyphPosition} from '../render/glyph_atlas';
-
-module.exports = {
-    getIconQuads,
-    getGlyphQuads
-};
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -46,12 +42,11 @@ export type SymbolQuad = {
  * Create the quads used for rendering an icon.
  * @private
  */
-function getIconQuads(anchor: Anchor,
+export function getIconQuads(anchor: Anchor,
                       shapedIcon: PositionedIcon,
                       layer: SymbolStyleLayer,
                       alongLine: boolean,
                       shapedText: Shaping,
-                      globalProperties: Object,
                       feature: Feature): Array<SymbolQuad> {
     const image = shapedIcon.image;
     const layout = layer.layout;
@@ -71,7 +66,7 @@ function getIconQuads(anchor: Anchor,
     if (layout.get('icon-text-fit') !== 'none' && shapedText) {
         const iconWidth = (right - left),
             iconHeight = (bottom - top),
-            size = layout.get('text-size').evaluate(feature) / 24,
+            size = layout.get('text-size').evaluate(feature, {}) / 24,
             textLeft = shapedText.left * size,
             textRight = shapedText.right * size,
             textTop = shapedText.top * size,
@@ -98,7 +93,7 @@ function getIconQuads(anchor: Anchor,
         bl = new Point(left, bottom);
     }
 
-    const angle = layer.layout.get('icon-rotate').evaluate(feature) * Math.PI / 180;
+    const angle = layer.layout.get('icon-rotate').evaluate(feature, {}) * Math.PI / 180;
 
     if (angle) {
         const sin = Math.sin(angle),
@@ -112,31 +107,23 @@ function getIconQuads(anchor: Anchor,
     }
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    const textureRect = {
-        x: image.textureRect.x - border,
-        y: image.textureRect.y - border,
-        w: image.textureRect.w + border * 2,
-        h: image.textureRect.h + border * 2
-    };
-
-    return [{tl, tr, bl, br, tex: textureRect, writingMode: undefined, glyphOffset: [0, 0]}];
+    return [{tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0]}];
 }
 
 /**
  * Create the quads used for rendering a text label.
  * @private
  */
-function getGlyphQuads(anchor: Anchor,
+export function getGlyphQuads(anchor: Anchor,
                        shaping: Shaping,
                        layer: SymbolStyleLayer,
                        alongLine: boolean,
-                       globalProperties: Object,
                        feature: Feature,
-                       positions: {[number]: GlyphPosition}): Array<SymbolQuad> {
+                       positions: {[string]: {[number]: GlyphPosition}}): Array<SymbolQuad> {
 
     const oneEm = 24;
-    const textRotate = layer.layout.get('text-rotate').evaluate(feature) * Math.PI / 180;
-    const textOffset = layer.layout.get('text-offset').evaluate(feature).map((t)=> t * oneEm);
+    const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
+    const textOffset = layer.layout.get('text-offset').evaluate(feature, {}).map((t)=> t * oneEm);
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
@@ -144,7 +131,8 @@ function getGlyphQuads(anchor: Anchor,
 
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
-        const glyph = positions[positionedGlyph.glyph];
+        const glyphPositions = positions[positionedGlyph.fontStack];
+        const glyph = glyphPositions && glyphPositions[positionedGlyph.glyph];
         if (!glyph) continue;
 
         const rect = glyph.rect;
@@ -154,7 +142,7 @@ function getGlyphQuads(anchor: Anchor,
         const glyphPadding = 1.0;
         const rectBuffer = GLYPH_PBF_BORDER + glyphPadding;
 
-        const halfAdvance = glyph.metrics.advance / 2;
+        const halfAdvance = glyph.metrics.advance * positionedGlyph.scale / 2;
 
         const glyphOffset = alongLine ?
             [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
@@ -164,11 +152,10 @@ function getGlyphQuads(anchor: Anchor,
             [0, 0] :
             [positionedGlyph.x + halfAdvance + textOffset[0], positionedGlyph.y + textOffset[1]];
 
-
-        const x1 = glyph.metrics.left - rectBuffer - halfAdvance + builtInOffset[0];
-        const y1 = -glyph.metrics.top - rectBuffer + builtInOffset[1];
-        const x2 = x1 + rect.w;
-        const y2 = y1 + rect.h;
+        const x1 = (glyph.metrics.left - rectBuffer) * positionedGlyph.scale - halfAdvance + builtInOffset[0];
+        const y1 = (-glyph.metrics.top - rectBuffer) * positionedGlyph.scale + builtInOffset[1];
+        const x2 = x1 + rect.w * positionedGlyph.scale;
+        const y2 = y1 + rect.h * positionedGlyph.scale;
 
         const tl = new Point(x1, y1);
         const tr = new Point(x2, y1);

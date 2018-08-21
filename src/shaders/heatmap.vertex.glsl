@@ -1,8 +1,8 @@
 #pragma mapbox: define highp float weight
+#pragma mapbox: define mediump float radius
 
 uniform mat4 u_matrix;
 uniform float u_extrude_scale;
-uniform float u_radius;
 uniform float u_opacity;
 uniform float u_intensity;
 
@@ -20,6 +20,7 @@ const highp float ZERO = 1.0 / 255.0 / 16.0;
 
 void main(void) {
     #pragma mapbox: initialize highp float weight
+    #pragma mapbox: initialize mediump float radius
 
     // unencode the extrusion vector that we snuck into the a_pos vector
     vec2 unscaled_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
@@ -37,12 +38,12 @@ void main(void) {
     // S = sqrt(-2.0 * log(ZERO / (weight * u_intensity * GAUSS_COEF))) / 3.0
     float S = sqrt(-2.0 * log(ZERO / weight / u_intensity / GAUSS_COEF)) / 3.0;
 
-    // Pass the varying in units of u_radius
+    // Pass the varying in units of radius
     v_extrude = S * unscaled_extrude;
 
-    // Scale by u_radius and the zoom-based scale factor to produce actual
+    // Scale by radius and the zoom-based scale factor to produce actual
     // mesh position
-    vec2 extrude = v_extrude * u_radius * u_extrude_scale;
+    vec2 extrude = v_extrude * radius * u_extrude_scale;
 
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data

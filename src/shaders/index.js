@@ -1,18 +1,32 @@
 // @flow
 
-const fs = require('fs');
+// We use brfs, a browserify transform, to inline shader sources during bundling. As a result:
+// - readFileSync calls must be written out long-form
+// - this module must use CommonJS rather than ES2015 syntax
+/* eslint-disable prefer-template, no-path-concat, import/unambiguous, import/no-commonjs */
 
-// readFileSync calls must be written out long-form for brfs.
-/* eslint-disable prefer-template, no-path-concat */
+const fs = require('fs');
 
 const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
     prelude: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/_prelude.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/_prelude.vertex.glsl', 'utf8')
     },
+    background: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/background.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/background.vertex.glsl', 'utf8')
+    },
+    backgroundPattern: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/background_pattern.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/background_pattern.vertex.glsl', 'utf8')
+    },
     circle: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/circle.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/circle.vertex.glsl', 'utf8')
+    },
+    clippingMask: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/clipping_mask.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/clipping_mask.vertex.glsl', 'utf8')
     },
     heatmap: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/heatmap.fragment.glsl', 'utf8'),
@@ -62,9 +76,21 @@ const shaders: {[string]: {fragmentSource: string, vertexSource: string}} = {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/extrusion_texture.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/extrusion_texture.vertex.glsl', 'utf8')
     },
+    hillshadePrepare: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/hillshade_prepare.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/hillshade_prepare.vertex.glsl', 'utf8')
+    },
+    hillshade: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/hillshade.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/hillshade.vertex.glsl', 'utf8')
+    },
     line: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line.fragment.glsl', 'utf8'),
         vertexSource: fs.readFileSync(__dirname + '/../shaders/line.vertex.glsl', 'utf8')
+    },
+    lineGradient: {
+        fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_gradient.fragment.glsl', 'utf8'),
+        vertexSource: fs.readFileSync(__dirname + '/../shaders/line_gradient.vertex.glsl', 'utf8')
     },
     linePattern: {
         fragmentSource: fs.readFileSync(__dirname + '/../shaders/line_pattern.fragment.glsl', 'utf8'),

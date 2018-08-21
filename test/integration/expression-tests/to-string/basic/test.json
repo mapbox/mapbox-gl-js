@@ -15,6 +15,7 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": ["1", "false", "null", "string", "[1,2]", "{\"y\":1}"]
+    "outputs": ["1", "false", "", "string", "[1,2]", "{\"y\":1}"],
+    "serialized": ["to-string", ["get", "x"]]
   }
 }

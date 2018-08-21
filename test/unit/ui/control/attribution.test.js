@@ -1,16 +1,12 @@
-'use strict';
+import { test } from 'mapbox-gl-js-test';
+import config from '../../../../src/util/config';
+import AttributionControl from '../../../../src/ui/control/attribution_control';
+import { createMap as globalCreateMap } from '../../../util';
 
-const test = require('mapbox-gl-js-test').test;
-const window = require('../../../../src/util/window');
-const Map = require('../../../../src/ui/map');
-const config = require('../../../../src/util/config');
-const AttributionControl = require('../../../../src/ui/control/attribution_control');
-
-function createMap() {
-    const container = window.document.createElement('div');
+function createMap(t) {
     config.ACCESS_TOKEN = 'pk.123';
-    return new Map({
-        container: container,
+
+    return globalCreateMap(t, {
         attributionControl: false,
         style: {
             version: 8,
@@ -21,11 +17,10 @@ function createMap() {
         },
         hash: true
     });
-
 }
 
 test('AttributionControl appears in bottom-right by default', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     map.addControl(new AttributionControl());
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-attrib').length, 1);
@@ -33,7 +28,7 @@ test('AttributionControl appears in bottom-right by default', (t) => {
 });
 
 test('AttributionControl appears in the position specified by the position option', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     map.addControl(new AttributionControl(), 'top-left');
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib').length, 1);
@@ -41,7 +36,7 @@ test('AttributionControl appears in the position specified by the position optio
 });
 
 test('AttributionControl appears in compact mode if compact option is used', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 700, configurable: true});
 
     let attributionControl = new AttributionControl({
@@ -65,7 +60,7 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
 });
 
 test('AttributionControl appears in compact mode if container is less then 640 pixel wide', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 700, configurable: true});
     map.addControl(new AttributionControl());
 
@@ -81,7 +76,7 @@ test('AttributionControl appears in compact mode if container is less then 640 p
 });
 
 test('AttributionControl dedupes attributions that are substrings of others', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     const attribution = new AttributionControl();
     map.addControl(attribution);
 
@@ -91,14 +86,16 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
         map.addSource('3', { type: 'vector', attribution: 'Another Source' });
         map.addSource('4', { type: 'vector', attribution: 'Hello' });
         map.addSource('5', { type: 'vector', attribution: 'Hello World' });
+        map.addSource('6', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'Hello World' });
+        map.addSource('7', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, attribution: 'GeoJSON Source' });
 
     });
 
     let times = 0;
     map.on('data', (e) => {
         if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-            if (++times === 5) {
-                t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
+            if (++times === 7) {
+                t.equal(attribution._container.innerHTML, 'Hello World | Another Source | GeoJSON Source');
                 t.end();
             }
         }
@@ -106,7 +103,7 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
 });
 
 test('AttributionControl has the correct edit map link', (t) => {
-    const map = createMap();
+    const map = createMap(t);
     const attribution = new AttributionControl();
     map.addControl(attribution);
     map.on('load', () => {
@@ -120,4 +117,65 @@ test('AttributionControl has the correct edit map link', (t) => {
             }
         });
     });
+});
+
+test('AttributionControl is hidden if empty', (t) => {
+    const map = createMap(t);
+    const attribution = new AttributionControl();
+    map.addControl(attribution);
+    map.on('load', () => {
+        map.addSource('1', { type: 'vector' });
+    });
+
+    const container = map.getContainer();
+
+    const checkEmptyFirst = () => {
+        t.equal(attribution._container.innerHTML, '');
+        t.equal(container.querySelectorAll('.mapboxgl-attrib-empty').length, 1, 'includes empty class when no attribution strings are provided');
+
+        map.addSource('2', { type: 'vector', attribution: 'Hello World' });
+    };
+
+    const checkNotEmptyLater = () => {
+        t.equal(attribution._container.innerHTML, 'Hello World');
+        t.equal(container.querySelectorAll('.mapboxgl-attrib-empty').length, 0, 'removes empty class when source with attribution is added');
+        t.end();
+    };
+
+    let times = 0;
+    map.on('data', (e) => {
+        if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+            times++;
+            if (times === 1) {
+                checkEmptyFirst();
+            } else if (times === 2) {
+                checkNotEmptyLater();
+            }
+        }
+    });
+});
+
+test('AttributionControl shows custom attribution if customAttribution option is provided', (t) => {
+    const map = createMap(t);
+    const attributionControl = new AttributionControl({
+        customAttribution: 'Custom string'
+    });
+    map.addControl(attributionControl);
+
+    t.equal(attributionControl._container.innerHTML, 'Custom string');
+    t.end();
+});
+
+test('AttributionControl shows all custom attributions if customAttribution array of strings is provided', (t) => {
+    const map = createMap(t);
+    const attributionControl = new AttributionControl({
+        customAttribution: ['Some very long custom string', 'Custom string', 'Another custom string']
+    });
+    map.addControl(attributionControl);
+
+    t.equal(
+        attributionControl._container.innerHTML,
+        'Custom string | Another custom string | Some very long custom string'
+    );
+    t.end();
 });

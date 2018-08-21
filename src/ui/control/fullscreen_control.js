@@ -1,8 +1,9 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const window = require('../../util/window');
+import DOM from '../../util/dom';
+
+import { bindAll, warnOnce } from '../../util/util';
+import window from '../../util/window';
 
 import type Map from '../map';
 
@@ -26,7 +27,7 @@ class FullscreenControl {
 
     constructor() {
         this._fullscreen = false;
-        util.bindAll([
+        bindAll([
             '_onClickFullscreen',
             '_changeIcon'
         ], this);
@@ -50,7 +51,7 @@ class FullscreenControl {
             this._setupUI();
         } else {
             this._container.style.display = 'none';
-            util.warnOnce('This device does not support fullscreen mode.');
+            warnOnce('This device does not support fullscreen mode.');
         }
         return this._container;
     }
@@ -109,14 +110,14 @@ class FullscreenControl {
             }
         } else if (this._mapContainer.requestFullscreen) {
             this._mapContainer.requestFullscreen();
-        } else if (this._mapContainer.mozRequestFullScreen) {
+        } else if ((this._mapContainer: any).mozRequestFullScreen) {
             (this._mapContainer: any).mozRequestFullScreen();
-        } else if (this._mapContainer.msRequestFullscreen) {
+        } else if ((this._mapContainer: any).msRequestFullscreen) {
             (this._mapContainer: any).msRequestFullscreen();
-        } else if (this._mapContainer.webkitRequestFullscreen) {
+        } else if ((this._mapContainer: any).webkitRequestFullscreen) {
             (this._mapContainer: any).webkitRequestFullscreen();
         }
     }
 }
 
-module.exports = FullscreenControl;
+export default FullscreenControl;

@@ -1,18 +1,17 @@
 // @flow
 
-const CircleBucket = require('./circle_bucket');
+import CircleBucket from './circle_bucket';
 
-const heatmapInterface = {
-    layoutAttributes: CircleBucket.programInterface.layoutAttributes,
-    indexArrayType: CircleBucket.programInterface.indexArrayType,
+import { register } from '../../util/web_worker_transfer';
 
-    paintAttributes: [
-        {property: 'heatmap-weight'}
-    ]
-};
+import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer';
 
-class HeatmapBucket extends CircleBucket {}
+class HeatmapBucket extends CircleBucket<HeatmapStyleLayer> {
+    // Needed for flow to accept omit: ['layers'] below, due to
+    // https://github.com/facebook/flow/issues/4262
+    layers: Array<HeatmapStyleLayer>;
+}
 
-HeatmapBucket.programInterface = heatmapInterface;
+register('HeatmapBucket', HeatmapBucket, {omit: ['layers']});
 
-module.exports = HeatmapBucket;
+export default HeatmapBucket;

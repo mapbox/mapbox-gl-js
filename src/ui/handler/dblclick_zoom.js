@@ -1,24 +1,27 @@
 // @flow
 
-const util = require('../../util/util');
+import { bindAll } from '../../util/util';
 
 import type Map from '../map';
+import type {MapMouseEvent, MapTouchEvent} from '../events';
 
 /**
  * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
- * double clicking.
- *
- * @param {Map} map The Mapbox GL JS map to add the handler to.
+ * double clicking or double tapping.
  */
 class DoubleClickZoomHandler {
     _map: Map;
     _enabled: boolean;
     _active: boolean;
+    _tapped: ?TimeoutID;
 
+    /**
+     * @private
+     */
     constructor(map: Map) {
         this._map = map;
 
-        util.bindAll([
+        bindAll([
             '_onDblClick',
             '_onZoomEnd'
         ], this);
@@ -50,7 +53,6 @@ class DoubleClickZoomHandler {
      */
     enable() {
         if (this.isEnabled()) return;
-        this._map.on('dblclick', this._onDblClick);
         this._enabled = true;
     }
 
@@ -62,11 +64,29 @@ class DoubleClickZoomHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
-        this._map.off('dblclick', this._onDblClick);
         this._enabled = false;
     }
 
-    _onDblClick(e: any) {
+    onTouchStart(e: MapTouchEvent) {
+        if (!this.isEnabled()) return;
+        if (e.points.length > 1) return;
+
+        if (!this._tapped) {
+            this._tapped = setTimeout(() => { this._tapped = null; }, 300);
+        } else {
+            clearTimeout(this._tapped);
+            this._tapped = null;
+            this._zoom(e);
+        }
+    }
+
+    onDblClick(e: MapMouseEvent) {
+        if (!this.isEnabled()) return;
+        e.originalEvent.preventDefault();
+        this._zoom(e);
+    }
+
+    _zoom(e: MapMouseEvent | MapTouchEvent) {
         this._active = true;
         this._map.on('zoomend', this._onZoomEnd);
         this._map.zoomTo(
@@ -82,4 +102,4 @@ class DoubleClickZoomHandler {
     }
 }
 
-module.exports = DoubleClickZoomHandler;
+export default DoubleClickZoomHandler;

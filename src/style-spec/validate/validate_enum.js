@@ -1,8 +1,8 @@
 
-const ValidationError = require('../error/validation_error');
-const unbundle = require('../util/unbundle_jsonlint');
+import ValidationError from '../error/validation_error';
+import { unbundle } from '../util/unbundle_jsonlint';
 
-module.exports = function validateEnum(options) {
+export default function validateEnum(options) {
     const key = options.key;
     const value = options.value;
     const valueSpec = options.valueSpec;
@@ -10,12 +10,12 @@ module.exports = function validateEnum(options) {
 
     if (Array.isArray(valueSpec.values)) { // <=v7
         if (valueSpec.values.indexOf(unbundle(value)) === -1) {
-            errors.push(new ValidationError(key, value, 'expected one of [%s], %s found', valueSpec.values.join(', '), JSON.stringify(value)));
+            errors.push(new ValidationError(key, value, `expected one of [${valueSpec.values.join(', ')}], ${JSON.stringify(value)} found`));
         }
     } else { // >=v8
         if (Object.keys(valueSpec.values).indexOf(unbundle(value)) === -1) {
-            errors.push(new ValidationError(key, value, 'expected one of [%s], %s found', Object.keys(valueSpec.values).join(', '), JSON.stringify(value)));
+            errors.push(new ValidationError(key, value, `expected one of [${Object.keys(valueSpec.values).join(', ')}], ${JSON.stringify(value)} found`));
         }
     }
     return errors;
-};
+}

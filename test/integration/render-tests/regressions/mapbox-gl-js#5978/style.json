@@ -1,0 +1,64 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -180,
+            10
+          ],
+          [
+            180,
+            10
+          ]
+        ]
+      }
+    },
+    "b": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -180,
+            -10
+          ],
+          [
+            180,
+            -10
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "a",
+      "type": "line",
+      "source": "a",
+      "paint": {
+        "line-width": 4,
+        "line-pattern": "oneway_road"
+      }
+    },
+    {
+      "id": "b",
+      "type": "line",
+      "source": "b",
+      "paint": {
+        "line-width": 30,
+        "line-pattern": "default_3"
+      }
+    }
+  ]
+}

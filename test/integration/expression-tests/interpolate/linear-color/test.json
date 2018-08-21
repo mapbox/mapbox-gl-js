@@ -1,7 +1,15 @@
 {
   "expression": [
     "to-rgba",
-    ["interpolate", ["exponential", 1], ["get", "x"], 1, "red", 11, ["get", "color"]]
+    [
+      "interpolate",
+      ["exponential", 1],
+      ["get", "x"],
+      1,
+      "red",
+      11,
+      ["get", "color"]
+    ]
   ],
   "inputs": [
     [{}, {"properties": {"x": 0, "color": "blue"}}],
@@ -17,10 +25,22 @@
       "type": "array<number, 4>"
     },
     "outputs": [
-      [1, 0, 0, 1],
-      [0.6, 0, 0.4, 1],
-      [0, 0, 1, 1],
+      [255, 0, 0, 1],
+      [153, 0, 102, 1],
+      [0, 0, 255, 1],
       {"error": "Could not parse color from value 'oops blue'"}
+    ],
+    "serialized": [
+      "to-rgba",
+      [
+        "interpolate",
+        ["linear"],
+        ["number", ["get", "x"]],
+        1,
+        ["rgba", 255, 0, 0, 1],
+        11,
+        ["to-color", ["get", "color"]]
+      ]
     ]
   }
 }

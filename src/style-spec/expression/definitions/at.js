@@ -1,12 +1,8 @@
 // @flow
 
-const {
-    array,
-    ValueType,
-    NumberType
-} = require('../types');
+import { array, ValueType, NumberType } from '../types';
 
-const RuntimeError = require('../runtime_error');
+import RuntimeError from '../runtime_error';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -42,8 +38,12 @@ class At implements Expression {
         const index = ((this.index.evaluate(ctx): any): number);
         const array = ((this.input.evaluate(ctx): any): Array<Value>);
 
-        if (index < 0 || index >= array.length) {
-            throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length}.`);
+        if (index < 0) {
+            throw new RuntimeError(`Array index out of bounds: ${index} < 0.`);
+        }
+
+        if (index >= array.length) {
+            throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length - 1}.`);
         }
 
         if (index !== Math.floor(index)) {
@@ -57,6 +57,14 @@ class At implements Expression {
         fn(this.index);
         fn(this.input);
     }
+
+    possibleOutputs() {
+        return [undefined];
+    }
+
+    serialize() {
+        return ["at", this.index.serialize(), this.input.serialize()];
+    }
 }
 
-module.exports = At;
+export default At;

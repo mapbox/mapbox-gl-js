@@ -1,5 +1,9 @@
 {
-  "propertySpec": {"type": "string"},
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
   "expression": ["case", ["get", "x"], "x", ["get", "y"], "y", "otherwise"],
   "inputs": [
     [{}, {"properties": {"x": true, "y": true}}],
@@ -23,6 +27,14 @@
       {
         "error": "Expected value to be of type boolean, but found string instead."
       }
+    ],
+    "serialized": [
+      "case",
+      ["boolean", ["get", "x"]],
+      "x",
+      ["boolean", ["get", "y"]],
+      "y",
+      "otherwise"
     ]
   }
 }

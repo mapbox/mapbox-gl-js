@@ -1,6 +1,8 @@
 // @flow
 
-const util = require('../util/util');
+import { warnOnce } from '../util/util';
+
+import type Context from '../gl/context';
 
 /**
  * A LineAtlas lets us reuse rendered dashed lines
@@ -56,7 +58,7 @@ class LineAtlas {
         const offset = 128;
 
         if (this.nextRow + height > this.height) {
-            util.warnOnce('LineAtlas out of space');
+            warnOnce('LineAtlas out of space');
             return null;
         }
 
@@ -128,7 +130,8 @@ class LineAtlas {
         return pos;
     }
 
-    bind(gl: WebGLRenderingContext) {
+    bind(context: Context) {
+        const gl = context.gl;
         if (!this.texture) {
             this.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -149,4 +152,4 @@ class LineAtlas {
     }
 }
 
-module.exports = LineAtlas;
+export default LineAtlas;

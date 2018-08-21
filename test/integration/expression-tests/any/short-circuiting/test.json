@@ -1,8 +1,6 @@
 {
   "expression": ["any", true, ["error", "unreachable"]],
-  "inputs": [
-    [{}, {}]
-  ],
+  "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -10,6 +8,7 @@
       "isZoomConstant": true,
       "type": "boolean"
     },
-    "outputs": [true]
+    "outputs": [true],
+    "serialized": ["any", true, ["error", "unreachable"]]
   }
 }

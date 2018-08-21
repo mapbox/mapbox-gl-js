@@ -1,5 +1,5 @@
 
-const isEqual = require('lodash.isequal');
+import isEqual from './util/deep_equal';
 
 const operations = {
 
@@ -100,6 +100,36 @@ const operations = {
 
 };
 
+function addSource(sourceId, after, commands) {
+    commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
+}
+
+function removeSource(sourceId, commands, sourcesRemoved) {
+    commands.push({ command: operations.removeSource, args: [sourceId] });
+    sourcesRemoved[sourceId] = true;
+}
+
+function updateSource(sourceId, after, commands, sourcesRemoved) {
+    removeSource(sourceId, commands, sourcesRemoved);
+    addSource(sourceId, after, commands);
+}
+
+function canUpdateGeoJSON(before, after, sourceId) {
+    let prop;
+    for (prop in before[sourceId]) {
+        if (!before[sourceId].hasOwnProperty(prop)) continue;
+        if (prop !== 'data' && !isEqual(before[sourceId][prop], after[sourceId][prop])) {
+            return false;
+        }
+    }
+    for (prop in after[sourceId]) {
+        if (!after[sourceId].hasOwnProperty(prop)) continue;
+        if (prop !== 'data' && !isEqual(before[sourceId][prop], after[sourceId][prop])) {
+            return false;
+        }
+    }
+    return true;
+}
 
 function diffSources(before, after, commands, sourcesRemoved) {
     before = before || {};
@@ -111,8 +141,7 @@ function diffSources(before, after, commands, sourcesRemoved) {
     for (sourceId in before) {
         if (!before.hasOwnProperty(sourceId)) continue;
         if (!after.hasOwnProperty(sourceId)) {
-            commands.push({ command: operations.removeSource, args: [sourceId] });
-            sourcesRemoved[sourceId] = true;
+            removeSource(sourceId, commands, sourcesRemoved);
         }
     }
 
@@ -120,16 +149,13 @@ function diffSources(before, after, commands, sourcesRemoved) {
     for (sourceId in after) {
         if (!after.hasOwnProperty(sourceId)) continue;
         if (!before.hasOwnProperty(sourceId)) {
-            commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
+            addSource(sourceId, after, commands);
         } else if (!isEqual(before[sourceId], after[sourceId])) {
-            if (before[sourceId].type === 'geojson' && after[sourceId].type === 'geojson') {
-                // geojson sources use setGeoJSONSourceData command to update
+            if (before[sourceId].type === 'geojson' && after[sourceId].type === 'geojson' && canUpdateGeoJSON(before, after, sourceId)) {
                 commands.push({ command: operations.setGeoJSONSourceData, args: [sourceId, after[sourceId].data] });
             } else {
                 // no update command, must remove then add
-                commands.push({ command: operations.removeSource, args: [sourceId] });
-                commands.push({ command: operations.addSource, args: [sourceId, after[sourceId]] });
-                sourcesRemoved[sourceId] = true;
+                updateSource(sourceId, after, commands, sourcesRemoved);
             }
         }
     }
@@ -363,5 +389,5 @@ function diffStyles(before, after) {
     return commands;
 }
 
-module.exports = diffStyles;
-module.exports.operations = operations;
+export default diffStyles;
+export { operations };

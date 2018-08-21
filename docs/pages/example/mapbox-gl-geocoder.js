@@ -5,6 +5,7 @@ description: >-
   control to search for places using Mapbox Geocoding API.
 tags:
   - controls-and-overlays
+  - geocoder
 pathname: /mapbox-gl-js/example/mapbox-gl-geocoder/
 ---*/
 import Example from '../../components/example';

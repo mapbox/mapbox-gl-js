@@ -1,14 +1,6 @@
+import * as d3 from 'd3';
 
-/* global d3 */
-
-module.exports = {
-    summaryStatistics,
-    regression,
-    kde,
-    probabilitiesOfSuperiority
-};
-
-function probabilitiesOfSuperiority(before, after) {
+export function probabilitiesOfSuperiority(before, after) {
     const timerPrecision = 0.005;
 
     let superiorCount = 0;
@@ -30,7 +22,7 @@ function probabilitiesOfSuperiority(before, after) {
     };
 }
 
-function summaryStatistics(data) {
+export function summaryStatistics(data) {
     const variance = d3.variance(data);
     const sorted = data.slice().sort(d3.ascending);
     const [q1, q2, q3] = [.25, .5, .75].map((d) => d3.quantile(sorted, d));
@@ -70,7 +62,7 @@ function summaryStatistics(data) {
     };
 }
 
-function regression(measurements) {
+export function regression(measurements) {
     const result = [];
     for (let i = 0, n = 1; i + n < measurements.length; i += n, n++) {
         const subset = measurements.slice(i, i + n);
@@ -99,7 +91,7 @@ function leastSquaresRegression(data) {
     return { correlation, slope, intercept, data };
 }
 
-function kde(samples, summary, ticks) {
+export function kde(samples, summary, ticks) {
     const kernel = kernelEpanechnikov;
 
     if (samples.length === 0) {

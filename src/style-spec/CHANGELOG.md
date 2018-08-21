@@ -1,3 +1,84 @@
+## 13.1.1
+
+## 🐛 Bug fixes
+* Fix broken module import in mapboxgl-style-spec (v13.0.1) ([#6984](https://github.com/mapbox/mapbox-gl-js/issues/6984), fixed by [#6997](https://api.github.com/repos/mapbox/mapbox-gl-js/pulls/6997))
+
+## ✨ Features and improvements
+* Improve formatting for style output ([#7029](https://github.com/mapbox/mapbox-gl-js/pull/7029))
+
+## 13.1.0
+
+## ✨ Features and improvements
+* Add `raster-resampling` raster paint property ([#6411](https://github.com/mapbox/mapbox-gl-js/pull/6411)) (h/t [andrewharvey](https://github.com/andrewharvey))
+* Add `symbol-placement: line-center` ([#6821](https://github.com/mapbox/mapbox-gl-js/pull/6821))
+
+## 13.0.1
+
+### ⚠️ Breaking changes
+* Align implicit type behavior of `match` expressions with with `case/==` ([#6684](https://github.com/mapbox/mapbox-gl-js/pull/6684))
+* Update spec so that documentation can automatically capture which functions and expressions can be used with which properties ([#6521](https://github.com/mapbox/mapbox-gl-js/pull/6521))
+
+### ✨ Features and improvements
+* Add `feature-state` [#6263](https://github.com/mapbox/mapbox-gl-js/pull/6263)
+* Add support for GeoJSON attribution ([#6364](https://github.com/mapbox/mapbox-gl-js/pull/6364)) (h/t [andrewharvey](https://github.com/andrewharvey))
+* Upgrade to Flow 0.69 ([#6594](https://github.com/mapbox/mapbox-gl-js/pull/6594))
+
+### 🐛 Bug fixes
+* Use named exports for style-spec entrypoint module ([#6601](https://github.com/mapbox/mapbox-gl-js/issues/6601)
+
+## 13.0.0
+Malformed package published to NPM.
+
+## 12.0.0
+
+### ⚠️ Breaking changes
+* The `"to-string"` expression operator now converts null to an empty string rather than to `"null"`. [#6534](https://github.com/mapbox/mapbox-gl-js/pull/6534)
+
+### ✨ Features and improvements
+* 🌈 Add line-gradient property [#6303](https://github.com/mapbox/mapbox-gl-js/pull/6303)
+* Add collator expression for controlling case and diacritic sensitivity in string comparisons [#6270](https://github.com/mapbox/mapbox-gl-js/pull/6270)
+* Add `is-supported-script` expression for determining if a script is supported. [#6260](https://github.com/mapbox/mapbox-gl-js/pull/6260)
+* Add `collator` expression for controlling case and diacritic sensitivity in string comparisons [#6270](https://github.com/mapbox/mapbox-gl-js/pull/6270)
+* Add `abs`, `round`, `floor`, and `ceil` expression operators [#6496](https://github.com/mapbox/mapbox-gl-js/pull/6496)
+* Add support for Mapzen Terrarium tiles in raster-dem sources [#6110](https://github.com/mapbox/mapbox-gl-js/pull/6110)
+
+### 🐛 Bug fixes
+- Fix Rollup build [6575](https://github.com/mapbox/mapbox-gl-js/pull/6575)
+
+## 11.1.1
+
+### 🐛 Bug fixes
+
+* Update SDK support information for `text-font`, and `heatmap-color`, and `hillshade` layer properties.
+
+## 11.1.0
+
+### ✨ Features and improvements
+
+* Avoid use of `new Function` for filters by converting old-style filters to expressions [#5665](https://github.com/mapbox/mapbox-gl-js/pull/5665).
+
+## 11.0.0
+
+### ⚠️ Breaking changes
+
+* Remove constants validating code [#5885](https://github.com/mapbox/mapbox-gl-js/pull/5885)
+* `"colorSpace": "hcl"` now uses shortest-path interpolation for hue [#5811](https://github.com/mapbox/mapbox-gl-js/issues/5811)
+
+### ✨ Features and improvements
+
+* Introduce client-side hillshading with `raster-dem` source type and `hillshade` layer type [#5286](https://github.com/mapbox/mapbox-gl-js/pull/5286)
+* Add Color#toString and expose Color publicly [#5866](https://github.com/mapbox/mapbox-gl-js/pull/5866)
+* Improve typing for `==` and `!=` expressions [#5840](https://github.com/mapbox/mapbox-gl-js/pull/5840)
+* Made `coalesce` expressions more useful [#5755](https://github.com/mapbox/mapbox-gl-js/issues/5755)
+* Enable implicit type assertions for array types [#5738](https://github.com/mapbox/mapbox-gl-js/pull/5738)
+
+### 🐛 Bug fixes
+
+* Fix standalone browser build [#5736](https://github.com/mapbox/mapbox-gl-js/pull/5736), [#5906](https://github.com/mapbox/mapbox-gl-js/pull/5906)
+* Handle NaN as input to step and interpolate expressions [#5757](https://github.com/mapbox/mapbox-gl-js/pull/5757)
+* Fix style diffing for changes to GeoJSON sources [#5745](https://github.com/mapbox/mapbox-gl-js/pull/5745)
+* Mark layer "type" property as required [#5849](https://github.com/mapbox/mapbox-gl-js/pull/5849)
+
 ## 10.1.0
 
 * Remove support for validating and migrating v6 styles [#5604](https://github.com/mapbox/mapbox-gl-js/pull/5604)

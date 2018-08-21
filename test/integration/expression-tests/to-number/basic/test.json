@@ -24,6 +24,7 @@
       {"error": "Could not convert null to number."},
       {"error": "Could not convert [1,2] to number."},
       {"error": "Could not convert {\"y\":1} to number."}
-    ]
+    ],
+    "serialized": ["to-number", ["get", "x"]]
   }
 }

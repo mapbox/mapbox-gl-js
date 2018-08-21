@@ -210,9 +210,9 @@ map.on('load', function() {
         renderListings(filtered);
 
         // Set the filter to populate features into the layer.
-        map.setFilter('airport', ['in', 'abbrev'].concat(filtered.map(function(feature) {
+        map.setFilter('airport', ['match', ['get', 'abbrev'], filtered.map(function(feature) {
             return feature.properties.abbrev;
-        })));
+        }), true, false]);
     });
 
     // Call this function on initialization

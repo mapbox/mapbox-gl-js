@@ -1,0 +1,14 @@
+{
+  "expression": ["==", ["get", "x"], ["literal", {}]],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "\"==\" comparisons are not supported for type 'object'."
+        }
+      ]
+    }
+  }
+}

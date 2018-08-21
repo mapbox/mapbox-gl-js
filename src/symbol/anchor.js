@@ -1,6 +1,8 @@
 // @flow
 
-const Point = require('@mapbox/point-geometry');
+import Point from '@mapbox/point-geometry';
+
+import { register } from '../util/web_worker_transfer';
 
 class Anchor extends Point {
     angle: any;
@@ -19,4 +21,6 @@ class Anchor extends Point {
     }
 }
 
-module.exports = Anchor;
+register('Anchor', Anchor);
+
+export default Anchor;

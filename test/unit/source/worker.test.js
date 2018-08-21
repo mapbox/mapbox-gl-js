@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const Worker = require('../../../src/source/worker');
-const window = require('../../../src/util/window');
+import { test } from 'mapbox-gl-js-test';
+import Worker from '../../../src/source/worker';
+import window from '../../../src/util/window';
 
 const _self = {
     addEventListener: function() {}
@@ -16,6 +14,7 @@ test('load tile', (t) => {
             type: 'vector',
             source: 'source',
             uid: 0,
+            tileID: { overscaledZ: 0, wrap: 0, canonical: {x: 0, y: 0, z: 0, w: 0} },
             request: { url: '/error' }// Sinon fake server gives 404 responses by default
         }, (err) => {
             t.ok(err);
@@ -47,7 +46,7 @@ test('isolates different instances\' data', (t) => {
 test('worker source messages dispatched to the correct map instance', (t) => {
     const worker = new Worker(_self);
 
-    worker.actor.send = function (type, data, callback, buffers, mapId) {
+    worker.actor.send = function (type, data, callback, mapId) {
         t.equal(type, 'main thread task');
         t.equal(mapId, 999);
         t.end();

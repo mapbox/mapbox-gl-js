@@ -100,7 +100,7 @@ map.on('load', function() {
     //
     // Here we're using d3 to help us make the ajax request but you can use
     // Any request method (library or otherwise) you wish.
-    d3.json('/mapbox-gl-js/assets/significant-earthquakes-2015.geojson', function(err, data) {
+    d3.json('https://www.mapbox.com/mapbox-gl-js/assets/significant-earthquakes-2015.geojson', function(err, data) {
         if (err) throw err;
 
         // Create a month property value based on time
@@ -120,21 +120,21 @@ map.on('load', function() {
             'type': 'circle',
             'source': 'earthquakes',
             'paint': {
-                'circle-color': {
-                    property: 'mag',
-                    stops: [
-                        [6, '#FCA107'],
-                        [8, '#7F3121']
-                    ]
-                },
+                'circle-color': [
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'mag'],
+                    6, '#FCA107',
+                    8, '#7F3121'
+                ],
                 'circle-opacity': 0.75,
-                'circle-radius': {
-                    property: 'mag',
-                    stops: [
-                        [6, 20],
-                        [8, 40]
-                    ]
-                }
+                'circle-radius': [
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'mag'],
+                    6, 20,
+                    8, 40
+                ]
             }
         });
 
@@ -143,7 +143,7 @@ map.on('load', function() {
             'type': 'symbol',
             'source': 'earthquakes',
             'layout': {
-                'text-field': '{mag}m',
+                'text-field': ['concat', ['to-string', ['get', 'mag']], 'm'],
                 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
                 'text-size': 12
             },

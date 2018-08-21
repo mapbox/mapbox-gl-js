@@ -1,13 +1,16 @@
 // @flow
 
-const util = require('./util');
+import { extend } from './util';
 
 type Listener = (Object) => any;
 type Listeners = { [string]: Array<Listener> };
 
 function _addEventListener(type: string, listener: Listener, listenerList: Listeners) {
-    listenerList[type] = listenerList[type] || [];
-    listenerList[type].push(listener);
+    const listenerExists = listenerList[type] && listenerList[type].indexOf(listener) !== -1;
+    if (!listenerExists) {
+        listenerList[type] = listenerList[type] || [];
+        listenerList[type].push(listener);
+    }
 }
 
 function _removeEventListener(type: string, listener: Listener, listenerList: Listeners) {
@@ -19,12 +22,29 @@ function _removeEventListener(type: string, listener: Listener, listenerList: Li
     }
 }
 
+export class Event {
+    +type: string;
+
+    constructor(type: string, data: Object = {}) {
+        extend(this, data);
+        this.type = type;
+    }
+}
+
+export class ErrorEvent extends Event {
+    error: Error;
+
+    constructor(error: Error, data: Object = {}) {
+        super('error', extend({error}, data));
+    }
+}
+
 /**
  * Methods mixed in to other classes for event capabilities.
  *
  * @mixin Evented
  */
-class Evented {
+export class Evented {
     _listeners: Listeners;
     _oneTimeListeners: Listeners;
     _eventedParent: ?Evented;
@@ -76,39 +96,44 @@ class Evented {
         return this;
     }
 
-    /**
-     * Fires an event of the specified type.
-     *
-     * @param {string} type The type of event to fire.
-     * @param {Object} [data] Data to be passed to any listeners.
-     * @returns {Object} `this`
-     */
-    fire(type: string, data?: Object) {
+    fire(event: Event) {
+        // Compatibility with (type: string, properties: Object) signature from previous versions.
+        // See https://github.com/mapbox/mapbox-gl-js/issues/6522,
+        //     https://github.com/mapbox/mapbox-gl-draw/issues/766
+        if (typeof event === 'string') {
+            event = new Event(event, arguments[1] || {});
+        }
+
+        const type = event.type;
+
         if (this.listens(type)) {
-            data = util.extend({}, data, {type: type, target: this});
+            (event: any).target = this;
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
-
-            for (let i = 0; i < listeners.length; i++) {
-                listeners[i].call(this, data);
+            for (const listener of listeners) {
+                listener.call(this, event);
             }
 
             const oneTimeListeners = this._oneTimeListeners && this._oneTimeListeners[type] ? this._oneTimeListeners[type].slice() : [];
-
-            for (let i = 0; i < oneTimeListeners.length; i++) {
-                oneTimeListeners[i].call(this, data);
-                _removeEventListener(type, oneTimeListeners[i], this._oneTimeListeners);
+            for (const listener of oneTimeListeners) {
+                _removeEventListener(type, listener, this._oneTimeListeners);
+                listener.call(this, event);
             }
 
-            if (this._eventedParent) {
-                this._eventedParent.fire(type, util.extend({}, data, typeof this._eventedParentData === 'function' ? this._eventedParentData() : this._eventedParentData));
+            const parent = this._eventedParent;
+            if (parent) {
+                extend(
+                    event,
+                    typeof this._eventedParentData === 'function' ? this._eventedParentData() : this._eventedParentData
+                );
+                parent.fire(event);
             }
 
         // To ensure that no error events are dropped, print them to the
         // console if they have no listeners.
-        } else if (util.endsWith(type, 'error')) {
-            console.error((data && data.error) || data || 'Empty error event');
+        } else if (event instanceof ErrorEvent) {
+            console.error(event.error);
         }
 
         return this;
@@ -119,6 +144,7 @@ class Evented {
      *
      * @param {string} type The event type
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
+     * @private
      */
     listens(type: string) {
         return (
@@ -133,6 +159,7 @@ class Evented {
      *
      * @private
      * @returns {Object} `this`
+     * @private
      */
     setEventedParent(parent: ?Evented, data?: Object | () => Object) {
         this._eventedParent = parent;
@@ -141,5 +168,3 @@ class Evented {
         return this;
     }
 }
-
-module.exports = Evented;

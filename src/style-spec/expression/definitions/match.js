@@ -1,12 +1,14 @@
 // @flow
 
-const assert = require('assert');
-const { typeOf } = require('../values');
+import assert from 'assert';
+
+import { typeOf } from '../values';
+import { ValueType, type Type } from '../types';
 
 import type { Expression } from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type { Type } from '../types';
+import type { Value } from '../values';
 
 // Map input label values to output expression index
 type Cases = {[number | string]: number};
@@ -83,19 +85,25 @@ class Match implements Expression {
             outputs.push(result);
         }
 
-        const input = context.parse(args[1], 1, inputType);
+        const input = context.parse(args[1], 1, ValueType);
         if (!input) return null;
 
         const otherwise = context.parse(args[args.length - 1], args.length - 1, outputType);
         if (!otherwise) return null;
 
         assert(inputType && outputType);
+
+        if (input.type.kind !== 'value' && context.concat(1).checkSubtype((inputType: any), input.type)) {
+            return null;
+        }
+
         return new Match((inputType: any), (outputType: any), input, cases, outputs, otherwise);
     }
 
     evaluate(ctx: EvaluationContext) {
         const input = (this.input.evaluate(ctx): any);
-        return (this.outputs[this.cases[input]] || this.otherwise).evaluate(ctx);
+        const output = (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
+        return output.evaluate(ctx);
     }
 
     eachChild(fn: (Expression) => void) {
@@ -103,6 +111,51 @@ class Match implements Expression {
         this.outputs.forEach(fn);
         fn(this.otherwise);
     }
+
+    possibleOutputs(): Array<Value | void> {
+        return []
+            .concat(...this.outputs.map((out) => out.possibleOutputs()))
+            .concat(this.otherwise.possibleOutputs());
+    }
+
+    serialize(): Array<mixed> {
+        const serialized = ["match", this.input.serialize()];
+
+        // Sort so serialization has an arbitrary defined order, even though
+        // branch order doesn't affect evaluation
+        const sortedLabels = Object.keys(this.cases).sort();
+
+        // Group branches by unique match expression to support condensed
+        // serializations of the form [case1, case2, ...] -> matchExpression
+        const groupedByOutput: Array<[number, Array<number | string>]> = [];
+        const outputLookup: {[index: number]: number} = {}; // lookup index into groupedByOutput for a given output expression
+        for (const label of sortedLabels) {
+            const outputIndex = outputLookup[this.cases[label]];
+            if (outputIndex === undefined) {
+                // First time seeing this output, add it to the end of the grouped list
+                outputLookup[this.cases[label]] = groupedByOutput.length;
+                groupedByOutput.push([this.cases[label], [label]]);
+            } else {
+                // We've seen this expression before, add the label to that output's group
+                groupedByOutput[outputIndex][1].push(label);
+            }
+        }
+
+        const coerceLabel = (label) => this.inputType.kind === 'number' ? Number(label) : label;
+
+        for (const [outputIndex, labels] of groupedByOutput) {
+            if (labels.length === 1) {
+                // Only a single label matches this output expression
+                serialized.push(coerceLabel(labels[0]));
+            } else {
+                // Array of literal labels pointing to this output expression
+                serialized.push(labels.map(coerceLabel));
+            }
+            serialized.push(this.outputs[outputIndex].serialize());
+        }
+        serialized.push(this.otherwise.serialize());
+        return serialized;
+    }
 }
 
-module.exports = Match;
+export default Match;

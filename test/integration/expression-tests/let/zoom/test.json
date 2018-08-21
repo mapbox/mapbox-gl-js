@@ -2,9 +2,9 @@
   "expression": [
     "let",
     "z0_value",
-    10,
+    ["number", ["get", "a"]],
     "z20_value",
-    30,
+    ["number", ["get", "b"]],
     [
       "interpolate",
       ["linear"],
@@ -15,14 +15,30 @@
       ["var", "z20_value"]
     ]
   ],
-  "inputs": [[{"zoom": 10}, {}]],
+  "inputs": [[{"zoom": 10}, {"properties": {"a": 10, "b": 30}}]],
   "expected": {
     "compiled": {
       "result": "success",
-      "isFeatureConstant": true,
+      "isFeatureConstant": false,
       "isZoomConstant": false,
       "type": "number"
     },
-    "outputs": [20]
+    "outputs": [20],
+    "serialized": [
+      "let",
+      "z0_value",
+      ["number", ["get", "a"]],
+      "z20_value",
+      ["number", ["get", "b"]],
+      [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0,
+        ["var", "z0_value"],
+        20,
+        ["var", "z20_value"]
+      ]
+    ]
   }
 }

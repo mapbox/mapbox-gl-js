@@ -1,10 +1,16 @@
 
 <tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
+
+<% if (r.status !== 'errored') { %>
     <td><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.actual %>" data-alt-src="data:image/png;base64,<%- r.expected %>"></td>
     <td><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.diff %>"></td>
+<% } else { %>
+    <td></td><td></td>
+<% } %>
     <td>
-        <h2 style="background: <%- r.color %>"><a href="<%- r.group %>/<%- r.test %>/style.json"><%- r.group %>/<%- r.test %> <% if (!r.ok) { %>(failed)<% } %></a></h2>
+        <h2 style="background: <%- r.color %>"><a href="<%- r.id %>/style.json"><%- r.id %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
         <ul>
+            <% if (r.error) { %><li>error: <%- r.error.message %></li><% } %>
             <li>diff: <strong><%- r.difference %></strong></li>
             <% if (r.zoom) { %><li>zoom: <strong><%- r.zoom %></strong></li><% } %>
             <% if (r.center) { %><li>center: <strong><%- r.center %></strong></li><% } %>

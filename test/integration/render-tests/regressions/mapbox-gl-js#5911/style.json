@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "width": 256,
+      "height": 2048,
+      "description": "Issue #5911 caused items in the distance on a pitched map to have collision boxes that were too small, although the debug box drew correctly. Before the fix, this test would show both labels, with the boxes visibly overlapping."
+    }
+  },
+  "center": [
+    0,
+    70
+  ],
+  "zoom": 5,
+  "pitch": 60,
+  "bearing": 0,
+  "sources": {
+      "geojson": {
+        "type": "geojson",
+        "data": {
+          "type": "MultiPoint",
+          "coordinates": [
+            [
+              -0.8,
+              81.25
+            ],
+            [
+              1,
+              82
+            ]
+          ]
+        }
+      }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "test\ntest test\ntest",
+        "text-pitch-alignment": "viewport",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

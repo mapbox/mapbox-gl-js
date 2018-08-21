@@ -4,10 +4,7 @@
     "compiled": {
       "result": "error",
       "errors": [
-        {
-          "key": "",
-          "error": "Expected arguments of type (number, number) | (string, string) | (boolean, boolean) | (null, null), but found (string, number) instead."
-        }
+        {"key": "", "error": "Cannot compare types 'string' and 'number'."}
       ]
     }
   }

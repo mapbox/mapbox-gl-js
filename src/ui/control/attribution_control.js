@@ -1,10 +1,15 @@
 // @flow
 
-const DOM = require('../../util/dom');
-const util = require('../../util/util');
-const config = require('../../util/config');
+import DOM from '../../util/dom';
+import { bindAll } from '../../util/util';
+import config from '../../util/config';
 
 import type Map from '../map';
+
+type Options = {
+    compact?: boolean,
+    customAttribution?: string | Array<string>
+};
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
@@ -12,6 +17,7 @@ import type Map from '../map';
  * @implements {IControl}
  * @param {Object} [options]
  * @param {boolean} [options.compact] If `true` force a compact attribution that shows the full attribution on mouse hover, or if `false` force the full attribution control. The default is a responsive attribution that collapses when the map is less than 640 pixels wide.
+ * @param {string | Array<string>} [options.customAttribution] String or strings to show in addition to any other attributions.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({
@@ -19,17 +25,17 @@ import type Map from '../map';
  *     }));
  */
 class AttributionControl {
-    options: any;
+    options: Options;
     _map: Map;
     _container: HTMLElement;
     _editLink: ?HTMLAnchorElement;
     styleId: string;
     styleOwner: string;
 
-    constructor(options: any) {
+    constructor(options: Options = {}) {
         this.options = options;
 
-        util.bindAll([
+        bindAll([
             '_updateEditLink',
             '_updateData',
             '_updateCompact'
@@ -107,6 +113,13 @@ class AttributionControl {
     _updateAttributions() {
         if (!this._map.style) return;
         let attributions: Array<string> = [];
+        if (this.options.customAttribution) {
+            if (Array.isArray(this.options.customAttribution)) {
+                attributions = attributions.concat(this.options.customAttribution);
+            } else if (typeof this.options.customAttribution === 'string') {
+                attributions.push(this.options.customAttribution);
+            }
+        }
 
         if (this._map.style.stylesheet) {
             const stylesheet: any = this._map.style.stylesheet;
@@ -131,7 +144,12 @@ class AttributionControl {
             }
             return true;
         });
-        this._container.innerHTML = attributions.join(' | ');
+        if (attributions.length) {
+            this._container.innerHTML = attributions.join(' | ');
+            this._container.classList.remove('mapboxgl-attrib-empty');
+        } else {
+            this._container.classList.add('mapboxgl-attrib-empty');
+        }
         // remove old DOM node from _editLink
         this._editLink = null;
     }
@@ -146,4 +164,4 @@ class AttributionControl {
 
 }
 
-module.exports = AttributionControl;
+export default AttributionControl;

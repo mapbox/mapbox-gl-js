@@ -1,10 +1,45 @@
 
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
-const extend = require('../util/extend');
-const unbundle = require('../util/unbundle_jsonlint');
-const {isExpression} = require('../expression');
-const {isFunction} = require('../function');
+import extend from '../util/extend';
+import { unbundle, deepUnbundle } from '../util/unbundle_jsonlint';
+import { isExpression } from '../expression';
+import { isFunction } from '../function';
+
+import validateFunction from './validate_function';
+import validateExpression from './validate_expression';
+import validateObject from './validate_object';
+import validateArray from './validate_array';
+import validateBoolean from './validate_boolean';
+import validateNumber from './validate_number';
+import validateColor from './validate_color';
+import validateConstants from './validate_constants';
+import validateEnum from './validate_enum';
+import validateFilter from './validate_filter';
+import validateLayer from './validate_layer';
+import validateSource from './validate_source';
+import validateLight from './validate_light';
+import validateString from './validate_string';
+import validateFormatted from './validate_formatted';
+
+const VALIDATORS = {
+    '*': function() {
+        return [];
+    },
+    'array': validateArray,
+    'boolean': validateBoolean,
+    'number': validateNumber,
+    'color': validateColor,
+    'constants': validateConstants,
+    'enum': validateEnum,
+    'filter': validateFilter,
+    'function': validateFunction,
+    'layer': validateLayer,
+    'object': validateObject,
+    'source': validateSource,
+    'light': validateLight,
+    'string': validateString,
+    'formatted': validateFormatted
+};
+
 
 // Main recursive validation function. Tracks:
 //
@@ -14,59 +49,26 @@ const {isFunction} = require('../function');
 //   high level object that needs to be descended into deeper or a simple
 //   scalar value.
 // - valueSpec: current spec being evaluated. Tracks value.
+// - styleSpec: current full spec being evaluated.
 
-module.exports = function validate(options) {
-
-    const validateFunction = require('./validate_function');
-    const validateExpression = require('./validate_expression');
-    const validateObject = require('./validate_object');
-    const VALIDATORS = {
-        '*': function() {
-            return [];
-        },
-        'array': require('./validate_array'),
-        'boolean': require('./validate_boolean'),
-        'number': require('./validate_number'),
-        'color': require('./validate_color'),
-        'constants': require('./validate_constants'),
-        'enum': require('./validate_enum'),
-        'filter': require('./validate_filter'),
-        'function': require('./validate_function'),
-        'layer': require('./validate_layer'),
-        'object': require('./validate_object'),
-        'source': require('./validate_source'),
-        'light': require('./validate_light'),
-        'string': require('./validate_string')
-    };
-
+export default function validate(options) {
     const value = options.value;
     const valueSpec = options.valueSpec;
-    const key = options.key;
     const styleSpec = options.styleSpec;
-    const style = options.style;
 
-    if (getType(value) === 'string' && value[0] === '@') {
-        if (styleSpec.$version > 7) {
-            return [new ValidationError(key, value, 'constants have been deprecated as of v8')];
-        }
-        if (!(value in style.constants)) {
-            return [new ValidationError(key, value, 'constant "%s" not found', value)];
-        }
-        options = extend({}, options, { value: style.constants[value] });
-    }
-
-    if (valueSpec.function && isFunction(unbundle(value))) {
+    if (valueSpec.expression && isFunction(unbundle(value))) {
         return validateFunction(options);
 
-    } else if (valueSpec.function && isExpression(unbundle.deep(value))) {
+    } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
 
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
         return VALIDATORS[valueSpec.type](options);
 
     } else {
-        return validateObject(extend({}, options, {
+        const valid = validateObject(extend({}, options, {
             valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
         }));
+        return valid;
     }
-};
+}

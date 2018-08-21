@@ -1,6 +1,6 @@
 /*---
-title: Style lines using an identity property function.
-description: Using an identity line-color property function for a visualization
+title: Style lines with a data-driven property
+description: Creating a visualization with a data expression for [`line-color`](/mapbox-gl-js/style-spec#paint-line-line-color)
 tags:
   - layers
 pathname: /mapbox-gl-js/example/data-driven-lines/

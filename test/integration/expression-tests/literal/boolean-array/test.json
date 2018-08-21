@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "array<boolean, 2>"
     },
-    "outputs": [[true, false]]
+    "outputs": [[true, false]],
+    "serialized": ["literal", [true, false]]
   }
 }

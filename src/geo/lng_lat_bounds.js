@@ -1,6 +1,6 @@
 // @flow
 
-const LngLat = require('./lng_lat');
+import LngLat from './lng_lat';
 
 import type {LngLatLike} from './lng_lat';
 
@@ -66,7 +66,7 @@ class LngLatBounds {
      * @param {LngLat|LngLatBounds} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
-    extend(obj) {
+    extend(obj: LngLat | LngLatBounds) {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;
@@ -201,6 +201,15 @@ class LngLatBounds {
     }
 
     /**
+     * Check if the bounding box is an empty/`null`-type box.
+     *
+     * @returns {boolean} True if bounds have been defined, otherwise false.
+     */
+    isEmpty() {
+        return !(this._sw && this._ne);
+    }
+
+    /**
      * Converts an array to a `LngLatBounds` object.
      *
      * If a `LngLatBounds` object is passed in, the function returns it unchanged.
@@ -235,4 +244,4 @@ class LngLatBounds {
  */
 export type LngLatBoundsLike = LngLatBounds | [LngLatLike, LngLatLike] | [number, number, number, number];
 
-module.exports = LngLatBounds;
+export default LngLatBounds;

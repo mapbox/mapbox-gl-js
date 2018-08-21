@@ -13,6 +13,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [1, -1, -1, -1]
+    "outputs": [1, -1, -1, -1],
+    "serialized": ["number", ["get", "x"], -1]
   }
 }

@@ -1,14 +1,20 @@
 // @flow
 
-const StyleLayer = require('./style_layer');
-const util = require('../util/util');
-const featureFilter = require('../style-spec/feature_filter');
-const groupByLayout = require('../style-spec/group_by_layout');
+import StyleLayer from './style_layer';
+import createStyleLayer from './create_style_layer';
+
+import { values } from '../util/util';
+import featureFilter from '../style-spec/feature_filter';
+import groupByLayout from '../style-spec/group_by_layout';
+
+import type {TypedStyleLayer} from './style_layer/typed_style_layer';
+import type {LayerSpecification} from '../style-spec/types';
 
 export type LayerConfigs = { [string]: LayerSpecification };
+export type Family<Layer: TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
-    familiesBySource: { [string]: { [string]: Array<Array<StyleLayer>> } };
+    familiesBySource: { [source: string]: { [sourceLayer: string]: Array<Family<*>> } };
 
     _layerConfigs: LayerConfigs;
     _layers: { [string]: StyleLayer };
@@ -29,7 +35,7 @@ class StyleLayerIndex {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
-            const layer = this._layers[layerConfig.id] = StyleLayer.create(layerConfig);
+            const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig);
             layer._featureFilter = featureFilter(layer.filter);
         }
         for (const id of removedIds) {
@@ -39,7 +45,7 @@ class StyleLayerIndex {
 
         this.familiesBySource = {};
 
-        const groups = groupByLayout(util.values(this._layerConfigs));
+        const groups = groupByLayout(values(this._layerConfigs));
 
         for (const layerConfigs of groups) {
             const layers = layerConfigs.map((layerConfig) => this._layers[layerConfig.id]);
@@ -66,4 +72,4 @@ class StyleLayerIndex {
     }
 }
 
-module.exports = StyleLayerIndex;
+export default StyleLayerIndex;

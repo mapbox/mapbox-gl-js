@@ -1,66 +1,74 @@
 [
   {
     "message": "layers[0]: either \"type\" or \"ref\" is required",
-    "line": 14
+    "line": 23
   },
   {
     "message": "layers[1]: missing required property \"id\"",
-    "line": 19
+    "line": 28
   },
   {
     "message": "layers[3]: \"type\" is prohibited for ref layers",
-    "line": 33
+    "line": 42
   },
   {
     "message": "layers[3]: \"source\" is prohibited for ref layers",
-    "line": 34
+    "line": 43
   },
   {
     "message": "layers[3]: \"source-layer\" is prohibited for ref layers",
-    "line": 35
+    "line": 44
   },
   {
     "message": "layers[3]: \"filter\" is prohibited for ref layers",
-    "line": 36
-  },
-  {
-    "message": "layers[3]: \"layout\" is prohibited for ref layers",
-    "line": 37
-  },
-  {
-    "message": "layers[4]: ref layer \"not-found\" not found",
-    "line": 41
-  },
-  {
-    "message": "layers[5]: ref cannot reference another ref layer",
     "line": 45
   },
   {
-    "message": "layers[6]: missing required property \"source\"",
-    "line": 47
+    "message": "layers[3]: \"layout\" is prohibited for ref layers",
+    "line": 46
   },
   {
-    "message": "layers[7]: source \"not-found\" not found",
+    "message": "layers[4]: ref layer \"not-found\" not found",
+    "line": 50
+  },
+  {
+    "message": "layers[5]: ref cannot reference another ref layer",
     "line": 54
   },
   {
+    "message": "layers[6]: missing required property \"source\"",
+    "line": 56
+  },
+  {
+    "message": "layers[7]: source \"not-found\" not found",
+    "line": 63
+  },
+  {
     "message": "layers[8]: layer \"vector-raster-mismatch\" requires a vector source",
-    "line": 59
+    "line": 68
   },
   {
     "message": "layers[9]: layer \"raster-vector-mismatch\" requires a raster source",
-    "line": 64
+    "line": 73
   },
   {
-    "message": "layers[11]: duplicate layer id \"duplicate\", previously used at line 68",
-    "line": 74
+    "message": "layers[11]: duplicate layer id \"duplicate\", previously used at line 77",
+    "line": 83
   },
   {
-    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, background], \"invalid\" found",
-    "line": 81
+    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, hillshade, background], \"invalid\" found",
+    "line": 90
   },
   {
     "message": "layers[13]: layer \"missing-source-layer\" must specify a \"source-layer\"",
-    "line": 91
+    "line": 100
+  },
+  {
+    "message": "layers[15]: layer \"line-gradient-bad\" specifies a line-gradient, which requires a GeoJSON source with `lineMetrics` enabled.",
+    "line": 112
+  },
+  {
+    "message": "layers[16]: layer \"line-gradient-missing-lineMetrics\" specifies a line-gradient, which requires a GeoJSON source with `lineMetrics` enabled.",
+    "line": 126
   }
 ]

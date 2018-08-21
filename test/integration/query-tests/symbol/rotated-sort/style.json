@@ -1,0 +1,50 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "description": "Because text-allow-overlap is true, the query results will be reordered based on rotated rendering order (compare to rotated-after-insert, in which the results match the order in the original data)",
+            "width": 256,
+            "height": 256,
+            "queryGeometry": [
+                [
+                    0,
+                    0
+                ],
+                [
+                    256,
+                    256
+                ]
+            ]
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 3,
+    "bearing": 45,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": "local://data/121points.geojson"
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sprite": "local://sprites/sprite",
+    "layers": [
+        {
+            "id": "symbol",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": ".",
+                "text-size": 6,
+                "text-allow-overlap": true,
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}

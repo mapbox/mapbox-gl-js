@@ -17,6 +17,10 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [2, 2, 3.3333333333333335, 6, 6]
+    "outputs": [2, 2, 3.33333, 6, 6],
+    "serialized": [
+      "number",
+      ["interpolate", ["exponential", 2], ["number", ["get", "x"]], 1, 2, 3, 6]
+    ]
   }
 }

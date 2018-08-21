@@ -1,14 +1,16 @@
 {
   "extends": [
     "mourner",
-    "plugin:flowtype/recommended"
+    "plugin:flowtype/recommended",
+    "plugin:import/recommended"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
-    "sourceType": "script"
+    "sourceType": "module"
   },
   "plugins": [
-    "flowtype"
+    "flowtype",
+    "import"
   ],
   "rules": {
     "array-bracket-spacing": "off",
@@ -22,6 +24,7 @@
       }
     ],
     "global-require": "off",
+    "import/no-commonjs": "error",
     "key-spacing": "off",
     "no-eq-null": "off",
     "no-lonely-if": "off",
@@ -53,6 +56,9 @@
         "parameters": "off"
       }
     }]
+  },
+  "globals": {
+    "performance": true
   },
   "env": {
     "es6": true,

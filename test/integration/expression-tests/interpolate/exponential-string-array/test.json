@@ -13,10 +13,7 @@
     "compiled": {
       "result": "error",
       "errors": [
-        {
-          "key": "",
-          "error": "Type array<string, 1> is not interpolatable."
-        }
+        {"key": "", "error": "Type array<string, 1> is not interpolatable."}
       ]
     }
   }

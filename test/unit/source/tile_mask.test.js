@@ -1,15 +1,13 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const updateTileMasks = require('../../../src/render/tile_mask');
-const TileCoord = require('../../../src/source/tile_coord');
+import { test } from 'mapbox-gl-js-test';
+import updateTileMasks from '../../../src/render/tile_mask';
+import { OverscaledTileID } from '../../../src/source/tile_id';
 
 
 test('computeTileMasks', (t) => {
     class Tile {
         constructor(z, x, y, w) {
-            this.coord = new TileCoord(z, x, y, w);
-            this.sourceMaxZoom = 16;
+            const sourceMaxZoom = 16;
+            this.tileID = new OverscaledTileID(z, w || 0, Math.min(sourceMaxZoom, z), x, y);
         }
 
         setMask(mask) {
@@ -28,19 +26,19 @@ test('computeTileMasks', (t) => {
     t.test('no children', (t) => {
         const renderables = [new Tile(0, 0, 0) ];
         updateTileMasks(renderables);
-        t.deepEqual(Object.keys(renderables[0].mask), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(Object.keys(renderables[0].mask), [new OverscaledTileID(0, 0, 0, 0, 0).key]);
 
         const renderables2 = [new Tile(4, 3, 8)];
         updateTileMasks(renderables2);
-        t.deepEqual(Object.keys(renderables2[0].mask), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(Object.keys(renderables2[0].mask), [new OverscaledTileID(0, 0, 0, 0, 0).key]);
 
         const renderables3 = [new Tile(1, 0, 0), new Tile(1, 1, 1)];
         updateTileMasks(renderables3);
-        t.deepEqual(renderables3.map((r)=>{ return Object.keys(r.mask); }), [[new TileCoord(0, 0, 0).id], [new TileCoord(0, 0, 0).id]]);
+        t.deepEqual(renderables3.map((r)=>{ return Object.keys(r.mask); }), [[new OverscaledTileID(0, 0, 0, 0, 0).key], [new OverscaledTileID(0, 0, 0, 0, 0).key]]);
 
         const renderables4 = [new Tile(1, 0, 0), new Tile(2, 2, 3)];
         updateTileMasks(renderables4);
-        t.deepEqual(renderables4.map((r)=>{ return Object.keys(r.mask); }), [[new TileCoord(0, 0, 0).id], [new TileCoord(0, 0, 0).id]]);
+        t.deepEqual(renderables4.map((r)=>{ return Object.keys(r.mask); }), [[new OverscaledTileID(0, 0, 0, 0, 0).key], [new OverscaledTileID(0, 0, 0, 0, 0).key]]);
         t.end();
     });
 
@@ -50,10 +48,10 @@ test('computeTileMasks', (t) => {
         t.deepEqual(renderables.map((r)=>{ return Object.keys(r.mask); }), [
             // empty mask -- i.e. don't draw anything because child tiles cover the whole parent tile
             [],
-            [new TileCoord(0, 0, 0).id],
-            [new TileCoord(0, 0, 0).id],
-            [new TileCoord(0, 0, 0).id],
-            [new TileCoord(0, 0, 0).id]]);
+            [new OverscaledTileID(0, 0, 0, 0, 0).key],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key]]);
         t.end();
     });
 
@@ -62,11 +60,11 @@ test('computeTileMasks', (t) => {
         updateTileMasks(renderables);
         t.deepEqual(renderables.map((r)=>{ return Object.keys(r.mask); }), [
             [
-                new TileCoord(1, 1, 0).id,
-                new TileCoord(1, 0, 1).id,
-                new TileCoord(1, 1, 1).id
+                new OverscaledTileID(1, 0, 1, 1, 0).key,
+                new OverscaledTileID(1, 0, 1, 0, 1).key,
+                new OverscaledTileID(1, 0, 1, 1, 1).key
             ],
-            [new TileCoord(0, 0, 0).id]
+            [new OverscaledTileID(0, 0, 0, 0, 0).key]
         ]);
         t.end();
     });
@@ -82,24 +80,24 @@ test('computeTileMasks', (t) => {
         updateTileMasks(renderables);
         t.deepEqual(renderables.map((r)=>{ return Object.keys(r.mask); }), [
             [
-                new TileCoord(1, 1, 1).id.toString(),
-                new TileCoord(2, 3, 0).id.toString(),
-                new TileCoord(2, 3, 1).id.toString(),
+                new OverscaledTileID(1, 0, 1, 1, 1).key.toString(),
+                new OverscaledTileID(2, 0, 2, 3, 0).key.toString(),
+                new OverscaledTileID(2, 0, 2, 3, 1).key.toString(),
             ],
             [
-                new TileCoord(1, 1, 0).id.toString(),
-                new TileCoord(1, 0, 1).id.toString(),
-                new TileCoord(1, 1, 1).id.toString()
+                new OverscaledTileID(1, 0, 1, 1, 0).key.toString(),
+                new OverscaledTileID(1, 0, 1, 0, 1).key.toString(),
+                new OverscaledTileID(1, 0, 1, 1, 1).key.toString()
             ],
             [
-                new TileCoord(1, 0, 0).id.toString(),
-                new TileCoord(1, 1, 0).id.toString(),
-                new TileCoord(1, 1, 1).id.toString()
+                new OverscaledTileID(1, 0, 1, 0, 0).key.toString(),
+                new OverscaledTileID(1, 0, 1, 1, 0).key.toString(),
+                new OverscaledTileID(1, 0, 1, 1, 1).key.toString()
             ],
-            [new TileCoord(0, 0, 0).id.toString()],
-            [new TileCoord(0, 0, 0).id.toString()],
-            [new TileCoord(0, 0, 0).id.toString()],
-            [new TileCoord(0, 0, 0).id.toString()]
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()]
         ]);
         t.end();
     });
@@ -109,21 +107,21 @@ test('computeTileMasks', (t) => {
         updateTileMasks(renderables);
         t.deepEqual(renderables.map((r)=>{ return Object.keys(r.mask); }), [
             [
-                new TileCoord(2, 0, 0).id.toString(),
-                new TileCoord(1, 1, 0).id.toString(),
-                new TileCoord(2, 1, 0).id.toString(),
-                new TileCoord(1, 0, 1).id.toString(),
-                new TileCoord(1, 1, 1).id.toString(),
-                new TileCoord(2, 0, 1).id.toString(),
-                new TileCoord(3, 3, 2).id.toString(),
-                new TileCoord(3, 2, 3).id.toString(),
-                new TileCoord(3, 3, 3).id.toString(),
-                new TileCoord(4, 5, 4).id.toString(),
-                new TileCoord(4, 4, 5).id.toString(),
-                new TileCoord(4, 5, 5).id.toString(),
+                new OverscaledTileID(2, 0, 2, 0, 0).key.toString(),
+                new OverscaledTileID(1, 0, 1, 1, 0).key.toString(),
+                new OverscaledTileID(2, 0, 2, 1, 0).key.toString(),
+                new OverscaledTileID(1, 0, 1, 0, 1).key.toString(),
+                new OverscaledTileID(1, 0, 1, 1, 1).key.toString(),
+                new OverscaledTileID(2, 0, 2, 0, 1).key.toString(),
+                new OverscaledTileID(3, 0, 3, 3, 2).key.toString(),
+                new OverscaledTileID(3, 0, 3, 2, 3).key.toString(),
+                new OverscaledTileID(3, 0, 3, 3, 3).key.toString(),
+                new OverscaledTileID(4, 0, 4, 5, 4).key.toString(),
+                new OverscaledTileID(4, 0, 4, 4, 5).key.toString(),
+                new OverscaledTileID(4, 0, 4, 5, 5).key.toString(),
             ],
             [
-                new TileCoord(0, 0, 0).id.toString()
+                new OverscaledTileID(0, 0, 0, 0, 0).key.toString()
             ]
         ]);
         t.end();
@@ -134,17 +132,17 @@ test('computeTileMasks', (t) => {
         updateTileMasks(renderables);
         t.deepEqual(renderables.map((r)=>{ return Object.keys(r.mask); }), [
             [
-                new TileCoord(1, 1, 0).id.toString(),
-                new TileCoord(1, 0, 1).id.toString(),
-                new TileCoord(2, 3, 2).id.toString(),
-                new TileCoord(2, 2, 3).id.toString(),
-                new TileCoord(3, 7, 6).id.toString(),
-                new TileCoord(3, 6, 7).id.toString()
+                new OverscaledTileID(1, 0, 1, 1, 0).key.toString(),
+                new OverscaledTileID(1, 0, 1, 0, 1).key.toString(),
+                new OverscaledTileID(2, 0, 2, 3, 2).key.toString(),
+                new OverscaledTileID(2, 0, 2, 2, 3).key.toString(),
+                new OverscaledTileID(3, 0, 3, 7, 6).key.toString(),
+                new OverscaledTileID(3, 0, 3, 6, 7).key.toString()
             ],
-            [new TileCoord(0, 0, 0).id.toString()],
-            [new TileCoord(0, 0, 0).id.toString()],
-            [new TileCoord(0, 0, 0).id.toString()],
-            [new TileCoord(0, 0, 0).id.toString()]
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()],
+            [new OverscaledTileID(0, 0, 0, 0, 0).key.toString()]
 
         ]);
         t.end();

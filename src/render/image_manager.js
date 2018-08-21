@@ -1,13 +1,14 @@
 // @flow
 
-const ShelfPack = require('@mapbox/shelf-pack');
-const {RGBAImage} = require('../util/image');
-const {imagePosition} = require('./image_atlas');
-const Texture = require('./texture');
-const assert = require('assert');
+import ShelfPack from '@mapbox/shelf-pack';
+
+import { RGBAImage } from '../util/image';
+import { ImagePosition } from './image_atlas';
+import Texture from './texture';
+import assert from 'assert';
 
 import type {StyleImage} from '../style/style_image';
-import type {ImagePosition} from './image_atlas';
+import type Context from '../gl/context';
 import type {Bin} from '@mapbox/shelf-pack';
 import type {Callback} from '../types/callback';
 
@@ -50,7 +51,7 @@ class ImageManager {
 
         this.shelfPack = new ShelfPack(64, 64, {autoResize: true});
         this.patterns = {};
-        this.atlasImage = RGBAImage.create({width: 64, height: 64});
+        this.atlasImage = new RGBAImage({width: 64, height: 64});
         this.dirty = true;
     }
 
@@ -93,6 +94,10 @@ class ImageManager {
         }
     }
 
+    listImages(): Array<string> {
+        return Object.keys(this.images);
+    }
+
     getImages(ids: Array<string>, callback: Callback<{[string]: StyleImage}>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been addeded via runtime styling), then notify the requestor immediately.
@@ -119,7 +124,12 @@ class ImageManager {
         for (const id of ids) {
             const image = this.images[id];
             if (image) {
-                response[id] = image;
+                // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
+                response[id] = {
+                    data: image.data.clone(),
+                    pixelRatio: image.pixelRatio,
+                    sdf: image.sdf
+                };
             }
         }
 
@@ -154,7 +164,7 @@ class ImageManager {
             return null;
         }
 
-        RGBAImage.resize(this.atlasImage, this.getPixelSize());
+        this.atlasImage.resize(this.getPixelSize());
 
         const src = image.data;
         const dst = this.atlasImage;
@@ -174,14 +184,15 @@ class ImageManager {
 
         this.dirty = true;
 
-        const position = imagePosition(bin, image);
+        const position = new ImagePosition(bin, image);
         this.patterns[id] = { bin, position };
         return position;
     }
 
-    bind(gl: WebGLRenderingContext) {
+    bind(context: Context) {
+        const gl = context.gl;
         if (!this.atlasTexture) {
-            this.atlasTexture = new Texture(gl, this.atlasImage, gl.RGBA);
+            this.atlasTexture = new Texture(context, this.atlasImage, gl.RGBA);
         } else if (this.dirty) {
             this.atlasTexture.update(this.atlasImage);
             this.dirty = false;
@@ -191,4 +202,4 @@ class ImageManager {
     }
 }
 
-module.exports = ImageManager;
+export default ImageManager;

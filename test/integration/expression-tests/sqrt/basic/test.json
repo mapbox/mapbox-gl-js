@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [2, 0.5]
+    "outputs": [2, 0.5],
+    "serialized": ["sqrt", ["number", ["get", "x"]]]
   }
 }

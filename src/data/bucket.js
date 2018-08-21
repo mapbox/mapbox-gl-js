@@ -1,30 +1,27 @@
 // @flow
 
-const util = require('../util/util');
-
-import type CollisionBoxArray from '../symbol/collision_box';
+import type {CollisionBoxArray} from './array_types';
 import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
+import type Context from '../gl/context';
+import type {FeatureStates} from '../source/source_state';
 
-export type BucketParameters = {
+export type BucketParameters<Layer: TypedStyleLayer> = {
     index: number,
-    layers: Array<StyleLayer>,
+    layers: Array<Layer>,
     zoom: number,
     pixelRatio: number,
     overscaling: number,
-    collisionBoxArray: CollisionBoxArray
+    collisionBoxArray: CollisionBoxArray,
+    sourceLayerIndex: number,
+    sourceID: string
 }
 
 export type PopulateParameters = {
     featureIndex: FeatureIndex,
     iconDependencies: {},
     glyphDependencies: {}
-}
-
-export type SerializedBucket = {
-    zoom: number,
-    layerIds: Array<string>
 }
 
 export type IndexedFeature = {
@@ -57,12 +54,16 @@ export type IndexedFeature = {
  * @private
  */
 export interface Bucket {
-    populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
-    isEmpty(): boolean;
-    serialize(transferables?: Array<Transferable>): SerializedBucket;
+    layerIds: Array<string>;
+    +layers: Array<any>;
+    +stateDependentLayers: Array<any>;
 
-    upload(gl: WebGLRenderingContext): void;
-    uploaded: boolean;
+    populate(features: Array<IndexedFeature>, options: PopulateParameters): void;
+    update(states: FeatureStates, vtLayer: VectorTileLayer): void;
+    isEmpty(): boolean;
+
+    upload(context: Context): void;
+    uploadPending(): boolean;
 
     /**
      * Release the WebGL resources associated with the buffers. Note that because
@@ -74,29 +75,30 @@ export interface Bucket {
     destroy(): void;
 }
 
-module.exports = {
-    deserialize(input: Array<SerializedBucket>, style: Style): {[string]: Bucket} {
-        const output = {};
+export function deserialize(input: Array<Bucket>, style: Style): {[string]: Bucket} {
+    const output = {};
 
-        // Guard against the case where the map's style has been set to null while
-        // this bucket has been parsing.
-        if (!style) return output;
+    // Guard against the case where the map's style has been set to null while
+    // this bucket has been parsing.
+    if (!style) return output;
 
-        for (const serialized of input) {
-            const layers = serialized.layerIds
-                .map((id) => style.getLayer(id))
-                .filter(Boolean);
+    for (const bucket of input) {
+        const layers = bucket.layerIds
+            .map((id) => style.getLayer(id))
+            .filter(Boolean);
 
-            if (layers.length === 0) {
-                continue;
-            }
-
-            const bucket = layers[0].createBucket(util.extend({layers}, serialized));
-            for (const layer of layers) {
-                output[layer.id] = bucket;
-            }
+        if (layers.length === 0) {
+            continue;
         }
 
-        return output;
+        // look up StyleLayer objects from layer ids (since we don't
+        // want to waste time serializing/copying them from the worker)
+        (bucket: any).layers = layers;
+        (bucket: any).stateDependentLayers = layers.filter((l) => l.isStateDependent());
+        for (const layer of layers) {
+            output[layer.id] = bucket;
+        }
     }
-};
+
+    return output;
+}

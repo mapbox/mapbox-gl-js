@@ -8,6 +8,7 @@
       "isZoomConstant": true,
       "type": "number"
     },
-    "outputs": [2.718281828459045]
+    "outputs": [2.71828],
+    "serialized": 2.718281828459045
   }
 }

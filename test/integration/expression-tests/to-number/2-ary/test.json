@@ -28,6 +28,7 @@
       -1,
       -1,
       {"error": "Could not convert \"bad fallback\" to number."}
-    ]
+    ],
+    "serialized": ["to-number", ["get", "x"], ["get", "y"]]
   }
 }

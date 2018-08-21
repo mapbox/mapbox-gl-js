@@ -10,7 +10,7 @@ var mapStyle = {
         },
         "overlay": {
             "type": "image",
-            "url": "/mapbox-gl-js/assets/radar.gif",
+            "url": "https://www.mapbox.com/mapbox-gl-js/assets/radar.gif",
             "coordinates": [
                 [-80.425, 46.437],
                 [-71.516, 46.437],
@@ -56,7 +56,13 @@ var mapStyle = {
             "layout": {
                 "text-field": "{name_en}",
                 "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
-                "text-size": {"stops": [[4, 9], [6, 12]]}
+                "text-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    4, 9,
+                    6, 12
+                ]
             },
             "paint": {
                 "text-color": "#969696",
@@ -75,7 +81,13 @@ var mapStyle = {
                 "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
                 "text-letter-spacing": 0.15,
                 "text-max-width": 7,
-                "text-size": {"stops": [[4, 10], [6, 14]]}
+                "text-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    4, 10,
+                    6, 14
+                ]
             },
             "filter": [">=", "area", 80000],
             "paint": {
@@ -93,8 +105,7 @@ var map = new mapboxgl.Map({
     minZoom: 4,
     zoom: 5,
     center: [-75.789, 41.874],
-    style: mapStyle,
-    hash: false
+    style: mapStyle
 });
 
 </script>

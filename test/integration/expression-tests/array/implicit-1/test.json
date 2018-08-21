@@ -1,0 +1,20 @@
+{
+  "expression": ["at", 0, ["get", "array"]],
+  "inputs": [
+    [{}, {"properties": {"array": [0, 1, 2]}}],
+    [{}, {"properties": {"array": "not"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "value"
+    },
+    "outputs": [
+      0,
+      {"error": "Expected value to be of type array, but found string instead."}
+    ],
+    "serialized": ["at", 0, ["array", ["get", "array"]]]
+  }
+}

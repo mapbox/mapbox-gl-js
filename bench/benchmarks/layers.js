@@ -1,7 +1,7 @@
 
-const Benchmark = require('../lib/benchmark');
-const createMap = require('../lib/create_map');
-const style = require('../data/empty.json');
+import Benchmark from '../lib/benchmark';
+import createMap from '../lib/create_map';
+import style from '../data/empty.json';
 
 function generateLayers(layer) {
     const generated = [];
@@ -26,8 +26,6 @@ class LayerBenchmark extends Benchmark {
     }
 
     bench() {
-        this.map._styleDirty = true;
-        this.map._sourcesDirty = true;
         this.map._render();
     }
 
@@ -102,39 +100,62 @@ class LayerFillExtrusion extends LayerBenchmark {
 }
 
 class LayerHeatmap extends LayerBenchmark {
+    setup() {
+        return fetch('/bench/data/naturalearth-land.json')
+            .then(response => response.json())
+            .then(data => {
+                this.layerStyle = Object.assign({}, style, {
+                    sources: {
+                        'heatmap': {
+                            'type': 'geojson',
+                            'data': data,
+                            'maxzoom': 23
+                        }
+                    },
+                    layers: generateLayers({
+                        'id': 'layer',
+                        'type': 'heatmap',
+                        'source': 'heatmap',
+                        'paint': {
+                            "heatmap-radius": 50,
+                            "heatmap-weight": {
+                                "stops": [[0, 0.5], [4, 2]]
+                            },
+                            "heatmap-intensity": 0.9,
+                            "heatmap-color": [
+                                "interpolate",
+                                ["linear"],
+                                ["heatmap-density"],
+                                0, "rgba(0, 0, 255, 0)",
+                                0.1, "royalblue",
+                                0.3, "cyan",
+                                0.5, "lime",
+                                0.7, "yellow",
+                                1, "red"
+                            ]
+                        }
+                    })
+                });
+            })
+            .then(() => super.setup());
+    }
+}
+
+class LayerHillshade extends LayerBenchmark {
     constructor() {
         super();
 
         this.layerStyle = Object.assign({}, style, {
             sources: {
-                'heatmap': {
-                    'type': 'geojson',
-                    'data': require('../data/naturalearth-land.json'),
-                    'maxzoom': 23
+                'terrain-rgb': {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.terrain-rgb'
                 }
             },
             layers: generateLayers({
                 'id': 'layer',
-                'type': 'heatmap',
-                'source': 'heatmap',
-                'paint': {
-                    "heatmap-radius": 50,
-                    "heatmap-weight": {
-                        "stops": [[0, 0.5], [4, 2]]
-                    },
-                    "heatmap-intensity": 0.9,
-                    "heatmap-color": [
-                        "interpolate",
-                        ["linear"],
-                        ["heatmap-density"],
-                        0, "rgba(0, 0, 255, 0)",
-                        0.1, "royalblue",
-                        0.3, "cyan",
-                        0.5, "lime",
-                        0.7, "yellow",
-                        1, "red"
-                    ]
-                }
+                'type': 'hillshade',
+                'source': 'terrain-rgb',
             })
         });
     }
@@ -196,12 +217,13 @@ class LayerSymbol extends LayerBenchmark {
 }
 
 
-module.exports = [
+export default [
     LayerBackground,
     LayerCircle,
     LayerFill,
     LayerFillExtrusion,
     LayerHeatmap,
+    LayerHillshade,
     LayerLine,
     LayerRaster,
     LayerSymbol

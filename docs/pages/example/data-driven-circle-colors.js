@@ -1,6 +1,6 @@
 /*---
-title: Style circles using data-driven styling
-description: Using a categorical circle-color property function for a visualization
+title: Style circles with a data-driven property
+description: Creating a visualization with a data expression for [`circle-color`](/mapbox-gl-js/style-spec#paint-circle-circle-color)
 tags:
   - layers
 pathname: /mapbox-gl-js/example/data-driven-circle-colors/

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+if [ "$#" == 5 ]; then
+  arg="${@:0:4} ${BASH_ARGV[1]}/${BASH_ARGV[0]}"
+else
+  arg="${@}"
+fi
+
+node_modules/.bin/tap --node-arg -r --node-arg @mapbox/flow-remove-types/register --node-arg -r --node-arg esm $arg --node-arg

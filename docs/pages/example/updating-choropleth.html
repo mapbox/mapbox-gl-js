@@ -80,20 +80,20 @@ map.on('load', function() {
         'type': 'fill',
         'filter': ['==', 'isState', true],
         'paint': {
-            'fill-color': {
-                property: 'population',
-                stops: [
-                    [0, '#F2F12D'],
-                    [500000, '#EED322'],
-                    [750000, '#E6B71E'],
-                    [1000000, '#DA9C20'],
-                    [2500000, '#CA8323'],
-                    [5000000, '#B86B25'],
-                    [7500000, '#A25626'],
-                    [10000000, '#8B4225'],
-                    [25000000, '#723122']
-                ]
-            },
+            'fill-color': [
+                'interpolate',
+                ['linear'],
+                ['get', 'population'],
+                0, '#F2F12D',
+                500000, '#EED322',
+                750000, '#E6B71E',
+                1000000, '#DA9C20',
+                2500000, '#CA8323',
+                5000000, '#B86B25',
+                7500000, '#A25626',
+                10000000, '#8B4225',
+                25000000, '#723122'
+            ],
             'fill-opacity': 0.75
         }
     }, 'waterway-label');
@@ -106,20 +106,20 @@ map.on('load', function() {
         'type': 'fill',
         'filter': ['==', 'isCounty', true],
         'paint': {
-            'fill-color': {
-                property: 'population',
-                stops: [
-                    [0, '#F2F12D'],
-                    [100, '#EED322'],
-                    [1000, '#E6B71E'],
-                    [5000, '#DA9C20'],
-                    [10000, '#CA8323'],
-                    [50000, '#B86B25'],
-                    [100000, '#A25626'],
-                    [500000, '#8B4225'],
-                    [1000000, '#723122']
-                ]
-            },
+            'fill-color': [
+                'interpolate',
+                ['linear'],
+                ['get', 'population'],
+                0, '#F2F12D',
+                100, '#EED322',
+                1000, '#E6B71E',
+                5000, '#DA9C20',
+                10000, '#CA8323',
+                50000, '#B86B25',
+                100000, '#A25626',
+                500000, '#8B4225',
+                1000000, '#723122'
+            ],
             'fill-opacity': 0.75
         }
     }, 'waterway-label');

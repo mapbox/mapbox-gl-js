@@ -1,6 +1,9 @@
 // @flow
 
-const createStructArrayType = require('../util/struct_array');
+import {
+    LineIndexArray,
+    TriangleIndexArray
+} from './array_types';
 
 /**
  * An index array stores Uint16 indicies of vertexes in a corresponding vertex array. We use
@@ -8,18 +11,4 @@ const createStructArrayType = require('../util/struct_array');
  * arrays storing pairs of indicies, forming line segments.
  * @private
  */
-
-function createIndexArrayType(components: number) {
-    return createStructArrayType({
-        members: [{
-            type: 'Uint16',
-            name: 'vertices',
-            components
-        }]
-    });
-}
-
-module.exports = {
-    LineIndexArray: createIndexArrayType(2),
-    TriangleIndexArray: createIndexArrayType(3)
-};
+export {LineIndexArray, TriangleIndexArray};

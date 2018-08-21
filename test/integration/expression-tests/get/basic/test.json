@@ -11,6 +11,7 @@
     "outputs": [
       {"error": "Expected value to be of type number, but found null instead."},
       1
-    ]
+    ],
+    "serialized": ["number", ["get", "x"]]
   }
 }

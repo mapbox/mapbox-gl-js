@@ -1,10 +1,8 @@
-'use strict';
-
-const test = require('mapbox-gl-js-test').test;
-const CollisionFeature = require('../../../src/symbol/collision_feature');
-const Anchor = require('../../../src/symbol/anchor');
-const Point = require('@mapbox/point-geometry');
-const CollisionBoxArray = require('../../../src/symbol/collision_box');
+import { test } from 'mapbox-gl-js-test';
+import CollisionFeature from '../../../src/symbol/collision_feature';
+import Anchor from '../../../src/symbol/anchor';
+import Point from '@mapbox/point-geometry';
+import { CollisionBoxArray } from '../../../src/data/array_types';
 
 test('CollisionFeature', (t) => {
 

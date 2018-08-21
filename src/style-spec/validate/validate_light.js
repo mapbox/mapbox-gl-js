@@ -1,9 +1,9 @@
 
-const ValidationError = require('../error/validation_error');
-const getType = require('../util/get_type');
-const validate = require('./validate');
+import ValidationError from '../error/validation_error';
+import getType from '../util/get_type';
+import validate from './validate';
 
-module.exports = function validateLight(options) {
+export default function validateLight(options) {
     const light = options.value;
     const styleSpec = options.styleSpec;
     const lightSpec = styleSpec.light;
@@ -15,7 +15,7 @@ module.exports = function validateLight(options) {
     if (light === undefined) {
         return errors;
     } else if (rootType !== 'object') {
-        errors = errors.concat([new ValidationError('light', light, 'object expected, %s found', rootType)]);
+        errors = errors.concat([new ValidationError('light', light, `object expected, ${rootType} found`)]);
         return errors;
     }
 
@@ -39,9 +39,9 @@ module.exports = function validateLight(options) {
                 styleSpec: styleSpec
             }));
         } else {
-            errors = errors.concat([new ValidationError(key, light[key], 'unknown property "%s"', key)]);
+            errors = errors.concat([new ValidationError(key, light[key], `unknown property "${key}"`)]);
         }
     }
 
     return errors;
-};
+}

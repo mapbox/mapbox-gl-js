@@ -26,6 +26,7 @@
         "error": "Expected value to be of type object, but found boolean instead."
       },
       {"error": "Expected value to be of type object, but found null instead."}
-    ]
+    ],
+    "serialized": ["object", ["get", "x"]]
   }
 }

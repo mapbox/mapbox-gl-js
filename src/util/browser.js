@@ -1,12 +1,13 @@
 // @flow
 
-const window = require('./window');
+import window from './window';
+import type { Cancelable } from '../types/cancelable';
 
 const now = window.performance && window.performance.now ?
     window.performance.now.bind(window.performance) :
     Date.now.bind(Date);
 
-const frame = window.requestAnimationFrame ||
+const raf = window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.msRequestAnimationFrame;
@@ -19,44 +20,16 @@ const cancel = window.cancelAnimationFrame ||
 /**
  * @private
  */
-module.exports = {
+const exported = {
     /**
      * Provides a function that outputs milliseconds: either performance.now()
      * or a fallback to Date.now()
      */
     now,
 
-    frame(fn: Function) {
-        return frame(fn);
-    },
-
-    cancelFrame(id: number) {
-        return cancel(id);
-    },
-
-    timed(fn: (n: number) => mixed, dur: number, ctx: mixed) {
-        if (!dur) {
-            fn.call(ctx, 1);
-            return null;
-        }
-
-        let abort = false;
-        const start = now();
-
-        function tick() {
-            if (abort) return;
-            const end = now();
-            if (end >= start + dur) {
-                fn.call(ctx, 1);
-            } else {
-                fn.call(ctx, (end - start) / dur);
-                frame(tick);
-            }
-        }
-
-        frame(tick);
-
-        return function() { abort = true; };
+    frame(fn: Function): Cancelable {
+        const frame = raf(fn);
+        return { cancel: () => cancel(frame) };
     },
 
     getImageData(img: CanvasImageSource): ImageData {
@@ -71,15 +44,23 @@ module.exports = {
         return context.getImageData(0, 0, img.width, img.height);
     },
 
+    resolveURL(path: string) {
+        const a = window.document.createElement('a');
+        a.href = path;
+        return a.href;
+    },
+
     hardwareConcurrency: window.navigator.hardwareConcurrency || 4,
-
     get devicePixelRatio() { return window.devicePixelRatio; },
-
     supportsWebp: false
 };
 
-const webpImgTest = window.document.createElement('img');
-webpImgTest.onload = function() {
-    module.exports.supportsWebp = true;
-};
-webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
+export default exported;
+
+if (window.document) {
+    const webpImgTest = window.document.createElement('img');
+    webpImgTest.onload = function() {
+        exported.supportsWebp = true;
+    };
+    webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
+}

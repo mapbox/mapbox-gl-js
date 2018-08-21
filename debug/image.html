@@ -36,12 +36,15 @@ var imageStyle = {
         "id": "background",
         "type": "background",
         "paint": {
-            "background-color": "rgb(4,7,14)"
+            "background-color": "rgb(128,128,128)"
         }
     }, {
         "id": "image",
         "type": "raster",
-        "source": "image"
+        "source": "image",
+        "paint": {
+            "raster-resampling": "nearest"
+        }
     }]
 };
 

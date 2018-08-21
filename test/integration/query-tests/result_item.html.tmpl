@@ -1,8 +1,11 @@
 <tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
-    <td><img src="data:image/png;base64,<%- r.actual %>"></td>
     <td>
-        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/style.json"><%- r.group %>/<%- r.test %> <% if (!r.ok) { %>(failed)<% } %></a></h2>
+    <% if (r.status !== 'errored') { %><img src="data:image/png;base64,<%- r.actual %>"><% } %>
+    </td>
+    <td>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.id %>/style.json"><%- r.id %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
         <ul>
+            <% if (r.error) { %><li>error: <%- r.error.message %></li><% } %>
             <li>diff: <strong><%- r.difference %></strong></li>
             <li>zoom: <strong><%- r.zoom %></strong></li>
             <li>center: <strong><%- r.center %></strong></li>

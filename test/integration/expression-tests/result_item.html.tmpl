@@ -1,18 +1,22 @@
 <tr class="<%- r.status %> <%- (hasFailedTests && /passed/.test(r.status) || /ignored/.test(r.status)) ? 'hide' : '' %>">
     <td>
-        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json">&nbsp;</a></h2>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.id %>/case.json">&nbsp;</a></h2>
         <pre><%- r.expression %></pre>
     </td>
     <td>
-        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json"><%- r.group %>/<%- r.test %></a></h2>
-        <pre><%- r.difference %></pre>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.id %>/case.json"><%- r.id %> <% if (!r.ok) { %>(<%=r.status%>)<% } %></a></h2>
+        <% if (r.error) { %><div>error: <%- r.error.message %></div><% } %>
+        <div style="font-family: monospace; white-space: pre"><%= r.difference %></div>
     </td>
     <td>
-        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/case.json">&nbsp;</a></h2>
-        <div style="max-width: 400px; overflow: scroll; font-family: monospace;">
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.id %>/case.json">&nbsp;</a></h2>
+        <div>
+<% if (r.serialized) { %>
+            Serialized:
             <pre>
-<%- r.compiledJs %>
+<%- r.serialized %>
             </pre>
+<% } %>
         </div>
     </td>
 </tr>

@@ -1,11 +1,12 @@
 // @flow
 
-const TileCoord = require('../source/tile_coord');
+import { OverscaledTileID, CanonicalTileID } from '../source/tile_id';
 
 import type Tile from './../source/tile';
+import type Context from '../gl/context';
 
-export type Mask = {
-    [number]: boolean
+type Mask = {
+    [number]: CanonicalTileID
 };
 
 // Updates the TileMasks for all renderable tiles. A TileMask describes all regions
@@ -59,8 +60,8 @@ export type Mask = {
 // 2/1/3, since it is not a descendant of it.
 
 
-module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContext) {
-    const sortedRenderables = renderableTiles.sort((a, b) => { return a.coord.isLessThan(b.coord) ? -1 : b.coord.isLessThan(a.coord) ? 1 : 0; });
+export default function(renderableTiles: Array<Tile>, context: Context) {
+    const sortedRenderables = renderableTiles.sort((a, b) => { return a.tileID.isLessThan(b.tileID) ? -1 : b.tileID.isLessThan(a.tileID) ? 1 : 0; });
 
     for (let i = 0; i < sortedRenderables.length; i++) {
         const mask = {};
@@ -71,21 +72,21 @@ module.exports = function(renderableTiles: Array<Tile>, gl: WebGLRenderingContex
         // tile. We also compute the lower bound of the next wrap, because items of the next wrap
         // can never be children of the current wrap.
 
-        computeTileMasks(tile.coord.wrapped(), tile.coord, childArray, new TileCoord(0, 0, 0, tile.coord.w + 1), mask);
-        tile.setMask(mask, gl);
+        computeTileMasks(tile.tileID.wrapped(), tile.tileID, childArray, new OverscaledTileID(0, tile.tileID.wrap + 1, 0, 0, 0), mask);
+        tile.setMask(mask, context);
     }
-};
+}
 
-function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array<Tile>, lowerBound: TileCoord, mask: Mask) {
+function computeTileMasks(rootTile: OverscaledTileID, ref: OverscaledTileID, childArray: Array<Tile>, lowerBound: OverscaledTileID, mask: Mask) {
     // If the reference or any of its children is found in the list, we need to recurse.
     for (let i = 0; i < childArray.length; i++) {
         const childTile = childArray[i];
         // childTile is from a larger wrap than the rootTile so it cannot be a child tile
-        if (lowerBound.isLessThan(childTile.coord)) break;
+        if (lowerBound.isLessThan(childTile.tileID)) break;
         // The current tile is masked out, so we don't need to add them to the mask set.
-        if (ref.id === childTile.coord.id) {
+        if (ref.key === childTile.tileID.key) {
             return;
-        } else if (childTile.coord.isChildOf(ref, childTile.sourceMaxZoom)) {
+        } else if (childTile.tileID.isChildOf(ref)) {
             // There's at least one child tile that is masked out, so recursively descend
             const children = ref.children(Infinity);
             for (let j = 0; j < children.length; j++) {
@@ -98,7 +99,7 @@ function computeTileMasks(rootTile: TileCoord, ref: TileCoord, childArray: Array
     // We couldn't find a child, so it's definitely a masked part.
     // Compute the difference between the root tile ID and the reference tile ID, since TileMask
     // elements are always relative (see below for explanation).
-    const diffZ = ref.z - rootTile.z;
-    const maskTileId = new TileCoord(diffZ, ref.x - (rootTile.x << diffZ), ref.y - (rootTile.y << diffZ)).id;
-    mask[maskTileId] = mask[maskTileId] || true;
+    const diffZ = ref.overscaledZ - rootTile.overscaledZ;
+    const maskTileId = new CanonicalTileID(diffZ, ref.canonical.x - (rootTile.canonical.x << diffZ), ref.canonical.y - (rootTile.canonical.y << diffZ));
+    mask[maskTileId.key] = mask[maskTileId.key] || maskTileId;
 }

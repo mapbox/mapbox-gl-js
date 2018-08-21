@@ -1,5 +1,9 @@
 {
-  "propertySpec": {"type": "number"},
+  "propertySpec": {
+    "type": "number",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
   "expression": ["interpolate", ["linear"], ["get", "x"], 0, 100, 10, 200],
   "inputs": [
     [{}, {"properties": {"x": 0}}],
@@ -25,6 +29,15 @@
       {
         "error": "Expected value to be of type number, but found string instead."
       }
+    ],
+    "serialized": [
+      "interpolate",
+      ["linear"],
+      ["number", ["get", "x"]],
+      0,
+      100,
+      10,
+      200
     ]
   }
 }

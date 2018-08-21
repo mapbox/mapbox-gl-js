@@ -8,10 +8,12 @@ import type EvaluationContext  from '../evaluation_context';
 class Var implements Expression {
     type: Type;
     name: string;
+    boundExpression: Expression;
 
-    constructor(name: string, type: Type) {
-        this.type = type;
+    constructor(name: string, boundExpression: Expression) {
+        this.type = boundExpression.type;
         this.name = name;
+        this.boundExpression = boundExpression;
     }
 
     static parse(args: Array<mixed>, context: ParsingContext) {
@@ -23,14 +25,22 @@ class Var implements Expression {
             return context.error(`Unknown variable "${name}". Make sure "${name}" has been bound in an enclosing "let" expression before using it.`, 1);
         }
 
-        return new Var(name, context.scope.get(name).type);
+        return new Var(name, context.scope.get(name));
     }
 
     evaluate(ctx: EvaluationContext) {
-        return ctx.scope.get(this.name).evaluate(ctx);
+        return this.boundExpression.evaluate(ctx);
     }
 
     eachChild() {}
+
+    possibleOutputs() {
+        return [undefined];
+    }
+
+    serialize() {
+        return ["var", this.name];
+    }
 }
 
-module.exports = Var;
+export default Var;

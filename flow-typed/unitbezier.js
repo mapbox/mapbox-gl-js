@@ -7,5 +7,5 @@ declare module "unitbezier" {
         solveCurveX(t: number): number;
         solve(x: number, epsilon?: number): number;
     }
-    declare var exports: typeof UnitBezier;
+    declare module.exports: typeof UnitBezier;
 }

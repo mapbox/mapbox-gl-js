@@ -8,22 +8,35 @@
 
     <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
     <link rel='stylesheet' href='/dist/mapbox-gl.css'/>
+    <script href='https://unpkg.com/url-search-params@0.10.0/build/url-search-params.js'></script>
 </head>
 
 <body>
     <div id="benchmarks"></div>
-    <script src="https://unpkg.com/react@next/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@next/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/d3@4"></script>
     <script>
-        // Unless the URL contains a no-master query parameter, include the
-        // current master-branch build of benchmarks.js for comparison
-        if (!/no-master/.test(window.location.search)) {
-            document.write(`<script src="https://s3.amazonaws.com/mapbox-gl-js/master/benchmarks.js"><` + `/script>`);
-        }
+        const params = new URLSearchParams(location.search.slice(1));
+        Promise.resolve(params.has('compare') ?
+            params.getAll('compare').filter(Boolean) :
+            fetch('/package.json')
+            .then(response => response.json())
+            .then(pkg => [`v${pkg.version}`, 'master']))
+        .then(versions => {
+            const scripts = versions.map(v => `https://s3.amazonaws.com/mapbox-gl-js/${v}/benchmarks.js`)
+                .concat('/bench/benchmarks_generated.js', '/bench/benchmarks_view_generated.js');
+            return scripts.reduce((p, script) => p.then(() => loadScript(script)), Promise.resolve());
+        })
+        .catch(err => console.error(err))
+
+function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+    });
+}
     </script>
-    <script src="/bench/benchmarks_generated.js"></script>
-    <script src="/bench/benchmarks_view_generated.js"></script>
 </body>
 
 </html>
