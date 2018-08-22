@@ -26,7 +26,7 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 /**
- * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
+ * “滑轮层级助手”帮助用户通过滑动鼠标滑轮进行地图缩放（改变地图层级）
  */
 class ScrollZoomHandler {
     _map: Map;
@@ -70,9 +70,9 @@ class ScrollZoomHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "scroll to zoom" interaction is enabled.
+     * 返回一个布尔值，用于表明“滑轮层级”的交互功能是否可用。
      *
-     * @returns {boolean} `true` if the "scroll to zoom" interaction is enabled.
+     * @returns {boolean} 返回“true”则表明“滑轮层级”的交互功能可用。
      */
     isEnabled() {
         return !!this._enabled;
@@ -83,11 +83,11 @@ class ScrollZoomHandler {
     }
 
     /**
-     * Enables the "scroll to zoom" interaction.
+     * 激活“滑轮层级”的交互功能。
      *
      * @param {Object} [options]
-     * @param {string} [options.around] If "center" is passed, map will zoom around center of map
-     *
+     * @param {string} [options.around] 如果传递了参数“center”，则地图将以“center”为中心显示
+     * 
      * @example
      *   map.scrollZoom.enable();
      * @example
@@ -100,8 +100,8 @@ class ScrollZoomHandler {
     }
 
     /**
-     * Disables the "scroll to zoom" interaction.
-     *
+     * 关闭“滑轮层级”的交互功能。
+     * 
      * @example
      *   map.scrollZoom.disable();
      */
