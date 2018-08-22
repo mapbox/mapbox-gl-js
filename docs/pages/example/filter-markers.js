@@ -1,6 +1,6 @@
 /*---
-title: Filter symbols by toggling a list
-description: Filter a set of [symbols](/mapbox-gl-js/style-spec#layers-symbol) based on a property value in the data.
+title: 通过切换列表来过滤符号
+description: 根据数据中的一个属性值来过滤一系列的[符号]。(/mapbox-gl-js/style-spec#layers-symbol) 
 tags:
   - user-interaction
 pathname: /mapbox-gl-js/example/filter-markers/
