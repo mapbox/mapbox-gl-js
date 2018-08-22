@@ -9,8 +9,8 @@ import { Event } from '../../util/evented';
 import type Map from '../map';
 
 /**
- * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
- * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
+ * “矩形层级助手”帮助用户将地图放大到一个矩形范围内，其层级也会相应增加。
+ * 矩形范围的生成方式：保持“shift”键被按住，然后在地图上点击鼠标左键，并且拖动鼠标。
  */
 class BoxZoomHandler {
     _map: Map;
@@ -42,27 +42,28 @@ class BoxZoomHandler {
     }
 
     /**
-     * Returns a Boolean indicating whether the "box zoom" interaction is enabled.
+     * 返回一个布尔值，用于表明“矩形层级”的交互功能是否可用。
      *
-     * @returns {boolean} `true` if the "box zoom" interaction is enabled.
+     * @返回值 {布尔类型} 返回“true”则表明“矩形层级”的交互功能可用。
+
      */
     isEnabled() {
         return !!this._enabled;
     }
 
     /**
-     * Returns a Boolean indicating whether the "box zoom" interaction is active, i.e. currently being used.
+     * 返回一个布尔值，用于表明“矩形层级”的交互功能是否正在被使用。
      *
-     * @returns {boolean} `true` if the "box zoom" interaction is active.
+     * @返回值 {布尔类型} 返回“true”则表明“矩形层级”的交互功能正在被使用。
      */
     isActive() {
         return !!this._active;
     }
 
     /**
-     * Enables the "box zoom" interaction.
+     * 激活“矩形层级”功能。
      *
-     * @example
+     * @示例
      *   map.boxZoom.enable();
      */
     enable() {
@@ -71,9 +72,9 @@ class BoxZoomHandler {
     }
 
     /**
-     * Disables the "box zoom" interaction.
+     * 关闭“矩形层级”功能。
      *
-     * @example
+     * @示例
      *   map.boxZoom.disable();
      */
     disable() {
