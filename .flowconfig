@@ -13,6 +13,7 @@
 .*/test/unit/style-spec/fixture/invalidjson.input.json
 .*/test/integration/render-tests/.*
 .*/test/build/downstream-flow-fixture/.*
+.*/_batfish_site/.*
 
 [version]
 0.77.0
