@@ -7,6 +7,7 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
+import FaceCullingMode from '../gl/face_culling_mode';
 import { collisionUniformValues } from './program/collision_program';
 
 export default drawCollisionDebug;
@@ -27,6 +28,7 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
         program.draw(context, drawCircles ? gl.TRIANGLES : gl.LINES,
             DepthMode.disabled, StencilMode.disabled,
             painter.colorModeForRenderPass(),
+            FaceCullingMode.disabled,
             collisionUniformValues(
                 coord.posMatrix,
                 painter.transform,

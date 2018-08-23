@@ -6,8 +6,9 @@ import Framebuffer from './framebuffer';
 import DepthMode from './depth_mode';
 import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
+import FaceCullingMode from './face_culling_mode';
 import { deepEqual } from '../util/util';
-import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, CullFace, Blend, BlendFunc, BlendColor, BlendEquation, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY } from './value';
+import { ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceMode, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY } from './value';
 
 
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
@@ -41,11 +42,13 @@ class Context {
     depthRange: DepthRange;
     depthTest: DepthTest;
     depthFunc: DepthFunc;
-    cullFace: CullFace;
     blend: Blend;
     blendFunc: BlendFunc;
     blendColor: BlendColor;
     blendEquation: BlendEquation;
+    cullFace: CullFace;
+    cullFaceMode: CullFaceMode;
+    frontFace: FrontFace;
     program: Program;
     activeTexture: ActiveTextureUnit;
     viewport: Viewport;
@@ -79,11 +82,13 @@ class Context {
         this.depthRange = new DepthRange(this);
         this.depthTest = new DepthTest(this);
         this.depthFunc = new DepthFunc(this);
-        this.cullFace = new CullFace(this);
         this.blend = new Blend(this);
         this.blendFunc = new BlendFunc(this);
         this.blendColor = new BlendColor(this);
         this.blendEquation = new BlendEquation(this);
+        this.cullFace = new CullFace(this);
+        this.cullFaceMode = new CullFaceMode(this);
+        this.frontFace = new FrontFace(this);
         this.program = new Program(this);
         this.activeTexture = new ActiveTextureUnit(this);
         this.viewport = new Viewport(this);
@@ -126,11 +131,13 @@ class Context {
         this.depthRange.dirty = true;
         this.depthTest.dirty = true;
         this.depthFunc.dirty = true;
-        this.cullFace.dirty = true;
         this.blend.dirty = true;
         this.blendFunc.dirty = true;
         this.blendColor.dirty = true;
         this.blendEquation.dirty = true;
+        this.cullFace.dirty = true;
+        this.cullFaceMode.dirty = true;
+        this.frontFace.dirty = true;
         this.program.dirty = true;
         this.activeTexture.dirty = true;
         this.viewport.dirty = true;
@@ -194,6 +201,13 @@ class Context {
         // }
 
         gl.clear(mask);
+    }
+
+    setFaceCullingMode(mode: $ReadOnly<FaceCullingMode>) {
+        const gl = this.gl;
+        this.cullFace.set(mode.cullFace);
+        this.cullFaceMode.set(mode.cullFaceMode ? mode.cullFaceMode : gl.BACK);
+        this.frontFace.set(mode.frontFace ? mode.frontFace : gl.CCW);
     }
 
     setDepthMode(depthMode: $ReadOnly<DepthMode>) {

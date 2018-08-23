@@ -2,6 +2,7 @@
 
 import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
+import FaceCullingMode from '../gl/face_culling_mode';
 import {
     fillUniformValues,
     fillPatternUniformValues,
@@ -116,7 +117,8 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
         }
 
         program.draw(painter.context, drawMode, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, uniformValues,
+            painter.stencilModeForClipping(coord), colorMode,
+            FaceCullingMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration);
     }

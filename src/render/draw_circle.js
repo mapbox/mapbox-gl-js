@@ -2,6 +2,7 @@
 
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
+import FaceCullingMode from '../gl/face_culling_mode';
 import { circleUniformValues } from './program/circle_program';
 
 import type Painter from './painter';
@@ -42,7 +43,8 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const program = painter.useProgram('circle', programConfiguration);
 
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+        program.draw(context, gl.TRIANGLES,
+            depthMode, stencilMode, colorMode, FaceCullingMode.disabled,
             circleUniformValues(painter, coord, tile, layer), layer.id,
             bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration);
