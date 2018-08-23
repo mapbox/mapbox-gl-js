@@ -448,7 +448,7 @@ export default GeolocateControl;
  */
 
 /**
- * 当地理定位工具状态变为 ACTIVE_LOCK 时触发, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
+ * 当地理定位工具状态变为 ACTIVE_LOCK 时触发.要么是第一次成功获取到用户的 Geolocation API 定位时触发 (地理定位事件随后触发), 要么是用户在 background 状态(该状态是使用最近一次可知的位置居中地图并进入active lock状态)点击地理定位按钮时触发. (除非用户位置改变,否则不触发地理定事件).
  *
  * @event trackuserlocationstart
  * @memberof GeolocateControl
