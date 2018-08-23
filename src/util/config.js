@@ -15,22 +15,23 @@ type Config = {|
 
 const config: Config = {
     _API_URL: 'https://api.mapbox.com',
+    API_URL: 'https://api.mapbox.com',
     EVENTS_URL: EventsUrlOptions.DefaultEventsUrl,
     REQUIRE_ACCESS_TOKEN: true,
     ACCESS_TOKEN: null
 };
 
-Object.defineProperty(config,'API_URL',{
-    get: function(){
+const defineProperty = Object.defineProperty;
+defineProperty(config, 'API_URL', {
+    get: function() {
         return this._API_URL;
     },
-    set: function(apiurl: string){
+    set: function(apiurl: string) {
         this._API_URL = apiurl;
-        if(this._API_URL.indexOf('https://api.mapbox.cn') === 0){
-          this.EVENTS_URL = EventsUrlOptions.ChinaEventsUrl;
-        }
-        else {
-          this.EVENTS_URL = EventsUrlOptions.DefaultEventsUrl;
+        if (this._API_URL.indexOf('https://api.mapbox.cn') === 0) {
+            this.EVENTS_URL = EventsUrlOptions.ChinaEventsUrl;
+        } else {
+            this.EVENTS_URL = EventsUrlOptions.DefaultEventsUrl;
         }
     }
 });
