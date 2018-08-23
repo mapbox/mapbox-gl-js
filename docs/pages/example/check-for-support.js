@@ -1,6 +1,6 @@
 /*---
-title: Check for browser support
-description: Check for Mapbox GL browser support
+title: 检测浏览器是否支持
+description: 检测浏览器是否支持 Mapbox GL 
 tags:
   - browser-support
 pathname: /mapbox-gl-js/example/check-for-support/
