@@ -55,21 +55,15 @@ function checkGeolocationSupport(callback) {
 }
 
 /**
- * A `GeolocateControl` control provides a button that uses the browser's geolocation
- * API to locate the user on the map.
- *
- * Not all browsers support geolocation,
- * and some users may disable the feature. Geolocation support for modern
- * browsers including Chrome requires sites to be served over HTTPS. If
- * geolocation support is not available, the GeolocateControl will not
- * be visible.
- *
- * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
- *
- * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode the GeolocateControl has three states:
- * * active - the map's camera automatically updates as the user's location changes, keeping the location dot in the center.
- * * passive - the user's location dot automatically updates, but the map's camera does not.
- * * disabled
+ *  `GeolocateControl` 工具提供一个按钮，该按钮利用浏览器的 geolocation API 对用户进行定位.
+ * 并不是所有的浏览器都支持地理定位,一些用户也有可能禁用了该功能。 
+ * Geolocation support for modern browsers including Chrome requires sites to be served over HTTPS. 
+ * 若浏览器地理定位功能不可用, GeolocateControl 工具将隐藏.
+ * 地图缩放级别依赖于设备提供的地理定位精度.
+ * 地理定位有两种模式. 若 `trackUserLocation` 为 `false` (默认),则定位工具类似于按钮,当按下按钮时,地图相机瞄准用户位置. 如果用户移动,地图不会刷新. 这种模式最适合桌面应用. 如果 `trackUserLocation` 为 `true` ,该工具表现为一个切换按钮, 当用户位置激活时，积极监控用户位置变化. 在这种模式下,该地理定位工具有三种状态:
+ * * 主动 - 地图相机随着用户位置变化自动更新, 保持用户位置居于地图中心点.
+ * * 被动 - 用户定位点自动更新,但地图相机不更新.
+ * * 禁用
  *
  * @implements {IControl}
  * @param {Object} [options]
@@ -85,7 +79,7 @@ function checkGeolocationSupport(callback) {
  *     },
  *     trackUserLocation: true
  * }));
- * @see [Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
+ * @see [用户定位](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
 class GeolocateControl extends Evented {
     _map: Map;
@@ -305,9 +299,9 @@ class GeolocateControl extends Evented {
     }
 
     /**
-     * Trigger a geolocation
+     * 触发地理定位
      *
-     * @returns {boolean} Returns `false` if called before control was added to a map, otherwise returns `true`.
+     * @returns {boolean} 如果工具调用发生在被添加进地图之前时返回 `false` , 否则返回 `true`.
      */
     trigger() {
         if (!this._setup) {
