@@ -1,9 +1,7 @@
 /*---
-title: Add support for right-to-left scripts
+title: 添加从右到左文字的支持
 description: >-
-  Use the [mapbox-gl-rtl-text](https://github.com/mapbox/mapbox-gl-rtl-text)
-  plugin to support scripts that use right-to-left layout (such as Arabic or
-  Hebrew). Note that Mapbox Studio does not yet support RTL text.
+  使用[mapbox-gl-rtl-text](https://github.com/mapbox/mapbox-gl-rtl-text)插件来支持从右到左（RTL）布局的文字（例如阿拉伯文或希伯来文）。请注意，Mapbox Studio 尚未支持 RTL 文本.
 tags:
   - internationalization
 pathname: /mapbox-gl-js/example/mapbox-gl-rtl-text/
