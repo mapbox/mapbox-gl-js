@@ -431,31 +431,26 @@ export default class extends React.Component {
                     <div className='contain margin3 col9'>
                         <div className='prose'>
                             <h1>{meta.title}</h1>
-                            <p>A Mapbox style is a document that defines the visual appearance of a map: what data to
-                                draw, the order to draw it in, and how to style the data when drawing it. A style
-                                document is a <a href="http://www.json.org/">JSON</a> object with specific root level
-                                and nested properties. This specification defines and describes these properties.</p>
-                            <p>The intended audience of this specification includes:</p>
+                            <p>Mapbox 样式是确定地图的文件：画地图用的数据，画地图的顺序，以及地图的样式。样式文件为 <a href="http://www.json.org/">JSON</a> object with specific root level
+                               物体带特定的根级和嵌套的属性。该规范确定这些属性。</p>
+                            <p>该属性的目标受众包括：</p>
                             <ul>
-                                <li>Advanced designers and cartographers who want to write styles by hand rather
-                                    than use <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
-                                <li>Developers using style-related features of <a
-                                    href='https://www.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the <a
-                                    href='https://www.mapbox.com/android-sdk/'>Mapbox Maps SDK for Android</a></li>
-                                <li>Authors of software that generates or processes Mapbox styles.</li>
+                                <li>资深设计师和地图设计师想手工绘制地图样式，而不是用 <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
+                                <li>利用 <a
+                                    href='https://www.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> 或 <a
+                                    href='https://www.mapbox.com/android-sdk/'>Mapbox Maps SDK for Android</a></li>样式特点的地图开发者
+                                <li>生成或处理Mapbox样式的软件作者</li>
                             </ul>
-                            <p>Developers using the <a href='https://www.mapbox.com/ios-sdk/'>Mapbox Maps SDK for iOS</a> or <a
-                                href='https://github.com/mapbox/mapbox-gl-native/tree/master/platform/macos/'>
-                                Mapbox Maps SDK for macOS</a> should consult the iOS SDK API reference for platform-appropriate
-                                documentation of style-related features.</p>
+                            <p> 使用<a href='https://www.mapbox.com/ios-sdk/'>Mapbox Maps SDK for iOS</a> 或 <a
+                                href='https://github.com/mapbox/mapbox-gl-native/tree/master/platform/macos/'>的开发者
+                                  macOS</a>的Mapbox Maps SDK 应参考 iOS SDK API ，确定适合平台文档的样式特点。
+                              </p>
                         </div>
 
                         <div className='prose'>
                             <a id='root' className='anchor'/>
-                            <h2><a href='#root' title='link to root'>Root Properties</a></h2>
-                            <p>Root level properties of a Mapbox style specify the map's layers, tile sources and other
-                                resources, and default values for the initial camera position when not specified
-                                elsewhere.</p>
+                            <h2><a href='#root' title='link to root'>根的属性</a></h2>
+                            <p>Mapbox样式的根级属性指定地图的层级、名称来源和其他来源 ，并在其他地方未指定初始摄像机位置时确定默认值。</p>
                             <div className='space-bottom1 clearfix'>
                                 {highlightJSON(`
                                 {
@@ -493,25 +488,22 @@ export default class extends React.Component {
                             <a id='sources' className='anchor'/>
                             <h2><a href='#sources' title='link to sources'>Sources</a></h2>
                             <p>
-                                Sources supply data to be shown on the map. The type of source is specified by the
-                                <code>"type"</code> property, and must be one of {sourceTypes.map((t, i) => <var key={i}>{t}</var>).reduce((prev, curr) => [prev, ', ', curr])}.
-                                Adding a source
-                                won't immediately make data appear on the map because sources don't contain
-                                styling details like color or width. Layers refer
-                                to a source and give it a visual representation. This makes it possible
-                                to style the same source in different ways, like differentiating between
-                                types of roads in a highways layer.
+                                来源是地图的数据来源。The type of source is specified by the
+                                <code>"类型"</code> 属性确定来源的类型，并且必须为 {sourceTypes.map((t, i) => <var key={i}>{t}</var>).reduce((prev, curr) => [prev, ', ', curr])}.
+                                增加数据来源
+                                不会立刻显示在地图上，因为数据来源未包含颜色或宽度等样式详情。 层级
+                               是指来源，并且显示样式。所以，用不同的方式表示数据来源的样式成为可能，如用高速公路层级区分不同的公路。
                             </p>
                             <p>
-                                Tiled sources (vector and raster) must specify
-                                their details in terms of the <a href="https://github.com/mapbox/tilejson-spec">TileJSON
-                                specification</a>.
-                                This can be done in several ways:
+                                平铺的数据来源（矢量和光栅） 必须用
+                                 <a href="https://github.com/mapbox/tilejson-spec">TileJSON
+                                specification</a>的方式指定细节。
+                                可通过几种方式：
                             </p>
                             <ul>
                                 <li>
-                                    By supplying TileJSON properties such as <code>"tiles"</code>, <code>"minzoom"</code>, and
-                                    <code>"maxzoom"</code> directly in the source:
+                                    通过提供 TileJSON 属性，如 <code>"tiles"</code>, <code>"minzoom"</code>, 以及直接在数据来源中的
+                                    <code>"maxzoom"</code> 
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
                                             "mapbox-streets": {
@@ -525,7 +517,7 @@ export default class extends React.Component {
                                     </div>
                                 </li>
                                 <li>
-                                    By providing a <code>"url"</code> to a TileJSON resource:
+                                    通过向TileJSON数据来源提供 <code>"url"</code> ：
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
                                             "mapbox-streets": {
@@ -535,10 +527,10 @@ export default class extends React.Component {
                                     </div>
                                 </li>
                                 <li>
-                                    By providing a url to a WMS server that supports
-                                    EPSG:3857 (or EPSG:900913) as a source of tiled data.
-                                    The server url should contain a <code>"{`{bbox-epsg-3857}`}"</code>
-                                    replacement token to supply the <code>bbox</code> parameter.
+                                    通过向支持
+                                    EPSG:3857 (or EPSG:900913)的WMS服务器提供url，作为平铺数据的来源。 
+                                    服务器 url 应包括<code>"{`{bbox-epsg-3857}`}"</code>
+                                    替换标识提供  <code>bbox</code> 参数。
                                     {highlightJSON(`
                                         "wms-imagery": {
                                             "type": "raster",
@@ -554,14 +546,14 @@ export default class extends React.Component {
                                 <div id='sources-vector' className='pad2 keyline-bottom'>
                                     <h3 className='space-bottom1'><a href='#sources-vector' title='link to vector'>vector</a></h3>
                                     <p>
-                                        A vector tile source. Tiles must be in <a
+                                        矢量平铺数据来源。 平铺数据格式须为 <a
                                             href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
-                                        Vector Tile format</a>. All geometric coordinates in vector tiles must be
-                                        between <code>-1 * extent</code> and <code>(extent * 2) - 1</code> inclusive.
-                                        All layers that use a vector source must specify a <a href='#layer-source-layer'><code>"source-layer"</code></a>
-                                        value.
-                                        For vector tiles hosted by Mapbox, the <code>"url"</code> value should be of the
-                                        form <code>mapbox://<var>mapid</var></code>.
+                                        矢量平铺格式 </a>. 矢量平铺数据的所有地理坐标必须在
+                                        <code>-1 * extent</code> 和 <code>(extent * 2) - 1</code> 之间。
+                                        使用矢量来源的所有层级必须指定 <a href='#layer-source-layer'><code>"source-layer"</code></a>
+                                        数值。
+                                        对于Mapbox确定的矢量平铺数据来源,  <code>"url"</code> 数值格式必须为
+                                         <code>mapbox://<var>mapid</var></code>.
                                     </p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
@@ -588,8 +580,7 @@ export default class extends React.Component {
                                 <div id='sources-raster' className='pad2 keyline-bottom'>
                                     <h3 className='space-bottom1'><a href='#sources-raster' title='link to raster'>raster</a></h3>
                                     <p>
-                                        A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
-                                        form <code>mapbox://<var>mapid</var></code>.
+                                        光栅平铺数据来源。对于Mapbox确定的矢量平铺数据来源, <code>"url"</code> 数值格式必须为<code>mapbox://<var>mapid</var></code>.
                                     </p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
@@ -617,7 +608,7 @@ export default class extends React.Component {
                                 <div id='sources-raster-dem' className='pad2 keyline-bottom'>
                                     <h3 className='space-bottom1'><a href='#sources-raster-dem' title='link to raster-dem'>raster-dem</a></h3>
                                     <p>
-                                        A raster DEM source. Currently only supports <a href="https://blog.mapbox.com/global-elevation-data-6689f1d0ba65">Mapbox Terrain RGB</a> (<code>mapbox://mapbox.terrain-rgb</code>)
+                                        光栅DEM 数据来源。 目前仅支持 <a href="https://blog.mapbox.com/global-elevation-data-6689f1d0ba65">Mapbox Terrain RGB</a> (<code>mapbox://mapbox.terrain-rgb</code>)
                                     </p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
@@ -641,8 +632,8 @@ export default class extends React.Component {
                                 <div id='sources-geojson' className='pad2 keyline-bottom'>
                                     <h3 className='space-bottom1'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
                                     <p>
-                                        A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
-                                        property, whose value can be a URL or inline GeoJSON.
+                                         <a href="http://geojson.org/">GeoJSON</a> 数据来源。数据必须通过 <code>"data"</code>
+                                        属性提供，其数值可为URL 或 inline GeoJSON。
                                     </p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
@@ -662,8 +653,8 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
                                     <p>
-                                        This example of a GeoJSON source refers to an external GeoJSON document via its URL. The
-                                        GeoJSON document must be on the same domain or accessible using <a href='http://enable-cors.org/'>CORS</a>.
+                                        GeoJSON 数据来源的例子是指通过其 URL的外部GeoJSON文件. 
+                                        GeoJSON 文件必须在同一域名或通过  <a href='http://enable-cors.org/'>CORS</a>获取。
                                     </p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
@@ -696,12 +687,10 @@ export default class extends React.Component {
                                 <div id='sources-image' className='pad2 keyline-bottom'>
                                     <h3 className='space-bottom1'><a href='#sources-image' title='link to image'>image</a></h3>
                                     <p>
-                                        An image source. The <code>"url"</code> value contains the image location.
+                                        图像来源。 <code>"url"</code> 数值包括图像位置。
                                     </p>
                                     <p>
-                                        The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the image
-                                        corners listed in clockwise order: top left, top right, bottom right, bottom left.
-                                    </p>
+                                        <code>"coordinates"</code> 数组包括 <code>[longitude, latitude]</code>顺时针顺序排列的图像拐角： 左上、右上、右下、左下。</p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
                                             "image": {
@@ -733,13 +722,12 @@ export default class extends React.Component {
                                 <div id='sources-video' className='pad2 keyline-bottom'>
                                     <h3 className='space-bottom1'><a href='#sources-video' title='link to video'>video</a></h3>
                                     <p>
-                                        A video source. The <code>"urls"</code> value is an array. For each URL in the array,
-                                        a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
-                                        be created, in order to support same media in multiple formats supported by different browsers.
+                                        视频来源。  <code>"urls"</code> 数值 为数组。对于数组中的每个 URL，
+                                        会创建 <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> 
+                                        视频元素，为了支持不同浏览器支持的多种格式的同一媒介。
                                     </p>
                                     <p>
-                                        The <code>"coordinates"</code> array contains <code>[longitude, latitude]</code> pairs for the video
-                                        corners listed in clockwise order: top left, top right, bottom right, bottom left.
+                                         <code>"coordinates"</code> 数组包括 <code>[longitude, latitude]</code> 顺时针顺序排列的视频拐角： 左上、右上、右下、左下。 
                                     </p>
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
@@ -775,24 +763,22 @@ export default class extends React.Component {
                             <a id='sprite' className='anchor'></a>
                             <h2><a href='#sprite' title='link to sprite'>Sprite</a></h2>
                             <p>
-                                A style's <code>sprite</code> property supplies a URL template for loading small images to use in
-                                rendering <code>background-pattern</code>, <code>fill-pattern</code>, <code>line-pattern</code>,
-                                and <code>icon-image</code> style properties.
+                                样式的<code>sprite</code> 属性提供下载渲染
+                                <code>background-pattern</code>, <code>fill-pattern</code>, <code>line-pattern</code>,
+                                和<code>icon-image</code> 样式属性使用的小图像的URL模板。
                             </p>
                             <div className='space-bottom1 pad2x clearfix'>
                                 {highlightJSON(`"sprite": ${JSON.stringify(ref.$root.sprite.example, null, 2)}`)}
                             </div>
                             <p>
-                                A valid sprite source must supply two types of files:
+                                有效的来源必须提供两类文档：
                             </p>
                             <ul>
                                 <li>
-                                    An <em>index file</em>, which is a JSON document containing a description of each image contained in the sprite. The
-                                    content of this file must be a JSON object whose keys form identifiers to be used as the values of the above
-                                    style properties, and whose values are objects describing the dimensions (<code>width</code> and
-                                    <code>height</code> properties) and pixel ratio (<code>pixelRatio</code>) of the image and its location within
-                                    the sprite (<code>x</code> and <code>y</code>). For example, a sprite containing a single image might have the
-                                    following index file contents:
+                                    <em>index file</em>为含有每张图像描述的JSON 文件。本文件的内容 
+                                    必须为 JSON 物体，物体的主要格式标识用作上述样式属性的数值，并且其数值为描述(<code>width</code> and
+                                    <code>height</code> properties) 在(<code>x</code> and <code>y</code>)之内的图像和图像位置尺寸和像素比例 (<code>pixelRatio</code>) 。例如，包括单张图像的来源可能有下述索引文件内容：
+
                                     <div className='space-bottom1 clearfix'>
                                         {highlightJSON(`
                                             {
@@ -805,28 +791,30 @@ export default class extends React.Component {
                                                 }
                                             }`)}
                                     </div>
-                                    Then the style could refer to this sprite image by creating a symbol layer with the layout property
-                                    <code>"icon-image": "poi"</code>, or with the tokenized value <code>"icon-image": "{`{icon}`}"</code> and vector
-                                    tile features with a <code>icon</code> property with the value <code>poi</code>.
+                                  然后样式可通过创建带布局属性
+                                    <code>"icon-image": "poi"</code>, 或 带标记化数值 <code>"icon-image": "{`{icon}`}"</code> 和 矢量平铺特征
+                                    <code>icon</code> 带数值<code>poi</code>属性的符号图层参考该sprite 图像。
+
                                 </li>
                                 <li>
-                                    <em>Image files</em>, which are PNG images containing the sprite data.
+                                    <em>Image files</em>为含sprite 数据的PNG 图像
                                 </li>
                             </ul>
                             <p>
-                                Mapbox SDKs will use the value of the <code>sprite</code> property in the style to generate the URLs for
-                                loading both files. First, for both file types, it will append <code>@2x</code> to the URL on high-DPI devices.
-                                Second, it will append a file extension: <code>.json</code> for the index file, and <code>.png</code> for the
-                                image file. For example, if you specified <code>"sprite": "https://example.com/sprite"</code>, renderers would
-                                load <code>https://example.com/sprite.json</code> and <code>https://example.com/sprite.png</code>, or
-                                <code>https://example.com/sprite@2x.json</code> and <code>https://example.com/sprite@2x.png</code>.
+                                
+Mapbox SDKs 会在样式中使用<code>sprite</code> 属性的数值 生成下载两类文档的 URLs 。首选，对两类文档来说， 会在高密度装置上的URL添加<code>@2x</code> to。
+                                其次，会为索引文档添加 文件扩展名：<code>.json</code>，并且为图像文件添加 <code>.png</code> 。例如，如果指定 <code>"sprite": "https://example.com/sprite"</code>, 渲染设计师会下载
+                                <code>https://example.com/sprite.json</code> 和<code>https://example.com/sprite.png</code>，或
+                                <code>https://example.com/sprite@2x.json</code> 和 <code>https://example.com/sprite@2x.png</code>.
+
                             </p>
                             <p>
-                                If you are using Mapbox Studio, you will use prebuilt sprites provided by Mapbox, or you can upload custom SVG
-                                images to build your own sprite. In either case, the sprite will be built automatically and supplied by Mapbox
-                                APIs. If you want to build a sprite by hand and self-host the files, you can
-                                use <a href="https://github.com/mapbox/spritezero-cli">spritezero-cli</a>, a command line utility that builds Mapbox
-                                GL compatible sprite PNGs and index files from a directory of SVGs.
+                               
+如有您正在使用 Mapbox Studio，您会使用Mapbox提供的预先创建的sprites, 或者可以上传定制的 SVG
+                                图像创建您自己的 sprite。无论哪种情况，                                APIs会自动创建或提供sprite。如想想在自己的文件里手动创建sprite ，可以使用
+                               <a href="https://github.com/mapbox/spritezero-cli">spritezero-cli</a>, 这是一个创建Mapbox
+                                GL 兼容 sprite PNGs和从SVGs目录中创建索引文件的命令行实用程序。
+
                             </p>
                         </div>
 
@@ -834,19 +822,17 @@ export default class extends React.Component {
                             <a id='glyphs' className='anchor'></a>
                             <h2><a href='#glyphs' title='link to glyphs'>Glyphs</a></h2>
                             <p>
-                                A style's <code>glyphs</code> property provides a URL template for loading signed-distance-field glyph sets in PBF format.
+                                样式的 <code>glyphs</code> 属性提供下载PBF格式的有向距离场符号集合的URL 模板。
                             </p>
                             <div className='space-bottom1 pad2x clearfix'>
                                 {highlightJSON(`"glyphs": ${JSON.stringify(ref.$root.glyphs.example, null, 2)}`)}
                             </div>
                             <p>
-                                This URL template should include two tokens:
+                                这一URL模板应包括两个符号：
                             </p>
                             <ul>
                                 <li><code>{`{fontstack}`}</code>
-                                    When requesting glyphs, this token is replaced with a comma separated list of fonts from a font
-                                    stack specified in the <a href="#layout-symbol-text-font"><code>text-font</code></a> property of
-                                    a symbol layer.
+                                需要符号时，用符号图层的 <a href="#layout-symbol-text-font"><code>text-font</code></a> 属性中规定的字体栈的逗号分隔列表替换。
                                 </li>
                                 <li><code>{`{range}`}</code>
                                     When requesting glyphs, this token is replaced with a range of 256 Unicode code points. For example,
