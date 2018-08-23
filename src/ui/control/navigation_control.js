@@ -17,17 +17,17 @@ const defaultOptions: Options = {
 };
 
 /**
- * A `NavigationControl` control contains zoom buttons and a compass.
+ * 一个 `NavigationControl` 工具包含缩放按钮和指南针.
  *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {Boolean} [options.showCompass=true] If `true` the compass button is included.
- * @param {Boolean} [options.showZoom=true] If `true` the zoom-in and zoom-out buttons are included.
+ * @param {Boolean} [options.showCompass=true] 若`true` 则工具包含指南针.
+ * @param {Boolean} [options.showZoom=true] 若 `true` 则工具包含放大和缩小按钮.
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
- * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
- * @see [Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
+ * @see [显示地图导航工具](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
+ * @see [添加第三方矢量瓦片源](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class NavigationControl {
     _map: Map;
