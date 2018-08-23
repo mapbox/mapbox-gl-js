@@ -1,6 +1,6 @@
 /*---
-title: Locate the user
-description: Geolocate the user and then track their current location on the map using the [`GeolocateControl`](/mapbox-gl-js/api/#geolocatecontrol)
+title: 定位用户
+description: 对用户的地理位置进行定位，并使用[`GeolocateControl`](/mapbox-gl-js/api/#geolocatecontrol)在地图上对用户的实时位置进行跟踪
 tags:
   - controls-and-overlays
 pathname: /mapbox-gl-js/example/locate-user/
