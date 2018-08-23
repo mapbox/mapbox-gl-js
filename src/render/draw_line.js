@@ -1,6 +1,7 @@
 // @flow
 
 import DepthMode from '../gl/depth_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
 import {
     lineUniformValues,
@@ -86,7 +87,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         program.draw(context, gl.TRIANGLES, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, uniformValues,
+            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
             layer.paint, painter.transform.zoom, programConfiguration);
 

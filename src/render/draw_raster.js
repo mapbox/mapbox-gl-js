@@ -6,6 +6,7 @@ import ImageSource from '../source/image_source';
 import browser from '../util/browser';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import { rasterUniformValues } from './program/raster_program';
 
 import type Painter from './painter';
@@ -63,16 +64,16 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
         if (source instanceof ImageSource) {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, source.boundsBuffer,
                 painter.quadTriangleIndexBuffer, source.boundsSegments);
         } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, tile.maskedBoundsBuffer,
                 tile.maskedIndexBuffer, tile.segments, layer.paint,
                 painter.transform.zoom);
         } else {
-            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+            program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 uniformValues, layer.id, painter.rasterBoundsBuffer,
                 painter.quadTriangleIndexBuffer, painter.rasterBoundsSegments);
         }

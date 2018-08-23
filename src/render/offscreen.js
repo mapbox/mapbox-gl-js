@@ -4,6 +4,7 @@ import Texture from './texture';
 import Color from '../style-spec/util/color';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import {extrusionTextureUniformValues} from './program/fill_extrusion_program';
 
 import type Painter from './painter';
@@ -56,6 +57,7 @@ export function drawOffscreenTexture(painter: Painter, layer: CustomStyleLayer |
     painter.useProgram('extrusionTexture').draw(context, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled,
         painter.colorModeForRenderPass(),
+        CullFaceMode.disabled,
         extrusionTextureUniformValues(painter, opacity, 0),
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
         painter.viewportSegments, layer.paint, painter.transform.zoom);

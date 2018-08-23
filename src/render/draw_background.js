@@ -2,6 +2,7 @@
 
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
+import CullFaceMode from '../gl/cull_face_mode';
 import {
     backgroundUniformValues,
     backgroundPatternUniformValues
@@ -50,7 +51,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundPatternUniformValues(matrix, opacity, painter, image, {tileID, tileSize}, crossfade) :
             backgroundUniformValues(matrix, opacity, color);
 
-        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode,
+        program.draw(context, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, painter.tileExtentBuffer,
             painter.quadTriangleIndexBuffer, painter.tileExtentSegments);
     }
