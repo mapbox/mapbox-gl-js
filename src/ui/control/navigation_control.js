@@ -26,8 +26,8 @@ const defaultOptions: Options = {
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');
- * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
- * @see [Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
+ * @see [显示地图导航工具](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
+ * @see [添加第三方矢量瓦片源](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 class NavigationControl {
     _map: Map;
