@@ -861,11 +861,11 @@ export default class extends React.Component {
                             <a id='transition' className='anchor'></a>
                             <h2><a href='#transition' title='link to transition'>Transition</a></h2>
                             <p>
-                                A <code>transition</code> property controls timing for the interpolation between a transitionable style
-                                property's previous value and new value. A style's <a href='#root-transition' title='link to root-transition'>
-                                root <code>transition</code></a> property provides global transition defaults for that style. Any transitionable
-                                style property may also have its own <code>-transition</code> property that defines specific transition timing
-                                for that specific layer property, overriding the global <code>transition</code> values.
+                               <code>转换</code> 属性控制可转换样式属性的之前数值和当前数值之间的插值时间。
+                                样式的 <a href='#root-transition' title='link to root-transition'>
+                                根 <code>transition</code></a> 属性提供岩石全球转换默认值。 任何可转换的样式
+                                属性也可有自己的 <code>-transition</code> 定义特别图层特征的特别转换时间的属性，重新定义全球<code>transition</code> 数值。
+
                             </p>
                             <div className='space-bottom1 pad2x clearfix'>
                                 {highlightJSON(`"transition": ${JSON.stringify(ref.$root.transition.example, null, 2)}`)}
@@ -880,14 +880,14 @@ export default class extends React.Component {
                             <a id='layers' className='anchor'></a>
                             <h2><a href='#layers' title='link to layers'>Layers</a></h2>
                             <p>
-                                A style's <code>layers</code> property lists all of the layers available in that style. The type of
-                                layer is specified by the <code>"type"</code> property, and must be one of {layerTypes.map((t, i) => <var key={i}>{t}</var>).reduce((prev, curr) => [prev, ', ', curr])}.
-                            </p>
+                               样式的 <code>layers</code>属性列出该样式中所有的图层。 
+                                <code>"type"</code> 属性确定图层类型，同时该图层也必须为{layerTypes.map((t, i) => <var key={i}>{t}</var>).reduce((prev, curr) => [prev, ', ', curr])}.
+                            </p>之一。
+
                             <p>
-                                Except for layers of the <var>background</var> type, each layer needs
-                                to refer to a source. Layers take the data that they get from a source,
-                                optionally filter features, and then define how those features are
-                                styled.
+                                除了<var>背景</var> 类型的图层，每个图层需参考数据来源。 
+Layers take the data that they get from a source,图层取来源处的数据，选择性地过滤特征，然后确定样式。
+
                             </p>
                             <div className='space-bottom1 pad2x clearfix'>
                                 {highlightJSON(`"layers": ${JSON.stringify(ref.$root.layers.example, null, 2)}`)}
@@ -900,17 +900,17 @@ export default class extends React.Component {
 
                         <div className='pad2 prose'>
                             <p>
-                                Layers have two sub-properties that determine how data from that layer is rendered: <code>layout</code> and
-                                <code>paint</code> properties.
+                                图层有两个决定如何渲染该图层上的数据的子属性： <code>layout</code> 和
+                                <code>paint</code> 属性。
+
                             </p>
                             <p>
-                                <em id="layout-property">Layout properties</em> appear in the layer's <code>"layout"</code> object. They are applied early in the
-                                rendering process and define how data for that layer is passed to the GPU. Changes to a layout property
-                                require an asynchronous "layout" step.
+                                <em id="layout-property">布局属性</em> 出现在图层的 <code>"layout"</code> 物体。 它们应用于渲染过程中的早期，并且确定如何将该图层的数据传至GPU。布局属性的变动需要异步的“布局”步骤。
                             </p>
                             <p>
-                                <em id="paint-property">Paint properties</em> are applied later in the rendering process. Paint properties appear in the layer's
-                                <code>"paint"</code> object. Changes to a paint property are cheap and happen synchronously.
+                                <em id="paint-property">绘画属性</em> 应用在渲染过程的后期。绘画属性出现在图层的 P
+                                <code>"paint"</code> 物体。绘画属性变动花费小， 并且可同步进行。
+
                             </p>
                             <div className='space-bottom4 fill-white keyline-all'>
                                 {layerTypes.map((type, i) =>
@@ -929,15 +929,16 @@ export default class extends React.Component {
                         <div className='pad2 prose'>
                             <a id='types' className='anchor'/>
                             <h2><a href='#types' title='link to types'>Types</a></h2>
-                            <p>A Mapbox style contains values of various types, most commonly as values for the style properties of a layer.</p>
+                            <p>Mapbox 样式包含各种类型的数值，大部分通常为图层样式属性的数值。</p>
 
                             <div className='keyline-all fill-white'>
                                 <div className='pad2 keyline-bottom'>
                                     <a id='types-color' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-color' title='link to color'>Color</a></h3>
                                     <p>
-                                        The <code>color</code> type represents a color in the <a href="https://en.wikipedia.org/wiki/SRGB">sRGB color space</a>. Colors are written as JSON strings in a variety of permitted formats: HTML-style hex values, rgb, rgba, hsl, and hsla. Predefined HTML colors names, like <code>yellow</code> and <code>blue</code>, are also permitted.
+                                        <code>color</code> 类型表示 在 <a href="https://en.wikipedia.org/wiki/SRGB">sRGB color space</a>中的颜色。 颜色用各种经过许可的格式写为JSON 字符串： i HTML-style hex 数值， rgb, rgba, hsl, 和hsla. <code>黄色</code> 和 <code>blue</code>等预先确定的HTML颜色名称也是允许的。
                                     </p>
+
                                     {highlightJSON(`
                                         {
                                             "line-color": "#ff0",
@@ -948,7 +949,7 @@ export default class extends React.Component {
                                             "line-color": "hsla(100, 50%, 50%, 1)",
                                             "line-color": "yellow"
                                         }`)}
-                                    <p>Especially of note is the support for hsl, which can be <a href='http://mothereffinghsl.com/'>easier to reason about than rgb()</a>.</p>
+                                    <p>特别注意hsl支持， 可为 <a href='http://mothereffinghsl.com/'>比rgb()</a>.</p>更容易推出
                                 </div>
 
                                 <div className='pad2 keyline-bottom'>
@@ -967,7 +968,7 @@ export default class extends React.Component {
                                 <div className='pad2 keyline-bottom'>
                                     <a id='types-string' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-string' title='link to string'>String</a></h3>
-                                    <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes.</p>
+                                    <p>字符串基本上是文本。在 Mapbox 样式中， 要加引号。</p>
                                     {highlightJSON(`
                                         {
                                             "icon-image": "marker"
@@ -987,7 +988,7 @@ export default class extends React.Component {
                                 <div className='pad2 keyline-bottom'>
                                     <a id='types-number' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-number' title='link to number'>Number</a></h3>
-                                    <p>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
+                                    <p>数值通常是浮点数（小数）的整数。 不加引号。</p>
                                     {highlightJSON(`
                                         {
                                             "text-size": 24
@@ -997,8 +998,8 @@ export default class extends React.Component {
                                 <div className='pad2 keyline-bottom'>
                                     <a id='types-array' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#types-array' title='link to array'>Array</a></h3>
-                                    <p>Arrays are comma-separated lists of one or more numbers in a specific
-                                        order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
+                                    <p>数组是按特定顺序以逗号隔开的一个或多个数字列表。
+                                        例如，可在虚线数组中使用， 其中数字指定线的间隔，线之间有空格。</p>
                                     {highlightJSON(`
                                         {
                                             "line-dasharray": [2, 4]
@@ -1011,26 +1012,25 @@ export default class extends React.Component {
                             <a id='expressions' className='anchor'/>
                             <h2><a href='#expressions' title='link to expressions'>Expressions</a></h2>
 
-                            <p>The value for any <a href="#layout-property">layout property</a>, <a
-                                href="#paint-property">paint property</a>, or <a href="#layer-filter">filter</a> may be
-                                specified as an <em>expression</em>. An expression defines a formula for computing the
-                                value of the property using the <em>operators</em> described below. The set of expression
-                                operators provided by Mapbox GL includes:
+                            <p><a href="#layout-property">布局属性</a>, <a
+                                href="#paint-property">paint property</a>或 <a href="#layer-filter">filter</a> 的任何数值可被指定为
+<em>表达</em>。 表达确定下文使用<em>operators</em> 属性计算数值的公式。Mapbox GL提供的表达运算符集合包括：
+
                             </p>
 
                             <ul>
-                                <li>Mathematical operators for performing arithmetic and other operations on numeric values</li>
-                                <li>Logical operators for manipulating boolean values and making conditional decisions</li>
-                                <li>String operators for manipulating strings</li>
-                                <li>Data operators, providing access to the properties of source features</li>
-                                <li>Camera operators, providing access to the parameters defining the current map view</li>
+                                <li>在数值上进行算法和其他运算的数学运算符</li>
+                                <li>计算布尔值和做条件决定的逻辑运算符 </li>
+                                <li>计算字符串的字符串运算符</li>
+                                <li>数据运算符，能获取数据来源特点的属性</li>
+                                <li>摄像机运算符，能获取确定当前地图视图的参数</li>
                             </ul>
 
-                            <p>Expressions are represented as JSON arrays. The first element of an expression array is a
-                                string naming the expression operator, e.g. <a href="#expressions-*"><code>"*"</code></a>
-                                or <a href="#expressions-case"><code>"case"</code></a>. Subsequent elements (if any)
-                                are the <em>arguments</em> to the expression. Each argument is either a literal value
-                                (a string, number, boolean, or <code>null</code>), or another expression array.</p>
+                            <p>表达式表示为 JSON 数组。 表达式数组的第一个元素是
+                                名称为表达式运算符的字符串，如 <a href="#expressions-*"><code>"*"</code></a>
+                                或 <a href="#expressions-case"><code>"case"</code></a>. 后续元素（如有） 
+                                为 <em>arguments</em> 表达式。参数为字面值
+                                (字符串, 数字, 布尔值, 或 <code>null</code>), 或其他表达式数组 。</p>
 
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`[expression_name, argument_0, argument_1, ...]`)}
@@ -1044,44 +1044,37 @@ export default class extends React.Component {
                                 <a href="#expressions-id"><code>id</code></a>,
                                 <a href="#expressions-geometry-type"><code>geometry-type</code></a>,
                                 <a href="#expressions-properties"><code>properties</code></a>, or
-                                <a href="#expressions-feature-state"><code>feature-state</code></a>. Data expressions allow a
-                                feature's properties or state to determine its appearance. They can be used to differentiate
-                                features within the same layer and to create data visualizations.</p>
+                                <a href="#expressions-feature-state"><code>feature-state</code></a>. 数据表达式允许决定其出现的特征属性或状态。 
+                                它们用于区分同一图层内的特征，并且进行数据可视化。</p>
 
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`
                                     {
                                         "circle-color": [
                                             "rgb",
-                                            // red is higher when feature.properties.temperature is higher
+                                            // red is higher when 特征.属性.温度较高时，红色更高 
                                             ["get", "temperature"],
-                                            // green is always zero
+                                            // 绿色总是为零
                                             0,
-                                            // blue is higher when feature.properties.temperature is lower
+                                            //  特征.属性.温度较低时，蓝色更高
                                             ["-", 100, ["get", "temperature"]]
                                         ]
                                     }`)}
                             </div>
 
-                            <p>This example uses the  <a href="#expressions-get"><code>get</code></a> operator to obtain
-                                the <code>temperature</code> value of each feature. That value is used to compute
-                                arguments to the <a href="#expressions-rgb"><code>rgb</code></a> operator, defining a
-                                color in terms of its red, green, and blue components.</p>
+                            <p>该例子使用 <a href="#expressions-get"><code>get</code></a> 运算符得到每个特征的
+                                <code>温度</code> 数值。数值用于计算 
+                                <a href="#expressions-rgb"><code>rgb</code></a> 运算符的参数，确定红色、绿色、蓝色。</p>
 
-                            <p>Data expressions are allowed as the value of the
-                                <a href="#layer-filter"><code>filter</code></a> property, and as values for most paint
-                                and layout properties. However, some paint and layout properties do not yet support data
-                                expressions. The level of support is indicated by the "data-driven styling" row of the
-                                "SDK Support" table for each property. Data expressions with the
-                                <a href="#expressions-feature-state"><code>feature-state</code></a> operator are allowed
-                                only on paint properties.</p>
+
+                            <p><a href="#layer-filter"><code>filter</code></a> 属性数值，和大部分绘画和布局属性的数值。
+但是，有些绘画和布局属性还不能支持表达式。每个属性“SDK Support”表的“数据驱动样式”行显示支持的层次
+带
+                                <a href="#expressions-feature-state"><code>feature-state</code></a> 运算符的数据表达式仅在绘画属性上显示。</p>
+
 
                             <h3>Camera expressions</h3>
-                            <p>A <a id="camera-expression" className="anchor"></a><em>camera expression</em> is any
-                                expression that uses the <a href="#expressions-zoom"><code>zoom</code></a> operator. Such
-                                expressions allow the the appearance of a layer to change with the map's zoom level.
-                                Camera expressions can be used to create the appearance of depth and to control data
-                                density.
+                            <p> <a id="camera-expression" className="anchor"></a><em>camera expression</em>是 使用 <a href="#expressions-zoom"><code>zoom</code></a> 运算符的任何表达式。此类表达式显示图层随着地图缩放比例变动。 摄像机表达式用于表达深度和控制数据密度。
                             </p>
 
                             <div className='col12 space-bottom'>
@@ -1097,16 +1090,13 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <p>This example uses the <a
+                            <p>>该例子使用 <a
                                 href="#expressions-interpolate"><code>interpolate</code></a>
-                                operator to define a linear relationship between zoom level and circle size using a set
-                                of input-output pairs. In this case, the expression indicates that the circle radius should
-                                be 1 pixel when the zoom level is 5 or below, and 5 pixels when the zoom is 10 or above.
-                                In between, the radius will be linearly interpolated between 1 and 5 pixels</p>
+                                运算符确定使用输入输出的缩放比例和循环范围之间的线性关系。在这种情况下，表达式显示圆的半径在缩放比例为5或5以下时应为1像素，缩放比例为10或10以上时，圆的半径应为5像素。 在这之间，半径会在1-5像素之间线性分布。
+                              </p>
 
-                            <p>Camera expressions are allowed anywhere an expression may be used. However, when a camera
-                                expression used as the value of a layout or paint property, it must be in one of the
-                                following forms:</p>
+
+                            <p>摄像机表达式可用在任何地方。但是，当摄像机表达式用作布局或绘画特性的数值时，必须为下列形式之一：</p>
 
                             <div className='col12 space-bottom'>
                                 {highlightJSON(`[ "interpolate", interpolation, ["zoom"], ... ]`)}
@@ -1140,24 +1130,16 @@ export default class extends React.Component {
                                     ]`)}
                             </div>
 
-                            <p>That is, in layout or paint properties, <code>["zoom"]</code> may appear only as the
-                                input to an outer <a href="#expressions-interpolate"><code>interpolate</code></a> or <a
-                                    href="#expressions-step"><code>step</code></a> expression, or such an expression within
-                                a <a href="#expressions-let"><code>let</code></a> expression.</p>
+                            <p>即，在布局或绘画属性中， <code>["zoom"]</code> 可作为外部 <a href="#expressions-interpolate"><code>interpolate</code></a> 或 <a
+                                    href="#expressions-step"><code>step</code></a> 表达式的输入或
+                                <a href="#expressions-let"><code>let</code></a> 表达式内的表达式出现。</p>
 
-                            <p>There is an important difference between layout and paint properties in
-                                the timing of camera expression evaluation. Paint property camera expressions are
-                                re-evaluated whenever the zoom level changes, even fractionally. For example, a paint
-                                property camera expression will be re-evaluated continuously as the map moves between
-                                zoom levels 4.1 and 4.6. On the other hand, a layout property camera expression is
-                                evaluated only at integer zoom levels. It will <em>not</em> be re-evaluated as the zoom
-                                changes from 4.1 to 4.6 -- only if it goes above 5 or below 4.
+
+                            <p>摄像机表达式求值的时间中布局和绘图属性之间有很大的不同。随着缩放比例变动，对绘画属性的摄像机表达式重新求值，即使微小的变动，也需要重新求值。例如，地图缩放比例在4.1 和 4.6之间变动时，也会对绘画属性的摄像机表达式重新求值。而在另一方面，只有缩放比例为整数时，才对布局属性摄像机表达式重新求值。缩放比例在4.1 和 4.6之间之间变动-只有超过5或低于4时，才对<em>not</em>重新求值。
                             </p>
 
                             <h3>Composition</h3>
-                            <p>A single expression may use a mix of data operators, camera operators, and other
-                                operators. Such composite expressions allows a layer's appearance to be determined by a
-                                combination of the zoom level <em>and</em> individual feature properties.
+                            <p>单个表达式可使用数据运算符、摄像机运算符和其他运算符的混合。这个复合表达式让缩放比例<em>和</em>单个特征属性的组合决定图层是否出现。
                             </p>
 
                             <div className='col12 space-bottom'>
@@ -1173,31 +1155,29 @@ export default class extends React.Component {
                                     }`)}
                             </div>
 
-                            <p>An expression that uses both data and camera operators is considered both a data expression
-                                and a camera expression, and must adhere to the restrictions described above for both.</p>
+                            <p>使用数据和摄像机运算符的表达式被视为数据表达式和摄像机表达式，必须遵守上文规定的限制。</p>
 
                             <h3>Type system</h3>
-                            <p>The input arguments to expressions, and their result values, use the same set of <a
-                                href="#types">types</a> as the rest of the style specification: boolean, string,
-                                number, color, and arrays of these types. Furthermore, expressions are <em>type safe</em>:
-                                each use of an expression has a known result type and required argument types, and the
-                                SDKs verify that the result type of an expression is appropriate for the context in
-                                which it is used. For example, the result type of an expression in the <a
-                                href="#layer-filter"><code>filter</code></a> property must be <a
-                                href="#types-boolean">boolean</a>, and the arguments to the <a
-                                href="#expressions-+"><code>+</code></a> operator must be <a
-                                href="#types-number">numbers</a>.
+                            <p>表达式的输入参数以及其结果数值用<a
+                                href="#types">types</a>的同一集合作为样式规范的其他部分： 这些类型的布尔值、字符串、颜色和数组。此外， 表达式为： <em>type safe</em>:
+                                表达式的每次使用均有结果类型和要求的参数类型，并且
+                                SDKs验证表达式的结果类型适合其所用的场景。例如， 
+<a
+                                href="#layer-filter"><code>filter</code></a> 属性中的表达式结果类型必须为<a
+                                href="#types-boolean">boolean</a>，并且 <a
+                                href="#expressions-+"><code>+</code></a>运算符的参数必须为<a
+                                href="#types-number">numbers</a>。
+
                             </p>
 
-                            <p>When working with feature data, the type of a feature property value is typically not known
-                                ahead of time by the SDK. In order to preserve type safety, when evaluating a data
-                                expression, the SDK will check that the property value is appropriate for the context.
-                                For example, if you use the expression <code>["get", "feature-color"]</code> for the <a
-                                    href="#paint-circle-circle-color"><code>circle-color</code></a> property, the SDK
-                                will verify that the <code>feature-color</code> value of each feature is a string
-                                identifying a valid <a href="#types-color">color</a>. If this check fails, an error will
-                                be indicated in an SDK-specific way (typically a log message), and the default value for
-                                the property will be used instead.
+                            <p>使用特征数据时，SDK一般不能提前知道特征属性数值的类型。为了保护类型的安全性，对数据表达式求值时，SDK会检查属性数值是否适合情景。
+例如，如果使用表达式
+                               <code>["get", "feature-color"]</code> 作为 <a
+                                    href="#paint-circle-circle-color"><code>circle-color</code></a>属性， SDK会验证
+                                <code>feature-color</code> 每个特征的数值是否为有效的
+<a href="#types-color">color</a>的字符串。如果不是，会以SDK特定的方式 （一般为日志信息）
+显示错误, 会用属性的默认值替代。
+
                             </p>
 
                             <p>In most cases, this verification will occur automatically wherever it is needed. However,
