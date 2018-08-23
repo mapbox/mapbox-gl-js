@@ -195,18 +195,6 @@ class GeoJSONSource extends Evented implements Source {
         return this;
     }
 
-<<<<<<< HEAD
-    getLeaves(clusterId, clusterZoom, limit, offset, callback) {
-        const options = util.extend({clusterId: clusterId, clusterZoom: Math.ceil(clusterZoom), limit: limit || 10, offset: offset || 0}, this.workerOptions);
-
-        this.dispatcher.send(`${this.type}.getLeaves`, options, (err, leaves) => {
-            if (err) {
-                callback({success: false});
-                return this.fire('error', { error: err });
-            }
-            callback({success: true, leaves: leaves});
-        }, this.workerID);
-=======
     /**
      * For clustered sources, fetches the zoom at which the given cluster expands.
      *
@@ -248,7 +236,6 @@ class GeoJSONSource extends Evented implements Source {
             offset
         }, callback, this.workerID);
         return this;
->>>>>>> v0.48.0
     }
 
     /*

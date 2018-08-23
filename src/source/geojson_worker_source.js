@@ -33,27 +33,15 @@ export type LoadGeoJSONParameters = {
     geojsonVtOptions?: Object
 };
 
-export type GetLeavesParameters = {
-    source: string,
-    clusterId: string,
-    clusterZoom: number,
-    limit: number,
-    offset: number
-};
-
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: Callback<mixed>) => void;
 
 export interface GeoJSONIndex {
-<<<<<<< HEAD
-    getLeaves(clusterId: string, clusterZoom: number, limit: number, offset: number): void
-=======
     getTile(z: number, x: number, y: number): Object;
 
     // supercluster methods
     getClusterExpansionZoom(clusterId: number): number;
     getChildren(clusterId: number): Array<GeoJSONFeature>;
     getLeaves(clusterId: number, limit: number, offset: number): Array<GeoJSONFeature>;
->>>>>>> v0.48.0
 }
 
 function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
@@ -119,13 +107,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
         }
-    }
-
-    getLeaves(params: GetLeavesParameters, callback: Callback<void>) {
-        const superclusterInstance = this._geoJSONIndexes[params.source];
-        const leaves = superclusterInstance.getLeaves(params.clusterId, params.clusterZoom, params.limit, params.offset);
-
-        callback(null, leaves);
     }
 
     /*

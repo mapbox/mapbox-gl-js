@@ -152,17 +152,14 @@ class VectorTileSource extends Evented implements Source {
         }
     }
 
-    getLeaves(tileCoordinate, clusterId, clusterZoom, limit, offset, callback) {
-        const options = util.extend({
-            tileCoordinate: tileCoordinate,
-            clusterId: clusterId,
-            clusterZoom: Math.ceil(clusterZoom),
-            limit: limit || 10,
-            offset: offset || 0,
-            source: this.id
-        }, this.workerOptions);
-
-        this.dispatcher.broadcast(`${this.type}.getLeaves`, options, (err, tilesLeaves) => {
+    getClusterLeaves(tileID: OverscaledTileID, clusterId: number, limit: number, offset: number, callback: Callback<Array<GeoJSONFeature>>) {
+        this.dispatcher.broadcast(`${this.type}.getClusterLeaves`, {
+            source: this.id,
+            clusterId,
+            limit,
+            offset,
+            tileID
+        }, (err, tilesLeaves) => {
             let leaves = [];
             if (err) {
                 callback({success: false, error: err});
@@ -172,7 +169,8 @@ class VectorTileSource extends Evented implements Source {
                 leaves = leaves.concat(tileLeaves)
             });
             callback({success: true, leaves: leaves});
-        });
+        }, this.workerID);
+        return this;
     }
 
     abortTile(tile: Tile) {

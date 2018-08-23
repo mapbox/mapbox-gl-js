@@ -1,24 +1,16 @@
 // @flow
 
-<<<<<<< HEAD
-const ajax = require('../util/ajax');
-const vt = require('@mapbox/vector-tile');
-const Protobuf = require('pbf');
-const WorkerTile = require('./worker_tile');
-const util = require('../util/util');
-const Coordinate = require('../geo/coordinate');
-const geojsonToVectorTile = require('./geojson_to_vector_tile');
-const vtpbf = require('vt-pbf');
-const rewind = require('geojson-rewind');
-=======
-import {getArrayBuffer} from '../util/ajax';
+import geojsonToVectorTile from './geojson_to_vector_tile';
+import vtpbf from 'vt-pbf';
+import rewind  from 'geojson-rewind';
+
+import { getJSON, getArrayBuffer } from '../util/ajax';
 
 import vt from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
-import { extend } from '../util/util';
+import { extend, values } from '../util/util';
 import performance from '../util/performance';
->>>>>>> v0.48.0
 
 import type {
     WorkerSource,
@@ -27,6 +19,7 @@ import type {
     TileParameters
 } from '../source/worker_source';
 
+import type {OverscaledTileID} from './tile_id';
 import type {PerformanceResourceTiming} from '../types/performance_resource_timing';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -39,16 +32,6 @@ export type LoadVectorTileResult = {
     cacheControl?: any;
     resourceTiming?: Array<PerformanceResourceTiming>;
 };
-
-export type GetLeavesParameters = {
-    source: string,
-    tileCoordinate: Coordinate,
-    clusterId: string,
-    clusterZoom: number,
-    limit: number,
-    offset: number
-};
-
 
 /**
  * @callback LoadVectorDataCallback
@@ -66,7 +49,6 @@ export type LoadVectorData = (params: WorkerTileParameters, callback: LoadVector
  */
 
 function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-<<<<<<< HEAD
     const options = params.options || {};
     if (options.geojsonTile === true) {
         return loadGeojsonTile(params, callback);
@@ -81,7 +63,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
 */
 function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
     const options = params.options || {};
-    const xhr = ajax.getJSON(params.request, (err, data) => {
+    const request = getJSON(params.request, (err, data) => {
         if (err || !data) {
             return callback(err);
         } else if (typeof data !== 'object') {
@@ -91,7 +73,7 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
 
             try {
                 const { geojsonWrappedVectorTile, geojsonIndex } = geojsonToVectorTile(
-                  data, options, params.tileSize, params.zoom, params.coord
+                  data, options, params.tileSize, params.zoom, params.tileID
                 );
 
                 let pbf = vtpbf(geojsonWrappedVectorTile);
@@ -113,7 +95,7 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
     });
 
     return () => {
-        xhr.abort();
+        request.cancel();
         callback();
     };
 }
@@ -122,10 +104,7 @@ function loadGeojsonTile(params: WorkerTileParameters, callback: LoadVectorDataC
  * Calls a tile endpoint that responds in pbf format, converts them vt vector tile.
 */
 function defaultLoadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCallback) {
-    const xhr = ajax.getArrayBuffer(params.request, (err, response) => {
-=======
     const request = getArrayBuffer(params.request, (err, response) => {
->>>>>>> v0.48.0
         if (err) {
             callback(err);
         } else if (response) {
@@ -210,12 +189,8 @@ class VectorTileWorkerSource implements WorkerSource {
             }
 
             workerTile.vectorTile = response.vectorTile;
-<<<<<<< HEAD
             workerTile.geojsonIndex = response.geojsonIndex;
-            workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
-=======
             workerTile.parse(response.vectorTile, this.layerIndex, this.actor, (err, result) => {
->>>>>>> v0.48.0
                 if (err || !result) return callback(err);
 
                 // Transferring a copy of rawTileData because the worker needs to retain its copy.
@@ -255,19 +230,13 @@ class VectorTileWorkerSource implements WorkerSource {
         }
     }
 
-    /**
-     * For a geojson vector tile that is clustered, given id of a cluster
-     * this will return the features contributing to the cluster.
-     *
-     * @param GetLeavesParameters
-     * @param Callback
-     */
-    getLeaves(params: GetLeavesParameters, callback: Callback<void>) {
-        const workerTiles = util.values(this.loaded[params.source]);
+    getClusterLeaves(params: {clusterId: number, limit: number, offset: number, tileID: OverscaledTileID}, callback: Callback<Array<GeoJSONFeature>>) {
+        const workerTiles = values(this.loaded[params.source]);
         const workerTile = workerTiles.filter((wt) => {
-            return wt.coord.x === params.tileCoordinate.column &&
-                wt.coord.y === params.tileCoordinate.row &&
-                wt.coord.z === params.tileCoordinate.zoom;
+            return wt.tileID && wt.tileID.toCoordinate() &&
+                wt.tileID.toCoordinate().column === params.tileID.column &&
+                wt.tileID.toCoordinate().row === params.tileID.row &&
+                wt.tileID.toCoordinate().zoom === params.tileID.zoom;
         })[0];
 
         if (!workerTile) {
@@ -280,12 +249,7 @@ class VectorTileWorkerSource implements WorkerSource {
             return callback(new Error('Index not found for the feature\'s tile.'));
         }
 
-        const leaves = superclusterInstance.getLeaves(
-            params.clusterId,
-            params.clusterZoom,
-            params.limit,
-            params.offset
-        );
+        const leaves = superclusterInstance.getLeaves(params.clusterId, params.limit, params.offset);
 
         callback(null, leaves);
     }

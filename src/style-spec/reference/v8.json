@@ -386,7 +386,6 @@
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     },
-<<<<<<< HEAD
     "aggregateBy": {
       "type": "string",
       "doc": "point_count will be an aggregate of this property in all the features in the cluster."
@@ -395,7 +394,7 @@
       "type": "boolean",
       "default": false,
       "doc": "if true, each tile's response(expected to be a valid geojson and not in pbf) will be converted to vector tiles."
-=======
+    },
     "lineMetrics": {
       "type": "boolean",
       "default": false,
@@ -405,7 +404,6 @@
         "type": "boolean",
         "default": false,
         "doc": "Whether to generate ids for the geojson features. When enabled, the `feature.id` property will be auto assigned based on its index in the `features` array, over-writing any previous values."
->>>>>>> v0.48.0
     }
   },
   "source_video": {
