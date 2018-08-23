@@ -2,11 +2,14 @@
 
 import { mat4 } from 'gl-matrix';
 import EXTENT from '../data/extent';
-import VertexArrayObject from './vertex_array_object';
 import { PosArray } from '../data/array_types';
+import { LineIndexArray } from '../data/index_array_type';
 import posAttributes from '../data/pos_attributes';
+import SegmentVector from '../data/segment';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
+import { debugUniformValues } from './program/debug_program';
+import Color from '../style-spec/util/color';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -27,24 +30,25 @@ function drawDebugTile(painter, sourceCache, coord) {
     const posMatrix = coord.posMatrix;
     const program = painter.useProgram('debug');
 
-    context.setDepthMode(DepthMode.disabled);
-    context.setStencilMode(StencilMode.disabled);
-    context.setColorMode(painter.colorModeForRenderPass());
+    const depthMode = DepthMode.disabled;
+    const stencilMode = StencilMode.disabled;
+    const colorMode = painter.colorModeForRenderPass();
+    const id = '$debug';
 
-    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
-    gl.uniform4f(program.uniforms.u_color, 1, 0, 0, 1);
-    painter.debugVAO.bind(context, program, painter.debugBuffer, []);
-    gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
+    program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode,
+        debugUniformValues(posMatrix, Color.red), id,
+        painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
-    const vertices = createTextVerticies(coord.toString(), 50, 200, 5);
+    const vertices = createTextVertices(coord.toString(), 50, 200, 5);
     const debugTextArray = new PosArray();
+    const debugTextIndices = new LineIndexArray();
     for (let v = 0; v < vertices.length; v += 2) {
         debugTextArray.emplaceBack(vertices[v], vertices[v + 1]);
+        debugTextIndices.emplaceBack(v, v + 1);
     }
     const debugTextBuffer = context.createVertexBuffer(debugTextArray, posAttributes.members);
-    const debugTextVAO = new VertexArrayObject();
-    debugTextVAO.bind(context, program, debugTextBuffer, []);
-    gl.uniform4f(program.uniforms.u_color, 1, 1, 1, 1);
+    const debugTextIndexBuffer = context.createIndexBuffer(debugTextIndices);
+    const debugTextSegment = SegmentVector.simpleSegment(0, 0, debugTextArray.length / 2, debugTextArray.length / 2);
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
@@ -53,13 +57,19 @@ function drawDebugTile(painter, sourceCache, coord) {
     const translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (let i = 0; i < translations.length; i++) {
         const translation = translations[i];
-        gl.uniformMatrix4fv(program.uniforms.u_matrix, false, mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]));
-        gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
+
+        program.draw(context, gl.LINES, depthMode, stencilMode, colorMode,
+            debugUniformValues(
+                mat4.translate([], posMatrix, [
+                    onePixel * translation[0],
+                    onePixel * translation[1], 0]),
+                Color.white),
+            id, debugTextBuffer, debugTextIndexBuffer, debugTextSegment);
     }
 
-    gl.uniform4f(program.uniforms.u_color, 0, 0, 0, 1);
-    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
-    gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
+    program.draw(context, gl.LINES, depthMode, stencilMode, colorMode,
+        debugUniformValues(posMatrix, Color.black), id,
+        debugTextBuffer, debugTextIndexBuffer, debugTextSegment);
 }
 
 // Font data From Hershey Simplex Font
@@ -162,7 +172,7 @@ const simplexFont = {
     "~": [24, [3, 6, 3, 8, 4, 11, 6, 12, 8, 12, 10, 11, 14, 8, 16, 7, 18, 7, 20, 8, 21, 10, -1, -1, 3, 8, 4, 10, 6, 11, 8, 11, 10, 10, 14, 7, 16, 6, 18, 6, 20, 7, 21, 10, 21, 12]]
 };
 
-function createTextVerticies(text, left, baseline, scale) {
+function createTextVertices(text, left, baseline, scale) {
     scale = scale || 1;
 
     const strokes = [];
