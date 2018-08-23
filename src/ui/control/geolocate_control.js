@@ -301,7 +301,7 @@ class GeolocateControl extends Evented {
     /**
      * 触发地理定位
      *
-     * @returns {boolean} 如果工具调用发生在被添加进地图之前时返回 `false` , 否则返回 `true`.
+     * @returns {boolean} 如果工具调用发生在被添加进地图之前则返回 `false` , 否则返回 `true`.
      */
     trigger() {
         if (!this._setup) {
@@ -409,26 +409,26 @@ class GeolocateControl extends Evented {
 
 export default GeolocateControl;
 
-/* Geolocate Control Watch States
- * This is the private state of the control.
+/* 地理定位工具的观察状态
+ * 这是工具的私有状态.
  *
  * OFF
  *    off/inactive
  * WAITING_ACTIVE
- *    Geolocate Control was clicked but still waiting for Geolocation API response with user location
+ *    地理定位工具被点击,却一直在等待 Geolocation API 对用户位置作出响应
  * ACTIVE_LOCK
- *    Showing the user location as a dot AND tracking the camera to be fixed to their location. If their location changes the map moves to follow.
+ *    显示用户点位并追踪地图相机固定到定位点. 如果位置改变地图跟着移动.
  * ACTIVE_ERROR
- *    There was en error from the Geolocation API while trying to show and track the user location.
+ *    Geolocation API 在尝试显示和追踪用户位置时报错.
  * BACKGROUND
- *    Showing the user location as a dot but the camera doesn't follow their location as it changes.
+ *    显示了用户点位,但相机并没有跟随用户位置变化.
  * BACKGROUND_ERROR
- *    There was an error from the Geolocation API while trying to show (but not track) the user location.
+ *    Geolocation API在尝试显示用户点位时(并不跟踪)出错.
  */
 
 
 /**
- * Fired on each Geolocation API position update which returned as success.
+ * Geolocation API位置每次更新成功时触发.
  *
  * @event geolocate
  * @memberof GeolocateControl
@@ -438,7 +438,7 @@ export default GeolocateControl;
  */
 
 /**
- * Fired on each Geolocation API position update which returned as an error.
+ * Geolocation API位置每次更新出错时触发.
  *
  * @event error
  * @memberof GeolocateControl
@@ -448,7 +448,7 @@ export default GeolocateControl;
  */
 
 /**
- * Fired when the Geolocate Control changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
+ * 当地理定位工具状态变为 ACTIVE_LOCK 时触发, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
  *
  * @event trackuserlocationstart
  * @memberof GeolocateControl
@@ -457,7 +457,7 @@ export default GeolocateControl;
  */
 
 /**
- * Fired when the Geolocate Control changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
+ * 当地理定位工具状态变为 BACKGROUND 时触发, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
  *
  * @event trackuserlocationend
  * @memberof GeolocateControl
