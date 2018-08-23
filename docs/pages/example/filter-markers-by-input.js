@@ -1,6 +1,6 @@
 /*---
-title: Filter symbols by text input
-description: Filter [symbols](/mapbox-gl-js/style-spec#layers-symbol) by icon name by typing in a text input.
+title: 通过文本输入过滤符号
+description: 通过键入文本输入按图标名称来过滤[symbols](/mapbox-gl-js/style-spec#layers-symbol)。
 tags:
   - user-interaction
 pathname: /mapbox-gl-js/example/filter-markers-by-input/
