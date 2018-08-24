@@ -1200,34 +1200,30 @@ export default class extends React.Component {
                                 the property will be used instead.
                             </p>
 
-                            <p>In most cases, this verification will occur automatically wherever it is needed. However,
-                                in certain situations, the SDK may be unable to automatically determine the expected
-                                result type of a data expression from surrounding context. For example, it is not clear
-                                whether the expression <code>["&lt;", ["get", "a"], ["get", "b"]]</code> is attempting
-                                to compare strings or numbers. In situations like this, you can use one of
-                                the <em>type assertion</em> expression operators to indicate the expected type of a
-                                data expression: <code>["&lt;", ["number", ["get", "a"]], ["number", ["get", "b"]]]</code>.
-                                A type assertion checks that the feature data actually matches the expected type of the
-                                data expression. If this check fails, it produces an error and causes the whole
-                                expression to fall back to the default value for the property being defined. The
-                                assertion operators are <a
+                            <p>在大多数情况下，需要时会自动验证。但是，在某些情况下，SDK不可能从周围的情景中自动决定数据表达式的预期结果类型。 例如， 
+                                表达式 <code>["&lt;", ["get", "a"], ["get", "b"]]</code>是否对比字符串或数字尚不清楚。
+在这种情况下，可以使用
+                                 <em>type assertion</em> 表达式运算符之一显示
+                                数据表达式 <code>["&lt;", ["number", ["get", "a"]], ["number", ["get", "b"]]]</code>的预期类型。检查类型确认特征数据确实与数据表达式的预期类型匹配。
+                               如果不匹配，就会出现错误，导致整个表达式回到确认属性的默认值。确认运算符为<a
+
                                     href="#expressions-types-array"><code>array</code></a>, <a
                                     href="#expressions-types-boolean"><code>boolean</code></a>, <a
                                     href="#expressions-types-number"><code>number</code></a>, and <a
                                     href="#expressions-types-string"><code>string</code></a>.
                             </p>
 
-                            <p>Expressions perform only one kind of implicit type conversion: a data expression used in
-                                a context where a <a href="#types-color">color</a> is expected will convert a string
-                                representation of a color to a color value. In all other cases, if you want to convert
-                                between types, you must use one of the <em>type conversion</em> expression operators: <a
+                            <p>表达式仅执行一类隐含的类型转换： 
+                                用于 <a href="#types-color">color</a>情景的数据表达式预计能将颜色的字符串表示转换为颜色数值。 在所有其他情况下，如果想在不同类型间转换，必须使用
+<em>类型转换</em> 表达式运算符：
+ <a
                                     href="#expressions-types-to-boolean"><code>to-boolean</code></a>, <a
                                     href="#expressions-types-to-number"><code>to-number</code></a>, <a
                                     href="#expressions-types-to-string"><code>to-string</code></a>, or <a
-                                    href="#expressions-types-to-color"><code>to-color</code></a>. For example, if you
-                                have a feature property that stores numeric values in string format, and you want to use
-                                those values as numbers rather than strings, you can use an expression such
-                                as <code>["to-number", ["get", "property-name"]]</code>.
+                                    href="#expressions-types-to-color"><code>to-color</code></a>. 例如，如果有以字符串格式储存数值的特征属性， if you
+                               并且想将这些数值 
+                                数字，而不是字符串， 可使用如
+                                <code>["to-number", ["get", "property-name"]]</code>的表达式。
                             </p>
 
                             <h3>Expression reference</h3>
@@ -1241,28 +1237,24 @@ export default class extends React.Component {
 
                                         {group.name === "Types" &&
                                             <div>
-                                                <p>The expressions in this section are provided for the purpose of
-                                                   testing for and converting between different data types like strings,
-                                                   numbers, and boolean values.</p>
-                                                <p>Often, such tests and conversions are
-                                                   unnecessary, but they may be necessary in some expressions where the
-                                                   type of a certain sub-expression is ambiguous.  They can also be
-                                                   useful in cases where your feature data has inconsistent types; for
-                                                   example, you could use <code>to-number</code> to make sure that
-                                                   values like <code>"1.5"</code> (instead of <code>1.5</code>) are
-                                                   treated as numeric values.
+                                                <p>本章节中的表达式是为了测试并在字符串、数字和布尔值等不同的数据类型之间转换
+</p>
+
+                                                <p>通常情况下，此类测试和转换并不是必须的，但是某种子表达式的类型模糊不清是，某些表达式需要此类测试和转换。特征数据类型不一致的情况下，此类测试和转换也非常有用；例如，
+可以使用 <code>数字</code> 确保
+                                                   <code>"1.5"</code>这样的数值 (而不是<code>1.5</code>) 被当做数宇值。
+
                                                 </p>
                                             </div>}
 
                                         {group.name === "Decision" &&
                                             <p>
-                                                The expressions in this section can be used to add conditional
-                                                logic to your styles. For example, the <a
+                                               本章节中的表达式可被用作样式增添的条件逻辑。例如，
+<a
                                                     href="#expressions-case"><code>'case'</code></a> expression
-                                                provides basic "if/then/else" logic, and <a
-                                                    href="#expressions-match"><code>'match'</code></a> allows you to
-                                                map specific values of an input expression to different output
-                                                expressions.
+                                                提供基本的 "if/then/else" 逻辑，并且 <a
+                                                    href="#expressions-match"><code>'match'</code></a> 可以绘制不同输出表达式的输入表达式的特定数值。
+
                                             </p>}
 
                                         {group.expressions.map(({name, doc, type, sdkSupport}, i) =>
@@ -1291,20 +1283,16 @@ export default class extends React.Component {
                                     <a id='other-function' className='anchor'/>
                                     <h3 className='space-bottom1'><a href='#other-function' title='link to function'>Function</a></h3>
 
-                                    <p>The value for any layout or paint property may be specified as
-                                        a <em>function</em>. Functions allow you to make the appearance of a map feature
-                                        change with the current zoom level and/or the feature's properties.</p>
+                                    <p>任何布局或绘画属性的数值可被指定为 <em>函数</em>。函数可以呈现地图特征随着当前缩放比例和/或特征属性变动。</p>
                                     <div className='col12 pad1x'>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
                                             <div><span className='code'><a id="function-stops" href="#function-stops">stops</a></span>
                                             </div>
                                             <div><em className='quiet'>Required (except
                                                 for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
-                                            <div>Functions are defined in terms of input and output values. A set of one
-                                                input value and one output value is known as a "stop." Stop output values
-                                                must be literal values (i.e. not functions or expressions), and appropriate
-                                                for the property. For example, stop output values for a function used in
-                                                the <code>fill-color</code> property must be <a href="#types-color">colors</a>.
+                                            <div>函数定义为输入和输出数值。一个输入数值和一个输出数值的集合称为“停止”。停止输出数值必须为文字值（如非函数或表达式），并且适合属性。例如
+                                               用于 <code>fill-color</code> 属性函数的停止输出数值必须为<a href="#types-color">colors</a>。
+
                                             </div>
                                         </div>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
@@ -1313,9 +1301,9 @@ export default class extends React.Component {
                                             </div>
                                             <div><em className='quiet'>Optional <a href='#types-string'>string</a>.</em>
                                             </div>
-                                            <div>If specified, the function will take the specified feature property as
-                                                an input. See <a href="#types-function-zoom-property">Zoom Functions and
-                                                    Property Functions</a> for more information.
+                                            <div>如指定，函数会将特定的特征属性作为输入。更多信息，见
+<a href="#types-function-zoom-property">缩放函数和属性函数</a> 。
+
                                             </div>
                                         </div>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
@@ -1323,10 +1311,7 @@ export default class extends React.Component {
                                                 href="#function-base">base</a></span></div>
                                             <div><em className='quiet'>Optional <a href='#types-number'>number</a>.
                                                 Default is {ref.function.base.default}.</em></div>
-                                            <div>The exponential base of the interpolation curve. It controls the rate
-                                                at which the function output increases. Higher values make the output
-                                                increase more towards the high end of the range. With values close to 1
-                                                the output increases linearly.
+                                            <div>插值曲线的指数基。函数值增大时。指数基控制大小。较大的数值输出朝范围的顶端增大。数值接近1时，输出呈直线形增大。
                                             </div>
                                         </div>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
@@ -1340,16 +1325,12 @@ export default class extends React.Component {
                                                 <dt><code>"identity"</code></dt>
                                                 <dd>A function that returns its input as the output.</dd>
                                                 <dt><code>"exponential"</code></dt>
-                                                <dd>A function that generates an output by interpolating between stops just
-                                                    less than and just greater than the
-                                                    function input. The domain (input value) must be numeric, and the
-                                                    style property must support
-                                                    interpolation. Style properties that support interpolation are
-                                                    marked marked with <span
+                                                <dd>通过停止之间插值生成输出的函数正好小于和大于函数输入。域名（输入数值）必须是数字，样式属性必须支持插值。样式属性以
+<span
                                                         className='icon smooth-ramp quiet micro space-right indivne'
-                                                        title='continuous'/>, the
-                                                    "exponential" symbol, and <var>exponential</var> is the default
-                                                    function type for these properties.
+                                                        title='continuous'/>标记，
+                                                    "exponential" 符号，和<var>exponential</var> 是这些属性的默认函数类型。
+
                                                 </dd>
                                                 <dt><code>"interval"</code></dt>
                                                 <dd>A function that returns the output value of the stop just less than the
