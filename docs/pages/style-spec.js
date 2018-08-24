@@ -1352,17 +1352,14 @@ export default class extends React.Component {
                                                     function type for these properties.
                                                 </dd>
                                                 <dt><code>"interval"</code></dt>
-                                                <dd>A function that returns the output value of the stop just less than the
-                                                    function input. The domain (input
-                                                    value) must be numeric. Any style property may use interval
-                                                    functions. For properties marked with
+                                                <dd>返回停止输出数值的函数正好小于函数输入。域名（输入数值）必须为数字。
+任何式样属性可用区间函数。对于标记 
                                                     <span className='icon step-ramp quiet micro space-right indivne'
-                                                        title='discrete'/>, the "interval"
-                                                    symbol, this is the default function type.
+                                                        title='discrete'/>的属性，“区间” 符号即为默认函数类型。
+
                                                 </dd>
                                                 <dt><code>"categorical"</code></dt>
-                                                <dd>A function that returns the output value of the stop equal to the function
-                                                    input.
+                                                <dd>.返回停止输出数值的函数等于函数输入。
                                                 </dd>
                                             </dl>
                                         </div>
@@ -1370,27 +1367,19 @@ export default class extends React.Component {
                                             <div><span className='code'><a id="function-default"
                                                 href="#function-default">default</a></span>
                                             </div>
-                                            <div>A value to serve as a fallback function result when a value isn't
-                                                otherwise available. It is used in the following circumstances:
+                                            <div>没有其他数值时，数值为后退函数结果，用于以下情形：
                                             </div>
                                             <ul>
-                                                <li>In categorical functions, when the feature value does not match any
-                                                    of the stop domain values.
+                                                <li>在分类函数中，特征数值与任何停止域名数值不匹配时。
                                                 </li>
-                                                <li>In property and zoom-and-property functions, when a feature does not
-                                                    contain a value for the specified property.
+                                                <li>在属性和缩放属性函数中，特征不含特定属性的数值。
                                                 </li>
-                                                <li>In identity functions, when the feature value is not valid for the
-                                                    style property (for example, if the function is being used for
-                                                    a <var>circle-color</var> property but the feature property value is
-                                                    not a string or not a valid color).
+                                                <li>在恒等函数中，特征数值对样式属性取消时（例如，如果函数用于<var>circle-color</var>属性，但是特征属性数值不是字符串或有效颜色）。
                                                 </li>
-                                                <li>In interval or exponential property and zoom-and-property functions,
-                                                    when the feature value is not numeric.
+                                                <li>在区间或指数属性和缩放特定函数中，特征数值为数字时。
                                                 </li>
                                             </ul>
-                                            <div>If no default is provided, the style property's default is used in
-                                                these circumstances.
+                                            <div>若未提供默认值，样式属性的默认值用于这些情形。
                                             </div>
                                         </div>
                                         <div className="col12 clearfix pad0y pad2x space-bottom2">
@@ -1399,21 +1388,17 @@ export default class extends React.Component {
                                             </div>
                                             <div><em className='quiet'>Optional <a href='#types-string'>string</a>. One of
                                                 <code>"rgb"</code>, <code>"lab"</code>, <code>"hcl"</code>.</em></div>
-                                            <div className=' space-bottom1'>The color space in which colors
-                                                interpolated. Interpolating colors in perceptual color spaces like LAB
-                                                and HCL tend to produce color ramps that look more consistent and
-                                                produce colors that can be differentiated more easily than those
-                                                interpolated in RGB space.
+                                            <div className=' space-bottom1'>颜色插值的颜色空间。与在RGB空间内插值的颜色相比，
+在LAB和HCL等感性颜色空间内插值的颜色倾向生成看起来更加一致的颜色渐变以及更容易区分的颜色。
+
                                             </div>
                                             <dl className="space-bottom">
                                                 <dt><code>"rgb"</code></dt>
-                                                <dd>Use the RGB color space to interpolate color values</dd>
+                                                <dd>使用RGB颜色空间插值颜色数值</dd>
                                                 <dt><code>"lab"</code></dt>
-                                                <dd>Use the LAB color space to interpolate color values.</dd>
+                                                <dd>使用LAB 颜色空间插值颜色数值</dd>
                                                 <dt><code>"hcl"</code></dt>
-                                                <dd>Use the HCL color space to interpolate color values, interpolating
-                                                    the Hue, Chroma, and Luminance channels individually.
-                                                </dd>
+                                                <dd>使用HCL颜色空间插值颜色数值，分别插值色调、色度和亮度通道。</dd>
                                             </dl>
                                         </div>
                                     </div>
@@ -1474,7 +1459,9 @@ export default class extends React.Component {
                                         }}/>
                                     </div>
 
-                                    <p><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements: the first is a zoom level and the second is a function output value.</p>
+                                    使用HCL颜色空间插值颜色数值，分别插值色调、色度和亮度通道。</dd>
+<p><strong>Zoom functions</strong> 呈现地图特征随着地图缩放比例变动而变动。缩放函数可用于产生立体感效应并控制数据密度。每个停顿是带两个元素的数组：第一个元素是缩放比例，第二个是函数输出数值。</p>
+
 
                                     <div className='col12 space-bottom'>
                                         {highlightJSON(`
@@ -1490,11 +1477,11 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
 
-                                    <p>The rendered values of <a href='#types-color'>color</a>, <a href='#types-number'>number</a>, and <a href='#types-array'>array</a> properties are interpolated between stops. <a href='#types-boolean'>Boolean</a> and <a href='#types-string'>string</a> property values cannot be interpolated, so their rendered values only change at the specified stops.</p>
+                                    <p> <a href='#types-color'>color</a>的渲染数值， <a href='#types-number'>number</a>和 <a href='#types-array'>array</a> 属性在停顿之间插值。 <a href='#types-boolean'>Boolean</a> 和 <a href='#types-string'>string</a> 属性数值不能被插值，，因此其渲染数值仅在特定停顿时变动。 </p>
 
-                                    <p>There is an important difference between the way that zoom functions render for <em>layout</em> and <em>paint</em> properties. Paint properties are continuously re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the function will be re-evaluated according to the function, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom function, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
+                                    <p><em>layout</em> 和 <em>paint</em>特性的缩放函数渲染方式存在很大的不同。缩放比例变动时，即使是微小的变动，也要对绘画特性继续重新计算数值。 例如，随着地图在缩放比例<code>4.1</code> 和 <code>4.6</code>之间变动，绘画特性的渲染数值也会变动。在另一方面，每个整数缩放比例，只对布局属性计算一次。继续上面的例子：无论指定什么停顿，布局属性的渲染会在<em>not</em> 缩放比例 <code>4.1</code> 和 <code>4.6</code>之间变动；但是缩放比例为 <code>5</code>，会根据函数重新计算函数，并且属性的渲染值会变动。（可在布局属性缩放函数中包括小数缩放比例，并且会将影响生成的数值；但是，渲染仍只有是缩放比例为整数时变动。）</p>
 
-                                    <p><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Each stop is an array with two elements, the first is a property input value and the second is a function output value. Note that support for property functions is not available across all properties and platforms at this time.</p>
+                                   <p><strong>属性函数</strong>呈现地图特征随着其属性变动而变动。 属性函数可用作可视化区分同一层级内的特征类型或进行数据可视化。每个停顿为带两个元素的数组：第一个元素是属性输入数值，第二个是函数输出数值。注意此时所有属性和平台不能使用属性函数支持。
 
                                     <div className='col12 space-bottom'>
                                         {highlightJSON(`
@@ -1511,7 +1498,7 @@ export default class extends React.Component {
                                             }`)}
                                     </div>
 
-                                    <p><a id='types-function-zoom-property' className='anchor'></a><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
+                                   <p><a id='types-function-zoom-property' className='anchor'></a><strong>Zoom-and-property functions</strong> 显示地图特征随着其特性 <em>和</em> 缩放变动而变动。每个停顿是带两个元素的数组：第一个元素是带属性输入数值和缩放的物体，第二个是函数输出数值。注意属性函数的支持尚不完整。 </p>
 
                                     <div className='col12 space-bottom'>
                                         {highlightJSON(`
@@ -1519,16 +1506,16 @@ export default class extends React.Component {
                                                 "circle-radius": {
                                                     "property": "rating",
                                                     "stops": [
-                                                        // zoom is 0 and "rating" is 0 -> circle radius will be 0px
+                                                        // zoom is 0 and "rating" is 0 -> 圆弧半径会为 0px
                                                         [{zoom: 0, value: 0}, 0],
 
-                                                        // zoom is 0 and "rating" is 5 -> circle radius will be 5px
+                                                        // zoom is 0 and "rating" is 5 -> 圆弧半径会为 5px
                                                         [{zoom: 0, value: 5}, 5],
 
-                                                        // zoom is 20 and "rating" is 0 -> circle radius will be 0px
+                                                        // zoom is 20 and "rating" is 0 -> 圆弧半径会为 0px
                                                         [{zoom: 20, value: 0}, 0],
 
-                                                        // zoom is 20 and "rating" is 5 -> circle radius will be 20px
+                                                        // zoom is 20 and "rating" is 5 -> 圆弧半径会为20px
                                                         [{zoom: 20, value: 5}, 20]
                                                     ]
                                                 }
@@ -1539,7 +1526,7 @@ export default class extends React.Component {
                                 <div className='pad2'>
                                     <a id='other-filter' className='anchor'></a>
                                     <h3 className='space-bottom1'><a href='#other-filter' title='link to filter'>Filter (deprecated syntax)</a></h3>
-                                    <p>In previous versions of the style specification, <a href="#layer-filter">filters</a> were defined using the deprecated syntax documented below. Though filters defined with this syntax will continue to work, we recommend using the more flexible <a href="#expressions">expression</a> syntax instead. Expression syntax and the deprecated syntax below cannot be mixed in a single filter definition.</p>
+                                    <p>在样式规格之前的版本中，用下述弃用的句法定义<a href="#layer-filter">filters</a> 。虽然用该句法确定的过滤继续有效，建议采用更灵活的<a href="#expressions">expression</a> 句法。在单独的过滤定义中不能混淆表达式句法和弃用句法 。</p>
 
                                     <div className='col12 clearfix space-bottom2'>
 
@@ -1596,36 +1583,37 @@ export default class extends React.Component {
                                     </div>
 
                                     <p>
-                                        A <var>key</var> must be a string that identifies a feature property, or one of the following special keys:
+                                       <var>key</var> 必须是能明确特征属性的字符串或者是下述特殊键：
                                     </p>
                                     <ul>
-                                        <li><code>"$type"</code>: the feature type. This key may be used with the <code>"=="</code>,
-                                            <code>"!="</code>, <code>"in"</code>, and <code>"!in"</code> operators. Possible values are
+                                        <li><code>"$type"</code>：特征类型。 该键可与  <code>"=="</code>,
+                                            <code>"!="</code>、 <code>"in"</code>、和 <code>"!in"</code> 运算符一起使用。可能的数值为 
                                             <code>"Point"</code>, <code>"LineString"</code>, and <code>"Polygon"</code>.</li>
-                                        <li><code>"$id"</code>: the feature identifier. This key may be used with the <code>"=="</code>,
+                                        <li><code>"$id"</code>：特征 标识符。该键可与 <code>"=="</code>,
                                             <code>"!="</code>, <code>"has"</code>, <code>"!has"</code>, <code>"in"</code>,
-                                            and <code>"!in"</code> operators.</li>
+                                            和<code>"!in"</code> 运算符一起使用。</li>
+
                                     </ul>
                                     <p>
-                                        A <var>value</var> (and <var>v0</var>, ..., <var>vn</var> for set operators) must be
-                                        a <a href="#string">string</a>, <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare
-                                        the property value against.
+                              <var>value</var> (and <var>v0</var>, ..., <var>vn</var> 集合运算符) 必须是与属性数值对比的
+                                        <a href="#string">string</a>, <a href="#number">number</a>, or <a href="#boolean">boolean</a> 。
+
                                     </p>
 
                                     <p>
-                                        Set membership filters are a compact and efficient way to test whether a
-                                        field matches any of multiple values.
+                                       设置成员关系过滤是测试字段是否与多个数值匹配的简单而有效的方式。
                                     </p>
 
                                     <p>
-                                        The comparison and set membership filters implement strictly-typed comparisons; for example, all of the
-                                        following evaluate to false: <code>0 &lt; "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
+                                        对比和设置成员关系过滤是严格类型化对比。例如，所有下述求值不成立：
+<code>0 &lt; "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>。
+
                                     </p>
 
                                     <p>
-                                        The <code>"all"</code>, <code>"any"</code>, and <code>"none"</code> filter operators are
-                                        used to create compound filters. The values <var>f0</var>, ..., <var>fn</var> must be
-                                        filter expressions themselves.
+                                        <code>0 &lt; "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>。
+<code>"all"</code>, <code>"any"</code>和 <code>"none"</code> 过滤运算符用作创建复合过滤器。 数值  <var>f0</var>, ..., <var>fn</var> 必须自行过滤表达式。
+
                                     </p>
 
                                     <div className='space-bottom1 clearfix'>
@@ -1633,9 +1621,9 @@ export default class extends React.Component {
                                     </div>
 
                                     <p>
-                                        This filter requires that the <code>class</code> property of
-                                        each feature is equal to either "street_major", "street_minor",
-                                        or "street_limited".
+                                       该过滤要求 <code>class</code> 每个特征的属性等于 "street_major", "street_minor",
+                                        或 "street_limited"。
+
                                     </p>
 
                                     <div className='space-bottom1 clearfix'>
@@ -1643,14 +1631,11 @@ export default class extends React.Component {
                                     </div>
 
                                     <p>
-                                        The combining filter "all" takes the three other filters that
-                                        follow it and requires all of them to be true for a feature
-                                        to be included: a feature must have a <code>class</code> equal
-                                        to "street_limited", its <code>admin_level</code> must be greater
-                                        than or equal to 3, and its type cannot be Polygon. You could
-                                        change the combining filter to "any" to allow features matching
-                                        any of those criteria to be included - features that are Polygons,
-                                        but have a different <code>class</code> value, and so on.
+                                       复合过滤器将其他三个过滤器“全都”组合并且要求它们都包含一个特征：
+  
+<code>class</code> 等于 "street_limited"的特征，其 <code>admin_level</code> 必须大于或等于 3，并且其类型不能为多边形。 可将复合过滤器变成“任何”Y含有匹配那些标准特征的过滤器-多边形特征，但是有不同的
+<code>class</code> 数值，等等。 
+
                                     </p>
 
                                     <div className='space-bottom1 clearfix'>
