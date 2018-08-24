@@ -18,7 +18,7 @@ const defaultOptions: Options = {
 };
 
 /**
- * `比例尺控件`展示了地图上的线段长度与实地相应线段长度之比。
+ * `ScaleControl`展示了地图上的线段长度与实地相应线段长度之比。
  *
  * @implements {IControl}
  * @param {Object} [options]
