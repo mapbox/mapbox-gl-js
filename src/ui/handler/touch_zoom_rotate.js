@@ -8,6 +8,7 @@ import { Event } from '../../util/evented';
 
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
+import type LngLat from '../../geo/lng_lat';
 import type {TaskID} from '../../util/task_queue';
 
 const inertiaLinearity = 0.15,
@@ -28,6 +29,7 @@ class TouchZoomRotateHandler {
     _aroundCenter: boolean;
     _rotationDisabled: boolean;
     _startVec: Point;
+    _startAround: LngLat;
     _startScale: number;
     _startBearing: number;
     _gestureIntent: 'rotate' | 'zoom' | void;
