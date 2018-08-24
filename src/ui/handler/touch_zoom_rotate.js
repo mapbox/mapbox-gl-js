@@ -115,9 +115,11 @@ class TouchZoomRotateHandler {
         if (e.touches.length !== 2) return;
 
         const p0 = DOM.mousePos(this._el, e.touches[0]),
-            p1 = DOM.mousePos(this._el, e.touches[1]);
+            p1 = DOM.mousePos(this._el, e.touches[1]),
+            center = p0.add(p1).div(2);
 
         this._startVec = p0.sub(p1);
+        this._startAround = this._map.transform.pointLocation(center);
         this._gestureIntent = undefined;
         this._inertia = [];
 
@@ -193,7 +195,7 @@ class TouchZoomRotateHandler {
 
         tr.zoom = tr.scaleZoom(this._startScale * scale);
 
-        tr.setLocationAtPoint(around, aroundPoint);
+        tr.setLocationAtPoint(this._startAround, aroundPoint);
 
         this._map.fire(new Event(gestureIntent, {originalEvent: this._lastTouchEvent}));
         this._map.fire(new Event('move', {originalEvent: this._lastTouchEvent}));
