@@ -18,12 +18,12 @@ const defaultOptions: Options = {
 };
 
 /**
- * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
+ * `ScaleControl`展示了地图上的线段长度与实地相应线段长度之比。
  *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {number} [options.maxWidth='100'] The maximum length of the scale control in pixels.
- * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
+ * @param {number} [options.maxWidth='100'] 比例尺控件以像素为单位的最大宽度。
+ * @param {string} [options.unit='metric'] 长度单位 (`'imperial'`, `'metric'` or `'nautical'`)。
  * @example
  * var scale = new mapboxgl.ScaleControl({
  *     maxWidth: 80,
@@ -72,9 +72,9 @@ class ScaleControl {
     }
 
     /**
-     * Set the scale's unit of the distance
+     * 设置比例尺使用的长度单位。
      *
-     * @param unit Unit of the distance (`'imperial'`, `'metric'` or `'nautical'`).
+     * @param unit 长度单位 (`'imperial'`, `'metric'` or `'nautical'`)。
      */
     setUnit(unit: Unit) {
         this.options.unit = unit;
