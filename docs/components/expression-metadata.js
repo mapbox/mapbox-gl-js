@@ -77,6 +77,10 @@ const types = {
         type: 'ItemType',
         parameters: ['number', 'array']
     }],
+    in: [{
+        type: 'boolean',
+        parameters: ['value', 'array']
+    }],
     case: [{
         type: 'OutputType',
         parameters: [{ repeat: ['condition: boolean', 'output: OutputType'] }, 'default: OutputType']
