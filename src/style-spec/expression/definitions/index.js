@@ -11,6 +11,7 @@ import Literal from './literal';
 import Assertion from './assertion';
 import Coercion from './coercion';
 import At from './at';
+import In from './in';
 import Match from './match';
 import Case from './case';
 import Step from './step';
@@ -47,6 +48,7 @@ const expressions: ExpressionRegistry = {
     'coalesce': Coalesce,
     'collator': CollatorExpression,
     'format': FormatExpression,
+    'in': In,
     'interpolate': Interpolate,
     'interpolate-hcl': Interpolate,
     'interpolate-lab': Interpolate,
