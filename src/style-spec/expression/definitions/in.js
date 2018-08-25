@@ -35,7 +35,7 @@ class In implements Expression {
         const needle = (this.needle.evaluate(ctx): any);
         const haystack = ((this.haystack.evaluate(ctx): any): Array<Value>);
 
-        return haystack.includes(needle);
+        return haystack.indexOf(needle) >= 0;
     }
 
     eachChild(fn: (Expression) => void) {
