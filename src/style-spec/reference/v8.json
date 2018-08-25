@@ -2345,6 +2345,15 @@
           }
         }
       },
+      "in": {
+        "doc": "Determines whether an item exists in an array.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "0.49.0"
+          }
+        }
+      },
       "case": {
         "doc": "Selects the first output whose corresponding test condition evaluates to true.",
         "group": "Decision",
