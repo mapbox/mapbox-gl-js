@@ -86,7 +86,7 @@ export default class ImageAtlas {
         }
 
         const {w, h} = binpack(bins);
-        const image = new RGBAImage({width: w, height: h});
+        const image = new RGBAImage({width: w || 1, height: h || 1});
 
         for (const id in icons) {
             const src = icons[id];
