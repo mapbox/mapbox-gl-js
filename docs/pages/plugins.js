@@ -87,6 +87,10 @@ const plugins = {
         "ngx-mapbox-gl": {
             "website": "https://github.com/Wykks/ngx-mapbox-gl",
             "description": md`provides an [Angular](https://angular.io/) integration for Mapbox GL JS`
+        },
+        "elm-mapbox": {
+            "website": "https://package.elm-lang.org/packages/gampleman/elm-mapbox/latest/",
+            "description": md`provides an [Elm](https://elm-lang.org) integration for Mapbox GL JS`
         }
     },
     "Utility Libraries": {
