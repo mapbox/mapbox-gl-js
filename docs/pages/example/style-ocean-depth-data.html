@@ -1,0 +1,64 @@
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v10',
+    center: [142.591669, 11.373335], // coordinate position
+    zoom: 3, // starting zoom
+    minZoom: 3, // minimum zoom
+    maxZoom: 5, // maximum zoom
+});
+
+map.on('load', function() {
+
+    // add the data source
+    map.addSource('10m-bathymetry-81bsvj', {
+        type: 'vector',
+        url: 'mapbox://mapbox.9tm8dx88'
+    });
+
+    // add the data as a layer
+    map.addLayer({
+        "id": "10m-bathymetry-81bsvj",
+        "type": "fill",
+        "source": "10m-bathymetry-81bsvj",
+        "source-layer": "10m-bathymetry-81bsvj",
+        "layout": {},
+        "paint": {
+            "fill-outline-color": "hsla(337, 82%, 62%, 0)",
+            "fill-color": [
+                "interpolate",
+                [
+                    "cubic-bezier",
+                    0,
+                    1,
+                    1,
+                    0
+                ],
+                ["get", "DEPTH"],
+                200,
+                "#78bced",
+                1000,
+                "#67b3eb",
+                2000,
+                "#55abe8",
+                3000,
+                "#44a2e6",
+                4000,
+                "#339ae4",
+                5000,
+                "#2191e1",
+                6000,
+                "#1c87d3",
+                7000,
+                "#1a7bc2",
+                8000,
+                "#1870b1",
+                9000,
+                "#15659f"
+            ]
+        }
+    }, 'barrier_line-land-polygon');
+});
+</script>
